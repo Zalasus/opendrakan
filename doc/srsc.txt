@@ -1,0 +1,325 @@
+
+!!!!!!!!
+   Partially outdated info. Refer to riot_database_format.txt instead!!
+!!!!!!!!
+
+
+
+Findings on the ubiquitous files with SRSC magic number
+=======================================================
+
+-seems like they always start with 'SRSC' 0x00 0x01
+	- 0x00 might be zero terminator, 0x01 version number
+		- plaintext .db files all state "version 1", so this might fit
+
+-appears to be a universal archive file:
+	-Music.rrc, is 8.8MB big. too big for just music definitions,
+	 contains RIFF strings -> music files?
+	
+-appears with many file endings. found so far:
+
+	.rrc (only in top level, resource archives?)
+	.mod
+	.adb
+	.odb
+	.sdb  (seems to be a sound database. filenames contained mostly describe sounds and dialog)
+	.txd
+	
+-found the follwing string formats:
+	16 bit LE length prefix, no terminator
+	
+-attempted disection with ./Common/Interface/Interface.odb (contains much plaintext)
+
+	'SRSC' 00   		# Magic number
+	01 					# Version
+	f0 04 00 00			# Offset of directory in bytes
+	04 00				# Number of entries in directory
+	02 01 00 00 	    # begin of first file
+	01 00
+	01 00
+	05 00
+	05 00
+	10 00 2E 2E ...		# definitely a string, reads '..\..\Dragon.rf', exatly 0x10 bytes -> length field
+	
+	
+String format
+=============
+
+    Strings are plain ASCII, prefixed with a 16 bit length field. Strings are padded to 
+    even sizes with a single zero byte. Apparently SRSC files are completely word-aligned.
+	
+
+File format
+===========
+
+directory_entry =
+{
+	uint16: record type
+	uint16: record id
+	uint16: group id
+	uint32: offset
+	uint32: size
+	
+	@offset
+	uint8[size]: data
+}
+
+vect3f =
+{
+    float:  x
+    float:  y
+    float:  z
+}
+
+# File header
+uint8[4]:	magic_id = 'SRSC'
+uint8:		dummy = 0
+uint8:		version = 1
+uint32:		directory_offset
+uint16:		file_count
+
+# [file data here...]
+
+@directory_offset
+directory_entry[file_count]: directory
+
+
+
+Record types
+============
+
+All record types seem to contain a resource type (high byte) and a record type (low byte).
+Record types of 0x**01 always seems to be group definitions, however not all resource types
+support grouping.
+
+
+Texture (0x00)
+--------------
+
+[0x0030] Palette
+    colour = { uint8: r, uint8: g, uint8: b, uint8: flags } (these are copied verbatim from the RIFF PAL file)
+    uint16:     colour count
+    colour[~]:  palette colours
+
+[0x0040] Material data (record ID is material ID)
+    uint32:     texture width (editor only allows 32, 64, 128 or 256)
+    uint32:     texture height (editor allows arbitrary height)
+    uint32:     row spacing (bytes per row)
+    uint16:     bits per pixel
+    uint16:     alpha map bits per pixel (indicates 5:5:5+1, 4:4:4+4 or 3:3:2+8 formats. 8:8:8+8 format is reported as "not yet implemented")
+    uint16:     ???
+    uint32:     colour key
+    uint16:     mip map material ID
+    uint16:     ???
+    uint16:     alternate material ID
+    uint8[8]:   ???
+    ...
+    uint16:     flags (the following are partially speculative)
+        (0x0080 if "keep high quality",
+         0x0040 if "dynamic texture" is ticked, 
+         0x0020 if "next frame", 
+         0x0008 if this is a mipmap
+         0x0004 if this is an alternate of another texture,
+         0x0002 if an alpha channel is integrated into the image data
+         0x0001 if this has a seperate alpha map attached after the image data
+         0x0a00 always set for normal textures
+        )
+    uint16:     mip map number (as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps)
+    uint16:     class ID
+    uint16:     ???
+    uint32:     usage count ? (seems so at least for models
+    uint32:     compression level (0 = none, 1 = lowest, 9 = highest)
+    uint32:     compressed size
+    uint8[~]:   zlib-compressed raw texture data (see "texture format")
+    
+    (the following area appears if flag 0x01 is set)
+    uint32:     additional data length (seems to be always equal to length of compressed texture)
+    uint8[~]:   additional data (no zlib-header)
+
+
+Class (0x01)
+------------
+
+[0x0100] Riot Function Library reference
+    uint8[8]:   ???
+    string:     relative path to rfl file
+ 
+[0x0101] Class group definition
+    string:     group name
+
+[0x0102] Class data
+    field_def = { uint32: type, string: name } 
+    (LSB of type is base type:
+     type 0x01 = integer (signed), 
+     type 0x02 = float,
+     type 0x03 = class,
+     type 0x04 = model
+     type 0x05 = sound
+     type 0x07 = enum (possible items depends on field; are stored as uint32)
+     type 0x08 = character channel (probably bone etc.)
+     type 0x09 = animation
+     type 0x0a = string
+     type 0x0b = sequence
+     type 0x0e = texture
+     type 0x0f = colour
+     if second byte is 0x10, field is an array of that type
+     )
+    string:         class name
+    uint16:         ?? (seems to always be 1)
+    uint16:         model ID ( maybe join these two into new datatype?)
+    uint16:         model database number (from dependency table)
+    uint16:         class type
+    uint16:         icon number
+    uint32:         number of fields
+    uint32:         size of data area in dwords (1 means 4 bytes)
+    uint8[*]:       data area
+    field_def[*]:   field definitions
+
+
+Model (0x02)
+------------
+
+[0x0200] Model name
+    string:     model name
+    uint32:     shading type (0 = none, 09 = flat, 0a = smooth, flags seem to change this in weird ways)
+
+[0x0201] Model group definition
+    string:     group name
+
+[0x0202] ???
+    (Doesn't seem to be associated with a particular model. Has ID and GID = 0)
+
+[0x0203] Vertices
+    uint16:     vertex count
+    vect3f[~]:  vertices
+    
+[0x0204] Faces
+    vertex = { uint16: vertex number, float: u coordinate, float: v coordinate }
+    face =   { uint16: ???, uint16: vertex count, uint16: material, vertex[~1]: vertex list }
+    uint16:     face count
+    face[~]:    faces
+
+[0x0206] Material list (speculative. why should these be 32 bits for instance)
+    uint32:     material count
+    uint32[~]:  material id
+    
+[0x0207] Bounding data
+     vect3f:    sphere center
+     float:     sphere radius
+     vect3f:    box position
+     float:     box x length
+     uint8[12]: ??? (all zeroes. the fuck is this?)
+     float:     box y length
+     uint8[12]: ??? (all zeroes)
+     float:     box z length
+     ... (more unknown float coordinates)
+    
+[0x0209] ???
+    uint8[6]:   ???
+    (these records are consistently 6 bytes long and contained only zeroes in at least one tested model)
+    
+
+
+Sound (0x03)
+------------
+
+[0x0301] Sound group definition
+	string: 	group name
+	
+[0x0302] Sound data
+	string:    sound name
+	uint32:    flags (4 = flush after playing, 8 = play looping)
+	uint16:    channels
+	uint16:    bits
+	uint32:    frequency
+	uint32:    volume (no idea how this is encoded)
+	float:     dropoff (min 0, max 30)
+	uint32:    priority (range 0-10)
+	uint32:    decompressed size   (the editor alters these three fields globally for a database!)
+	uint32:    compression level (0 = none, 1 = lowest, 9 = highest)
+	uint32:    compressed size (record size - header size, only valid if compression level > 0)
+	uint8[*]:  zlib-compressed PCM sample audio (see "Audio format")
+	
+	
+Misc (0x04)
+-----------
+
+[0x0402] End record?
+    (one of these appears in many databases, often last. it's size seems to always be 4)
+	
+	
+Audio format
+============
+
+    Audio is zlib compressed after a short header. Until now,
+    only 8 bit and 16 bit sounds have been found. Sample frequency varies.
+    16 bit audio is stored as signed integers, LE. Sample after sample.
+    Stereo format is interleaved, left sample first.
+
+
+Texture format
+==============
+    
+    Textures are encoded as zlib-compressed raw pixels.
+    Rows are stored bottom-up from left to right.
+    
+    The pixel format is selected by the bpp-field in the texture header.
+    The following pixel formats have been found:
+    
+    8 bpp
+    -----
+    
+        Each pixel is represented by one byte that is an index in the colour palette, found in the 0x0030 record.
+        
+    
+    16 bpp
+    ------
+        Format depends on the type of alpha map used. If no alpha map is present or it is stored seperately (flag 0x01),
+        the following format is used:
+            5-6-5-format (note the LE byte order!)
+            
+            RRRRRGGG GGGBBBBB 
+             Byte 1   Byte 0
+         
+            Note that the green channel uses 6 bit while red and blue only use 5.
+            
+        If the alpha map is integrated into the texture (alpha channel, indicated by flag 0x02),
+        the format used is determined by the alpha-bpp-field. The following formats have been found:
+        
+            ABPP    R:G:B + A bits
+            1       5:5:5 + 1
+            4       4:4:4 + 4
+            8       3:3:2 + 8
+            
+        The 8:8:8+8 is sometimes listed but reported as "not yet implemented", probably due to the fact the 8-alpha-bit
+        setting is already occupied by the 3:3:2+8 format.
+        Please note that these formats also use LE encoding.
+
+
+    24 bpp
+    ------
+        8-8-8-format
+
+        RRRRRRRR GGGGGGGG BBBBBBBB
+         Byte 0   Byte 1   Byte 2
+         
+        Note that this is not adjusted for any byte order!
+
+
+    32 bpp
+    ------
+    
+        GGGGGGGG BBBBBBBB XXXXXXXX RRRRRRRRR
+        
+        X is unused. Note that this is not adjusted for any byte order!
+        Even when adjusted, this order makes little sense. Probably this feature hadn't much work put into it.
+        When trying to make a 8:8:8+8 alpha channel texture, the editor reports "not yet implemented". While 32bpp textures with
+        no alpha channel can be created, it is doubtful that any of these will ever occur. I couldn't find 32bpp textures in any
+        of the Drakan databases.
+
+
+
+
+
+
+	

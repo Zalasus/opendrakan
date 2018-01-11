@@ -1,0 +1,380 @@
+
++================================+
+|Riot Engine database file format|
++================================+
+
+This file documents the database file format ("SRSC") used by the Riot Game Engine by Surreal Software.
+
+All of the following information has been aquired through reverse engineering. 
+Some basic information was taken from a script found at: http://aluigi.altervista.org/bms/drakan.bms.
+
+This document uses a pseudo-C syntax for data structure definitions. You'll figure it out.
+    (Just some hints: ~ refers to the previous field)
+
+PLEASE NOTE: This documentation is not complete. I could not identify all fields used in all files
+and am still working on figuring out things like animations. Feel free to make a pull request should
+you find out things not documented here.
+
+
+How the engine manages it's assets
+==================================
+    
+    The Riot Engine stores all it's assets in database files with a common format. All these files use
+    the magic number "SRSC", so that's what we are gonna call the format from now on.
+    
+    An SRSC file consists of a list of records of which one or more may represent a single game asset.
+    Sounds for instance consist of only one record, while models are made up of at least 6 records each.
+    
+    Assets are managed in so called "databases", defined by a *.db file. The name of that file (without extension) 
+    is that database's name. The *.db file is plaintext formatted. More about that file can be found in chapter "Database definition".
+
+    A database's different types of assets are stored in seperate SRSC files stored in the same directory as the defining *.db file.
+    The type of asset contained in an SRSC file is identified by it's file extensions.
+    These are the possible file extensions and their associated asset types for databases:
+    
+        *.mod    Models
+        *.adb    Animations ("STOMP"-Sequences)
+        *.odb    Objects
+        *.sdb    Sounds
+        *.txd    Textures
+
+    Apart from those, the following files are also SRSC formatted, but aren't part of databases:
+
+        *.rrc   Contains various resources like Music; found in engine toplevel
+        *.lvl   Contains level geometry, object placements etc.
+
+
+Database definition
+===================
+    A database is defined by it's *.db file. It is a plaintext file with the structure:
+        
+        version <version number>
+        dependencies <dependency count>
+        1 <path of dependency 1 db file>
+        2 <path of dependency 2 db file>
+            ...
+        n <path of dependency n db file>
+
+    The dependencies listed are used for internally referencing records. See subchapter "Referencing a record"
+    in chapter "Basic SRSC format". Note that these indices are 1-based!
+
+
+Basic SRSC format
+=================
+
+    Data formatting
+    ---------------
+        All fields are little-endian.
+
+        SRSC files are word-aligned, so all fields start at an even offset.
+
+        Strings are plain ASCII, prefixed with a 16-bit length field. Strings with an odd length
+        are padded with a single 0 byte so the aligment is preseved. This padding is also included
+        in the length field, so a string length can only ever be even. Strings are not zero-terminated.
+
+        Floats use standard IEEE 754 format, single precision.
+
+   
+    File structure
+    --------------
+        Header:
+
+            uint8[4]    magic = 'SRSC';
+            uint16      version = 0x0100; // speculative
+            uint32      directory_offset;
+            uint16      record_count;
+
+        This is followed by a block containing the record bodies. After that,
+        starting at directory_offset one can find a list of all records with pointers to the data area above:
+
+            struct directory_entry
+            {
+                uint16  record_type;
+                uint16  record_id;   // see "Record ID and grouping"
+                uint16  group_id;
+                uint32  body_offset;
+                uint32  body_size;
+            }
+
+            directory_entry[record_count]   directory;
+
+            // end of file
+
+        
+    Record types
+    ------------
+        All records have a 16-bit type. The high byte of that type defines the associated asset type, while the interpretation
+        of the low byte depends on the given asset type. This type also defines the structure of the record body.
+        See top chapter "Record types" for a list of all known record structures.
+
+    Record ID and grouping
+    ----------------------
+        Most records are identified by an ID, found in the SRSC directory. This is a running number that is
+        unique per SRSC file. If a record has no ID, the ID field has a value of 0.
+
+        Some asset types allow grouping of records. These are namely models, classes and sounds. These asset types
+        define a special record type for group definitions. This seems to always be the type with the low byte 0x01.
+        That record's body consists of a single string, which is the groups name.
+        The record ID of that group definition record is that group's ID. All records whose directory entry states a group ID
+        different than 0 are part of the group with the ID stated. 
+        Group definition records can also be part of a group, making them subgroups of the given group. Record that are children of
+        those subgroup use the subgroup's ID instead.
+        Note that even across groups, all record IDs must be unique, IDs of groups included.
+
+        Grouping seems like it's only use is convenience for the level designer. Group definitions only ever show up in the editor,
+        and group IDs are not needed for identifiying a record since record IDs are unique across groups.
+
+
+    Referencing a record
+    --------------------
+        Records are referenced by their ID. Since these IDs aren't unique across different SRSC files, all references to other records
+        include an index of their database's dependency table. The database found at that index is the one containing the referenced record.
+        Note that this index is 1-based, as an index of 0 refers to the current database.
+
+        While IDs also aren't unique across a databases different asset archives, this is not a problem since all references state the type
+        of the referenced record either implicitly (e.g. model field in class record) or explicitly (other class fields).
+
+
+Record types
+============
+
+    All record types consist of an asset type (high byte). The interpretation of the low byte depends on the asset type.
+    For most records, a low byte of 0x01 indicates a group definition.
+
+    The following is an incomplete list of record types, grouped by asset type.
+
+    Texture (0x00)
+    --------------
+
+    [0x0030] Palette
+        struct color { uint8 r; uint8 g; uint8 b; uint8 flags; }; // these are copied verbatim from the RIFF PAL file
+        uint16      color_count;
+        colour[~]   palette_colors;
+
+    [0x0040] Material data (record ID is material ID)
+        uint32      width; // editor only allows 32, 64, 128 or 256
+        uint32      height; // editor allows arbitrary height
+        uint32      bytes_per_row;
+        uint16      bits_per_pixel;
+        uint16      alpha_bits_per_pixel; // indicates 5 5 5+1, 4 4 4+4 or 3 3 2+8 formats for alpha channels. 8 8 8+8 format is reported as "not yet implemented"
+        uint16      ???
+        uint32      colour_key;
+        uint16      mip_map_id;
+        uint16      ???
+        uint16      alternate_texture_id;
+        uint8[8]    ???
+        ...
+        uint16      flags; (the following are partially speculative)
+            (0x0080 if "keep high quality",
+             0x0040 if "dynamic texture" is ticked, 
+             0x0020 if "next frame", 
+             0x0008 if this is a mipmap
+             0x0004 if this is an alternate of another texture,
+             0x0002 if an alpha channel is integrated into the image data
+             0x0001 if this has a seperate alpha map attached after the image data
+             0x0a00 always set for normal textures
+            )
+        uint16      mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps 
+        uint16      class_id;
+        uint16      ???
+        uint32      usage_count; // ? (seems so at least for models
+        uint32      compression_level; (0 = none, 1 = lowest, 9 = highest)
+        uint32      compressed_size;
+        uint8[~]    zlib-compressed raw texture data (see "texture format")
+        
+        // the following area appears if flag 0x01 is set
+        uint32      additional_data_length // seems to be always equal to length of compressed texture
+        uint8[~]    additional_data // no zlib-header
+
+        // as of now, I have no idea how animations work
+
+    Class (0x01)
+    ------------
+
+    [0x0100] Riot Function Library reference
+        uint8[8]    ???
+        string      relative_path_to_rfl_file; // for Drakan, this is always Dragon.rfl in the engine root dir
+     
+    [0x0101] Class group definition
+        string      group_name;
+
+    [0x0102] Class data
+        struct field_def { uint32 type; string name; };
+        /*LSB of type is base type 
+         type 0x01 = integer (signed), 
+         type 0x02 = float,
+         type 0x03 = class,
+         type 0x04 = model
+         type 0x05 = sound
+         type 0x07 = enum (possible items depends on field; are stored as uint32)
+         type 0x08 = character channel (probably bones)
+         type 0x09 = animation
+         type 0x0a = string
+         type 0x0b = sequence
+         type 0x0e = texture
+         type 0x0f = colour
+         if second byte is 0x10, field is an array of that type
+         */
+        string          class_name;
+        uint16          ?? (seems to always be 1)
+        uint16          model_id; // none if zero
+        uint16          model_database_number; // from dependency table
+        uint16          class_type;
+        uint16          icon_number; // Selected class icon in the editor. Should have no effect on gameplay
+        uint32          number_of_fields;
+        uint32          size_of_data_area_in_dwords; // 1 means 4 bytes
+        uint8[4*~]      data_area;
+        field_def[*]    field_definitions;
+
+
+    Model (0x02)
+    ------------
+
+    struct vect3f { float x; float y; float z; };
+
+    [0x0200] Model name
+        string      model_name;
+        uint32      shading_type; (0 = none, 09 = flat, 0a = smooth, flags seem to change this in weird ways)
+
+    [0x0201] Model group definition
+        string      group_name;
+
+    [0x0202] ???
+        (Doesn't seem to be associated with a particular model. Has ID and GID = 0)
+
+    The following records must all appear once per model and thus have the same record ID.
+
+    [0x0203] Vertices
+        uint16      vertex_count;
+        vect3f[~]   vertices;
+        
+    [0x0204] Faces
+        struct vertex { uint16 vertex_number; float u_coord; float  v_coord; };
+        struct face { uint16  ???; uint16 vertex_count; uint16 material; vertex[~1] vertex_list; } // material as found in record 0x206
+        uint16      face_count;
+        face[~]     faces;
+
+    [0x0206] Material list
+        struct material_ref { uint16 material_id; uint16 database_number; }
+        uint32          material_count;
+        material_ref[~] material_list;
+        
+    [0x0207] Bounding data
+         vect3f     sphere_center;
+         float      sphere_radius;
+         vect3f     box_position;
+         float      box_x_length;
+         uint8[12]  ??? // all zeroes. the fuck is this?
+         float      box_y_length;
+         uint8[12]  ??? // all zeroes
+         float      box_z_length;
+         ... (more unknown float coordinates)
+        
+    [0x0209] ???
+        uint8[6]    ???
+        (these records are consistently 6 bytes long and contained only zeroes in at least one tested model)
+        
+
+
+    Sound (0x03)
+    ------------
+
+    [0x0301] Sound group definition
+	    string  	group_name;
+	    
+    [0x0302] Sound data;
+	    string     sound_name;
+	    uint32     flags; // 0x04 = flush after playing, 0x08 = play looping
+	    uint16     channels;
+	    uint16     bits;
+	    uint32     frequency;
+	    uint32     volume; // no idea how this is encoded
+	    float      dropoff; // min 0, max 30
+	    uint32     priority; // range 0-10
+	    uint32     decompressed_size; // the editor alters these three fields globally for a database!
+	    uint32     compression_level; // 0 = none, 1 = lowest, 9 = highest
+	    uint32     compressed_size; // record size - header size, only valid if compression level > 0, contains garbage otherwise
+	    uint8[*]   audio_data; // see "Audio format"
+	    
+	    
+    Misc (0x04)
+    -----------
+
+    [0x0402] End record?
+        (one of these appears in many databases, often last. it's size seems to always be 4)
+
+
+Audio format
+============
+    Audio data is stored as raw PCM samples (optionally zlib-compressed). It is stored sample after sample without
+    any metadata.
+
+    Stereo files are stored interleaved, left channel first.
+
+    8 bit samples are stored unsigned with a bias of 128. 16 bit samples are stored signed.
+
+
+Texture format
+==============
+    Textures are encoded as zlib-compressed raw pixels.
+    Rows are stored bottom-up from left to right.
+    
+    The pixel format is selected by the bpp-field in the texture header.
+    The following pixel formats have been found:
+    
+    8 bpp
+    -----
+        Each pixel is represented by one byte that is an index in the colour palette, found in the 0x0030 record.
+        
+    
+    16 bpp
+    ------
+        Format depends on the type of alpha map used. If no alpha map is present or it is stored seperately (flag 0x01),
+        the following format is used:
+            5-6-5-format (note the LE byte order!)
+            
+            RRRRRGGG GGGBBBBB
+             Byte 1   Byte 0
+         
+            Note that the green channel uses 6 bit while red and blue only use 5.
+            
+        If the alpha map is integrated into the texture (alpha channel, indicated by flag 0x02),
+        the format used is determined by the alpha-bpp-field. The following formats have been found:
+        
+            ABPP    R:G:B+A bits
+            1       5:5:5+1
+            4       4:4:4+4
+            8       3:3:2+8
+            
+        The 8:8:8+8 is sometimes listed in the editor but reported as "not yet implemented", probably due to the
+        fact the 8-alpha-bit setting is already occupied by the 3:3:2+8 format.
+        Please note that these formats also use LE encoding.
+
+
+    24 bpp
+    ------
+        8-8-8-format
+
+        RRRRRRRR GGGGGGGG BBBBBBBB
+         Byte 0   Byte 1   Byte 2
+         
+        Note that this is not adjusted for any byte order!
+
+
+    32 bpp
+    ------
+        GGGGGGGG BBBBBBBB XXXXXXXX RRRRRRRRR
+        
+        X is unused. Note that this is not adjusted for any byte order!
+        Even when adjusted, this order makes little sense. Probably this feature hadn't much work put into it.
+        When trying to make a 8:8:8+8 alpha channel texture, the editor reports "not yet implemented". While 32bpp textures with
+        no alpha channel can be created, it is doubtful that any of these will ever occur. I couldn't find 32bpp textures in any
+        of the Drakan databases.
+
+
+
+
+
+
+
+
