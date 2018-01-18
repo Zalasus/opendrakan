@@ -15,6 +15,10 @@
 namespace od
 {
 
+    DbManager::DbManager()
+    {
+    }
+
     bool DbManager::isDbLoaded(FilePath dbFilePath) const
     {
         auto pred = [&dbFilePath](RiotDb *db){ return db->getDbFilePath() == dbFilePath; };

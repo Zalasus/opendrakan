@@ -35,17 +35,21 @@ namespace od
 
 	void RiotDb::_loadDbFileAndDependencies()
 	{
-		std::regex versionRegex("[:space:]*version[:space:]+([:digit:]+).*");
-		std::regex dependenciesRegex("[:space:]*dependencies[:space:]+([:digit:]+).*");
-		std::regex dependencyDefRegex("[:space:]*([:digit:]+)[:space:]+(.*)");
-		std::regex commentRegex("[:space:]*"); // allow empty lines. if we find something like a comment, add it here
+		std::regex versionRegex("\\s*version\\s+(\\d+).*");
+		std::regex dependenciesRegex("\\s*dependencies\\s+(\\d+).*");
+		std::regex dependencyDefRegex("\\s*(\\d+)\\s+(.*)");
+		std::regex commentRegex("\\s*"); // allow empty lines. if we find something like a comment, add it here
 
 		std::ifstream in(mDbFilePath.str(), std::ios::in | std::ios::binary);
+		if(in.fail())
+		{
+		    throw Exception("Could not open db definition file " + mDbFilePath.str());
+		}
 
 		std::string line;
 		bool readingDependencies = false;
         size_t dependenciesLoaded = 0;
-		while(!std::getline(in, line))
+		while(std::getline(in, line))
 		{
 			std::smatch results;
 
@@ -94,6 +98,11 @@ namespace od
 
 				// note: dependency paths are always stored relative to the path of the db file defining it
 				FilePath depPath(results[2], mDbFilePath.dir());
+
+				if(depPath == mDbFilePath)
+				{
+				    throw Exception("Self dependent database file");
+				}
 
 				mDependencies[depIndex-1] = &mDbManager.loadDb(depPath);
 

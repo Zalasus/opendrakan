@@ -12,16 +12,12 @@
 #include <vector>
 #include <fstream>
 
-#include "zstr/zstr.hpp"
+#include "zstr.hpp"
 #include "FilePath.h"
+#include "DataStream.h"
 
 namespace od
 {
-
-	class RecordDescriptor
-	{
-
-	};
 
 	class SrscFile
 	{
@@ -83,6 +79,7 @@ namespace od
 		void decompressAll(const std::string &prefix, bool extractRaw);
 		void decompressRecord(const std::string &prefix, DirEntry dirEntry, bool extractRaw);
 
+
 	protected:
 
 		void _readHeaderAndDirectory();
@@ -90,7 +87,7 @@ namespace od
 		FilePath mFilePath;
 		std::ifstream mInputStream;
 
-		uint8_t mVersion;
+		uint16_t mVersion;
 		uint32_t mDirectoryOffset;
 		uint16_t mRecordCount;
 		std::vector<DirEntry> mDirectory;

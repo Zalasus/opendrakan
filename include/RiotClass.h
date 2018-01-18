@@ -8,6 +8,9 @@
 #ifndef INCLUDE_RIOTCLASS_H_
 #define INCLUDE_RIOTCLASS_H_
 
+#include "RiotAsset.h"
+#include "SrscFile.h"
+
 namespace od
 {
 
@@ -16,6 +19,8 @@ namespace od
 	public:
 
 		RiotClass();
+
+
 
 	};
 

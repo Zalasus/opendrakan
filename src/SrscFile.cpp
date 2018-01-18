@@ -261,8 +261,6 @@ namespace od
 			throw std::runtime_error("Invalid magic number in SRSC file");
 		}
 
-		in.ignore(1); // this should always be 0
-
 		in >> mVersion;
 		in >> mDirectoryOffset;
 		in >> mRecordCount;
