@@ -7,66 +7,190 @@
 
 #include "FilePath.h"
 
-#include <sstream>
+#include <algorithm>
 
 #include "StringUtils.h"
+#include "Exception.h"
 
 #if defined (__WIN32__)
 #	define OD_FILEPATH_SEPERATOR	    '\\'
+#	define OD_FILEPATH_SEPERATOR_STR    "\\"
+#	define OD_FILEPATH_HOST_STYLE		STYLE_DOS
 #else
 #	define OD_FILEPATH_SEPERATOR	    '/'
+#	define OD_FILEPATH_SEPERATOR_STR    "/"
+#	define OD_FILEPATH_HOST_STYLE		STYLE_POSIX
 #endif
 
 namespace od
 {
 
 	FilePath::FilePath(const std::string &path)
+	: mOriginalPath(path)
+	, mRootStyle(STYLE_RELATIVE)
 	{
 	    _parsePath(path);
 	}
 
 	FilePath::FilePath(const std::string &path, FilePath relativeTo)
+	: mOriginalPath(path)
+	, mRootStyle(STYLE_RELATIVE)
 	{
 	    _parsePath(relativeTo.str() + OD_FILEPATH_SEPERATOR + path);
 	}
 
+	FilePath::FilePath(const FilePath &p, size_t omitLastNComponents)
+	: mOriginalPath(p.mOriginalPath)
+	, mRoot(p.mRoot)
+	, mRootStyle(p.mRootStyle)
+	, mPathComponents(p.mPathComponents.begin(), p.mPathComponents.begin() + (p.mPathComponents.size() - omitLastNComponents))
+	{
+	}
+
 	FilePath FilePath::dir() const
 	{
-	    size_t lastSlash = mGoodPath.find_last_of("/\\");
-	    std::string newPath = mGoodPath.substr(0, lastSlash);
-	    return FilePath(newPath);
+		return FilePath(*this, 1);
 	}
 
 	std::string FilePath::str() const
 	{
-	    std::string hostPath = mGoodPath;
+	    return _buildHostPath();
+	}
 
-	    for(size_t i = 0; i < hostPath.size(); ++i)
-        {
-            if((hostPath[i] == '\\' || hostPath[i] == '/') && hostPath[i] != OD_FILEPATH_SEPERATOR)
-            {
-                hostPath[i] = OD_FILEPATH_SEPERATOR;
-            }
-        }
+	std::string FilePath::strNoExt() const
+	{
+		std::string file = str();
 
-	    return mGoodPath;
+		size_t lastDot = file.find_last_of(".");
+		return file.substr(0, lastDot);
+	}
+
+	std::string FilePath::fileStr() const
+	{
+		if(mPathComponents.size() == 0)
+		{
+			throw Exception("Tried to access file part of empty path");
+		}
+
+		return mPathComponents[mPathComponents.size() - 1];
+	}
+
+	std::string FilePath::fileStrNoExt() const
+	{
+		std::string file = fileStr();
+
+		size_t lastDot = file.find_last_of(".");
+		return file.substr(0, lastDot);
 	}
 
 	bool FilePath::operator==(const FilePath &right) const
     {
-	    return mGoodPath == right.mGoodPath;
+		if(mRoot != right.mRoot)
+		{
+			return false;
+		}
+
+		return std::equal(mPathComponents.begin(), mPathComponents.end(), right.mPathComponents.begin(), right.mPathComponents.end());
     }
 
 	void FilePath::_parsePath(const std::string &path)
 	{
-		mGoodPath = path;
-		for(size_t i = 0; i < mGoodPath.size(); ++i)
+		std::string workPath = StringUtils::trim(path);
+
+		if(workPath.empty())
 		{
-		    if(mGoodPath[i] == '\\')
-		    {
-		        mGoodPath[i] = '/';
-		    }
+			return;
 		}
+
+		size_t startSearchAt = 0;
+
+		if(workPath.size() >= 1 && workPath[0] == '/')
+		{
+			// POSIX root
+			mRoot = "/";
+			mRootStyle = STYLE_POSIX;
+			startSearchAt = 1;
+
+		}else if(workPath.size() >= 2 && workPath[1] == ':')
+		{
+			// DOS root
+			mRoot = workPath.substr(0,1) + ":\\";
+			mRootStyle = STYLE_DOS;
+			startSearchAt = 3;
+		}
+
+		while(startSearchAt < workPath.size())
+		{
+			size_t nextSlash = workPath.find_first_of("\\/", startSearchAt);
+
+			size_t componentSize;
+			if(nextSlash != std::string::npos)
+			{
+				componentSize = nextSlash - startSearchAt;
+
+			}else
+			{
+				componentSize = std::string::npos;
+			}
+
+
+			std::string pathComponent = workPath.substr(startSearchAt, componentSize);
+
+			if(pathComponent == "..")
+			{
+				if(mPathComponents.empty())
+				{
+					throw Exception("Invalid path: '..' used beyond path root.");
+				}
+
+				mPathComponents.pop_back();
+
+			}else if(!pathComponent.empty() && pathComponent != ".")
+			{
+				mPathComponents.push_back(pathComponent);
+			}
+
+
+			if(nextSlash != std::string::npos)
+			{
+				startSearchAt = nextSlash + 1;
+
+			}else
+			{
+				startSearchAt = std::string::npos;
+			}
+		}
+	}
+
+	std::string FilePath::_buildHostPath() const
+	{
+		std::string hostPath;
+
+		if(mRootStyle != STYLE_RELATIVE)
+		{
+			if(mRootStyle != OD_FILEPATH_HOST_STYLE)
+			{
+				throw Exception("Can't convert absolute path roots right now");
+			}
+
+			hostPath = mRoot;
+
+		}else if(mPathComponents.empty())
+		{
+			return ".";
+		}
+
+		for(size_t i = 0; i < mPathComponents.size(); ++i)
+		{
+			hostPath.append(mPathComponents[i]);
+
+			if(i+1 < mPathComponents.size()) // if this is not the last item
+			{
+				hostPath.append(OD_FILEPATH_SEPERATOR_STR);
+			}
+		}
+
+		return hostPath;
 	}
 }
 

@@ -22,6 +22,13 @@ namespace od
 	{
 	public:
 
+		enum PathRootStyle
+		{
+			STYLE_DOS,
+			STYLE_POSIX,
+			STYLE_RELATIVE
+		};
+
 		/**
 		 * Constructs a new FilePath object from the given path. If path is
 		 * relative, it is assumed to be relative to the current working directory.
@@ -34,6 +41,7 @@ namespace od
 		 */
 		FilePath(const std::string &path, FilePath relativeTo);
 
+		FilePath(const FilePath &p, size_t omitLastNComponents = 0);
 
 		/**
 		 * If this object represents a path to a file, this method returns a FilePath for the directory
@@ -52,14 +60,35 @@ namespace od
 		 */
 		std::string str() const;
 
+		/**
+		 * Returns the same as str() but with possible extensions removed.
+		 */
+		std::string strNoExt() const;
+
+		/**
+		 * Returns a string containing just the filename without any directories.
+		 */
+		std::string fileStr() const;
+
+		/**
+		 * Returns the same as fileStr() but with possible extensions removed.
+		 */
+		std::string fileStrNoExt() const;
+
+
 		bool operator==(const FilePath &right) const;
 
 
 	private:
 
 		void _parsePath(const std::string &path);
+		std::string _buildHostPath() const;
 
-		std::string mGoodPath;
+		std::string mOriginalPath;
+
+		std::string mRoot;
+		PathRootStyle mRootStyle;
+		std::vector<std::string> mPathComponents;
 	};
 
 }

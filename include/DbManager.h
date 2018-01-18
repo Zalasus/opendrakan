@@ -22,13 +22,16 @@ namespace od
 	public:
 
 		DbManager();
+		~DbManager();
 
 		bool isDbLoaded(FilePath dbFilePath) const;
 
         /**
          * @param[in]   dbFile  Path to the *.db file defining the database to be loaded. Extension optional.
          */
-		RiotDb &loadDb(FilePath dbFilePath);
+		RiotDb &loadDb(FilePath dbFilePath, size_t dependencyDepth = 0);
+
+		RiotDb &getDb(FilePath dbFilePath);
 
 
 	private:

@@ -10,7 +10,44 @@
 
 #include "SrscFile.h"
 #include "DbManager.h"
+#include "RiotDb.h"
 
+
+void srscStat(od::SrscFile &file)
+{
+	std::cout << "Got SRSC version " << (int32_t)file.getVersion() << " with " << file.getRecordCount() << " records." << std::endl;
+	std::cout << "Records:" << std::endl;
+
+	std::cout << std::setw(6) << "Index"
+			  << std::setw(6) << "Type"
+			  << std::setw(8) << "Size"
+			  << std::setw(6) << "RecID"
+			  << std::setw(6) << "GruID"
+			  << std::setw(24) << "Name"
+			  << std::endl;
+
+	auto it = file.getDirectoryBegin();
+	while(it != file.getDirectoryEnd())
+	{
+		od::SrscFile::RecordInfo info = file.getRecordInfo(*it);
+
+		std::cout
+			<< std::setw(6) << (it - file.getDirectoryBegin())
+			<< std::setw(6) << std::hex << it->type << std::dec
+			<< std::setw(8) << it->dataSize
+			<< std::setw(6) << std::hex << it->recordId << std::dec
+			<< std::setw(6) << std::hex << it->groupId << std::dec;
+
+		if((it->type == 0x302) || ((it->type & 0xff) == 0x01) || (it->type == 0x200))  // sound record
+		{
+			std::cout << std::setw(24) << info.name;
+		}
+
+		std::cout << std::endl;
+
+		++it;
+	}
+}
 
 void printUsage()
 {
@@ -66,7 +103,15 @@ int main(int argc, char **argv)
 	{
 		od::DbManager dbm;
 
-		dbm.loadDb(od::FilePath(filename));
+		std::cout << "Loading database " << filename << std::endl;
+
+		od::RiotDb &db = dbm.loadDb(od::FilePath(filename));
+
+		std::cout << "Successfully loaded database!" << std::endl;
+
+		od::SrscFile &srscFile = db.getResourceContainer(od::ASSET_SEQUENCE);
+		srscStat(srscFile);
+
 
 	}catch(std::exception &e)
 	{
