@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <memory>
 
 #include "SrscFile.h"
 #include "DbManager.h"
@@ -23,13 +24,11 @@ void srscStat(od::SrscFile &file)
 			  << std::setw(8) << "Size"
 			  << std::setw(6) << "RecID"
 			  << std::setw(6) << "GruID"
-			  << std::setw(24) << "Name"
 			  << std::endl;
 
 	auto it = file.getDirectoryBegin();
 	while(it != file.getDirectoryEnd())
 	{
-		od::SrscFile::RecordInfo info = file.getRecordInfo(*it);
 
 		std::cout
 			<< std::setw(6) << (it - file.getDirectoryBegin())
@@ -37,11 +36,6 @@ void srscStat(od::SrscFile &file)
 			<< std::setw(8) << it->dataSize
 			<< std::setw(6) << std::hex << it->recordId << std::dec
 			<< std::setw(6) << std::hex << it->groupId << std::dec;
-
-		if((it->type == 0x302) || ((it->type & 0xff) == 0x01) || (it->type == 0x200))  // sound record
-		{
-			std::cout << std::setw(24) << info.name;
-		}
 
 		std::cout << std::endl;
 
@@ -67,6 +61,7 @@ int main(int argc, char **argv)
 	}
 
 	std::string filename;
+	bool extract = false;
 	uint16_t extractRecordId = 0;
 	for(int i = 1; i < argc; ++i)
 	{
@@ -84,6 +79,10 @@ int main(int argc, char **argv)
 			std::string arg2(argv[++i]);
 			std::istringstream is(arg2);
 			is >> std::hex >> extractRecordId;
+
+		}else if(arg == "-x")
+		{
+		    extract = true;
 
 		}else
 		{
@@ -109,8 +108,28 @@ int main(int argc, char **argv)
 
 		std::cout << "Successfully loaded database!" << std::endl;
 
-		od::SrscFile &srscFile = db.getResourceContainer(od::ASSET_SEQUENCE);
-		srscStat(srscFile);
+		od::SrscFile &srscFile = db.getResourceContainer(od::ASSET_CLASS);
+
+		if(extract)
+		{
+            if(extractRecordId > 0)
+            {
+                od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
+                srscFile.decompressRecord("out/", dirEntry, true);
+
+                od::AssetPtr classTest = db.getAssetById(od::ASSET_CLASS, extractRecordId);
+
+                std::cout << "The loaded asset has name: " << classTest->getName() << std::endl;
+
+            }else
+            {
+                srscFile.decompressAll("out/", true);
+            }
+
+		}else
+		{
+		    srscStat(srscFile);
+		}
 
 
 	}catch(std::exception &e)

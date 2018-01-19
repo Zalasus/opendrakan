@@ -45,7 +45,8 @@ namespace od
 		if(mSrscMap.find(type) == mSrscMap.end())
 		{
 			// not yet loaded -> load
-			std::string srscPath = mDbFilePath.strNoExt() + getExtensionForAssetType(type);
+		    AssetFactory &factory = AssetFactory::getFactoryForType(type);
+			std::string srscPath = mDbFilePath.strNoExt() + "." + factory.getDbExtension();
 
 			SrscFile *srscFile = new SrscFile(FilePath(srscPath)); // TODO: use proper RAII
 			mSrscMap[type] = srscFile;
@@ -116,13 +117,16 @@ namespace od
 					throw Exception("Found dependency definition before dependencies statement");
 				}
 
+				if(dependenciesLoaded >= mDependencies.size())
+                {
+                    throw Exception("More dependencies than stated in 'dependencies' statement");
+                }
+
 				uint32_t depIndex;
 				std::istringstream is(results[1]);
 				is >> depIndex;
 
-				// FIXME: these indices neither have to be consecutive nor do they have to start at a given index
-				//        replace this array's content type with a struct that stores the given index alongside the db object
-				if(depIndex == 0 || depIndex > mDependencies.size())
+				if(depIndex == 0)
 				{
 					throw Exception("Invalid dependency index");
 				}
@@ -142,14 +146,19 @@ namespace od
 				    throw Exception("Self dependent database file");
 				}
 
+				Dependency dep;
+				dep.index = depIndex;
+
 				if(!mDbManager.isDbLoaded(depPath))
 				{
-					mDependencies[depIndex-1] = &mDbManager.loadDb(depPath, dependencyDepth + 1);
+					dep.db = &mDbManager.loadDb(depPath, dependencyDepth + 1);
 
 				}else
 				{
-					mDependencies[depIndex-1] = &mDbManager.getDb(depPath);
+					dep.db = &mDbManager.getDb(depPath);
 				}
+
+				mDependencies[dependenciesLoaded] = dep;
 
                 ++dependenciesLoaded;
 
@@ -165,36 +174,18 @@ namespace od
         }
 	}
 
+	AssetPtr RiotDb::getAssetById(AssetType type, RecordId id)
+    {
+	    SrscFile &srscFile = getResourceContainer(type);
 
+	    AssetFactory &factory = AssetFactory::getFactoryForType(type);
 
-	std::string RiotDb::getExtensionForAssetType(AssetType type)
-	{
-		switch(type)
-		{
-		case ASSET_TEXTURE:
-			return ".txd";
-			break;
+	    AssetPtr newAsset = factory.createNewAsset();
+	    newAsset->loadFromRecord(srscFile, id);
 
-		case ASSET_CLASS:
-			return ".odb";
-			break;
+	    return AssetPtr(newAsset);
+    }
 
-		case ASSET_MODEL:
-			return ".mod";
-			break;
-
-		case ASSET_SOUND:
-			return ".sdb";
-			break;
-
-		case ASSET_SEQUENCE:
-			return ".ssd";
-			break;
-
-		default:
-			throw Exception("Unknown asset type");
-		}
-	}
 } 
 
 

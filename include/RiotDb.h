@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include "RiotAsset.h"
 #include "SimpleArray.h"
@@ -20,13 +21,12 @@
 namespace od
 {
 
-	enum AssetType
+    class RiotDb;
+
+	struct Dependency
 	{
-		ASSET_TEXTURE,
-		ASSET_CLASS,
-		ASSET_MODEL,
-		ASSET_SOUND,
-		ASSET_SEQUENCE
+	    uint16_t index;
+	    RiotDb *db;
 	};
 
 	class DbManager;
@@ -44,8 +44,7 @@ namespace od
 
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
-
-		static std::string getExtensionForAssetType(AssetType type);
+		AssetPtr getAssetById(AssetType type, RecordId id);
 
 
 	private:
@@ -55,7 +54,7 @@ namespace od
 		DbManager &mDbManager;
 
 		uint32_t mVersion;
-		SimpleArray<RiotDb*> mDependencies;
+		SimpleArray<Dependency> mDependencies;
 
 		std::unordered_map<AssetType, SrscFile*> mSrscMap;
 	};

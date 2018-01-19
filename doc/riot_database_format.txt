@@ -144,13 +144,10 @@ Basic SRSC format
 Record types
 ============
 
-    All record types consist of an asset type (high byte). The interpretation of the low byte depends on the asset type.
-    For most records, a low byte of 0x01 indicates a group definition.
-
     The following is an incomplete list of record types, grouped by asset type.
 
-    Texture (0x00)
-    --------------
+    Texture (0x00**)
+    ----------------
 
     [0x0030] Palette
         struct color { uint8 r; uint8 g; uint8 b; uint8 flags; }; // these are copied verbatim from the RIFF PAL file
@@ -192,10 +189,11 @@ Record types
         uint32      additional_data_length // seems to be always equal to length of compressed texture
         uint8[~]    additional_data // no zlib-header
 
-        // as of now, I have no idea how animations work
+        // as of now, I have no idea how texture animations work
 
-    Class (0x01)
-    ------------
+
+    Class (0x01**)
+    --------------
 
     [0x0100] Riot Function Library reference
         uint8[8]    ???
@@ -233,22 +231,22 @@ Record types
         field_def[*]    field_definitions;
 
 
-    Model (0x02)
-    ------------
+    Model (0x02**)
+    --------------
 
     struct vect3f { float x; float y; float z; };
-
+    
     [0x0200] Model name
         string      model_name;
         uint32      shading_type; (0 = none, 09 = flat, 0a = smooth, flags seem to change this in weird ways)
-
+	
     [0x0201] Model group definition
         string      group_name;
 
     [0x0202] ???
         (Doesn't seem to be associated with a particular model. Has ID and GID = 0)
 
-    The following records must all appear once per model and thus have the same record ID.
+    The following records must all appear once per model (also 0x0200) and thus have the same record ID.
 
     [0x0203] Vertices
         uint16      vertex_count;
@@ -281,9 +279,8 @@ Record types
         (these records are consistently 6 bytes long and contained only zeroes in at least one tested model)
         
 
-
-    Sound (0x03)
-    ------------
+    Sound (0x030*)
+    --------------
 
     [0x0301] Sound group definition
         string      group_name;
@@ -303,8 +300,23 @@ Record types
         uint8[*]   audio_data; // see "Audio format"
         
         
+    Sequence (0x031*)
+    -----------------
+    
+    [0x0310] ???
+    	// 8 bytes. not all zero
+    	
+    [0x0311] Sequence
+    	string		sequence_name;
+    	...
+    
+    [0x0312] Sequence group definition
+    	string		group_name;
+    	
+   	
     Misc (0x04)
-    -----------
+    -----------All record types consist of an asset type (high byte). The interpretation of the low byte depends on the asset type.
+    For most records, a low byte of 0x01 indicates a group definition.
 
     [0x0402] End record?
         (one of these appears in many databases, often last. it's size seems to always be 4)

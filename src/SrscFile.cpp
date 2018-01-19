@@ -13,13 +13,7 @@
 #include <streambuf>
 
 #include "DataStream.h"
-
-struct membuf : std::streambuf
-{
-    membuf(char* begin, char* end) {
-        this->setg(begin, begin, end);
-    }
-};
+#include "Exception.h"
 
 namespace od
 {
@@ -32,7 +26,7 @@ namespace od
 		if(mInputStream.fail())
 		{
 			// huh, too bad
-			throw std::runtime_error("Could not open SRSC file");
+			throw Exception("Could not open SRSC file");
 		}
 
 		_readHeaderAndDirectory();
@@ -71,7 +65,7 @@ namespace od
 		return mDirectory.end();
 	}
 
-	SrscFile::DirEntry SrscFile::getDirectoryEntryByID(uint16_t id)
+	SrscFile::DirEntry SrscFile::getDirectoryEntryByID(RecordId id)
 	{
 		for(DirEntry entry : mDirectory)
 		{
@@ -84,94 +78,30 @@ namespace od
 		throw std::runtime_error("Record ID not found in directory");
 	}
 
-	SrscFile::RecordInfo SrscFile::getRecordInfo(const SrscFile::DirEntry &dirEntry)
+	SrscFile::DirEntry SrscFile::getDirectoryEntryByTypeAndID(RecordType type, RecordId id)
+    {
+        for(DirEntry entry : mDirectory)
+        {
+            if(entry.recordId == id && entry.type == type)
+            {
+                return entry;
+            }
+        }
+
+        throw std::runtime_error("Record ID and type not found in directory");
+    }
+
+	std::istream &SrscFile::getStreamForRecord(const SrscFile::DirEntry &dirEntry)
 	{
-		RecordInfo info;
-		DataReader in(mInputStream);
 		mInputStream.seekg(dirEntry.dataOffset);
 
-		if(dirEntry.type == 0x302) // seems to be a sound record
-		{
-			in >> info.name
-			   >> info.flags
-			   >> info.channels
-			   >> info.bits
-			   >> info.frequency
-			   >> info.volume
-			   >> info.dropoff
-			   >> info.priority
-			   >> info.decompressed_size
-			   >> info.compression_rate
-			   >> info.compressed_size;
-
-		}else if((dirEntry.type & 0xff) == 0x01) // group declaration
-		{
-
-			in >> info.name;
-			mInputStream.seekg(dirEntry.dataOffset);
-
-		}else if(dirEntry.type == 0x200) // model name
-		{
-			in >> info.name;
-			mInputStream.seekg(dirEntry.dataOffset);
-
-		}else if(dirEntry.type == 0x0040) // texture/material
-		{
-			in >> info.width
-			   >> info.height
-			   >> info.row_spacing
-			   >> info.bits_per_pixel
-			   >> info.alpha_bits_per_pixel;
-
-			in.ignore(2);
-
-			in >> info.colour_key;
-
-			in.read((char*)&info.dummy[0], 0x18);
-
-			in >> info.compression_rate
-			   >> info.compressed_size;
-		}
-
-		info.payloadOffset = mInputStream.tellg();
-		info.payloadSize = dirEntry.dataSize - (info.payloadOffset - dirEntry.dataOffset);
-
-		return info;
-	}
-
-	std::istream &SrscFile::getStreamForRecord(const SrscFile::DirEntry &dirEntry, bool decompress)
-	{
-		RecordInfo info = getRecordInfo(dirEntry);
-
-		mInputStream.seekg(info.payloadOffset);
-
-		/*if(!decompress)
-		{
-			return
-		}
-		mRecordPayloadBuffer = new char[info.payloadSize];
-		mInputStream.read(payloadBuffer, info.payloadSize);
-
-		membuf payloadStreamBuffer(payloadBuffer, payloadBuffer + info.payloadSize);
-
-		zstr::istreambuf inflateBuffer(&payloadStreamBuffer, 1<<16, true);
-		std::istream inflateStream(&inflateBuffer);
-		inflateStream.exceptions(std::ios_base::badbit);
-
-		const std::streamsize buff_size = 1 << 16;
-		char *buff = new char [buff_size];
-		while(true)
-		{
-			inflateStream.read(buff, buff_size);
-			std::streamsize cnt = inflateStream.gcount();
-			if (cnt == 0) break;
-			out.write(buff, cnt);
-		}
-		delete[] buff;
-
-*/
 		return mInputStream;
 	}
+
+	std::istream &SrscFile::getStreamForRecordTypeId(RecordType type, RecordId id)
+    {
+	    return getStreamForRecord(getDirectoryEntryByTypeAndID(type, id));
+    }
 
 	void SrscFile::decompressAll(const std::string &prefix, bool extractRaw)
 	{
@@ -205,48 +135,7 @@ namespace od
 
 		}else
 		{
-
-			RecordInfo info = getRecordInfo(dirEntry);
-
-			std::string filename;
-			std::ostringstream ss;
-			ss << prefix;
-			if(info.name.empty())
-			{
-				ss << "record" << dirEntry.index << "-" << dirEntry.recordId << "-" << dirEntry.groupId;
-
-			}else
-			{
-				ss << info.name;
-			}
-			ss << ".dat";
-
-			std::ofstream out(ss.str(), std::ios::out | std::ios::binary);
-
-			mInputStream.seekg(info.payloadOffset);
-
-			char *payloadBuffer = new char[info.payloadSize];
-			mInputStream.read(payloadBuffer, info.payloadSize);
-
-			membuf payloadStreamBuffer(payloadBuffer, payloadBuffer + info.payloadSize);
-
-			zstr::istreambuf inflateBuffer(&payloadStreamBuffer, 1<<16, true);
-			std::istream inflateStream(&inflateBuffer);
-			inflateStream.exceptions(std::ios_base::badbit);
-
-			const std::streamsize buff_size = 1 << 16;
-			char *buff = new char [buff_size];
-			while(true)
-			{
-				inflateStream.read(buff, buff_size);
-				std::streamsize cnt = inflateStream.gcount();
-				if (cnt == 0) break;
-				out.write(buff, cnt);
-			}
-			delete[] buff;
-
-			out.flush();
-			out.close();
+		    throw Exception("Can't decompress right now");
 		}
 	}
 
@@ -258,7 +147,7 @@ namespace od
 		in >> magic;
 		if(magic != 0x43535253) // 'SRSC' in LE
 		{
-			throw std::runtime_error("Invalid magic number in SRSC file");
+			throw Exception("Invalid magic number in SRSC file");
 		}
 
 		in >> mVersion;

@@ -10,6 +10,7 @@
 
 #include "RiotAsset.h"
 #include "SrscFile.h"
+#include "DataStream.h"
 
 namespace od
 {
@@ -20,8 +21,14 @@ namespace od
 
 		RiotClass();
 
+		virtual void loadFromRecord(SrscFile &srscFile, RecordId id);
+
+		virtual std::string getName();
 
 
+	private:
+
+		std::string mClassName;
 	};
 
 }
