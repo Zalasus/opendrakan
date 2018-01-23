@@ -26,11 +26,11 @@ namespace od
         ~SimpleArray();
 
         bool allocate(uint32_t size);
-        uint32_t size() const;
+        size_t size() const;
         T *ptr() const;
 
-        T &operator [](uint32_t i);
-        const T &operator [](uint32_t i) const;
+        T &operator [](size_t i);
+        const T &operator [](size_t i) const;
         operator T*() const;
         operator const T*() const;
 
@@ -38,7 +38,7 @@ namespace od
     private:
 
         T *mData;
-        uint32_t mSize;
+        size_t mSize;
 
     };
 
@@ -66,10 +66,7 @@ namespace od
         {
             allocate(s.size());
 
-            for(uint32_t i = 0; i < size(); ++i)
-            {
-                mData[i] = s[i];
-            }
+            memcpy(mData, s.mData, mSize*sizeof(T));
         }
     }
 
@@ -103,7 +100,7 @@ namespace od
     }
 
     template <typename T>
-    uint32_t SimpleArray<T>::size() const
+    size_t SimpleArray<T>::size() const
     {
         return mSize;
     }
@@ -115,18 +112,18 @@ namespace od
     }
 
     template <typename T>
-    T &SimpleArray<T>::operator [](uint32_t i)
+    T &SimpleArray<T>::operator [](size_t i)
     {
         if(i >= mSize)
         {
-            throw std::runtime_error("Requested index  out of bounds");
+            throw std::runtime_error("Requested index out of bounds");
         }
 
         return mData[i];
     }
 
     template <typename T>
-    const T &SimpleArray<T>::operator [](uint32_t i) const
+    const T &SimpleArray<T>::operator [](size_t i) const
     {
         if(i >= mSize)
         {

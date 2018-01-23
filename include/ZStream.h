@@ -9,23 +9,47 @@
 #define INCLUDE_ZSTREAM_H_
 
 #include <istream>
+#include <streambuf>
+#include <zlib.h> // has C-linkage built in
+
+#include "SimpleArray.h"
 
 namespace od
 {
 
-	class ZStream : std::istream
-	{
-	public:
+    class ZStreamBuffer : std::streambuf
+    {
+    public:
 
-		ZStream(std::istream &in);
+        ZStreamBuffer(std::istream &in, size_t bufferSize);
+        ~ZStreamBuffer();
 
 
+    private:
 
-	private:
+        virtual int_type underflow();
+        virtual int_type uflow();
+        virtual int_type pbackfail(int_type ch);
+        virtual std::streamsize showmanyc();
 
-		std::istream &mInputStream;
 
-	};
+    private:
+
+        void _fillBuffer();
+
+
+        std::istream &mInputStream;
+
+        SimpleArray<Bytef> mInputBuffer;
+        size_t mInputAvailable;
+
+        SimpleArray<Bytef> mOutputBuffer;
+        size_t mOutputAvailable;
+        size_t mOutputCurrent;
+
+        z_stream mZStream;
+
+    };
 
 }
 
