@@ -12,7 +12,7 @@
 
 namespace od
 {
-	class DataReader
+	class DataReader : public std::istream
 	{
 	public:
 

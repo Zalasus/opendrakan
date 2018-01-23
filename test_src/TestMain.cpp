@@ -9,6 +9,8 @@
 #include <iomanip>
 #include <memory>
 
+#include <zstr.hpp>
+
 #include "SrscFile.h"
 #include "DbManager.h"
 #include "RiotDb.h"
@@ -24,6 +26,7 @@ void srscStat(od::SrscFile &file)
 			  << std::setw(8) << "Size"
 			  << std::setw(6) << "RecID"
 			  << std::setw(6) << "GruID"
+			  << std::setw(24) << "Data"
 			  << std::endl;
 
 	auto it = file.getDirectoryBegin();
@@ -36,6 +39,24 @@ void srscStat(od::SrscFile &file)
 			<< std::setw(8) << it->dataSize
 			<< std::setw(6) << std::hex << it->recordId << std::dec
 			<< std::setw(6) << std::hex << it->groupId << std::dec;
+
+		std::cout << "  ";
+
+		od::DataReader dr(file.getStreamForRecord(*it));
+
+		for(size_t i = 0; i < it->dataSize; ++i)
+		{
+			uint8_t b;
+			dr >> b;
+
+			printf("%02x ", b); // whatcha gonna do bout it?
+
+			if(i >= 16)
+			{
+				std::cout << " [...]";
+				break;
+			}
+		}
 
 		std::cout << std::endl;
 
@@ -100,7 +121,7 @@ int main(int argc, char **argv)
 
 	try
 	{
-		od::DbManager dbm;
+		/*od::DbManager dbm;
 
 		std::cout << "Loading database " << filename << std::endl;
 
@@ -108,7 +129,7 @@ int main(int argc, char **argv)
 
 		std::cout << "Successfully loaded database!" << std::endl;
 
-		od::SrscFile &srscFile = db.getResourceContainer(od::ASSET_CLASS);
+		od::SrscFile &srscFile = db.getResourceContainer(od::ASSET_SOUND);
 
 		if(extract)
 		{
@@ -117,7 +138,7 @@ int main(int argc, char **argv)
                 od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
                 srscFile.decompressRecord("out/", dirEntry, true);
 
-                od::AssetPtr classTest = db.getAssetById(od::ASSET_CLASS, extractRecordId);
+                od::AssetPtr classTest = db.getAssetById(od::ASSET_SOUND, extractRecordId);
 
                 std::cout << "The loaded asset has name: " << classTest->getName() << std::endl;
 
@@ -129,7 +150,42 @@ int main(int argc, char **argv)
 		}else
 		{
 		    srscStat(srscFile);
-		}
+		}*/
+
+		od::SrscFile srscFile(filename);
+
+		/*if(extract)
+		{
+            if(extractRecordId > 0)
+            {
+                od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
+                srscFile.decompressRecord("out/", dirEntry, true);
+
+                std::cout << "Extracting record " << std::hex << extractRecordId << std::dec << " to out/" << std::endl;
+
+            }else
+            {
+                srscFile.decompressAll("out/", true);
+
+                std::cout << "Extracting all records to out/" << std::endl;
+            }
+
+		}else
+		{
+		    srscStat(srscFile);
+		}*/
+
+		od::DataReader dr(srscFile.getStreamForRecordTypeId(0x0001, 0));
+
+		dr.ignore(32);
+
+		std::string layerName;
+		dr >> layerName;
+
+		dr.ignore(36);
+
+		//od::ZStream zstream(dr);
+
 
 
 	}catch(std::exception &e)

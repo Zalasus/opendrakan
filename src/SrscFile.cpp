@@ -45,7 +45,7 @@ namespace od
 		}
 	}
 
-	uint8_t SrscFile::getVersion()
+	uint16_t SrscFile::getVersion()
 	{
 		return mVersion;
 	}

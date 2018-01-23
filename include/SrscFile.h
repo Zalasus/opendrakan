@@ -38,7 +38,7 @@ namespace od
 		SrscFile(FilePath filePath);
 		~SrscFile();
 
-		uint8_t getVersion();
+		uint16_t getVersion();
 		size_t getRecordCount();
 
 		std::vector<DirEntry>::iterator getDirectoryBegin();
