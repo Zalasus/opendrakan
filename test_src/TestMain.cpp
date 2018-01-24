@@ -9,8 +9,7 @@
 #include <iomanip>
 #include <memory>
 
-#include <zstr.hpp>
-
+#include "ZStream.h"
 #include "SrscFile.h"
 #include "DbManager.h"
 #include "RiotDb.h"
@@ -184,9 +183,19 @@ int main(int argc, char **argv)
 
 		dr.ignore(36);
 
-		//od::ZStream zstream(dr);
+		od::ZStream in(dr.getStream());
+		std::ofstream out("out/layerout.dat", std::ios::out | std::ios::binary);
+		size_t n = 0;
 
+		int c = in.get();
+		while(c != od::ZStream::traits_type::eof())
+		{
+		    c = in.get();
+		    out.put(c);
+		    n++;
+		}
 
+		std::cout << "Decompressed " << n << " bytes to out" << std::endl;
 
 	}catch(std::exception &e)
 	{

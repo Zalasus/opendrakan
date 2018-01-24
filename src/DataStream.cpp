@@ -33,6 +33,11 @@ namespace od
 		}
 	}
 
+	std::istream &DataReader::getStream()
+	{
+	    return mStream;
+	}
+
 	uint8_t DataReader::_getNext()
 	{
 		return mStream.get();

@@ -15,10 +15,10 @@ namespace od
     ZStreamBuffer::ZStreamBuffer(std::istream &in, size_t bufferSize)
     : mInputStream(in)
     , mInputBuffer(bufferSize)
-    , mInputAvailable(0)
+    , mInputStart(nullptr)
+    , mInputEnd(nullptr)
     , mOutputBuffer(bufferSize)
-    , mOutputAvailable(0)
-    , mOutputCurrent(0)
+    , mOutputEnd(nullptr)
     {
         mZStream.zalloc = Z_NULL;
         mZStream.zfree = Z_NULL;
@@ -31,6 +31,10 @@ namespace od
         {
             throw Exception("Could not initialize zlib");
         }
+
+        char *gptr = reinterpret_cast<char*>(mOutputBuffer.ptr());
+
+        this->setg(gptr, gptr, gptr);
     }
 
     ZStreamBuffer::~ZStreamBuffer()
@@ -40,72 +44,55 @@ namespace od
 
     ZStreamBuffer::int_type ZStreamBuffer::underflow()
     {
-        if(mOutputCurrent >= mOutputAvailable)
+        // fill input buffer if no input available anymore
+        if(mInputStart == mInputEnd)
         {
-            _fillBuffer();
+            mInputStart = mInputBuffer.ptr();
+            mInputStream.read(reinterpret_cast<char*>(mInputBuffer.ptr()), mInputBuffer.size());
+            mInputEnd = mInputBuffer.ptr() + mInputStream.gcount();
 
-            if(mOutputAvailable == 0)
+            if(mInputEnd == mInputStart)
             {
+                // no input was read. can't produce more output -> EOF
                 return traits_type::eof();
             }
         }
 
-        return traits_type::to_int_type(mOutputBuffer[mOutputCurrent]);
-    }
-
-    ZStreamBuffer::int_type ZStreamBuffer::uflow()
-    {
-        if(mOutputCurrent >= mOutputAvailable)
-        {
-            _fillBuffer();
-
-            if(mOutputAvailable == 0)
-            {
-                return traits_type::eof();
-            }
-        }
-
-        return traits_type::to_int_type(mOutputBuffer[mOutputCurrent++]);
-    }
-
-    ZStreamBuffer::int_type ZStreamBuffer::pbackfail(int_type ch)
-    {
-        return traits_type::eof();
-    }
-
-    std::streamsize ZStreamBuffer::showmanyc()
-    {
-        return mOutputAvailable - mOutputCurrent;
-    }
-
-    void ZStreamBuffer::_fillBuffer()
-    {
-        mZStream.avail_in = mInputStream.readsome(reinterpret_cast<char*>(mInputBuffer.ptr()), mInputBuffer.size());
-        if(mZStream.avail_in == 0)
-        {
-            mOutputAvailable = 0;
-            return;
-        }
-        mZStream.next_in = mInputBuffer.ptr();
-
-        mZStream.avail_out = mOutputBuffer.size();
+        // decompress
+        mZStream.next_in = mInputStart;
+        mZStream.avail_in = mInputEnd - mInputStart;
         mZStream.next_out = mOutputBuffer.ptr();
-
-        int zlibError = inflate(&mZStream, Z_SYNC_FLUSH);
-        switch(zlibError)
+        mZStream.avail_out = mOutputBuffer.size();
+        int ret = inflate(&mZStream, Z_NO_FLUSH);
+        if(ret != Z_OK && ret != Z_STREAM_END)
         {
-        case Z_OK:
-            break;
-
-        case Z_STREAM_END:
-            break; // What to do here?
-
-        default:
-            throw Exception("ZLib inflate error");
+            throw Exception("zlib error");
         }
 
-        mOutputAvailable = mOutputBuffer.size() - mZStream.avail_out;
-        mOutputCurrent = 0;
+        // update our pointers and set gptr
+        mInputStart = mZStream.next_in;
+        mInputEnd = mInputBuffer.ptr() + mZStream.avail_in;
+        mOutputEnd = mZStream.next_out;
+
+        char *outputStart = reinterpret_cast<char*>(mOutputBuffer.ptr());
+        char *outputEnd = reinterpret_cast<char*>(mOutputEnd);
+        setg(outputStart, outputStart, outputEnd);
+
+        return (gptr() == egptr()) ? traits_type::eof() : traits_type::to_int_type(*gptr());
+    }
+
+
+
+
+
+    ZStream::ZStream(std::istream &in)
+    : std::istream(new ZStreamBuffer(in))
+    {
+    }
+
+    ZStream::~ZStream()
+    {
+        delete rdbuf();
     }
 
 }

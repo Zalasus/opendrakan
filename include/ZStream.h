@@ -14,23 +14,22 @@
 
 #include "SimpleArray.h"
 
+#define OD_ZSTREAM_DEFAULT_BUFFER_SIZE (1 << 19)
+
 namespace od
 {
 
-    class ZStreamBuffer : std::streambuf
+    class ZStreamBuffer : public std::streambuf
     {
     public:
 
-        ZStreamBuffer(std::istream &in, size_t bufferSize);
+        ZStreamBuffer(std::istream &in, size_t bufferSize = OD_ZSTREAM_DEFAULT_BUFFER_SIZE);
         ~ZStreamBuffer();
 
 
-    private:
+    protected:
 
         virtual int_type underflow();
-        virtual int_type uflow();
-        virtual int_type pbackfail(int_type ch);
-        virtual std::streamsize showmanyc();
 
 
     private:
@@ -41,13 +40,22 @@ namespace od
         std::istream &mInputStream;
 
         SimpleArray<Bytef> mInputBuffer;
-        size_t mInputAvailable;
+        Bytef *mInputStart;
+        Bytef *mInputEnd;
 
         SimpleArray<Bytef> mOutputBuffer;
-        size_t mOutputAvailable;
-        size_t mOutputCurrent;
+        Bytef *mOutputEnd;
 
         z_stream mZStream;
+
+    };
+
+    class ZStream : public std::istream
+    {
+    public:
+
+        ZStream(std::istream &in);
+        ~ZStream();
 
     };
 

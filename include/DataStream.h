@@ -12,7 +12,7 @@
 
 namespace od
 {
-	class DataReader : public std::istream
+	class DataReader
 	{
 	public:
 
@@ -24,6 +24,8 @@ namespace od
 		void read(char *data, size_t size);
 
 		void ignore(size_t n);
+
+		std::istream &getStream();
 
 
 	private:
