@@ -18,7 +18,8 @@ SRSC file (see riot_database_format.txt) with the following record types:
         uint32      width; // in vertices; a layer with widthand height of 1 is a square with 1 vertex in each corner
         uint32      height;
         uint32      type;  // 0 = floor, 1 = ceiling, 2 = between
-        uint8[8]    ???;
+        uint32      origin_x; // position of layer's top left corner in the level, where 0/0 is the top left corner of the level
+        uint32      origin_y; 
         float       world_height;
         string      layer_name;
         uint32      flags; // 2 = member of alternate blending group
@@ -28,13 +29,14 @@ SRSC file (see riot_database_format.txt) with the following record types:
         color4b     ambient_color;
         uint32      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
         uint32      ???;
-        uint32      compression_level; // unclear as there is no way to alter this in the editor
-        uint32      compressed_size;
-        uint8[~]    layer_data; // zlib-compressed
+        uint32      ???;
     }
-    uint32      layer_count;
-    uint32      ???;
-    layer[~1]   layers;
+    uint32          layer_count;
+    uint32          ???;
+    layer_def[~1]   layer_definitions;
+    uint32          ???;
+    uint32          ???;
+    uint8[*]        layer_data; // zlib-compressed
     
     
 [0x0002] Layer groups and visibility

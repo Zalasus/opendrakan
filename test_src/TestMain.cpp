@@ -13,6 +13,7 @@
 #include "SrscFile.h"
 #include "DbManager.h"
 #include "RiotDb.h"
+#include "Logger.h"
 
 
 void srscStat(od::SrscFile &file)
@@ -120,6 +121,8 @@ int main(int argc, char **argv)
 
 	try
 	{
+		od::Logger::getDefaultLogger().setPrintDebug(true);
+
 		/*od::DbManager dbm;
 
 		std::cout << "Loading database " << filename << std::endl;
@@ -153,7 +156,7 @@ int main(int argc, char **argv)
 
 		od::SrscFile srscFile(filename);
 
-		/*if(extract)
+		if(extract)
 		{
             if(extractRecordId > 0)
             {
@@ -172,16 +175,61 @@ int main(int argc, char **argv)
 		}else
 		{
 		    srscStat(srscFile);
-		}*/
+		}
 
 		od::DataReader dr(srscFile.getStreamForRecordTypeId(0x0001, 0));
 
-		dr.ignore(32);
+		uint32_t layerCount;
+		uint32_t dummy;
 
-		std::string layerName;
-		dr >> layerName;
+		uint32_t      width; // in vertices; a layer with widthand height of 1 is a square with 1 vertex in each corner
+        uint32_t      height;
+        uint32_t      type;  // 0 = floor, 1 = ceiling, 2 = between
+        uint32_t    	origin_x;
+        uint32_t	origin_y;
+        float       world_height;
+        std::string      layer_name;
+        uint32_t      flags; // 2 = member of alternate blending group
+        float       light_direction;
+        float       light_ascension;
+        uint32_t     light_color;
+        uint32_t     ambient_color;
+        uint32_t      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
+        uint32_t      dummy1;
+        uint32_t      dummy2;
 
-		dr.ignore(36);
+        dr  >> layerCount
+			>> dummy;
+
+        for(size_t i = 0; i < layerCount; ++i)
+        {
+			dr  >> width
+				>> height
+				>> type
+				>> origin_x
+				>> origin_y
+				>> world_height
+				>> layer_name
+				>> flags
+				>> light_direction
+				>> light_ascension
+				>> light_color
+				>> ambient_color
+				>> light_dropoff_type
+				>> dummy1
+				>> dummy2;
+
+			std::cout << "Layer name " << layer_name << std::endl;
+			std::cout << " D1 " <<  std::hex << dummy1 << std::dec << std::endl;
+			std::cout << " D2 " <<  std::hex << dummy2 << std::dec << std::endl;
+        }
+
+        dr >> dummy1
+		   >> dummy2;
+
+        std::cout << "---------" << std::endl;
+        std::cout << "D1 " <<  std::hex << dummy1 << std::dec << std::endl;
+        std::cout << "D2 " <<  std::hex << dummy1 << std::dec << std::endl;
 
 		od::ZStream in(dr.getStream());
 		std::ofstream out("out/layerout.dat", std::ios::out | std::ios::binary);
@@ -190,12 +238,12 @@ int main(int argc, char **argv)
 		int c = in.get();
 		while(c != od::ZStream::traits_type::eof())
 		{
-		    c = in.get();
-		    out.put(c);
-		    n++;
+			c = in.get();
+			out.put(c);
+			n++;
 		}
 
-		std::cout << "Decompressed " << n << " bytes to out" << std::endl;
+		std::cout << "Decompressed " << n << " bytes to out/layerout.dat" << std::endl;
 
 	}catch(std::exception &e)
 	{

@@ -7,6 +7,7 @@
 
 #include "ZStream.h"
 
+#include "Logger.h"
 #include "Exception.h"
 
 namespace od
@@ -29,7 +30,7 @@ namespace od
         int ret = inflateInit(&mZStream);
         if(ret != Z_OK)
         {
-            throw Exception("Could not initialize zlib");
+        	_error(ret);
         }
 
         char *gptr = reinterpret_cast<char*>(mOutputBuffer.ptr());
@@ -58,6 +59,13 @@ namespace od
             }
         }
 
+        Logger::info() << "Call to inflate";
+
+        Bytef a = *mInputStart;
+        Bytef b = *(mInputStart+1);
+
+        Logger::info() << "Header: " << (int)a << " " << (int)b;
+
         // decompress
         mZStream.next_in = mInputStart;
         mZStream.avail_in = mInputEnd - mInputStart;
@@ -66,7 +74,7 @@ namespace od
         int ret = inflate(&mZStream, Z_NO_FLUSH);
         if(ret != Z_OK && ret != Z_STREAM_END)
         {
-            throw Exception("zlib error");
+            _error(ret);
         }
 
         // update our pointers and set gptr
@@ -81,13 +89,52 @@ namespace od
         return (gptr() == egptr()) ? traits_type::eof() : traits_type::to_int_type(*gptr());
     }
 
+    void ZStreamBuffer::_error(int zlibError)
+    {
+    	std::string msg = mZStream.msg;
 
+    	msg += " (";
+
+    	switch(zlibError)
+        {
+        case Z_STREAM_ERROR:
+            msg += "Z_STREAM_ERROR";
+            break;
+
+        case Z_DATA_ERROR:
+            msg += "Z_DATA_ERROR";
+            break;
+
+        case Z_MEM_ERROR:
+            msg += "Z_MEM_ERROR";
+            break;
+
+        case Z_VERSION_ERROR:
+            msg += "Z_VERSION_ERROR";
+            break;
+
+        case Z_BUF_ERROR:
+            msg += "Z_BUF_ERROR";
+            break;
+
+        default:
+            std::ostringstream oss;
+            oss << zlibError;
+            msg += oss.str();
+            break;
+        }
+
+    	msg += ")";
+
+        throw Exception(msg);
+    }
 
 
 
     ZStream::ZStream(std::istream &in)
     : std::istream(new ZStreamBuffer(in))
     {
+    	exceptions(std::ios_base::badbit);
     }
 
     ZStream::~ZStream()

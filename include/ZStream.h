@@ -34,7 +34,7 @@ namespace od
 
     private:
 
-        void _fillBuffer();
+        void _error(int zlibError);
 
 
         std::istream &mInputStream;
