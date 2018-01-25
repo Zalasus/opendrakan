@@ -7,8 +7,7 @@
 
 #include "DbManager.h"
 
-#include <iostream>
-
+#include "Logger.h"
 #include "RiotDb.h"
 #include "StringUtils.h"
 #include "Exception.h"
@@ -30,7 +29,7 @@ namespace od
     	}
     }
 
-    bool DbManager::isDbLoaded(FilePath dbFilePath) const
+    bool DbManager::isDbLoaded(const FilePath &dbFilePath) const
     {
         for(RiotDb *db : mRiotDbs)
         {
@@ -43,21 +42,29 @@ namespace od
         return false;
     }
 
-    RiotDb &DbManager::loadDb(FilePath dbFilePath, size_t dependencyDepth)
+    RiotDb &DbManager::loadDb(const FilePath &dbFilePath, size_t dependencyDepth)
     {
     	if(dependencyDepth > OD_MAX_DEPENDENCY_DEPTH)
     	{
     		throw Exception("Dependency depth exceeded maximum. Possible undetected circular dependency?");
     	}
 
-    	if(isDbLoaded(dbFilePath))
+    	// force the right extension
+    	FilePath actualFilePath = dbFilePath.ext(".db");
+
+    	try
     	{
-    		throw Exception("Tried to load db that was already loaded.");
+    	    RiotDb &db = getDb(actualFilePath);
+    	    return db;
+
+    	}catch(Exception &e)
+    	{
+    	    // not loaded -> load
     	}
 
-    	std::cout << "Loading db: " << dbFilePath.str() << " depth: " << dependencyDepth << std::endl;
+    	Logger::info() << "Loading db: " << dbFilePath.str() << " depth: " << dependencyDepth;
 
-        RiotDb *db = new RiotDb(dbFilePath, *this); // FIXME: use some more elegant RAII here
+        RiotDb *db = new RiotDb(actualFilePath, *this); // FIXME: use some more elegant RAII here
         if(db == NULL)
         {
         	throw Exception("Could not allocate db object");
@@ -69,7 +76,7 @@ namespace od
         return *db;
     }
 
-    RiotDb &DbManager::getDb(FilePath dbFilePath)
+    RiotDb &DbManager::getDb(const FilePath &dbFilePath)
     {
     	for(RiotDb *db : mRiotDbs)
         {

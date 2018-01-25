@@ -30,13 +30,13 @@ SRSC file (see riot_database_format.txt) with the following record types:
         uint32      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
         uint32      ???;
         uint32      ???;
+        uint32[~1]	???;
     }
     uint32          layer_count;
     uint32          ???;
     layer_def[~1]   layer_definitions;
-    uint32          ???;
-    uint32          ???;
-    uint8[*]        layer_data; // zlib-compressed
+    uint32          compressed_size;
+    uint8[~]        layer_data; // zlib-compressed
     
     
 [0x0002] Layer groups and visibility

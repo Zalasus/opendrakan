@@ -24,14 +24,17 @@ namespace od
 		DbManager();
 		~DbManager();
 
-		bool isDbLoaded(FilePath dbFilePath) const;
+		bool isDbLoaded(const FilePath &dbFilePath) const;
 
         /**
-         * @param[in]   dbFile  Path to the *.db file defining the database to be loaded. Extension optional.
+         * @brief Loads a database if not already loaded and returns the the RiotDb object.
+         *
+         * @param[in]   dbFile              Path to the *.db file defining the database to be loaded. Extension is ignored.
+         * @param[in]   dependencyDepth     Depth of dependency loading. Used to prevent undectected circular dependencies. Only used by RiotDb objects.
          */
-		RiotDb &loadDb(FilePath dbFilePath, size_t dependencyDepth = 0);
+		RiotDb &loadDb(const FilePath &dbFilePath, size_t dependencyDepth = 0);
 
-		RiotDb &getDb(FilePath dbFilePath);
+		RiotDb &getDb(const FilePath &dbFilePath);
 
 
 	private:

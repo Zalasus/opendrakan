@@ -131,15 +131,8 @@ namespace od
 					throw Exception("Invalid dependency index");
 				}
 
-				// the *.db extension is always missing in the dependency definitions. here we make them optional
-				std::string depPathStr = results[2];
-				if(!StringUtils::endsWith(depPathStr, ".db"))
-				{
-					depPathStr += ".db";
-				}
-
 				// note: dependency paths are always stored relative to the path of the db file defining it
-				FilePath depPath(depPathStr, mDbFilePath.dir());
+				FilePath depPath(results[2], mDbFilePath.dir());
 
 				if(depPath == mDbFilePath)
 				{
@@ -149,14 +142,7 @@ namespace od
 				Dependency dep;
 				dep.index = depIndex;
 
-				if(!mDbManager.isDbLoaded(depPath))
-				{
-					dep.db = &mDbManager.loadDb(depPath, dependencyDepth + 1);
-
-				}else
-				{
-					dep.db = &mDbManager.getDb(depPath);
-				}
+				dep.db = &mDbManager.loadDb(depPath, dependencyDepth + 1);
 
 				mDependencies[dependenciesLoaded] = dep;
 

@@ -59,10 +59,7 @@ namespace od
 
 	std::string FilePath::strNoExt() const
 	{
-		std::string file = str();
-
-		size_t lastDot = file.find_last_of(".");
-		return file.substr(0, lastDot);
+		return FilePath(fileStrNoExt(), dir()).str();
 	}
 
 	std::string FilePath::fileStr() const
@@ -78,9 +75,21 @@ namespace od
 	std::string FilePath::fileStrNoExt() const
 	{
 		std::string file = fileStr();
-
 		size_t lastDot = file.find_last_of(".");
 		return file.substr(0, lastDot);
+	}
+
+	std::string FilePath::extStr() const
+	{
+	    std::string file = fileStr();
+        size_t lastDot = file.find_last_of(".");
+        return file.substr(lastDot);
+	}
+
+	FilePath FilePath::ext(const std::string &newExt) const
+	{
+	    std::string path = strNoExt();
+	    return FilePath(path + newExt);
 	}
 
 	bool FilePath::operator==(const FilePath &right) const

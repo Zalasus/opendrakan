@@ -75,6 +75,17 @@ namespace od
 		 */
 		std::string fileStrNoExt() const;
 
+		/**
+		 * Returns the file's extension on it's own, including the extension seperator (.) if present
+		 */
+		std::string extStr() const;
+
+		/**
+		 * Creates copy of this path, but changes the file's extension to the passed string
+		 * or appends it if no extension is present. The passed string must include the dot.
+		 */
+		FilePath ext(const std::string &newExt) const;
+
 
 		bool operator==(const FilePath &right) const;
 

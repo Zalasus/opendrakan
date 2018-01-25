@@ -14,6 +14,8 @@
 #include "DbManager.h"
 #include "RiotDb.h"
 #include "Logger.h"
+#include "RiotLevel.h"
+#include "StringUtils.h"
 
 
 void srscStat(od::SrscFile &file)
@@ -67,9 +69,12 @@ void srscStat(od::SrscFile &file)
 void printUsage()
 {
 	std::cout
-		<< "Usage: opendrakan [options] <path to db file>" << std::endl
+		<< "Usage: opendrakan [options] <path to srsc file>" << std::endl
 		<< "Options:" << std::endl
-		<< "    -i <id>    Extract record with ID <id>" << std::endl
+		<< "    -i <id>    Extract first record with ID <id>" << std::endl
+		<< "    -x         Extract all records" << std::endl
+		<< "    -s         Print SRSC statistics" << std::endl
+		<< "If no option is given, the file is loaded as a level." << std::endl
 		<< std::endl;
 }
 
@@ -83,6 +88,7 @@ int main(int argc, char **argv)
 
 	std::string filename;
 	bool extract = false;
+	bool stat = false;
 	uint16_t extractRecordId = 0;
 	for(int i = 1; i < argc; ++i)
 	{
@@ -154,96 +160,39 @@ int main(int argc, char **argv)
 		    srscStat(srscFile);
 		}*/
 
-		od::SrscFile srscFile(filename);
-
-		if(extract)
+		if(stat || extract)
 		{
-            if(extractRecordId > 0)
-            {
-                od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
-                srscFile.decompressRecord("out/", dirEntry, true);
+		    od::SrscFile srscFile(filename);
 
-                std::cout << "Extracting record " << std::hex << extractRecordId << std::dec << " to out/" << std::endl;
+		    if(extract)
+            {
+                if(extractRecordId > 0)
+                {
+                    od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
+                    srscFile.decompressRecord("out/", dirEntry, true);
+
+                    std::cout << "Extracting record " << std::hex << extractRecordId << std::dec << " to out/" << std::endl;
+
+                }else
+                {
+                    srscFile.decompressAll("out/", true);
+
+                    std::cout << "Extracting all records to out/" << std::endl;
+                }
 
             }else
             {
-                srscFile.decompressAll("out/", true);
-
-                std::cout << "Extracting all records to out/" << std::endl;
+                srscStat(srscFile);
             }
 
 		}else
 		{
-		    srscStat(srscFile);
+		    od::DbManager dbm;
+		    od::RiotLevel level(filename, dbm);
+
+
+
 		}
-
-		od::DataReader dr(srscFile.getStreamForRecordTypeId(0x0001, 0));
-
-		uint32_t layerCount;
-		uint32_t dummy;
-
-		uint32_t      width; // in vertices; a layer with widthand height of 1 is a square with 1 vertex in each corner
-        uint32_t      height;
-        uint32_t      type;  // 0 = floor, 1 = ceiling, 2 = between
-        uint32_t    	origin_x;
-        uint32_t	origin_y;
-        float       world_height;
-        std::string      layer_name;
-        uint32_t      flags; // 2 = member of alternate blending group
-        float       light_direction;
-        float       light_ascension;
-        uint32_t     light_color;
-        uint32_t     ambient_color;
-        uint32_t      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
-        uint32_t      dummy1;
-        uint32_t      dummy2;
-
-        dr  >> layerCount
-			>> dummy;
-
-        for(size_t i = 0; i < layerCount; ++i)
-        {
-			dr  >> width
-				>> height
-				>> type
-				>> origin_x
-				>> origin_y
-				>> world_height
-				>> layer_name
-				>> flags
-				>> light_direction
-				>> light_ascension
-				>> light_color
-				>> ambient_color
-				>> light_dropoff_type
-				>> dummy1
-				>> dummy2;
-
-			std::cout << "Layer name " << layer_name << std::endl;
-			std::cout << " D1 " <<  std::hex << dummy1 << std::dec << std::endl;
-			std::cout << " D2 " <<  std::hex << dummy2 << std::dec << std::endl;
-        }
-
-        dr >> dummy1
-		   >> dummy2;
-
-        std::cout << "---------" << std::endl;
-        std::cout << "D1 " <<  std::hex << dummy1 << std::dec << std::endl;
-        std::cout << "D2 " <<  std::hex << dummy1 << std::dec << std::endl;
-
-		od::ZStream in(dr.getStream());
-		std::ofstream out("out/layerout.dat", std::ios::out | std::ios::binary);
-		size_t n = 0;
-
-		int c = in.get();
-		while(c != od::ZStream::traits_type::eof())
-		{
-			c = in.get();
-			out.put(c);
-			n++;
-		}
-
-		std::cout << "Decompressed " << n << " bytes to out/layerout.dat" << std::endl;
 
 	}catch(std::exception &e)
 	{
