@@ -13,6 +13,29 @@
 namespace od
 {
 
+
+	void Layer::load(DataReader &dr)
+	{
+		dr 	>> width
+			>> height
+			>> type
+			>> origin_x
+			>> origin_y
+			>> world_height
+			>> layer_name
+			>> flags
+			>> light_direction
+			>> light_ascension
+			>> light_color
+			>> ambient_color
+			>> light_dropoff_type
+			>> dummyLength;
+
+		dr.ignore(4*(dummyLength + 1));
+	}
+
+
+
     RiotLevel::RiotLevel(const FilePath &levelPath, DbManager &dbManager)
     : mLevelPath(levelPath)
     , mDbManager(dbManager)
@@ -24,19 +47,28 @@ namespace od
 
     void RiotLevel::_loadLevel()
     {
+    	Logger::info() << "Loading level " << mLevelPath.str();
+
         SrscFile file(mLevelPath);
 
-        DataReader dr(file.getStreamForRecordTypeId(0x0000, 0));
-        dr  >> mLevelName
+        _loadNameAndDeps(file);
+        _loadLayers(file);
+    }
+
+    void RiotLevel::_loadNameAndDeps(SrscFile &file)
+    {
+    	DataReader dr(file.getStreamForRecordTypeId(0x0000, 0));
+
+    	dr  >> mLevelName
             >> mMaxWidth
             >> mMaxHeight;
 
         uint32_t dbRefCount;
         dr >> dbRefCount;
 
-        Logger::info() << "Lvl has " << dbRefCount << " dependencies";
+        Logger::info() << "Level has " << dbRefCount << " dependencies";
 
-        mDatabases.allocate(dbRefCount);
+        mDatabases.reserve(dbRefCount);
 
         for(size_t i = 0; i < dbRefCount; ++i)
         {
@@ -54,9 +86,30 @@ namespace od
             ref.db = &db;
 
             mDatabases[i] = ref;
-
-            Logger::info() << "Lvl has dependency: " << dbPath.str();
         }
+    }
+
+    void RiotLevel::_loadLayers(SrscFile &file)
+    {
+    	DataReader dr(file.getStreamForRecordTypeId(0x0001, 0));
+
+    	uint32_t layerCount;
+    	dr >> layerCount;
+
+    	Logger::info() << "Level has " << layerCount << " layers";
+    	mLayers.resize(layerCount);
+
+    	dr.ignore(4);
+
+    	for(size_t i = 0; i < layerCount; ++i)
+    	{
+    		Logger::info() << "Loading layer " << i;
+
+    		Layer layer;
+    		layer.load(dr);
+
+    		mLayers[i] = layer;
+    	}
     }
 
 }

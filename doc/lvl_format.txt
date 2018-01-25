@@ -28,9 +28,9 @@ SRSC file (see riot_database_format.txt) with the following record types:
         color4b     light_color;
         color4b     ambient_color;
         uint32      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
+        uint32      dummyLength;
         uint32      ???;
-        uint32      ???;
-        uint32[~1]	???;
+        uint32[4*~1] ???;
     }
     uint32          layer_count;
     uint32          ???;
