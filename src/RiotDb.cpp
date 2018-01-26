@@ -72,7 +72,6 @@ namespace od
 
 		std::string line;
 		bool readingDependencies = false;
-        size_t dependenciesLoaded = 0;
 		while(std::getline(in, line))
 		{
 			// getline leaves the CR byte (0x0D) in the string if given windows line endings. remove if it is there
@@ -105,7 +104,7 @@ namespace od
 
 				if(depCount > 0)
 				{
-					mDependencies.allocate(depCount);
+					mDependencies.reserve(depCount);
 				}
 
 				readingDependencies = true;
@@ -117,7 +116,7 @@ namespace od
 					throw Exception("Found dependency definition before dependencies statement");
 				}
 
-				if(dependenciesLoaded >= mDependencies.size())
+				if(mDependencies.size() == mDependencies.capacity())
                 {
                     throw Exception("More dependencies than stated in 'dependencies' statement");
                 }
@@ -144,9 +143,7 @@ namespace od
 
 				dep.db = &mDbManager.loadDb(depPath, dependencyDepth + 1);
 
-				mDependencies[dependenciesLoaded] = dep;
-
-                ++dependenciesLoaded;
+				mDependencies.push_back(dep);
 
 			}else
 			{
@@ -154,7 +151,7 @@ namespace od
 			}
 		}
 
-        if(dependenciesLoaded < mDependencies.size())
+        if(mDependencies.size() < mDependencies.capacity())
         {
             throw Exception("Found less dependency definitions than stated in dependencies statement");
         }

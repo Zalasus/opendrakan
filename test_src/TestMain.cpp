@@ -111,6 +111,10 @@ int main(int argc, char **argv)
 		{
 		    extract = true;
 
+		}else if(arg == "-s")
+		{
+		    stat = true;
+
 		}else
 		{
 			filename = arg;

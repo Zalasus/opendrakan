@@ -29,14 +29,18 @@ SRSC file (see riot_database_format.txt) with the following record types:
         color4b     ambient_color;
         uint32      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
         uint32      dummyLength;
-        uint32      ???;
+        uint32      ???;  // probably related to layer stacking
         uint32[4*~1] ???;
     }
-    uint32          layer_count;
-    uint32          ???;
-    layer_def[~1]   layer_definitions;
-    uint32          compressed_size;
-    uint8[~]        layer_data; // zlib-compressed
+    struct layer_data_block
+    {
+        uint32          compressed_size;
+        uint8[~]        layer_data; // zlib-compressed
+    }
+    uint32                  layer_count;
+    uint32                  ???;
+    layer_def[~1]           layer_definitions;
+    layer_data_block[~2]    data_blocks:
     
     
 [0x0002] Layer groups and visibility
@@ -48,6 +52,10 @@ SRSC file (see riot_database_format.txt) with the following record types:
     }
     uint32          group_count;
     layer_group[~]  groups;
+    
+    
+[0x0020] Objects
+    uint16      object_count;
     
     
     

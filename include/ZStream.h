@@ -10,9 +10,8 @@
 
 #include <istream>
 #include <streambuf>
+#include <vector>
 #include <zlib.h> // has C-linkage built in
-
-#include "SimpleArray.h"
 
 #define OD_ZSTREAM_DEFAULT_BUFFER_SIZE (1 << 19)
 
@@ -26,6 +25,12 @@ namespace od
         ZStreamBuffer(std::istream &in, size_t bufferSize = OD_ZSTREAM_DEFAULT_BUFFER_SIZE);
         ~ZStreamBuffer();
 
+        /**
+         * Will move the input stream just past the last byte that has been used for generating output, or
+         * to the beginning of the zlib data block if the zlib stream hasn't ended yet.
+         * It will then clear all internal buffers.
+         */
+        void finalize();
 
     protected:
 
@@ -39,14 +44,17 @@ namespace od
 
         std::istream &mInputStream;
 
-        SimpleArray<Bytef> mInputBuffer;
+        std::vector<Bytef> mInputBuffer;
         Bytef *mInputStart;
         Bytef *mInputEnd;
 
-        SimpleArray<Bytef> mOutputBuffer;
+        std::vector<Bytef> mOutputBuffer;
         Bytef *mOutputEnd;
 
         z_stream mZStream;
+
+        bool mStreamActive;
+        std::streamoff mZlibEndInInput;
 
     };
 
@@ -57,6 +65,11 @@ namespace od
         ZStream(std::istream &in);
         ~ZStream();
 
+        void finalize();
+
+    private:
+
+        ZStreamBuffer *mBuffer;
     };
 
 }

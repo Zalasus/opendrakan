@@ -8,8 +8,9 @@
 #ifndef INCLUDE_RIOTSOUND_H_
 #define INCLUDE_RIOTSOUND_H_
 
+#include <vector>
+
 #include "RiotAsset.h"
-#include "SimpleArray.h"
 
 #define OD_SOUND_FLAG_FLUSH_AFTER_PLAYING 	0x04
 #define OD_SOUND_FLAG_PLAY_LOOPING			0x08
@@ -46,7 +47,7 @@ namespace od
         uint32_t 	mCompressionLevel; // 0 = none, 1 = lowest, 9 = highest
         uint32_t    mCompressedSize; // contains garbage if uncompressed
 
-        SimpleArray<int16_t> mPcmBuffer;
+        std::vector<int16_t> mPcmBuffer;
 	};
 
 }

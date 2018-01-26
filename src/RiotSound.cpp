@@ -56,7 +56,7 @@ namespace od
         	throw Exception("Only mono supported right now");
         }
 
-        mPcmBuffer.allocate(mDecompressedSize);
+        mPcmBuffer.resize(mDecompressedSize);
 
         if(mCompressionLevel != 0)
         {

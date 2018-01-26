@@ -12,9 +12,9 @@
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <vector>
 
 #include "RiotAsset.h"
-#include "SimpleArray.h"
 #include "FilePath.h"
 #include "SrscFile.h"
 
@@ -54,7 +54,7 @@ namespace od
 		DbManager &mDbManager;
 
 		uint32_t mVersion;
-		SimpleArray<Dependency> mDependencies;
+		std::vector<Dependency> mDependencies;
 
 		std::unordered_map<AssetType, SrscFile*> mSrscMap;
 	};

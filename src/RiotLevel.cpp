@@ -7,6 +7,8 @@
 
 #include "RiotLevel.h"
 
+#include <algorithm>
+
 #include "SrscFile.h"
 #include "Logger.h"
 
@@ -31,7 +33,14 @@ namespace od
 			>> light_dropoff_type
 			>> dummyLength;
 
-		dr.ignore(4*(dummyLength + 1));
+		dummyField.reserve(dummyLength+1);
+		for(size_t i = 0; i < dummyLength + 1; ++i)
+		{
+			uint32_t v;
+			dr >> v;
+
+			dummyField.push_back(v);
+		}
 	}
 
 
@@ -53,6 +62,7 @@ namespace od
 
         _loadNameAndDeps(file);
         _loadLayers(file);
+        _loadLayerGroups(file);
     }
 
     void RiotLevel::_loadNameAndDeps(SrscFile &file)
@@ -86,6 +96,8 @@ namespace od
             ref.db = &db;
 
             mDatabases[i] = ref;
+
+            Logger::info() << ref.index << ": " << ref.db->getDbFilePath().str();
         }
     }
 
@@ -97,7 +109,7 @@ namespace od
     	dr >> layerCount;
 
     	Logger::info() << "Level has " << layerCount << " layers";
-    	mLayers.resize(layerCount);
+    	mLayers.reserve(layerCount);
 
     	dr.ignore(4);
 
@@ -108,10 +120,56 @@ namespace od
     		Layer layer;
     		layer.load(dr);
 
-    		mLayers[i] = layer;
+    		mLayers.push_back(layer);
+
+    		Logger::info() << "    name = " << layer.layer_name;
+    		Logger::info() << "    n = " << layer.getDummyField().size();
+    		for(uint32_t v : layer.getDummyField())
+    		{
+    			Logger::info() << "        " << v;
+    		}
+    	}
+
+    	for(size_t i = 0; i < layerCount; ++i)
+    	{
+			uint32_t zlibStuffSize;
+			dr >> zlibStuffSize;
+
+			uint16_t zlibHeader;
+			dr >> zlibHeader;
+
+			Logger::info() << "The zlib stuff has " << zlibStuffSize << " bytes, hdr: " << std::hex << zlibHeader << std::dec;
+			dr.ignore(zlibStuffSize-2);
     	}
     }
 
+    void RiotLevel::_loadLayerGroups(SrscFile &file)
+    {
+    	DataReader dr(file.getStreamForRecordTypeId(0x0002, 0));
+
+    	uint32_t groupCount;
+    	dr >> groupCount;
+
+    	for(size_t i = 0; i < groupCount; ++i)
+    	{
+    		std::string groupName;
+    		uint32_t layerCount;
+
+    		dr >> groupName
+			   >> layerCount;
+
+    		Logger::info() << "Group " << groupName << " has " << layerCount << " layers:";
+
+    		for(size_t j = 0; j < layerCount; ++j)
+    		{
+    			uint32_t layer;
+    			dr >> layer;
+
+    			Logger::info() << "    " << std::hex << layer << std::dec;
+    		}
+
+    	}
+    }
 }
 
 

@@ -13,7 +13,6 @@
 #include <string>
 #include <vector>
 
-#include "SimpleArray.h"
 #include "RiotDb.h"
 #include "DbManager.h"
 
@@ -42,7 +41,7 @@ namespace od
 
 		void load(DataReader &dr);
 
-	private:
+		inline std::vector<uint32_t> &getDummyField() {return dummyField;};
 
 		uint32_t width;
 		uint32_t height;
@@ -58,8 +57,7 @@ namespace od
 		uint32_t ambient_color;
 		uint32_t light_dropoff_type;
 		uint32_t dummyLength;
-		//uint32      ???;
-		//uint32[~1]	???;
+		std::vector<uint32_t> dummyField;
 	};
 
 
@@ -81,6 +79,7 @@ namespace od
         void _loadLevel();
         void _loadNameAndDeps(SrscFile &file);
         void _loadLayers(SrscFile &file);
+        void _loadLayerGroups(SrscFile &file);
 
 
         FilePath mLevelPath;

@@ -20,37 +20,62 @@ namespace od
     , mInputEnd(nullptr)
     , mOutputBuffer(bufferSize)
     , mOutputEnd(nullptr)
+    , mStreamActive(false)
+    , mZlibEndInInput(0)
     {
-        mZStream.zalloc = Z_NULL;
+    	mZStream.zalloc = Z_NULL;
         mZStream.zfree = Z_NULL;
         mZStream.opaque = Z_NULL;
-        mZStream.avail_in = 0;
-        mZStream.next_in = Z_NULL;
 
-        int ret = inflateInit(&mZStream);
-        if(ret != Z_OK)
-        {
-        	_error(ret);
-        }
-
-        char *gptr = reinterpret_cast<char*>(mOutputBuffer.ptr());
-
-        this->setg(gptr, gptr, gptr);
+        char *gptr = reinterpret_cast<char*>(mOutputBuffer.data());
+        setg(gptr, gptr, gptr);
     }
 
     ZStreamBuffer::~ZStreamBuffer()
     {
-        inflateEnd(&mZStream);
+    	if(mStreamActive)
+    	{
+    		inflateEnd(&mZStream);
+    	}
+    }
+
+    void ZStreamBuffer::finalize()
+    {
+    	mInputStream.seekg(mZlibEndInInput);
+
+    	mInputStart = mInputBuffer.data();
+    	mInputEnd = mInputBuffer.data();
+    	mOutputEnd = mOutputBuffer.data();
+
+    	char *gptr = reinterpret_cast<char*>(mOutputBuffer.data());
+        setg(gptr, gptr, gptr);
     }
 
     ZStreamBuffer::int_type ZStreamBuffer::underflow()
     {
+    	if(!mStreamActive)
+    	{
+    		mZlibEndInInput = mInputStream.tellg();
+
+    		mZStream.zalloc = Z_NULL;
+    		mZStream.zfree = Z_NULL;
+    		mZStream.opaque = Z_NULL;
+
+    		int ret = inflateInit(&mZStream);
+			if(ret != Z_OK)
+			{
+				_error(ret);
+			}
+
+			mStreamActive = true;
+    	}
+
         // fill input buffer if no input available anymore
         if(mInputStart == mInputEnd)
         {
-            mInputStart = mInputBuffer.ptr();
-            mInputStream.read(reinterpret_cast<char*>(mInputBuffer.ptr()), mInputBuffer.size());
-            mInputEnd = mInputBuffer.ptr() + mInputStream.gcount();
+            mInputStart = mInputBuffer.data();
+            mInputStream.read(reinterpret_cast<char*>(mInputBuffer.data()), mInputBuffer.size());
+            mInputEnd = mInputBuffer.data() + mInputStream.gcount();
 
             if(mInputEnd == mInputStart)
             {
@@ -69,20 +94,29 @@ namespace od
         // decompress
         mZStream.next_in = mInputStart;
         mZStream.avail_in = mInputEnd - mInputStart;
-        mZStream.next_out = mOutputBuffer.ptr();
+        mZStream.next_out = mOutputBuffer.data();
         mZStream.avail_out = mOutputBuffer.size();
         int ret = inflate(&mZStream, Z_NO_FLUSH);
-        if(ret != Z_OK && ret != Z_STREAM_END)
+        if(ret == Z_STREAM_END)
+        {
+        	// all zlib data has been decompressed. avail_in contains the amount of bytes
+        	//  read from stream that we didn't use
+
+        	mZlibEndInInput = (int)mInputStream.tellg() - mZStream.avail_in;
+        	mStreamActive = false;
+        	inflateEnd(&mZStream);
+
+        } else if(ret != Z_OK)
         {
             _error(ret);
         }
 
         // update our pointers and set gptr
         mInputStart = mZStream.next_in;
-        mInputEnd = mInputBuffer.ptr() + mZStream.avail_in;
+        mInputEnd = mInputStart + mZStream.avail_in;
         mOutputEnd = mZStream.next_out;
 
-        char *outputStart = reinterpret_cast<char*>(mOutputBuffer.ptr());
+        char *outputStart = reinterpret_cast<char*>(mOutputBuffer.data());
         char *outputEnd = reinterpret_cast<char*>(mOutputEnd);
         setg(outputStart, outputStart, outputEnd);
 
@@ -135,11 +169,18 @@ namespace od
     : std::istream(new ZStreamBuffer(in))
     {
     	exceptions(std::ios_base::badbit);
+
+    	mBuffer = static_cast<ZStreamBuffer*>(rdbuf());
     }
 
     ZStream::~ZStream()
     {
-        delete rdbuf();
+    	delete rdbuf();
+    }
+
+    void ZStream::finalize()
+    {
+    	mBuffer->finalize();
     }
 
 }
