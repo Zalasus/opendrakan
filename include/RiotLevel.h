@@ -12,6 +12,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 
 #include "RiotDb.h"
 #include "DbManager.h"
@@ -39,25 +40,43 @@ namespace od
 			DROPOFF_W2E = 4
 		};
 
-		void load(DataReader &dr);
+		struct Vertex
+		{
+			uint8_t type;
+			int32_t heightOffset; // this is the actual, signed offset, also scaled by 2!
+		};
 
-		inline std::vector<uint32_t> &getDummyField() {return dummyField;};
+		struct Face
+		{
+			enum { DIV_BOTTOMLEFT_TOPRIGHT = 0, DIV_TOPLEFT_BOTTOMRIGHT = 1 } division;
+			uint32_t textureLeft;
+			uint32_t textureRight;
+		};
 
-		uint32_t width;
-		uint32_t height;
-		uint32_t type;
-		uint32_t origin_x;
-		uint32_t origin_y;
-		float world_height;
-		std::string layer_name;
-		uint32_t flags; // 2 = member of alternate blending group
-		float light_direction;
-		float light_ascension;
-		uint32_t light_color;
-		uint32_t ambient_color;
-		uint32_t light_dropoff_type;
-		uint32_t dummyLength;
-		std::vector<uint32_t> dummyField;
+		void loadDefinition(DataReader &dr);
+		void loadPolyData(DataReader &dr);
+
+		inline std::vector<uint32_t> &getDummyArray() { return mDummyArray; };
+
+
+	private:
+
+		uint32_t 				mWidth;
+		uint32_t 				mHeight;
+		LayerType 				mType;
+		uint32_t 				mOriginX;
+		uint32_t 				mOriginY;
+		float 					mWorldHeight;
+		std::string 			mLayerName;
+		uint32_t 				mFlags; // 2 = member of alternate blending group
+		float 					mLightDirection;
+		float 					mLightAscension;
+		uint32_t 				mLightColor;
+		uint32_t 				mAmbientColor;
+		LightDropoffType 		mLightDropoffType;
+		std::vector<uint32_t>	mDummyArray;
+		std::vector<Vertex>   	mVertices;
+		std::vector<Face>	  	mFaces;
 	};
 
 
@@ -68,13 +87,9 @@ namespace od
         RiotLevel(const FilePath &levelPath, DbManager &dbManager);
 
 
-    private:
 
-        struct DbRef
-        {
-            RiotDb *db;
-            uint16_t index;
-        };
+
+    private:
 
         void _loadLevel();
         void _loadNameAndDeps(SrscFile &file);
@@ -88,7 +103,7 @@ namespace od
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::vector<DbRef> mDatabases;
+        std::map<uint16_t, RiotDb*> mDatabases;
         std::vector<Layer> mLayers;
     };
 

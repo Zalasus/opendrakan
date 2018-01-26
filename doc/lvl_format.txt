@@ -61,4 +61,35 @@ SRSC file (see riot_database_format.txt) with the following record types:
     
     
     
+Layer data block format
+-----------------------
+
+    Zlib-compressed
+
+    First block is vertex data
+    4 bytes per vertex. Top left vertex appears first, then filled left to right, top to bottom
+    
+        first byte is type. type 0 is normal. values 0-75 are defined. working on list later
+        
+        second byte is always 0x01. no idea what it does yet.
+        
+        third and fourth byte seems to be height offset divided by two (can't change height in smaller units)
+        value is biased, so 0x8000 means an offset of 0, 0x7FFF means -2 and 0x8002 means +4 etc.
+        
+        
+    Second block is face data
+    26 bytes per face, top left face first, then filled left to right, top to bottom
+    
+        first 2 bytes are division:
+               +-+      +-+
+            0= |/|   1= |\|
+               +-+      +-+
+               
+        followed by two 4-byte-words which are database references for the face textures. 
+        first is for left triangle, second is right triangle.
+        
+        followed by that, 16 bytes that indicate texture orientation, but in what way i can not tell yet
+    
+    
+    
     

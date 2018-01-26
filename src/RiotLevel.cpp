@@ -11,35 +11,77 @@
 
 #include "SrscFile.h"
 #include "Logger.h"
+#include "ZStream.h"
 
 namespace od
 {
 
 
-	void Layer::load(DataReader &dr)
+	void Layer::loadDefinition(DataReader &dr)
 	{
-		dr 	>> width
-			>> height
-			>> type
-			>> origin_x
-			>> origin_y
-			>> world_height
-			>> layer_name
-			>> flags
-			>> light_direction
-			>> light_ascension
-			>> light_color
-			>> ambient_color
-			>> light_dropoff_type
-			>> dummyLength;
+		dr 	>> mWidth
+			>> mHeight;
 
-		dummyField.reserve(dummyLength+1);
+		uint32_t type;
+		dr >> type;
+		mType = static_cast<LayerType>(type);
+
+		dr  >> mOriginX
+			>> mOriginY
+			>> mWorldHeight
+			>> mLayerName
+			>> mFlags
+			>> mLightDirection
+			>> mLightAscension
+			>> mLightColor
+			>> mAmbientColor;
+
+		uint32_t lightDropoffType;
+		dr >> lightDropoffType;
+		mLightDropoffType = static_cast<LightDropoffType>(lightDropoffType);
+
+		uint32_t dummyLength;
+		dr >> dummyLength;
+		mDummyArray.reserve(dummyLength+1);
 		for(size_t i = 0; i < dummyLength + 1; ++i)
 		{
 			uint32_t v;
 			dr >> v;
+			mDummyArray.push_back(v);
+		}
+	}
 
-			dummyField.push_back(v);
+	void Layer::loadPolyData(DataReader &dr)
+	{
+		mVertices.reserve((mWidth+1)*(mHeight+1));
+		for(size_t i = 0; i < mVertices.capacity(); ++i)
+		{
+			Vertex v;
+
+			dr >> v.type;
+
+			dr.ignore(1);
+
+			uint16_t heightOffset;
+			dr >> heightOffset;
+			v.heightOffset = (heightOffset - 0x8000) * 2;
+
+			mVertices.push_back(v);
+		}
+
+		mFaces.reserve(mWidth*mHeight);
+		for(size_t i = 0; i < mFaces.capacity(); ++i)
+		{
+			Face f;
+
+			uint16_t div;
+			dr >> div;
+			f.division = div ? Face::DIV_TOPLEFT_BOTTOMRIGHT : Face::DIV_BOTTOMLEFT_TOPRIGHT;
+
+			dr >> f.textureLeft
+			   >> f.textureRight;
+
+			dr.ignore(16); // ignore texture orientation stuff
 		}
 	}
 
@@ -63,6 +105,8 @@ namespace od
         _loadNameAndDeps(file);
         _loadLayers(file);
         _loadLayerGroups(file);
+
+        Logger::info() << "Level loaded successfully";
     }
 
     void RiotLevel::_loadNameAndDeps(SrscFile &file)
@@ -76,15 +120,13 @@ namespace od
         uint32_t dbRefCount;
         dr >> dbRefCount;
 
-        Logger::info() << "Level has " << dbRefCount << " dependencies";
-
-        mDatabases.reserve(dbRefCount);
+        Logger::info() << "Level has " << dbRefCount << " dependencies:";
 
         for(size_t i = 0; i < dbRefCount; ++i)
         {
-            DbRef ref;
 
-            dr  >> ref.index;
+        	uint16_t dbIndex;
+            dr  >> dbIndex;
             dr.ignore(2);
 
             std::string dbPathStr;
@@ -93,11 +135,9 @@ namespace od
             FilePath dbPath(dbPathStr, mLevelPath.dir());
             RiotDb &db = mDbManager.loadDb(dbPath);
 
-            ref.db = &db;
+            mDatabases[dbIndex] = &db;
 
-            mDatabases[i] = ref;
-
-            Logger::info() << ref.index << ": " << ref.db->getDbFilePath().str();
+            Logger::info() << "    " << dbIndex << ": " << dbPath.str();
         }
     }
 
@@ -118,28 +158,27 @@ namespace od
     		Logger::info() << "Loading layer " << i;
 
     		Layer layer;
-    		layer.load(dr);
+    		layer.loadDefinition(dr);
 
     		mLayers.push_back(layer);
-
-    		Logger::info() << "    name = " << layer.layer_name;
-    		Logger::info() << "    n = " << layer.getDummyField().size();
-    		for(uint32_t v : layer.getDummyField())
-    		{
-    			Logger::info() << "        " << v;
-    		}
     	}
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-			uint32_t zlibStuffSize;
+    		uint32_t zlibStuffSize;
 			dr >> zlibStuffSize;
 
-			uint16_t zlibHeader;
-			dr >> zlibHeader;
+			size_t zlibOffset = dr.getStream().tellg();
 
-			Logger::info() << "The zlib stuff has " << zlibStuffSize << " bytes, hdr: " << std::hex << zlibHeader << std::dec;
-			dr.ignore(zlibStuffSize-2);
+			ZStream zstr(dr.getStream());
+			DataReader zdr(zstr);
+			mLayers[i].loadPolyData(zdr);
+			zstr.seekToEndOfZlib();
+
+			if((size_t)dr.getStream().tellg() != zlibOffset + zlibStuffSize)
+			{
+				throw Exception("ZStream read either too many or too few bytes");
+			}
     	}
     }
 

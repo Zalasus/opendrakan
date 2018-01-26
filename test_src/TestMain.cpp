@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
 	try
 	{
-		od::Logger::getDefaultLogger().setPrintDebug(true);
+		od::Logger::getDefaultLogger().setPrintDebug(false);
 
 		/*od::DbManager dbm;
 
