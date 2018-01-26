@@ -15,6 +15,18 @@ My documentation on the Riot Engine's SRSC file format can be found
 [here](https://github.com/Zalasus/opendrakan/blob/master/doc/riot_database_format.txt).
 
 
+Copyright notice
+----------------
+
+Everything in this project was created by me or was taken from other open-source projects in
+accordance with their respective license. This project does not and will never distribute any 
+copyrighted material by Surreal Software or Warner Bros. Interactive Entertainment (who aquired
+Surreal Software in 2009).
+
+All information on the Riot Engine has been aquired through reverse engineering or by other, 
+non-copyright-infringing means.
+
+
 Compiling
 ---------
 
