@@ -33,7 +33,7 @@ How the engine manages it's assets
     These are the possible file extensions and their associated asset types for databases:
     
         *.mod    Models
-        *.adb      ?
+        *.adb    Model/Character animations (?)
         *.ssd    Animations ("STOMP"-Sequences)  
         *.odb    Objects
         *.sdb    Sounds
@@ -57,7 +57,7 @@ Database definition
         <index of dependency n>  <path of dependency n>
 
     The listed database paths omit the *.db extension and are relative to the location of the current *.db file.
-    Note that the given indices aren't necessarily consecutive or start at at given number (e.g. 2,4,6). The only
+    Note that the given indices aren't necessarily consecutive or start at a given number (e.g. 2,4,6). The only
     rule is that these are 1-based. Index 0 is used to refer to the current database and can not be used for 
     dependencies.
     
@@ -146,8 +146,14 @@ Record types
 
     The following is an incomplete list of record types, grouped by asset type.
 
-    Texture (0x00**)
-    ----------------
+    Level (0x0000 - 0x0020)
+    -----------------------
+    
+        see lvl_format.txt
+        
+
+    Texture (0x0030-0x0040)
+    -----------------------
 
     [0x0030] Palette
         struct color { uint8 r; uint8 g; uint8 b; uint8 flags; }; // these are copied verbatim from the RIFF PAL file
@@ -192,8 +198,8 @@ Record types
         // as of now, I have no idea how texture animations work
 
 
-    Class (0x01**)
-    --------------
+    Class (0x0100 - 0x0102)
+    -----------------------
 
     [0x0100] Riot Function Library reference
         uint8[8]    ???
@@ -231,8 +237,8 @@ Record types
         field_def[*]    field_definitions;
 
 
-    Model (0x02**)
-    --------------
+    Model (0x0200 - 0x0209)
+    -----------------------
 
     struct vect3f { float x; float y; float z; };
     
@@ -279,8 +285,8 @@ Record types
         (these records are consistently 6 bytes long and contained only zeroes in at least one tested model)
         
 
-    Sound (0x030*)
-    --------------
+    Sound (0x0301 - 0x0302)
+    -----------------------
 
     [0x0301] Sound group definition
         string      group_name;
@@ -300,8 +306,8 @@ Record types
         uint8[*]   audio_data; // see "Audio format"
         
         
-    Sequence (0x031*)
-    -----------------
+    Sequence (0x0310 - 0x0312)
+    --------------------------
     
     [0x0310] ???
     	// 8 bytes. not all zero
@@ -314,9 +320,8 @@ Record types
     	string		group_name;
     	
    	
-    Misc (0x04)
-    -----------All record types consist of an asset type (high byte). The interpretation of the low byte depends on the asset type.
-    For most records, a low byte of 0x01 indicates a group definition.
+    Misc
+    ----
 
     [0x0402] End record?
         (one of these appears in many databases, often last. it's size seems to always be 4)

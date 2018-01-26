@@ -56,6 +56,7 @@ SRSC file (see riot_database_format.txt) with the following record types:
     
 [0x0020] Objects
     uint16      object_count;
+    ...
     
     
     
