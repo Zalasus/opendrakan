@@ -33,8 +33,7 @@ Compiling
 There are no makefiles yet, so you'd have to assemble these yourself or use
 whatever way of building a project suits you best.
 
-The only dependencies yet are zlib and this wrapper for it: 
-https://github.com/mateidavid/zstr
+The only dependency yet is zlib.
 
 
 License
