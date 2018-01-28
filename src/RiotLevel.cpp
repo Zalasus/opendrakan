@@ -133,7 +133,7 @@ namespace od
             dr >> dbPathStr;
 
             FilePath dbPath(dbPathStr, mLevelPath.dir());
-            RiotDb &db = mDbManager.loadDb(dbPath);
+            RiotDb &db = mDbManager.loadDb(dbPath.adjustCase());
 
             mDatabases[dbIndex] = &db;
 
@@ -208,6 +208,41 @@ namespace od
     		}
 
     	}
+    }
+
+    void RiotLevel::_loadObjects(SrscFile &file)
+    {
+    	SrscFile::DirEntry objectRecordEntry;
+
+    	try
+    	{
+    		objectRecordEntry = file.getDirectoryEntryByTypeAndID(0x0020, 0);
+
+    	}catch(Exception &e)
+    	{
+    		// record not found -> this level has no objects
+    		return;
+    	}
+
+    	DataReader dr(file.getStreamForRecord(objectRecordEntry));
+
+    	uint16_t objectCount;
+    	dr >> objectCount;
+
+    	/*mObjects.reserve(objectCount);
+
+    	for(size_t i = 0; i < objectCount; ++i)
+    	{
+    		uint32_t index;
+    		dr >> index;
+
+    		uint16_t classId;
+    		uint16_t classDb;
+    		dr >> classId
+			   >> classDb;
+
+    		dr.ignore(4);
+    	}*/
     }
 }
 

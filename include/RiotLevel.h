@@ -95,6 +95,7 @@ namespace od
         void _loadNameAndDeps(SrscFile &file);
         void _loadLayers(SrscFile &file);
         void _loadLayerGroups(SrscFile &file);
+        void _loadObjects(SrscFile &file);
 
 
         FilePath mLevelPath;

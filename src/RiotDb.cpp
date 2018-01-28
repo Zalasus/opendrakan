@@ -11,6 +11,7 @@
 #include <sstream>
 #include <regex>
 
+#include "Logger.h"
 #include "DbManager.h"
 #include "StringUtils.h"
 #include "Exception.h"
@@ -132,10 +133,12 @@ namespace od
 
 				// note: dependency paths are always stored relative to the path of the db file defining it
 				FilePath depPath(results[2], mDbFilePath.dir());
+				depPath = depPath.adjustCase();
 
 				if(depPath == mDbFilePath)
 				{
-				    throw Exception("Self dependent database file");
+				    Logger::warn() << "Self dependent database file: " << mDbFilePath;
+				    continue; // FIXME: will always cause an error cause not all deps have been loaded
 				}
 
 				Dependency dep;

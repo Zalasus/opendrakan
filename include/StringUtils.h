@@ -22,6 +22,7 @@ namespace od
 
 		static std::string toLower(const std::string &s);
 		static std::string toUpper(const std::string &s);
+		static bool compareIgnoringCase(const std::string &a, const std::string &b);
 
 		static std::string &ltrim(std::string &sw);
 		static std::string &rtrim(std::string &sw);

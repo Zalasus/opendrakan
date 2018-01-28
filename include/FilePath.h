@@ -86,6 +86,17 @@ namespace od
 		 */
 		FilePath ext(const std::string &newExt) const;
 
+		/**
+		 * Will try to resolve all elements in the path, replacing a directory or filename with whatever
+		 * the OS reports should the one stored in this FilePath and the one found in the file system match
+		 * when ignoring case.
+		 *
+		 * If a part of the path can't be accessed (either because it does not exist or because of insufficient
+		 * permissions, that part of the path is kept as-is.
+		 *
+		 * On Windows this returns an exact copy without chaning anything right now.
+		 */
+		FilePath adjustCase() const;
 
 		bool operator==(const FilePath &right) const;
 
@@ -102,6 +113,7 @@ namespace od
 		std::vector<std::string> mPathComponents;
 	};
 
+	std::ostream &operator<<(std::ostream &left, const FilePath &right);
 }
 
 #endif /* INCLUDE_FILEPATH_H_ */

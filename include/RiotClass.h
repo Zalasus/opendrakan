@@ -11,6 +11,7 @@
 #include "RiotAsset.h"
 #include "SrscFile.h"
 #include "DataStream.h"
+#include "rfl/RiotFunctionLibrary.h"
 
 namespace od
 {
@@ -29,6 +30,7 @@ namespace od
 	private:
 
 		std::string mClassName;
+		RflClassTypeId mClassTypeId;
 	};
 
 }

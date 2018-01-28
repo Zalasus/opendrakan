@@ -16,6 +16,7 @@
 #include "Logger.h"
 #include "RiotLevel.h"
 #include "StringUtils.h"
+#include "rfl/RiotFunctionLibrary.h"
 
 
 void srscStat(od::SrscFile &file)
@@ -133,6 +134,9 @@ int main(int argc, char **argv)
 	{
 		od::Logger::getDefaultLogger().setPrintDebug(false);
 
+		od::RiotFunctionLibrary &rfl = od::RiotFunctionLibrary::getSingleton();
+		od::Logger::info() << "Got RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered class types";
+
 		/*od::DbManager dbm;
 
 		std::cout << "Loading database " << filename << std::endl;
@@ -191,10 +195,12 @@ int main(int argc, char **argv)
 
 		}else
 		{
-		    od::DbManager dbm;
-		    od::RiotLevel level(filename, dbm);
+		    /*od::DbManager dbm;
+		    od::RiotLevel level(filename, dbm);*/
 
+			od::FilePath path(filename);
 
+			std::cout << "Adjusted path: " << path.adjustCase().str() << std::endl;
 
 		}
 

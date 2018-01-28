@@ -66,9 +66,11 @@ namespace od
 		return i;
 	}
 
-	std::string StringUtils::toLower(const std::string &s)
+	bool StringUtils::compareIgnoringCase(const std::string &a, const std::string &b)
 	{
-	    return s; //FIXME: Implement this method
+		auto ciPred = [](char a, char b){ return std::toupper(a) == std::toupper(b); };
+
+		return std::equal(a.begin(), a.end(), b.begin(), b.end(), ciPred);
 	}
 
 	bool StringUtils::startsWith(const std::string &s, const std::string &begin)

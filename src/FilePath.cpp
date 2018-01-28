@@ -8,18 +8,21 @@
 #include "FilePath.h"
 
 #include <algorithm>
+#include <sstream>
 
 #include "StringUtils.h"
 #include "Exception.h"
 
 #if defined (__WIN32__)
 #	define OD_FILEPATH_SEPERATOR	    '\\'
-#	define OD_FILEPATH_SEPERATOR_STR    "\\"
 #	define OD_FILEPATH_HOST_STYLE		STYLE_DOS
 #else
 #	define OD_FILEPATH_SEPERATOR	    '/'
-#	define OD_FILEPATH_SEPERATOR_STR    "/"
 #	define OD_FILEPATH_HOST_STYLE		STYLE_POSIX
+extern "C"
+{
+#	include <dirent.h>
+}
 #endif
 
 namespace od
@@ -90,6 +93,57 @@ namespace od
 	{
 	    std::string path = strNoExt();
 	    return FilePath(path + newExt);
+	}
+
+	FilePath FilePath::adjustCase() const
+	{
+#if defined (__WIN32__)
+		// in a windows environment, paths are case-insensitive, so we don't have to adjust anything.
+		//  this is great, because i don't know whether all windows libcs have a dirent.h and i can't be bothered
+		//  to look up the right way of listing directories on windows right now.
+		return *this;
+#else
+
+		FilePath fp(*this);
+
+		std::string adjustedPath((mRootStyle == STYLE_RELATIVE) ? "." : mRoot);
+
+		for(size_t i = 0; i < fp.mPathComponents.size(); ++i)
+		{
+			if(i > 0)
+			{
+				adjustedPath += OD_FILEPATH_SEPERATOR + fp.mPathComponents[i-1];
+			}
+
+			DIR *dir = opendir(adjustedPath.c_str());
+			if(dir == NULL)
+			{
+				// could not access path. keep this component as-is
+				continue;
+
+			}
+
+			std::string &name = fp.mPathComponents[i];
+
+			dirent *entry = readdir(dir);
+			while(entry != NULL)
+			{
+				std::string realName(entry->d_name);
+
+				if(StringUtils::compareIgnoringCase(realName, name))
+				{
+					fp.mPathComponents[i] = realName;
+					break;
+				}
+
+				entry = readdir(dir);
+			}
+
+			closedir(dir);
+		}
+
+		return fp;
+#endif
 	}
 
 	bool FilePath::operator==(const FilePath &right) const
@@ -173,7 +227,7 @@ namespace od
 
 	std::string FilePath::_buildHostPath() const
 	{
-		std::string hostPath;
+		std::ostringstream oss;
 
 		if(mRootStyle != STYLE_RELATIVE)
 		{
@@ -182,7 +236,7 @@ namespace od
 				throw Exception("Can't convert absolute path roots right now");
 			}
 
-			hostPath = mRoot;
+			oss << mRoot;
 
 		}else if(mPathComponents.empty())
 		{
@@ -191,15 +245,23 @@ namespace od
 
 		for(size_t i = 0; i < mPathComponents.size(); ++i)
 		{
-			hostPath.append(mPathComponents[i]);
+			oss << mPathComponents[i];
 
 			if(i+1 < mPathComponents.size()) // if this is not the last item
 			{
-				hostPath.append(OD_FILEPATH_SEPERATOR_STR);
+				oss << OD_FILEPATH_SEPERATOR;
 			}
 		}
 
-		return hostPath;
+		return oss.str();
+	}
+
+
+	std::ostream &operator<<(std::ostream &left, const FilePath &right)
+	{
+		left << right.str();
+
+		return left;
 	}
 }
 

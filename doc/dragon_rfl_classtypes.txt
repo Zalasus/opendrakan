@@ -1,0 +1,19 @@
+
+
+The following is a list of all known class types in the "dragon.rfl" Riot Function Library
+as used by Drakan, grouped by category.
+
+
+
+Item
+-----
+
+[N/A] Common item fields
+    string  DisplayName      = "";
+    int     Quantity         = 1;
+    enum { No, Yes } Grouped = No;
+    int     Bit Map Number   = 1;
+
+[0x000A] Health Pack
+    int     Health Boost = 0;
+    

@@ -11,6 +11,7 @@ namespace od
 {
 
     RiotClass::RiotClass()
+    : mClassTypeId(0)
     {
     }
 
@@ -19,6 +20,15 @@ namespace od
         DataReader dr(srscFile.getStreamForRecordTypeId(0x0102, id));
 
         dr >> mClassName;
+        dr.ignore(2);
+
+        dr.ignore(4); // model stuff
+
+        dr >> mClassTypeId;
+
+        RflClassType &classType = RiotFunctionLibrary::getSingleton().getClassTypeById(mClassTypeId);
+
+
     }
 
     std::string RiotClass::getName()

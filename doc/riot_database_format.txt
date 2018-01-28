@@ -233,7 +233,7 @@ Record types
         uint16          icon_number; // Selected class icon in the editor. Should have no effect on gameplay
         uint32          number_of_fields;
         uint32          size_of_data_area_in_dwords; // 1 means 4 bytes
-        uint8[4*~]      data_area;
+        uint8[4*~]      data_area; // for layout see "Class format"
         field_def[*]    field_definitions;
 
 
@@ -395,9 +395,26 @@ Texture format
         of the Drakan databases.
 
 
+Class format
+============
+    Classes are stored as a set of fields. A class record first contains a short header, then a data area consisting of
+    dwords (4 bytes). After that, a list of field definitions is stored. Each definition contains the field's data type and
+    the field's name (probably the preferred way of identifying the field, even though field names are sometimes more descriptive
+    than one would expect from variable identifiers). 
+    
+    Each of the field definitions corresponds to one dword in the data area, in the same order as they appear in the field 
+    definition list (so the first field defined would correspond to the first dword at the beginning of the data area).
+    
+    Some fields, however, may require more than a dword to store their contents. These are namely strings and arrays.
+    For this reason, the data area may contain more dwords than the number of fields. In this trailing area, the actual string
+    or array data is stored, while the dword at the string's/array's index instead looks like this:
+    
+        uint16 offset;
+        uint16 length;
 
-
-
+    Where offset is the offset in dwords starting from the beginning of the data area where the string's/array's data can be found,
+    and length is the number of dwords contained in that trailing field. For arrays this is equal to the number of elements contained,
+    while strings are packed into as many dwords as required, and then padded with zero bytes if the string's size is not divisible by 4.
 
 
 
