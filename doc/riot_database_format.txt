@@ -399,8 +399,9 @@ Class format
 ============
     Classes are stored as a set of fields. A class record first contains a short header, then a data area consisting of
     dwords (4 bytes). After that, a list of field definitions is stored. Each definition contains the field's data type and
-    the field's name (probably the preferred way of identifying the field, even though field names are sometimes more descriptive
-    than one would expect from variable identifiers). 
+    the field's name. It is likely that the index of the field definition can be used to identify the field (objects in level
+    files, which list only modified fields, explicitly state the index these fields have in their class). Otherwise, a field's
+    name is a safe albeit inefficient way to identify it.
     
     Each of the field definitions corresponds to one dword in the data area, in the same order as they appear in the field 
     definition list (so the first field defined would correspond to the first dword at the beginning of the data area).

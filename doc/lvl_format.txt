@@ -64,18 +64,18 @@ SRSC file (see riot_database_format.txt) with the following record types:
         float           x_position;
         float           y_position; // elevation axis, always relative to model origin
         float           z_position;
-        uint32          flags; // ?, seems to control whether some fields appear or not. is 0x100 normally and 0x101 if scale fields appear
-        uint32          ???;
+        uint32          flags; // 0x01 = visible in-game, 0x100 = scaled
+        uint32          initial_event_count;
         uint16          x_rotation; // in degrees
         uint16          y_rotation; //    "
         uint16          z_rotation; //    "
-        float           x_scaling;  // these only appear if bit 0x100 in flag field is set
+        float           x_scaling;  // these only appear if scaled flag is set
         float           y_scaling;  //   "
         float           z_scaling;  //   "
         uint32          data_area_size; // in dwords (4 byte blocks)
         uint32          parameter_count;  // how many parameters in this object are changed compared to the class
         uint32[~1]      parameter_data;
-        uint16[~1]      ???; // don't know what this is, only that it contains one uint16 for every field
+        uint16[~1]      parameter_indices; // location x of this contains the index field x as defined here has in this object's class
         field_def[~2]   parameter_definitions; // this has the same format as the one of classes
     }
     uint16      object_count;
