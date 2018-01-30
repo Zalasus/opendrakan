@@ -8,6 +8,7 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include <unistd.h>
 
 #include "ZStream.h"
 #include "SrscFile.h"
@@ -75,6 +76,7 @@ void printUsage()
 		<< "    -i <id>    Extract first record with ID <id>" << std::endl
 		<< "    -x         Extract all records" << std::endl
 		<< "    -s         Print SRSC statistics" << std::endl
+		<< "    -v         Increase verbosity of logger" << std::endl
 		<< "If no option is given, the file is loaded as a level." << std::endl
 		<< std::endl;
 }
@@ -87,52 +89,69 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	od::Logger::LogLevel logLevel = od::Logger::LOGLEVEL_INFO;
 	std::string filename;
 	bool extract = false;
 	bool stat = false;
 	uint16_t extractRecordId = 0;
-	for(int i = 1; i < argc; ++i)
+	int c;
+	while((c = getopt(argc, argv, "i:xsv")) != -1)
 	{
-		std::string arg(argv[i]);
-
-		if(arg == "-i")
+		switch(c)
 		{
-			if(i == argc - 1)
+		case 'i':
 			{
-				std::cout << "i flag needs ID argument" << std::endl;
-				printUsage();
-				return 1;
+				std::istringstream iss(optarg);
+				iss >> std::hex >> extractRecordId;
+				if(iss.fail())
+				{
+					std::cout << "Argument to -i must be a hex ID number" << std::endl;
+					return 1;
+				}
 			}
+			break;
 
-			std::string arg2(argv[++i]);
-			std::istringstream is(arg2);
-			is >> std::hex >> extractRecordId;
+		case 'x':
+			extract = true;
+			break;
 
-		}else if(arg == "-x")
-		{
-		    extract = true;
+		case 's':
+			stat = true;
+			break;
 
-		}else if(arg == "-s")
-		{
-		    stat = true;
+		case 'v':
+			if(logLevel < od::Logger::LOGLEVEL_DEBUG)
+			{
+				logLevel = static_cast<od::Logger::LogLevel>(1 + static_cast<int>(logLevel)); // i know, yucky enum abuse
+			}
+			break;
 
-		}else
-		{
-			filename = arg;
+		case '?':
+			if(optopt == 'i')
+			{
+				std::cerr << "Option -i requires a hex ID argument." << std::endl;
+
+			}else
+			{
+				std::cout << "Unknown option -" << optopt << std::endl;
+				printUsage();
+			}
+			return 1;
 		}
 	}
 
-	if(filename.empty())
+	if(optind >= argc)
 	{
-	    std::cout << "Need at least a db file argument." << std::endl;
+		std::cout << "Need at least a file argument." << std::endl;
 	    printUsage();
 	    return 1;
 	}
 
+	filename = std::string(argv[optind]);
 
 	try
 	{
-		od::Logger::getDefaultLogger().setOutputLogLevel(od::Logger::LOGLEVEL_VERBOSE);
+		od::Logger::getDefaultLogger().setOutputLogLevel(logLevel);
 
 		od::RiotFunctionLibrary &rfl = od::RiotFunctionLibrary::getSingleton();
 		od::Logger::info() << "Got RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered class types";
