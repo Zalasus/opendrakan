@@ -51,21 +51,21 @@ namespace od
 
 		enum LogLevel
 		{
-			LOGLEVEL_INFO,
+			// order is vital! must be from least verbose to most verbose
+			LOGLEVEL_ERROR,
 			LOGLEVEL_WARNING,
-			LOGLEVEL_SEVERE,
+			LOGLEVEL_INFO,
+			LOGLEVEL_VERBOSE,
 			LOGLEVEL_DEBUG
 		};
-		static const LogLevel DEFAULT_LOGLEVEL = LOGLEVEL_INFO;
 
 
-		Logger(const std::string &name, std::ostream *stream = &std::cout);
+		Logger(LogLevel outputLogLevel, std::ostream *stream = &std::cout);
 
-		void log(const std::string &msg, LogLevel level = DEFAULT_LOGLEVEL);
+		void log(const std::string &msg, LogLevel level);
 
-        std::string getLoggerName();
         void setEnableTimestamp(bool ts);
-        void setPrintDebug(bool b);
+        void setOutputLogLevel(LogLevel level);
         void setOutputStream(std::ostream *s);
         void setChildLogger(Logger *l);
         void addListener(ILoggerListener *listener);
@@ -79,28 +79,30 @@ namespace od
         LoggerStreamProxy operator<<(const T &t);
 
         static Logger &getDefaultLogger();
+        static inline void debug(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_DEBUG); }
+        static inline void verbose(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_VERBOSE); }
 		static inline void info(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_INFO); }
 		static inline void warn(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_WARNING); }
-		static inline void severe(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_SEVERE); }
-		static inline void debug(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_DEBUG); }
+		static inline void error(const std::string &msg) { getDefaultLogger().log(msg, LOGLEVEL_ERROR); }
 
 		// default stream getters
+		static LoggerStreamProxy debug();
+		static LoggerStreamProxy verbose();
 		static LoggerStreamProxy info();
 		static LoggerStreamProxy warn();
-		static LoggerStreamProxy severe();
-		static LoggerStreamProxy debug();
+		static LoggerStreamProxy error();
+
 
 	private:
 
 		void _flushLogStream();
 
-		std::string mName;
 		bool mEnableTimestamp;
-		bool mPrintDebugInfo;
 		std::ostream *mStream;
 		Logger *mChildLogger;
 		std::vector<ILoggerListener*> mListeners;
-		LogLevel mStreamLogLevel;
+		LogLevel mStreamLogLevel; // as inserted by the stream operator <<
+		LogLevel mOutputLogLevel;
 		std::ostringstream mStreamBuffer;
 
 		static Logger smDefaultLogger;

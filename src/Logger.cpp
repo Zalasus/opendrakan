@@ -28,29 +28,28 @@ namespace od
 		return timeString;
 	}
 
-	Logger::Logger(const std::string &name, std::ostream *stream)
-	: mName(name),
-	  mEnableTimestamp(false),
-	  mPrintDebugInfo(false),
-	  mStream(stream),
-	  mChildLogger(nullptr),
-	  mStreamLogLevel(LOGLEVEL_INFO)
+	Logger::Logger(LogLevel outputLogLevel, std::ostream *stream)
+	: mEnableTimestamp(false)
+	, mStream(stream)
+	, mChildLogger(nullptr)
+	, mStreamLogLevel(LOGLEVEL_INFO)
+	, mOutputLogLevel(outputLogLevel)
 	{
 	}
 
 	void Logger::log(const std::string &msg, LogLevel level)
 	{
+		if(level > mOutputLogLevel)
+		{
+			return;
+		}
+
 	    if(mChildLogger != nullptr)
 	    {
 	        mChildLogger->log(msg, level);
 	    }
 
 	    if(mStream == nullptr || !mStream->good())
-	    {
-	        return;
-	    }
-
-	    if(!mPrintDebugInfo && level == LOGLEVEL_DEBUG)
 	    {
 	        return;
 	    }
@@ -68,19 +67,14 @@ namespace od
         }
 	}
 
-	std::string Logger::getLoggerName()
-	{
-	    return mName;
-	}
-
     void Logger::setEnableTimestamp(bool ts)
     {
         mEnableTimestamp = ts;
     }
 
-    void Logger::setPrintDebug(bool b)
+    void Logger::setOutputLogLevel(LogLevel level)
     {
-        mPrintDebugInfo = b;
+    	mOutputLogLevel = level;
     }
 
     void Logger::setOutputStream(std::ostream *s)
@@ -97,8 +91,8 @@ namespace od
     {
         switch(level)
 		{
-		case LOGLEVEL_SEVERE:
-		    return "SEVE";
+		case LOGLEVEL_ERROR:
+		    return "ERRO";
 
 		case LOGLEVEL_WARNING:
 		    return "WARN";
@@ -109,6 +103,9 @@ namespace od
 		case LOGLEVEL_INFO:
 		    return "INFO";
 		    
+		case LOGLEVEL_VERBOSE:
+			return "VERB";
+
 		default:
 		    return "????";
 		}
@@ -133,7 +130,7 @@ namespace od
         }
     }
 
-    Logger Logger::smDefaultLogger("Default");
+    Logger Logger::smDefaultLogger(LOGLEVEL_INFO);
 
     Logger &Logger::getDefaultLogger()
     {
@@ -165,9 +162,17 @@ namespace od
     	return p;
     }
 
-	LoggerStreamProxy Logger::severe()
+	LoggerStreamProxy Logger::error()
     {
-    	getDefaultLogger().mStreamLogLevel = LOGLEVEL_SEVERE;
+    	getDefaultLogger().mStreamLogLevel = LOGLEVEL_ERROR;
+
+    	LoggerStreamProxy p(getDefaultLogger());
+    	return p;
+    }
+
+	LoggerStreamProxy Logger::verbose()
+    {
+    	getDefaultLogger().mStreamLogLevel = LOGLEVEL_VERBOSE;
 
     	LoggerStreamProxy p(getDefaultLogger());
     	return p;
@@ -185,9 +190,6 @@ namespace od
     {
     	log(mStreamBuffer.str(), mStreamLogLevel);
     	mStreamBuffer.str("");
-
-    	// reset log level to default everytime a stream statement ends
-    	mStreamLogLevel = DEFAULT_LOGLEVEL;
     }
 
 

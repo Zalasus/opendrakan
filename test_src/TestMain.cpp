@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 
 	try
 	{
-		od::Logger::getDefaultLogger().setPrintDebug(false);
+		od::Logger::getDefaultLogger().setOutputLogLevel(od::Logger::LOGLEVEL_VERBOSE);
 
 		od::RiotFunctionLibrary &rfl = od::RiotFunctionLibrary::getSingleton();
 		od::Logger::info() << "Got RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered class types";
@@ -195,13 +195,8 @@ int main(int argc, char **argv)
 
 		}else
 		{
-		    /*od::DbManager dbm;
-		    od::RiotLevel level(filename, dbm);*/
-
-			od::FilePath path(filename);
-
-			std::cout << "Adjusted path: " << path.adjustCase().str() << std::endl;
-
+		    od::DbManager dbm;
+		    od::RiotLevel level(filename, dbm);
 		}
 
 	}catch(std::exception &e)

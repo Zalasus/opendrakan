@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <memory>
 
 #include "RiotDb.h"
 #include "DbManager.h"
@@ -56,11 +57,14 @@ namespace od
 		void loadDefinition(DataReader &dr);
 		void loadPolyData(DataReader &dr);
 
-		inline std::vector<uint32_t> &getDummyArray() { return mDummyArray; };
+		inline uint32_t getId() const { return mId; };
+		inline std::string getName() const { return mLayerName; };
+		inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
 
 
 	private:
 
+		uint32_t				mId;
 		uint32_t 				mWidth;
 		uint32_t 				mHeight;
 		LayerType 				mType;
@@ -74,18 +78,18 @@ namespace od
 		uint32_t 				mLightColor;
 		uint32_t 				mAmbientColor;
 		LightDropoffType 		mLightDropoffType;
-		std::vector<uint32_t>	mDummyArray;
+		std::vector<uint32_t>	mVisibleLayers;
 		std::vector<Vertex>   	mVertices;
 		std::vector<Face>	  	mFaces;
 	};
 
+	typedef std::shared_ptr<Layer> LayerPtr;
 
     class RiotLevel
     {
     public:
 
         RiotLevel(const FilePath &levelPath, DbManager &dbManager);
-
 
 
 
@@ -104,8 +108,8 @@ namespace od
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::map<uint16_t, RiotDb*> mDatabases;
-        std::vector<Layer> mLayers;
+        std::map<uint16_t, RiotDbRef> mDatabaseMap;
+        std::vector<LayerPtr> mLayers;
     };
 
 

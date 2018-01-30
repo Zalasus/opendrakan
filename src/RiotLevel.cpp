@@ -19,7 +19,8 @@ namespace od
 
 	void Layer::loadDefinition(DataReader &dr)
 	{
-		dr 	>> mWidth
+		dr 	>> mId
+		    >> mWidth
 			>> mHeight;
 
 		uint32_t type;
@@ -40,14 +41,14 @@ namespace od
 		dr >> lightDropoffType;
 		mLightDropoffType = static_cast<LightDropoffType>(lightDropoffType);
 
-		uint32_t dummyLength;
-		dr >> dummyLength;
-		mDummyArray.reserve(dummyLength+1);
-		for(size_t i = 0; i < dummyLength + 1; ++i)
+		uint32_t visibleLayerCount;
+		dr >> visibleLayerCount;
+		mVisibleLayers.reserve(visibleLayerCount);
+		for(size_t i = 0; i < visibleLayerCount; ++i)
 		{
 			uint32_t v;
 			dr >> v;
-			mDummyArray.push_back(v);
+			mVisibleLayers.push_back(v);
 		}
 	}
 
@@ -104,7 +105,7 @@ namespace od
 
         _loadNameAndDeps(file);
         _loadLayers(file);
-        _loadLayerGroups(file);
+        //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
 
         Logger::info() << "Level loaded successfully";
     }
@@ -120,11 +121,10 @@ namespace od
         uint32_t dbRefCount;
         dr >> dbRefCount;
 
-        Logger::info() << "Level has " << dbRefCount << " dependencies:";
+        Logger::verbose() << "Level depends on " << dbRefCount << " databases";
 
         for(size_t i = 0; i < dbRefCount; ++i)
         {
-
         	uint16_t dbIndex;
             dr  >> dbIndex;
             dr.ignore(2);
@@ -135,9 +135,7 @@ namespace od
             FilePath dbPath(dbPathStr, mLevelPath.dir());
             RiotDb &db = mDbManager.loadDb(dbPath.adjustCase());
 
-            mDatabases[dbIndex] = &db;
-
-            Logger::info() << "    " << dbIndex << ": " << dbPath.str();
+            mDatabaseMap.insert(std::pair<uint16_t, RiotDbRef>(dbIndex, db));
         }
     }
 
@@ -148,20 +146,21 @@ namespace od
     	uint32_t layerCount;
     	dr >> layerCount;
 
-    	Logger::info() << "Level has " << layerCount << " layers";
     	mLayers.reserve(layerCount);
 
-    	dr.ignore(4);
+    	Logger::verbose() << "Level has " << layerCount << " layers";
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		Logger::info() << "Loading layer " << i;
+    		Logger::verbose() << "Loading layer number " << i;
 
-    		Layer layer;
-    		layer.loadDefinition(dr);
+    		LayerPtr layer(new Layer);
+    		layer->loadDefinition(dr);
 
     		mLayers.push_back(layer);
     	}
+
+    	dr.ignore(4);
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
@@ -172,7 +171,7 @@ namespace od
 
 			ZStream zstr(dr.getStream());
 			DataReader zdr(zstr);
-			mLayers[i].loadPolyData(zdr);
+			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
 
 			if((size_t)dr.getStream().tellg() != zlibOffset + zlibStuffSize)
@@ -203,8 +202,6 @@ namespace od
     		{
     			uint32_t layer;
     			dr >> layer;
-
-    			Logger::info() << "    " << std::hex << layer << std::dec;
     		}
 
     	}

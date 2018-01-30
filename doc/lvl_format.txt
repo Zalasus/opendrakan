@@ -15,6 +15,7 @@ SRSC file (see riot_database_format.txt) with the following record types:
     struct color4b { uint8 red; uint8 green; uint8 blue; uint8 dummy = 0; }
     struct layer_def
     {
+        uint32      id;
         uint32      width; // in vertices; a layer with widthand height of 1 is a square with 1 vertex in each corner
         uint32      height;
         uint32      type;  // 0 = floor, 1 = ceiling, 2 = between
@@ -28,9 +29,8 @@ SRSC file (see riot_database_format.txt) with the following record types:
         color4b     light_color;
         color4b     ambient_color;
         uint32      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
-        uint32      dummyLength;
-        uint32      ???;  // probably related to layer stacking
-        uint32[4*~1] ???;
+        uint32      visible_layer_count;
+        uint32[~]   visible_layers; // this lists layers by their index in the definition block (not the layer's ID!)
     }
     struct layer_data_block
     {
@@ -38,17 +38,17 @@ SRSC file (see riot_database_format.txt) with the following record types:
         uint8[~]        layer_data; // zlib-compressed
     }
     uint32                  layer_count;
-    uint32                  ???;
-    layer_def[~1]           layer_definitions;
-    layer_data_block[~2]    data_blocks:
+    layer_def[~]            layer_definitions;
+    uint32                  ???; // could be compression level of layer data. seems to be always 1
+    layer_data_block[~2]    data_blocks;
     
     
-[0x0002] Layer groups and visibility
+[0x0002] Layer groups (probably an editor thing without relevance for the game)
     struct layer_group
     {
         string      group_name;
         uint32      layer_count;
-        uint32[~]   layers; // ??? don't know how this is stored
+        uint32[~]   layers; // lists IDs of all member layers
     }
     uint32          group_count;
     layer_group[~]  groups;

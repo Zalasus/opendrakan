@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <memory>
 #include <vector>
+#include <functional>
 
 #include "RiotAsset.h"
 #include "FilePath.h"
@@ -58,6 +59,8 @@ namespace od
 
 		std::unordered_map<AssetType, SrscFile*> mSrscMap;
 	};
+
+	typedef std::reference_wrapper<RiotDb> RiotDbRef;
 
 }
 
