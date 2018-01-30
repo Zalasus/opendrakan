@@ -18,7 +18,7 @@
 namespace od
 {
 
-	SrscFile::SrscFile(FilePath filePath)
+	SrscFile::SrscFile(const FilePath &filePath)
 	: mFilePath(filePath)
 	, mRecordPayloadBuffer(nullptr)
 	{
@@ -43,26 +43,6 @@ namespace od
 		{
 			delete[] mRecordPayloadBuffer;
 		}
-	}
-
-	uint16_t SrscFile::getVersion()
-	{
-		return mVersion;
-	}
-
-	size_t SrscFile::getRecordCount()
-	{
-		return mRecordCount;
-	}
-
-	std::vector<SrscFile::DirEntry>::iterator SrscFile::getDirectoryBegin()
-	{
-		return mDirectory.begin();
-	}
-
-	std::vector<SrscFile::DirEntry>::iterator SrscFile::getDirectoryEnd()
-	{
-		return mDirectory.end();
 	}
 
 	SrscFile::DirEntry SrscFile::getDirectoryEntryByID(RecordId id)
@@ -105,16 +85,13 @@ namespace od
 
 	void SrscFile::decompressAll(const std::string &prefix, bool extractRaw)
 	{
-		auto it = getDirectoryBegin();
-		while(it != getDirectoryEnd())
+		for(DirEntry entry : mDirectory)
 		{
-			decompressRecord(prefix, *it, extractRaw);
-
-			++it;
+			decompressRecord(prefix, entry, extractRaw);
 		}
 	}
 
-	void SrscFile::decompressRecord(const std::string &prefix, DirEntry dirEntry, bool extractRaw)
+	void SrscFile::decompressRecord(const std::string &prefix, const DirEntry &dirEntry, bool extractRaw)
 	{
 		if(extractRaw)
 		{
@@ -152,13 +129,15 @@ namespace od
 
 		in >> mVersion;
 		in >> mDirectoryOffset;
-		in >> mRecordCount;
 
-		mDirectory.resize(mRecordCount);
+		uint32_t recordCount;
+		in >> recordCount;
+
+		mDirectory.resize(recordCount);
 
 		mInputStream.seekg(mDirectoryOffset);
 
-		for(size_t i = 0; i < mRecordCount; ++i)
+		for(size_t i = 0; i < recordCount; ++i)
 		{
 			DirEntry entry;
 			in >> entry.type

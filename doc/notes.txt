@@ -1,9 +1,0 @@
-
--Music (Music.rrc) is in SGT format, which is some sort of MIDI-thing for DirectMusic
-
-Editor allows merging alpha maps into texture with these formats: 
-    5:5:5 + 1
-    4:4:4 + 4
-    3:3:2 + 8
-    
-    

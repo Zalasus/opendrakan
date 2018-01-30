@@ -185,9 +185,9 @@ Record types
             )
         uint16      mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps 
         uint16      class_id;
-        uint16      ???
+        uint16      class_database_index;
         uint32      usage_count; // ? (seems so at least for models
-        uint32      compression_level; (0 = none, 1 = lowest, 9 = highest)
+        uint32      compression_level; // (0 = none, 1 = lowest, 9 = highest)
         uint32      compressed_size;
         uint8[~]    zlib-compressed raw texture data (see "texture format")
         

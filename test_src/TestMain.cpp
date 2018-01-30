@@ -33,12 +33,12 @@ void srscStat(od::SrscFile &file)
 			  << std::setw(24) << "Data"
 			  << std::endl;
 
-	auto it = file.getDirectoryBegin();
-	while(it != file.getDirectoryEnd())
+	auto it = file.getDirectory().begin();
+	while(it != file.getDirectory().end())
 	{
 
 		std::cout
-			<< std::setw(6) << (it - file.getDirectoryBegin())
+			<< std::setw(6) << (it - file.getDirectory().begin())
 			<< std::setw(6) << std::hex << it->type << std::dec
 			<< std::setw(8) << it->dataSize
 			<< std::setw(6) << std::hex << it->recordId << std::dec
@@ -217,6 +217,16 @@ int main(int argc, char **argv)
 		    od::DbManager dbm;
 		    od::RiotLevel level(filename, dbm);
 		}
+
+		od::SrscFile srscFile(filename);
+		for(od::SrscFile::DirEntry entry : srscFile.getDirectory())
+		{
+			if(entry.type == 0x0102)
+			{
+
+			}
+		}
+
 
 	}catch(std::exception &e)
 	{

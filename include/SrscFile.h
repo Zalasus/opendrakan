@@ -35,14 +35,13 @@ namespace od
 			uint32_t dataSize;
 		};
 
-		SrscFile(FilePath filePath);
+		SrscFile(const FilePath &filePath);
 		~SrscFile();
 
-		uint16_t getVersion();
-		size_t getRecordCount();
+		inline uint16_t getVersion() const { return mVersion; };
+		inline size_t getRecordCount() const { return mDirectory.size(); };
+		inline const std::vector<DirEntry> &getDirectory() const { return mDirectory; };
 
-		std::vector<DirEntry>::iterator getDirectoryBegin();
-		std::vector<DirEntry>::iterator getDirectoryEnd();
 		DirEntry getDirectoryEntryByID(RecordId id);
 		DirEntry getDirectoryEntryByTypeAndID(RecordType type, RecordId id);
 
@@ -50,7 +49,7 @@ namespace od
 		std::istream &getStreamForRecordTypeId(RecordType type, RecordId id);
 
 		void decompressAll(const std::string &prefix, bool extractRaw);
-		void decompressRecord(const std::string &prefix, DirEntry dirEntry, bool extractRaw);
+		void decompressRecord(const std::string &prefix, const DirEntry &dirEntry, bool extractRaw);
 
 
 	protected:
@@ -62,7 +61,6 @@ namespace od
 
 		uint16_t mVersion;
 		uint32_t mDirectoryOffset;
-		uint16_t mRecordCount;
 		std::vector<DirEntry> mDirectory;
 
 		char *mRecordPayloadBuffer;
