@@ -10,6 +10,9 @@
 #include <memory>
 #include <unistd.h>
 
+#include <osg/Group>
+#include <osgViewer/Viewer>
+
 #include "ZStream.h"
 #include "SrscFile.h"
 #include "DbManager.h"
@@ -217,26 +220,14 @@ int main(int argc, char **argv)
 		{
 		    od::DbManager dbm;
 		    od::RiotLevel level(filename, dbm);
-		}
 
-		od::SrscFile srscFile(filename);
-		for(od::SrscFile::DirEntry entry : srscFile.getDirectory())
-		{
-			if(entry.type == 0x0102)
-			{
-			    od::DataReader dr(srscFile.getStreamForRecord(entry));
+		    osg::ref_ptr<osg::Group> rootNode(new osg::Group);
+		    rootNode->addChild(&level);
 
-			    std::string classname;
-			    dr >> classname;
-
-			    dr.ignore(6);
-
-			    uint16_t classType;
-			    dr >> classType;
-
-			    std::cout << classname << ": " << std::hex << classType << std::dec << std::endl;
-
-			}
+		    osgViewer::Viewer viewer;
+		    viewer.getCamera()->setClearColor(osg::Vec4(0,0,0,1));
+		    viewer.setSceneData(rootNode);
+		    viewer.run();
 		}
 
 

@@ -14,6 +14,9 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <osg/Group>
+#include <osg/Geode>
+#include <osg/Geometry>
 
 #include "RiotDb.h"
 #include "DbManager.h"
@@ -21,7 +24,7 @@
 namespace od
 {
 
-	class Layer
+	class Layer : public osg::Geode
 	{
 	public:
 
@@ -79,17 +82,23 @@ namespace od
 		uint32_t 				mAmbientColor;
 		LightDropoffType 		mLightDropoffType;
 		std::vector<uint32_t>	mVisibleLayers;
-		std::vector<Vertex>   	mVertices;
-		std::vector<Face>	  	mFaces;
+		//std::vector<Vertex>   	mVertices;
+		//std::vector<Face>	  	mFaces;
+
+		osg::ref_ptr<osg::Geometry> mGeometry;
 	};
 
 	typedef std::shared_ptr<Layer> LayerPtr;
 
-    class RiotLevel
+    class RiotLevel : public osg::Group
     {
     public:
 
         RiotLevel(const FilePath &levelPath, DbManager &dbManager);
+
+        // override osg::Group
+        virtual const char *libraryName() const;
+        virtual const char *className() const;
 
 
 

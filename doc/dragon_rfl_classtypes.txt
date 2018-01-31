@@ -3,17 +3,31 @@
 The following is a list of all known class types in the "dragon.rfl" Riot Function Library
 as used by Drakan, grouped by category.
 
+Field names are in braces here as they may contain spaces.
 
 
 Item
 -----
 
-[N/A] Common item fields
-    string  DisplayName      = "";
-    int     Quantity         = 1;
-    enum { No, Yes } Grouped = No;
-    int     Bit Map Number   = 1;
+[*] Common item fields
+    string  {DisplayName}      = "";
+    int     {Quantity}         = 1;
+    enum    {Grouped}          = No;  // No = 0, Yes = 1
+    int     {Bit Map Number}   = 1;
+    int     {Icon Index (1-8)} = 1;
+    int     {Icon Slot Size (1-3)} = 1;
+    enum    {Player Slot}     = Right Hand;
+    class   {Powerup Object} = NULL;
+    sound   {Activate Sound} = NULL;
+    sound   {Dropped Sound}  = NULL;
+    sound   {Picked Up Sound} = NULL;
+    enum    {Droppable?}     = Yes; // no/yes
+    float   {Fade Time when dropped (Sec)} = 60;
+    
 
 [0x000A] Health Pack
-    int     Health Boost = 0;
+    int     {Health Boost} = 0;
+    
+[0x0021] Key
+    int     {Lock Code} = 0;
     

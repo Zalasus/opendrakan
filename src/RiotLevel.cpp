@@ -8,7 +8,9 @@
 #include "RiotLevel.h"
 
 #include <algorithm>
+#include <osg/PolygonMode>
 
+#include "OdDefines.h"
 #include "SrscFile.h"
 #include "Logger.h"
 #include "ZStream.h"
@@ -54,9 +56,16 @@ namespace od
 
 	void Layer::loadPolyData(DataReader &dr)
 	{
-		mVertices.reserve((mWidth+1)*(mHeight+1));
-		for(size_t i = 0; i < mVertices.capacity(); ++i)
+		mGeometry = osg::ref_ptr<osg::Geometry>(new osg::Geometry());
+
+		//mVertices.reserve((mWidth+1)*(mHeight+1));
+        osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array());
+        vertices->reserve((mWidth+1)*(mHeight+1));
+		for(size_t i = 0; i < (mWidth+1)*(mHeight+1); ++i)
 		{
+			size_t xRel = i % (mWidth + 1);
+			size_t yRel = i / (mWidth + 1);
+
 			Vertex v;
 
 			dr >> v.type;
@@ -67,12 +76,22 @@ namespace od
 			dr >> heightOffset;
 			v.heightOffset = (heightOffset - 0x8000) * 2;
 
-			mVertices.push_back(v);
-		}
+			float x = mOriginX + xRel;
+			float y = mOriginY + yRel;
+			float z = 0.0005*(mWorldHeight + v.heightOffset);
 
-		mFaces.reserve(mWidth*mHeight);
-		for(size_t i = 0; i < mFaces.capacity(); ++i)
+			//mVertices.push_back(v);
+			vertices->push_back(osg::Vec3(x,y,z));
+		}
+		mGeometry->setVertexArray(vertices);
+
+		//mFaces.reserve(mWidth*mHeight);
+		osg::ref_ptr<osg::DrawElementsUInt> primitiveSet(new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES, 0));
+		primitiveSet->reserve(mWidth*mHeight*6);
+		for(size_t i = 0; i < mWidth*mHeight; ++i)
 		{
+			size_t faceY = i / mWidth;
+
 			Face f;
 
 			uint16_t div;
@@ -83,7 +102,51 @@ namespace od
 			   >> f.textureRight;
 
 			dr.ignore(16); // ignore texture orientation stuff
+
+			//  --a-----b--
+			//    |     |
+			//    |     |
+			//  --c-----d--
+			size_t a = i + faceY;
+			size_t b = i + 1 + faceY;
+			size_t c = i + mWidth + 1 + faceY;
+			size_t d = i + mWidth + 2 + faceY;
+
+			if(f.division == Face::DIV_BOTTOMLEFT_TOPRIGHT)
+			{
+				primitiveSet->push_back(a);
+				primitiveSet->push_back(b);
+				primitiveSet->push_back(c);
+
+				primitiveSet->push_back(b);
+				primitiveSet->push_back(d);
+				primitiveSet->push_back(c);
+
+			}else
+			{
+				primitiveSet->push_back(a);
+				primitiveSet->push_back(b);
+				primitiveSet->push_back(d);
+
+				primitiveSet->push_back(a);
+				primitiveSet->push_back(d);
+				primitiveSet->push_back(c);
+			}
 		}
+        mGeometry->addPrimitiveSet(primitiveSet);
+
+        osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
+        colorArray->push_back(osg::Vec4(0,1,0,0));
+        mGeometry->setColorArray(colorArray);
+        mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+        addDrawable(mGeometry);
+
+        osg::StateSet *state = getOrCreateStateSet();
+        osg::PolygonMode *polymode = new osg::PolygonMode();
+        polymode->setMode(osg::PolygonMode::Face::FRONT_AND_BACK, osg::PolygonMode::LINE);
+        state->setAttributeAndModes(polymode ,osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+        setStateSet(state);
 	}
 
 
@@ -95,6 +158,16 @@ namespace od
     , mMaxHeight(0)
     {
         _loadLevel();
+    }
+
+    const char *RiotLevel::libraryName() const
+    {
+    	return OD_LIB_NAME;
+    }
+
+    const char *RiotLevel::className() const
+    {
+    	return "RiotLevel";
     }
 
     void RiotLevel::_loadLevel()
@@ -178,6 +251,8 @@ namespace od
 			{
 				throw Exception("ZStream read either too many or too few bytes");
 			}
+
+			this->addChild(mLayers[i].get());
     	}
     }
 
