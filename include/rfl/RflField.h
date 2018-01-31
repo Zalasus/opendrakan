@@ -13,21 +13,7 @@
 
 namespace od
 {
-	enum RflFieldType
-	{
-		INTEGER 		= 0x01,
-		FLOAT   		= 0x02,
-		CLASS   		= 0x03,
-		MODEL			= 0x04,
-		SOUND			= 0x05,
-		ENUM			= 0x07,
-		CHAR_CHANNEL 	= 0x08,
-		ANIMATION 		= 0x09,
-		STRING			= 0x0a,
-		SEUQUENCE		= 0x0b,
-		TEXTURE			= 0x0e,
-		COLOR			= 0x0f
-	};
+    class RflFieldProbe;
 
 	/**
 	 * Common parent to all RflFields so RflClassBuilder can store them in a single vector.
@@ -36,7 +22,23 @@ namespace od
 	{
 	public:
 
-		RflField(RflClassBuilder &cb);
+        enum RflFieldType
+        {
+            INTEGER         = 0x01,
+            FLOAT           = 0x02,
+            CLASS           = 0x03,
+            MODEL           = 0x04,
+            SOUND           = 0x05,
+            ENUM            = 0x07,
+            CHAR_CHANNEL    = 0x08,
+            ANIMATION       = 0x09,
+            STRING          = 0x0a,
+            SEUQUENCE       = 0x0b,
+            TEXTURE         = 0x0e,
+            COLOR           = 0x0f
+        };
+
+		RflField(RflFieldProbe *probe, RflFieldType type, const char *fieldName);
 
 	};
 
@@ -45,30 +47,25 @@ namespace od
 	{
 	public:
 
-		RflFieldImpl(RflClassBuilder &cb, char *name, _DataType defaultValue, RflFieldType fieldType)
-		: RflField(cb)
-		, mFieldName(name)
-		, mDefaultValue(defaultValue)
-		, mFieldType(fieldType)
+		RflFieldImpl(RflFieldProbe *probe, const char *name, _DataType defaultValue, RflFieldType fieldType)
+		: RflField(probe, fieldType, name)
+		, mValue(defaultValue)
 		{
 		}
 
-		inline _DataType getDefaultValue() const { return mDefaultValue; };
+		inline _DataType getValue() const { return mValue; };
 
 	private:
 
-		std::string mFieldName;
-		_DataType mDefaultValue;
-		RflFieldType mFieldType;
-
+		_DataType mValue;
 	};
 
 	class RflString : public RflFieldImpl<std::string, RflString>
 	{
 	public:
 
-		RflString(RflClassBuilder &cb, char *name, const std::string &defaultValue)
-		: RflFieldImpl<std::string, RflString>(cb, name, defaultValue, STRING)
+		RflString(RflFieldProbe *probe, const char *name, const std::string &defaultValue)
+		: RflFieldImpl<std::string, RflString>(probe, name, defaultValue, STRING)
 		{
 		}
 	};
@@ -77,17 +74,8 @@ namespace od
 	{
 	public:
 
-		RflInteger(RflClassBuilder &cb, char *name, int32_t defaultValue)
-		: RflFieldImpl<int32_t, RflInteger>(cb, name, defaultValue, INTEGER)
-		{
-
-		}
-	};
-
-	class RflEnum : public RflFieldImpl<uint32_t, RflEnum>
-	{
-		RflEnum(RflClassBuilder &cb, char *name, int32_t defaultValue, std::initializer_list<uint32_t> possibleItems)
-		: RflFieldImpl<uint32_t, RflEnum>(cb, name, defaultValue, ENUM)
+		RflInteger(RflFieldProbe *probe, const char *name, int32_t defaultValue)
+		: RflFieldImpl<int32_t, RflInteger>(probe, name, defaultValue, INTEGER)
 		{
 
 		}

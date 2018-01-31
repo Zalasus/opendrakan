@@ -10,20 +10,20 @@
 
 #include <string>
 
-#include "RflClassType.h"
-#include "RflField.h"
+#include "rfl/RflField.h"
+#include "rfl/RflClass.h"
 
 namespace od
 {
 
-	class RflAbstractItem : public RflClassType
+	class RflAbstractItem : public RflClass
 	{
 	public:
 
-		RflAbstractItem(RflClassBuilder &cb)
-		: RflClassType(cb)
-		, mDisplayName(cb, "DisplayName", "")
-		, mQuantity(cb, "Quantity", 1)
+		RflAbstractItem(RflFieldProbe *probe)
+		: RflClass(probe)
+		, mDisplayName(probe, "DisplayName", "")
+		, mQuantity(probe, "Quantity", 1)
 		{
 
 		}

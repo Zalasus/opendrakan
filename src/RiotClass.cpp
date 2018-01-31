@@ -26,7 +26,6 @@ namespace od
 
         dr >> mClassTypeId;
 
-        RflClassType &classType = RiotFunctionLibrary::getSingleton().getClassTypeById(mClassTypeId);
 
 
     }

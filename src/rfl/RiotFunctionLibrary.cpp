@@ -13,23 +13,23 @@
 namespace od
 {
 
-	RflClassTypeRegistrar::RflClassTypeRegistrar(RflClassTypeId typeId, const std::string &typeName)
-	: mTypeId(typeId)
-    , mTypeName(typeName)
+	RflClassRegistrar::RflClassRegistrar(RflClassId classId, const std::string &className)
+	: mClassId(classId)
+    , mClassName(className)
 	{
 		RiotFunctionLibrary &rfl = RiotFunctionLibrary::getSingleton();
 
-		if(rfl.mRegistrarMap.find(typeId) != rfl.mRegistrarMap.end())
+		if(rfl.mRegistrarMap.find(classId) != rfl.mRegistrarMap.end())
 		{
-			Logger::warn() << "Ignoring double registration of RFL class type " << std::hex << typeId << std::dec;
+			Logger::warn() << "Ignoring double registration of RFL class type " << std::hex << classId << std::dec;
 
 		}else
 		{
-			rfl.mRegistrarMap[typeId] = this;
+			rfl.mRegistrarMap.insert(std::pair<RflClassId, std::reference_wrapper<RflClassRegistrar>>(classId, *this));
 		}
 	}
 
-	RflClassTypeRegistrar::~RflClassTypeRegistrar()
+	RflClassRegistrar::~RflClassRegistrar()
 	{
 	}
 
@@ -40,14 +40,15 @@ namespace od
 	{
 	}
 
-	RflClassType &RiotFunctionLibrary::getClassTypeById(RflClassTypeId id)
+	RflClassRegistrar &RiotFunctionLibrary::getClassRegistrarById(RflClassId id)
 	{
-		if(mRegistrarMap.find(id) != mRegistrarMap.end())
+	    auto it = mRegistrarMap.find(id);
+		if(it != mRegistrarMap.end())
 		{
-			throw Exception("Given class type ID is not registered in RFL");
+			throw Exception("Given class ID is not registered in RFL");
 		}
 
-		return mRegistrarMap[id]->getClassType();
+		return it->second;
 	}
 }
 

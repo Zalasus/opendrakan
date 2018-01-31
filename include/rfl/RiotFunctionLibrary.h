@@ -9,12 +9,13 @@
 #define INCLUDE_RFL_RIOTFUNCTIONLIBRARY_H_
 
 #include <string>
+#include <functional>
 #include <map>
 
-#include "RflClassType.h"
+#include "rfl/RflClass.h"
 
-#define OD_REGISTER_RFL_CLASSTYPE(typeId, typeName, classTypeCppClass) \
-	static od::RflClassTypeRegistrarImpl<classTypeCppClass> sOdRflRegistrar_ ## _ ## classTypeCppClass (typeId, typeName);
+#define OD_REGISTER_RFL_CLASS(classId, className, classCppClass) \
+	static od::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);
 
 #define OD_REGISTER_RFL(rflName) \
 	od::RiotFunctionLibrary od::RiotFunctionLibrary::smSingleton(rflName);
@@ -22,50 +23,45 @@
 namespace od
 {
 
-	typedef uint16_t RflClassTypeId;
+	typedef uint16_t RflClassId;
 
-	class RiotObject;
 	class RiotFunctionLibrary;
 
-	class RflClassTypeRegistrar
+	class RflClassRegistrar
 	{
 	public:
 
-		RflClassTypeRegistrar(RflClassTypeId typeId, const std::string &typeName);
-		virtual ~RflClassTypeRegistrar();
+		RflClassRegistrar(RflClassId classId, const std::string &className);
+		virtual ~RflClassRegistrar();
 
-		virtual RflClassType &getClassType() = 0;
+		virtual RflClass *createClassInstance(RflFieldProbe *probe) = 0;
 
-		inline RflClassTypeId getTypeId() const { return mTypeId; }
-		inline std::string getTypeName() const { return mTypeName; }
+		inline RflClassId getClassId() const { return mClassId; }
+		inline std::string getClassName() const { return mClassName; }
 
 
 	private:
 
-		RflClassTypeId mTypeId;
-		std::string mTypeName;
+		RflClassId mClassId;
+		std::string mClassName;
 
 	};
 
 
 	template <typename T>
-	class RflClassTypeRegistrarImpl : public RflClassTypeRegistrar
+	class RflClassTypeRegistrarImpl : public RflClassRegistrar
 	{
 	public:
 
-		RflClassTypeRegistrarImpl(RflClassTypeId typeId, const std::string &typeName)
-		: RflClassTypeRegistrar(typeId, typeName)
+		RflClassTypeRegistrarImpl(RflClassId typeId, const std::string &typeName)
+		: RflClassRegistrar(typeId, typeName)
 		{
 		}
 
-		virtual RflClassType &getClassType()
+		virtual RflClass *createClassInstance(RflFieldProbe *probe)
 		{
-			return mClassType;
+		    return new T(probe); // FIXME: RAII!!!
 		}
-
-	private:
-
-		T mClassType;
 	};
 
 
@@ -73,14 +69,14 @@ namespace od
 	{
 	public:
 
-		friend class RflClassTypeRegistrar;
+		friend class RflClassRegistrar;
 
 
 		RiotFunctionLibrary(const std::string &name);
 
 		inline std::string getName() const { return mName; }
 		inline size_t getClassTypeCount() const { return mRegistrarMap.size(); }
-		RflClassType &getClassTypeById(RflClassTypeId id);
+		RflClassRegistrar &getClassRegistrarById(RflClassId id);
 
 
 		inline static RiotFunctionLibrary &getSingleton() { return smSingleton; }
@@ -89,7 +85,7 @@ namespace od
 	private:
 
 		std::string mName;
-		std::map<RflClassTypeId, RflClassTypeRegistrar*> mRegistrarMap;
+		std::map<RflClassId, std::reference_wrapper<RflClassRegistrar>> mRegistrarMap;
 
 		static RiotFunctionLibrary smSingleton;
 	};

@@ -130,7 +130,7 @@ namespace od
 		in >> mVersion;
 		in >> mDirectoryOffset;
 
-		uint32_t recordCount;
+		uint16_t recordCount;
 		in >> recordCount;
 
 		mDirectory.resize(recordCount);

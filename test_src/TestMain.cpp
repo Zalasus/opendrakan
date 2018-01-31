@@ -33,12 +33,13 @@ void srscStat(od::SrscFile &file)
 			  << std::setw(24) << "Data"
 			  << std::endl;
 
-	auto it = file.getDirectory().begin();
-	while(it != file.getDirectory().end())
+	const std::vector<od::SrscFile::DirEntry> &directory = file.getDirectory();
+	auto it = directory.begin();
+	while(it != directory.end())
 	{
 
 		std::cout
-			<< std::setw(6) << (it - file.getDirectory().begin())
+			<< std::setw(6) << (it - directory.begin())
 			<< std::setw(6) << std::hex << it->type << std::dec
 			<< std::setw(8) << it->dataSize
 			<< std::setw(6) << std::hex << it->recordId << std::dec
@@ -223,6 +224,17 @@ int main(int argc, char **argv)
 		{
 			if(entry.type == 0x0102)
 			{
+			    od::DataReader dr(srscFile.getStreamForRecord(entry));
+
+			    std::string classname;
+			    dr >> classname;
+
+			    dr.ignore(6);
+
+			    uint16_t classType;
+			    dr >> classType;
+
+			    std::cout << classname << ": " << std::hex << classType << std::dec << std::endl;
 
 			}
 		}

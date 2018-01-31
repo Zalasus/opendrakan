@@ -8,8 +8,8 @@
 #ifndef INCLUDE_RFL_RFLHEALTHPACK_H_
 #define INCLUDE_RFL_RFLHEALTHPACK_H_
 
-#include <rfl/RflAbstractItem.h>
-#include "RiotFunctionLibrary.h"
+#include "rfl/RflAbstractItem.h"
+#include "rfl/RiotFunctionLibrary.h"
 
 namespace od
 {

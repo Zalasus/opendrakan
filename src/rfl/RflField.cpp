@@ -5,4 +5,19 @@
  *      Author: zal
  */
 
+#include "rfl/RflFieldProbe.h"
+#include "rfl/RflField.h"
 
+
+namespace od
+{
+
+    RflField::RflField(RflFieldProbe *probe, RflFieldType type, const char *fieldName)
+    {
+        if(probe != nullptr)
+        {
+            probe->registerField(*this, type, fieldName);
+        }
+    }
+
+}

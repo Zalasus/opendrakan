@@ -30,7 +30,7 @@ namespace od
 	private:
 
 		std::string mClassName;
-		RflClassTypeId mClassTypeId;
+		RflClassId mClassTypeId;
 	};
 
 }
