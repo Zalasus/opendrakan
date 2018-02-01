@@ -64,6 +64,9 @@ namespace od
 		inline std::string getName() const { return mLayerName; };
 		inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
 
+		// override osg::Geode
+		virtual const char *libraryName() const;
+		virtual const char *className() const;
 
 	private:
 
@@ -88,9 +91,9 @@ namespace od
 		osg::ref_ptr<osg::Geometry> mGeometry;
 	};
 
-	typedef std::shared_ptr<Layer> LayerPtr;
+	typedef osg::ref_ptr<Layer> LayerPtr;
 
-    class RiotLevel : public osg::Group
+    class RiotLevel : public osg::Group, public AssetRefTranslator
     {
     public:
 
@@ -100,7 +103,8 @@ namespace od
         virtual const char *libraryName() const;
         virtual const char *className() const;
 
-
+        // implement AssetRefTranslator
+        virtual AssetPtr getAssetByRef(AssetType type, const AssetRef &ref);
 
     private:
 

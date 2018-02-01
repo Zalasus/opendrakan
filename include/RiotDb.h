@@ -10,7 +10,7 @@
 
 #include <string>
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <memory>
 #include <vector>
 #include <functional>
@@ -24,15 +24,23 @@ namespace od
 
     class RiotDb;
 
-	struct Dependency
-	{
-	    uint16_t index;
-	    RiotDb *db;
-	};
-
 	class DbManager;
 
-	class RiotDb
+    typedef std::reference_wrapper<RiotDb> RiotDbRef;
+
+	/**
+	 * Common interface for RiotDb and RiotLevel's database index lookup.
+	 */
+	class AssetRefTranslator
+	{
+	public:
+
+	    virtual ~AssetRefTranslator() {}
+
+	    virtual AssetPtr getAssetByRef(AssetType type, const AssetRef &ref) = 0;
+	};
+
+	class RiotDb : public AssetRefTranslator
 	{
 	public:
 
@@ -48,6 +56,10 @@ namespace od
 		AssetPtr getAssetById(AssetType type, RecordId id);
 
 
+		// implement AssetRefTranslator
+        virtual AssetPtr getAssetByRef(AssetType type, const AssetRef &ref);
+
+
 	private:
 
 
@@ -55,13 +67,10 @@ namespace od
 		DbManager &mDbManager;
 
 		uint32_t mVersion;
-		std::vector<Dependency> mDependencies;
+		std::map<uint16_t, RiotDbRef> mDependencyMap;
 
-		std::unordered_map<AssetType, SrscFile*> mSrscMap;
+		std::map<AssetType, SrscFile*> mSrscMap;
 	};
-
-	typedef std::reference_wrapper<RiotDb> RiotDbRef;
-
 }
 
 #endif /* INCLUDE_RIOTDB_H_ */

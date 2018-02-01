@@ -101,7 +101,11 @@ namespace od
 			dr >> f.textureLeft
 			   >> f.textureRight;
 
-			dr.ignore(16); // ignore texture orientation stuff
+			for(size_t i = 0; i < 8; ++i)
+			{
+			    uint16_t coord;
+			    dr >> coord;
+			}
 
 			//  --a-----b--
 			//    |     |
@@ -145,9 +149,19 @@ namespace od
         osg::StateSet *state = getOrCreateStateSet();
         osg::PolygonMode *polymode = new osg::PolygonMode();
         polymode->setMode(osg::PolygonMode::Face::FRONT_AND_BACK, osg::PolygonMode::LINE);
-        state->setAttributeAndModes(polymode ,osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
+        state->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
         setStateSet(state);
 	}
+
+	const char *Layer::libraryName() const
+    {
+        return OD_LIB_NAME;
+    }
+
+    const char *Layer::className() const
+    {
+        return "Layer";
+    }
 
 
 
@@ -315,6 +329,17 @@ namespace od
 
     		dr.ignore(4);
     	}*/
+    }
+
+    AssetPtr RiotLevel::getAssetByRef(AssetType type, const AssetRef &ref)
+    {
+        auto it = mDatabaseMap.find(ref.dbIndex);
+        if(it == mDatabaseMap.end())
+        {
+            throw Exception("Database index not found in level dependencies");
+        }
+
+        return it->second.get().getAssetById(type, ref.assetId);
     }
 }
 

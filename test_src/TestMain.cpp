@@ -219,10 +219,10 @@ int main(int argc, char **argv)
 		}else
 		{
 		    od::DbManager dbm;
-		    od::RiotLevel level(filename, dbm);
+		    osg::ref_ptr<od::RiotLevel> level(new od::RiotLevel(filename, dbm));
 
 		    osg::ref_ptr<osg::Group> rootNode(new osg::Group);
-		    rootNode->addChild(&level);
+		    rootNode->addChild(level);
 
 		    osgViewer::Viewer viewer;
 		    viewer.getCamera()->setClearColor(osg::Vec4(0,0,0,1));

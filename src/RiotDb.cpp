@@ -73,6 +73,8 @@ namespace od
 
 		std::string line;
 		bool readingDependencies = false;
+		size_t totalDependencyCount = 0;
+		size_t dependenciesRead = 0;
 		while(std::getline(in, line))
 		{
 			// getline leaves the CR byte (0x0D) in the string if given windows line endings. remove if it is there
@@ -99,14 +101,8 @@ namespace od
 
 			}else if(std::regex_match(line, results, dependenciesRegex))
 			{
-				size_t depCount;
 				std::istringstream is(results[1]);
-				is >> depCount;
-
-				if(depCount > 0)
-				{
-					mDependencies.reserve(depCount);
-				}
+				is >> totalDependencyCount;
 
 				readingDependencies = true;
 
@@ -117,9 +113,9 @@ namespace od
 					throw Exception("Found dependency definition before dependencies statement");
 				}
 
-				if(mDependencies.size() == mDependencies.capacity())
+				if(dependenciesRead >= totalDependencyCount)
                 {
-                    throw Exception("More dependencies than stated in 'dependencies' statement");
+                    throw Exception("More dependency lines found in db file than stated in 'dependencies' statement");
                 }
 
 				uint32_t depIndex;
@@ -141,12 +137,11 @@ namespace od
 				    continue; // FIXME: will always cause an error cause not all deps have been loaded
 				}
 
-				Dependency dep;
-				dep.index = depIndex;
+				RiotDb &db = mDbManager.loadDb(depPath, dependencyDepth + 1);
 
-				dep.db = &mDbManager.loadDb(depPath, dependencyDepth + 1);
+				mDependencyMap.insert(std::pair<uint16_t, RiotDbRef>(depIndex, db));
 
-				mDependencies.push_back(dep);
+				++dependenciesRead;
 
 			}else
 			{
@@ -154,7 +149,7 @@ namespace od
 			}
 		}
 
-        if(mDependencies.size() < mDependencies.capacity())
+        if(dependenciesRead < totalDependencyCount)
         {
             throw Exception("Found less dependency definitions than stated in dependencies statement");
         }
@@ -170,6 +165,17 @@ namespace od
 	    newAsset->loadFromRecord(srscFile, id);
 
 	    return AssetPtr(newAsset);
+    }
+
+    AssetPtr RiotDb::getAssetByRef(AssetType type, const AssetRef &ref)
+    {
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            throw Exception("Database index not found in dependency table");
+        }
+
+        return it->second.get().getAssetById(type, ref.assetId);
     }
 
 } 

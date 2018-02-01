@@ -71,6 +71,15 @@ namespace od
         return sFactories;
     }
 
+
+    DataReader &operator>>(DataReader &left, AssetRef &right)
+    {
+        left >> right.assetId
+             >> right.dbIndex;
+
+        return left;
+    }
+
 }
 
 

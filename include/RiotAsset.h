@@ -94,6 +94,14 @@ namespace od
 	    return AssetPtr(newAsset);
 	}
 
+	struct AssetRef
+	{
+	    RecordId assetId;
+	    uint16_t dbIndex;
+	};
+
+	DataReader &operator>>(DataReader &left, AssetRef &right);
+
 }
 
 #define OD_REGISTER_ASSET_TYPE(assetType, assetClass, dbExtension) static AssetFactoryImpl<assetClass> sAssetFectory_ ## assetClass(assetType, dbExtension);
