@@ -8,6 +8,7 @@
 #include "Texture.h"
 
 #include "ZStream.h"
+#include "Logger.h"
 
 namespace od
 {
@@ -24,6 +25,8 @@ namespace od
 
     void Texture::loadFromRecord(SrscFile &srscFile, RecordId id)
     {
+    	Logger::info() << "Loading texture " << id;
+
         DataReader dr(srscFile.getStreamForRecordTypeId(0x0040, id));
 
         uint32_t rowSpacing;
@@ -34,9 +37,10 @@ namespace od
            >> mBitsPerPixel
            >> mAlphaBitsPerPixel;
 
-        dr.ignore(32);
+        dr.ignore(30);
 
         size_t bytePerPixel;
+        GLint pixelType;
         switch(mBitsPerPixel)
         {
         case 8:
@@ -44,14 +48,17 @@ namespace od
 
         case 16:
             bytePerPixel = 2;
+            pixelType = GL_UNSIGNED_SHORT_5_6_5; // unless alpha!
             break;
 
         case 24:
             bytePerPixel = 3;
+            pixelType = GL_3_BYTES;
             break;
 
         case 32:
             bytePerPixel = 4;
+            pixelType = GL_UNSIGNED_INT_8_8_8_8; // FIXME: i don't think this really is the right format
             break;
 
         default:
@@ -73,9 +80,12 @@ namespace od
 
         std::vector<char> pixBuffer(mWidth*mHeight*bytePerPixel);
         zstr.read(pixBuffer.data(), pixBuffer.size());
+        zstr.seekToEndOfZlib();
 
-        //mImage->setImage(mWidth, mHeight, 0, 0xdeadbeef, 0, 0, pixBuffer.data(), osg::Image::AllocationMode::USE_NEW_DELETE, 1, mWidth);
+        unsigned char *pixData = reinterpret_cast<unsigned char*>(pixBuffer.data());
+        mImage->setImage(mWidth, mHeight, 0, GL_RGB, GL_RGB, pixelType, pixData, osg::Image::USE_NEW_DELETE);
 
+        Logger::info() << "Texture successfully loaded";
     }
 
     OD_REGISTER_ASSET_TYPE(ASSET_TEXTURE, Texture, "txd");

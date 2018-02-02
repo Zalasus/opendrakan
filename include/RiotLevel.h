@@ -23,6 +23,7 @@
 
 namespace od
 {
+	class RiotLevel;
 
 	class Layer : public osg::Geode
 	{
@@ -57,6 +58,8 @@ namespace od
 			uint32_t textureRight;
 		};
 
+		Layer(RiotLevel &level);
+
 		void loadDefinition(DataReader &dr);
 		void loadPolyData(DataReader &dr);
 
@@ -70,6 +73,7 @@ namespace od
 
 	private:
 
+		RiotLevel 			   &mLevel;
 		uint32_t				mId;
 		uint32_t 				mWidth;
 		uint32_t 				mHeight;
@@ -85,8 +89,6 @@ namespace od
 		uint32_t 				mAmbientColor;
 		LightDropoffType 		mLightDropoffType;
 		std::vector<uint32_t>	mVisibleLayers;
-		//std::vector<Vertex>   	mVertices;
-		//std::vector<Face>	  	mFaces;
 
 		osg::ref_ptr<osg::Geometry> mGeometry;
 	};

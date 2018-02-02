@@ -225,7 +225,7 @@ int main(int argc, char **argv)
 		    rootNode->addChild(level);
 
 		    osgViewer::Viewer viewer;
-		    viewer.getCamera()->setClearColor(osg::Vec4(0,0,0,1));
+		    viewer.getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 		    viewer.setSceneData(rootNode);
 		    viewer.run();
 		}

@@ -9,6 +9,8 @@
 
 #include <algorithm>
 #include <osg/PolygonMode>
+#include <osg/ShadeModel>
+#include <osgUtil/SmoothingVisitor>
 
 #include "OdDefines.h"
 #include "SrscFile.h"
@@ -18,6 +20,24 @@
 namespace od
 {
 
+	Layer::Layer(RiotLevel &level)
+	: mLevel(level)
+	, mId(0)
+	, mWidth(0)
+	, mHeight(0)
+	, mType(TYPE_FLOOR)
+	, mOriginX(0)
+	, mOriginY(0)
+	, mWorldHeight(0)
+	, mLayerName("")
+	, mFlags(0)
+	, mLightDirection(0)
+	, mLightAscension(0)
+	, mLightColor(0)
+	, mAmbientColor(0)
+	, mLightDropoffType(DROPOFF_NONE)
+	{
+	}
 
 	void Layer::loadDefinition(DataReader &dr)
 	{
@@ -58,7 +78,6 @@ namespace od
 	{
 		mGeometry = osg::ref_ptr<osg::Geometry>(new osg::Geometry());
 
-		//mVertices.reserve((mWidth+1)*(mHeight+1));
         osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array());
         vertices->reserve((mWidth+1)*(mHeight+1));
 		for(size_t i = 0; i < (mWidth+1)*(mHeight+1); ++i)
@@ -80,12 +99,10 @@ namespace od
 			float y = mOriginY + yRel;
 			float z = 0.0005*(mWorldHeight + v.heightOffset);
 
-			//mVertices.push_back(v);
 			vertices->push_back(osg::Vec3(x,y,z));
 		}
 		mGeometry->setVertexArray(vertices);
 
-		//mFaces.reserve(mWidth*mHeight);
 		osg::ref_ptr<osg::DrawElementsUInt> primitiveSet(new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES, 0));
 		primitiveSet->reserve(mWidth*mHeight*6);
 		for(size_t i = 0; i < mWidth*mHeight; ++i)
@@ -98,8 +115,11 @@ namespace od
 			dr >> div;
 			f.division = div ? Face::DIV_TOPLEFT_BOTTOMRIGHT : Face::DIV_BOTTOMLEFT_TOPRIGHT;
 
-			dr >> f.textureLeft
-			   >> f.textureRight;
+			AssetRef textureLeftRef;
+			AssetRef textureRightRef;
+
+			dr >> textureLeftRef
+			   >> textureRightRef;
 
 			for(size_t i = 0; i < 8; ++i)
 			{
@@ -140,17 +160,14 @@ namespace od
         mGeometry->addPrimitiveSet(primitiveSet);
 
         osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
-        colorArray->push_back(osg::Vec4(0,1,0,0));
+        colorArray->push_back(osg::Vec4(0,0.7,0,0));
         mGeometry->setColorArray(colorArray);
         mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-        addDrawable(mGeometry);
+        this->addDrawable(mGeometry);
 
-        osg::StateSet *state = getOrCreateStateSet();
-        osg::PolygonMode *polymode = new osg::PolygonMode();
-        polymode->setMode(osg::PolygonMode::Face::FRONT_AND_BACK, osg::PolygonMode::LINE);
-        state->setAttributeAndModes(polymode, osg::StateAttribute::OVERRIDE | osg::StateAttribute::ON);
-        setStateSet(state);
+        osgUtil::SmoothingVisitor sm;
+        this->accept(sm);
 	}
 
 	const char *Layer::libraryName() const
@@ -222,6 +239,8 @@ namespace od
             FilePath dbPath(dbPathStr, mLevelPath.dir());
             RiotDb &db = mDbManager.loadDb(dbPath.adjustCase());
 
+            Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
+
             mDatabaseMap.insert(std::pair<uint16_t, RiotDbRef>(dbIndex, db));
         }
     }
@@ -241,7 +260,7 @@ namespace od
     	{
     		Logger::verbose() << "Loading layer number " << i;
 
-    		LayerPtr layer(new Layer);
+    		LayerPtr layer(new Layer(*this));
     		layer->loadDefinition(dr);
 
     		mLayers.push_back(layer);
@@ -333,9 +352,13 @@ namespace od
 
     AssetPtr RiotLevel::getAssetByRef(AssetType type, const AssetRef &ref)
     {
+    	Logger::debug() << "Requested asset " << ref.assetId << " from level dependency " << ref.dbIndex;
+
         auto it = mDatabaseMap.find(ref.dbIndex);
         if(it == mDatabaseMap.end())
         {
+        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+
             throw Exception("Database index not found in level dependencies");
         }
 

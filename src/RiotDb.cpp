@@ -169,9 +169,16 @@ namespace od
 
     AssetPtr RiotDb::getAssetByRef(AssetType type, const AssetRef &ref)
     {
+    	if(ref.dbIndex == 0)
+    	{
+    		return this->getAssetById(type, ref.assetId);
+    	}
+
         auto it = mDependencyMap.find(ref.dbIndex);
         if(it == mDependencyMap.end())
         {
+        	Logger::error() << "Database index " << ref.dbIndex << " not found in database dependencies";
+
             throw Exception("Database index not found in dependency table");
         }
 
