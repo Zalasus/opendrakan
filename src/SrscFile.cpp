@@ -25,8 +25,7 @@ namespace od
 		mInputStream.open(mFilePath.str().c_str(), std::ios::in | std::ios::binary);
 		if(mInputStream.fail())
 		{
-			// huh, too bad
-			throw Exception("Could not open SRSC file");
+			throw IoException("Could not open SRSC file");
 		}
 
 		_readHeaderAndDirectory();
@@ -47,6 +46,7 @@ namespace od
 
 	SrscFile::DirEntry SrscFile::getDirectoryEntryByID(RecordId id)
 	{
+		// TODO: Check if we can do better than linear search complexity
 		for(DirEntry entry : mDirectory)
 		{
 			if(entry.recordId == id)
@@ -55,11 +55,12 @@ namespace od
 			}
 		}
 
-		throw std::runtime_error("Record ID not found in directory");
+		throw NotFoundException("Record ID not found in directory");
 	}
 
 	SrscFile::DirEntry SrscFile::getDirectoryEntryByTypeAndID(RecordType type, RecordId id)
     {
+		// TODO: Check if we can do better than linear search complexity
         for(DirEntry entry : mDirectory)
         {
             if(entry.recordId == id && entry.type == type)
@@ -68,7 +69,7 @@ namespace od
             }
         }
 
-        throw std::runtime_error("Record ID and type not found in directory");
+        throw NotFoundException("Record ID and type not found in directory");
     }
 
 	std::istream &SrscFile::getStreamForRecord(const SrscFile::DirEntry &dirEntry)
@@ -112,7 +113,7 @@ namespace od
 
 		}else
 		{
-		    throw Exception("Can't decompress right now");
+		    throw UnsupportedException("Can't decompress right now");
 		}
 	}
 

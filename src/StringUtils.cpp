@@ -109,60 +109,6 @@ namespace od
         return true;
     }
 
-    bool StringUtils::parseInt(const std::string &s, int32_t &v)
-    {
-        v = 0;
-
-        for(uint32_t i = 0; i < s.length(); ++i)
-        {
-            if(isdigit(s[i]))
-            {
-                v *= 10;
-                v += s[i] - '0';
-
-            }else
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool StringUtils::parseFloat(const std::string &s, float &v) //FIXME: Somehow this function does not return totally correct results
-    {
-        v = 0;
-        bool decimals = false;
-        float decimal = 1;
-
-        for(uint32_t i = 0; i < s.length(); ++i)
-        {
-            if(isdigit(s[i]))
-            {
-                if(!decimals)
-                {
-                    v *= 10;
-                    v += s[i] - '0';
-
-                }else
-                {
-                    decimal *= 10;
-                    v += s[i] / decimal;
-                }
-
-            }else if(s[i] == '.' && !decimals)
-            {
-                decimals = true;
-
-            }else
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     int32_t StringUtils::indexOf(const std::string &s, char find)
     {
         return indexOf(s, find, 0);

@@ -44,7 +44,7 @@ namespace od
         switch(mBitsPerPixel)
         {
         case 8:
-            throw Exception("Can't load 8bpp textured right now as I can't be bothered to read the palette");
+            throw UnsupportedException("Can't load 8bpp textured right now as I can't be bothered to read the palette");
 
         case 16:
             bytePerPixel = 2;
@@ -73,7 +73,7 @@ namespace od
 
         if(compressionLevel == 0)
         {
-            throw Exception("Can't handle uncompressed textures right now");
+            throw UnsupportedException("Can't handle uncompressed textures right now");
         }
 
         ZStream zstr(dr.getStream());

@@ -18,6 +18,7 @@
 #include "RiotAsset.h"
 #include "FilePath.h"
 #include "SrscFile.h"
+#include "TextureFactory.h"
 
 namespace od
 {
@@ -49,8 +50,6 @@ namespace od
 
 		FilePath getDbFilePath() const;
 
-		SrscFile &getResourceContainer(AssetType type);
-
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
 		AssetPtr getAssetById(AssetType type, RecordId id);
@@ -69,7 +68,7 @@ namespace od
 		uint32_t mVersion;
 		std::map<uint16_t, RiotDbRef> mDependencyMap;
 
-		std::map<AssetType, SrscFile*> mSrscMap;
+		TextureFactory mTextureFactory;
 	};
 }
 

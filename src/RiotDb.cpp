@@ -30,32 +30,11 @@ namespace od
 
 	RiotDb::~RiotDb()
 	{
-		for(std::pair<AssetType, SrscFile*> entry : mSrscMap)
-		{
-			delete entry.second;
-		}
 	}
 
 	FilePath RiotDb::getDbFilePath() const
 	{
 	    return mDbFilePath;
-	}
-
-	SrscFile &RiotDb::getResourceContainer(AssetType type)
-	{
-		if(mSrscMap.find(type) == mSrscMap.end())
-		{
-			// not yet loaded -> load
-		    AssetFactory &factory = AssetFactory::getFactoryForType(type);
-			std::string srscPath = mDbFilePath.strNoExt() + "." + factory.getDbExtension();
-
-			SrscFile *srscFile = new SrscFile(FilePath(srscPath)); // TODO: use proper RAII
-			mSrscMap[type] = srscFile;
-
-			return *srscFile;
-		}
-
-		return *mSrscMap[type];
 	}
 
 	void RiotDb::loadDbFileAndDependencies(size_t dependencyDepth)
@@ -68,7 +47,7 @@ namespace od
 		std::ifstream in(mDbFilePath.str(), std::ios::in | std::ios::binary);
 		if(in.fail())
 		{
-		    throw Exception("Could not open db definition file " + mDbFilePath.str());
+		    throw IoException("Could not open db definition file " + mDbFilePath.str());
 		}
 
 		std::string line;
@@ -96,7 +75,7 @@ namespace od
 
 				if(mVersion > OD_RIOTDB_MAXVERSION)
 				{
-					throw Exception("Unsupported database version");
+					throw UnsupportedException("Unsupported database version");
 				}
 
 			}else if(std::regex_match(line, results, dependenciesRegex))
@@ -134,7 +113,8 @@ namespace od
 				if(depPath == mDbFilePath)
 				{
 				    Logger::warn() << "Self dependent database file: " << mDbFilePath;
-				    continue; // FIXME: will always cause an error cause not all deps have been loaded
+				    ++dependenciesRead;
+				    continue;
 				}
 
 				RiotDb &db = mDbManager.loadDb(depPath, dependencyDepth + 1);
@@ -157,14 +137,16 @@ namespace od
 
 	AssetPtr RiotDb::getAssetById(AssetType type, RecordId id)
     {
-	    SrscFile &srscFile = getResourceContainer(type);
+	    switch(type)
+	    {
+	    case ASSET_TEXTURE:
 
-	    AssetFactory &factory = AssetFactory::getFactoryForType(type);
+	    	break;
 
-	    AssetPtr newAsset = factory.createNewAsset();
-	    newAsset->loadFromRecord(srscFile, id);
-
-	    return AssetPtr(newAsset);
+	    default:
+	    	Logger::error() << "Requested unknown asset type " << type << " from database " << mDbFilePath;
+	    	throw InvalidArgumentException("Unknown asset type");
+	    }
     }
 
     AssetPtr RiotDb::getAssetByRef(AssetType type, const AssetRef &ref)
@@ -179,7 +161,7 @@ namespace od
         {
         	Logger::error() << "Database index " << ref.dbIndex << " not found in database dependencies";
 
-            throw Exception("Database index not found in dependency table");
+            throw NotFoundException("Database index not found in dependency table");
         }
 
         return it->second.get().getAssetById(type, ref.assetId);

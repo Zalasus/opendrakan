@@ -233,7 +233,7 @@ namespace od
 		{
 			if(mRootStyle != OD_FILEPATH_HOST_STYLE)
 			{
-				throw Exception("Can't convert absolute path roots right now");
+				throw UnsupportedException("Can't convert absolute path roots right now");
 			}
 
 			oss << mRoot;

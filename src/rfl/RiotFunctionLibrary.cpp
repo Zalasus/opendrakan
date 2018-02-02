@@ -45,7 +45,7 @@ namespace od
 	    auto it = mRegistrarMap.find(id);
 		if(it != mRegistrarMap.end())
 		{
-			throw Exception("Given class ID is not registered in RFL");
+			throw NotFoundException("Given class ID is not registered in RFL");
 		}
 
 		return it->second;

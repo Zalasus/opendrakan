@@ -48,12 +48,12 @@ namespace od
 
         if(mBits != 8 && mBits != 16)
         {
-        	throw Exception("Invalid bit count");
+        	throw UnsupportedException("Unsupported bit count");
         }
 
         if(mChannels != 1)
         {
-        	throw Exception("Only mono supported right now");
+        	throw UnsupportedException("Only mono supported right now");
         }
 
         mPcmBuffer.resize(mDecompressedSize);

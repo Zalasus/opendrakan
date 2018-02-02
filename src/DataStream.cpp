@@ -9,12 +9,18 @@
 
 #include <string>
 
+#include "Exception.h"
+
 namespace od
 {
 
 	DataReader::DataReader(std::istream &stream)
 	: mStream(stream)
 	{
+		if(!mStream.good())
+		{
+			throw IoException("Constructed DataReader with bad stream");
+		}
 	}
 
 	void DataReader::ignore(size_t n)
@@ -40,7 +46,14 @@ namespace od
 
 	uint8_t DataReader::_getNext()
 	{
-		return mStream.get();
+		int c = mStream.get();
+
+		if(c == std::istream::traits_type::eof())
+		{
+			throw IoException("DataReader encountered unexpected EOF");
+		}
+
+		return c;
 	}
 
 

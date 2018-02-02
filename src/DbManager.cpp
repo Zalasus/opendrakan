@@ -23,15 +23,11 @@ namespace od
 
     DbManager::~DbManager()
     {
-    	for(RiotDb *db : mRiotDbs)
-    	{
-    		delete db;
-    	}
     }
 
     bool DbManager::isDbLoaded(const FilePath &dbFilePath) const
     {
-        for(RiotDb *db : mRiotDbs)
+        for(std::shared_ptr<RiotDb> db : mRiotDbs)
         {
         	if(db->getDbFilePath() == dbFilePath)
         	{
@@ -57,18 +53,15 @@ namespace od
     	    RiotDb &db = getDb(actualFilePath);
     	    return db;
 
-    	}catch(Exception &e)
+    	}catch(NotFoundException &e)
     	{
     	    // not loaded -> load
     	}
 
-    	Logger::info() << "Loading db: " << dbFilePath.str() << " depth: " << dependencyDepth;
+    	Logger::info() << "Loading db: " << dbFilePath.str() << (dependencyDepth ? " due to dependency" : "");
 
-        RiotDb *db = new RiotDb(actualFilePath, *this); // FIXME: use some more elegant RAII here
-        if(db == NULL)
-        {
-        	throw Exception("Could not allocate db object");
-        }
+        std::shared_ptr<RiotDb> db(new RiotDb(actualFilePath, *this));
+
         mRiotDbs.push_back(db);
 
         db->loadDbFileAndDependencies(dependencyDepth);
@@ -78,7 +71,7 @@ namespace od
 
     RiotDb &DbManager::getDb(const FilePath &dbFilePath)
     {
-    	for(RiotDb *db : mRiotDbs)
+    	for(std::shared_ptr<RiotDb> db : mRiotDbs)
         {
         	if(db->getDbFilePath() == dbFilePath)
         	{
@@ -86,7 +79,7 @@ namespace od
         	}
         }
 
-        throw Exception("Db with given path not loaded");
+        throw NotFoundException("Database with given path not loaded");
     }
 
 }

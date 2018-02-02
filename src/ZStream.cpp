@@ -46,7 +46,7 @@ namespace od
     {
     	if(!mStreamEnded)
     	{
-    		throw Exception("Can't seek to end of zlib data. Stream has not ended yet");
+    		throw IoException("Can't seek to end of zlib data. Stream has not ended yet");
     	}
 
     	mInputStream.clear(); // as buffer reading had us hitting EOF most likely
@@ -191,7 +191,7 @@ namespace od
 
     	msg += ")";
 
-        throw Exception(msg);
+        throw IoException(msg);
     }
 
 

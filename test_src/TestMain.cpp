@@ -11,7 +11,9 @@
 #include <unistd.h>
 
 #include <osg/Group>
-#include <osgViewer/Viewer>
+#include <osgViewer/CompositeViewer>
+#include <osgViewer/View>
+#include <osgViewer/ViewerEventHandlers>
 
 #include "ZStream.h"
 #include "SrscFile.h"
@@ -224,10 +226,19 @@ int main(int argc, char **argv)
 		    osg::ref_ptr<osg::Group> rootNode(new osg::Group);
 		    rootNode->addChild(level);
 
-		    osgViewer::Viewer viewer;
-		    viewer.getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-		    viewer.setSceneData(rootNode);
-		    viewer.run();
+		    osgViewer::CompositeViewer composite;
+		    osg::ref_ptr<osgViewer::Viewer> viewer(new osgViewer::Viewer);
+		    viewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
+		    viewer->setSceneData(rootNode);
+		    composite.addView(viewer);
+
+		    osg::ref_ptr<osgViewer::View> view(new osgViewer::View);
+		    osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
+		    statsHandler->setKeyEventPrintsOutStats('s');
+		    viewer->addEventHandler(statsHandler);
+		    composite.addView(view);
+
+		    return viewer->run();
 		}
 
 

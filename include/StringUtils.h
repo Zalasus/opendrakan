@@ -32,9 +32,6 @@ namespace od
 		static bool startsWith(const std::string &s, const std::string &begin);
 		static bool endsWith(const std::string &s, const std::string &end);
 
-		static bool parseInt(const std::string &s, int32_t &i);
-		static bool parseFloat(const std::string &s, float &f);
-
 		static int32_t indexOf(const std::string &s, char find);
         static int32_t indexOf(const std::string &s, char find, int32_t startIndex);
         static int32_t indexOf(const std::string &s, const std::string &find);

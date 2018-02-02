@@ -282,7 +282,7 @@ namespace od
 
 			if((size_t)dr.getStream().tellg() != zlibOffset + zlibStuffSize)
 			{
-				throw Exception("ZStream read either too many or too few bytes");
+				throw IoException("ZStream read either too many or too few bytes");
 			}
 
 			this->addChild(mLayers[i].get());
@@ -323,7 +323,7 @@ namespace od
     	{
     		objectRecordEntry = file.getDirectoryEntryByTypeAndID(0x0020, 0);
 
-    	}catch(Exception &e)
+    	}catch(NotFoundException &e)
     	{
     		// record not found -> this level has no objects
     		return;
@@ -359,7 +359,7 @@ namespace od
         {
         	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
 
-            throw Exception("Database index not found in level dependencies");
+            throw NotFoundException("Database index not found in level dependencies");
         }
 
         return it->second.get().getAssetById(type, ref.assetId);

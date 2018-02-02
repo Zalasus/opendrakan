@@ -9,6 +9,7 @@
 #define INCLUDE_DBMANAGER_H_
 
 #include <string>
+#include <memory>
 
 #include "FilePath.h"
 
@@ -39,7 +40,7 @@ namespace od
 
 	private:
 
-		std::vector<RiotDb*> mRiotDbs;
+		std::vector<std::shared_ptr<RiotDb>> mRiotDbs;
 	};
 
 }
