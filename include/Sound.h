@@ -5,12 +5,12 @@
  *      Author: zal
  */
 
-#ifndef INCLUDE_RIOTSOUND_H_
-#define INCLUDE_RIOTSOUND_H_
+#ifndef INCLUDE_SOUND_H_
+#define INCLUDE_SOUND_H_
 
 #include <vector>
 
-#include "RiotAsset.h"
+#include "Asset.h"
 
 #define OD_SOUND_FLAG_FLUSH_AFTER_PLAYING 	0x04
 #define OD_SOUND_FLAG_PLAY_LOOPING			0x08
@@ -18,12 +18,12 @@
 namespace od
 {
 
-	class RiotSound : public RiotAsset
+	class Sound
 	{
 	public:
 
-		RiotSound();
-		virtual ~RiotSound();
+		Sound();
+		virtual ~Sound();
 
 		virtual void loadFromRecord(SrscFile &srscFile, RecordId id);
 
@@ -53,4 +53,4 @@ namespace od
 }
 
 
-#endif /* INCLUDE_RIOTSOUND_H_ */
+#endif /* INCLUDE_SOUND_H_ */

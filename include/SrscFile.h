@@ -35,6 +35,8 @@ namespace od
 			uint32_t dataSize;
 		};
 
+		typedef std::vector<DirEntry>::iterator DirIterator;
+
 		SrscFile(const FilePath &filePath);
 		~SrscFile();
 
@@ -42,14 +44,23 @@ namespace od
 		inline size_t getRecordCount() const { return mDirectory.size(); };
 		inline const std::vector<DirEntry> &getDirectory() const { return mDirectory; };
 
-		DirEntry getDirectoryEntryByID(RecordId id);
-		DirEntry getDirectoryEntryByTypeAndID(RecordType type, RecordId id);
+		DirIterator getDirectoryBegin();
+		DirIterator getDirectoryEnd();
+		DirIterator getDirIteratorById(RecordId id, DirIterator start);
+		DirIterator getDirIteratorByType(RecordType type, DirIterator start);
+		DirIterator getDirIteratorByTypeId(RecordType type, RecordId id, DirIterator start);
+		inline DirIterator getDirIteratorById(RecordId id) { return getDirIteratorById(id, mDirectory.begin()); }
+		inline DirIterator getDirIteratorByType(RecordType type) { return getDirIteratorByType(type, mDirectory.begin()); }
+		inline DirIterator getDirIteratorByTypeId(RecordType type, RecordId id) { return getDirIteratorByTypeId(type, id, mDirectory.begin()); }
 
 		std::istream &getStreamForRecord(const DirEntry &dirEntry);
-		std::istream &getStreamForRecordTypeId(RecordType type, RecordId id);
+		inline std::istream &getStreamForRecord(const DirIterator &dirIt) { return getStreamForRecord(*dirIt); }
+		inline std::istream &getStreamForRecordType(RecordType type) { return getStreamForRecord(getDirIteratorByType(type)); }
+		inline std::istream &getStreamForRecordTypeId(RecordType type, RecordId id) { return getStreamForRecord(getDirIteratorByTypeId(type, id)); }
 
 		void decompressAll(const std::string &prefix, bool extractRaw);
 		void decompressRecord(const std::string &prefix, const DirEntry &dirEntry, bool extractRaw);
+		inline void decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw) { decompressRecord(prefix, *dirIt, extractRaw); }
 
 
 	protected:
@@ -62,8 +73,6 @@ namespace od
 		uint16_t mVersion;
 		uint32_t mDirectoryOffset;
 		std::vector<DirEntry> mDirectory;
-
-		char *mRecordPayloadBuffer;
 	};
 
 }

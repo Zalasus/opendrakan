@@ -123,6 +123,14 @@ namespace od
 		return *this;
 	}
 
+    template <>
+	DataReader &DataReader::operator >> <char>(char &b)
+	{
+		b = _getNext();
+
+		return *this;
+	}
+
     //FIXME: Portability issue. This could produce invalid results if target platform uses different floating point format than the advised IEEE 754
     template <>
 	DataReader &DataReader::operator >> <float>(float &f)

@@ -5,6 +5,7 @@
  *      Author: zal
  */
 
+
 #include <iostream>
 #include <iomanip>
 #include <memory>
@@ -18,11 +19,11 @@
 #include "ZStream.h"
 #include "SrscFile.h"
 #include "DbManager.h"
-#include "RiotDb.h"
 #include "Logger.h"
-#include "RiotLevel.h"
 #include "StringUtils.h"
 #include "rfl/RiotFunctionLibrary.h"
+#include "Database.h"
+#include "Level.h"
 
 
 void srscStat(od::SrscFile &file)
@@ -77,10 +78,12 @@ void srscStat(od::SrscFile &file)
 void printUsage()
 {
 	std::cout
-		<< "Usage: opendrakan [options] <path to srsc file>" << std::endl
+		<< "Usage: opendrakan [options] <file>" << std::endl
 		<< "Options:" << std::endl
-		<< "    -i <id>    Extract first record with ID <id>" << std::endl
-		<< "    -x         Extract all records" << std::endl
+		<< "    -o <path>  Output path (default './out/')" << std::endl
+		<< "    -x         Extract raw records" << std::endl
+		<< "    -t         Extract as a texture" << std::endl
+		<< "    -i <id>    Limit extraction to records with ID <id>" << std::endl
 		<< "    -s         Print SRSC statistics" << std::endl
 		<< "    -v         Increase verbosity of logger" << std::endl
 		<< "If no option is given, the file is loaded as a level." << std::endl
@@ -97,11 +100,13 @@ int main(int argc, char **argv)
 
 	od::Logger::LogLevel logLevel = od::Logger::LOGLEVEL_INFO;
 	std::string filename;
+	std::string outputPath = "out/";
 	bool extract = false;
+	bool texture = false;
 	bool stat = false;
 	uint16_t extractRecordId = 0;
 	int c;
-	while((c = getopt(argc, argv, "i:xsv")) != -1)
+	while((c = getopt(argc, argv, "i:o:txsv")) != -1)
 	{
 		switch(c)
 		{
@@ -132,10 +137,22 @@ int main(int argc, char **argv)
 			}
 			break;
 
+		case 't':
+			texture = true;
+			break;
+
+		case 'o':
+			outputPath = std::string(optarg);
+			break;
+
 		case '?':
 			if(optopt == 'i')
 			{
 				std::cerr << "Option -i requires a hex ID argument." << std::endl;
+
+			}else if(optopt == 'o')
+			{
+				std::cerr << "Option -o requires a valid path argument" << std::endl;
 
 			}else
 			{
@@ -193,35 +210,55 @@ int main(int argc, char **argv)
 		    srscStat(srscFile);
 		}*/
 
-		if(stat || extract)
+		if(stat)
 		{
 		    od::SrscFile srscFile(filename);
 
-		    if(extract)
-            {
-                if(extractRecordId > 0)
-                {
-                    od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
-                    srscFile.decompressRecord("out/", dirEntry, true);
+		    srscStat(srscFile);
 
-                    std::cout << "Extracting record " << std::hex << extractRecordId << std::dec << " to out/" << std::endl;
+		}else if(extract)
+        {
+			od::SrscFile srscFile(filename);
 
-                }else
-                {
-                    srscFile.decompressAll("out/", true);
+			if(extractRecordId > 0)
+			{
+				std::cout << "Extracting all records with ID " << std::hex << extractRecordId << std::dec << " to " << outputPath << std::endl;
 
-                    std::cout << "Extracting all records to out/" << std::endl;
-                }
+				od::SrscFile::DirIterator dirIt = srscFile.getDirIteratorById(extractRecordId);
+				while(dirIt != srscFile.getDirectoryEnd())
+				{
+					srscFile.decompressRecord(outputPath, dirIt, true);
 
-            }else
-            {
-                srscStat(srscFile);
-            }
+					dirIt = srscFile.getDirIteratorById(extractRecordId, dirIt);
+				}
+
+			}else
+			{
+				srscFile.decompressAll(outputPath, true);
+
+				std::cout << "Extracting all records to " << outputPath << std::endl;
+			}
+
+        }else if(texture)
+        {
+        	od::DbManager dbm;
+        	od::Database &db = dbm.loadDb(filename);
+
+        	od::AssetRef ref;
+        	ref.assetId = extractRecordId;
+        	ref.dbIndex = 0;
+
+        	od::TexturePtr tex = db.getAssetAsTexture(ref);
+
+			std::ostringstream ss;
+			ss << outputPath << "texture" << extractRecordId << ".png";
+
+        	tex->exportToPng(ss.str());
 
 		}else
 		{
 		    od::DbManager dbm;
-		    osg::ref_ptr<od::RiotLevel> level(new od::RiotLevel(filename, dbm));
+		    osg::ref_ptr<od::Level> level(new od::Level(filename, dbm));
 
 		    osg::ref_ptr<osg::Group> rootNode(new osg::Group);
 		    rootNode->addChild(level);

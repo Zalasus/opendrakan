@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <sstream>
+#include <fstream>
 
 #include "StringUtils.h"
 #include "Exception.h"
@@ -144,6 +145,13 @@ namespace od
 
 		return fp;
 #endif
+	}
+
+	bool FilePath::exists() const
+	{
+		// the probably easiest way is to go try and open the file
+		std::ifstream in(this->str(), std::ios::in);
+		return !in.fail();
 	}
 
 	bool FilePath::operator==(const FilePath &right) const

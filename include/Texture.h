@@ -10,31 +10,34 @@
 
 #include <osg/Image>
 
-#include "RiotAsset.h"
+#include "SrscFile.h"
 
 namespace od
 {
 
-    class Texture : public RiotAsset
+	class TextureFactory;
+
+    class Texture : public osg::Image
     {
     public:
 
-        Texture();
+        Texture(RecordId id);
 
-        virtual void loadFromRecord(SrscFile &srscFile, RecordId id);
+        void loadFromRecord(TextureFactory &factory, SrscFile &srscFile, SrscFile::DirIterator record);
 
+        void exportToPng(const FilePath &path);
 
     private:
+
+        RecordId mId;
 
         uint32_t mWidth;
         uint32_t mHeight;
         uint16_t mBitsPerPixel;
         uint16_t mAlphaBitsPerPixel;
-
-        osg::ref_ptr<osg::Image> mImage;
-
     };
 
+    typedef osg::ref_ptr<Texture> TexturePtr;
 }
 
 

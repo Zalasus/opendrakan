@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include "RiotLevel.h"
+#include "Level.h"
 
 #include <algorithm>
 #include <osg/PolygonMode>
@@ -13,14 +13,16 @@
 #include <osgUtil/SmoothingVisitor>
 
 #include "OdDefines.h"
+#include "SrscRecordTypes.h"
 #include "SrscFile.h"
 #include "Logger.h"
 #include "ZStream.h"
+#include "Exception.h"
 
 namespace od
 {
 
-	Layer::Layer(RiotLevel &level)
+	Layer::Layer(Level &level)
 	: mLevel(level)
 	, mId(0)
 	, mWidth(0)
@@ -182,7 +184,7 @@ namespace od
 
 
 
-    RiotLevel::RiotLevel(const FilePath &levelPath, DbManager &dbManager)
+    Level::Level(const FilePath &levelPath, DbManager &dbManager)
     : mLevelPath(levelPath)
     , mDbManager(dbManager)
     , mMaxWidth(0)
@@ -191,17 +193,17 @@ namespace od
         _loadLevel();
     }
 
-    const char *RiotLevel::libraryName() const
+    const char *Level::libraryName() const
     {
     	return OD_LIB_NAME;
     }
 
-    const char *RiotLevel::className() const
+    const char *Level::className() const
     {
     	return "RiotLevel";
     }
 
-    void RiotLevel::_loadLevel()
+    void Level::_loadLevel()
     {
     	Logger::info() << "Loading level " << mLevelPath.str();
 
@@ -214,9 +216,9 @@ namespace od
         Logger::info() << "Level loaded successfully";
     }
 
-    void RiotLevel::_loadNameAndDeps(SrscFile &file)
+    void Level::_loadNameAndDeps(SrscFile &file)
     {
-    	DataReader dr(file.getStreamForRecordTypeId(0x0000, 0));
+    	DataReader dr(file.getStreamForRecordType(OD_SRSC_LEVEL_NAME));
 
     	dr  >> mLevelName
             >> mMaxWidth
@@ -237,17 +239,17 @@ namespace od
             dr >> dbPathStr;
 
             FilePath dbPath(dbPathStr, mLevelPath.dir());
-            RiotDb &db = mDbManager.loadDb(dbPath.adjustCase());
+            Database &db = mDbManager.loadDb(dbPath.adjustCase());
 
             Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
 
-            mDatabaseMap.insert(std::pair<uint16_t, RiotDbRef>(dbIndex, db));
+            mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(dbIndex, db));
         }
     }
 
-    void RiotLevel::_loadLayers(SrscFile &file)
+    void Level::_loadLayers(SrscFile &file)
     {
-    	DataReader dr(file.getStreamForRecordTypeId(0x0001, 0));
+    	DataReader dr(file.getStreamForRecordType(OD_SRSC_LEVEL_LAYERS));
 
     	uint32_t layerCount;
     	dr >> layerCount;
@@ -289,9 +291,9 @@ namespace od
     	}
     }
 
-    void RiotLevel::_loadLayerGroups(SrscFile &file)
+    void Level::_loadLayerGroups(SrscFile &file)
     {
-    	DataReader dr(file.getStreamForRecordTypeId(0x0002, 0));
+    	DataReader dr(file.getStreamForRecordType(OD_SRSC_LEVEL_LAYERGROUPS));
 
     	uint32_t groupCount;
     	dr >> groupCount;
@@ -315,21 +317,15 @@ namespace od
     	}
     }
 
-    void RiotLevel::_loadObjects(SrscFile &file)
+    void Level::_loadObjects(SrscFile &file)
     {
-    	SrscFile::DirEntry objectRecordEntry;
-
-    	try
+    	SrscFile::DirIterator objectRecord = file.getDirIteratorByType(OD_SRSC_LEVEL_OBJECTS);
+    	if(objectRecord == file.getDirectoryEnd())
     	{
-    		objectRecordEntry = file.getDirectoryEntryByTypeAndID(0x0020, 0);
-
-    	}catch(NotFoundException &e)
-    	{
-    		// record not found -> this level has no objects
-    		return;
+    		return; // if record does not appear level has no objects
     	}
 
-    	DataReader dr(file.getStreamForRecord(objectRecordEntry));
+    	DataReader dr(file.getStreamForRecord(objectRecord));
 
     	uint16_t objectCount;
     	dr >> objectCount;
@@ -350,19 +346,22 @@ namespace od
     	}*/
     }
 
-    AssetPtr RiotLevel::getAssetByRef(AssetType type, const AssetRef &ref)
-    {
+    TexturePtr Level::getAssetAsTexture(const AssetRef &ref)
+	{
     	Logger::debug() << "Requested asset " << ref.assetId << " from level dependency " << ref.dbIndex;
 
-        auto it = mDatabaseMap.find(ref.dbIndex);
-        if(it == mDatabaseMap.end())
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
         {
         	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
 
             throw NotFoundException("Database index not found in level dependencies");
         }
 
-        return it->second.get().getAssetById(type, ref.assetId);
+        // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
+        AssetRef foreignRef = ref;
+        foreignRef.dbIndex = 0;
+        return it->second.get().getAssetAsTexture(foreignRef);
     }
 }
 

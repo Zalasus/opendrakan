@@ -5,12 +5,14 @@
  *      Author: zal
  */
 
-#include "RiotSound.h"
+#include "Sound.h"
+
+#include "Exception.h"
 
 namespace od
 {
 
-	RiotSound::RiotSound()
+	Sound::Sound()
 	: mSoundName("")
 	, mFlags(0)
 	, mChannels(0)
@@ -25,11 +27,11 @@ namespace od
     {
     }
 
-	RiotSound::~RiotSound()
+	Sound::~Sound()
 	{
 	}
 
-    void RiotSound::loadFromRecord(SrscFile &srscFile, RecordId id)
+    void Sound::loadFromRecord(SrscFile &srscFile, RecordId id)
     {
         DataReader dr(srscFile.getStreamForRecordTypeId(0x0302, id));
 
@@ -79,13 +81,11 @@ namespace od
         }
     }
 
-    std::string RiotSound::getName()
+    std::string Sound::getName()
     {
         return mSoundName;
     }
 
-
-    OD_REGISTER_ASSET_TYPE(ASSET_SOUND, RiotSound, "sdb");
 }
 
 

@@ -20,7 +20,6 @@ namespace od
 
 	SrscFile::SrscFile(const FilePath &filePath)
 	: mFilePath(filePath)
-	, mRecordPayloadBuffer(nullptr)
 	{
 		mInputStream.open(mFilePath.str().c_str(), std::ios::in | std::ios::binary);
 		if(mInputStream.fail())
@@ -33,44 +32,62 @@ namespace od
 
 	SrscFile::~SrscFile()
 	{
-		if(mInputStream.is_open())
-		{
-			mInputStream.close();
-		}
-
-		if(mRecordPayloadBuffer != nullptr)
-		{
-			delete[] mRecordPayloadBuffer;
-		}
 	}
 
-	SrscFile::DirEntry SrscFile::getDirectoryEntryByID(RecordId id)
+	SrscFile::DirIterator SrscFile::getDirectoryBegin()
 	{
-		// TODO: Check if we can do better than linear search complexity
-		for(DirEntry entry : mDirectory)
-		{
-			if(entry.recordId == id)
-			{
-				return entry;
-			}
-		}
-
-		throw NotFoundException("Record ID not found in directory");
+		return mDirectory.begin();
 	}
 
-	SrscFile::DirEntry SrscFile::getDirectoryEntryByTypeAndID(RecordType type, RecordId id)
-    {
-		// TODO: Check if we can do better than linear search complexity
-        for(DirEntry entry : mDirectory)
-        {
-            if(entry.recordId == id && entry.type == type)
-            {
-                return entry;
-            }
-        }
+	SrscFile::DirIterator SrscFile::getDirectoryEnd()
+	{
+		return mDirectory.end();
+	}
 
-        throw NotFoundException("Record ID and type not found in directory");
-    }
+	SrscFile::DirIterator SrscFile::getDirIteratorById(RecordId id, DirIterator start)
+	{
+		while(start != mDirectory.end())
+		{
+			if(start->recordId == id)
+			{
+				return start;
+			}
+
+			++start;
+		}
+
+		return mDirectory.end();
+	}
+
+	SrscFile::DirIterator SrscFile::getDirIteratorByType(RecordType type, DirIterator start)
+	{
+		while(start != mDirectory.end())
+		{
+			if(start->type == type)
+			{
+				return start;
+			}
+
+			++start;
+		}
+
+		return mDirectory.end();
+	}
+
+	SrscFile::DirIterator SrscFile::getDirIteratorByTypeId(RecordType type, RecordId id, DirIterator start)
+	{
+		while(start != mDirectory.end())
+		{
+			if(start->recordId == id && start->type == type)
+			{
+				return start;
+			}
+
+			++start;
+		}
+
+		return mDirectory.end();
+	}
 
 	std::istream &SrscFile::getStreamForRecord(const SrscFile::DirEntry &dirEntry)
 	{
@@ -78,11 +95,6 @@ namespace od
 
 		return mInputStream;
 	}
-
-	std::istream &SrscFile::getStreamForRecordTypeId(RecordType type, RecordId id)
-    {
-	    return getStreamForRecord(getDirectoryEntryByTypeAndID(type, id));
-    }
 
 	void SrscFile::decompressAll(const std::string &prefix, bool extractRaw)
 	{
@@ -129,6 +141,11 @@ namespace od
 		}
 
 		in >> mVersion;
+		if(mVersion != 0x100)
+		{
+			throw UnsupportedException("Unsupported SRSC version");
+		}
+
 		in >> mDirectoryOffset;
 
 		uint16_t recordCount;

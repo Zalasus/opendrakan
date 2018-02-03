@@ -1,0 +1,19 @@
+/*
+ * SrscRecordTypes.h
+ *
+ *  Created on: 2 Feb 2018
+ *      Author: zal
+ */
+
+#ifndef INCLUDE_SRSCRECORDTYPES_H_
+#define INCLUDE_SRSCRECORDTYPES_H_
+
+#define OD_SRSC_LEVEL_NAME  		0x0000
+#define OD_SRSC_LEVEL_LAYERS		0x0001
+#define OD_SRSC_LEVEL_LAYERGROUPS	0x0002
+#define OD_SRSC_LEVEL_OBJECTS		0x0020
+
+#define OD_SRSC_PALETTE 			0x0030
+#define OD_SRSC_TEXTURE	 			0x0040
+
+#endif /* INCLUDE_SRSCRECORDTYPES_H_ */

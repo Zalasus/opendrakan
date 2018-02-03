@@ -10,7 +10,18 @@
 namespace od
 {
 
-	NotFoundException::NotFoundException(const char *msg, RecordType type, RecordId id)
+	Exception::Exception(const std::string &msg)
+	: mMsg(msg)
+	{
+	}
+
+	const char *Exception::what() const noexcept
+	{
+		return mMsg.c_str();
+	}
+
+
+	NotFoundException::NotFoundException(const std::string &msg, RecordType type, RecordId id)
 	: Exception(msg)
 	, mType(type)
 	, mId(id)
@@ -18,17 +29,17 @@ namespace od
 	}
 
 
-	InvalidArgumentException::InvalidArgumentException(const char *msg)
+	InvalidArgumentException::InvalidArgumentException(const std::string &msg)
 	: Exception(msg)
 	{
 	}
 
-	UnsupportedException::UnsupportedException(const char *msg)
+	UnsupportedException::UnsupportedException(const std::string &msg)
 	: Exception(msg)
 	{
 	}
 
-	IoException::IoException(const char *msg)
+	IoException::IoException(const std::string &msg)
 	: Exception(msg)
 	{
 	}

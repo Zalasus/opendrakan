@@ -8,22 +8,26 @@
 #ifndef RIOTLEVEL_H_
 #define RIOTLEVEL_H_
 
-#include "FilePath.h"
+
+
 
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
+
 #include <osg/Group>
 #include <osg/Geode>
 #include <osg/Geometry>
 
-#include "RiotDb.h"
+#include "FilePath.h"
 #include "DbManager.h"
+#include "Database.h"
+
 
 namespace od
 {
-	class RiotLevel;
+	class Level;
 
 	class Layer : public osg::Geode
 	{
@@ -58,7 +62,7 @@ namespace od
 			uint32_t textureRight;
 		};
 
-		Layer(RiotLevel &level);
+		Layer(Level &level);
 
 		void loadDefinition(DataReader &dr);
 		void loadPolyData(DataReader &dr);
@@ -73,7 +77,7 @@ namespace od
 
 	private:
 
-		RiotLevel 			   &mLevel;
+		Level 			   &mLevel;
 		uint32_t				mId;
 		uint32_t 				mWidth;
 		uint32_t 				mHeight;
@@ -93,20 +97,23 @@ namespace od
 		osg::ref_ptr<osg::Geometry> mGeometry;
 	};
 
+
 	typedef osg::ref_ptr<Layer> LayerPtr;
 
-    class RiotLevel : public osg::Group, public AssetRefTranslator
+
+    class Level : public osg::Group, public AssetProvider
     {
     public:
 
-        RiotLevel(const FilePath &levelPath, DbManager &dbManager);
+        Level(const FilePath &levelPath, DbManager &dbManager);
 
         // override osg::Group
         virtual const char *libraryName() const;
         virtual const char *className() const;
 
         // implement AssetRefTranslator
-        virtual AssetPtr getAssetByRef(AssetType type, const AssetRef &ref);
+        virtual TexturePtr getAssetAsTexture(const AssetRef &ref);
+
 
     private:
 
@@ -123,7 +130,7 @@ namespace od
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::map<uint16_t, RiotDbRef> mDatabaseMap;
+        std::map<uint16_t, DbRefWrapper> mDependencyMap;
         std::vector<LayerPtr> mLayers;
     };
 

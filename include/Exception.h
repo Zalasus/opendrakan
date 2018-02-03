@@ -8,20 +8,33 @@
 #ifndef INCLUDE_EXCEPTION_H_
 #define INCLUDE_EXCEPTION_H_
 
-#include <stdexcept>
+#include <exception>
+#include <string>
 
 #include "SrscFile.h"
 
 namespace od
 {
 
-	typedef std::runtime_error Exception;
+	class Exception : public std::exception
+	{
+	public:
+
+		Exception(const std::string &msg);
+
+		virtual const char *what() const noexcept;
+
+
+	protected:
+
+		std::string mMsg;
+	};
 
 	class NotFoundException : public Exception
 	{
 	public:
 
-		NotFoundException(const char *msg, RecordType type = 0, RecordId id = 0);
+		NotFoundException(const std::string &msg, RecordType type = 0, RecordId id = 0);
 
 		inline RecordType getRecordType() const { return mType; };
 		inline RecordId getRecordId() const { return mId; };
@@ -38,7 +51,7 @@ namespace od
 	{
 	public:
 
-		InvalidArgumentException(const char *msg);
+		InvalidArgumentException(const std::string &msg);
 
 	};
 
@@ -46,7 +59,7 @@ namespace od
 	{
 	public:
 
-		UnsupportedException(const char *msg);
+		UnsupportedException(const std::string &msg);
 
 	};
 
@@ -54,7 +67,7 @@ namespace od
 	{
 	public:
 
-		IoException(const char *msg);
+		IoException(const std::string &msg);
 
 	};
 }

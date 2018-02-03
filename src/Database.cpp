@@ -5,8 +5,7 @@
  *      Author: zal
  */
 
-#include "RiotDb.h"
-
+#include <Database.h>
 #include <fstream>
 #include <sstream>
 #include <regex>
@@ -21,23 +20,23 @@
 namespace od
 {
 
-	RiotDb::RiotDb(FilePath dbFilePath, DbManager &dbManager)
+	Database::Database(FilePath dbFilePath, DbManager &dbManager)
 	: mDbFilePath(dbFilePath)
 	, mDbManager(dbManager)
 	, mVersion(0)
 	{
 	}
 
-	RiotDb::~RiotDb()
+	Database::~Database()
 	{
 	}
 
-	FilePath RiotDb::getDbFilePath() const
+	FilePath Database::getDbFilePath() const
 	{
 	    return mDbFilePath;
 	}
 
-	void RiotDb::loadDbFileAndDependencies(size_t dependencyDepth)
+	void Database::loadDbFileAndDependencies(size_t dependencyDepth)
 	{
 		std::regex versionRegex("\\s*version\\s+(\\d+).*");
 		std::regex dependenciesRegex("\\s*dependencies\\s+(\\d+).*");
@@ -117,9 +116,9 @@ namespace od
 				    continue;
 				}
 
-				RiotDb &db = mDbManager.loadDb(depPath, dependencyDepth + 1);
+				Database &db = mDbManager.loadDb(depPath, dependencyDepth + 1);
 
-				mDependencyMap.insert(std::pair<uint16_t, RiotDbRef>(depIndex, db));
+				mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(depIndex, db));
 
 				++dependenciesRead;
 
@@ -133,39 +132,45 @@ namespace od
         {
             throw Exception("Found less dependency definitions than stated in dependencies statement");
         }
+
+        // now that the database is loaded, create the various asset factories
+
+        FilePath txdPath = mDbFilePath.ext(".txd");
+        if(txdPath.exists())
+        {
+        	mTextureFactory = std::unique_ptr<TextureFactory>(new TextureFactory(txdPath, *this));
+        	Logger::verbose() << "Opened database texture container";
+
+        }else
+        {
+        	Logger::verbose() << "Database has no texture container";
+        }
 	}
 
-	AssetPtr RiotDb::getAssetById(AssetType type, RecordId id)
-    {
-	    switch(type)
-	    {
-	    case ASSET_TEXTURE:
+	TexturePtr Database::getAssetAsTexture(const AssetRef &ref)
+	{
+		if(ref.dbIndex == 0)
+		{
+			if(mTextureFactory != nullptr)
+			{
+				return mTextureFactory->loadTexture(ref.assetId);
 
-	    	break;
+			}else
+			{
+				throw NotFoundException("Texture with given ID not found in database");
+			}
+		}
 
-	    default:
-	    	Logger::error() << "Requested unknown asset type " << type << " from database " << mDbFilePath;
-	    	throw InvalidArgumentException("Unknown asset type");
-	    }
-    }
+		auto it = mDependencyMap.find(ref.dbIndex);
+		if(it == mDependencyMap.end())
+		{
+			throw Exception("Database has no dependency with given index");
+		}
 
-    AssetPtr RiotDb::getAssetByRef(AssetType type, const AssetRef &ref)
-    {
-    	if(ref.dbIndex == 0)
-    	{
-    		return this->getAssetById(type, ref.assetId);
-    	}
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-        	Logger::error() << "Database index " << ref.dbIndex << " not found in database dependencies";
-
-            throw NotFoundException("Database index not found in dependency table");
-        }
-
-        return it->second.get().getAssetById(type, ref.assetId);
-    }
+		AssetRef foreignRef = ref;
+		foreignRef.dbIndex = 0;
+		return it->second.get().getAssetAsTexture(foreignRef);
+	}
 
 } 
 

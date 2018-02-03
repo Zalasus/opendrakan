@@ -81,6 +81,14 @@ namespace od
 		std::string extStr() const;
 
 		/**
+		 * @brief Returns true if the represented file exists, false if not.
+		 *
+		 * This will check for file existence by trying to open that file in read mode. If that fails (for whatever
+		 * reason, insufficient permissions included), false will be returned.
+		 */
+		bool exists() const;
+
+		/**
 		 * Creates copy of this path, but changes the file's extension to the passed string
 		 * or appends it if no extension is present. The passed string must include the dot.
 		 */

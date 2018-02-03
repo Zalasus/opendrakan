@@ -18,7 +18,7 @@ namespace od
 
 	void Model::loadFromRecord(SrscFile &srscFile, RecordId id)
 	{
-		_loadNameAndShading(DataReader(srscFile.getStreamForRecordTypeId(0x0200, id)));
+		//_loadNameAndShading(DataReader(srscFile.getStreamForRecordTypeId(0x0200, id)));
 	}
 
 	std::string Model::getName()
@@ -33,8 +33,6 @@ namespace od
 		uint32_t shadingType;
 		dr >> shadingType;
 	}
-
-	OD_REGISTER_ASSET_TYPE(ASSET_MODEL, Model, "mod");
 
 }
 

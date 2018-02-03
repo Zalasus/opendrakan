@@ -5,10 +5,10 @@
  *      Author: zal
  */
 
+#include <Database.h>
 #include "DbManager.h"
 
 #include "Logger.h"
-#include "RiotDb.h"
 #include "StringUtils.h"
 #include "Exception.h"
 
@@ -27,7 +27,7 @@ namespace od
 
     bool DbManager::isDbLoaded(const FilePath &dbFilePath) const
     {
-        for(std::shared_ptr<RiotDb> db : mRiotDbs)
+        for(std::shared_ptr<Database> db : mRiotDbs)
         {
         	if(db->getDbFilePath() == dbFilePath)
         	{
@@ -38,7 +38,7 @@ namespace od
         return false;
     }
 
-    RiotDb &DbManager::loadDb(const FilePath &dbFilePath, size_t dependencyDepth)
+    Database &DbManager::loadDb(const FilePath &dbFilePath, size_t dependencyDepth)
     {
     	if(dependencyDepth > OD_MAX_DEPENDENCY_DEPTH)
     	{
@@ -50,7 +50,7 @@ namespace od
 
     	try
     	{
-    	    RiotDb &db = getDb(actualFilePath);
+    	    Database &db = getDb(actualFilePath);
     	    return db;
 
     	}catch(NotFoundException &e)
@@ -60,7 +60,7 @@ namespace od
 
     	Logger::info() << "Loading db: " << dbFilePath.str() << (dependencyDepth ? " due to dependency" : "");
 
-        std::shared_ptr<RiotDb> db(new RiotDb(actualFilePath, *this));
+        std::shared_ptr<Database> db(new Database(actualFilePath, *this));
 
         mRiotDbs.push_back(db);
 
@@ -69,9 +69,9 @@ namespace od
         return *db;
     }
 
-    RiotDb &DbManager::getDb(const FilePath &dbFilePath)
+    Database &DbManager::getDb(const FilePath &dbFilePath)
     {
-    	for(std::shared_ptr<RiotDb> db : mRiotDbs)
+    	for(std::shared_ptr<Database> db : mRiotDbs)
         {
         	if(db->getDbFilePath() == dbFilePath)
         	{

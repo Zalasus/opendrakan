@@ -8,14 +8,14 @@
 #ifndef INCLUDE_MODEL_H_
 #define INCLUDE_MODEL_H_
 
+#include <Asset.h>
 #include <string>
 
-#include "RiotAsset.h"
 
 namespace od
 {
 
-	class Model : public RiotAsset
+	class Model
 	{
 	public:
 

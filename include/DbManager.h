@@ -16,7 +16,7 @@
 namespace od
 {
 
-    class RiotDb;
+    class Database;
 
 	class DbManager
 	{
@@ -33,14 +33,14 @@ namespace od
          * @param[in]   dbFile              Path to the *.db file defining the database to be loaded. Extension is ignored.
          * @param[in]   dependencyDepth     Depth of dependency loading. Used to prevent undectected circular dependencies. Only used by RiotDb objects.
          */
-		RiotDb &loadDb(const FilePath &dbFilePath, size_t dependencyDepth = 0);
+		Database &loadDb(const FilePath &dbFilePath, size_t dependencyDepth = 0);
 
-		RiotDb &getDb(const FilePath &dbFilePath);
+		Database &getDb(const FilePath &dbFilePath);
 
 
 	private:
 
-		std::vector<std::shared_ptr<RiotDb>> mRiotDbs;
+		std::vector<std::shared_ptr<Database>> mRiotDbs;
 	};
 
 }
