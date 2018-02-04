@@ -108,9 +108,9 @@ namespace od
         		uint16_t color;
         		zdr >> color;
 
-        		pixBuffer[i]   = (color >> 11) & 0x1f;
-        		pixBuffer[i+1] = (color >> 5)  & 0x3f;
-        		pixBuffer[i+2] = color         & 0x1f;
+        		pixBuffer[i]   = (color >> 8) & 0xf8;
+        		pixBuffer[i+1] = (color >> 3) & 0xfc;
+        		pixBuffer[i+2] = (color << 3) & 0xf8;
 
 			}else if(bytePerPixel == 3)
 			{
@@ -131,7 +131,7 @@ namespace od
         }
         zstr.seekToEndOfZlib();
 
-        this->setImage(mWidth, mHeight, 1, GL_RGB, GL_RGB, GL_RGB8UI, pixBuffer, osg::Image::USE_NEW_DELETE);
+        this->setImage(mWidth, mHeight, 1, 3, GL_RGB, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
 
         Logger::info() << "Texture successfully loaded";
     }

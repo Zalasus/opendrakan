@@ -11,6 +11,7 @@
 #include <osg/PolygonMode>
 #include <osg/ShadeModel>
 #include <osgUtil/SmoothingVisitor>
+#include <osg/Texture2D>
 
 #include "OdDefines.h"
 #include "SrscRecordTypes.h"
