@@ -83,7 +83,7 @@ namespace od
 		uint32_t 				mHeight;
 		LayerType 				mType;
 		uint32_t 				mOriginX;
-		uint32_t 				mOriginY;
+		uint32_t 				mOriginZ;
 		float 					mWorldHeight;
 		std::string 			mLayerName;
 		uint32_t 				mFlags; // 2 = member of alternate blending group

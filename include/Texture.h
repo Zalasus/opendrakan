@@ -11,6 +11,7 @@
 #include <osg/Image>
 
 #include "SrscFile.h"
+#include "Asset.h"
 
 namespace od
 {
@@ -23,9 +24,11 @@ namespace od
 
         Texture(RecordId id);
 
-        void loadFromRecord(TextureFactory &factory, SrscFile &srscFile, SrscFile::DirIterator record);
+        inline RecordId getRecordId() const { return mId; }
 
+        void loadFromRecord(TextureFactory &factory, SrscFile &srscFile, SrscFile::DirIterator record);
         void exportToPng(const FilePath &path);
+
 
     private:
 
@@ -35,6 +38,15 @@ namespace od
         uint32_t mHeight;
         uint16_t mBitsPerPixel;
         uint16_t mAlphaBitsPerPixel;
+        uint32_t mColorKey;
+        RecordId mMipMapId;
+        RecordId mAlternateId;
+        uint16_t mFlags;
+        uint16_t mMipMapNumber;
+        AssetRef mClassRef;
+        uint32_t mUsageCount;
+        uint32_t mCompressionLevel;
+        uint32_t mCompressedSize;
     };
 
     typedef osg::ref_ptr<Texture> TexturePtr;

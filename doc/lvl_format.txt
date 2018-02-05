@@ -20,7 +20,7 @@ SRSC file (see riot_database_format.txt) with the following record types:
         uint32      height;
         uint32      type;  // 0 = floor, 1 = ceiling, 2 = between
         uint32      origin_x; // position of layer's top left corner in the level, where 0/0 is the top left corner of the level
-        uint32      origin_y; 
+        uint32      origin_z; 
         float       world_height;
         string      layer_name;
         uint32      flags; // 2 = member of alternate blending group

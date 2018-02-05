@@ -14,6 +14,11 @@
 namespace od
 {
 
+    DataReader::Ignore::Ignore(size_t n)
+    : mCountByte(n)
+    {
+    }
+
 	DataReader::DataReader(std::istream &stream)
 	: mStream(stream)
 	{
@@ -56,8 +61,12 @@ namespace od
 		return c;
 	}
 
+    DataReader &DataReader::operator >> (const DataReader::Ignore &i)
+    {
+	    this->ignore(i.getCount());
 
-
+        return *this;
+    }
 
 	template <>
 	DataReader &DataReader::operator >> <uint64_t>(uint64_t &l)

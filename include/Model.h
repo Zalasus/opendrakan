@@ -8,21 +8,21 @@
 #ifndef INCLUDE_MODEL_H_
 #define INCLUDE_MODEL_H_
 
-#include <Asset.h>
 #include <string>
+#include <osg/Group>
 
+#include "Asset.h"
 
 namespace od
 {
 
-	class Model
+	class Model : public osg::Group
 	{
 	public:
 
 		Model();
 
-		virtual void loadFromRecord(SrscFile &srscFile, RecordId id);
-		virtual std::string getName();
+		void loadFromRecord(SrscFile &srscFile, RecordId id);
 
 
 	private:

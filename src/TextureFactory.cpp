@@ -21,6 +21,10 @@ namespace od
 		_loadPalette();
 	}
 
+	TextureFactory::~TextureFactory()
+	{
+	}
+
 	TextureFactory::PaletteColor TextureFactory::getPaletteColor(size_t index)
 	{
 		if(index >= mPalette.size())
@@ -33,17 +37,44 @@ namespace od
 
 	TexturePtr TextureFactory::loadTexture(RecordId textureId)
 	{
-		SrscFile::DirIterator it = mSrscFile.getDirIteratorByTypeId(OD_SRSC_TEXTURE, textureId);
-		if(it == mSrscFile.getDirectoryEnd())
+	    auto it = mTextureCache.find(textureId);
+	    if(it != mTextureCache.end())
+	    {
+	        Logger::debug() << "Texture " << std::hex << textureId << std::dec << " found in cache";
+
+	        return TexturePtr(it->second);
+	    }
+
+		SrscFile::DirIterator dirIt = mSrscFile.getDirIteratorByTypeId(OD_SRSC_TEXTURE, textureId);
+		if(dirIt == mSrscFile.getDirectoryEnd())
 		{
 			throw NotFoundException("Texture not found in database");
 		}
 
-		// might as well just return a pointer to osg::Image, generate it right here and get rid of our Texture class
 		TexturePtr texture(new Texture(textureId));
-		texture->loadFromRecord(*this, mSrscFile, it);
+		texture->loadFromRecord(*this, mSrscFile, dirIt);
+		texture->addObserver(this);
+
+		mTextureCache[textureId] = texture.get();
+		Logger::debug() << "Texture factory now caching texture with ID " << std::hex << textureId << std::dec;
 
 		return texture;
+	}
+
+	void TextureFactory::objectDeleted(void *object)
+	{
+	    Texture *texture = dynamic_cast<Texture*>(static_cast<osg::Referenced*>(object)); // a bit unsafe but osg gives us no choice
+	    if(texture == nullptr)
+	    {
+	        Logger::warn() << "Texture factory was notified of deletion of non-texture object";
+	        return;
+	    }
+
+	    RecordId texId = texture->getRecordId();
+
+	    Logger::debug() << "Unregistering texture " << std::hex << texId << std::dec << " from texture cache";
+
+	    mTextureCache.erase(texId);
 	}
 
 	void TextureFactory::_loadPalette()

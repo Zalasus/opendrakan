@@ -12,6 +12,8 @@
 #include <osg/ShadeModel>
 #include <osgUtil/SmoothingVisitor>
 #include <osg/Texture2D>
+#include <osg/Material>
+#include <osg/LightModel>
 
 #include "OdDefines.h"
 #include "SrscRecordTypes.h"
@@ -30,7 +32,7 @@ namespace od
 	, mHeight(0)
 	, mType(TYPE_FLOOR)
 	, mOriginX(0)
-	, mOriginY(0)
+	, mOriginZ(0)
 	, mWorldHeight(0)
 	, mLayerName("")
 	, mFlags(0)
@@ -53,7 +55,7 @@ namespace od
 		mType = static_cast<LayerType>(type);
 
 		dr  >> mOriginX
-			>> mOriginY
+			>> mOriginZ
 			>> mWorldHeight
 			>> mLayerName
 			>> mFlags
@@ -86,7 +88,7 @@ namespace od
 		for(size_t i = 0; i < (mWidth+1)*(mHeight+1); ++i)
 		{
 			size_t xRel = i % (mWidth + 1);
-			size_t yRel = i / (mWidth + 1);
+			size_t zRel = i / (mWidth + 1);
 
 			Vertex v;
 
@@ -99,10 +101,10 @@ namespace od
 			v.heightOffset = (heightOffset - 0x8000) * 2;
 
 			float x = mOriginX + xRel;
-			float y = mOriginY + yRel;
-			float z = 0.0005*(mWorldHeight + v.heightOffset);
+			float y = 0.0005*(mWorldHeight + v.heightOffset);
+			float z = mOriginZ + zRel;
 
-			vertices->push_back(osg::Vec3(x,y,z));
+			vertices->push_back(osg::Vec3(x, y,z));
 		}
 		mGeometry->setVertexArray(vertices);
 
@@ -123,6 +125,9 @@ namespace od
 
 			dr >> textureLeftRef
 			   >> textureRightRef;
+
+			if(textureLeftRef.dbIndex != 0xffff)
+			    mLevel.getAssetAsTexture(textureLeftRef);
 
 			for(size_t i = 0; i < 8; ++i)
 			{
@@ -167,9 +172,12 @@ namespace od
         mGeometry->setColorArray(colorArray);
         mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
 
+//        osg::StateSet *st = this->getOrCreateStateSet();
+
         this->addDrawable(mGeometry);
 
         osgUtil::SmoothingVisitor sm;
+
         this->accept(sm);
 	}
 

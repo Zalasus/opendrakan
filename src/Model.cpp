@@ -21,11 +21,6 @@ namespace od
 		//_loadNameAndShading(DataReader(srscFile.getStreamForRecordTypeId(0x0200, id)));
 	}
 
-	std::string Model::getName()
-	{
-		return mModelName;
-	}
-
 	void Model::_loadNameAndShading(DataReader dr)
 	{
 		dr >> mModelName;

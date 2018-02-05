@@ -16,10 +16,21 @@ namespace od
 	{
 	public:
 
+	    class Ignore
+	    {
+	    public:
+	        Ignore(size_t n);
+	        inline size_t getCount() const { return mCountByte; }
+	    private:
+	        size_t mCountByte;
+	    };
+
 		DataReader(std::istream &stream);
 
 		template <typename T>
 		DataReader &operator>>(T &s);
+
+		DataReader &operator>>(const Ignore &s);
 
 		void read(char *data, size_t size);
 

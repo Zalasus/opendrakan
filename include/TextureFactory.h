@@ -8,6 +8,8 @@
 #ifndef INCLUDE_TEXTUREFACTORY_H_
 #define INCLUDE_TEXTUREFACTORY_H_
 
+#include <osg/Observer>
+
 #include "FilePath.h"
 #include "SrscFile.h"
 #include "Texture.h"
@@ -16,7 +18,7 @@ namespace od
 {
 	class Database;
 
-	class TextureFactory
+	class TextureFactory : public osg::Observer
 	{
 	public:
 
@@ -29,10 +31,15 @@ namespace od
 		};
 
 		TextureFactory(const FilePath &txdFilePath, Database &database);
+		virtual ~TextureFactory();
 
 		PaletteColor getPaletteColor(size_t index);
 
 		TexturePtr loadTexture(RecordId textureId);
+
+
+		// override osg::Observer
+		virtual void objectDeleted(void *object);
 
 
 	private:
@@ -43,7 +50,7 @@ namespace od
 		SrscFile mSrscFile;
 
 		std::vector<PaletteColor> mPalette;
-
+        std::map<RecordId, Texture*> mTextureCache;
 	};
 
 }
