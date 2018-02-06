@@ -8,6 +8,7 @@
 #include "TextureAtlas.h"
 
 #include <cmath>
+#include <algorithm>
 
 #include "Exception.h"
 #include "Logger.h"
@@ -17,7 +18,6 @@ namespace od
 
     TextureAtlas::TextureAtlas()
     : mFinished(false)
-    , mNewYPixelOffset(0)
     {
     }
 
@@ -49,16 +49,44 @@ namespace od
             return;
         }
 
-        // for testing purposes, build a 1x1 atlas with the last texture we find
-        TexturePtr tex;
+        // for simplicity, build a 1x* atlas
+        int atlasSizeX = 0;
+        int atlasSizeY = 0;
+        GLint bytePerPixel = 0;
+        size_t nextYOffset = 0;
         for(std::pair<AssetRef, AtlasEntry> entry : mTextureMap)
         {
-            entry.second.topleft = osg::Vec2(0, 0);
-            entry.second.bottomright = osg::Vec2(1, 1);
-            tex = entry.second.texture;
+            atlasSizeX = std::max(atlasSizeX, entry.second.texture->s());
+            bytePerPixel = std::max(bytePerPixel, entry.second.texture->getInternalTextureFormat());
+
+            entry.second.pixelY = nextYOffset;
+            nextYOffset += entry.second.texture->t();
+        }
+        atlasSizeY = nextYOffset;
+
+        mPixelBuffer.resize(atlasSizeX*atlasSizeY*bytePerPixel);
+
+        for(std::pair<AssetRef, AtlasEntry> entry : mTextureMap)
+        {
+            // copy texture row by row
+            unsigned char *atlasStart = mPixelBuffer.data() + entry.second.pixelY*atlasSizeX*bytePerPixel;
+
+            for(int row = 0; row < entry.second.texture->t(); ++row)
+            {
+                unsigned char *texStart = entry.second.texture->data() + entry.second.texture->getRowStepInBytes()*row;
+
+                memcpy(atlasStart+row*atlasSizeX, texStart, entry.second.texture->getRowSizeInBytes());
+            }
+
+            float tv = static_cast<float>(entry.second.pixelY) / atlasSizeY;
+            float bu = static_cast<float>(entry.second.texture->s()) / atlasSizeX;
+            float bv = static_cast<float>(entry.second.pixelY + entry.second.texture->t()) / atlasSizeY;
+
+            entry.second.topleft = osg::Vec2(0, tv);
+            entry.second.bottomright = osg::Vec2(bu, bv);
         }
 
-        this->setImage(tex->s(), tex->t(), 1, tex->getInternalTextureFormat(), tex->getPixelFormat(), tex->getDataType(), tex->data(), osg::Image::NO_DELETE);
+        this->setImage(atlasSizeX, nextYOffset, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, mPixelBuffer.data(), osg::Image::NO_DELETE);
 
         mFinished = true;
     }

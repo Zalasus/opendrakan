@@ -42,7 +42,6 @@ namespace od
         };
 
         bool mFinished;
-        size_t mNewYPixelOffset;
         std::map<AssetRef, AtlasEntry> mTextureMap;
         std::vector<unsigned char> mPixelBuffer;
     };
