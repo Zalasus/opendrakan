@@ -104,7 +104,7 @@ Layer data block format
     Second block is face data
     26 bytes per face, top left face first, then filled left to right, top to bottom
     
-        first 2 bytes are division:
+        first 2 bytes seem to be flags. low bit is face division:
                +-+      +-+
             0= |/|   1= |\|
                +-+      +-+

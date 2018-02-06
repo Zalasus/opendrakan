@@ -22,6 +22,12 @@
 #include "ZStream.h"
 #include "Exception.h"
 
+
+#define OD_DIV_BOTTOMLEFT_TOPRIGHT 0
+#define OD_DIV_TOPLEFT_BOTTOMRIGHT 1
+
+#define OD_LAYER_YSCALING 0.0005
+
 namespace od
 {
 
@@ -89,96 +95,168 @@ namespace od
 		{
 			size_t xRel = i % (mWidth + 1);
 			size_t zRel = i / (mWidth + 1);
+			uint8_t vertexType;
+			uint16_t heightOffsetBiased;
 
-			Vertex v;
+			dr >> vertexType
+			   >> DataReader::Ignore(1)
+			   >> heightOffsetBiased;
 
-			dr >> v.type;
-
-			dr.ignore(1);
-
-			uint16_t heightOffset;
-			dr >> heightOffset;
-			v.heightOffset = (heightOffset - 0x8000) * 2;
+			int32_t heightOffsetReal;
+			heightOffsetReal = (heightOffsetBiased - 0x8000) * 2;
 
 			float x = mOriginX + xRel;
-			float y = 0.0005*(mWorldHeight + v.heightOffset);
+			float y = OD_LAYER_YSCALING*(mWorldHeight + heightOffsetReal);
 			float z = mOriginZ + zRel;
 
-			vertices->push_back(osg::Vec3(x, y,z));
+			vertices->push_back(osg::Vec3(x, -y, z));
 		}
 		mGeometry->setVertexArray(vertices);
 
-		osg::ref_ptr<osg::DrawElementsUInt> primitiveSet(new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES, 0));
-		primitiveSet->reserve(mWidth*mHeight*6);
+		// first, collect all faces so we can build a texture atlas TODO: check if perhaps a level-wide texture atlas would be more efficient
+		std::vector<Face> faces;
+		size_t visibleTriangles = 0;
+		faces.reserve(mWidth*mHeight);
+		mTextureAtlas = new TextureAtlas;
 		for(size_t i = 0; i < mWidth*mHeight; ++i)
 		{
-			size_t faceY = i / mWidth;
-
 			Face f;
 
-			uint16_t div;
-			dr >> div;
-			f.division = div ? Face::DIV_TOPLEFT_BOTTOMRIGHT : Face::DIV_BOTTOMLEFT_TOPRIGHT;
+			dr >> f.division
+			   >> f.leftTextureRef
+			   >> f.rightTextureRef;
 
-			AssetRef textureLeftRef;
-			AssetRef textureRightRef;
-
-			dr >> textureLeftRef
-			   >> textureRightRef;
-
-			if(textureLeftRef.dbIndex != 0xffff)
-			    mLevel.getAssetAsTexture(textureLeftRef);
-
-			for(size_t i = 0; i < 8; ++i)
+			/*if(f.division != 0 && f.division != 1)
 			{
-			    uint16_t coord;
-			    dr >> coord;
+			    Logger::error() << "Layer polygon data contained invalid division value " << f.division;
+			    throw Exception("Invalid division value");
+			}*/
+
+			for(size_t j = 0; j < 8; ++j)
+			{
+			    dr >> f.texCoords[j];
 			}
 
-			//  --a-----b--
-			//    |     |
-			//    |     |
-			//  --c-----d--
-			size_t a = i + faceY;
-			size_t b = i + 1 + faceY;
-			size_t c = i + mWidth + 1 + faceY;
-			size_t d = i + mWidth + 2 + faceY;
-
-			if(f.division == Face::DIV_BOTTOMLEFT_TOPRIGHT)
+			if(f.leftTextureRef.dbIndex != 0xffff)
 			{
-				primitiveSet->push_back(a);
-				primitiveSet->push_back(b);
-				primitiveSet->push_back(c);
-
-				primitiveSet->push_back(b);
-				primitiveSet->push_back(d);
-				primitiveSet->push_back(c);
-
-			}else
-			{
-				primitiveSet->push_back(a);
-				primitiveSet->push_back(b);
-				primitiveSet->push_back(d);
-
-				primitiveSet->push_back(a);
-				primitiveSet->push_back(d);
-				primitiveSet->push_back(c);
+			    TexturePtr leftTex = mLevel.getAssetAsTexture(f.leftTextureRef);
+			    mTextureAtlas->addTexture(f.leftTextureRef, leftTex);
+			    ++visibleTriangles;
 			}
+
+			if(f.rightTextureRef.dbIndex != 0xffff)
+            {
+                TexturePtr rightTex = mLevel.getAssetAsTexture(f.rightTextureRef);
+                mTextureAtlas->addTexture(f.rightTextureRef, rightTex);
+                ++visibleTriangles;
+            }
+
+			faces.push_back(f);
 		}
+        mTextureAtlas->build();
+        osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(mTextureAtlas));
+
+        Logger::debug() << "Layer has " << visibleTriangles << " visible triangles";
+
+        osg::ref_ptr<osg::DrawElementsUInt> primitiveSet(new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES, 0));
+        osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
+        primitiveSet->reserve(visibleTriangles*3);
+        uvCoords->reserve(visibleTriangles*3);
+        for(size_t i = 0; i < mWidth*mHeight*2; ++i)
+        {
+            // TODO: holy shit this loop looks messy
+            size_t faceIndex = i/2;
+            size_t faceY = faceIndex / mWidth;
+            bool isLeft = (i%2 == 0);
+            Face f = faces[faceIndex];
+
+            // skip triangles with null texture
+            if((isLeft && f.leftTextureRef.dbIndex == 0xffff) || (!isLeft && f.rightTextureRef.dbIndex == 0xffff))
+            {
+                continue;
+            }
+
+            std::pair<osg::Vec2, osg::Vec2> uvInAtlas = isLeft ? mTextureAtlas->getUvOfTexture(f.leftTextureRef) : mTextureAtlas->getUvOfTexture(f.rightTextureRef);
+
+            //  --a-----b--
+            //    |     |
+            //    |     |
+            //  --c-----d--
+            size_t a = faceIndex + faceY;
+            size_t b = faceIndex + 1 + faceY;
+            size_t c = faceIndex + mWidth + 1 + faceY;
+            size_t d = faceIndex + mWidth + 2 + faceY;
+
+            osg::Vec2 uvA = uvInAtlas.first;
+            osg::Vec2 uvB = osg::Vec2(uvInAtlas.first.x(), uvInAtlas.second.y());
+            osg::Vec2 uvC = osg::Vec2(uvInAtlas.second.x(), uvInAtlas.first.y());
+            osg::Vec2 uvD = uvInAtlas.second;
+
+            if(f.division == OD_DIV_BOTTOMLEFT_TOPRIGHT)
+            {
+                if(isLeft)
+                {
+                    primitiveSet->push_back(a);
+                    primitiveSet->push_back(b);
+                    primitiveSet->push_back(c);
+                    uvCoords->push_back(uvA);
+                    uvCoords->push_back(uvB);
+                    uvCoords->push_back(uvC);
+
+                }else
+                {
+
+                    primitiveSet->push_back(b);
+                    primitiveSet->push_back(d);
+                    primitiveSet->push_back(c);
+                    uvCoords->push_back(uvB);
+                    uvCoords->push_back(uvD);
+                    uvCoords->push_back(uvC);
+                }
+
+            }else
+            {
+                if(isLeft)
+                {
+                    primitiveSet->push_back(a);
+                    primitiveSet->push_back(b);
+                    primitiveSet->push_back(d);
+                    uvCoords->push_back(uvA);
+                    uvCoords->push_back(uvB);
+                    uvCoords->push_back(uvD);
+
+                }else
+                {
+                    primitiveSet->push_back(a);
+                    primitiveSet->push_back(d);
+                    primitiveSet->push_back(c);
+                    uvCoords->push_back(uvA);
+                    uvCoords->push_back(uvD);
+                    uvCoords->push_back(uvC);
+                }
+            }
+        }
         mGeometry->addPrimitiveSet(primitiveSet);
+        mGeometry->setTexCoordArray(0, uvCoords);
+
+        // generate normals
+        osgUtil::SmoothingVisitor sm;
+        mGeometry->accept(sm);
 
         osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
         colorArray->push_back(osg::Vec4(0,0.7,0,0));
         mGeometry->setColorArray(colorArray);
         mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
 
-//        osg::StateSet *st = this->getOrCreateStateSet();
-
         this->addDrawable(mGeometry);
 
-        osgUtil::SmoothingVisitor sm;
+        osg::ref_ptr<osg::Material> mat(new osg::Material);
+        mat->setColorMode(osg::Material::EMISSION);
+        mat->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4(1,1,1,0));
 
-        this->accept(sm);
+        osg::StateSet *st = this->getOrCreateStateSet();
+        st->setAttributeAndModes(mat, osg::StateAttribute::ON);
+        st->setTextureAttributeAndModes(0, texture);
 	}
 
 	const char *Layer::libraryName() const
@@ -269,7 +347,7 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		Logger::verbose() << "Loading layer number " << i;
+    		Logger::verbose() << "Loading layer definition number " << i;
 
     		LayerPtr layer(new Layer(*this));
     		layer->loadDefinition(dr);
@@ -281,6 +359,8 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
+    	    Logger::verbose() << "Loading layer polygon data number " << i;
+
     		uint32_t zlibStuffSize;
 			dr >> zlibStuffSize;
 

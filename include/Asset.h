@@ -20,10 +20,14 @@ namespace od
 	{
 		RecordId assetId;
 		uint16_t dbIndex;
+
+		// so we can use this in a map
+		bool operator<(const AssetRef &right) const;
 	};
 
 	DataReader &operator>>(DataReader &left, AssetRef &right);
-}
 
+	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
+}
 
 #endif /* INCLUDE_ASSET_H_ */

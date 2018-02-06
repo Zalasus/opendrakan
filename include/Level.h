@@ -23,7 +23,7 @@
 #include "FilePath.h"
 #include "DbManager.h"
 #include "Database.h"
-
+#include "TextureAtlas.h"
 
 namespace od
 {
@@ -49,19 +49,6 @@ namespace od
 			DROPOFF_W2E = 4
 		};
 
-		struct Vertex
-		{
-			uint8_t type;
-			int32_t heightOffset; // this is the actual, signed offset, also scaled by 2!
-		};
-
-		struct Face
-		{
-			enum { DIV_BOTTOMLEFT_TOPRIGHT = 0, DIV_TOPLEFT_BOTTOMRIGHT = 1 } division;
-			uint32_t textureLeft;
-			uint32_t textureRight;
-		};
-
 		Layer(Level &level);
 
 		void loadDefinition(DataReader &dr);
@@ -76,6 +63,14 @@ namespace od
 		virtual const char *className() const;
 
 	private:
+
+		struct Face
+		{
+		    uint16_t division;
+		    AssetRef leftTextureRef;
+		    AssetRef rightTextureRef;
+		    uint16_t texCoords[8];
+		};
 
 		Level 			   &mLevel;
 		uint32_t				mId;
@@ -94,6 +89,7 @@ namespace od
 		LightDropoffType 		mLightDropoffType;
 		std::vector<uint32_t>	mVisibleLayers;
 
+		osg::ref_ptr<TextureAtlas> mTextureAtlas;
 		osg::ref_ptr<osg::Geometry> mGeometry;
 	};
 
