@@ -23,6 +23,8 @@ namespace od
 
 		// so we can use this in a map
 		bool operator<(const AssetRef &right) const;
+
+		bool isNull() const;
 	};
 
 	DataReader &operator>>(DataReader &left, AssetRef &right);

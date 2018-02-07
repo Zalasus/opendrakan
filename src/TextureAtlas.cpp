@@ -72,18 +72,20 @@ namespace od
         {
         	this->copySubImage(0, it->second.pixelY, 0, it->second.texture);
 
-            float tv = static_cast<float>(it->second.pixelY) / atlasSizeY;
-            float bu = static_cast<float>(it->second.texture->s()) / atlasSizeX;
-            float bv = static_cast<float>(it->second.pixelY + it->second.texture->t()) / atlasSizeY;
+            float tv = ((float)it->second.pixelY + 0.5) / atlasSizeY;
+            float bu = ((float)it->second.texture->s() + 0.5) / atlasSizeX;
+            float bv = (((float)it->second.pixelY + 0.5) + it->second.texture->t()) / atlasSizeY;
 
-            it->second.topleft = osg::Vec2(0, tv);
-            it->second.bottomright = osg::Vec2(bu, bv);
+            it->second.uvA = osg::Vec2(0, tv);
+            it->second.uvB = osg::Vec2(bu, tv);
+            it->second.uvC = osg::Vec2(0, bv);
+            it->second.uvD = osg::Vec2(bu, bv);
         }
 
         mFinished = true;
     }
 
-    std::pair<osg::Vec2, osg::Vec2> TextureAtlas::getUvOfTexture(const AssetRef &textureRef)
+    std::tuple<osg::Vec2, osg::Vec2, osg::Vec2, osg::Vec2> TextureAtlas::getUvOfTexture(const AssetRef &textureRef)
     {
         if(!mFinished)
         {
@@ -97,7 +99,7 @@ namespace od
             throw NotFoundException("Given texture was not added to texture atlas");
         }
 
-        return std::pair<osg::Vec2, osg::Vec2>(it->second.topleft, it->second.bottomright);
+        return std::tuple<osg::Vec2, osg::Vec2, osg::Vec2, osg::Vec2>(it->second.uvA, it->second.uvB, it->second.uvC, it->second.uvD);
     }
 
     void TextureAtlas::exportToPng(const std::string &path)

@@ -53,6 +53,7 @@ namespace od
 
 		void loadDefinition(DataReader &dr);
 		void loadPolyData(DataReader &dr);
+		void buildTextureAtlas(TextureAtlas &atlas);
 		void buildGeometry();
 
 		inline uint32_t getId() const { return mId; };

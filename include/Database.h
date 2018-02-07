@@ -44,6 +44,8 @@ namespace od
 	/**
 	 * Common interface for classes with means to translate DB indices to
 	 * actual databases, like Database and Level.
+	 *
+	 * TODO: perhaps move this into it's own header.
 	 */
 	class AssetProvider
 	{

@@ -8,7 +8,7 @@
 #ifndef TEXTUREATLAS_H_
 #define TEXTUREATLAS_H_
 
-#include <utility>
+#include <tuple>
 #include <map>
 #include <vector>
 #include <osg/Vec2>
@@ -25,10 +25,18 @@ namespace od
 
         TextureAtlas();
 
+        /**
+         * @brief Registers a texture to be used in the atlas. Call will be ignored if texture is already registered.
+         *
+         * Once the atlas has been built, this must not be called anymore or the method will throw.
+         */
         void addTexture(const AssetRef &ref, TexturePtr texture);
         void build();
 
-        std::pair<osg::Vec2, osg::Vec2> getUvOfTexture(const AssetRef &textureRef);
+        /**
+         * @brief Get UV coordinates of texture as tuple of top-left, top-right, bottom-left and bottom-right coordinates.
+         */
+        std::tuple<osg::Vec2, osg::Vec2, osg::Vec2, osg::Vec2> getUvOfTexture(const AssetRef &textureRef);
 
         void exportToPng(const std::string &path);
 
@@ -38,8 +46,10 @@ namespace od
         struct AtlasEntry
         {
             TexturePtr texture;
-            osg::Vec2 topleft;
-            osg::Vec2 bottomright;
+            osg::Vec2 uvA;
+            osg::Vec2 uvB;
+            osg::Vec2 uvC;
+            osg::Vec2 uvD;
             size_t pixelY;
         };
 

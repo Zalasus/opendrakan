@@ -124,28 +124,69 @@ namespace od
 
 	}
 
+	void Layer::buildTextureAtlas(TextureAtlas &atlas)
+	{
+		Logger::debug() << "Building texture atlas for layer " << mId;
+
+		for(size_t i = 0; i < mWidth*mHeight; ++i)
+		{
+			Cell c = mCells[i];
+
+			if(!c.leftTextureRef.isNull())
+			{
+				TexturePtr tex = mLevel.getAssetAsTexture(c.leftTextureRef);
+				atlas.addTexture(c.leftTextureRef, tex);
+			}
+
+			if(!c.rightTextureRef.isNull())
+			{
+				TexturePtr tex = mLevel.getAssetAsTexture(c.rightTextureRef);
+				atlas.addTexture(c.rightTextureRef, tex);
+			}
+		}
+
+		atlas.build();
+	}
+
 	void Layer::buildGeometry()
 	{
 		Logger::debug() << "Building geometry for layer " << mId;
 
+		// for now, build our own texture atlas for every layer here. we can decide to build a level-wide one later
+		mTextureAtlas = osg::ref_ptr<TextureAtlas>(new TextureAtlas);
+		this->buildTextureAtlas(*mTextureAtlas);
+
 		mGeometry = osg::ref_ptr<osg::Geometry>(new osg::Geometry);
 
-		// iterate over cells and generate triangles
+		// iterate over triangles and generate vertices and UVs
         osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array);
+        osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
         vertices->reserve(mWidth*mHeight*6); // each cell has 2 triangles, each triangle has 3 vertices
-		for(size_t i = 0; i < mWidth*mHeight; ++i)
+        uvCoords->reserve(mWidth*mHeight*6);
+		for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
 		{
-			int aXRel = i%mWidth;
-            int aZRel = i/mWidth;// has to be an integer operation to floor it
+			size_t cellIndex = triIndex/2;
+			bool isLeft = (triIndex%2 == 0);
+			Cell cell = mCells[cellIndex];
+			AssetRef textureRef = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+
+			// skip triangles with no texture on them. they'd be invisible anyway
+			if(textureRef.isNull())
+			{
+				continue;
+			}
+
+			int aXRel = cellIndex%mWidth;
+            int aZRel = cellIndex/mWidth;// has to be an integer operation to floor it
 			float aX = mOriginX + aXRel;
             float aZ = mOriginZ + aZRel;
 
 			// calculate indices of corner vertices
 			// z x> --a------b---
             // V      | cell | cell
-            //        |  #i  | #i+1
+            //        |  #n  | #n+1
             //      --c------d---
-            size_t a = i + aZRel; // add row index since we want to skip top right vertex in every row passed so far
+            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
             size_t b = a + 1;
             size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
             size_t d = b + (mWidth+1);
@@ -155,39 +196,73 @@ namespace od
             osg::Vec3 cVec = osg::Vec3(  aX, mVertices[c].absoluteHeight, aZ+1);
             osg::Vec3 dVec = osg::Vec3(aX+1, mVertices[d].absoluteHeight, aZ+1);
 
-            if(mCells[i].flags & OD_LAYER_FLAG_DIV_SLASH)
+            osg::Vec2 aUvVec;
+            osg::Vec2 bUvVec;
+            osg::Vec2 cUvVec;
+            osg::Vec2 dUvVec;
+            std::tie(aUvVec, bUvVec, cUvVec, dUvVec) = mTextureAtlas->getUvOfTexture(textureRef);
+
+            if(mCells[cellIndex].flags & OD_LAYER_FLAG_DIV_SLASH)
             {
-            	// left triangle
-            	vertices->push_back(cVec);
-            	vertices->push_back(bVec);
-				vertices->push_back(aVec);
+            	if(isLeft)
+            	{
+					vertices->push_back(cVec);
+					vertices->push_back(bVec);
+					vertices->push_back(aVec);
 
-				// right triangle
-				vertices->push_back(cVec);
-				vertices->push_back(dVec);
-                vertices->push_back(bVec);
+					uvCoords->push_back(cUvVec);
+					uvCoords->push_back(bUvVec);
+					uvCoords->push_back(aUvVec);
 
-            }else
+            	}else
+            	{
+					vertices->push_back(cVec);
+					vertices->push_back(dVec);
+					vertices->push_back(bVec);
+
+					uvCoords->push_back(cUvVec);
+					uvCoords->push_back(dUvVec);
+					uvCoords->push_back(bUvVec);
+            	}
+
+            }else // division = BACKSLASH
             {
-            	// left triangle
-            	vertices->push_back(aVec);
-            	vertices->push_back(cVec);
-				vertices->push_back(dVec);
+            	if(isLeft)
+            	{
+					vertices->push_back(aVec);
+					vertices->push_back(cVec);
+					vertices->push_back(dVec);
 
-				// right triangle
-                vertices->push_back(aVec);
-                vertices->push_back(dVec);
-				vertices->push_back(bVec);
+					uvCoords->push_back(aUvVec);
+					uvCoords->push_back(cUvVec);
+					uvCoords->push_back(dUvVec);
+
+            	}else
+				{
+					vertices->push_back(aVec);
+					vertices->push_back(dVec);
+					vertices->push_back(bVec);
+
+					uvCoords->push_back(aUvVec);
+					uvCoords->push_back(dUvVec);
+					uvCoords->push_back(bUvVec);
+            	}
             }
 		}
 		mGeometry->setVertexArray(vertices);
-		mGeometry->addPrimitiveSet(new osg::DrawArrays(osg::DrawArrays::TRIANGLES, 0, mWidth*mHeight*6));
+		mGeometry->setTexCoordArray(0, uvCoords);
+		mGeometry->addPrimitiveSet(new osg::DrawArrays(osg::DrawArrays::TRIANGLES, 0, vertices->size()));
 
         // add color
         osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
         colorArray->push_back(osg::Vec4(1,1,1,0));
         mGeometry->setColorArray(colorArray);
         mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+        // setup texture
+        osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D);
+        texture->setImage(mTextureAtlas);
+        mGeometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
 
         if(mGeometry->checkForDeprecatedData())
         {
