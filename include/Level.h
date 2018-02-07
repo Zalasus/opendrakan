@@ -53,6 +53,7 @@ namespace od
 
 		void loadDefinition(DataReader &dr);
 		void loadPolyData(DataReader &dr);
+		void buildGeometry();
 
 		inline uint32_t getId() const { return mId; };
 		inline std::string getName() const { return mLayerName; };
@@ -64,12 +65,19 @@ namespace od
 
 	private:
 
-		struct Face
+		struct Cell
 		{
-		    uint16_t division;
+		    uint16_t flags;
 		    AssetRef leftTextureRef;
 		    AssetRef rightTextureRef;
 		    uint16_t texCoords[8];
+		};
+
+		struct Vertex
+		{
+			uint8_t type;
+			int32_t heightOffset;
+			float absoluteHeight;
 		};
 
 		Level 			   &mLevel;
@@ -91,6 +99,9 @@ namespace od
 
 		osg::ref_ptr<TextureAtlas> mTextureAtlas;
 		osg::ref_ptr<osg::Geometry> mGeometry;
+
+		std::vector<Vertex> mVertices;
+		std::vector<Cell>   mCells;
 	};
 
 
@@ -102,6 +113,8 @@ namespace od
     public:
 
         Level(const FilePath &levelPath, DbManager &dbManager);
+
+        inline FilePath getFilePath() const { return mLevelPath; }
 
         // override osg::Group
         virtual const char *libraryName() const;

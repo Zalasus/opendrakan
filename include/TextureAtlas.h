@@ -30,6 +30,8 @@ namespace od
 
         std::pair<osg::Vec2, osg::Vec2> getUvOfTexture(const AssetRef &textureRef);
 
+        void exportToPng(const std::string &path);
+
 
     private:
 
@@ -43,7 +45,6 @@ namespace od
 
         bool mFinished;
         std::map<AssetRef, AtlasEntry> mTextureMap;
-        std::vector<unsigned char> mPixelBuffer;
     };
 
 }

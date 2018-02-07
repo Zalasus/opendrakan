@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <algorithm>
+#include <osgDB/WriteFile>
 
 #include "Exception.h"
 #include "Logger.h"
@@ -41,7 +42,9 @@ namespace od
 
     void TextureAtlas::build()
     {
-        // this is where the magic happens
+    	// this is where the magic happens
+
+    	Logger::debug() << "Building texture atlas";
 
         if(mTextureMap.size() == 0)
         {
@@ -52,41 +55,30 @@ namespace od
         // for simplicity, build a 1x* atlas
         int atlasSizeX = 0;
         int atlasSizeY = 0;
-        GLint bytePerPixel = 0;
         size_t nextYOffset = 0;
-        for(std::pair<AssetRef, AtlasEntry> entry : mTextureMap)
+        for(auto it = mTextureMap.begin(); it != mTextureMap.end(); ++it)
         {
-            atlasSizeX = std::max(atlasSizeX, entry.second.texture->s());
-            bytePerPixel = std::max(bytePerPixel, entry.second.texture->getInternalTextureFormat());
+            atlasSizeX = std::max(atlasSizeX, it->second.texture->s());
 
-            entry.second.pixelY = nextYOffset;
-            nextYOffset += entry.second.texture->t();
+            it->second.pixelY = nextYOffset;
+            nextYOffset += it->second.texture->t();
         }
         atlasSizeY = nextYOffset;
 
-        mPixelBuffer.resize(atlasSizeX*atlasSizeY*bytePerPixel);
+        unsigned char *pixelBuffer = new unsigned char[atlasSizeX*atlasSizeY*4];
+        this->setImage(atlasSizeX, atlasSizeY, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixelBuffer, osg::Image::USE_NEW_DELETE);
 
-        for(std::pair<AssetRef, AtlasEntry> entry : mTextureMap)
+        for(auto it = mTextureMap.begin(); it != mTextureMap.end(); ++it)
         {
-            // copy texture row by row
-            unsigned char *atlasStart = mPixelBuffer.data() + entry.second.pixelY*atlasSizeX*bytePerPixel;
+        	this->copySubImage(0, it->second.pixelY, 0, it->second.texture);
 
-            for(int row = 0; row < entry.second.texture->t(); ++row)
-            {
-                unsigned char *texStart = entry.second.texture->data() + entry.second.texture->getRowStepInBytes()*row;
+            float tv = static_cast<float>(it->second.pixelY) / atlasSizeY;
+            float bu = static_cast<float>(it->second.texture->s()) / atlasSizeX;
+            float bv = static_cast<float>(it->second.pixelY + it->second.texture->t()) / atlasSizeY;
 
-                memcpy(atlasStart+row*atlasSizeX, texStart, entry.second.texture->getRowSizeInBytes());
-            }
-
-            float tv = static_cast<float>(entry.second.pixelY) / atlasSizeY;
-            float bu = static_cast<float>(entry.second.texture->s()) / atlasSizeX;
-            float bv = static_cast<float>(entry.second.pixelY + entry.second.texture->t()) / atlasSizeY;
-
-            entry.second.topleft = osg::Vec2(0, tv);
-            entry.second.bottomright = osg::Vec2(bu, bv);
+            it->second.topleft = osg::Vec2(0, tv);
+            it->second.bottomright = osg::Vec2(bu, bv);
         }
-
-        this->setImage(atlasSizeX, nextYOffset, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, mPixelBuffer.data(), osg::Image::NO_DELETE);
 
         mFinished = true;
     }
@@ -106,6 +98,11 @@ namespace od
         }
 
         return std::pair<osg::Vec2, osg::Vec2>(it->second.topleft, it->second.bottomright);
+    }
+
+    void TextureAtlas::exportToPng(const std::string &path)
+    {
+    	osgDB::writeImageFile(*this, path);
     }
 
 }

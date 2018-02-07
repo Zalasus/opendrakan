@@ -22,9 +22,9 @@
 #include "ZStream.h"
 #include "Exception.h"
 
-
-#define OD_DIV_BOTTOMLEFT_TOPRIGHT 0
-#define OD_DIV_TOPLEFT_BOTTOMRIGHT 1
+// yeak, i know these are unintuitive at first. but they are kinda shorter
+#define OD_LAYER_FLAG_DIV_SLASH     0
+#define OD_LAYER_FLAG_DIV_BACKSLASH 1
 
 #define OD_LAYER_YSCALING 0.0005
 
@@ -87,14 +87,9 @@ namespace od
 
 	void Layer::loadPolyData(DataReader &dr)
 	{
-		mGeometry = osg::ref_ptr<osg::Geometry>(new osg::Geometry());
-
-        osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array());
-        vertices->reserve((mWidth+1)*(mHeight+1));
+		mVertices.reserve((mWidth+1)*(mHeight+1));
 		for(size_t i = 0; i < (mWidth+1)*(mHeight+1); ++i)
 		{
-			size_t xRel = i % (mWidth + 1);
-			size_t zRel = i / (mWidth + 1);
 			uint8_t vertexType;
 			uint16_t heightOffsetBiased;
 
@@ -102,161 +97,108 @@ namespace od
 			   >> DataReader::Ignore(1)
 			   >> heightOffsetBiased;
 
-			int32_t heightOffsetReal;
-			heightOffsetReal = (heightOffsetBiased - 0x8000) * 2;
+			Vertex v;
+			v.type = vertexType;
+			v.heightOffset = (heightOffsetBiased - 0x8000) * 2;
+			v.absoluteHeight = OD_LAYER_YSCALING*(mWorldHeight + v.heightOffset);
 
-			float x = mOriginX + xRel;
-			float y = OD_LAYER_YSCALING*(mWorldHeight + heightOffsetReal);
-			float z = mOriginZ + zRel;
-
-			vertices->push_back(osg::Vec3(x, -y, z));
+			mVertices.push_back(v);
 		}
-		mGeometry->setVertexArray(vertices);
 
-		// first, collect all faces so we can build a texture atlas TODO: check if perhaps a level-wide texture atlas would be more efficient
-		std::vector<Face> faces;
-		size_t visibleTriangles = 0;
-		faces.reserve(mWidth*mHeight);
-		mTextureAtlas = new TextureAtlas;
+		mCells.reserve(mWidth*mHeight);
 		for(size_t i = 0; i < mWidth*mHeight; ++i)
 		{
-			Face f;
+			Cell c;
 
-			dr >> f.division
-			   >> f.leftTextureRef
-			   >> f.rightTextureRef;
-
-			/*if(f.division != 0 && f.division != 1)
-			{
-			    Logger::error() << "Layer polygon data contained invalid division value " << f.division;
-			    throw Exception("Invalid division value");
-			}*/
+			dr >> c.flags
+			   >> c.leftTextureRef
+			   >> c.rightTextureRef;
 
 			for(size_t j = 0; j < 8; ++j)
 			{
-			    dr >> f.texCoords[j];
+			    dr >> c.texCoords[j];
 			}
 
-			if(f.leftTextureRef.dbIndex != 0xffff)
-			{
-			    TexturePtr leftTex = mLevel.getAssetAsTexture(f.leftTextureRef);
-			    mTextureAtlas->addTexture(f.leftTextureRef, leftTex);
-			    ++visibleTriangles;
-			}
-
-			if(f.rightTextureRef.dbIndex != 0xffff)
-            {
-                TexturePtr rightTex = mLevel.getAssetAsTexture(f.rightTextureRef);
-                mTextureAtlas->addTexture(f.rightTextureRef, rightTex);
-                ++visibleTriangles;
-            }
-
-			faces.push_back(f);
+			mCells.push_back(c);
 		}
-        mTextureAtlas->build();
-        osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(mTextureAtlas));
 
-        Logger::debug() << "Layer has " << visibleTriangles << " visible triangles";
+	}
 
-        osg::ref_ptr<osg::DrawElementsUInt> primitiveSet(new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES, 0));
-        osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
-        primitiveSet->reserve(visibleTriangles*3);
-        uvCoords->reserve(visibleTriangles*3);
-        for(size_t i = 0; i < mWidth*mHeight*2; ++i)
-        {
-            // TODO: holy shit this loop looks messy
-            size_t faceIndex = i/2;
-            size_t faceY = faceIndex / mWidth;
-            bool isLeft = (i%2 == 0);
-            Face f = faces[faceIndex];
+	void Layer::buildGeometry()
+	{
+		Logger::debug() << "Building geometry for layer " << mId;
 
-            // skip triangles with null texture
-            if((isLeft && f.leftTextureRef.dbIndex == 0xffff) || (!isLeft && f.rightTextureRef.dbIndex == 0xffff))
+		mGeometry = osg::ref_ptr<osg::Geometry>(new osg::Geometry);
+
+		// iterate over cells and generate triangles
+        osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array);
+        vertices->reserve(mWidth*mHeight*6); // each cell has 2 triangles, each triangle has 3 vertices
+		for(size_t i = 0; i < mWidth*mHeight; ++i)
+		{
+			int aXRel = i%mWidth;
+            int aZRel = i/mWidth;// has to be an integer operation to floor it
+			float aX = mOriginX + aXRel;
+            float aZ = mOriginZ + aZRel;
+
+			// calculate indices of corner vertices
+			// z x> --a------b---
+            // V      | cell | cell
+            //        |  #i  | #i+1
+            //      --c------d---
+            size_t a = i + aZRel; // add row index since we want to skip top right vertex in every row passed so far
+            size_t b = a + 1;
+            size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
+            size_t d = b + (mWidth+1);
+
+            osg::Vec3 aVec = osg::Vec3(  aX, mVertices[a].absoluteHeight,   aZ);
+            osg::Vec3 bVec = osg::Vec3(aX+1, mVertices[b].absoluteHeight,   aZ);
+            osg::Vec3 cVec = osg::Vec3(  aX, mVertices[c].absoluteHeight, aZ+1);
+            osg::Vec3 dVec = osg::Vec3(aX+1, mVertices[d].absoluteHeight, aZ+1);
+
+            if(mCells[i].flags & OD_LAYER_FLAG_DIV_SLASH)
             {
-                continue;
-            }
+            	// left triangle
+            	vertices->push_back(cVec);
+            	vertices->push_back(bVec);
+				vertices->push_back(aVec);
 
-            std::pair<osg::Vec2, osg::Vec2> uvInAtlas = isLeft ? mTextureAtlas->getUvOfTexture(f.leftTextureRef) : mTextureAtlas->getUvOfTexture(f.rightTextureRef);
-
-            //  --a-----b--
-            //    |     |
-            //    |     |
-            //  --c-----d--
-            size_t a = faceIndex + faceY;
-            size_t b = faceIndex + 1 + faceY;
-            size_t c = faceIndex + mWidth + 1 + faceY;
-            size_t d = faceIndex + mWidth + 2 + faceY;
-
-            osg::Vec2 uvA = uvInAtlas.first;
-            osg::Vec2 uvB = osg::Vec2(uvInAtlas.first.x(), uvInAtlas.second.y());
-            osg::Vec2 uvC = osg::Vec2(uvInAtlas.second.x(), uvInAtlas.first.y());
-            osg::Vec2 uvD = uvInAtlas.second;
-
-            if(f.division == OD_DIV_BOTTOMLEFT_TOPRIGHT)
-            {
-                if(isLeft)
-                {
-                    primitiveSet->push_back(a);
-                    primitiveSet->push_back(b);
-                    primitiveSet->push_back(c);
-                    uvCoords->push_back(uvA);
-                    uvCoords->push_back(uvB);
-                    uvCoords->push_back(uvC);
-
-                }else
-                {
-
-                    primitiveSet->push_back(b);
-                    primitiveSet->push_back(d);
-                    primitiveSet->push_back(c);
-                    uvCoords->push_back(uvB);
-                    uvCoords->push_back(uvD);
-                    uvCoords->push_back(uvC);
-                }
+				// right triangle
+				vertices->push_back(cVec);
+				vertices->push_back(dVec);
+                vertices->push_back(bVec);
 
             }else
             {
-                if(isLeft)
-                {
-                    primitiveSet->push_back(a);
-                    primitiveSet->push_back(b);
-                    primitiveSet->push_back(d);
-                    uvCoords->push_back(uvA);
-                    uvCoords->push_back(uvB);
-                    uvCoords->push_back(uvD);
+            	// left triangle
+            	vertices->push_back(aVec);
+            	vertices->push_back(cVec);
+				vertices->push_back(dVec);
 
-                }else
-                {
-                    primitiveSet->push_back(a);
-                    primitiveSet->push_back(d);
-                    primitiveSet->push_back(c);
-                    uvCoords->push_back(uvA);
-                    uvCoords->push_back(uvD);
-                    uvCoords->push_back(uvC);
-                }
+				// right triangle
+                vertices->push_back(aVec);
+                vertices->push_back(dVec);
+				vertices->push_back(bVec);
             }
-        }
-        mGeometry->addPrimitiveSet(primitiveSet);
-        mGeometry->setTexCoordArray(0, uvCoords);
+		}
+		mGeometry->setVertexArray(vertices);
+		mGeometry->addPrimitiveSet(new osg::DrawArrays(osg::DrawArrays::TRIANGLES, 0, mWidth*mHeight*6));
 
-        // generate normals
-        osgUtil::SmoothingVisitor sm;
-        mGeometry->accept(sm);
-
+        // add color
         osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
-        colorArray->push_back(osg::Vec4(0,0.7,0,0));
+        colorArray->push_back(osg::Vec4(1,1,1,0));
         mGeometry->setColorArray(colorArray);
         mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
 
+        if(mGeometry->checkForDeprecatedData())
+        {
+        	Logger::warn() << "Layer " << mId << " geometry contains deprecated data";
+        }
+
         this->addDrawable(mGeometry);
 
-        osg::ref_ptr<osg::Material> mat(new osg::Material);
-        mat->setColorMode(osg::Material::EMISSION);
-        mat->setEmission(osg::Material::FRONT_AND_BACK, osg::Vec4(1,1,1,0));
-
-        osg::StateSet *st = this->getOrCreateStateSet();
-        st->setAttributeAndModes(mat, osg::StateAttribute::ON);
-        st->setTextureAttributeAndModes(0, texture);
+        // generate normals
+        osgUtil::SmoothingVisitor sm;
+        this->accept(sm);
 	}
 
 	const char *Layer::libraryName() const
@@ -347,8 +289,6 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		Logger::verbose() << "Loading layer definition number " << i;
-
     		LayerPtr layer(new Layer(*this));
     		layer->loadDefinition(dr);
 
@@ -359,8 +299,6 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    	    Logger::verbose() << "Loading layer polygon data number " << i;
-
     		uint32_t zlibStuffSize;
 			dr >> zlibStuffSize;
 
@@ -375,6 +313,8 @@ namespace od
 			{
 				throw IoException("ZStream read either too many or too few bytes");
 			}
+
+			mLayers[i]->buildGeometry();
 
 			this->addChild(mLayers[i].get());
     	}
