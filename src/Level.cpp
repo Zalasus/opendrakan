@@ -262,6 +262,8 @@ namespace od
         // setup texture
         osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D);
         texture->setImage(mTextureAtlas);
+        texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST);
+        texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST);
         mGeometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
 
         if(mGeometry->checkForDeprecatedData())

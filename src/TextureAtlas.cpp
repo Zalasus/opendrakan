@@ -72,14 +72,15 @@ namespace od
         {
         	this->copySubImage(0, it->second.pixelY, 0, it->second.texture);
 
-            float tv = ((float)it->second.pixelY + 0.5) / atlasSizeY;
-            float bu = ((float)it->second.texture->s() + 0.5) / atlasSizeX;
-            float bv = (((float)it->second.pixelY + 0.5) + it->second.texture->t()) / atlasSizeY;
+        	float au = 0.5 / atlasSizeX;
+            float av = ((float)it->second.pixelY + 0.5) / atlasSizeY;
+            float du = ((float)it->second.texture->s() + 0.5) / atlasSizeX;
+            float dv = (((float)it->second.pixelY + 0.5) + it->second.texture->t()) / atlasSizeY;
 
-            it->second.uvA = osg::Vec2(0, tv);
-            it->second.uvB = osg::Vec2(bu, tv);
-            it->second.uvC = osg::Vec2(0, bv);
-            it->second.uvD = osg::Vec2(bu, bv);
+            it->second.uvA = osg::Vec2(au, av);
+            it->second.uvB = osg::Vec2(du, av);
+            it->second.uvC = osg::Vec2(au, dv);
+            it->second.uvD = osg::Vec2(du, dv);
         }
 
         mFinished = true;
