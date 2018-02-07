@@ -12,12 +12,33 @@
 
 namespace od
 {
+
+	class Asset
+	{
+	public:
+
+		Asset(RecordId assetId);
+		virtual ~Asset();
+
+		inline RecordId getAssetId() const { return mId; }
+
+		virtual const char *getAssetTypeName() const = 0;
+
+
+	private:
+
+		RecordId mId;
+	};
+
 	/**
 	 * Structure for representing a Record-ID & Database-Index pair as they
 	 * appear all over the engines files when referencing another asset.
 	 */
 	struct AssetRef
 	{
+		AssetRef() : assetId(0), dbIndex(0) {}
+		AssetRef(RecordId id, uint16_t index) : assetId(id), dbIndex(index) {}
+
 		RecordId assetId;
 		uint16_t dbIndex;
 
@@ -30,6 +51,7 @@ namespace od
 	DataReader &operator>>(DataReader &left, AssetRef &right);
 
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
+
 }
 
 #endif /* INCLUDE_ASSET_H_ */

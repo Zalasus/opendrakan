@@ -10,6 +10,8 @@
 
 #include <osg/Observer>
 
+#include "Asset.h"
+#include "AssetFactory.h"
 #include "FilePath.h"
 #include "SrscFile.h"
 #include "Texture.h"
@@ -18,7 +20,7 @@ namespace od
 {
 	class Database;
 
-	class TextureFactory : public osg::Observer
+	class TextureFactory : public AssetFactory<Texture>
 	{
 	public:
 
@@ -31,26 +33,21 @@ namespace od
 		};
 
 		TextureFactory(const FilePath &txdFilePath, Database &database);
-		virtual ~TextureFactory();
 
 		PaletteColor getPaletteColor(size_t index);
 
-		TexturePtr loadTexture(RecordId textureId);
 
+	protected:
 
-		// override osg::Observer
-		virtual void objectDeleted(void *object);
+		// implement AssetFactory<Texture>
+		TexturePtr loadAsset(RecordId textureId);
 
 
 	private:
 
 		void _loadPalette();
 
-		Database &mDatabase;
-		SrscFile mSrscFile;
-
 		std::vector<PaletteColor> mPalette;
-        std::map<RecordId, Texture*> mTextureCache;
 	};
 
 }

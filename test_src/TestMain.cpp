@@ -12,6 +12,10 @@
 #include <unistd.h>
 
 #include <osg/Group>
+#include <osg/Geode>
+#include <osgDB/ReadFile>
+#include <osg/MatrixTransform>
+#include <osg/PositionAttitudeTransform>
 #include <osgViewer/CompositeViewer>
 #include <osgViewer/View>
 #include <osgViewer/ViewerEventHandlers>

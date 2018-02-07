@@ -15,14 +15,9 @@ namespace od
 {
 
 	TextureFactory::TextureFactory(const FilePath &txdFilePath, Database &database)
-	: mDatabase(database)
-	, mSrscFile(txdFilePath)
+	: AssetFactory<Texture>(txdFilePath, database)
 	{
 		_loadPalette();
-	}
-
-	TextureFactory::~TextureFactory()
-	{
 	}
 
 	TextureFactory::PaletteColor TextureFactory::getPaletteColor(size_t index)
@@ -35,59 +30,31 @@ namespace od
 		return mPalette[index];
 	}
 
-	TexturePtr TextureFactory::loadTexture(RecordId textureId)
+	TexturePtr TextureFactory::loadAsset(RecordId textureId)
 	{
-	    auto it = mTextureCache.find(textureId);
-	    if(it != mTextureCache.end())
-	    {
-	        Logger::debug() << "Texture " << std::hex << textureId << std::dec << " found in cache";
-
-	        return TexturePtr(it->second);
-	    }
-
-		SrscFile::DirIterator dirIt = mSrscFile.getDirIteratorByTypeId(OD_SRSC_TEXTURE, textureId);
-		if(dirIt == mSrscFile.getDirectoryEnd())
+		SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(OD_SRSC_TEXTURE, textureId);
+		if(dirIt == getSrscFile().getDirectoryEnd())
 		{
 			throw NotFoundException("Texture not found in database");
 		}
 
 		TexturePtr texture(new Texture(textureId));
-		texture->loadFromRecord(*this, mSrscFile, dirIt);
-		texture->addObserver(this);
-
-		mTextureCache[textureId] = texture.get();
-		Logger::debug() << "Texture factory now caching texture with ID " << std::hex << textureId << std::dec;
+		texture->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(dirIt)));
 
 		return texture;
-	}
-
-	void TextureFactory::objectDeleted(void *object)
-	{
-	    Texture *texture = dynamic_cast<Texture*>(static_cast<osg::Referenced*>(object)); // a bit unsafe but osg gives us no choice
-	    if(texture == nullptr)
-	    {
-	        Logger::warn() << "Texture factory was notified of deletion of non-texture object";
-	        return;
-	    }
-
-	    RecordId texId = texture->getRecordId();
-
-	    Logger::debug() << "Unregistering texture " << std::hex << texId << std::dec << " from texture cache";
-
-	    mTextureCache.erase(texId);
 	}
 
 	void TextureFactory::_loadPalette()
 	{
 		Logger::verbose() << "Loading texture database palette";
 
-		SrscFile::DirIterator it = mSrscFile.getDirIteratorByType(OD_SRSC_PALETTE);
-		if(it == mSrscFile.getDirectoryEnd())
+		SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(OD_SRSC_PALETTE);
+		if(it == getSrscFile().getDirectoryEnd())
 		{
 			return;
 		}
 
-		DataReader dr(mSrscFile.getStreamForRecord(it));
+		DataReader dr(getSrscFile().getStreamForRecord(it));
 
 		uint16_t colorCount;
 		dr >> colorCount;

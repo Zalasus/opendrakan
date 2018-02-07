@@ -30,7 +30,7 @@ namespace od
 {
 
     Texture::Texture(RecordId id)
-    : mId(id)
+    : Asset(id)
     , mWidth(0)
     , mHeight(0)
     , mBitsPerPixel(0)
@@ -47,11 +47,9 @@ namespace od
 
     }
 
-    void Texture::loadFromRecord(TextureFactory &factory, SrscFile &srscFile, SrscFile::DirIterator record)
+    void Texture::loadFromRecord(TextureFactory &factory, DataReader dr)
     {
-    	Logger::verbose() << "Loading texture " << std::hex << mId << std::dec;
-
-        DataReader dr(srscFile.getStreamForRecord(record));
+    	Logger::verbose() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
 
         uint32_t rowSpacing; // TODO: shouldn't we do something with this?
 

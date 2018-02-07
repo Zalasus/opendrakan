@@ -18,21 +18,25 @@ namespace od
 
 	class TextureFactory;
 
-    class Texture : public osg::Image
+    class Texture : public Asset, public osg::Image
     {
     public:
 
         Texture(RecordId id);
 
-        inline RecordId getRecordId() const { return mId; }
+        void loadFromRecord(TextureFactory &factory, DataReader dr);
 
-        void loadFromRecord(TextureFactory &factory, SrscFile &srscFile, SrscFile::DirIterator record);
         void exportToPng(const FilePath &path);
+
+        // implement Asset
+        virtual const char *getAssetTypeName() const { return "texture"; }
+
+        // override osg::Image
+        virtual const char *libraryName() const { return "od";    }
+        virtual const char *className()   const { return "Texture"; }
 
 
     private:
-
-        RecordId mId;
 
         uint32_t mWidth;
         uint32_t mHeight;

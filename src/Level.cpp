@@ -8,12 +8,8 @@
 #include "Level.h"
 
 #include <algorithm>
-#include <osg/PolygonMode>
-#include <osg/ShadeModel>
 #include <osgUtil/SmoothingVisitor>
 #include <osg/Texture2D>
-#include <osg/Material>
-#include <osg/LightModel>
 
 #include "OdDefines.h"
 #include "SrscRecordTypes.h"
@@ -454,7 +450,7 @@ namespace od
 
     TexturePtr Level::getAssetAsTexture(const AssetRef &ref)
 	{
-    	Logger::debug() << "Requested asset " << ref.assetId << " from level dependency " << ref.dbIndex;
+    	Logger::debug() << "Requested texture " << ref.assetId << " from level dependency " << ref.dbIndex;
 
         auto it = mDependencyMap.find(ref.dbIndex);
         if(it == mDependencyMap.end())
@@ -468,6 +464,24 @@ namespace od
         AssetRef foreignRef = ref;
         foreignRef.dbIndex = 0;
         return it->second.get().getAssetAsTexture(foreignRef);
+    }
+
+    ModelPtr Level::getAssetAsModel(const AssetRef &ref)
+    {
+    	Logger::debug() << "Requested model " << ref.assetId << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+
+            throw NotFoundException("Database index not found in level dependencies");
+        }
+
+        // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
+        AssetRef foreignRef = ref;
+        foreignRef.dbIndex = 0;
+        return it->second.get().getAssetAsModel(foreignRef);
     }
 }
 

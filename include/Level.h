@@ -121,8 +121,9 @@ namespace od
         virtual const char *libraryName() const;
         virtual const char *className() const;
 
-        // implement AssetRefTranslator
+        // implement AssetProvider
         virtual TexturePtr getAssetAsTexture(const AssetRef &ref);
+        virtual ModelPtr getAssetAsModel(const AssetRef &ref);
 
 
     private:

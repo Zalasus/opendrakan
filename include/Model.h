@@ -9,33 +9,56 @@
 #define INCLUDE_MODEL_H_
 
 #include <string>
-#include <osg/Group>
+#include <osg/Geode>
+#include <osg/Vec3>
+#include <osg/Texture2D>
 
 #include "Asset.h"
 
 namespace od
 {
 
-	class Model : public osg::Group
+	class ModelFactory;
+
+	class Model : public Asset, public osg::Geode
 	{
 	public:
 
-		Model();
+		Model(RecordId modelId);
 
-		void loadFromRecord(SrscFile &srscFile, RecordId id);
+		void loadNameAndShading(ModelFactory &factory, DataReader dr);
+		void loadVertices(ModelFactory &factory, DataReader dr);
+		void loadFaces(ModelFactory &factory, DataReader dr);
+		void loadTextures(ModelFactory &factory, DataReader dr);
+		void loadBoundingData(ModelFactory &factory, DataReader dr);
+		void buildGeometry();
+
+		// implement Asset
+        virtual const char *getAssetTypeName() const { return "model"; }
+
+		// override osg::Group
+		virtual const char *libraryName() const { return "od";    }
+        virtual const char *className()   const { return "Model"; }
 
 
 	private:
 
-		void _loadNameAndShading(DataReader dr);
-		void _loadVertices(DataReader dr);
-		void _loadFaces(DataReader dr);
-		void _loadMaterials(DataReader dr);
-		void _loadBoundingData(DataReader dr);
+        struct Face
+		{
+        	uint16_t vertexCount;
+        	uint16_t materialIndex;
+
+        	uint16_t  vertexIndices[4];
+        	osg::Vec2 vertexUvCoords[4];
+		};
 
 		std::string mModelName;
+		std::vector<osg::Vec3> mVertices;
+		std::vector<Face> mFaces;
+		std::vector<osg::ref_ptr<osg::Texture2D>> mTextures;
 	};
 
+	typedef osg::ref_ptr<Model> ModelPtr;
 }
 
 #endif /* INCLUDE_MODEL_H_ */

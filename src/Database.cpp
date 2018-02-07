@@ -133,6 +133,7 @@ namespace od
             throw Exception("Found less dependency definitions than stated in dependencies statement");
         }
 
+
         // now that the database is loaded, create the various asset factories
 
         FilePath txdPath = mDbFilePath.ext(".txd");
@@ -145,7 +146,20 @@ namespace od
         {
         	Logger::verbose() << "Database has no texture container";
         }
+
+        FilePath modPath = mDbFilePath.ext(".mod");
+        if(modPath.exists())
+        {
+        	mModelFactory = std::unique_ptr<ModelFactory>(new ModelFactory(modPath, *this));
+        	Logger::verbose() << "Opened database model container";
+
+        }else
+        {
+        	Logger::verbose() << "Database has no model container";
+        }
 	}
+
+	// TODO: these methods do pretty much the same. perhaps replace AssetProvider with a template class that does this automatically?
 
 	TexturePtr Database::getAssetAsTexture(const AssetRef &ref)
 	{
@@ -153,7 +167,7 @@ namespace od
 		{
 			if(mTextureFactory != nullptr)
 			{
-				return mTextureFactory->loadTexture(ref.assetId);
+				return mTextureFactory->getAsset(ref.assetId);
 
 			}else
 			{
@@ -170,6 +184,31 @@ namespace od
 		AssetRef foreignRef = ref;
 		foreignRef.dbIndex = 0;
 		return it->second.get().getAssetAsTexture(foreignRef);
+	}
+
+	ModelPtr Database::getAssetAsModel(const AssetRef &ref)
+	{
+		if(ref.dbIndex == 0)
+		{
+			if(mModelFactory != nullptr)
+			{
+				return mModelFactory->getAsset(ref.assetId);
+
+			}else
+			{
+				throw NotFoundException("Model with given ID not found in database");
+			}
+		}
+
+		auto it = mDependencyMap.find(ref.dbIndex);
+		if(it == mDependencyMap.end())
+		{
+			throw Exception("Database has no dependency with given index");
+		}
+
+		AssetRef foreignRef = ref;
+		foreignRef.dbIndex = 0;
+		return it->second.get().getAssetAsModel(foreignRef);
 	}
 
 } 

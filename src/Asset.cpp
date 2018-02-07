@@ -12,6 +12,17 @@
 namespace od
 {
 
+	Asset::Asset(RecordId assetId)
+	: mId(assetId)
+	{
+	}
+
+	Asset::~Asset()
+	{
+	}
+
+
+
     bool AssetRef::operator<(const AssetRef &right) const
     {
         return (dbIndex << 16 | assetId) < (right.dbIndex << 16 | right.assetId);

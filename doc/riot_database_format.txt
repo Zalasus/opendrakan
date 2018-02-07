@@ -242,7 +242,7 @@ Record types
 
     struct vect3f { float x; float y; float z; };
     
-    [0x0200] Model name
+    [0x0200] Model name ( this one is always the first record in the directory with the model's ID)
         string      model_name;
         uint32      shading_type; (0 = none, 09 = flat, 0a = smooth, flags seem to change this in weird ways)
 	
@@ -259,15 +259,15 @@ Record types
         vect3f[~]   vertices;
         
     [0x0204] Faces
-        struct vertex { uint16 vertex_number; float u_coord; float  v_coord; };
-        struct face { uint16  ???; uint16 vertex_count; uint16 material; vertex[~1] vertex_list; } // material as found in record 0x206
+        struct vert_index { uint16 vertex_number; float u_coord; float  v_coord; };
+        struct face { uint16  ???; uint16 vertex_count; uint16 material; vert_index[~1] vertex_list; } // material as found in record 0x206
         uint16      face_count;
         face[~]     faces;
 
-    [0x0206] Material list
-        struct material_ref { uint16 material_id; uint16 database_number; }
-        uint32          material_count;
-        material_ref[~] material_list;
+    [0x0206] Texture list
+        struct texture_ref { uint16 texture_id; uint16 database_number; }
+        uint32          texture_count;
+        texture_ref[~]  texture_list;
         
     [0x0207] Bounding data
          vect3f     sphere_center;
