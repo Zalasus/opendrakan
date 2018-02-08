@@ -33,7 +33,7 @@ Compiling
 There are no makefiles yet, so you'd have to assemble these yourself or use
 whatever way of building a project suits you best.
 
-The only dependency yet is zlib.
+Dependencies are [zlib](https://www.zlib.net/) and [OpenSceneGraph](http:://www.openscenegraph.net/).
 
 
 License
