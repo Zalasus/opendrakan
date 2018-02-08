@@ -15,6 +15,7 @@
 #include "Logger.h"
 #include "ZStream.h"
 #include "Exception.h"
+#include "Object.h"
 
 namespace od
 {
@@ -165,20 +166,13 @@ namespace od
     	uint16_t objectCount;
     	dr >> objectCount;
 
-    	/*mObjects.reserve(objectCount);
-
     	for(size_t i = 0; i < objectCount; ++i)
     	{
-    		uint32_t index;
-    		dr >> index;
+    		ObjectPtr object(new od::Object(*this));
+    		object->loadFromRecord(dr);
 
-    		uint16_t classId;
-    		uint16_t classDb;
-    		dr >> classId
-			   >> classDb;
-
-    		dr.ignore(4);
-    	}*/
+    		this->addChild(object);
+    	}
     }
 
     TexturePtr Level::getAssetAsTexture(const AssetRef &ref)
@@ -215,6 +209,23 @@ namespace od
         AssetRef foreignRef = ref;
         foreignRef.dbIndex = 0;
         return it->second.get().getAssetAsModel(foreignRef);
+    }
+
+    ObjectTemplatePtr Level::getAssetAsObjectTemplate(const AssetRef &ref)
+    {
+        Logger::debug() << "Requested class " << ref.assetId << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+            throw NotFoundException("Database index not found in level dependencies");
+        }
+
+        // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
+        AssetRef foreignRef = ref;
+        foreignRef.dbIndex = 0;
+        return it->second.get().getAssetAsObjectTemplate(foreignRef);
     }
 }
 

@@ -157,6 +157,17 @@ namespace od
         {
         	Logger::verbose() << "Database has no model container";
         }
+
+        FilePath odbPath = mDbFilePath.ext(".odb");
+        if(odbPath.exists())
+        {
+            mObjectTemplateFactory = std::unique_ptr<ObjectTemplateFactory>(new ObjectTemplateFactory(odbPath, *this));
+            Logger::verbose() << "Opened database class container";
+
+        }else
+        {
+            Logger::verbose() << "Database has no class container";
+        }
 	}
 
 	// TODO: these methods do pretty much the same. perhaps replace AssetProvider with a template class that does this automatically?
@@ -210,6 +221,32 @@ namespace od
 		foreignRef.dbIndex = 0;
 		return it->second.get().getAssetAsModel(foreignRef);
 	}
+
+    ObjectTemplatePtr Database::getAssetAsObjectTemplate(const AssetRef &ref)
+    {
+        if(ref.dbIndex == 0)
+        {
+            if(mObjectTemplateFactory != nullptr)
+            {
+                return mObjectTemplateFactory->getAsset(ref.assetId);
+
+            }else
+            {
+                throw NotFoundException("Class with given ID not found in database");
+            }
+        }
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            throw Exception("Database has no dependency with given index");
+        }
+
+        AssetRef foreignRef = ref;
+        foreignRef.dbIndex = 0;
+        return it->second.get().getAssetAsObjectTemplate(foreignRef);
+    }
+
 
 } 
 

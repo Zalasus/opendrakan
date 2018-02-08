@@ -18,6 +18,8 @@ namespace od
 	public:
 
 		Asset(RecordId assetId);
+		Asset(Asset &a) = delete;
+		Asset(const Asset &a) = delete;
 		virtual ~Asset();
 
 		inline RecordId getAssetId() const { return mId; }

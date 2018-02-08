@@ -44,6 +44,7 @@ namespace od
         // implement AssetProvider
         virtual TexturePtr getAssetAsTexture(const AssetRef &ref);
         virtual ModelPtr getAssetAsModel(const AssetRef &ref);
+        virtual ObjectTemplatePtr getAssetAsObjectTemplate(const AssetRef &ref);
 
 
     private:

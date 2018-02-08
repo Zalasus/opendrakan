@@ -16,6 +16,10 @@
 #define OD_SRSC_PALETTE 			0x0030
 #define OD_SRSC_TEXTURE	 			0x0040
 
+#define OD_SRSC_CLASS_RFL           0x0100
+#define OD_SRSC_CLASS_GROUP         0x0101
+#define OD_SRSC_CLASS               0x0102
+
 #define OD_SRSC_MODEL_NAME          0x0200
 #define OD_SRSC_MODEL_GROUP         0x0201
 #define OD_SRSC_MODEL_UNKNOWN1      0x0202
