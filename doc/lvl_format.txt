@@ -57,10 +57,10 @@ SRSC file (see riot_database_format.txt) with the following record types:
 [0x0020] Objects (does not appear if level has no objects)
     struct object
     {
-        uint32          ???; // running number?
+        uint32          id;
         uint16          class_id;
         uint16          class_db_index;
-        uint32          ???;
+        uint32          lighting_layer_id;
         float           x_position;
         float           y_position; // elevation axis, always relative to model origin
         float           z_position;

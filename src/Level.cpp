@@ -25,8 +25,15 @@ namespace od
     , mDbManager(dbManager)
     , mMaxWidth(0)
     , mMaxHeight(0)
+    , mLayerGroup(new osg::Group)
+    , mObjectGroup(new osg::Group)
     {
+    	this->addChild(mLayerGroup);
+    	this->addChild(mObjectGroup);
+
         _loadLevel();
+
+        //this->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     }
 
     const char *Level::libraryName() const
@@ -48,6 +55,7 @@ namespace od
         _loadNameAndDeps(file);
         _loadLayers(file);
         //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
+        _loadObjects(file);
 
         Logger::info() << "Level loaded successfully";
     }
@@ -68,8 +76,9 @@ namespace od
         for(size_t i = 0; i < dbRefCount; ++i)
         {
         	uint16_t dbIndex;
-            dr  >> dbIndex;
-            dr.ignore(2);
+        	uint16_t dummy;
+            dr  >> dbIndex
+            	>> dummy;
 
             std::string dbPathStr;
             dr >> dbPathStr;
@@ -77,7 +86,7 @@ namespace od
             FilePath dbPath(dbPathStr, mLevelPath.dir());
             Database &db = mDbManager.loadDb(dbPath.adjustCase());
 
-            Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
+            Logger::verbose() << "Level dependency index " << dbIndex << " (" << dummy << "): " << dbPath;
 
             mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(dbIndex, db));
         }
@@ -123,7 +132,7 @@ namespace od
 
 			mLayers[i]->buildGeometry();
 
-			this->addChild(mLayers[i].get());
+			mLayerGroup->addChild(mLayers[i].get());
     	}
     }
 
@@ -155,9 +164,12 @@ namespace od
 
     void Level::_loadObjects(SrscFile &file)
     {
+    	Logger::verbose() << "Loading level objects";
+
     	SrscFile::DirIterator objectRecord = file.getDirIteratorByType(OD_SRSC_LEVEL_OBJECTS);
     	if(objectRecord == file.getDirectoryEnd())
     	{
+    		Logger::verbose() << "Level has no objects";
     		return; // if record does not appear level has no objects
     	}
 
@@ -166,18 +178,23 @@ namespace od
     	uint16_t objectCount;
     	dr >> objectCount;
 
+    	Logger::verbose() << "Level has " << objectCount << " objects";
+
     	for(size_t i = 0; i < objectCount; ++i)
     	{
     		ObjectPtr object(new od::Object(*this));
     		object->loadFromRecord(dr);
 
-    		this->addChild(object);
+    		mObjectGroup->addChild(object);
     	}
+
+    	// disable lighting for objects as models will show up mostly black right now
+		mObjectGroup->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     }
 
     TexturePtr Level::getAssetAsTexture(const AssetRef &ref)
 	{
-    	Logger::debug() << "Requested texture " << ref.assetId << " from level dependency " << ref.dbIndex;
+    	Logger::debug() << "Requested texture " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
         auto it = mDependencyMap.find(ref.dbIndex);
         if(it == mDependencyMap.end())
@@ -195,7 +212,7 @@ namespace od
 
     ModelPtr Level::getAssetAsModel(const AssetRef &ref)
     {
-    	Logger::debug() << "Requested model " << ref.assetId << " from level dependency " << ref.dbIndex;
+    	Logger::debug() << "Requested model " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
         auto it = mDependencyMap.find(ref.dbIndex);
         if(it == mDependencyMap.end())
@@ -213,7 +230,7 @@ namespace od
 
     ObjectTemplatePtr Level::getAssetAsObjectTemplate(const AssetRef &ref)
     {
-        Logger::debug() << "Requested class " << ref.assetId << " from level dependency " << ref.dbIndex;
+        Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
         auto it = mDependencyMap.find(ref.dbIndex);
         if(it == mDependencyMap.end())

@@ -29,8 +29,8 @@
 namespace od
 {
 
-    Texture::Texture(RecordId id)
-    : Asset(id)
+    Texture::Texture(Database &db, RecordId id)
+    : Asset(db, id)
     , mWidth(0)
     , mHeight(0)
     , mBitsPerPixel(0)
@@ -51,7 +51,7 @@ namespace od
     {
     	Logger::verbose() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
 
-        uint32_t rowSpacing; // TODO: shouldn't we do something with this?
+        uint32_t rowSpacing;
 
         dr >> mWidth
            >> mHeight
@@ -149,15 +149,15 @@ namespace od
             	throw Exception("Invalid alpha BPP count");
             }
 
-            pixelReaderFunc = [&zdr, redMask, greenMask, blueMask, alphaMask](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
+            pixelReaderFunc = [this, &zdr, redMask, greenMask, blueMask, alphaMask](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
             	uint16_t c;
             	zdr >> c;
 
-            	red = 0xff * ((c & redMask)/static_cast<float>(redMask));
-            	green = 0xff * ((c & greenMask)/static_cast<float>(greenMask));
-            	blue = 0xff * ((c & blueMask)/static_cast<float>(blueMask));
-            	alpha = alphaMask ? (0xff * ((c & alphaMask)/static_cast<float>(alphaMask))) : OD_TEX_OPAQUE_ALPHA;
+            	red = _filter16BitChannel(c, redMask);
+            	green = _filter16BitChannel(c, greenMask);
+            	blue = _filter16BitChannel(c, blueMask);
+            	alpha = alphaMask ? _filter16BitChannel(c, alphaMask) : OD_TEX_OPAQUE_ALPHA;
             };
 
         }else if(mBitsPerPixel == 24)
@@ -189,7 +189,13 @@ namespace od
         	throw Exception("Invalid BPP");
         }
 
-        // translate whatever is stored in texture into 32-bit RGBA format
+         uint32_t trailingBytes = rowSpacing - mWidth*(mBitsPerPixel/8);
+         if(trailingBytes)
+         {
+        	 throw UnsupportedException("Can only load packed textures right now");
+         }
+
+        // translate whatever is stored in texture into 8-bit RGBA format
         unsigned char *pixBuffer = new unsigned char[mWidth*mHeight*4]; // no need for RAII, osg takes ownership
         for(size_t i = 0; i < mWidth*mHeight*4; i += 4)
         {
@@ -199,12 +205,29 @@ namespace od
 
         this->setImage(mWidth, mHeight, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
 
-        Logger::verbose() << "Texture successfully loaded";
+        Logger::debug() << "Texture successfully loaded";
     }
 
     void Texture::exportToPng(const FilePath &path)
     {
 		osgDB::writeImageFile(*this, path.str());
+    }
+
+    unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)
+    {
+    	// filtering algorithm:
+    	//    mask out channel
+    	//    shift channel so highest channel bit lies in highest output bit
+    	//    copy lowest channel bit to all output bits not occupied by channel after shift
+    	//
+    	//   too complicated to do it with as few instructions as possible. try using float operations
+
+    	//uint16_t channelShifted = (color & mask) << shift;
+    	//uint16_t bitToRepeatMask = (mask << shift) & ~(mask << shift + 1);
+
+    	float percentColor = ((float)(color&mask)/mask);
+
+    	return 0xff * percentColor;
     }
 
 }

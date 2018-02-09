@@ -38,12 +38,10 @@ namespace od
         ObjectId mId;
         ObjectTemplatePtr mObjTemplate;
         uint32_t mFlags;
-        uint32_t mInitialEventCount;
-
-        osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
+        uint16_t mInitialEventCount;
     };
 
-    typedef osg::ref_ptr<Object> ObjectPtr;
+    typedef osg::ref_ptr<od::Object> ObjectPtr;
 }
 
 

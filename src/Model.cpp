@@ -7,7 +7,9 @@
 
 #include "Model.h"
 
+#include <algorithm>
 #include <osg/Geometry>
+#include <osgUtil/SmoothingVisitor>
 
 #include "Asset.h"
 #include "Exception.h"
@@ -18,11 +20,12 @@
 namespace od
 {
 
-	Model::Model(RecordId modelId)
-	: Asset(modelId)
+	Model::Model(Database &db, RecordId modelId)
+	: Asset(db, modelId)
 	, mModelName("")
+	, mTriangleCount(0)
+	, mQuadCount(0)
 	{
-
 	}
 
 	void Model::loadNameAndShading(ModelFactory &factory, DataReader dr)
@@ -65,7 +68,20 @@ namespace od
 
 			dr >> DataReader::Ignore(2)
 			   >> f.vertexCount
-			   >> f.materialIndex;
+			   >> f.textureIndex;
+
+			if(f.vertexCount == 3)
+			{
+				++mTriangleCount;
+
+			}else if(f.vertexCount == 4)
+			{
+				++mTriangleCount;
+
+			}else
+			{
+				throw UnsupportedException("Can't load model with non-triangle/non-quad primitives");
+			}
 
 			for(size_t i = 0; i < f.vertexCount; ++i)
 			{
@@ -79,11 +95,6 @@ namespace od
 				f.vertexUvCoords[i] = osg::Vec2(u,v);
 			}
 
-			if(f.vertexCount != 3 && f.vertexCount != 4)
-			{
-				throw UnsupportedException("Can't load model with non-triangle/on-quad primitives");
-			}
-
 			mFaces.push_back(f);
 		}
 	}
@@ -93,49 +104,122 @@ namespace od
 		uint32_t textureCount;
 		dr >> textureCount;
 
-		mTextures.reserve(textureCount);
+		mTextureRefs.reserve(textureCount);
 		for(size_t i = 0; i < textureCount; ++i)
 		{
 			AssetRef textureRef;
 			dr >> textureRef;
 
-			TexturePtr tex = factory.getDatabase().getAssetAsTexture(textureRef);
-			mTextures.push_back(osg::ref_ptr<osg::Texture2D>(new osg::Texture2D(tex)));
+			mTextureRefs.push_back(textureRef);
 		}
 	}
 
 	void Model::buildGeometry()
 	{
-		// for simplicity, create a geometry for every face. is just want to see how it looks right now
-		for(Face f : mFaces)
-		{
-			osg::ref_ptr<osg::Geometry> geometry(new osg::Geometry);
+		Logger::debug() << "Building geometry for model " << std::hex << getAssetId() << std::dec;
 
+		// one geometry per texture to avoid multitexturing
+		// experimental.
+
+		auto pred = [](Face &left, Face &right){ return left.textureIndex < right.textureIndex; };
+		std::sort(mFaces.begin(), mFaces.end(), pred);
+
+		struct GeomGroup
+		{
+			std::vector<Face>::iterator facesBegin;
+			std::vector<Face>::iterator facesEnd;
+			osg::ref_ptr<osg::Geometry> geometry;
+			uint16_t textureIndex;
+		};
+
+		std::vector<GeomGroup> geomGroups;
+		geomGroups.reserve(mTextureRefs.size());
+		for(auto it = mFaces.begin(); it != mFaces.end(); ++it)
+		{
+			if(geomGroups.size() == 0)
+			{
+				GeomGroup gg;
+				gg.geometry = new osg::Geometry;
+				gg.facesBegin = it;
+				gg.textureIndex = it->textureIndex;
+				geomGroups.push_back(gg);
+
+			}else if(geomGroups.back().textureIndex != it->textureIndex)
+			{
+				geomGroups.back().facesEnd = it;
+
+				GeomGroup gg;
+				gg.geometry = new osg::Geometry;
+				gg.facesBegin = it;
+				gg.textureIndex = it->textureIndex;
+				geomGroups.push_back(gg);
+			}
+		}
+		if(geomGroups.size() > 0)
+		{
+			geomGroups.back().facesEnd = mFaces.end();
+		}
+
+
+		for(auto ggIt = geomGroups.begin(); ggIt != geomGroups.end(); ++ggIt)
+		{
 			osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array);
 			osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
-			vertices->reserve(f.vertexCount);
-			uvCoords->reserve(f.vertexCount);
-			for(size_t i = 0; i < f.vertexCount; ++i)
+
+			for(auto it = ggIt->facesBegin; it != ggIt->facesEnd; ++it)
 			{
-				vertices->push_back(mVertices[f.vertexIndices[i]]);
-				uvCoords->push_back(f.vertexUvCoords[i]);
+				if(it->vertexCount == 3)
+				{
+					vertices->push_back(mVertices[it->vertexIndices[0]]);
+					vertices->push_back(mVertices[it->vertexIndices[1]]);
+					vertices->push_back(mVertices[it->vertexIndices[2]]);
+					uvCoords->push_back(it->vertexUvCoords[0]);
+					uvCoords->push_back(it->vertexUvCoords[1]);
+					uvCoords->push_back(it->vertexUvCoords[2]);
+
+				}else if(it->vertexCount == 4) // convert all quads to triangles
+				{
+					vertices->push_back(mVertices[it->vertexIndices[0]]);
+					vertices->push_back(mVertices[it->vertexIndices[1]]);
+					vertices->push_back(mVertices[it->vertexIndices[2]]);
+					uvCoords->push_back(it->vertexUvCoords[0]);
+					uvCoords->push_back(it->vertexUvCoords[1]);
+					uvCoords->push_back(it->vertexUvCoords[2]);
+
+					vertices->push_back(mVertices[it->vertexIndices[2]]);
+					vertices->push_back(mVertices[it->vertexIndices[3]]);
+					vertices->push_back(mVertices[it->vertexIndices[0]]);
+					uvCoords->push_back(it->vertexUvCoords[2]);
+					uvCoords->push_back(it->vertexUvCoords[3]);
+					uvCoords->push_back(it->vertexUvCoords[0]);
+				}
 			}
-			geometry->setVertexArray(vertices);
-			geometry->setTexCoordArray(0, uvCoords);
 
-			if(f.vertexCount == 3)
-			{
-				geometry->addPrimitiveSet(new osg::DrawArrays(osg::DrawArrays::TRIANGLES, 0, 3));
+			ggIt->geometry->setVertexArray(vertices);
+			ggIt->geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES, 0, vertices->size()));
+			ggIt->geometry->setTexCoordArray(0, uvCoords);
 
-			}else if(f.vertexCount == 4)
+			TexturePtr textureImage = getDatabase().getAssetAsTexture(mTextureRefs[ggIt->textureIndex]);
+			if(textureImage->hasAlpha())
 			{
-				geometry->addPrimitiveSet(new osg::DrawArrays(osg::DrawArrays::QUADS, 0, 4));
+				ggIt->geometry->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
 			}
 
-			geometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTextures[f.materialIndex]);
+			osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(textureImage));
+			texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); // this is the default for all drakan textures
+			texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+			ggIt->geometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
 
-			this->addDrawable(geometry);
+			osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array);
+			colorArray->push_back(osg::Vec4(1,1,1,1));
+			ggIt->geometry->setColorArray(colorArray);
+			ggIt->geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
+
+			this->addDrawable(ggIt->geometry);
 		}
+
+		osgUtil::SmoothingVisitor sm;
+        this->accept(sm);
 	}
 }
 

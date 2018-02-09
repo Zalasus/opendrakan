@@ -8,12 +8,14 @@
 #include "Exception.h"
 
 #include "Asset.h"
+#include "Database.h"
 
 namespace od
 {
 
-	Asset::Asset(RecordId assetId)
-	: mId(assetId)
+	Asset::Asset(Database &db, RecordId assetId)
+	: mDb(db)
+	, mId(assetId)
 	{
 	}
 

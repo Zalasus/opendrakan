@@ -29,7 +29,9 @@ namespace od
             throw NotFoundException("Given class not found in database");
         }
 
-        ObjectTemplatePtr objectTemplate(new ObjectTemplate(classId));
+		Logger::verbose() << "Loading class " << std::hex << classId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+
+        ObjectTemplatePtr objectTemplate(new ObjectTemplate(getDatabase(), classId));
         objectTemplate->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(it)));
 
         return objectTemplate;

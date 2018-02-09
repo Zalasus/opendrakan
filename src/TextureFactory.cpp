@@ -10,6 +10,7 @@
 #include "Exception.h"
 #include "SrscRecordTypes.h"
 #include "Logger.h"
+#include "Database.h"
 
 namespace od
 {
@@ -38,7 +39,9 @@ namespace od
 			throw NotFoundException("Texture not found in database");
 		}
 
-		TexturePtr texture(new Texture(textureId));
+		Logger::verbose() << "Loading texture " << std::hex << textureId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+
+		TexturePtr texture(new Texture(getDatabase(), textureId));
 		texture->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(dirIt)));
 
 		return texture;
@@ -66,7 +69,8 @@ namespace od
 
 			dr >> color.red
 			   >> color.green
-			   >> color.blue;
+			   >> color.blue
+			   >> color.dummy;
 
 			mPalette.push_back(color);
 		}

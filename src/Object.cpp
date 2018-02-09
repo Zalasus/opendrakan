@@ -8,8 +8,11 @@
 #include "Object.h"
 
 #include "Level.h"
+#include "Exception.h"
+#include "OdDefines.h"
 
-#define OD_OBJECT_FLAG_SCALED 0x100
+#define OD_OBJECT_FLAG_VISIBLE 0x001
+#define OD_OBJECT_FLAG_SCALED  0x100
 
 namespace od
 {
@@ -17,9 +20,9 @@ namespace od
     Object::Object(Level &level)
     : mLevel(level)
     , mId(0)
-    , mTransform(new osg::PositionAttitudeTransform)
+    , mFlags(0)
+    , mInitialEventCount(0)
     {
-        this->addChild(mTransform);
     }
 
     void Object::loadFromRecord(DataReader dr)
@@ -37,6 +40,8 @@ namespace od
         uint32_t dataAreaSize;
         uint32_t paramCount;
 
+        uint16_t dummyLength;
+
         dr >> mId
            >> templateRef
            >> DataReader::Ignore(4)
@@ -45,7 +50,11 @@ namespace od
            >> zPos
            >> mFlags
            >> mInitialEventCount
-           >> xRot
+		   >> dummyLength;
+
+        dr.ignore(2*dummyLength);
+
+        dr >> xRot
            >> yRot
            >> zRot;
 
@@ -69,13 +78,31 @@ namespace od
                >> name;
         }
 
-        mTransform->setPosition(osg::Vec3(xPos, yPos, zPos));
-        mTransform->setScale(osg::Vec3(xScale, yScale, zScale));
+        mObjTemplate = mLevel.getAssetAsObjectTemplate(templateRef);
 
-        ObjectTemplatePtr objTemplate = mLevel.getAssetAsObjectTemplate(templateRef);
-        ModelPtr model = mLevel.getAssetAsModel(objTemplate->getModelRef());
+        if(mObjTemplate->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
+        {
+        	try
+        	{
+        		osg::ref_ptr<osg::PositionAttitudeTransform> transform(new osg::PositionAttitudeTransform);
+        		transform->setAttitude(osg::Quat(
+        			osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
+        			osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),
+					osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1)));
+        		transform->setPosition(osg::Vec3(xPos, yPos, zPos) * OD_WORLD_SCALE);
+        		transform->setScale(osg::Vec3(xScale, yScale, zScale));
 
-        mTransform->addChild(model);
+				transform->addChild(mObjTemplate->getModel());
+				this->addChild(transform);
+
+        	}catch(NotFoundException &e)
+        	{
+        		Logger::error() << "Object " << std::hex << mId << std::dec
+        				        << " of class " << mObjTemplate->getName()
+								<< " from DB " << mObjTemplate->getDatabase().getDbFilePath().fileStr()
+								<< ": Model " << mObjTemplate->getModelRef() << " not found. Leaving invisible";
+        	}
+        }
     }
 
 }

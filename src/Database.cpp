@@ -140,7 +140,7 @@ namespace od
         if(txdPath.exists())
         {
         	mTextureFactory = std::unique_ptr<TextureFactory>(new TextureFactory(txdPath, *this));
-        	Logger::verbose() << "Opened database texture container";
+        	Logger::verbose() << "Opened database texture container" << txdPath.str();
 
         }else
         {
@@ -151,7 +151,7 @@ namespace od
         if(modPath.exists())
         {
         	mModelFactory = std::unique_ptr<ModelFactory>(new ModelFactory(modPath, *this));
-        	Logger::verbose() << "Opened database model container";
+        	Logger::verbose() << "Opened database model container " << modPath.str();
 
         }else
         {
@@ -162,7 +162,7 @@ namespace od
         if(odbPath.exists())
         {
             mObjectTemplateFactory = std::unique_ptr<ObjectTemplateFactory>(new ObjectTemplateFactory(odbPath, *this));
-            Logger::verbose() << "Opened database class container";
+            Logger::verbose() << "Opened database class container" << odbPath.str();
 
         }else
         {

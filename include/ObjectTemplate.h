@@ -12,6 +12,7 @@
 #include <osg/ref_ptr>
 
 #include "Asset.h"
+#include "Model.h"
 
 namespace od
 {
@@ -25,9 +26,12 @@ namespace od
     {
     public:
 
-        ObjectTemplate(RecordId classId);
+        ObjectTemplate(Database &db, RecordId classId);
 
+        inline bool hasModel() const { return mModelRef.assetId != 0; }
         inline AssetRef getModelRef() const { return mModelRef; }
+        inline ModelPtr getModel() { return mModel; }
+        inline std::string getName() const { return mTemplateName; }
 
         void loadFromRecord(ObjectTemplateFactory &factory, DataReader dr);
 
@@ -39,6 +43,7 @@ namespace od
 
         std::string mTemplateName;
         AssetRef mModelRef;
+        ModelPtr mModel;
         //RflClass mRflClass;
         uint16_t mIconNumber;
     };

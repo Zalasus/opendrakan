@@ -9,6 +9,7 @@
 
 #include "Exception.h"
 #include "SrscRecordTypes.h"
+#include "Database.h"
 
 namespace od
 {
@@ -23,12 +24,12 @@ namespace od
 		SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_NAME, id);
 		if(nameRecord == getSrscFile().getDirectoryEnd())
 		{
-			throw NotFoundException("Model not found in database");
+			throw NotFoundException("Given model not found in database");
 		}
 
-		Logger::verbose() << "Loading model " << std::hex << id << std::dec;
+		Logger::verbose() << "Loading model " << std::hex << id << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
-		ModelPtr model(new Model(id));
+		ModelPtr model(new Model(getDatabase(), id));
 		model->loadNameAndShading(*this, DataReader(getSrscFile().getStreamForRecord(nameRecord)));
 
 		SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_VERTICES, id, nameRecord);

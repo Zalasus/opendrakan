@@ -7,11 +7,14 @@
 
 #include "ObjectTemplate.h"
 
+#include "Logger.h"
+#include "Database.h"
+
 namespace od
 {
 
-    ObjectTemplate::ObjectTemplate(RecordId classId)
-    : Asset(classId)
+    ObjectTemplate::ObjectTemplate(Database &db, RecordId classId)
+    : Asset(db, classId)
     , mIconNumber(0)
     {
     }
@@ -24,6 +27,13 @@ namespace od
            >> DataReader::Ignore(2)
            >> mModelRef
            >> rflClassType;
+
+        if(hasModel())
+        {
+        	mModel = getDatabase().getAssetAsModel(mModelRef);
+        }
+
+        Logger::debug() << "Loaded object template with name " << mTemplateName;
     }
 
 }

@@ -22,10 +22,11 @@ namespace od
     {
     public:
 
-        Texture(RecordId id);
+        Texture(Database &db, RecordId id);
+
+        inline bool hasAlpha() const { return mAlphaBitsPerPixel != 0; };
 
         void loadFromRecord(TextureFactory &factory, DataReader dr);
-
         void exportToPng(const FilePath &path);
 
         // implement Asset
@@ -37,6 +38,8 @@ namespace od
 
 
     private:
+
+        unsigned char _filter16BitChannel(uint16_t color, uint16_t mask);
 
         uint32_t mWidth;
         uint32_t mHeight;

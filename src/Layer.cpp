@@ -17,8 +17,6 @@
 #define OD_LAYER_FLAG_DIV_SLASH     0
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
 
-#define OD_LAYER_YSCALING 0.0005
-
 namespace od
 {
 
@@ -91,7 +89,7 @@ namespace od
             Vertex v;
             v.type = vertexType;
             v.heightOffset = (heightOffsetBiased - 0x8000) * 2;
-            v.absoluteHeight = OD_LAYER_YSCALING*(mWorldHeight + v.heightOffset);
+            v.absoluteHeight = OD_WORLD_SCALE*(mWorldHeight + v.heightOffset);
 
             mVertices.push_back(v);
         }
@@ -246,7 +244,7 @@ namespace od
 
         // add color
         osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
-        colorArray->push_back(osg::Vec4(1,1,1,0));
+        colorArray->push_back(osg::Vec4(1,1,1,1));
         mGeometry->setColorArray(colorArray);
         mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
 
@@ -255,6 +253,7 @@ namespace od
         texture->setImage(mTextureAtlas);
         texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST);
         texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST);
+        texture->setResizeNonPowerOfTwoHint(false);
         mGeometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
 
         if(mGeometry->checkForDeprecatedData())

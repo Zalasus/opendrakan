@@ -13,23 +13,28 @@
 namespace od
 {
 
+	class Database;
+
 	class Asset
 	{
 	public:
 
-		Asset(RecordId assetId);
+		Asset(Database &db, RecordId assetId);
 		Asset(Asset &a) = delete;
 		Asset(const Asset &a) = delete;
 		virtual ~Asset();
 
 		inline RecordId getAssetId() const { return mId; }
+		inline Database &getDatabase() { return mDb; }
 
 		virtual const char *getAssetTypeName() const = 0;
 
 
 	private:
 
+		Database &mDb;
 		RecordId mId;
+
 	};
 
 	/**

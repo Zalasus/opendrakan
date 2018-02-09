@@ -64,6 +64,9 @@ namespace od
         uint32_t mMaxHeight;
         std::map<uint16_t, DbRefWrapper> mDependencyMap;
         std::vector<LayerPtr> mLayers;
+
+        osg::ref_ptr<osg::Group> mLayerGroup;
+        osg::ref_ptr<osg::Group> mObjectGroup;
     };
 
 

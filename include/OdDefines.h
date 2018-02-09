@@ -10,4 +10,6 @@
 
 #define OD_LIB_NAME "od"
 
+#define OD_WORLD_SCALE (1.0/(1 << 11))
+
 #endif /* INCLUDE_ODDEFINES_H_ */

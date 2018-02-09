@@ -24,7 +24,7 @@ namespace od
 	{
 	public:
 
-		Model(RecordId modelId);
+		Model(Database &db, RecordId modelId);
 
 		void loadNameAndShading(ModelFactory &factory, DataReader dr);
 		void loadVertices(ModelFactory &factory, DataReader dr);
@@ -46,7 +46,7 @@ namespace od
         struct Face
 		{
         	uint16_t vertexCount;
-        	uint16_t materialIndex;
+        	uint16_t textureIndex;
 
         	uint16_t  vertexIndices[4];
         	osg::Vec2 vertexUvCoords[4];
@@ -55,7 +55,9 @@ namespace od
 		std::string mModelName;
 		std::vector<osg::Vec3> mVertices;
 		std::vector<Face> mFaces;
-		std::vector<osg::ref_ptr<osg::Texture2D>> mTextures;
+		size_t mTriangleCount;
+		size_t mQuadCount;
+		std::vector<AssetRef> mTextureRefs;
 	};
 
 	typedef osg::ref_ptr<Model> ModelPtr;
