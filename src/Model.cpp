@@ -76,7 +76,7 @@ namespace od
 
 			}else if(f.vertexCount == 4)
 			{
-				++mTriangleCount;
+				++mQuadCount;
 
 			}else
 			{
@@ -129,6 +129,7 @@ namespace od
 			std::vector<Face>::iterator facesBegin;
 			std::vector<Face>::iterator facesEnd;
 			osg::ref_ptr<osg::Geometry> geometry;
+			size_t vertexCount;
 			uint16_t textureIndex;
 		};
 
@@ -139,6 +140,7 @@ namespace od
 			if(geomGroups.size() == 0)
 			{
 				GeomGroup gg;
+				gg.vertexCount = 0;
 				gg.geometry = new osg::Geometry;
 				gg.facesBegin = it;
 				gg.textureIndex = it->textureIndex;
@@ -149,11 +151,14 @@ namespace od
 				geomGroups.back().facesEnd = it;
 
 				GeomGroup gg;
+				gg.vertexCount = 0;
 				gg.geometry = new osg::Geometry;
 				gg.facesBegin = it;
 				gg.textureIndex = it->textureIndex;
 				geomGroups.push_back(gg);
 			}
+
+			geomGroups.back().vertexCount += (it->vertexCount == 3) ? 3 : 6;
 		}
 		if(geomGroups.size() > 0)
 		{
@@ -164,7 +169,9 @@ namespace od
 		for(auto ggIt = geomGroups.begin(); ggIt != geomGroups.end(); ++ggIt)
 		{
 			osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array);
+			vertices->reserve(ggIt->vertexCount);
 			osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
+			uvCoords->reserve(ggIt->vertexCount);
 
 			for(auto it = ggIt->facesBegin; it != ggIt->facesEnd; ++it)
 			{
