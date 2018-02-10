@@ -14,7 +14,6 @@
 #include "OdDefines.h"
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
-#define OD_LAYER_FLAG_DIV_SLASH     0
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
 
 namespace od
@@ -191,7 +190,7 @@ namespace od
             osg::Vec2 dUvVec;
             std::tie(aUvVec, bUvVec, cUvVec, dUvVec) = mTextureAtlas->getUvOfTexture(textureRef);
 
-            if(mCells[cellIndex].flags & OD_LAYER_FLAG_DIV_SLASH)
+            if(!(mCells[cellIndex].flags & OD_LAYER_FLAG_DIV_BACKSLASH))
             {
                 if(isLeft)
                 {
