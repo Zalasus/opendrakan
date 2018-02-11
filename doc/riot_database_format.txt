@@ -226,7 +226,7 @@ Record types
          if second byte is 0x10, field is an array of that type
          */
         string          class_name;
-        uint16          ?? (seems to always be 1)
+        uint16          ??
         uint16          model_id; // none if zero
         uint16          model_database_number; // from dependency table
         uint16          class_type;

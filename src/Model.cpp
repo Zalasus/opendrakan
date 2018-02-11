@@ -14,6 +14,7 @@
 #include "Asset.h"
 #include "Exception.h"
 #include "Database.h"
+#include "OdDefines.h"
 #include "ModelFactory.h"
 #include "Texture.h"
 
@@ -25,6 +26,9 @@ namespace od
 	, mModelName("")
 	, mTriangleCount(0)
 	, mQuadCount(0)
+	, mVerticesLoaded(false)
+	, mTexturesLoaded(false)
+	, mFacesLoaded(false)
 	{
 	}
 
@@ -54,21 +58,50 @@ namespace od
 
 			mVertices.push_back(osg::Vec3(x,y,z));
 		}
+
+		mVerticesLoaded = true;
+	}
+
+	void Model::loadTextures(ModelFactory &factory, DataReader dr)
+	{
+		uint32_t textureCount;
+		dr >> textureCount;
+
+		mTextureRefs.reserve(textureCount);
+		for(size_t i = 0; i < textureCount; ++i)
+		{
+			AssetRef textureRef;
+			dr >> textureRef;
+
+			mTextureRefs.push_back(textureRef);
+		}
+
+		mTexturesLoaded = true;
 	}
 
 	void Model::loadFaces(ModelFactory &factory, DataReader dr)
 	{
+		if(!mTexturesLoaded || !mVerticesLoaded)
+		{
+			throw Exception("Must load vertices and textures before loading faces!");
+		}
+
 		uint16_t faceCount;
 		dr >> faceCount;
 
 		mFaces.reserve(faceCount);
 		for(size_t i = 0; i < faceCount; ++i)
 		{
-			Face f;
+			uint16_t textureIndex;
+			uint16_t vertexCount;
 
 			dr >> DataReader::Ignore(2)
-			   >> f.vertexCount
-			   >> f.textureIndex;
+			   >> vertexCount
+			   >> textureIndex;
+
+			Face f;
+			f.texture = mTextureRefs[textureIndex];
+			f.vertexCount = vertexCount;
 
 			if(f.vertexCount == 3)
 			{
@@ -87,143 +120,32 @@ namespace od
 			{
 				float u;
 				float v;
+				uint16_t vertexIndex;
 
-				dr >> f.vertexIndices[i]
+				dr >> vertexIndex
 				   >> u
 				   >> v;
 
+				f.vertexIndices[i] = vertexIndex;
 				f.vertexUvCoords[i] = osg::Vec2(u,v);
 			}
 
 			mFaces.push_back(f);
 		}
-	}
 
-	void Model::loadTextures(ModelFactory &factory, DataReader dr)
-	{
-		uint32_t textureCount;
-		dr >> textureCount;
-
-		mTextureRefs.reserve(textureCount);
-		for(size_t i = 0; i < textureCount; ++i)
-		{
-			AssetRef textureRef;
-			dr >> textureRef;
-
-			mTextureRefs.push_back(textureRef);
-		}
+		mFacesLoaded = true;
 	}
 
 	void Model::buildGeometry()
 	{
+		if(!mTexturesLoaded || !mVerticesLoaded || !mFacesLoaded)
+		{
+			throw Exception("Must load at least vertices, textures and faces before building geometry");
+		}
+
 		Logger::debug() << "Building geometry for model " << std::hex << getAssetId() << std::dec;
 
-		// one geometry per texture to avoid multitexturing
-		// experimental.
-
-		auto pred = [](Face &left, Face &right){ return left.textureIndex < right.textureIndex; };
-		std::sort(mFaces.begin(), mFaces.end(), pred);
-
-		struct GeomGroup
-		{
-			std::vector<Face>::iterator facesBegin;
-			std::vector<Face>::iterator facesEnd;
-			osg::ref_ptr<osg::Geometry> geometry;
-			size_t vertexCount;
-			uint16_t textureIndex;
-		};
-
-		std::vector<GeomGroup> geomGroups;
-		geomGroups.reserve(mTextureRefs.size());
-		for(auto it = mFaces.begin(); it != mFaces.end(); ++it)
-		{
-			if(geomGroups.size() == 0)
-			{
-				GeomGroup gg;
-				gg.vertexCount = 0;
-				gg.geometry = new osg::Geometry;
-				gg.facesBegin = it;
-				gg.textureIndex = it->textureIndex;
-				geomGroups.push_back(gg);
-
-			}else if(geomGroups.back().textureIndex != it->textureIndex)
-			{
-				geomGroups.back().facesEnd = it;
-
-				GeomGroup gg;
-				gg.vertexCount = 0;
-				gg.geometry = new osg::Geometry;
-				gg.facesBegin = it;
-				gg.textureIndex = it->textureIndex;
-				geomGroups.push_back(gg);
-			}
-
-			geomGroups.back().vertexCount += (it->vertexCount == 3) ? 3 : 6;
-		}
-		if(geomGroups.size() > 0)
-		{
-			geomGroups.back().facesEnd = mFaces.end();
-		}
-
-
-		for(auto ggIt = geomGroups.begin(); ggIt != geomGroups.end(); ++ggIt)
-		{
-			osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array);
-			vertices->reserve(ggIt->vertexCount);
-			osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
-			uvCoords->reserve(ggIt->vertexCount);
-
-			for(auto it = ggIt->facesBegin; it != ggIt->facesEnd; ++it)
-			{
-				if(it->vertexCount == 3)
-				{
-					vertices->push_back(mVertices[it->vertexIndices[0]]);
-					vertices->push_back(mVertices[it->vertexIndices[1]]);
-					vertices->push_back(mVertices[it->vertexIndices[2]]);
-					uvCoords->push_back(it->vertexUvCoords[0]);
-					uvCoords->push_back(it->vertexUvCoords[1]);
-					uvCoords->push_back(it->vertexUvCoords[2]);
-
-				}else if(it->vertexCount == 4) // convert all quads to triangles
-				{
-					vertices->push_back(mVertices[it->vertexIndices[0]]);
-					vertices->push_back(mVertices[it->vertexIndices[1]]);
-					vertices->push_back(mVertices[it->vertexIndices[2]]);
-					uvCoords->push_back(it->vertexUvCoords[0]);
-					uvCoords->push_back(it->vertexUvCoords[1]);
-					uvCoords->push_back(it->vertexUvCoords[2]);
-
-					vertices->push_back(mVertices[it->vertexIndices[2]]);
-					vertices->push_back(mVertices[it->vertexIndices[3]]);
-					vertices->push_back(mVertices[it->vertexIndices[0]]);
-					uvCoords->push_back(it->vertexUvCoords[2]);
-					uvCoords->push_back(it->vertexUvCoords[3]);
-					uvCoords->push_back(it->vertexUvCoords[0]);
-				}
-			}
-
-			ggIt->geometry->setVertexArray(vertices);
-			ggIt->geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES, 0, vertices->size()));
-			ggIt->geometry->setTexCoordArray(0, uvCoords);
-
-			TexturePtr textureImage = getDatabase().getAssetAsTexture(mTextureRefs[ggIt->textureIndex]);
-			if(textureImage->hasAlpha())
-			{
-				ggIt->geometry->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
-			}
-
-			osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(textureImage));
-			texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); // this is the default for all drakan textures
-			texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
-			ggIt->geometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
-
-			osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array);
-			colorArray->push_back(osg::Vec4(1,1,1,1));
-			ggIt->geometry->setColorArray(colorArray);
-			ggIt->geometry->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-			this->addDrawable(ggIt->geometry);
-		}
+		SegmentedGeode::build(getDatabase(), mVertices, mFaces, mTextureRefs.size());
 
 		osgUtil::SmoothingVisitor sm;
         this->accept(sm);

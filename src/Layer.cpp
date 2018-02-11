@@ -35,6 +35,7 @@ namespace od
     , mLightColor(0)
     , mAmbientColor(0)
     , mLightDropoffType(DROPOFF_NONE)
+    , mVisibleTriangles(0)
     {
     }
 
@@ -108,66 +109,54 @@ namespace od
             }
 
             mCells.push_back(c);
-        }
-
-    }
-
-    void Layer::buildTextureAtlas(TextureAtlas &atlas)
-    {
-        Logger::debug() << "Building texture atlas for layer " << mId;
-
-        for(size_t i = 0; i < mWidth*mHeight; ++i)
-        {
-            Cell c = mCells[i];
 
             if(!c.leftTextureRef.isNull())
             {
-                TexturePtr tex = mLevel.getAssetAsTexture(c.leftTextureRef);
-                atlas.addTexture(c.leftTextureRef, tex);
+            	++mVisibleTriangles;
             }
 
             if(!c.rightTextureRef.isNull())
             {
-                TexturePtr tex = mLevel.getAssetAsTexture(c.rightTextureRef);
-                atlas.addTexture(c.rightTextureRef, tex);
+            	++mVisibleTriangles;
             }
         }
-
-        atlas.build();
     }
 
     void Layer::buildGeometry()
     {
         Logger::debug() << "Building geometry for layer " << mId;
 
-        // for now, build our own texture atlas for every layer here. we can decide to build a level-wide one later
-        mTextureAtlas = osg::ref_ptr<TextureAtlas>(new TextureAtlas);
-        this->buildTextureAtlas(*mTextureAtlas);
+        // generate vertices and UVs for SegmentedGeode
 
-        mGeometry = osg::ref_ptr<osg::Geometry>(new osg::Geometry);
+        std::vector<osg::Vec3> vertices;
+        vertices.reserve(mVertices.size());
+        for(size_t i = 0; i < mVertices.size(); ++i)
+        {
+        	size_t aXRel = i%(mWidth+1);
+            size_t aZRel = i/(mWidth+1); // has to be an integer operation to floor it
+            float aX = mOriginX + aXRel;
+            float aZ = mOriginZ + aZRel;
 
-        // iterate over triangles and generate vertices and UVs
-        osg::ref_ptr<osg::Vec3Array> vertices(new osg::Vec3Array);
-        osg::ref_ptr<osg::Vec2Array> uvCoords(new osg::Vec2Array);
-        vertices->reserve(mWidth*mHeight*6); // each cell has 2 triangles, each triangle has 3 vertices
-        uvCoords->reserve(mWidth*mHeight*6);
+            vertices.push_back(osg::Vec3(aX, mVertices[i].absoluteHeight, aZ));
+        }
+
+        std::vector<Face> faces;
+        faces.reserve(mVisibleTriangles);
         for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
         {
             size_t cellIndex = triIndex/2;
             bool isLeft = (triIndex%2 == 0);
             Cell cell = mCells[cellIndex];
-            AssetRef textureRef = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+            Face f;
+        	f.vertexCount = 3;
+        	f.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
 
-            // skip triangles with no texture on them. they'd be invisible anyway
-            if(textureRef.isNull())
-            {
-                continue;
-            }
+        	if(f.texture.isNull())
+        	{
+        		continue;
+        	}
 
-            int aXRel = cellIndex%mWidth;
-            int aZRel = cellIndex/mWidth;// has to be an integer operation to floor it
-            float aX = mOriginX + aXRel;
-            float aZ = mOriginZ + aZRel;
+            int aZRel = cellIndex/mWidth; // has to be an integer operation to floor it
 
             // calculate indices of corner vertices
             // z x> --a------b---
@@ -177,90 +166,61 @@ namespace od
             size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
             size_t b = a + 1;
             size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
-            size_t d = b + (mWidth+1);
+            size_t d = c + 1;
 
-            osg::Vec3 aVec = osg::Vec3(  aX, mVertices[a].absoluteHeight,   aZ);
-            osg::Vec3 bVec = osg::Vec3(aX+1, mVertices[b].absoluteHeight,   aZ);
-            osg::Vec3 cVec = osg::Vec3(  aX, mVertices[c].absoluteHeight, aZ+1);
-            osg::Vec3 dVec = osg::Vec3(aX+1, mVertices[d].absoluteHeight, aZ+1);
+            // this order seems to work in most cases, but sometimes texture orientations are still messed up
+            osg::Vec2 uvA(cell.texCoords[0]/0xffff, cell.texCoords[1]/0xffff);
+            osg::Vec2 uvB(cell.texCoords[6]/0xffff, cell.texCoords[7]/0xffff);
+            osg::Vec2 uvC(cell.texCoords[4]/0xffff, cell.texCoords[5]/0xffff);
+            osg::Vec2 uvD(cell.texCoords[2]/0xffff, cell.texCoords[3]/0xffff);
 
-            osg::Vec2 aUvVec;
-            osg::Vec2 bUvVec;
-            osg::Vec2 cUvVec;
-            osg::Vec2 dUvVec;
-            std::tie(aUvVec, bUvVec, cUvVec, dUvVec) = mTextureAtlas->getUvOfTexture(textureRef);
-
-            if(!(mCells[cellIndex].flags & OD_LAYER_FLAG_DIV_BACKSLASH))
+            if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
             {
                 if(isLeft)
                 {
-                    vertices->push_back(cVec);
-                    vertices->push_back(bVec);
-                    vertices->push_back(aVec);
-
-                    uvCoords->push_back(cUvVec);
-                    uvCoords->push_back(bUvVec);
-                    uvCoords->push_back(aUvVec);
+                    f.vertexIndices[0] = c;
+                    f.vertexIndices[1] = b;
+                    f.vertexIndices[2] = a;
+                    f.vertexUvCoords[0] = uvC;
+                    f.vertexUvCoords[1] = uvB;
+                    f.vertexUvCoords[2] = uvA;
 
                 }else
                 {
-                    vertices->push_back(cVec);
-                    vertices->push_back(dVec);
-                    vertices->push_back(bVec);
-
-                    uvCoords->push_back(cUvVec);
-                    uvCoords->push_back(dUvVec);
-                    uvCoords->push_back(bUvVec);
+                	f.vertexIndices[0] = c;
+                    f.vertexIndices[1] = d;
+                    f.vertexIndices[2] = b;
+                    f.vertexUvCoords[0] = uvC;
+                    f.vertexUvCoords[1] = uvD;
+                    f.vertexUvCoords[2] = uvB;
                 }
 
             }else // division = BACKSLASH
             {
                 if(isLeft)
                 {
-                    vertices->push_back(aVec);
-                    vertices->push_back(cVec);
-                    vertices->push_back(dVec);
-
-                    uvCoords->push_back(aUvVec);
-                    uvCoords->push_back(cUvVec);
-                    uvCoords->push_back(dUvVec);
+                    f.vertexIndices[0] = a;
+                    f.vertexIndices[1] = c;
+                    f.vertexIndices[2] = d;
+                    f.vertexUvCoords[0] = uvA;
+                    f.vertexUvCoords[1] = uvC;
+                    f.vertexUvCoords[2] = uvD;
 
                 }else
                 {
-                    vertices->push_back(aVec);
-                    vertices->push_back(dVec);
-                    vertices->push_back(bVec);
-
-                    uvCoords->push_back(aUvVec);
-                    uvCoords->push_back(dUvVec);
-                    uvCoords->push_back(bUvVec);
+                    f.vertexIndices[0] = a;
+                    f.vertexIndices[1] = d;
+                    f.vertexIndices[2] = b;
+                    f.vertexUvCoords[0] = uvA;
+                    f.vertexUvCoords[1] = uvD;
+                    f.vertexUvCoords[2] = uvB;
                 }
             }
-        }
-        mGeometry->setVertexArray(vertices);
-        mGeometry->setTexCoordArray(0, uvCoords);
-        mGeometry->addPrimitiveSet(new osg::DrawArrays(osg::DrawArrays::TRIANGLES, 0, vertices->size()));
 
-        // add color
-        osg::ref_ptr<osg::Vec4Array> colorArray(new osg::Vec4Array());
-        colorArray->push_back(osg::Vec4(1,1,1,1));
-        mGeometry->setColorArray(colorArray);
-        mGeometry->setColorBinding(osg::Geometry::BIND_OVERALL);
-
-        // setup texture
-        osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D);
-        texture->setImage(mTextureAtlas);
-        texture->setFilter(osg::Texture::MIN_FILTER, osg::Texture::NEAREST);
-        texture->setFilter(osg::Texture::MAG_FILTER, osg::Texture::NEAREST);
-        texture->setResizeNonPowerOfTwoHint(false);
-        mGeometry->getOrCreateStateSet()->setTextureAttributeAndModes(0, texture);
-
-        if(mGeometry->checkForDeprecatedData())
-        {
-            Logger::warn() << "Layer " << mId << " geometry contains deprecated data";
+            faces.push_back(f);
         }
 
-        this->addDrawable(mGeometry);
+        build(mLevel, vertices, faces);
 
         // generate normals
         osgUtil::SmoothingVisitor sm;

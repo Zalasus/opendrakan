@@ -52,6 +52,9 @@ namespace od
 		// so we can use this in a map
 		bool operator<(const AssetRef &right) const;
 
+		bool operator==(const AssetRef &right) const;
+		inline bool operator!=(const AssetRef &right) const { return !(this->operator==(right)); }
+
 		bool isNull() const;
 	};
 

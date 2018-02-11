@@ -10,6 +10,8 @@
 
 #include <istream>
 
+#include "Logger.h"
+
 namespace od
 {
 	class DataReader
@@ -25,12 +27,27 @@ namespace od
 	        size_t mCountByte;
 	    };
 
+	    template <typename T>
+	    class Expect
+		{
+		public:
+
+	    	Expect(T value) : mValue(value) {}
+	    	const T getExpectedValue() const { return mValue; }
+
+		private:
+	    	T mValue;
+		};
+
 		DataReader(std::istream &stream);
 
 		template <typename T>
 		DataReader &operator>>(T &s);
 
 		DataReader &operator>>(const Ignore &s);
+
+		template <typename T>
+		DataReader &operator>>(const Expect<T> &s);
 
 		void read(char *data, size_t size);
 
@@ -60,6 +77,20 @@ namespace od
 
 		std::istream &mStream;
 	};
+
+	template <typename T>
+	DataReader &DataReader::operator>>(const DataReader::Expect<T> &s)
+	{
+		T value;
+		*this >> value;
+
+		if(value != s.getExpectedValue())
+		{
+			Logger::warn() << "Data error: expected value " << s.getExpectedValue() << ", found value " << value;
+		}
+
+		return *this;
+	}
 
 }
 

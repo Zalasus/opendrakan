@@ -30,6 +30,11 @@ namespace od
         return (dbIndex << 16 | assetId) < (right.dbIndex << 16 | right.assetId);
     }
 
+    bool AssetRef::operator==(const AssetRef &right) const
+	{
+    	return (dbIndex == right.dbIndex) && (assetId == right.assetId);
+	}
+
     bool AssetRef::isNull() const
     {
     	return dbIndex == 0xffff || assetId == 0xffff; // TODO: should this be && instead of || ?

@@ -35,11 +35,11 @@ namespace od
 		SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_VERTICES, id, nameRecord);
 		model->loadVertices(*this, DataReader(getSrscFile().getStreamForRecord(vertRecord)));
 
-		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_FACES, id, nameRecord);
-		model->loadFaces(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
-
 		SrscFile::DirIterator texRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_TEXTURES, id, nameRecord);
 		model->loadTextures(*this, DataReader(getSrscFile().getStreamForRecord(texRecord)));
+
+		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_FACES, id, nameRecord);
+		model->loadFaces(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
 
 		model->buildGeometry();
 

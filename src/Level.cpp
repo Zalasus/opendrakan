@@ -32,8 +32,6 @@ namespace od
     	this->addChild(mObjectGroup);
 
         _loadLevel();
-
-        //this->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     }
 
     const char *Level::libraryName() const
@@ -76,9 +74,8 @@ namespace od
         for(size_t i = 0; i < dbRefCount; ++i)
         {
         	uint16_t dbIndex;
-        	uint16_t dummy;
             dr  >> dbIndex
-            	>> dummy;
+            	>> DataReader::Expect<uint16_t>(0);
 
             std::string dbPathStr;
             dr >> dbPathStr;
@@ -86,7 +83,7 @@ namespace od
             FilePath dbPath(dbPathStr, mLevelPath.dir());
             Database &db = mDbManager.loadDb(dbPath.adjustCase());
 
-            Logger::verbose() << "Level dependency index " << dbIndex << " (" << dummy << "): " << dbPath;
+            Logger::verbose() << "Level dependency index " << dbIndex << ": " << dbPath;
 
             mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(dbIndex, db));
         }
@@ -111,7 +108,7 @@ namespace od
     		mLayers.push_back(layer);
     	}
 
-    	dr.ignore(4);
+    	dr >> DataReader::Expect<uint32_t>(1);
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{

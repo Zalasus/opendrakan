@@ -8,17 +8,15 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include <osg/Geode>
-
 #include "Asset.h"
+#include "SegmentedGeode.h"
 #include "DataStream.h"
-#include "TextureAtlas.h"
 
 namespace od
 {
     class Level;
 
-    class Layer : public osg::Geode
+    class Layer : public SegmentedGeode
     {
     public:
 
@@ -42,7 +40,6 @@ namespace od
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
-        void buildTextureAtlas(TextureAtlas &atlas);
         void buildGeometry();
 
         inline uint32_t getId() const { return mId; };
@@ -87,11 +84,9 @@ namespace od
         LightDropoffType        mLightDropoffType;
         std::vector<uint32_t>   mVisibleLayers;
 
-        osg::ref_ptr<TextureAtlas> mTextureAtlas;
-        osg::ref_ptr<osg::Geometry> mGeometry;
-
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
+        size_t mVisibleTriangles;
     };
 
     typedef osg::ref_ptr<Layer> LayerPtr;
