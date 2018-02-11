@@ -31,7 +31,7 @@ namespace od
 
         if(hasModel())
         {
-        	mModel = getDatabase().getAssetAsModel(mModelRef);
+        	mModel = getDatabase().getModelByRef(mModelRef);
         }
     }
 

@@ -18,11 +18,9 @@
 #include "FilePath.h"
 #include "SrscFile.h"
 #include "Asset.h"
-#include "Texture.h"
+#include "AssetProvider.h"
 #include "TextureFactory.h"
-#include "Model.h"
 #include "ModelFactory.h"
-#include "Class.h"
 #include "ClassFactory.h"
 
 namespace od
@@ -44,25 +42,6 @@ namespace od
         ASSET_SEQUENCE
     };
 
-
-	/**
-	 * Common interface for classes with means to translate DB indices to
-	 * actual databases, like Database and Level.
-	 *
-	 * TODO: perhaps move this into it's own header.
-	 */
-	class AssetProvider
-	{
-	public:
-
-	    virtual ~AssetProvider() {}
-
-	    virtual TexturePtr getAssetAsTexture(const AssetRef &ref) = 0;
-	    virtual ModelPtr getAssetAsModel(const AssetRef &ref) = 0;
-	    virtual ClassPtr getAssetAsClass(const AssetRef &ref) = 0;
-	};
-
-
 	class Database : public AssetProvider
 	{
 	public:
@@ -76,10 +55,14 @@ namespace od
 
 
 		// implement AssetProvider
-		virtual TexturePtr getAssetAsTexture(const AssetRef &ref);
-		virtual ModelPtr getAssetAsModel(const AssetRef &ref);
-        virtual ClassPtr getAssetAsClass(const AssetRef &ref);
+		virtual TexturePtr getTextureByRef(const AssetRef &ref);
+	    virtual ClassPtr   getClassByRef(const AssetRef &ref);
+	    virtual ModelPtr   getModelByRef(const AssetRef &ref);
 
+	    // override AssetProvider
+	    virtual TexturePtr getTexture(RecordId recordId);
+	    virtual ClassPtr   getClass(RecordId recordId);
+	    virtual ModelPtr   getModel(RecordId recordId);
 
 
 	private:

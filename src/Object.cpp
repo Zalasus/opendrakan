@@ -78,7 +78,7 @@ namespace od
                >> name;
         }
 
-        mClass = mLevel.getAssetAsClass(classRef);
+        mClass = mLevel.getClassByRef(classRef);
 
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {

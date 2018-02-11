@@ -42,9 +42,9 @@ namespace od
         virtual const char *className() const;
 
         // implement AssetProvider
-        virtual TexturePtr getAssetAsTexture(const AssetRef &ref);
-        virtual ModelPtr getAssetAsModel(const AssetRef &ref);
-        virtual ClassPtr getAssetAsClass(const AssetRef &ref);
+        virtual TexturePtr getTextureByRef(const AssetRef &ref);
+	    virtual ClassPtr   getClassByRef(const AssetRef &ref);
+	    virtual ModelPtr   getModelByRef(const AssetRef &ref);
 
 
     private:

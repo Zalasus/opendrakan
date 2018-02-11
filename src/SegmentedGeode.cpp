@@ -122,7 +122,7 @@ namespace od
 			ggIt->geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES, 0, vertices->size()));
 			ggIt->geometry->setTexCoordArray(0, uvCoords);
 
-			TexturePtr textureImage = db.getAssetAsTexture(ggIt->texture);
+			TexturePtr textureImage = db.getTextureByRef(ggIt->texture);
 			if(textureImage->hasAlpha())
 			{
 				ggIt->geometry->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);

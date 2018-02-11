@@ -170,20 +170,12 @@ namespace od
         }
 	}
 
-	// TODO: these methods do pretty much the same. perhaps replace AssetProvider with a template class that does this automatically?
-
-	TexturePtr Database::getAssetAsTexture(const AssetRef &ref)
+	// TODO: the following methods look pretty redundant. find clever template interface for them
+	TexturePtr Database::getTextureByRef(const AssetRef &ref)
 	{
 		if(ref.dbIndex == 0)
 		{
-			if(mTextureFactory != nullptr)
-			{
-				return mTextureFactory->getAsset(ref.assetId);
-
-			}else
-			{
-				throw NotFoundException("Texture with given ID not found in database");
-			}
+			return this->getTexture(ref.assetId);
 		}
 
 		auto it = mDependencyMap.find(ref.dbIndex);
@@ -192,23 +184,14 @@ namespace od
 			throw Exception("Database has no dependency with given index");
 		}
 
-		AssetRef foreignRef = ref;
-		foreignRef.dbIndex = 0;
-		return it->second.get().getAssetAsTexture(foreignRef);
+		return it->second.get().getTexture(ref.assetId);
 	}
 
-	ModelPtr Database::getAssetAsModel(const AssetRef &ref)
+	ClassPtr Database::getClassByRef(const AssetRef &ref)
 	{
 		if(ref.dbIndex == 0)
 		{
-			if(mModelFactory != nullptr)
-			{
-				return mModelFactory->getAsset(ref.assetId);
-
-			}else
-			{
-				throw NotFoundException("Model with given ID not found in database");
-			}
+			return this->getClass(ref.assetId);
 		}
 
 		auto it = mDependencyMap.find(ref.dbIndex);
@@ -217,36 +200,54 @@ namespace od
 			throw Exception("Database has no dependency with given index");
 		}
 
-		AssetRef foreignRef = ref;
-		foreignRef.dbIndex = 0;
-		return it->second.get().getAssetAsModel(foreignRef);
+		return it->second.get().getClass(ref.assetId);
 	}
 
-    ClassPtr Database::getAssetAsClass(const AssetRef &ref)
-    {
-        if(ref.dbIndex == 0)
-        {
-            if(mClassFactory != nullptr)
-            {
-                return mClassFactory->getAsset(ref.assetId);
+	ModelPtr Database::getModelByRef(const AssetRef &ref)
+	{
+		if(ref.dbIndex == 0)
+		{
+			return this->getModel(ref.assetId);
+		}
 
-            }else
-            {
-                throw NotFoundException("Class with given ID not found in database");
-            }
-        }
+		auto it = mDependencyMap.find(ref.dbIndex);
+		if(it == mDependencyMap.end())
+		{
+			throw Exception("Database has no dependency with given index");
+		}
 
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            throw Exception("Database has no dependency with given index");
-        }
+		return it->second.get().getModel(ref.assetId);
+	}
 
-        AssetRef foreignRef = ref;
-        foreignRef.dbIndex = 0;
-        return it->second.get().getAssetAsClass(foreignRef);
-    }
+	TexturePtr Database::getTexture(RecordId recordId)
+	{
+		if(mTextureFactory == nullptr)
+		{
+			throw NotFoundException("Can't get texture. Database has no texture container");
+		}
 
+		return mTextureFactory->getAsset(recordId);
+	}
+
+	ClassPtr Database::getClass(RecordId recordId)
+	{
+		if(mClassFactory == nullptr)
+		{
+			throw NotFoundException("Can't get class. Database has no class container");
+		}
+
+		return mClassFactory->getAsset(recordId);
+	}
+
+	ModelPtr Database::getModel(RecordId recordId)
+	{
+		if(mModelFactory == nullptr)
+		{
+			throw NotFoundException("Can't get model. Database has no model container");
+		}
+
+		return mModelFactory->getAsset(recordId);
+	}
 
 } 
 

@@ -189,7 +189,8 @@ namespace od
 		mObjectGroup->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
     }
 
-    TexturePtr Level::getAssetAsTexture(const AssetRef &ref)
+    // TODO: the following methods look pretty redundant. find clever template interface for them
+    TexturePtr Level::getTextureByRef(const AssetRef &ref)
 	{
     	Logger::debug() << "Requested texture " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -197,17 +198,13 @@ namespace od
         if(it == mDependencyMap.end())
         {
         	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-
             throw NotFoundException("Database index not found in level dependencies");
         }
 
-        // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
-        AssetRef foreignRef = ref;
-        foreignRef.dbIndex = 0;
-        return it->second.get().getAssetAsTexture(foreignRef);
+        return it->second.get().getTexture(ref.assetId);
     }
 
-    ModelPtr Level::getAssetAsModel(const AssetRef &ref)
+    ModelPtr Level::getModelByRef(const AssetRef &ref)
     {
     	Logger::debug() << "Requested model " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -219,13 +216,10 @@ namespace od
             throw NotFoundException("Database index not found in level dependencies");
         }
 
-        // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
-        AssetRef foreignRef = ref;
-        foreignRef.dbIndex = 0;
-        return it->second.get().getAssetAsModel(foreignRef);
+        return it->second.get().getModel(ref.assetId);
     }
 
-    ClassPtr Level::getAssetAsClass(const AssetRef &ref)
+    ClassPtr Level::getClassByRef(const AssetRef &ref)
     {
         Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -236,10 +230,7 @@ namespace od
             throw NotFoundException("Database index not found in level dependencies");
         }
 
-        // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
-        AssetRef foreignRef = ref;
-        foreignRef.dbIndex = 0;
-        return it->second.get().getAssetAsClass(foreignRef);
+        return it->second.get().getClass(ref.assetId);
     }
 }
 

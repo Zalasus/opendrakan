@@ -252,7 +252,7 @@ int main(int argc, char **argv)
         	ref.assetId = extractRecordId;
         	ref.dbIndex = 0;
 
-        	od::TexturePtr tex = db.getAssetAsTexture(ref);
+        	od::TexturePtr tex = db.getTextureByRef(ref);
 
 			std::ostringstream ss;
 			ss << outputPath << "texture" << extractRecordId << ".png";
