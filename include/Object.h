@@ -8,10 +8,10 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
-#include <ObjectTemplate.h>
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
 
+#include "Class.h"
 
 namespace od
 {
@@ -27,7 +27,7 @@ namespace od
         Object(Level &level);
 
         inline ObjectId getObjectId() const { return mId; }
-        inline ObjectTemplatePtr getObjectTemplate() { return mObjTemplate; }
+        inline ClassPtr getClass() { return mClass; }
 
         void loadFromRecord(DataReader dr);
 
@@ -36,7 +36,7 @@ namespace od
 
         Level &mLevel;
         ObjectId mId;
-        ObjectTemplatePtr mObjTemplate;
+        ClassPtr mClass;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
     };

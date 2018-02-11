@@ -1,29 +1,30 @@
 /*
- * ObjectTemplate.cpp
+ * Class.cpp
  *
- *  Created on: 8 Feb 2018
+ *  Created on: 11 Feb 2018
  *      Author: zal
  */
 
-#include "ObjectTemplate.h"
+#include "Class.h"
 
 #include "Logger.h"
 #include "Database.h"
+#include "ClassFactory.h"
 
 namespace od
 {
 
-    ObjectTemplate::ObjectTemplate(Database &db, RecordId classId)
+    Class::Class(Database &db, RecordId classId)
     : Asset(db, classId)
     , mIconNumber(0)
     {
     }
 
-    void ObjectTemplate::loadFromRecord(ObjectTemplateFactory &factory, DataReader dr)
+    void Class::loadFromRecord(ClassFactory &factory, DataReader dr)
     {
         uint16_t rflClassType;
 
-        dr >> mTemplateName
+        dr >> mClassName
            >> DataReader::Ignore(2)
            >> mModelRef
            >> rflClassType;
@@ -32,8 +33,6 @@ namespace od
         {
         	mModel = getDatabase().getAssetAsModel(mModelRef);
         }
-
-        Logger::debug() << "Loaded object template with name " << mTemplateName;
     }
 
 }

@@ -1,27 +1,28 @@
 /*
  * ClassFactory.cpp
  *
- *  Created on: 8 Feb 2018
+ *  Created on: 11 Feb 2018
  *      Author: zal
  */
+
+#include "ClassFactory.h"
 
 #include "SrscRecordTypes.h"
 #include "Exception.h"
 #include "Database.h"
 #include "StringUtils.h"
-#include "ObjectTemplateFactory.h"
 #include "rfl/RiotFunctionLibrary.h"
 
 namespace od
 {
 
-    ObjectTemplateFactory::ObjectTemplateFactory(const FilePath &odbFilePath, Database &database)
-    : AssetFactory<ObjectTemplate>(odbFilePath, database)
+	ClassFactory::ClassFactory(const FilePath &odbFilePath, Database &database)
+    : AssetFactory<Class>(odbFilePath, database)
     {
         _loadRflRecord();
     }
 
-    ObjectTemplatePtr ObjectTemplateFactory::loadAsset(RecordId classId)
+    ClassPtr ClassFactory::loadAsset(RecordId classId)
     {
         SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(OD_SRSC_CLASS, classId);
         if(it == getSrscFile().getDirectoryEnd())
@@ -31,13 +32,13 @@ namespace od
 
 		Logger::verbose() << "Loading class " << std::hex << classId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
-        ObjectTemplatePtr objectTemplate(new ObjectTemplate(getDatabase(), classId));
-        objectTemplate->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(it)));
+        ClassPtr newClass(new Class(getDatabase(), classId));
+        newClass->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(it)));
 
-        return objectTemplate;
+        return newClass;
     }
 
-    void ObjectTemplateFactory::_loadRflRecord()
+    void ClassFactory::_loadRflRecord()
     {
         SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(OD_SRSC_CLASS_RFL);
         if(it == getSrscFile().getDirectoryEnd())
@@ -60,7 +61,4 @@ namespace od
     }
 
 }
-
-
-
 

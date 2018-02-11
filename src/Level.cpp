@@ -225,7 +225,7 @@ namespace od
         return it->second.get().getAssetAsModel(foreignRef);
     }
 
-    ObjectTemplatePtr Level::getAssetAsObjectTemplate(const AssetRef &ref)
+    ClassPtr Level::getAssetAsClass(const AssetRef &ref)
     {
         Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -239,7 +239,7 @@ namespace od
         // TODO: instead of creating a new AssetRef everytime, why not add a getAsset method that just takes an ID?
         AssetRef foreignRef = ref;
         foreignRef.dbIndex = 0;
-        return it->second.get().getAssetAsObjectTemplate(foreignRef);
+        return it->second.get().getAssetAsClass(foreignRef);
     }
 }
 

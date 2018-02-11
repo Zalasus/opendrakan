@@ -30,6 +30,8 @@ namespace od
 
 		struct Face
 		{
+			Face() : vertexCount(0), texture(0xffff,0xffff) {}
+
 			size_t    vertexCount;
 			AssetRef  texture;
 			size_t    vertexIndices[4];

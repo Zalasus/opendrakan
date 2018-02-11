@@ -161,7 +161,7 @@ namespace od
         FilePath odbPath = mDbFilePath.ext(".odb");
         if(odbPath.exists())
         {
-            mObjectTemplateFactory = std::unique_ptr<ObjectTemplateFactory>(new ObjectTemplateFactory(odbPath, *this));
+            mClassFactory = std::unique_ptr<ClassFactory>(new ClassFactory(odbPath, *this));
             Logger::verbose() << "Opened database class container" << odbPath.str();
 
         }else
@@ -222,13 +222,13 @@ namespace od
 		return it->second.get().getAssetAsModel(foreignRef);
 	}
 
-    ObjectTemplatePtr Database::getAssetAsObjectTemplate(const AssetRef &ref)
+    ClassPtr Database::getAssetAsClass(const AssetRef &ref)
     {
         if(ref.dbIndex == 0)
         {
-            if(mObjectTemplateFactory != nullptr)
+            if(mClassFactory != nullptr)
             {
-                return mObjectTemplateFactory->getAsset(ref.assetId);
+                return mClassFactory->getAsset(ref.assetId);
 
             }else
             {
@@ -244,7 +244,7 @@ namespace od
 
         AssetRef foreignRef = ref;
         foreignRef.dbIndex = 0;
-        return it->second.get().getAssetAsObjectTemplate(foreignRef);
+        return it->second.get().getAssetAsClass(foreignRef);
     }
 
 

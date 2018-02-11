@@ -8,8 +8,6 @@
 #ifndef INCLUDE_DATABASE_H_
 #define INCLUDE_DATABASE_H_
 
-#include <ObjectTemplate.h>
-#include <ObjectTemplateFactory.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -24,6 +22,8 @@
 #include "TextureFactory.h"
 #include "Model.h"
 #include "ModelFactory.h"
+#include "Class.h"
+#include "ClassFactory.h"
 
 namespace od
 {
@@ -59,7 +59,7 @@ namespace od
 
 	    virtual TexturePtr getAssetAsTexture(const AssetRef &ref) = 0;
 	    virtual ModelPtr getAssetAsModel(const AssetRef &ref) = 0;
-	    virtual ObjectTemplatePtr getAssetAsObjectTemplate(const AssetRef &ref) = 0;
+	    virtual ClassPtr getAssetAsClass(const AssetRef &ref) = 0;
 	};
 
 
@@ -78,7 +78,7 @@ namespace od
 		// implement AssetProvider
 		virtual TexturePtr getAssetAsTexture(const AssetRef &ref);
 		virtual ModelPtr getAssetAsModel(const AssetRef &ref);
-        virtual ObjectTemplatePtr getAssetAsObjectTemplate(const AssetRef &ref);
+        virtual ClassPtr getAssetAsClass(const AssetRef &ref);
 
 
 
@@ -93,7 +93,7 @@ namespace od
 
 		std::unique_ptr<TextureFactory> mTextureFactory;
 		std::unique_ptr<ModelFactory> mModelFactory;
-		std::unique_ptr<ObjectTemplateFactory> mObjectTemplateFactory;
+		std::unique_ptr<ClassFactory> mClassFactory;
 	};
 }
 

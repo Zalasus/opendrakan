@@ -27,7 +27,7 @@ namespace od
 
     void Object::loadFromRecord(DataReader dr)
     {
-        AssetRef templateRef;
+        AssetRef classRef;
         float xPos;
         float yPos;
         float zPos;
@@ -43,7 +43,7 @@ namespace od
         uint16_t dummyLength;
 
         dr >> mId
-           >> templateRef
+           >> classRef
            >> DataReader::Ignore(4)
            >> xPos
            >> yPos
@@ -78,30 +78,20 @@ namespace od
                >> name;
         }
 
-        mObjTemplate = mLevel.getAssetAsObjectTemplate(templateRef);
+        mClass = mLevel.getAssetAsClass(classRef);
 
-        if(mObjTemplate->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
+        if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
-        	try
-        	{
-        		osg::ref_ptr<osg::PositionAttitudeTransform> transform(new osg::PositionAttitudeTransform);
-        		transform->setAttitude(osg::Quat(
-        			osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
-        			osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),
-					osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1)));
-        		transform->setPosition(osg::Vec3(xPos, yPos, zPos) * OD_WORLD_SCALE);
-        		transform->setScale(osg::Vec3(xScale, yScale, zScale));
+			osg::ref_ptr<osg::PositionAttitudeTransform> transform(new osg::PositionAttitudeTransform);
+			transform->setAttitude(osg::Quat(
+				osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
+				osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
+				osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1)));
+			transform->setPosition(osg::Vec3(xPos, yPos, zPos) * OD_WORLD_SCALE);
+			transform->setScale(osg::Vec3(xScale, yScale, zScale));
 
-				transform->addChild(mObjTemplate->getModel());
-				this->addChild(transform);
-
-        	}catch(NotFoundException &e)
-        	{
-        		Logger::error() << "Object " << std::hex << mId << std::dec
-        				        << " of class " << mObjTemplate->getName()
-								<< " from DB " << mObjTemplate->getDatabase().getDbFilePath().fileStr()
-								<< ": Model " << mObjTemplate->getModelRef() << " not found. Leaving invisible";
-        	}
+			transform->addChild(mClass->getModel());
+			this->addChild(transform);
         }
     }
 
