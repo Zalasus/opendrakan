@@ -11,6 +11,7 @@
 #include <string>
 #include <functional>
 #include <map>
+#include <memory>
 
 #include "rfl/RflClass.h"
 
@@ -34,7 +35,7 @@ namespace od
 		RflClassRegistrar(RflClassId classId, const std::string &className);
 		virtual ~RflClassRegistrar();
 
-		virtual RflClass *createClassInstance(RflFieldProbe *probe) = 0;
+		virtual std::unique_ptr<RflClass> createClassInstance(RflFieldProbe &probe) = 0;
 
 		inline RflClassId getClassId() const { return mClassId; }
 		inline std::string getClassName() const { return mClassName; }
@@ -49,18 +50,18 @@ namespace od
 
 
 	template <typename T>
-	class RflClassTypeRegistrarImpl : public RflClassRegistrar
+	class RflClassRegistrarImpl : public RflClassRegistrar
 	{
 	public:
 
-		RflClassTypeRegistrarImpl(RflClassId typeId, const std::string &typeName)
+		RflClassRegistrarImpl(RflClassId typeId, const std::string &typeName)
 		: RflClassRegistrar(typeId, typeName)
 		{
 		}
 
-		virtual RflClass *createClassInstance(RflFieldProbe *probe) override
+		virtual std::unique_ptr<RflClass> createClassInstance(RflFieldProbe &probe) override
 		{
-		    return new T(probe); // FIXME: RAII!!!
+		    return std::unique_ptr<RflClass>(new T(probe));
 		}
 	};
 

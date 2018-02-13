@@ -13,6 +13,6 @@ namespace od
 {
 
 	OD_REGISTER_RFL("Dragon");
-	//OD_REGISTER_RFL_CLASS(0x000A, "Health Pack", RflHealthPack);
+	OD_REGISTER_RFL_CLASS(0x000A, "Health Pack", RflHealthPack);
 
 }

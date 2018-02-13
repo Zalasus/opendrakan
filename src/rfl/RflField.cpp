@@ -12,12 +12,36 @@
 namespace od
 {
 
-    RflField::RflField(RflFieldProbe *probe, RflFieldType type, const char *fieldName)
+    RflField::RflField(RflFieldProbe &probe, RflFieldType type, const char *fieldName)
     {
-        if(probe != nullptr)
-        {
-            probe->registerField(*this, type, fieldName);
-        }
+        probe.registerField(*this, type, fieldName);
     }
+
+    void RflField::fill(DataReader &dr)
+    {
+    	throw Exception("Invalid field fill");
+    }
+
+    void RflField::fillArray(uint16_t size, DataReader &dr)
+    {
+    	throw Exception("Invalid field fillArray");
+    }
+
+
+
+    RflString::RflString(RflFieldProbe &probe, const char *name, const std::string &defaultValue)
+	: RflField(probe, STRING, name)
+	, mValue(defaultValue)
+	{
+	}
+
+    void RflString::fillArray(uint16_t size, DataReader &dr)
+	{
+		char *dataBuffer = new char[size*4+1]; // FIXME: RAII, maybe?
+		dr.read(dataBuffer, size*4);
+		dataBuffer[size] = '\0';
+
+		mValue = std::string(dataBuffer);
+	}
 
 }

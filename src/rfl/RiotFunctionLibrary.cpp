@@ -43,7 +43,7 @@ namespace od
 	RflClassRegistrar &RiotFunctionLibrary::getClassRegistrarById(RflClassId id)
 	{
 	    auto it = mRegistrarMap.find(id);
-		if(it != mRegistrarMap.end())
+		if(it == mRegistrarMap.end())
 		{
 			throw NotFoundException("Given class ID is not registered in RFL");
 		}

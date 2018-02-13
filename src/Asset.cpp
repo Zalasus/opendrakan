@@ -40,6 +40,8 @@ namespace od
     	return dbIndex == 0xffff || assetId == 0xffff; // TODO: should this be && instead of || ?
     }
 
+    const AssetRef AssetRef::NULL_REF(0xffff, 0xffff);
+
 
     DataReader &operator>>(DataReader &left, AssetRef &right)
     {

@@ -10,9 +10,11 @@
 
 #include <osg/Referenced>
 #include <osg/ref_ptr>
+#include <memory>
 
 #include "Asset.h"
 #include "Model.h"
+#include "rfl/RflClass.h"
 
 namespace od
 {
@@ -33,12 +35,13 @@ namespace od
         // implement Asset
         virtual const char *getAssetTypeName() const override { return "class"; }
 
+
 	private:
 
         std::string mClassName;
         AssetRef mModelRef;
         ModelPtr mModel;
-        //RflClass mRflClass;
+        std::unique_ptr<RflClass> mRflClass;
         uint16_t mIconNumber;
 
 	};

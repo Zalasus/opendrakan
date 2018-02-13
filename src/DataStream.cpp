@@ -36,6 +36,16 @@ namespace od
 		}
 	}
 
+	void DataReader::seek(size_t offset)
+	{
+		mStream.seekg(offset);
+	}
+
+	size_t DataReader::tell()
+	{
+		return mStream.tellg();
+	}
+
 	void DataReader::read(char *data, size_t size)
 	{
 		for(uint32_t i = 0; i < size; ++i)

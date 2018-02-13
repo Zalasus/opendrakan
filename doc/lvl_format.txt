@@ -40,7 +40,7 @@ SRSC file (see riot_database_format.txt) with the following record types:
     uint32                  layer_count;
     layer_def[~]            layer_definitions;
     uint32                  ???; // could be compression level of layer data. seems to be always 1
-    layer_data_block[~2]    data_blocks;
+    layer_data_block[~3]    data_blocks;
     
     
 [0x0002] Layer groups (probably an editor thing without relevance for the game)
@@ -74,9 +74,9 @@ SRSC file (see riot_database_format.txt) with the following record types:
         float           z_scaling;  //   "
         uint32          data_area_size; // in dwords (4 byte blocks)
         uint32          parameter_count;  // how many parameters in this object are changed compared to the class
-        uint32[~1]      parameter_data;
-        uint16[~1]      parameter_indices; // location x of this contains the index field x as defined here has in this object's class
-        field_def[~2]   parameter_definitions; // this has the same format as the one of classes
+        uint32[~2]      parameter_data;   // note that compared to classes, count and data are swapped
+        uint16[~2]      parameter_indices; // location x of this contains the index field x as defined here has in this object's class
+        field_def[~3]   parameter_definitions; // this has the same format as the one of classes
     }
     uint16      object_count;
     object[~]   objects;

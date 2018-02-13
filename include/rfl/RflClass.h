@@ -17,7 +17,7 @@ namespace od
 	{
 	public:
 
-		RflClass(RflFieldProbe *probe);
+		RflClass(RflFieldProbe &probe);
 
 
 	};

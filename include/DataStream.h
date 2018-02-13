@@ -52,6 +52,8 @@ namespace od
 		void read(char *data, size_t size);
 
 		void ignore(size_t n);
+		void seek(size_t offset);
+		size_t tell();
 
 		std::istream &getStream();
 

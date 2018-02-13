@@ -9,7 +9,7 @@ All of the following information has been aquired through reverse engineering.
 Some basic information was taken from a script found at: http://aluigi.altervista.org/bms/drakan.bms.
 
 This document uses a pseudo-C syntax for data structure definitions. You'll figure it out.
-    (Just some hints: ~ refers to the previous field)
+    (Just some hints: ~ or ~1 refers to the previous field, ~2 to the one before that etc.)
 
 PLEASE NOTE: This documentation is not complete. I could not identify all fields used in all files
 and am still working on figuring out things like animations. Feel free to make a pull request should
@@ -233,8 +233,8 @@ Record types
         uint16          icon_number; // Selected class icon in the editor. Should have no effect on gameplay
         uint32          number_of_fields;
         uint32          size_of_data_area_in_dwords; // 1 means 4 bytes
-        uint8[4*~]      data_area; // for layout see "Class format"
-        field_def[*]    field_definitions;
+        uint32[~]       data_area; // for layout see "Class format"
+        field_def[~3]    field_definitions;
 
 
     Model (0x0200 - 0x0209)

@@ -10,6 +10,9 @@
 
 #include <initializer_list>
 #include <string>
+#include <cstring>
+
+#include "Asset.h"
 
 namespace od
 {
@@ -38,49 +41,96 @@ namespace od
             COLOR           = 0x0f
         };
 
-		RflField(RflFieldProbe *probe, RflFieldType type, const char *fieldName);
+		RflField(RflFieldProbe &probe, RflFieldType type, const char *fieldName);
+		RflField(const RflField &f) = delete;
+		RflField(RflField &f) = delete;
+		virtual ~RflField() {}
 
+		virtual bool isArray() const = 0;
+
+		virtual void fill(DataReader &dr);
+		virtual void fillArray(uint16_t size, DataReader &dr);
 	};
 
-	template <typename _DataType, typename _FieldType>
-	class RflFieldImpl : public RflField
+	class RflString : public RflField
 	{
 	public:
 
-		RflFieldImpl(RflFieldProbe *probe, const char *name, _DataType defaultValue, RflFieldType fieldType)
-		: RflField(probe, fieldType, name)
+		RflString(RflFieldProbe &probe, const char *name, const std::string &defaultValue);
+
+		virtual bool isArray() const override { return true; }
+
+		virtual void fillArray(uint16_t size, DataReader &dr) override;
+
+
+	private:
+
+		std::string mValue;
+	};
+
+
+
+	template <RflField::RflFieldType _Type>
+	class RflAssetRef : public RflField
+	{
+	public:
+
+		RflAssetRef(RflFieldProbe &probe, const char *name, const AssetRef &defaultValue)
+		: RflField(probe, _Type, name)
 		, mValue(defaultValue)
 		{
 		}
 
-		inline _DataType getValue() const { return mValue; };
+		virtual bool isArray() const override { return false; }
+
+		virtual void fill(DataReader &dr) override
+		{
+			dr >> mValue;
+		}
+
+
+	private:
+
+		AssetRef mValue;
+
+	};
+
+	typedef RflAssetRef<RflField::CLASS>     RflClassRef;
+	typedef RflAssetRef<RflField::SOUND>     RflSoundRef;
+	typedef RflAssetRef<RflField::SEUQUENCE> RflSequenceRef;
+
+
+
+	template <typename _DataType, RflField::RflFieldType _Type>
+	class RflPOD : public RflField
+	{
+	public:
+
+		RflPOD(RflFieldProbe &probe, const char *name, const _DataType &defaultValue)
+	    : RflField(probe, _Type, name)
+		, mValue(defaultValue)
+		{
+		}
+
+		virtual bool isArray() const override { return false; }
+
+		virtual void fill(DataReader &dr) override
+		{
+			dr >> mValue;
+		}
+
 
 	private:
 
 		_DataType mValue;
+
 	};
 
-	class RflString : public RflFieldImpl<std::string, RflString>
-	{
-	public:
-
-		RflString(RflFieldProbe *probe, const char *name, const std::string &defaultValue)
-		: RflFieldImpl<std::string, RflString>(probe, name, defaultValue, STRING)
-		{
-		}
-	};
-
-	class RflInteger : public RflFieldImpl<int32_t, RflInteger>
-	{
-	public:
-
-		RflInteger(RflFieldProbe *probe, const char *name, int32_t defaultValue)
-		: RflFieldImpl<int32_t, RflInteger>(probe, name, defaultValue, INTEGER)
-		{
-
-		}
-	};
-
+	typedef RflPOD< int32_t, RflField::INTEGER> RflInteger;
+	typedef RflPOD<   float,   RflField::FLOAT> RflFloat;
+	typedef RflPOD<uint32_t,    RflField::ENUM> RflEnum;
+	typedef RflEnum                             RflEnumYesNo; // give these a list of allowed values once we implement that feature
+	typedef RflEnum                             RflEnumPlayerSlot;
 }
 
 #endif /* INCLUDE_RFL_RFLFIELD_H_ */

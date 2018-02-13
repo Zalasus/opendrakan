@@ -16,9 +16,18 @@ namespace od
 
 	class RflHealthPack : public RflAbstractItem
 	{
+	public:
+
+		RflHealthPack(RflFieldProbe &probe)
+		: RflAbstractItem(probe)
+		, mHealthBoost(probe, "Health Boost", 0)
+		{
+		}
+
+
 	private:
 
-
+		RflInteger mHealthBoost;
 
 	};
 

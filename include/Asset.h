@@ -56,6 +56,8 @@ namespace od
 		inline bool operator!=(const AssetRef &right) const { return !(this->operator==(right)); }
 
 		bool isNull() const;
+
+		static const AssetRef NULL_REF;
 	};
 
 	DataReader &operator>>(DataReader &left, AssetRef &right);
