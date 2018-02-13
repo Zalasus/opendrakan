@@ -18,40 +18,49 @@ namespace od
 
     Class::Class(Database &db, RecordId classId)
     : Asset(db, classId)
+    , mRflClassId(0)
     , mIconNumber(0)
     {
     }
 
     void Class::loadFromRecord(ClassFactory &factory, DataReader dr)
     {
-        uint16_t rflClassId;
-
         dr >> mClassName
            >> DataReader::Ignore(2)
            >> mModelRef
-           >> rflClassId
+           >> mRflClassId
 		   >> mIconNumber;
 
-        try
-        {
-        	RflClassRegistrar &cr = RiotFunctionLibrary::getSingleton().getClassRegistrarById(rflClassId);
-
-        	RflClassBuilder builder;
-        	builder.readFieldRecord(dr, false);
-        	mRflClass = cr.createClassInstance(builder);
-
-        	builder.fillFields();
-
-        }catch(NotFoundException &e)
-        {
-        	// ignore these for now as there are way more RflClasses than we have implemented
-        	Logger::warn() << "Loaded class with unknown RFLClass " << std::hex << rflClassId << std::dec;
-        }
+        mClassBuilder.readFieldRecord(dr, false);
 
         if(hasModel())
         {
         	mModel = getDatabase().getModelByRef(mModelRef);
         }
     }
+
+    std::unique_ptr<RflClass> Class::makeInstance(RflClassBuilder objectBuilder)
+	{
+    	Logger::debug() << "Instantiating class " << std::hex << getAssetId() << std::dec;
+
+    	try
+        {
+        	RflClassRegistrar &cr = RiotFunctionLibrary::getSingleton().getClassRegistrarById(mRflClassId);
+
+        	RflFieldProbe probe;
+        	std::unique_ptr<RflClass> newInstance = cr.createClassInstance(probe);
+
+        	// first, fill fields with template. then, let the builder we got from object override all changed values
+        	mClassBuilder.fillFields(probe);
+        	objectBuilder.fillFields(probe);
+
+        }catch(NotFoundException &e)
+        {
+        	// ignore these for now as there are way more RflClasses than we have implemented
+        	Logger::warn() << "Tried to instantiate class with unknown RFLClass " << std::hex << mRflClassId << std::dec;
+        }
+
+        return nullptr;
+	}
 
 }

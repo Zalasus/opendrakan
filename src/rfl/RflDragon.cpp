@@ -8,11 +8,13 @@
 
 #include "rfl/RiotFunctionLibrary.h"
 #include "rfl/RflHealthPack.h"
+#include "rfl/RflKey.h"
 
 namespace od
 {
 
 	OD_REGISTER_RFL("Dragon");
 	OD_REGISTER_RFL_CLASS(0x000A, "Health Pack", RflHealthPack);
+	OD_REGISTER_RFL_CLASS(0x0021, "Key",         RflKey);
 
 }

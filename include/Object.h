@@ -40,6 +40,7 @@ namespace od
         Level &mLevel;
         ObjectId mId;
         ClassPtr mClass;
+        std::unique_ptr<RflClass> mRflClassInstance;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
     };

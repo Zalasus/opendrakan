@@ -213,4 +213,40 @@ namespace od
 		return *this;
 	}
 
+
+    MemBuffer::MemBuffer(char *begin, char *end)
+    : mBegin(begin)
+    , mEnd(end)
+    {
+    	this->setg(begin, begin, end);
+    }
+
+    std::streampos MemBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+    {
+    	if(which != std::ios_base::in)
+    	{
+    		return -1;
+    	}
+
+    	if(way == std::ios_base::beg)
+    	{
+    		setg(eback(), eback() + off, egptr());
+
+    	}else if(way == std::ios_base::end)
+    	{
+    		setg(eback(), egptr() + off, egptr());
+
+    	}else if(way == std::ios_base::cur)
+    	{
+    		gbump(off);
+    	}
+
+    	return gptr() - eback();
+    }
+
+    std::streampos MemBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    {
+    	return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
+    }
+
 }

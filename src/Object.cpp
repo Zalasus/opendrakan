@@ -37,8 +37,6 @@ namespace od
         float xScale = 1;
         float yScale = 1;
         float zScale = 1;
-        uint32_t dataAreaSize;
-        uint32_t paramCount;
 
         uint16_t dummyLength;
 
@@ -65,20 +63,13 @@ namespace od
                >> zScale;
         }
 
-        dr >> dataAreaSize
-           >> paramCount;
 
-        dr.ignore(4*dataAreaSize + 2*paramCount);
-
-        for(size_t i = 0; i < paramCount; ++i)
-        {
-            uint32_t type;
-            std::string name;
-            dr >> type
-               >> name;
-        }
+        RflClassBuilder builder;
+        builder.readFieldRecord(dr, true);
 
         mClass = mLevel.getClassByRef(classRef);
+
+        mRflClassInstance = mClass->makeInstance(builder);
 
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {

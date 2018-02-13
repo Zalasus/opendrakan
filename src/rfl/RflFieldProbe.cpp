@@ -10,11 +10,7 @@
 namespace od
 {
 
-	RflClassBuilder::RflClassBuilder()
-	{
-	}
-
-	void RflClassBuilder::registerField(RflField &field, RflField::RflFieldType fieldType, const std::string &fieldName)
+	void RflFieldProbe::registerField(RflField &field, RflField::RflFieldType fieldType, const std::string &fieldName)
 	{
 		FieldReg f =
 		{
@@ -25,6 +21,18 @@ namespace od
 
 		mFieldRegs.push_back(f);
 	}
+
+	RflFieldProbe::FieldReg &RflFieldProbe::getFieldReg(size_t i)
+	{
+		if(i >= mFieldRegs.size())
+		{
+			throw Exception("Index of requested field out of bounds");
+		}
+
+		return mFieldRegs[i];
+	}
+
+
 
     void RflClassBuilder::readFieldRecord(DataReader &dr, bool isObjectRecord)
     {
@@ -63,20 +71,20 @@ namespace od
     		mFieldEntries[i].fieldType = static_cast<RflField::RflFieldType>(type & 0xff);
     		mFieldEntries[i].fieldName = name;
     		mFieldEntries[i].index = isObjectRecord ? fieldIndices[i] : i;
+    		mFieldEntries[i].dataOffset = i*4;
     		mFieldEntries[i].isArray = (type & 0x1000) || (mFieldEntries[i].fieldType == RflField::STRING); // strings are stored exactly like arrays
     	}
     }
 
-    void RflClassBuilder::fillFields()
+    void RflClassBuilder::fillFields(RflFieldProbe &probe)
     {
+    	MemBuffer buf(mFieldData.data(), mFieldData.data() + mFieldData.size());
+    	std::istream dataStr(&buf);
+    	DataReader dr(dataStr);
+
     	for(auto it = mFieldEntries.begin(); it != mFieldEntries.end(); ++it)
     	{
-    		if(it->index >= mFieldRegs.size())
-    		{
-    			throw Exception("Index of field definition out of bounds. Does not correspond to field in RflClass.");
-    		}
-
-    		FieldReg &reg = mFieldRegs[it->index];
+    		RflFieldProbe::FieldReg &reg = probe.getFieldReg(it->index);
 
     		if(it->fieldType != reg.fieldType)
     		{
@@ -96,7 +104,23 @@ namespace od
 
     		// field seems reasonable. let's fill it
 
-    		// TODO: ...
+    		dr.seek(it->dataOffset);
+    		if(!it->isArray)
+    		{
+    			reg.field.fill(dr);
+
+    		}else
+    		{
+    			uint16_t offset;
+    			uint16_t length;
+    			dr >> offset
+				   >> length;
+
+    			dr.seek(offset*4);
+    			reg.field.fillArray(length, dr);
+    		}
+
+    		Logger::debug() << "Filled field '" << reg.fieldName << "'";
     	}
     }
 }

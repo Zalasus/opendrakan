@@ -28,9 +28,10 @@
 #include "rfl/RiotFunctionLibrary.h"
 #include "Database.h"
 #include "Level.h"
+#include "SrscRecordTypes.h"
 
 
-void srscStat(od::SrscFile &file)
+static void srscStat(od::SrscFile &file)
 {
 	std::cout << "Got SRSC version " << (int32_t)file.getVersion() << " with " << file.getRecordCount() << " records." << std::endl;
 	std::cout << "Records:" << std::endl;
@@ -79,6 +80,114 @@ void srscStat(od::SrscFile &file)
 	}
 }
 
+static void statClasses(od::SrscFile &file)
+{
+	for(auto it = file.getDirIteratorByType(OD_SRSC_CLASS); it != file.getDirectoryEnd(); it = file.getDirIteratorByType(OD_SRSC_CLASS, it+1))
+	{
+		od::DataReader dr(file.getStreamForRecord(*it));
+
+		std::string name;
+		uint16_t dummy;
+        od::AssetRef modelRef;
+        uint16_t classType;
+        uint16_t iconNumber;
+        uint32_t fieldCount;
+        uint32_t dwordCount;
+
+        dr >> name
+		   >> dummy
+		   >> modelRef
+		   >> classType
+		   >> iconNumber
+		   >> fieldCount
+		   >> dwordCount;
+
+        dr.ignore(4*dwordCount);
+
+        std::cout
+				<< "[" << name << "]" << std::endl
+        		<< "Dummy: " << std::hex << dummy << std::dec << std::endl
+				<< "Model: " << modelRef << std::endl
+				<< "RflClass: " << std::hex << classType << std::dec << std::endl
+				<< "Icon: " << std::hex << iconNumber << std::dec << std::endl
+				<< "Fields: " << fieldCount << std::endl;
+
+        for(size_t i = 0; i < fieldCount; ++i)
+        {
+        	std::cout << "    ";
+
+        	uint32_t type;
+        	std::string name;
+        	dr >> type
+			   >> name;
+
+        	switch(type & 0xff)
+        	{
+        	case od::RflField::INTEGER:
+        		std::cout << "int32";
+        		break;
+
+            case od::RflField::FLOAT:
+            	std::cout << "float";
+        		break;
+
+            case od::RflField::CLASS:
+            	std::cout << "class";
+        		break;
+
+            case od::RflField::MODEL:
+            	std::cout << "model";
+        		break;
+
+            case od::RflField::SOUND:
+            	std::cout << "sound";
+        		break;
+
+            case od::RflField::ENUM:
+            	std::cout << "enum";
+        		break;
+
+            case od::RflField::CHAR_CHANNEL:
+            	std::cout << "channel";
+        		break;
+
+            case od::RflField::ANIMATION:
+            	std::cout << "anim";
+        		break;
+
+            case od::RflField::STRING:
+            	std::cout << "string";
+        		break;
+
+            case od::RflField::SEUQUENCE:
+            	std::cout << "sequence";
+        		break;
+
+            case od::RflField::TEXTURE:
+            	std::cout << "texture";
+        		break;
+
+            case od::RflField::COLOR:
+            	std::cout << "color";
+        		break;
+
+            default:
+            	std::cout << std::hex << (type & 0xff) << std::dec;
+        	}
+
+        	if(type &0x100)
+        	{
+        		std::cout << "[]";
+        	}
+
+        	std::cout << "\t\t" << name << std::endl;
+        }
+
+        std::cout << std::endl;
+	}
+
+}
+
 void printUsage()
 {
 	std::cout
@@ -89,6 +198,7 @@ void printUsage()
 		<< "    -t         Extract as a texture" << std::endl
 		<< "    -i <id>    Limit extraction to records with ID <id>" << std::endl
 		<< "    -s         Print SRSC statistics" << std::endl
+		<< "    -c         Create class statistics" << std::endl
 		<< "    -v         Increase verbosity of logger" << std::endl
 		<< "If no option is given, the file is loaded as a level." << std::endl
 		<< std::endl;
@@ -108,9 +218,10 @@ int main(int argc, char **argv)
 	bool extract = false;
 	bool texture = false;
 	bool stat = false;
+	bool classStat = false;
 	uint16_t extractRecordId = 0;
 	int c;
-	while((c = getopt(argc, argv, "i:o:txsv")) != -1)
+	while((c = getopt(argc, argv, "i:o:txscv")) != -1)
 	{
 		switch(c)
 		{
@@ -132,6 +243,10 @@ int main(int argc, char **argv)
 
 		case 's':
 			stat = true;
+			break;
+
+		case 'c':
+			classStat = true;
 			break;
 
 		case 'v':
@@ -183,37 +298,6 @@ int main(int argc, char **argv)
 		od::RiotFunctionLibrary &rfl = od::RiotFunctionLibrary::getSingleton();
 		od::Logger::info() << "Got RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered class types";
 
-		/*od::DbManager dbm;
-
-		std::cout << "Loading database " << filename << std::endl;
-
-		od::RiotDb &db = dbm.loadDb(od::FilePath(filename));
-
-		std::cout << "Successfully loaded database!" << std::endl;
-
-		od::SrscFile &srscFile = db.getResourceContainer(od::ASSET_SOUND);
-
-		if(extract)
-		{
-            if(extractRecordId > 0)
-            {
-                od::SrscFile::DirEntry dirEntry = srscFile.getDirectoryEntryByID(extractRecordId);
-                srscFile.decompressRecord("out/", dirEntry, true);
-
-                od::AssetPtr classTest = db.getAssetById(od::ASSET_SOUND, extractRecordId);
-
-                std::cout << "The loaded asset has name: " << classTest->getName() << std::endl;
-
-            }else
-            {
-                srscFile.decompressAll("out/", true);
-            }
-
-		}else
-		{
-		    srscStat(srscFile);
-		}*/
-
 		if(stat)
 		{
 		    od::SrscFile srscFile(filename);
@@ -259,7 +343,14 @@ int main(int argc, char **argv)
 
         	tex->exportToPng(ss.str());
 
-		}else
+		}else if(classStat)
+        {
+
+			od::SrscFile srscFile(filename);
+
+		    statClasses(srscFile);
+
+        }else
 		{
 		    od::DbManager dbm;
 		    osg::ref_ptr<od::Level> level(new od::Level(filename, dbm));

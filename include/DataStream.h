@@ -40,6 +40,10 @@ namespace od
 		};
 
 		DataReader(std::istream &stream);
+		//DataReader(const DataReader &dr) = delete;
+		//DataReader(DataReader &dr) = delete;
+		//DataReader &operator=(const DataReader &dr) = delete;
+		//DataReader &operator=(DataReader &dr) = delete;
 
 		template <typename T>
 		DataReader &operator>>(T &s);
@@ -51,6 +55,9 @@ namespace od
 
 		void read(char *data, size_t size);
 
+		void beginUnit(size_t size);
+		void endUnit();
+
 		void ignore(size_t n);
 		void seek(size_t offset);
 		size_t tell();
@@ -58,7 +65,7 @@ namespace od
 		std::istream &getStream();
 
 
-	private:
+	protected:
 
 		template <typename T>
         void _stupidlyReadIntegral(T &v)
@@ -93,6 +100,23 @@ namespace od
 
 		return *this;
 	}
+
+
+	class MemBuffer : public std::streambuf
+	{
+	public:
+
+		MemBuffer(char *begin, char *end);
+
+		virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
+		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
+
+	private:
+
+		char *mBegin;
+		char *mEnd;
+
+	};
 
 }
 
