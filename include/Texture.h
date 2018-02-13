@@ -30,11 +30,11 @@ namespace od
         void exportToPng(const FilePath &path);
 
         // implement Asset
-        virtual const char *getAssetTypeName() const { return "texture"; }
+        virtual const char *getAssetTypeName() const override { return "texture"; }
 
         // override osg::Image
-        virtual const char *libraryName() const { return "od";    }
-        virtual const char *className()   const { return "Texture"; }
+        virtual const char *libraryName() const override { return "od";    }
+        virtual const char *className()   const override { return "Texture"; }
 
 
     private:

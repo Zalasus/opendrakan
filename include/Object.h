@@ -31,6 +31,9 @@ namespace od
 
         void loadFromRecord(DataReader dr);
 
+        // override osg::Group
+		virtual const char *libraryName() const override { return "od";    }
+        virtual const char *className()   const override { return "Object"; }
 
     private:
 

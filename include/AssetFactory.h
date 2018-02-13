@@ -46,7 +46,7 @@ namespace od
 		virtual osg::ref_ptr<_AssetType> loadAsset(RecordId id) = 0;
 
 		// override osg::Observer
-		virtual void objectDeleted(void *object);
+		virtual void objectDeleted(void *object) override;
 
 
 	private:

@@ -58,7 +58,7 @@ namespace od
 		{
 		}
 
-		virtual RflClass *createClassInstance(RflFieldProbe *probe)
+		virtual RflClass *createClassInstance(RflFieldProbe *probe) override
 		{
 		    return new T(probe); // FIXME: RAII!!!
 		}

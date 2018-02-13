@@ -40,7 +40,7 @@ namespace od
 	protected:
 
 		// implement AssetFactory<Texture>
-		TexturePtr loadAsset(RecordId textureId);
+		TexturePtr loadAsset(RecordId textureId) override;
 
 
 	private:

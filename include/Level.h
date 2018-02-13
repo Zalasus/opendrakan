@@ -38,13 +38,13 @@ namespace od
         inline FilePath getFilePath() const { return mLevelPath; }
 
         // override osg::Group
-        virtual const char *libraryName() const;
-        virtual const char *className() const;
+        virtual const char *libraryName() const override;
+        virtual const char *className() const override;
 
         // implement AssetProvider
-        virtual TexturePtr getTextureByRef(const AssetRef &ref);
-	    virtual ClassPtr   getClassByRef(const AssetRef &ref);
-	    virtual ModelPtr   getModelByRef(const AssetRef &ref);
+        virtual TexturePtr getTextureByRef(const AssetRef &ref) override;
+	    virtual ClassPtr   getClassByRef(const AssetRef &ref) override;
+	    virtual ModelPtr   getModelByRef(const AssetRef &ref) override;
 
 
     private:

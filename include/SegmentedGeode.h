@@ -38,6 +38,11 @@ namespace od
         	osg::Vec2 vertexUvCoords[4];
 		};
 
+		// override osg::Geode
+		virtual const char *libraryName() const override { return "od";    }
+        virtual const char *className()   const override { return "SegmentedGeode"; }
+
+
 	protected:
 
 		void build(AssetProvider &db, std::vector<osg::Vec3> &vertexArray, std::vector<Face> &faceArray, size_t textureCount = 0);

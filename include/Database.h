@@ -32,16 +32,6 @@ namespace od
 
     typedef std::reference_wrapper<Database> DbRefWrapper;
 
-
-    enum AssetType
-    {
-        ASSET_TEXTURE,
-        ASSET_CLASS,
-        ASSET_MODEL,
-        ASSET_SOUND,
-        ASSET_SEQUENCE
-    };
-
 	class Database : public AssetProvider
 	{
 	public:
@@ -55,14 +45,14 @@ namespace od
 
 
 		// implement AssetProvider
-		virtual TexturePtr getTextureByRef(const AssetRef &ref);
-	    virtual ClassPtr   getClassByRef(const AssetRef &ref);
-	    virtual ModelPtr   getModelByRef(const AssetRef &ref);
+		virtual TexturePtr getTextureByRef(const AssetRef &ref) override;
+	    virtual ClassPtr   getClassByRef(const AssetRef &ref) override;
+	    virtual ModelPtr   getModelByRef(const AssetRef &ref) override;
 
 	    // override AssetProvider
-	    virtual TexturePtr getTexture(RecordId recordId);
-	    virtual ClassPtr   getClass(RecordId recordId);
-	    virtual ModelPtr   getModel(RecordId recordId);
+	    virtual TexturePtr getTexture(RecordId recordId) override;
+	    virtual ClassPtr   getClass(RecordId recordId) override;
+	    virtual ModelPtr   getModel(RecordId recordId) override;
 
 
 	private:

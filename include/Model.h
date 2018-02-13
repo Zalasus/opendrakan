@@ -34,11 +34,11 @@ namespace od
 		void buildGeometry();
 
 		// implement Asset
-        virtual const char *getAssetTypeName() const { return "model"; }
+        virtual const char *getAssetTypeName() const override { return "model"; }
 
 		// override osg::Group
-		virtual const char *libraryName() const { return "od";    }
-        virtual const char *className()   const { return "Model"; }
+		virtual const char *libraryName() const override { return "od";    }
+        virtual const char *className()   const override { return "Model"; }
 
 
 	private:

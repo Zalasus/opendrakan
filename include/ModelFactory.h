@@ -27,7 +27,8 @@ namespace od
 
 	protected:
 
-		virtual ModelPtr loadAsset(RecordId id);
+		// implement AssetFactory<Model>
+		virtual ModelPtr loadAsset(RecordId id) override;
 
 	};
 

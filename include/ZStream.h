@@ -36,9 +36,10 @@ namespace od
          */
         void restart();
 
+
     protected:
 
-        virtual int_type underflow();
+        virtual int_type underflow() override;
 
 
     private:

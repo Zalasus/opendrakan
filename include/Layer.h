@@ -47,8 +47,8 @@ namespace od
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
 
         // override osg::Geode
-        virtual const char *libraryName() const;
-        virtual const char *className() const;
+        virtual const char *libraryName() const override;
+        virtual const char *className() const override;
 
     private:
 

@@ -31,7 +31,7 @@ namespace od
         void loadFromRecord(ClassFactory &factory, DataReader dr);
 
         // implement Asset
-        virtual const char *getAssetTypeName() const { return "class"; }
+        virtual const char *getAssetTypeName() const override { return "class"; }
 
 	private:
 

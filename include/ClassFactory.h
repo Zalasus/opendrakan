@@ -24,7 +24,7 @@ namespace od
     protected:
 
         // implement AssetFactory<ClassFactory>
-        virtual ClassPtr loadAsset(RecordId classId);
+        virtual ClassPtr loadAsset(RecordId classId) override;
 
 
     private:
