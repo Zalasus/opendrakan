@@ -3,14 +3,15 @@
 The following is a list of all known class types in the "dragon.rfl" Riot Function Library
 as used by Drakan, grouped by category.
 
-Field names are in braces here as they may contain spaces.
+Field names are in quotes here as they may contain spaces.
 
 
 Item
 -----
 
-[*] Common item fields
-    string  {DisplayName}      = "";
+abstract class Item
+{
+    string  "DisplayName"      = "";
     int     {Quantity}         = 1;
     enum    {Grouped}          = No;  // No = 0, Yes = 1
     int     {Bit Map Number}   = 1;
@@ -23,11 +24,51 @@ Item
     sound   {Picked Up Sound} = NULL;
     enum    {Droppable?}     = Yes; // no/yes
     float   {Fade Time when dropped (Sec)} = 60;
+}
     
+abstract class Durability
+{
+    int32       Initial Durability Points
+    int32       Total Durability Points
+    sound       Warning Sound
+    class       Destruction Obj Generator
+}
 
-[0x000A] Health Pack
+abstract class "Basic Weapon"
+{
+    int32       Damage Maximum
+    float       Health given to wielder (% damage inflicted)
+    enum        Armor Piercing
+    int32       Chance Of Causing Heavy Hit (%)
+    enum        Weapon Type
+    class       Secondary Attack Object
+    int32       # of Secondary Charges
+    float       Weapon Speed
+    enum        Player Weapon
+    enum        Weapon Range
+}
+
+abstract class "Effects" : "Basic Weapon"
+{
+    class       Special Effect
+    class       Extra Multiplayer Effects
+    class       Damage Effect
+}
+
+abstract class "Sounds" : "Basic Weapon"
+{
+    sound       Swoosh Sounds
+}
+
+class "Health Pack"[0x000A] : Item
+{
     int     {Health Boost} = 0;
+}
     
-[0x0021] Key
+class "Key"[0x0021] : Item
+{
     int     {Lock Code} = 0;
+    
+    
+}
     

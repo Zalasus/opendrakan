@@ -65,7 +65,9 @@ SRSC file (see riot_database_format.txt) with the following record types:
         float           y_position; // elevation axis, always relative to model origin
         float           z_position;
         uint32          flags; // 0x01 = visible in-game, 0x100 = scaled
-        uint32          initial_event_count;
+        uint16          initial_event_count;
+        uint16          dummy_size;
+        uint16[~]       dummy_array; // don't know what this is
         uint16          x_rotation; // in degrees
         uint16          y_rotation; //    "
         uint16          z_rotation; //    "

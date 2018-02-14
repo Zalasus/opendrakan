@@ -9,11 +9,15 @@ All of the following information has been aquired through reverse engineering.
 Some basic information was taken from a script found at: http://aluigi.altervista.org/bms/drakan.bms.
 
 This document uses a pseudo-C syntax for data structure definitions. You'll figure it out.
-    (Just some hints: ~ or ~1 refers to the previous field, ~2 to the one before that etc.)
+    "T[uint16]" refers to an array of T with a uint16 length prefix
+    "ref" refers to another resource and is a struct { uint16 id, db_index; }.
+    All structs are packed. No alignment padding unless explicitly specified.
 
 PLEASE NOTE: This documentation is not complete. I could not identify all fields used in all files
 and am still working on figuring out things like animations. Feel free to make a pull request should
 you find out things not documented here.
+
+This info was compiled by Zalasus and HeckFluff from the arokhslair.net forums.
 
 
 How the engine manages it's assets
@@ -33,8 +37,8 @@ How the engine manages it's assets
     These are the possible file extensions and their associated asset types for databases:
     
         *.mod    Models
-        *.adb    Model/Character animations (?)
-        *.ssd    Animations ("STOMP"-Sequences)  
+        *.adb    Character model animations
+        *.ssd    "STOMP"-Sequences
         *.odb    Objects
         *.sdb    Sounds
         *.txd    Textures
@@ -42,7 +46,7 @@ How the engine manages it's assets
     Apart from those, the following files are also SRSC formatted, but aren't part of databases:
 
         *.rrc   Contains various resources like Music; found in engine toplevel
-        *.lvl   Contains level geometry, object placements etc.
+        *.lvl   Contains level geometry, object placements etc. (see lvl_format.txt for a preliminary documentation)
 
 
 Database definition
@@ -72,11 +76,9 @@ Basic SRSC format
     ---------------
         All fields are little-endian.
 
-        SRSC files are word-aligned, so all fields start at an even offset.
-
         Strings are plain ASCII, prefixed with a 16-bit length field. Strings with an odd length
-        are padded with a single 0 byte so the aligment is preseved. This padding is also included
-        in the length field, so a string length can only ever be even. Strings are not zero-terminated.
+        are padded with a single 0 byte. This padding is also included in the length field, so a 
+        string length can only ever be even. Strings are not zero-terminated.
 
         Floats use standard IEEE 754 format, single precision.
 
@@ -157,46 +159,41 @@ Record types
 
     [0x0030] Palette
         struct color { uint8 r; uint8 g; uint8 b; uint8 flags; }; // these are copied verbatim from the RIFF PAL file
-        uint16      color_count;
-        colour[~]   palette_colors;
+        color[uint16]   palette_colors;
 
-    [0x0040] Material data (record ID is material ID)
-        uint32      width; // editor only allows 32, 64, 128 or 256
-        uint32      height; // editor allows arbitrary height
-        uint32      bytes_per_row;
-        uint16      bits_per_pixel;
-        uint16      alpha_bits_per_pixel; // indicates 5 5 5+1, 4 4 4+4 or 3 3 2+8 formats for alpha channels. 8 8 8+8 format is reported as "not yet implemented"
-        uint16      ???
-        uint32      colour_key;
-        uint16      mip_map_id;
-        uint16      ???
-        uint16      alternate_texture_id;
-        uint8[6]    ???
-        ...
-        uint16      flags; (the following are partially speculative)
-            (0x0080 if "keep high quality",
-             0x0040 if "dynamic texture" is ticked, 
-             0x0020 if "next frame", 
-             0x0008 if this is a mipmap
-             0x0004 if this is an alternate of another texture,
-             0x0002 if an alpha channel is integrated into the image data
-             0x0001 if this has a seperate alpha map attached after the image data
-             0x0a00 always set for normal textures
-            )
-        uint16      mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps 
-        uint16      class_id;
-        uint16      class_database_index;
-        uint32      usage_count; // ? (seems so at least for models
-        uint32      compression_level; // (0 = none, 1 = lowest, 9 = highest)
-        uint32      compressed_size;
-        uint8[~]    zlib-compressed raw texture data (see "texture format")
-        
-        // the following area appears if flag 0x01 is set
-        uint32      additional_data_length // seems to be always equal to length of compressed texture
-        uint8[~]    additional_data // no zlib-header
+    [0x0040] Texture data (record ID is texture ID)
+        uint32        width; // editor only allows 32, 64, 128 or 256
+        uint32        height; // editor allows arbitrary height
+        uint32        pitch;
+        uint16        bits_per_pixel; // indicates 5 5 5+1, 4 4 4+4 or 3 3 2+8 formats for alpha channels. 8 8 8+8 format is reported as "not yet implemented"
+        uint32        alpha_bits_per_pixel;
+        uint32        colour_key;
+        ref           mip_map;
+        ref           alternate_texture;
+        ref           bump_map_texture;
+        uint8         animation_fps;  // Only valid if not "next frame".
+        // Flags (the following are partially speculative)
+        // 0x80 "keep high quality",
+        // 0x40 "dynamic texture" is ticked, 
+        // 0x20 "next frame", 
+        // 0x08 this is a mipmap
+        // 0x04 this is an alternate of another texture,
+        // 0x02 an alpha channel is integrated into the image data
+        // 0x01 this has a seperate alpha map attached after the image data
+        uint8         flags;  
+        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps         
+        ref           material_object;
+        uint32        ref_count;
+        uint32        compression_level; // (0 = none, 1 = lowest, 9 = highest)
+        uint8[uint32] zlib_compressed_data;
 
-        // as of now, I have no idea how texture animations work
-
+        if flags & 1:
+            // Unknown interpretation.
+            // This data might need to be appended to the above, or maybe not.
+            // Or maybe this data is corrupt and unusable.
+            uint8[uint32] separate_alphamap_data;
+            
+        // Texture animations are built by appending consecutive "next frame" textures to the first frame.
 
     Class (0x0100 - 0x0102)
     -----------------------
@@ -216,36 +213,44 @@ Record types
          type 0x03 = class,
          type 0x04 = model
          type 0x05 = sound
+         type 0x06 = ??
          type 0x07 = enum (possible items depends on field; are stored as uint32)
          type 0x08 = character channel (probably bones)
          type 0x09 = animation
          type 0x0a = string
          type 0x0b = sequence
+         type 0x0c = landscape layer
+         type 0x0d = ??
          type 0x0e = texture
          type 0x0f = colour
          if second byte is 0x10, field is an array of that type
          */
         string          class_name;
-        uint16          ??
-        uint16          model_id; // none if zero
-        uint16          model_database_number; // from dependency table
-        uint16          class_type;
+        uint16          unk0;
+        ref             model; // none if zero
+        uint16          rfl_class_id;
         uint16          icon_number; // Selected class icon in the editor. Should have no effect on gameplay
         uint32          number_of_fields;
-        uint32          size_of_data_area_in_dwords; // 1 means 4 bytes
-        uint32[~]       data_area; // for layout see "Class format"
-        field_def[~3]    field_definitions;
+        uint32[uint32]  field_value_data; // for layout see "Class format"
+        field_def[number_of_fields]  field_definitions;
 
 
     Model (0x0200 - 0x0209)
     -----------------------
 
-    struct vect3f { float x; float y; float z; };
+    struct vect2f { float x, y; };
+    struct vect3f { float x, y, z; };
+    struct mat3f { vect3f axes[3]; };
+    struct mat3x4f { mat3f linear; vect3f translation; };
+    struct sphere { vect3f center; float radius; };
+    struct obb { vect3f center; mat3f xform; };
+    struct obb_ex { obb obb; uint16[uint16] unk_poly_indices; };
+    struct bounding_info { sphere sphere; obb obb; };
     
     [0x0200] Model name ( this one is always the first record in the directory with the model's ID)
         string      model_name;
         uint32      shading_type; (0 = none, 09 = flat, 0a = smooth, flags seem to change this in weird ways)
-	
+    
     [0x0201] Model group definition
         string      group_name;
 
@@ -255,30 +260,103 @@ Record types
     The following records must all appear once per model (also 0x0200) and thus have the same record ID.
 
     [0x0203] Vertices
-        uint16      vertex_count;
-        vect3f[~]   vertices;
+        vect3f[uint16]   vertices;
         
     [0x0204] Faces
-        struct vert_index { uint16 vertex_number; float u_coord; float  v_coord; };
-        struct face { uint16  ???; uint16 vertex_count; uint16 material; vert_index[~1] vertex_list; } // material as found in record 0x206
-        uint16      face_count;
-        face[~]     faces;
-
-    [0x0206] Texture list
-        struct texture_ref { uint16 texture_id; uint16 database_number; }
-        uint32          texture_count;
-        texture_ref[~]  texture_list;
+        struct face_vertex
+        {
+            uint16 vertex_index;
+            vect2f uv;
+        };
         
-    [0x0207] Bounding data
-         vect3f     sphere_center;
-         float      sphere_radius;
-         vect3f     box_position;
-         float      box_x_length;
-         uint8[12]  ??? // all zeroes. the fuck is this?
-         float      box_y_length;
-         uint8[12]  ??? // all zeroes
-         float      box_z_length;
-         ... (more unknown float coordinates)
+        struct face
+        {
+            uint16 unk0;
+            uint16 vertex_count; // 3 or 4.
+            uint16 texture_index; // Indexes into the model's texture list.
+            face_vertex[vertex_count] vertex_list;
+        };
+        
+        face[uint16]  faces;
+        
+    [0x0205] ??? table // Rare. See Resources Powerups Fire02 for an example.
+        struct table_entry
+        {
+            uint16[3]           vertices;
+            uint16[2 + uint16]  polys; // Typically, there's 4 or 5 polys in this list.
+        };
+        table_entry[uint16]  unk_table;
+    
+    [0x0206] Texture list
+        ref[uint32]  textures;
+        
+    [0x0207] Bounding data // Possibly for culling. Possibly for physics.
+        bounding_info bounding_info;
+        uint16        num_shapes;
+        uint16        is_obb;
+        pair<uint16, uint16>[num_shapes] unk_links; // These are unknown shape indices.
+        if is_obb:
+            obb_ex[num_shapes] boxes;
+        else:
+            sphere[num_shapes] spheres;
+            
+    [0x0208] Character data // LOD, scene tree, channels, animation refs, bounding info
+        struct node_info
+        {
+            char[32]  name;
+            int32     parent_index; // negative if no parent
+        };
+        struct node_more_info
+        {
+            mat3x4f   inverted_model_rel_xform; // Inverted!!
+            int32     mesh_index; // Unknown use. These values can be seen in the editor.
+            int32     first_child_index; // negative if no children
+            int32     next_sibling_index; // negative if end of parent's child list
+            vertex_weight[uint16][num_lods] vertex_weights_per_lod; // A list of vertex weights for each LOD that are affected by this bone.
+        };
+        struct vertex_weight
+        {
+            uint32    vertex_index;
+            float     weight;
+        };
+        struct lod_mesh_info
+        {
+            uint16    mesh_index;
+            uint16    unk;
+            uint32    usage;
+            uint32    node_index;
+            uint32    first_vertex_index;
+            uint32    num_vertices;
+            uint32    first_poly_index;
+            uint32    num_polys;
+        };
+        struct channel // Weapon attachment and dismemberment?
+        {
+            // Dismemberment.
+            struct lod_cap
+            {
+                uint32 first_cap_poly_index;
+                uint32 num_cap_polys;
+                uint32 first_part_poly_index;
+                uint32 num_part_polys;
+                uint32 unk;
+                vertex_weight[uint16] vertex_weights;
+            };
+            
+            int32           node_index;
+            mat3x4f         xform_a; // Unknown.
+            mat3x4f         xform_b; // Unknown.
+            lod_cap[uint16] lod_caps;
+        };
+        
+        bounding_info                    bounding_info;
+        uint16                           num_lods;
+        string[num_lods - 1]             lod_names;  // The first LOD is unnamed.
+        node_info[uint16]                node_infos; // Contains some empty entries at the end.
+        node_more_info[uint16]           more_node_infos; // The size of this array should be no greater than the size of node_infos.
+        lod_mesh_info[uint16][num_lods]  lod_mesh_infos; // An array of mesh infos for each LOD.
+        uint16                           anim_ids; // Just IDs. It seems that only animations in the same DB can be referenced.
+        channel[uint16]                  channels;
         
     [0x0209] ???
         uint8[6]    ???
@@ -297,35 +375,149 @@ Record types
         uint16     channels;
         uint16     bits;
         uint32     frequency;
-        uint32     volume; // no idea how this is encoded
+        int32      volume; // 0 == full volume, -5000 == silent. Decibels * 100 (millibels). Amplitude factor = 10^(volume / 100 / 20)
         float      dropoff; // min 0, max 30
         uint32     priority; // range 0-10
         uint32     decompressed_size; // the editor alters these three fields globally for a database!
         uint32     compression_level; // 0 = none, 1 = lowest, 9 = highest
-        uint32     compressed_size; // record size - header size, only valid if compression level > 0, contains garbage otherwise
-        uint8[*]   audio_data; // see "Audio format"
-        
+        if compression_level > 0:
+            uint8[uint32] audio_data;
+        else:
+            uint8[decompressed_size] audio_data;
         
     Sequence (0x0310 - 0x0312)
     --------------------------
     
     [0x0310] ???
-    	// 8 bytes. not all zero
-    	
+        // 8 bytes. not all zero
+        
     [0x0311] Sequence
-    	string		sequence_name;
-    	...
+        struct quat { float x, y, z, w; };
+        
+        struct action
+        {
+            struct xform_key_frame
+            {
+                quat rotation;
+                vect3f position;
+                uint32 flags; // Probably. Always 0.
+                uint16 interpolation; // 0x00 == NONE, 0x10 == LINEAR_LINEAR, 0x30 == SINE_SPLINE
+                uint16 relative_to; // Probably. Always 0.
+            };
+            
+            struct start_anim
+            {
+                uint32 channel_index;
+                ref anim;
+                uint32 unk08; // Always 0.
+                float transition_time;
+                float speed;
+                uint32 root_node_translation_mode_flags; // 2 bits for each axis. 0b00 == MESH, 0b01 == FRAME, 0b10 == NONE, 0b11 = INVALID.
+            };
+            
+            struct play_sound
+            {
+                ref sound;
+                float duration;
+                uint16 volume; // [0..10000]
+                uint16 flags; // 0x8 == flush from memory after playing, 0x10 == mono, 0x30 == notify actor (what does this do?)
+            };
+            
+            struct attach
+            {
+                uint32 other_actor_id = 0;
+                uint32 this_actor_channel_id = 0;
+            };
+            
+            struct run_stop_ai
+            {
+                uint32 enable_ai;
+            };
+            
+            struct show_hide
+            {
+                uint32 is_visible;
+            };
+            
+            struct message
+            {
+                uint32 message_number; // Unknown meaning. Possibly hard-coded behaviour.
+                uint32 unk0; // Always 0.
+            };
+            
+            uint16 type;
+            float t;
+
+            if type == 0: xform_key_frame data;
+            if type == 1: start_anim data;
+            if type == 3: play_sound data;
+            if type == 4: attach data;
+            if type == 5: run_stop_ai data;
+            if type == 6: show_hide data;
+            if type == 7: message data;
+            // Type 2 is probably texture anims, and 8 is probably music, else, you've found something new.
+        };
+        
+        struct actor
+        {
+            string name;
+            uint32 id;
+            uint32 unk0; // Always 1
+            uint32 unk1; // Always 0
+            uint32 level_entity_id; // probably
+            action[uint32] actions;
+        };
+        
+        string        sequence_name;
+        uint32        unk0; // flags?
+        uint32        unk1;
+        uint32        unk2;
+        actor[uint32] actors;
+        
     
     [0x0312] Sequence group definition
-    	string		group_name;
-    	
-   	
+        string      group_name;
+        
+    
     Misc
     ----
 
     [0x0402] End record?
         (one of these appears in many databases, often last. it's size seems to always be 4)
+        
+    Animation (0x0501 - 0x0503)
+    ---------------------------
 
+    [0x0501] Info
+        float duration;
+        uint32 original_num_frames;
+        uint32 num_frames;
+        uint32 unk0;
+        uint32 model_num_nodes;
+        uint32 model_num_channels;
+        uint32 unk1; // Non-Looping flag?
+        uint32 ref_count;
+        float rotation_threshold;
+        float scale_threshold;
+        float translation_threshold; // Probably.
+        
+    [0x0202] Data
+        struct frame
+        {
+            float t;
+            mat3x4f xform; // Might be model-relative or parent-relative. Not sure yet.
+        };
+        
+        frame[uint16] frames;
+        
+    [0x0503] Frame Lookup
+        struct node_frames_index_range
+        {
+            uint32 first_frame_index;
+            uint32 num_frames;
+        };
+        
+        node_frames_index_range[uint16] frames_lookup; // One for each node.
 
 Audio format
 ============
@@ -416,6 +608,3 @@ Class format
     Where offset is the offset in dwords starting from the beginning of the data area where the string's/array's data can be found,
     and length is the number of dwords contained in that trailing field. For arrays this is equal to the number of elements contained,
     while strings are packed into as many dwords as required, and then padded with zero bytes if the string's size is not divisible by 4.
-
-
-
