@@ -17,11 +17,7 @@ namespace od
 	{
 	public:
 
-		RflKey(RflFieldProbe &probe)
-		: RflAbstractItem(probe)
-		, mLockCode(probe, "Lock Code", 0)
-		{
-		}
+		RflKey(RflFieldProbe &probe);
 
 
 	private:

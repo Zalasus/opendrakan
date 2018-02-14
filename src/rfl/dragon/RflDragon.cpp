@@ -8,6 +8,7 @@
 
 #include "rfl/Rfl.h"
 #include "rfl/general/RflMaterial.h"
+#include "rfl/general/RflCamera.h"
 #include "rfl/dragon/RflHealthPack.h"
 #include "rfl/dragon/RflKey.h"
 
@@ -16,6 +17,8 @@ namespace od
 
 	OD_REGISTER_RFL("Dragon");
 
+	// TODO: move the following in their respective cpp files wherever possible
+
 	// Item
 	OD_REGISTER_RFL_CLASS(0x000A, "Health Pack", RflHealthPack);
 	OD_REGISTER_RFL_CLASS(0x0021, "Key",         RflKey);
@@ -23,5 +26,8 @@ namespace od
 	// Material
 	OD_REGISTER_RFL_CLASS(0x004b, "Standard Material", RflMaterial);
 	OD_REGISTER_RFL_CLASS(0x0072, "Blended Material",  RflBlendedMaterial);
+
+	// System
+	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera",   RflTrackingCamera);
 
 }

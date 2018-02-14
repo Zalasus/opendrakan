@@ -17,11 +17,7 @@ namespace od
 	{
 	public:
 
-		RflHealthPack(RflFieldProbe &probe)
-		: RflAbstractItem(probe)
-		, mHealthBoost(probe, "Health Boost", 0)
-		{
-		}
+		RflHealthPack(RflFieldProbe &probe);
 
 
 	private:
