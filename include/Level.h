@@ -19,6 +19,7 @@
 #include <osg/Group>
 #include <osg/Geode>
 #include <osg/Geometry>
+#include <osg/Light>
 
 #include "FilePath.h"
 #include "DbManager.h"
@@ -29,17 +30,15 @@
 namespace od
 {
 
-    class Level : public osg::Group, public AssetProvider
+	class Engine;
+
+    class Level : public AssetProvider
     {
     public:
 
-        Level(const FilePath &levelPath, DbManager &dbManager);
+        Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode);
 
         inline FilePath getFilePath() const { return mLevelPath; }
-
-        // override osg::Group
-        virtual const char *libraryName() const override;
-        virtual const char *className() const override;
 
         // implement AssetProvider
         virtual TexturePtr getTextureByRef(const AssetRef &ref) override;
@@ -57,6 +56,7 @@ namespace od
 
 
         FilePath mLevelPath;
+        Engine &mEngine;
         DbManager &mDbManager;
 
         std::string mLevelName;
@@ -64,9 +64,10 @@ namespace od
         uint32_t mMaxHeight;
         std::map<uint16_t, DbRefWrapper> mDependencyMap;
         std::vector<LayerPtr> mLayers;
-
+        osg::ref_ptr<osg::Group> mLevelRootNode;
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;
+        osg::ref_ptr<osg::Light> mSunLight;
     };
 
 

@@ -8,6 +8,8 @@
 #include "Level.h"
 
 #include <algorithm>
+#include <osg/LightSource>
+#include <osg/Material>
 
 #include "OdDefines.h"
 #include "SrscRecordTypes.h"
@@ -16,32 +18,27 @@
 #include "ZStream.h"
 #include "Exception.h"
 #include "Object.h"
+#include "Engine.h"
 
 namespace od
 {
 
-    Level::Level(const FilePath &levelPath, DbManager &dbManager)
+    Level::Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode)
     : mLevelPath(levelPath)
-    , mDbManager(dbManager)
+    , mEngine(engine)
+    , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
+    , mLevelRootNode(levelRootNode)
     , mLayerGroup(new osg::Group)
     , mObjectGroup(new osg::Group)
     {
-    	this->addChild(mLayerGroup);
-    	this->addChild(mObjectGroup);
+    	mLevelRootNode->addChild(mLayerGroup);
+    	mLevelRootNode->addChild(mObjectGroup);
+
+		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
 
         _loadLevel();
-    }
-
-    const char *Level::libraryName() const
-    {
-    	return OD_LIB_NAME;
-    }
-
-    const char *Level::className() const
-    {
-    	return "RiotLevel";
     }
 
     void Level::_loadLevel()

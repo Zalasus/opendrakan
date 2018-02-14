@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <osg/Geometry>
+#include <osg/FrontFace>
 #include <osgUtil/SmoothingVisitor>
 
 #include "Asset.h"
@@ -149,6 +150,9 @@ namespace od
 
 		osgUtil::SmoothingVisitor sm;
         this->accept(sm);
+
+        // model faces are oriented CW for some reason
+        this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
 	}
 }
 

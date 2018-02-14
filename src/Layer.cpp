@@ -9,6 +9,7 @@
 
 #include <osgUtil/SmoothingVisitor>
 #include <osg/Texture2D>
+#include <osg/FrontFace>
 
 #include "Level.h"
 #include "OdDefines.h"
@@ -221,6 +222,20 @@ namespace od
         }
 
         build(mLevel, vertices, faces);
+
+        if(mType == TYPE_FLOOR)
+        {
+        	this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::COUNTER_CLOCKWISE), osg::StateAttribute::ON);
+
+        }else if(mType == TYPE_CEILING)
+		{
+			this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
+
+		}else if(mType == TYPE_BETWEEN)
+		{
+			// so both faces get rendered. that's what this "between" is, right?
+			this->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
+		}
 
         // generate normals
         osgUtil::SmoothingVisitor sm;

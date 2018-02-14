@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ENGINE_H_
 #define INCLUDE_ENGINE_H_
 
+#include <memory>
 #include <osgViewer/Viewer>
 
 #include "DbManager.h"
@@ -23,6 +24,7 @@ namespace od
 		Engine();
 
 		inline FilePath getInitialLevelFile() const { return mInitialLevelFile; }
+		inline DbManager &getDbManager() { return mDbManager; }
 		inline void setInitialLevelFile(const FilePath &level) { mInitialLevelFile = level; }
 
 		void run();
@@ -32,7 +34,7 @@ namespace od
 
 		DbManager mDbManager;
 		FilePath mInitialLevelFile;
-		osg::ref_ptr<Level> mLevel;
+		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 	};
 
