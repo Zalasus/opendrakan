@@ -1,12 +1,12 @@
 /*
- * RiotFunctionLibrary.h
+ * Rfl.h
  *
  *  Created on: 27 Jan 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_RFL_RIOTFUNCTIONLIBRARY_H_
-#define INCLUDE_RFL_RIOTFUNCTIONLIBRARY_H_
+#ifndef INCLUDE_RFL_RFL_H_
+#define INCLUDE_RFL_RFL_H_
 
 #include <string>
 #include <functional>
@@ -19,14 +19,14 @@
 	static od::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);
 
 #define OD_REGISTER_RFL(rflName) \
-	od::RiotFunctionLibrary od::RiotFunctionLibrary::smSingleton(rflName);
+	od::Rfl od::Rfl::smSingleton(rflName);
 
 namespace od
 {
 
 	typedef uint16_t RflClassId;
 
-	class RiotFunctionLibrary;
+	class Rfl;
 
 	class RflClassRegistrar
 	{
@@ -66,21 +66,21 @@ namespace od
 	};
 
 
-	class RiotFunctionLibrary
+	class Rfl
 	{
 	public:
 
 		friend class RflClassRegistrar;
 
 
-		RiotFunctionLibrary(const std::string &name);
+		Rfl(const std::string &name);
 
 		inline std::string getName() const { return mName; }
 		inline size_t getClassTypeCount() const { return mRegistrarMap.size(); }
 		RflClassRegistrar &getClassRegistrarById(RflClassId id);
 
 
-		inline static RiotFunctionLibrary &getSingleton() { return smSingleton; }
+		inline static Rfl &getSingleton() { return smSingleton; }
 
 
 	private:
@@ -88,9 +88,9 @@ namespace od
 		std::string mName;
 		std::map<RflClassId, std::reference_wrapper<RflClassRegistrar>> mRegistrarMap;
 
-		static RiotFunctionLibrary smSingleton;
+		static Rfl smSingleton;
 	};
 }
 
 
-#endif /* INCLUDE_RFL_RIOTFUNCTIONLIBRARY_H_ */
+#endif /* INCLUDE_RFL_RFL_H_ */

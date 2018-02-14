@@ -8,8 +8,7 @@
 #ifndef INCLUDE_RFL_RFLKEY_H_
 #define INCLUDE_RFL_RFLKEY_H_
 
-#include "rfl/RflAbstractItem.h"
-#include "rfl/RiotFunctionLibrary.h"
+#include "rfl/general/RflAbstractItem.h"
 
 namespace od
 {

@@ -5,7 +5,6 @@
  *      Author: zal
  */
 
-
 #include <iostream>
 #include <iomanip>
 #include <memory>
@@ -26,10 +25,10 @@
 #include "DbManager.h"
 #include "Logger.h"
 #include "StringUtils.h"
-#include "rfl/RiotFunctionLibrary.h"
 #include "Database.h"
 #include "Level.h"
 #include "SrscRecordTypes.h"
+#include "rfl/Rfl.h"
 
 
 static void srscStat(od::SrscFile &file)
@@ -296,7 +295,7 @@ int main(int argc, char **argv)
 	{
 		od::Logger::getDefaultLogger().setOutputLogLevel(logLevel);
 
-		od::RiotFunctionLibrary &rfl = od::RiotFunctionLibrary::getSingleton();
+		od::Rfl &rfl = od::Rfl::getSingleton();
 		od::Logger::info() << "Got RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered class types";
 
 		if(stat)

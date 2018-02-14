@@ -9,7 +9,6 @@
 #define INCLUDE_RFL_RFLMATERIAL_H_
 
 #include "rfl/RflClass.h"
-#include "rfl/RiotFunctionLibrary.h"
 
 namespace od
 {

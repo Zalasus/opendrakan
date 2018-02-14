@@ -10,7 +10,7 @@
 #include "Logger.h"
 #include "Database.h"
 #include "ClassFactory.h"
-#include "rfl/RiotFunctionLibrary.h"
+#include "rfl/Rfl.h"
 #include "rfl/RflFieldProbe.h"
 
 namespace od
@@ -52,7 +52,7 @@ namespace od
 
     	try
         {
-        	RflClassRegistrar &cr = RiotFunctionLibrary::getSingleton().getClassRegistrarById(mRflClassId);
+        	RflClassRegistrar &cr = Rfl::getSingleton().getClassRegistrarById(mRflClassId);
 
         	RflFieldProbe probe;
         	std::unique_ptr<RflClass> newInstance = cr.createClassInstance(probe);

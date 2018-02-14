@@ -5,8 +5,7 @@
  *      Author: zal
  */
 
-#include "rfl/RiotFunctionLibrary.h"
-
+#include <rfl/Rfl.h>
 #include "Logger.h"
 #include "Exception.h"
 
@@ -17,7 +16,7 @@ namespace od
 	: mClassId(classId)
     , mClassName(className)
 	{
-		RiotFunctionLibrary &rfl = RiotFunctionLibrary::getSingleton();
+		Rfl &rfl = Rfl::getSingleton();
 
 		if(rfl.mRegistrarMap.find(classId) != rfl.mRegistrarMap.end())
 		{
@@ -35,12 +34,12 @@ namespace od
 
 
 
-	RiotFunctionLibrary::RiotFunctionLibrary(const std::string &name)
+	Rfl::Rfl(const std::string &name)
 	: mName(name)
 	{
 	}
 
-	RflClassRegistrar &RiotFunctionLibrary::getClassRegistrarById(RflClassId id)
+	RflClassRegistrar &Rfl::getClassRegistrarById(RflClassId id)
 	{
 	    auto it = mRegistrarMap.find(id);
 		if(it == mRegistrarMap.end())

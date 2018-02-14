@@ -11,7 +11,7 @@
 #include "Exception.h"
 #include "Database.h"
 #include "StringUtils.h"
-#include "rfl/RiotFunctionLibrary.h"
+#include "rfl/Rfl.h"
 
 namespace od
 {
@@ -55,7 +55,7 @@ namespace od
 
         FilePath rflPath(rflPathStr, getDatabase().getDbFilePath().dir());
 
-        if(!StringUtils::compareIgnoringCase(rflPath.fileStrNoExt(), RiotFunctionLibrary::getSingleton().getName()))
+        if(!StringUtils::compareIgnoringCase(rflPath.fileStrNoExt(), Rfl::getSingleton().getName()))
         {
             throw UnsupportedException("Class database uses different RFL than linked into engine");
         }

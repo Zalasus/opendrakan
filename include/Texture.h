@@ -13,7 +13,7 @@
 #include "SrscFile.h"
 #include "Asset.h"
 #include "Class.h"
-#include "rfl/RflMaterial.h"
+#include "rfl/general/RflMaterial.h"
 
 namespace od
 {
