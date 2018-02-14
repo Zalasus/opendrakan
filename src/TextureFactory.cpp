@@ -25,7 +25,8 @@ namespace od
 	{
 		if(index >= mPalette.size())
 		{
-			throw Exception("Color index not found in palette");
+			PaletteColor black = { .red = 0, .green = 0, .blue = 0, .dummy = 0 };
+			return black;
 		}
 
 		return mPalette[index];
@@ -55,6 +56,7 @@ namespace od
 		SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(OD_SRSC_PALETTE);
 		if(it == getSrscFile().getDirectoryEnd())
 		{
+			Logger::warn() << "Texture container has no palette record. 8 bit textures will be blank";
 			return;
 		}
 
@@ -62,6 +64,11 @@ namespace od
 
 		uint16_t colorCount;
 		dr >> colorCount;
+
+		if(!colorCount)
+		{
+			Logger::warn() << "Texture container palette contains no colors. 8 bit textures will be blank";
+		}
 
 		mPalette.reserve(colorCount);
 		for(size_t i = 0; i < colorCount; ++i)
