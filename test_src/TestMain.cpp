@@ -10,25 +10,14 @@
 #include <memory>
 #include <unistd.h>
 
-#include <osg/Group>
-#include <osg/Geode>
-#include <osgDB/ReadFile>
-#include <osgGA/FirstPersonManipulator>
-#include <osg/MatrixTransform>
-#include <osg/PositionAttitudeTransform>
-#include <osgViewer/CompositeViewer>
-#include <osgViewer/View>
-#include <osgViewer/ViewerEventHandlers>
-
+#include "Engine.h"
 #include "ZStream.h"
 #include "SrscFile.h"
 #include "DbManager.h"
 #include "Logger.h"
 #include "StringUtils.h"
 #include "Database.h"
-#include "Level.h"
 #include "SrscRecordTypes.h"
-#include "rfl/Rfl.h"
 
 
 static void srscStat(od::SrscFile &file)
@@ -191,7 +180,7 @@ static void statClasses(od::SrscFile &file)
 void printUsage()
 {
 	std::cout
-		<< "Usage: opendrakan [options] <file>" << std::endl
+		<< "Usage: opendrakan [options] [file]" << std::endl
 		<< "Options:" << std::endl
 		<< "    -o <path>  Output path (default './out/')" << std::endl
 		<< "    -x         Extract raw records" << std::endl
@@ -200,18 +189,14 @@ void printUsage()
 		<< "    -s         Print SRSC statistics" << std::endl
 		<< "    -c         Create class statistics" << std::endl
 		<< "    -v         Increase verbosity of logger" << std::endl
+		<< "    -h         Display this message and exit" << std::endl
 		<< "If no option is given, the file is loaded as a level." << std::endl
+		<< "If no file and no options are given, the default intro level is loaded." << std::endl
 		<< std::endl;
 }
 
 int main(int argc, char **argv)
 {
-	if(argc <= 1)
-	{
-		printUsage();
-		return 0;
-	}
-
 	od::Logger::LogLevel logLevel = od::Logger::LOGLEVEL_INFO;
 	std::string filename;
 	std::string outputPath = "out/";
@@ -221,7 +206,7 @@ int main(int argc, char **argv)
 	bool classStat = false;
 	uint16_t extractRecordId = 0;
 	int c;
-	while((c = getopt(argc, argv, "i:o:txscv")) != -1)
+	while((c = getopt(argc, argv, "i:o:txscvh")) != -1)
 	{
 		switch(c)
 		{
@@ -264,6 +249,10 @@ int main(int argc, char **argv)
 			outputPath = std::string(optarg);
 			break;
 
+		case 'h':
+			printUsage();
+			return 0;
+
 		case '?':
 			if(optopt == 'i')
 			{
@@ -282,21 +271,21 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if(optind >= argc)
+	if((stat || extract || texture || classStat) && (optind >= argc))
 	{
 		std::cout << "Need at least a file argument." << std::endl;
-	    printUsage();
-	    return 1;
+		printUsage();
+		return 1;
 	}
 
-	filename = std::string(argv[optind]);
+	if(optind < argc)
+	{
+		filename = std::string(argv[optind]);
+	}
 
 	try
 	{
 		od::Logger::getDefaultLogger().setOutputLogLevel(logLevel);
-
-		od::Rfl &rfl = od::Rfl::getSingleton();
-		od::Logger::info() << "Got RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered class types";
 
 		if(stat)
 		{
@@ -352,25 +341,14 @@ int main(int argc, char **argv)
 
         }else
 		{
-		    od::DbManager dbm;
-		    osg::ref_ptr<od::Level> level(new od::Level(filename, dbm));
+		    od::Engine engine;
 
-		    osg::ref_ptr<osg::Group> rootNode(new osg::Group);
-		    rootNode->addChild(level);
+		    if(!filename.empty())
+		    {
+		    	engine.setInitialLevelFile(filename);
+		    }
 
-		    osgViewer::CompositeViewer composite;
-		    osg::ref_ptr<osgViewer::Viewer> viewer(new osgViewer::Viewer);
-		    viewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-		    viewer->setSceneData(rootNode);
-		    composite.addView(viewer);
-
-		    osg::ref_ptr<osgViewer::View> view(new osgViewer::View);
-		    osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
-		    statsHandler->setKeyEventPrintsOutStats('s');
-		    viewer->addEventHandler(statsHandler);
-		    composite.addView(view);
-
-		    return viewer->run();
+		    engine.run();
 		}
 
 
