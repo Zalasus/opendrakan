@@ -64,7 +64,7 @@ namespace od
         }catch(NotFoundException &e)
         {
         	// ignore these for now as there are way more RflClasses than we have implemented
-        	Logger::warn() << "Tried to instantiate class with unknown RFLClass " << std::hex << mRflClassId << std::dec;
+        	//Logger::warn() << "Tried to instantiate class with unknown RFLClass " << std::hex << mRflClassId << std::dec;
         }
 
         return nullptr;
