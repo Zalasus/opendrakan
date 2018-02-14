@@ -31,11 +31,6 @@ namespace od
 	{
 	}
 
-	FilePath Database::getDbFilePath() const
-	{
-	    return mDbFilePath;
-	}
-
 	void Database::loadDbFileAndDependencies(size_t dependencyDepth)
 	{
 		std::regex versionRegex("\\s*version\\s+(\\d+).*");

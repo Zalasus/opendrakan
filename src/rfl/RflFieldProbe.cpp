@@ -99,6 +99,7 @@ namespace od
 
     		if(it->isArray != reg.field.isArray())
     		{
+    			Logger::error() << "Field array flag mismatch: Field '" << reg.fieldName << "' was array in RFL or file while in the other it was not.";
     			throw Exception("Field as defined in RflClass does not match array state as found in record.");
     		}
 

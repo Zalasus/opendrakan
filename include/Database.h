@@ -39,7 +39,8 @@ namespace od
 		Database(FilePath dbFilePath, DbManager &dbManager);
 		~Database();
 
-		FilePath getDbFilePath() const;
+		inline FilePath getDbFilePath() const { return mDbFilePath; }
+		inline std::string getShortName() const { return mDbFilePath.fileStrNoExt(); }
 
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 

@@ -57,7 +57,7 @@ namespace od
 				geomGroups.push_back(gg);
 			}
 
-			if(it->texture.isNull())
+			if(it->texture.isNullTexture())
 			{
 				throw Exception("Can't build SegmentedGeode with null textures");
 			}

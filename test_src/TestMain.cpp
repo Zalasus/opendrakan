@@ -14,6 +14,7 @@
 #include <osg/Group>
 #include <osg/Geode>
 #include <osgDB/ReadFile>
+#include <osgGA/FirstPersonManipulator>
 #include <osg/MatrixTransform>
 #include <osg/PositionAttitudeTransform>
 #include <osgViewer/CompositeViewer>
@@ -175,7 +176,7 @@ static void statClasses(od::SrscFile &file)
             	std::cout << std::hex << (type & 0xff) << std::dec;
         	}
 
-        	if(type &0x100)
+        	if(type & 0x1000)
         	{
         		std::cout << "[]";
         	}

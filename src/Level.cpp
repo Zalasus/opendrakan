@@ -198,7 +198,7 @@ namespace od
         if(it == mDependencyMap.end())
         {
         	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Database index not found in level dependencies");
+            throw NotFoundException("Can't get texture. Database index not found in level dependencies");
         }
 
         return it->second.get().getTexture(ref.assetId);
@@ -212,8 +212,7 @@ namespace od
         if(it == mDependencyMap.end())
         {
         	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-
-            throw NotFoundException("Database index not found in level dependencies");
+            throw NotFoundException("Can't get model. Database index not found in level dependencies");
         }
 
         return it->second.get().getModel(ref.assetId);
@@ -227,7 +226,7 @@ namespace od
         if(it == mDependencyMap.end())
         {
             Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Database index not found in level dependencies");
+            throw NotFoundException("Can't get class. Database index not found in level dependencies");
         }
 
         return it->second.get().getClass(ref.assetId);

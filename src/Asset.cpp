@@ -35,11 +35,6 @@ namespace od
     	return (dbIndex == right.dbIndex) && (assetId == right.assetId);
 	}
 
-    bool AssetRef::isNull() const
-    {
-    	return dbIndex == 0xffff || assetId == 0xffff; // TODO: should this be && instead of || ?
-    }
-
     const AssetRef AssetRef::NULL_REF(0xffff, 0xffff);
 
 

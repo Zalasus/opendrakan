@@ -24,6 +24,7 @@ namespace od
 		SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_NAME, id);
 		if(nameRecord == getSrscFile().getDirectoryEnd())
 		{
+			Logger::error() << "Model " << std::hex << id << std::dec << " not found in database " << getDatabase().getShortName();
 			throw NotFoundException("Given model not found in database");
 		}
 

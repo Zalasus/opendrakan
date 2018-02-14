@@ -39,7 +39,14 @@ namespace od
         }
     }
 
-    std::unique_ptr<RflClass> Class::makeInstance(RflClassBuilder objectBuilder)
+    std::unique_ptr<RflClass> Class::makeInstance()
+	{
+    	RflClassBuilder dummyObjectBuilder;
+
+    	return this->makeInstance(dummyObjectBuilder);
+	}
+
+    std::unique_ptr<RflClass> Class::makeInstance(RflClassBuilder &objectBuilder)
 	{
     	Logger::debug() << "Instantiating class " << std::hex << getAssetId() << std::dec;
 

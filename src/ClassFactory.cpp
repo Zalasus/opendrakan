@@ -27,6 +27,7 @@ namespace od
         SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(OD_SRSC_CLASS, classId);
         if(it == getSrscFile().getDirectoryEnd())
         {
+        	Logger::error() << "Class " << std::hex << classId << std::dec << " not found in database " << getDatabase().getShortName();
             throw NotFoundException("Given class not found in database");
         }
 

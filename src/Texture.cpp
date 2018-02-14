@@ -15,6 +15,7 @@
 #include "Logger.h"
 #include "Exception.h"
 #include "TextureFactory.h"
+#include "Database.h"
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040
@@ -204,6 +205,13 @@ namespace od
         zstr.seekToEndOfZlib();
 
         this->setImage(mWidth, mHeight, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
+
+        if(!mClassRef.isNull())
+        {
+        	mClass = getDatabase().getClassByRef(mClassRef);
+        	std::unique_ptr<RflClass> rflClass = mClass->makeInstance();
+        	mMaterial = std::unique_ptr<RflMaterial>(dynamic_cast<RflMaterial*>(rflClass.release()));
+        }
 
         Logger::debug() << "Texture successfully loaded";
     }

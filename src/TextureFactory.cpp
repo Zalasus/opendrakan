@@ -36,6 +36,7 @@ namespace od
 		SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(OD_SRSC_TEXTURE, textureId);
 		if(dirIt == getSrscFile().getDirectoryEnd())
 		{
+			Logger::error() << "Texture " << std::hex << textureId << std::dec << " not found in database " << getDatabase().getShortName();
 			throw NotFoundException("Texture not found in database");
 		}
 

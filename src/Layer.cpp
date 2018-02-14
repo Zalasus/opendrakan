@@ -110,12 +110,12 @@ namespace od
 
             mCells.push_back(c);
 
-            if(!c.leftTextureRef.isNull())
+            if(!c.leftTextureRef.isNullTexture())
             {
             	++mVisibleTriangles;
             }
 
-            if(!c.rightTextureRef.isNull())
+            if(!c.rightTextureRef.isNullTexture())
             {
             	++mVisibleTriangles;
             }
@@ -151,7 +151,7 @@ namespace od
         	f.vertexCount = 3;
         	f.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
 
-        	if(f.texture.isNull())
+        	if(f.texture.isNullTexture())
         	{
         		continue;
         	}

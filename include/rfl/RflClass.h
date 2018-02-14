@@ -19,6 +19,7 @@ namespace od
 
 		RflClass(RflFieldProbe &probe);
 
+		virtual ~RflClass() = default;
 
 	};
 
