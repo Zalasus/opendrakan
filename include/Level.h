@@ -23,7 +23,7 @@
 
 #include "FilePath.h"
 #include "DbManager.h"
-#include "Database.h"
+#include "db/Database.h"
 #include "TextureAtlas.h"
 #include "Layer.h"
 

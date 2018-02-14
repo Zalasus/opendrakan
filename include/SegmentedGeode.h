@@ -11,7 +11,7 @@
 #include <vector>
 #include <osg/Geode>
 
-#include "Asset.h"
+#include "db/Asset.h"
 
 namespace od
 {

@@ -5,11 +5,11 @@
  *      Author: zal
  */
 
-#include "Class.h"
+#include "db/Class.h"
 
 #include "Logger.h"
-#include "Database.h"
-#include "ClassFactory.h"
+#include "db/Database.h"
+#include "db/ClassFactory.h"
 #include "rfl/Rfl.h"
 #include "rfl/RflFieldProbe.h"
 

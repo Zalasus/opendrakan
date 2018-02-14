@@ -11,7 +11,7 @@
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
 
-#include "Class.h"
+#include "db/Class.h"
 
 namespace od
 {

@@ -11,8 +11,8 @@
 #include <osg/Geometry>
 #include <osg/Texture2D>
 
-#include "Texture.h"
-#include "Database.h"
+#include "db/Texture.h"
+#include "db/Database.h"
 #include "Exception.h"
 
 namespace od

@@ -5,19 +5,19 @@
  *      Author: zal
  */
 
-#include "Model.h"
+#include "db/Model.h"
 
 #include <algorithm>
 #include <osg/Geometry>
 #include <osg/FrontFace>
 #include <osgUtil/SmoothingVisitor>
 
-#include "Asset.h"
+#include "db/Asset.h"
 #include "Exception.h"
-#include "Database.h"
+#include "db/Database.h"
 #include "OdDefines.h"
-#include "ModelFactory.h"
-#include "Texture.h"
+#include "db/ModelFactory.h"
+#include "db/Texture.h"
 
 namespace od
 {

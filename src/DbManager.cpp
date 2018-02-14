@@ -5,10 +5,11 @@
  *      Author: zal
  */
 
-#include <Database.h>
+
 #include "DbManager.h"
 
 #include "Logger.h"
+#include "db/Database.h"
 #include "StringUtils.h"
 #include "Exception.h"
 

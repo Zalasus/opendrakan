@@ -5,11 +5,11 @@
  *      Author: zal
  */
 
-#include "ClassFactory.h"
+#include "db/ClassFactory.h"
 
 #include "SrscRecordTypes.h"
 #include "Exception.h"
-#include "Database.h"
+#include "db/Database.h"
 #include "StringUtils.h"
 #include "rfl/Rfl.h"
 

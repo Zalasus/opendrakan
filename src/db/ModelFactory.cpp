@@ -5,11 +5,11 @@
  *      Author: zal
  */
 
-#include "ModelFactory.h"
+#include "db/ModelFactory.h"
 
 #include "Exception.h"
 #include "SrscRecordTypes.h"
-#include "Database.h"
+#include "db/Database.h"
 
 namespace od
 {

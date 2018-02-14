@@ -5,10 +5,10 @@
  *      Author: zal
  */
 
-#include "Exception.h"
+#include "db/Asset.h"
 
-#include "Asset.h"
-#include "Database.h"
+#include "db/Database.h"
+#include "Exception.h"
 
 namespace od
 {

@@ -8,7 +8,7 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
-#include "Asset.h"
+#include "db/Asset.h"
 #include "SegmentedGeode.h"
 #include "DataStream.h"
 

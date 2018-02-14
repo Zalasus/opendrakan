@@ -5,12 +5,12 @@
  *      Author: zal
  */
 
-#include "TextureFactory.h"
+#include "db/TextureFactory.h"
 
 #include "Exception.h"
 #include "SrscRecordTypes.h"
 #include "Logger.h"
-#include "Database.h"
+#include "db/Database.h"
 
 namespace od
 {

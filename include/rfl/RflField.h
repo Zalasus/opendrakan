@@ -12,7 +12,7 @@
 #include <string>
 #include <cstring>
 
-#include "Asset.h"
+#include "db/Asset.h"
 
 namespace od
 {

@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include "Sound.h"
+#include "db/Sound.h"
 
 #include "Exception.h"
 

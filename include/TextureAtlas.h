@@ -14,7 +14,7 @@
 #include <osg/Vec2>
 #include <osg/Image>
 
-#include "Texture.h"
+#include "db/Texture.h"
 
 namespace od
 {

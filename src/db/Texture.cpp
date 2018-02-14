@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include "Texture.h"
+#include "db/Texture.h"
 
 #include <functional>
 #include <osgDB/WriteFile>
@@ -14,8 +14,8 @@
 #include "ZStream.h"
 #include "Logger.h"
 #include "Exception.h"
-#include "TextureFactory.h"
-#include "Database.h"
+#include "db/TextureFactory.h"
+#include "db/Database.h"
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040

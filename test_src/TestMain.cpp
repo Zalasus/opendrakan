@@ -16,7 +16,7 @@
 #include "DbManager.h"
 #include "Logger.h"
 #include "StringUtils.h"
-#include "Database.h"
+#include "db/Database.h"
 #include "SrscRecordTypes.h"
 
 
