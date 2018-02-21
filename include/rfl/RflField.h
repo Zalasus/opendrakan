@@ -99,6 +99,7 @@ namespace od
 	typedef RflAssetRef<RflField::SOUND>     RflSoundRef;
 	typedef RflAssetRef<RflField::TEXTURE>   RflTextureRef;
 	typedef RflAssetRef<RflField::SEUQUENCE> RflSequenceRef;
+	typedef RflAssetRef<RflField::ANIMATION> RflAnimRef;
 
 
 
@@ -169,6 +170,7 @@ namespace od
 
 	typedef RflPODArray<AssetRef, RflField::SOUND> RflSoundRefArray;
 	typedef RflPODArray<AssetRef, RflField::CLASS> RflClassRefArray;
+	typedef RflPODArray<AssetRef, RflField::ANIMATION> RflAnimRefArray;
 }
 
 #endif /* INCLUDE_RFL_RFLFIELD_H_ */

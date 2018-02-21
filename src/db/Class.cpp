@@ -33,9 +33,17 @@ namespace od
 
         mClassBuilder.readFieldRecord(dr, false);
 
-        if(hasModel())
+        if(mModelRef.assetId != 0)
         {
-        	mModel = getDatabase().getModelByRef(mModelRef);
+            try
+            {
+                mModel = getDatabase().getModelByRef(mModelRef);
+
+            }catch(NotFoundException &e)
+            {
+                Logger::warn() << "Model of class " << mClassName << " not found. Leaving invisible";
+                mModel = nullptr;
+            }
         }
     }
 

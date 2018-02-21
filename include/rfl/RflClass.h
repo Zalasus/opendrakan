@@ -13,13 +13,21 @@
 namespace od
 {
 
+    class Object;
+
 	class RflClass
 	{
 	public:
 
 		RflClass(RflFieldProbe &probe);
-
 		virtual ~RflClass() = default;
+
+		void setLevelObject(Object &obj);
+
+
+	private:
+
+		Object *mLevelObject;
 
 	};
 

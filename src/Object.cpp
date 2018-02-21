@@ -10,6 +10,7 @@
 #include "Level.h"
 #include "Exception.h"
 #include "OdDefines.h"
+#include "rfl/RflClass.h"
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -70,6 +71,10 @@ namespace od
         mClass = mLevel.getClassByRef(classRef);
 
         mRflClassInstance = mClass->makeInstance(builder);
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->setLevelObject(*this);
+        }
 
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {

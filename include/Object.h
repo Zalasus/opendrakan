@@ -8,6 +8,7 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
+#include <memory>
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
 

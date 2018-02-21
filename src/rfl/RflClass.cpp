@@ -11,7 +11,13 @@ namespace od
 {
 
 	RflClass::RflClass(RflFieldProbe &probe)
+	: mLevelObject(nullptr)
 	{
+	}
+
+	void RflClass::setLevelObject(Object &obj)
+	{
+	    mLevelObject = &obj;
 	}
 
 }

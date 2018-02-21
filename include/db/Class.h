@@ -26,7 +26,7 @@ namespace od
 
 		Class(Database &db, RecordId classId);
 
-		inline bool hasModel() const { return mModelRef.assetId != 0; }
+		inline bool hasModel() const { return mModel != nullptr; }
         inline ModelPtr getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
 
