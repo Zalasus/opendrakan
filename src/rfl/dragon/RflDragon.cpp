@@ -9,7 +9,7 @@
 #include "rfl/Rfl.h"
 #include "rfl/general/RflMaterial.h"
 #include "rfl/general/RflCamera.h"
-#include "rfl/general/RflPlayerControl.h"
+//#include "rfl/general/RflPlayerControl.h"
 #include "rfl/dragon/RflHealthPack.h"
 #include "rfl/dragon/RflKey.h"
 
