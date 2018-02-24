@@ -70,10 +70,11 @@ namespace od
 
         mClass = mLevel.getClassByRef(classRef);
 
-        mRflClassInstance = mClass->makeInstance(builder);
+        mRflClassInstance = mClass->makeInstance();
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->setLevelObject(*this);
+            mRflClassInstance->probeFields(builder); // let builder override fields
         }
 
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))

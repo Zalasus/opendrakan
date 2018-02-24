@@ -18,38 +18,31 @@
 namespace od
 {
 
+    /**
+     * Common interface for classes that can be used to probe an RflClass for it's fields,
+     * possibly filling them while they do (see RflClassBuilder).
+     */
 	class RflFieldProbe
 	{
 	public:
 
-		friend class RflField;
-		friend class RflClassBuilder;
+	    virtual ~RflFieldProbe() = default;
 
-	private:
+	    virtual void beginCategory(const char *categoryName) = 0;
+		virtual void registerField(RflField &field, const char *fieldName) = 0; // TODO: Could use std::string_view once we switch to C++17
 
-		struct FieldReg
-		{
-			RflField &field;
-			RflField::RflFieldType fieldType;
-	        std::string fieldName;
-		};
-
-		// this method is only to be used by RflField
-		void registerField(RflField &field, RflField::RflFieldType fieldType, const std::string &fieldName);
-
-		// these methods are for RflClassBuilder
-		FieldReg &getFieldReg(size_t i);
-
-		std::vector<FieldReg> mFieldRegs;
 	};
 
-	class RflClassBuilder
+	class RflClassBuilder : public RflFieldProbe
 	{
 	public:
 
+	    RflClassBuilder();
+
 		void readFieldRecord(DataReader &dr, bool isObjectRecord);
 
-		void fillFields(RflFieldProbe &probe);
+		virtual void beginCategory(const char *categoryName) override;
+		virtual void registerField(RflField &field, const char *fieldName) override;
 
 
 	private:
@@ -65,8 +58,12 @@ namespace od
 
 	    std::vector<FieldEntry> mFieldEntries;
 	    std::vector<char> mFieldData;
+	    size_t mRegistrationIndex;
 	};
 
+	class RflObjectBuilder : public RflFieldProbe
+	{
+	};
 
 }
 

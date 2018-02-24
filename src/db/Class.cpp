@@ -49,25 +49,13 @@ namespace od
 
     std::unique_ptr<RflClass> Class::makeInstance()
 	{
-    	RflClassBuilder dummyObjectBuilder;
-
-    	return this->makeInstance(dummyObjectBuilder);
-	}
-
-    std::unique_ptr<RflClass> Class::makeInstance(RflClassBuilder &objectBuilder)
-	{
     	Logger::debug() << "Instantiating class " << std::hex << getAssetId() << std::dec;
 
     	try
         {
         	RflClassRegistrar &cr = Rfl::getSingleton().getClassRegistrarById(mRflClassId);
 
-        	RflFieldProbe probe;
-        	std::unique_ptr<RflClass> newInstance = cr.createClassInstance(probe);
-
-        	// first, fill fields with template. then, let the builder we got from object override all changed values
-        	mClassBuilder.fillFields(probe);
-        	objectBuilder.fillFields(probe);
+        	std::unique_ptr<RflClass> newInstance = cr.createClassInstance(mClassBuilder); // FIXME: this should not throw NotFoundException!
 
         }catch(NotFoundException &e)
         {

@@ -20,7 +20,12 @@ namespace od
 	{
 	public:
 
-		RflAbstractItem(RflFieldProbe &probe);
+		virtual void probeFields(RflFieldProbe &probe) override;
+
+
+	protected:
+
+        RflAbstractItem();
 
 
 	private:

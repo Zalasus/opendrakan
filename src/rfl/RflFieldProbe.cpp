@@ -7,32 +7,15 @@
 
 #include "rfl/RflFieldProbe.h"
 
+#include <algorithm>
+
 namespace od
 {
 
-	void RflFieldProbe::registerField(RflField &field, RflField::RflFieldType fieldType, const std::string &fieldName)
-	{
-		FieldReg f =
-		{
-			.field = field,
-			.fieldType = fieldType,
-			.fieldName = fieldName
-		};
-
-		mFieldRegs.push_back(f);
-	}
-
-	RflFieldProbe::FieldReg &RflFieldProbe::getFieldReg(size_t i)
-	{
-		if(i >= mFieldRegs.size())
-		{
-			throw Exception("Index of requested field out of bounds");
-		}
-
-		return mFieldRegs[i];
-	}
-
-
+    RflClassBuilder::RflClassBuilder()
+    : mRegistrationIndex(0)
+    {
+    }
 
     void RflClassBuilder::readFieldRecord(DataReader &dr, bool isObjectRecord)
     {
@@ -76,54 +59,65 @@ namespace od
     	}
     }
 
-    void RflClassBuilder::fillFields(RflFieldProbe &probe)
+    void RflClassBuilder::beginCategory(const char *categoryName)
     {
-    	MemBuffer buf(mFieldData.data(), mFieldData.data() + mFieldData.size());
-    	std::istream dataStr(&buf);
-    	DataReader dr(dataStr);
-
-    	for(auto it = mFieldEntries.begin(); it != mFieldEntries.end(); ++it)
-    	{
-    		RflFieldProbe::FieldReg &reg = probe.getFieldReg(it->index);
-
-    		if(it->fieldType != reg.fieldType)
-    		{
-    			throw Exception("Type mismatch in RflClass. Field type as defined in RflClass does not match the one found in record.");
-    		}
-
-    		if(it->fieldName != reg.fieldName)
-    		{
-    			Logger::error() << "Field name mismatch: Field in RflClass was named '" << reg.fieldName << "' where field in record was named '" << it->fieldName << "'";
-    			throw Exception("Field name mismatch in RflClass. Field name as defined in RflClass does not match the one found in record.");
-    		}
-
-    		if(it->isArray != reg.field.isArray())
-    		{
-    			Logger::error() << "Field array flag mismatch: Field '" << reg.fieldName << "' was array in RFL or file while in the other it was not.";
-    			throw Exception("Field as defined in RflClass does not match array state as found in record.");
-    		}
-
-    		// field seems reasonable. let's fill it
-
-    		dr.seek(it->dataOffset);
-    		if(!it->isArray)
-    		{
-    			reg.field.fill(dr);
-
-    		}else
-    		{
-    			uint16_t offset;
-    			uint16_t length;
-    			dr >> offset
-				   >> length;
-
-    			dr.seek(offset*4);
-    			reg.field.fillArray(length, dr);
-    		}
-
-    		Logger::debug() << "Filled field '" << reg.fieldName << "'";
-    	}
+        // Class builder doesn't give a damn about categories
     }
+
+    void RflClassBuilder::registerField(RflField &field, const char *fieldName)
+    {
+        auto pred = [this](FieldEntry &e){ return e.index == mRegistrationIndex; };
+        auto it = std::find_if(mFieldEntries.begin(), mFieldEntries.end(), pred); // FIXME: O(n) lookup. might split into classbuilder and objectbuilder, one with map and one with array
+        if(it == mFieldEntries.end())
+        {
+            return; // FIXME: this should be an error when building a class
+        }
+
+        if(it->fieldType != field.getFieldType())
+        {
+            throw Exception("Type mismatch in RflClass. Field type as defined in RflClass does not match the one found in record.");
+        }
+
+        if(it->fieldName != fieldName) // TODO: costly comparison. might want to make this optional
+        {
+            Logger::error() << "Field name mismatch: Field in RflClass was named '" << fieldName << "' where field in record was named '" << it->fieldName << "'";
+            throw Exception("Field name mismatch in RflClass. Field name as defined in RflClass does not match the one found in record.");
+        }
+
+        if(it->isArray != field.isArray())
+        {
+            Logger::error() << "Field array flag mismatch: Field '" << fieldName << "' was array in RFL or file while in the other it was not.";
+            throw Exception("Field as defined in RflClass does not match array state as found in record.");
+        }
+
+        // field seems reasonable. let's fill it
+
+        MemBuffer buf(mFieldData.data(), mFieldData.data() + mFieldData.size());
+        std::istream dataStr(&buf);
+        DataReader dr(dataStr);
+
+        dr.seek(it->dataOffset);
+        if(!it->isArray)
+        {
+            field.fill(dr);
+
+        }else
+        {
+            uint16_t offset;
+            uint16_t length;
+            dr >> offset
+               >> length;
+
+            dr.seek(offset*4);
+            field.fillArray(length, dr);
+        }
+
+        Logger::debug() << "Filled field '" << fieldName << "'";
+
+        ++mRegistrationIndex;
+    }
+
+
 }
 
 

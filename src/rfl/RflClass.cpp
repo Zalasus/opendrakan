@@ -10,7 +10,7 @@
 namespace od
 {
 
-	RflClass::RflClass(RflFieldProbe &probe)
+	RflClass::RflClass()
 	: mLevelObject(nullptr)
 	{
 	}

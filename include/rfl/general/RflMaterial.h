@@ -17,7 +17,9 @@ namespace od
 	{
 	public:
 
-		RflMaterial(RflFieldProbe &probe);
+		RflMaterial();
+
+		virtual void probeFields(RflFieldProbe &probe) override;
 
 
 	private:
@@ -46,7 +48,9 @@ namespace od
 	{
 	public:
 
-		RflBlendedMaterial(RflFieldProbe &probe);
+		RflBlendedMaterial();
+
+		virtual void probeFields(RflFieldProbe &probe) override;
 
 
 	private:

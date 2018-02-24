@@ -8,13 +8,23 @@
 
 #include "rfl/dragon/RflKey.h"
 
+#include "rfl/Rfl.h"
+
 namespace od
 {
 
-	RflKey::RflKey(RflFieldProbe &probe)
-	: RflAbstractItem(probe)
-	, mLockCode(probe, "Lock Code", 0)
+	RflKey::RflKey()
+	: mLockCode(0)
 	{
 	}
 
+	void RflKey::probeFields(RflFieldProbe &probe)
+    {
+        RflAbstractItem::probeFields(probe);
+
+        probe.beginCategory("Key");
+        probe.registerField(mLockCode, "Lock Code");
+    }
+
+	OD_REGISTER_RFL_CLASS(0x0021, "Key", RflKey);
 }

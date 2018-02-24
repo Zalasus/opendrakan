@@ -12,11 +12,6 @@
 namespace od
 {
 
-    RflField::RflField(RflFieldProbe &probe, RflFieldType type, const char *fieldName)
-    {
-        probe.registerField(*this, type, fieldName);
-    }
-
     void RflField::fill(DataReader &dr)
     {
     	throw Exception("Invalid field fill");
@@ -29,9 +24,8 @@ namespace od
 
 
 
-    RflString::RflString(RflFieldProbe &probe, const char *name, const std::string &defaultValue)
-	: RflField(probe, STRING, name)
-	, mValue(defaultValue)
+    RflString::RflString(const std::string &defaultValue)
+	: mValue(defaultValue)
 	{
 	}
 

@@ -41,12 +41,13 @@ namespace od
             COLOR           = 0x0f
         };
 
-		RflField(RflFieldProbe &probe, RflFieldType type, const char *fieldName);
+        RflField() = default;
 		RflField(const RflField &f) = delete;
 		RflField(RflField &f) = delete;
 		virtual ~RflField() {}
 
 		virtual bool isArray() const = 0;
+		virtual RflFieldType getFieldType() const = 0;
 
 		virtual void fill(DataReader &dr);
 		virtual void fillArray(uint16_t size, DataReader &dr);
@@ -56,9 +57,10 @@ namespace od
 	{
 	public:
 
-		RflString(RflFieldProbe &probe, const char *name, const std::string &defaultValue);
+		RflString(const std::string &defaultValue);
 
 		virtual bool isArray() const override { return true; }
+		virtual RflFieldType getFieldType() const { return STRING; }
 
 		virtual void fillArray(uint16_t size, DataReader &dr) override;
 
@@ -68,53 +70,18 @@ namespace od
 		std::string mValue;
 	};
 
-
-
-	template <RflField::RflFieldType _Type>
-	class RflAssetRef : public RflField
-	{
-	public:
-
-		RflAssetRef(RflFieldProbe &probe, const char *name, const AssetRef &defaultValue)
-		: RflField(probe, _Type, name)
-		, mValue(defaultValue)
-		{
-		}
-
-		virtual bool isArray() const override { return false; }
-
-		virtual void fill(DataReader &dr) override
-		{
-			dr >> mValue;
-		}
-
-
-	private:
-
-		AssetRef mValue;
-
-	};
-
-	typedef RflAssetRef<RflField::CLASS>     RflClassRef;
-	typedef RflAssetRef<RflField::SOUND>     RflSoundRef;
-	typedef RflAssetRef<RflField::TEXTURE>   RflTextureRef;
-	typedef RflAssetRef<RflField::SEUQUENCE> RflSequenceRef;
-	typedef RflAssetRef<RflField::ANIMATION> RflAnimRef;
-
-
-
 	template <typename _DataType, RflField::RflFieldType _Type>
 	class RflPOD : public RflField
 	{
 	public:
 
-		RflPOD(RflFieldProbe &probe, const char *name, const _DataType &defaultValue)
-	    : RflField(probe, _Type, name)
-		, mValue(defaultValue)
+		RflPOD(const _DataType &defaultValue)
+	    : mValue(defaultValue)
 		{
 		}
 
 		virtual bool isArray() const override { return false; }
+		virtual RflFieldType getFieldType() const { return _Type; }
 
 		virtual void fill(DataReader &dr) override
 		{
@@ -131,8 +98,14 @@ namespace od
 	typedef RflPOD< int32_t, RflField::INTEGER> RflInteger;
 	typedef RflPOD<   float,   RflField::FLOAT> RflFloat;
 	typedef RflPOD<uint32_t,    RflField::ENUM> RflEnum;
-	typedef RflEnum                             RflEnumYesNo; // give these a list of allowed values once we implement that feature
+	typedef RflEnum                             RflEnumYesNo; // TODO: give these a list of allowed values once we implement that feature
 	typedef RflEnum                             RflEnumPlayerSlot;
+	typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
+	typedef RflPOD<AssetRef, RflField::CLASS>     RflClassRef;
+    typedef RflPOD<AssetRef, RflField::SOUND>     RflSoundRef;
+    typedef RflPOD<AssetRef, RflField::TEXTURE>   RflTextureRef;
+    typedef RflPOD<AssetRef, RflField::SEUQUENCE> RflSequenceRef;
+    typedef RflPOD<AssetRef, RflField::ANIMATION> RflAnimRef;
 
 
 	template <typename _DataType, RflField::RflFieldType _Type>
@@ -140,13 +113,13 @@ namespace od
 	{
 	public:
 
-		RflPODArray(RflFieldProbe &probe, const char *name, const std::initializer_list<_DataType> defaultValues)
-	    : RflField(probe, _Type, name)
-		, mValues(defaultValues)
+		RflPODArray(const std::initializer_list<_DataType> defaultValues)
+	    : mValues(defaultValues)
 		{
 		}
 
 		virtual bool isArray() const override { return true; }
+		virtual RflFieldType getFieldType() const { return _Type; }
 
 		virtual void fillArray(uint16_t size, DataReader &dr) override
 		{
@@ -171,6 +144,7 @@ namespace od
 	typedef RflPODArray<AssetRef, RflField::SOUND> RflSoundRefArray;
 	typedef RflPODArray<AssetRef, RflField::CLASS> RflClassRefArray;
 	typedef RflPODArray<AssetRef, RflField::ANIMATION> RflAnimRefArray;
+	typedef RflPODArray<uint32_t, RflField::CHAR_CHANNEL> RflCharChannelArray;
 }
 
 #endif /* INCLUDE_RFL_RFLFIELD_H_ */

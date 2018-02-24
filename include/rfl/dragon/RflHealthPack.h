@@ -17,7 +17,9 @@ namespace od
 	{
 	public:
 
-		RflHealthPack(RflFieldProbe &probe);
+		RflHealthPack();
+
+		virtual void probeFields(RflFieldProbe &probe) override;
 
 
 	private:

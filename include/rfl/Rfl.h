@@ -61,7 +61,10 @@ namespace od
 
 		virtual std::unique_ptr<RflClass> createClassInstance(RflFieldProbe &probe) override
 		{
-		    return std::unique_ptr<RflClass>(new T(probe));
+		    std::unique_ptr<RflClass> instance(new T);
+		    instance->probeFields(probe);
+
+		    return instance;
 		}
 	};
 

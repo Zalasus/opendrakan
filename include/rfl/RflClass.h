@@ -19,8 +19,10 @@ namespace od
 	{
 	public:
 
-		RflClass(RflFieldProbe &probe);
+        RflClass();
 		virtual ~RflClass() = default;
+
+		virtual void probeFields(RflFieldProbe &probe) = 0;
 
 		void setLevelObject(Object &obj);
 

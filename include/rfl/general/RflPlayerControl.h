@@ -17,7 +17,9 @@ namespace od
     {
     public:
 
+        RflPlayerCommon();
 
+        virtual void probeFields(RflFieldProbe &probe) override;
 
 
     protected:
@@ -34,43 +36,43 @@ namespace od
         RflAnimRef          mRunAnim;
         RflAnimRef          mGroundStrafeLAnim;
         RflAnimRef          mGroundStrafeRAnim;
-        anim[]      Idle
-        float       Run Speed (lu/s)
-        float       Walk Speed (lu/s)
-        float       Walk Back Speed (lu/s)
-        float       Throttle Accel (lu/s^2)
-        float       Throttle Decel (lu/s^2)
-        float       Side Strafe Speed (lu/s)
-        float       Roll Speed (rot/s)
-        float       Pitch Speed (rot/s)
-        float       Side Accel (lu/s^2)
-        float       Roll Damping
-        float       Pitch Damping
-        channel     Neck Channel
-        channel     Head Channel
-        int32       Foot Sphere
-        int32       Begin Health
-        class       Got Hit Blood Gen.
-        anim[]      Ground Death
-        class       3D Explosion
-        sound       Death Sound
-        class       Amputation Blood Gen.
-        class       Body Part
-        class       Body Part (large)
-        float       Body Part Percentage
-        channel[]       Choppable Chan's (alive)
-        int32       Gib Cutoff
-        class[]     Gib Gen. (large)
-        class[]     Gib Gen. (small)
-        channel[]       Lrg. Gib Chan's
-        float       Body Part Velocity (0-1)
+        RflAnimRefArray     mIdleAnims;
+        RflFloat            mRunSpeed;
+        RflFloat            mWalkSpeed;
+        RflFloat            mWalkBackSpeed;
+        RflFloat            mThrottleAccel;
+        RflFloat            mThrottleDecel;
+        RflFloat            mSideStrafeSpeed;
+        RflFloat            mRollSpeed;
+        RflFloat            mPitchSpeed;
+        RflFloat            mSideAccel;
+        RflFloat            mRollDamping;
+        RflFloat            mPitchDamping;
+        RflCharChannel      mNeckChannel;
+        RflCharChannel      mHeadChannel;
+        RflInteger          mFootSphere;
+        RflInteger          mBeginHealth;
+        RflClassRef         mGotHitBloodGen;
+        RflAnimRefArray     mGroundDeathAnims;
+        RflClassRef         m3DExplosion;
+        RflSoundRef         mDeathSound;
+        RflClassRef         mAmputationBloodGen;
+        RflClassRef         mBodyPart;
+        RflClassRef         mBodyPartLarge;
+        RflFloat            mBodyPartPercentage;
+        RflCharChannelArray mChoppableChansAlive;
+        RflInteger          mGibCutoff;
+        RflClassRefArray    mGibGenLarge;
+        RflClassRefArray    mGibGenSmall;
+        RflCharChannelArray mLargeGibChans;
+        RflFloat            mBodyPartVelocity;
     };
 
     class RflPlayerControl : public RflPlayerCommon
     {
     public:
 
-        RflPlayerControl(RflFieldProbe &probe) : RflClass(probe) {}
+        RflPlayerControl();
 
 
     protected:

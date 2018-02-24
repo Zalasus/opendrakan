@@ -17,7 +17,9 @@ namespace od
 	{
 	public:
 
-		RflTrackingCamera(RflFieldProbe &probe);
+		RflTrackingCamera();
+
+		virtual void probeFields(RflFieldProbe &probe) override;
 
 
 	private:

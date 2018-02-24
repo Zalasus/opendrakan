@@ -17,7 +17,9 @@ namespace od
 	{
 	public:
 
-		RflKey(RflFieldProbe &probe);
+		RflKey();
+
+		virtual void probeFields(RflFieldProbe &probe) override;
 
 
 	private:
