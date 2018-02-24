@@ -34,9 +34,9 @@ namespace od
 
 
 
-	Rfl::Rfl(const std::string &name)
-	: mName(name)
+	Rfl::RflNameSetter::RflNameSetter(const std::string &name)
 	{
+		Rfl::getSingleton().setName(name);
 	}
 
 	RflClassRegistrar &Rfl::getClassRegistrarById(RflClassId id)
@@ -48,6 +48,13 @@ namespace od
 		}
 
 		return it->second;
+	}
+
+	Rfl &Rfl::getSingleton()
+	{
+		static Rfl rfl;
+
+		return rfl;
 	}
 }
 

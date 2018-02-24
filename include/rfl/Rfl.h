@@ -19,7 +19,7 @@
 	static od::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);
 
 #define OD_REGISTER_RFL(rflName) \
-	od::Rfl od::Rfl::smSingleton(rflName);
+	od::Rfl::RflNameSetter sRflNameSetter(rflName);
 
 namespace od
 {
@@ -73,27 +73,30 @@ namespace od
 	{
 	public:
 
+		class RflNameSetter
+		{
+		public:
+			RflNameSetter(const std::string &name);
+		};
+
 		friend class RflClassRegistrar;
 
 
-		Rfl(const std::string &name);
-
 		inline std::string getName() const { return mName; }
+		inline void setName(const std::string &name) { mName = name; }
 		inline size_t getClassTypeCount() const { return mRegistrarMap.size(); }
 		RflClassRegistrar &getClassRegistrarById(RflClassId id);
 
 
-		inline static Rfl &getSingleton() { return smSingleton; }
+		static Rfl &getSingleton();
 
 
 	private:
 
 		std::string mName;
 		std::map<RflClassId, std::reference_wrapper<RflClassRegistrar>> mRegistrarMap;
-
-		static Rfl smSingleton;
 	};
-}
 
+}
 
 #endif /* INCLUDE_RFL_RFL_H_ */
