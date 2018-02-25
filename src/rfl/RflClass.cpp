@@ -7,6 +7,8 @@
 
 #include "rfl/RflClass.h"
 
+#include "LevelObject.h"
+
 namespace od
 {
 
@@ -15,7 +17,7 @@ namespace od
 	{
 	}
 
-	void RflClass::setLevelObject(Object &obj)
+	void RflClass::setLevelObject(LevelObject &obj)
 	{
 	    mLevelObject = &obj;
 	}

@@ -5,8 +5,7 @@
  *      Author: zal
  */
 
-#include "Object.h"
-
+#include <LevelObject.h>
 #include "Level.h"
 #include "Exception.h"
 #include "OdDefines.h"
@@ -18,7 +17,7 @@
 namespace od
 {
 
-    Object::Object(Level &level)
+    LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
     , mFlags(0)
@@ -26,7 +25,7 @@ namespace od
     {
     }
 
-    void Object::loadFromRecord(DataReader dr)
+    void LevelObject::loadFromRecord(DataReader dr)
     {
         AssetRef classRef;
         float xPos;

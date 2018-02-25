@@ -8,6 +8,7 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
+#include "LevelObject.h"
 
 namespace od
 {
@@ -16,7 +17,7 @@ namespace od
     {
     public:
 
-
+    	void setObject(LevelObject *obj);
 
 
     };

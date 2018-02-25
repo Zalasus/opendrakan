@@ -13,7 +13,7 @@
 namespace od
 {
 
-    class Object;
+    class LevelObject;
 
 	class RflClass
 	{
@@ -24,12 +24,12 @@ namespace od
 
 		virtual void probeFields(RflFieldProbe &probe) = 0;
 
-		void setLevelObject(Object &obj);
+		void setLevelObject(LevelObject &obj);
 
 
 	private:
 
-		Object *mLevelObject;
+		LevelObject *mLevelObject;
 
 	};
 

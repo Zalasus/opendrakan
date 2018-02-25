@@ -5,6 +5,7 @@
  *      Author: zal
  */
 
+
 #include "Level.h"
 
 #include <algorithm>
@@ -17,8 +18,8 @@
 #include "Logger.h"
 #include "ZStream.h"
 #include "Exception.h"
-#include "Object.h"
 #include "Engine.h"
+#include "LevelObject.h"
 
 namespace od
 {
@@ -176,7 +177,7 @@ namespace od
 
     	for(size_t i = 0; i < objectCount; ++i)
     	{
-    		ObjectPtr object(new od::Object(*this));
+    		LevelObjectPtr object(new od::LevelObject(*this));
     		object->loadFromRecord(dr);
 
     		mObjectGroup->addChild(object);

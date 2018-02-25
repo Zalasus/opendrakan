@@ -19,34 +19,34 @@ namespace od
 
     class Level;
 
-    typedef uint32_t ObjectId;
+    typedef uint32_t LevelObjectId;
 
-    class Object : public osg::Group
+    class LevelObject : public osg::Group
     {
     public:
 
-        Object(Level &level);
+        LevelObject(Level &level);
 
-        inline ObjectId getObjectId() const { return mId; }
+        inline LevelObjectId getObjectId() const { return mId; }
         inline ClassPtr getClass() { return mClass; }
 
         void loadFromRecord(DataReader dr);
 
         // override osg::Group
 		virtual const char *libraryName() const override { return "od";    }
-        virtual const char *className()   const override { return "Object"; }
+        virtual const char *className()   const override { return "LevelObject"; }
 
     private:
 
         Level &mLevel;
-        ObjectId mId;
+        LevelObjectId mId;
         ClassPtr mClass;
         std::unique_ptr<RflClass> mRflClassInstance;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
     };
 
-    typedef osg::ref_ptr<od::Object> ObjectPtr;
+    typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;
 }
 
 
