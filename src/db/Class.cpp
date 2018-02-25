@@ -49,18 +49,25 @@ namespace od
 
     std::unique_ptr<RflClass> Class::makeInstance()
 	{
-    	Logger::debug() << "Instantiating class " << std::hex << getAssetId() << std::dec;
+    	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
     	try
         {
         	RflClassRegistrar &cr = Rfl::getSingleton().getClassRegistrarById(mRflClassId);
 
-        	std::unique_ptr<RflClass> newInstance = cr.createClassInstance(mClassBuilder); // FIXME: this should not throw NotFoundException!
+        	std::unique_ptr<RflClass> newInstance = cr.createClassInstance();// FIXME: make sure this does not throw NotFoundException or cause unwanted catches
+        	mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
+        	newInstance->probeFields(mClassBuilder);
+
+        	return newInstance;
+
 
         }catch(NotFoundException &e)
         {
         	// ignore these for now as there are way more RflClasses than we have implemented
         	//Logger::warn() << "Tried to instantiate class with unknown RFLClass " << std::hex << mRflClassId << std::dec;
+        	Logger::debug() << "RflClass type " << std::hex << mRflClassId << std::dec <<
+        			" of class '" << mClassName << "' not found. Probably unimplemented";
         }
 
         return nullptr;

@@ -29,6 +29,8 @@ namespace od
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline ClassPtr getClass() { return mClass; }
+        inline Level &getLevel() { return mLevel; }
+        inline osg::Vec3f getPosition() const { return mPosition; }
 
         void loadFromRecord(DataReader dr);
 
@@ -42,6 +44,7 @@ namespace od
         LevelObjectId mId;
         ClassPtr mClass;
         std::unique_ptr<RflClass> mRflClassInstance;
+        osg::Vec3f mPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
     };

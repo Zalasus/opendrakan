@@ -26,6 +26,7 @@
 #include "db/Database.h"
 #include "TextureAtlas.h"
 #include "Layer.h"
+#include "Player.h"
 
 namespace od
 {
@@ -39,6 +40,7 @@ namespace od
         Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode);
 
         inline FilePath getFilePath() const { return mLevelPath; }
+        inline Player &getPlayer() { return mPlayer; }
 
         // implement AssetProvider
         virtual TexturePtr getTextureByRef(const AssetRef &ref) override;
@@ -68,6 +70,7 @@ namespace od
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
+		Player mPlayer;
     };
 
 

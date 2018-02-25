@@ -9,10 +9,13 @@
 #include "Engine.h"
 
 #include <osgViewer/ViewerEventHandlers>
+#include <osgGA/TrackballManipulator>
 
 #include "Exception.h"
 #include "Logger.h"
 #include "Level.h"
+#include "LevelObject.h"
+#include "Player.h"
 #include "rfl/Rfl.h"
 
 namespace od
@@ -46,6 +49,16 @@ namespace od
 			throw Exception("Can't start engine. Initial level not set/does not exist");
 		}
 		mLevel.reset(new od::Level(mInitialLevelFile, *this, rootNode));
+
+		if(mLevel->getPlayer().getLevelObject() == nullptr)
+    	{
+			Logger::error() << "Can't start engine. Level does not contain a Human Control object";
+    		throw Exception("No HumanControl object present in level");
+    	}
+
+		osgGA::TrackballManipulator *manip(new osgGA::TrackballManipulator);
+		manip->setHomePosition(mLevel->getPlayer().getLevelObject()->getPosition(), osg::Vec3(0,0,0), osg::Vec3(0,1,0));
+		mViewer->setCameraManipulator(manip);
 
 		mViewer->run();
 

@@ -12,14 +12,9 @@
 namespace od
 {
 
-	RflClass::RflClass()
-	: mLevelObject(nullptr)
-	{
-	}
 
-	void RflClass::setLevelObject(LevelObject &obj)
+	void RflClass::spawn(LevelObject &obj)
 	{
-	    mLevelObject = &obj;
 	}
 
 }

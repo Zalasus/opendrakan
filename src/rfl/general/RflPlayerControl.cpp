@@ -8,7 +8,9 @@
 #include "rfl/general/RflPlayerControl.h"
 
 #include "rfl/Rfl.h"
-
+#include "LevelObject.h"
+#include "Level.h"
+#include "Player.h"
 
 namespace od
 {
@@ -292,7 +294,18 @@ namespace od
 
     void RflHumanControl::probeFields(RflFieldProbe &probe)
     {
+    	RflPlayerCommon::probeFields(probe);
+    }
 
+    void RflHumanControl::spawn(LevelObject &obj)
+    {
+    	// all aboard the indirection train!
+    	obj.getLevel().getPlayer().setLevelObject(LevelObjectPtr(&obj));
+
+    	Logger::verbose() << "Spawned Human Control at "
+    			<< obj.getPosition().x() << "/"
+				<< obj.getPosition().y() << "/"
+				<< obj.getPosition().z();
     }
 
     OD_REGISTER_RFL_CLASS(0x0009, "Human Control", RflHumanControl);

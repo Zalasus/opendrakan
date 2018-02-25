@@ -35,13 +35,13 @@ namespace od
 		RflClassRegistrar(RflClassId classId, const std::string &className);
 		virtual ~RflClassRegistrar();
 
-		virtual std::unique_ptr<RflClass> createClassInstance(RflFieldProbe &probe) = 0;
+		virtual std::unique_ptr<RflClass> createClassInstance() = 0;
 
 		inline RflClassId getClassId() const { return mClassId; }
 		inline std::string getClassName() const { return mClassName; }
 
 
-	private:
+	protected:
 
 		RflClassId mClassId;
 		std::string mClassName;
@@ -59,12 +59,11 @@ namespace od
 		{
 		}
 
-		virtual std::unique_ptr<RflClass> createClassInstance(RflFieldProbe &probe) override
+		virtual std::unique_ptr<RflClass> createClassInstance() override
 		{
-		    std::unique_ptr<RflClass> instance(new T);
-		    instance->probeFields(probe);
+			Logger::debug() << "Creating instance of RFL class '" << mClassName << "' (" << std::hex << mClassId << std::dec << ")";
 
-		    return instance;
+		    return std::unique_ptr<RflClass>(new T);
 		}
 	};
 
@@ -73,7 +72,7 @@ namespace od
 	{
 	public:
 
-		class RflNameSetter
+		class RflNameSetter // xD
 		{
 		public:
 			RflNameSetter(const std::string &name);

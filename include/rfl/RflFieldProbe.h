@@ -28,7 +28,10 @@ namespace od
 
 	    virtual ~RflFieldProbe() = default;
 
+	    /// Starts a new category. Categories may appear more than once. Fields will be added to the previous definition
 	    virtual void beginCategory(const char *categoryName) = 0;
+
+	    /// Registers a field in this probe. Should only be used by RflClass children.
 		virtual void registerField(RflField &field, const char *fieldName) = 0; // TODO: Could use std::string_view once we switch to C++17
 
 	};
@@ -40,6 +43,9 @@ namespace od
 	    RflClassBuilder();
 
 		void readFieldRecord(DataReader &dr, bool isObjectRecord);
+
+		/// Resets internal index counter so this builder can be used to build another class.
+		void resetIndexCounter();
 
 		virtual void beginCategory(const char *categoryName) override;
 		virtual void registerField(RflField &field, const char *fieldName) override;

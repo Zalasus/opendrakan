@@ -152,6 +152,7 @@ namespace od
         RflHumanControl();
 
         virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void spawn(LevelObject &obj) override;
 
 
     protected:/*

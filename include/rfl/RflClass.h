@@ -19,17 +19,12 @@ namespace od
 	{
 	public:
 
-        RflClass();
 		virtual ~RflClass() = default;
 
 		virtual void probeFields(RflFieldProbe &probe) = 0;
 
-		void setLevelObject(LevelObject &obj);
-
-
-	private:
-
-		LevelObject *mLevelObject;
+		// TODO: maybe create an "EventHandler" interface for this?
+		virtual void spawn(LevelObject &obj); // does nothing by default
 
 	};
 

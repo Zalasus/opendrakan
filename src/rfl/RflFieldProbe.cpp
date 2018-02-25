@@ -59,6 +59,11 @@ namespace od
     	}
     }
 
+    void RflClassBuilder::resetIndexCounter()
+    {
+    	mRegistrationIndex = 0;
+    }
+
     void RflClassBuilder::beginCategory(const char *categoryName)
     {
         // Class builder doesn't give a damn about categories

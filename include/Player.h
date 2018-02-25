@@ -17,9 +17,18 @@ namespace od
     {
     public:
 
-    	void setObject(LevelObject *obj);
+    	Player() = default;
+    	Player(const Player &p) = delete;
+    	Player(Player &p) = delete;
+
+    	inline void setLevelObject(LevelObjectPtr obj) { mPlayerObject = obj; }
+    	inline LevelObjectPtr getLevelObject() { return mPlayerObject; }
 
 
+
+    private:
+
+    	LevelObjectPtr mPlayerObject;
     };
 
 }

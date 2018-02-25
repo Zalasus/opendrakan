@@ -50,6 +50,9 @@ namespace od
            >> mInitialEventCount
 		   >> dummyLength;
 
+        mPosition.set(xPos, yPos, zPos);
+        mPosition *= OD_WORLD_SCALE; // correct editor scaling
+
         dr.ignore(2*dummyLength);
 
         dr >> xRot
@@ -72,8 +75,12 @@ namespace od
         mRflClassInstance = mClass->makeInstance();
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->setLevelObject(*this);
             mRflClassInstance->probeFields(builder); // let builder override fields
+            mRflClassInstance->spawn(*this);
+
+        }else
+        {
+        	Logger::debug() << "Could not instantiate class of level object";
         }
 
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
@@ -83,7 +90,7 @@ namespace od
 				osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
 				osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
 				osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1)));
-			transform->setPosition(osg::Vec3(xPos, yPos, zPos) * OD_WORLD_SCALE);
+			transform->setPosition(mPosition);
 			transform->setScale(osg::Vec3(xScale, yScale, zScale));
 
 			transform->addChild(mClass->getModel());
