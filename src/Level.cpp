@@ -42,6 +42,54 @@ namespace od
         _loadLevel();
     }
 
+    void Level::setSkyObject(LevelObject &obj)
+    {
+    	// ...
+    }
+
+    // TODO: the following methods look pretty redundant. find clever template interface for them
+    TexturePtr Level::getTextureByRef(const AssetRef &ref)
+	{
+    	Logger::debug() << "Requested texture " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+            throw NotFoundException("Can't get texture. Database index not found in level dependencies");
+        }
+
+        return it->second.get().getTexture(ref.assetId);
+    }
+
+    ModelPtr Level::getModelByRef(const AssetRef &ref)
+    {
+    	Logger::debug() << "Requested model " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+            throw NotFoundException("Can't get model. Database index not found in level dependencies");
+        }
+
+        return it->second.get().getModel(ref.assetId);
+    }
+
+    ClassPtr Level::getClassByRef(const AssetRef &ref)
+    {
+        Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+            throw NotFoundException("Can't get class. Database index not found in level dependencies");
+        }
+
+        return it->second.get().getClass(ref.assetId);
+    }
+
     void Level::_loadLevel()
     {
     	Logger::info() << "Loading level " << mLevelPath.str();
@@ -185,49 +233,6 @@ namespace od
 
     	// disable lighting for objects as models will show up mostly black right now
 		mObjectGroup->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-    }
-
-    // TODO: the following methods look pretty redundant. find clever template interface for them
-    TexturePtr Level::getTextureByRef(const AssetRef &ref)
-	{
-    	Logger::debug() << "Requested texture " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get texture. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getTexture(ref.assetId);
-    }
-
-    ModelPtr Level::getModelByRef(const AssetRef &ref)
-    {
-    	Logger::debug() << "Requested model " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get model. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getModel(ref.assetId);
-    }
-
-    ClassPtr Level::getClassByRef(const AssetRef &ref)
-    {
-        Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get class. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getClass(ref.assetId);
     }
 }
 
