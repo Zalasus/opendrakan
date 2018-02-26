@@ -49,15 +49,11 @@ namespace od
 		mVertices.reserve(vertexCount);
 		for(size_t i = 0; i < vertexCount; ++i)
 		{
-			float x;
-			float y;
-			float z;
+			osg::Vec3f vertex;
 
-			dr >> x
-			   >> y
-			   >> z;
+			dr >> vertex;
 
-			mVertices.push_back(osg::Vec3(x,y,z));
+			mVertices.push_back(vertex);
 		}
 
 		mVerticesLoaded = true;
@@ -119,16 +115,12 @@ namespace od
 
 			for(size_t i = 0; i < f.vertexCount; ++i)
 			{
-				float u;
-				float v;
 				uint16_t vertexIndex;
 
 				dr >> vertexIndex
-				   >> u
-				   >> v;
+				   >> f.vertexUvCoords[i];
 
-				f.vertexIndices[i] = vertexIndex;
-				f.vertexUvCoords[i] = osg::Vec2(u,v);
+				f.vertexIndices[i] = vertexIndex; // TODO: instead of doing it this way, maybe add a "readAs<type>" modifier?
 			}
 
 			mFaces.push_back(f);

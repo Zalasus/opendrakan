@@ -37,33 +37,25 @@ namespace od
 
     void LevelObject::loadFromRecord(DataReader dr)
     {
-        AssetRef classRef;
-        float xPos;
-        float yPos;
-        float zPos;
         uint16_t xRot;
         uint16_t yRot;
         uint16_t zRot;
-        float xScale = 1;
-        float yScale = 1;
-        float zScale = 1;
-
-        uint16_t dummyLength;
+        uint16_t linkCount;
 
         dr >> mId
-           >> classRef
+           >> mClassRef
            >> DataReader::Ignore(4)
-           >> xPos
-           >> yPos
-           >> zPos
+           >> mPosition
            >> mFlags
            >> mInitialEventCount
-		   >> dummyLength;
+		   >> linkCount;
 
-        mPosition.set(xPos, yPos, zPos);
-        mPosition *= OD_WORLD_SCALE; // correct editor scaling
-
-        dr.ignore(2*dummyLength);
+        // TODO: finally write a deserializer for vectors of things!
+        mLinks.resize(linkCount);
+        for(size_t i = 0; i < linkCount; ++i)
+        {
+        	dr >> mLinks[i];
+        }
 
         dr >> xRot
            >> yRot
@@ -71,16 +63,23 @@ namespace od
 
         if(mFlags & OD_OBJECT_FLAG_SCALED)
         {
-            dr >> xScale
-               >> yScale
-               >> zScale;
-        }
+            dr >> mScale;
 
+        }else
+        {
+        	mScale.set(1,1,1);
+        }
 
         RflClassBuilder builder;
         builder.readFieldRecord(dr, true);
 
-        mClass = mLevel.getClassByRef(classRef);
+        mPosition *= OD_WORLD_SCALE; // correct editor scaling
+        mRotation = osg::Quat(
+				osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
+				osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
+				osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1));
+
+        mClass = mLevel.getClassByRef(mClassRef);
 
         mRflClassInstance = mClass->makeInstance();
         if(mRflClassInstance != nullptr)
@@ -96,12 +95,9 @@ namespace od
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
 			mTransform = new osg::PositionAttitudeTransform;
-			mTransform->setAttitude(osg::Quat(
-				osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
-				osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
-				osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1)));
+			mTransform->setAttitude(mRotation);
 			mTransform->setPosition(mPosition);
-			mTransform->setScale(osg::Vec3(xScale, yScale, zScale));
+			mTransform->setScale(mScale);
 
 			mTransform->addChild(mClass->getModel());
 			this->addChild(mTransform);

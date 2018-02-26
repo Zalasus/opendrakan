@@ -43,11 +43,15 @@ namespace od
 
         Level &mLevel;
         LevelObjectId mId;
+        AssetRef mClassRef;
         ClassPtr mClass;
         std::unique_ptr<RflClass> mRflClassInstance;
         osg::Vec3f mPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
+        std::vector<uint16_t> mLinks;
+        osg::Vec3f mScale;
+        osg::Quat  mRotation;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
     };
