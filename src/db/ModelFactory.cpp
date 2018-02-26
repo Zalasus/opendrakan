@@ -21,7 +21,7 @@ namespace od
 
 	ModelPtr ModelFactory::loadAsset(RecordId id)
 	{
-		SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_NAME, id);
+		SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_NAME, id);
 		if(nameRecord == getSrscFile().getDirectoryEnd())
 		{
 			Logger::error() << "Model " << std::hex << id << std::dec << " not found in database " << getDatabase().getShortName();
@@ -33,13 +33,13 @@ namespace od
 		ModelPtr model(new Model(getDatabase(), id));
 		model->loadNameAndShading(*this, DataReader(getSrscFile().getStreamForRecord(nameRecord)));
 
-		SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_VERTICES, id, nameRecord);
+		SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_VERTICES, id, nameRecord);
 		model->loadVertices(*this, DataReader(getSrscFile().getStreamForRecord(vertRecord)));
 
-		SrscFile::DirIterator texRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_TEXTURES, id, nameRecord);
+		SrscFile::DirIterator texRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_TEXTURES, id, nameRecord);
 		model->loadTextures(*this, DataReader(getSrscFile().getStreamForRecord(texRecord)));
 
-		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(OD_SRSC_MODEL_FACES, id, nameRecord);
+		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_FACES, id, nameRecord);
 		model->loadFaces(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
 
 		model->buildGeometry();

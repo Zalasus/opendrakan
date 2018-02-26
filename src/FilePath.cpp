@@ -16,10 +16,10 @@
 
 #if defined (__WIN32__)
 #	define OD_FILEPATH_SEPERATOR	    '\\'
-#	define OD_FILEPATH_HOST_STYLE		STYLE_DOS
+#	define OD_FILEPATH_HOST_STYLE		PathRootStyle::DOS
 #else
 #	define OD_FILEPATH_SEPERATOR	    '/'
-#	define OD_FILEPATH_HOST_STYLE		STYLE_POSIX
+#	define OD_FILEPATH_HOST_STYLE		PathRootStyle::POSIX
 extern "C"
 {
 #	include <dirent.h>
@@ -31,14 +31,14 @@ namespace od
 
 	FilePath::FilePath(const std::string &path)
 	: mOriginalPath(path)
-	, mRootStyle(STYLE_RELATIVE)
+	, mRootStyle(PathRootStyle::RELATIVE)
 	{
 	    _parsePath(path);
 	}
 
 	FilePath::FilePath(const std::string &path, FilePath relativeTo)
 	: mOriginalPath(path)
-	, mRootStyle(STYLE_RELATIVE)
+	, mRootStyle(PathRootStyle::RELATIVE)
 	{
 	    _parsePath(relativeTo.str() + OD_FILEPATH_SEPERATOR + path);
 	}
@@ -107,7 +107,7 @@ namespace od
 
 		FilePath fp(*this);
 
-		std::string adjustedPath((mRootStyle == STYLE_RELATIVE) ? "." : mRoot);
+		std::string adjustedPath((mRootStyle == PathRootStyle::RELATIVE) ? "." : mRoot);
 
 		for(size_t i = 0; i < fp.mPathComponents.size(); ++i)
 		{
@@ -179,14 +179,14 @@ namespace od
 		{
 			// POSIX root
 			mRoot = "/";
-			mRootStyle = STYLE_POSIX;
+			mRootStyle = PathRootStyle::POSIX;
 			startSearchAt = 1;
 
 		}else if(workPath.size() >= 2 && workPath[1] == ':')
 		{
 			// DOS root
 			mRoot = workPath.substr(0,1) + ":\\";
-			mRootStyle = STYLE_DOS;
+			mRootStyle = PathRootStyle::DOS;
 			startSearchAt = 3;
 		}
 
@@ -237,7 +237,7 @@ namespace od
 	{
 		std::ostringstream oss;
 
-		if(mRootStyle != STYLE_RELATIVE)
+		if(mRootStyle != PathRootStyle::RELATIVE)
 		{
 			if(mRootStyle != OD_FILEPATH_HOST_STYLE)
 			{

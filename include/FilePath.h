@@ -22,11 +22,11 @@ namespace od
 	{
 	public:
 
-		enum PathRootStyle
+		enum class PathRootStyle
 		{
-			STYLE_DOS,
-			STYLE_POSIX,
-			STYLE_RELATIVE
+			DOS,
+			POSIX,
+			RELATIVE
 		};
 
 		/**

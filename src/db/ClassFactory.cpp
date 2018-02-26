@@ -24,7 +24,7 @@ namespace od
 
     ClassPtr ClassFactory::loadAsset(RecordId classId)
     {
-        SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(OD_SRSC_CLASS, classId);
+        SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(SrscRecordType::CLASS, classId);
         if(it == getSrscFile().getDirectoryEnd())
         {
         	Logger::error() << "Class " << std::hex << classId << std::dec << " not found in database " << getDatabase().getShortName();
@@ -41,7 +41,7 @@ namespace od
 
     void ClassFactory::_loadRflRecord()
     {
-        SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(OD_SRSC_CLASS_RFL);
+        SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(SrscRecordType::CLASS_RFL);
         if(it == getSrscFile().getDirectoryEnd())
         {
             throw Exception("Class database contained no RFL definition record");

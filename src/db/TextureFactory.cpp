@@ -34,7 +34,7 @@ namespace od
 
 	TexturePtr TextureFactory::loadAsset(RecordId textureId)
 	{
-		SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(OD_SRSC_TEXTURE, textureId);
+		SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::TEXTURE, textureId);
 		if(dirIt == getSrscFile().getDirectoryEnd())
 		{
 			Logger::error() << "Texture " << std::hex << textureId << std::dec << " not found in database " << getDatabase().getShortName();
@@ -53,7 +53,7 @@ namespace od
 	{
 		Logger::verbose() << "Loading texture database palette";
 
-		SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(OD_SRSC_PALETTE);
+		SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(SrscRecordType::PALETTE);
 		if(it == getSrscFile().getDirectoryEnd())
 		{
 			Logger::warn() << "Texture container has no palette record. 8 bit textures will be blank";

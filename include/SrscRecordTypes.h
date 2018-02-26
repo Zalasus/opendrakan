@@ -8,26 +8,33 @@
 #ifndef INCLUDE_SRSCRECORDTYPES_H_
 #define INCLUDE_SRSCRECORDTYPES_H_
 
-#define OD_SRSC_LEVEL_NAME  		0x0000
-#define OD_SRSC_LEVEL_LAYERS		0x0001
-#define OD_SRSC_LEVEL_LAYERGROUPS	0x0002
-#define OD_SRSC_LEVEL_OBJECTS		0x0020
+namespace od
+{
 
-#define OD_SRSC_PALETTE 			0x0030
-#define OD_SRSC_TEXTURE	 			0x0040
+	enum class SrscRecordType : uint16_t
+	{
+		LEVEL_NAME 			= 0x0000,
+		LEVEL_LAYERS		= 0x0001,
+		LEVEL_LAYERGROUPS	= 0x0002,
+		LEVEL_OBJECTS		= 0x0020,
 
-#define OD_SRSC_CLASS_RFL           0x0100
-#define OD_SRSC_CLASS_GROUP         0x0101
-#define OD_SRSC_CLASS               0x0102
+		PALETTE 			= 0x0030,
+		TEXTURE	 			= 0x0040,
 
-#define OD_SRSC_MODEL_NAME          0x0200
-#define OD_SRSC_MODEL_GROUP         0x0201
-#define OD_SRSC_MODEL_UNKNOWN1      0x0202
-#define OD_SRSC_MODEL_VERTICES      0x0203
-#define OD_SRSC_MODEL_FACES         0x0204
-#define OD_SRSC_MODEL_TEXTURES      0x0206
-#define OD_SRSC_MODEL_BOUNDING      0x0207
-#define OD_SRSC_MODEL_UNKNOWN2      0x0209
+		CLASS_RFL           = 0x0100,
+		CLASS_GROUP         = 0x0101,
+		CLASS               = 0x0102,
 
+		MODEL_NAME          = 0x0200,
+		MODEL_GROUP         = 0x0201,
+		MODEL_UNKNOWN1      = 0x0202,
+		MODEL_VERTICES      = 0x0203,
+		MODEL_FACES         = 0x0204,
+		MODEL_TEXTURES      = 0x0206,
+		MODEL_BOUNDING      = 0x0207,
+		MODEL_UNKNOWN2      = 0x0209
+	};
+
+}
 
 #endif /* INCLUDE_SRSCRECORDTYPES_H_ */

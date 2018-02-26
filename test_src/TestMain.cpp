@@ -71,7 +71,7 @@ static void srscStat(od::SrscFile &file)
 
 static void statClasses(od::SrscFile &file)
 {
-	for(auto it = file.getDirIteratorByType(OD_SRSC_CLASS); it != file.getDirectoryEnd(); it = file.getDirIteratorByType(OD_SRSC_CLASS, it+1))
+	for(auto it = file.getDirIteratorByType(od::SrscRecordType::CLASS); it != file.getDirectoryEnd(); it = file.getDirIteratorByType(od::SrscRecordType::CLASS, it+1))
 	{
 		od::DataReader dr(file.getStreamForRecord(*it));
 
