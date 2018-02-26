@@ -31,6 +31,7 @@ namespace od
         inline ClassPtr getClass() { return mClass; }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mPosition; }
+        void setPosition(osg::Vec3f v);
 
         void loadFromRecord(DataReader dr);
 
@@ -47,6 +48,8 @@ namespace od
         osg::Vec3f mPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
+
+        osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

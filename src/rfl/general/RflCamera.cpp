@@ -8,6 +8,7 @@
 #include "rfl/general/RflCamera.h"
 
 #include "rfl/Rfl.h"
+#include "Level.h"
 
 namespace od
 {
@@ -27,6 +28,11 @@ namespace od
 	    probe.registerField(mRubberBandStrength, "Rubber Band Strength");
 	    probe.registerField(mSpinSpeed, "Spin Speed");
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
+	}
+
+	void RflTrackingCamera::spawn(LevelObject &obj)
+	{
+		//obj.getLevel().getEngine().getCamera().setRubberBandStrength(mRubberBandStrength);
 	}
 
 	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera", RflTrackingCamera);

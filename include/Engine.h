@@ -12,7 +12,10 @@
 #include <osgViewer/Viewer>
 
 #include "DbManager.h"
+#include "InputManager.h"
 #include "Level.h"
+#include "Camera.h"
+#include "Player.h"
 
 namespace od
 {
@@ -22,20 +25,28 @@ namespace od
 	public:
 
 		Engine();
+		Engine(Engine &e) = delete;
+		Engine(const Engine &e) = delete;
+		~Engine() = default;
 
 		inline FilePath getInitialLevelFile() const { return mInitialLevelFile; }
-		inline DbManager &getDbManager() { return mDbManager; }
 		inline void setInitialLevelFile(const FilePath &level) { mInitialLevelFile = level; }
+		inline DbManager &getDbManager() { return mDbManager; }
+		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
+		inline Player &getPlayer() { return getLevel().getPlayer(); }
 
+		Camera &getCamera();
 		void run();
 
 
 	private:
 
 		DbManager mDbManager;
+		osg::ref_ptr<InputManager> mInputManager;
 		FilePath mInitialLevelFile;
 		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
+		std::unique_ptr<Camera> mCamera;
 	};
 
 }

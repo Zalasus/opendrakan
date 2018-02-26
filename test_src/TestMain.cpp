@@ -113,51 +113,51 @@ static void statClasses(od::SrscFile &file)
         	switch(type & 0xff)
         	{
         	case od::RflField::INTEGER:
-        		std::cout << "int32";
+        		std::cout << "RflInteger";
         		break;
 
             case od::RflField::FLOAT:
-            	std::cout << "float";
+            	std::cout << "RflFloat";
         		break;
 
             case od::RflField::CLASS:
-            	std::cout << "class";
+            	std::cout << "RflClassRef";
         		break;
 
             case od::RflField::MODEL:
-            	std::cout << "model";
+            	std::cout << "RflModelRef";
         		break;
 
             case od::RflField::SOUND:
-            	std::cout << "sound";
+            	std::cout << "RflSoundRef";
         		break;
 
             case od::RflField::ENUM:
-            	std::cout << "enum";
+            	std::cout << "RflEnum";
         		break;
 
             case od::RflField::CHAR_CHANNEL:
-            	std::cout << "channel";
+            	std::cout << "RflCharChannel";
         		break;
 
             case od::RflField::ANIMATION:
-            	std::cout << "anim";
+            	std::cout << "RflAnimRef";
         		break;
 
             case od::RflField::STRING:
-            	std::cout << "string";
+            	std::cout << "RflString";
         		break;
 
             case od::RflField::SEUQUENCE:
-            	std::cout << "sequence";
+            	std::cout << "RflSequenceRef";
         		break;
 
             case od::RflField::TEXTURE:
-            	std::cout << "texture";
+            	std::cout << "RflTextureRef";
         		break;
 
             case od::RflField::COLOR:
-            	std::cout << "color";
+            	std::cout << "RflColor";
         		break;
 
             default:
@@ -166,7 +166,7 @@ static void statClasses(od::SrscFile &file)
 
         	if(type & 0x1000)
         	{
-        		std::cout << "[]";
+        		std::cout << "Array";
         	}
 
         	std::cout << "\t\t" << name << std::endl;

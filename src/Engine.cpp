@@ -26,6 +26,21 @@ namespace od
 	{
 	}
 
+	Camera &Engine::getCamera()
+	{
+		if(mCamera == nullptr)
+		{
+			if(mViewer == nullptr)
+			{
+				throw Exception("No camera available because no viewer created yet");
+			}
+
+			mCamera.reset(new Camera(mViewer->getCamera()));
+		}
+
+		return *mCamera.get();
+	}
+
 	void Engine::run()
 	{
 		Logger::info() << "Starting OpenDrakan...";
@@ -36,11 +51,13 @@ namespace od
 		osg::ref_ptr<osg::Group> rootNode(new osg::Group);
 
 		mViewer = new osgViewer::Viewer;
+		mViewer->setName("OpenDrakan");
 		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 		mViewer->setSceneData(rootNode);
 
 		osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
-		statsHandler->setKeyEventPrintsOutStats('s');
+		statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
+		statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
 		mViewer->addEventHandler(statsHandler);
 
 		if(!mInitialLevelFile.exists())
@@ -55,6 +72,8 @@ namespace od
 			Logger::error() << "Can't start engine. Level does not contain a Human Control object";
     		throw Exception("No HumanControl object present in level");
     	}
+
+		mInputManager = new InputManager(*this, mLevel->getPlayer(), mViewer);
 
 		osgGA::TrackballManipulator *manip(new osgGA::TrackballManipulator);
 		manip->setHomePosition(mLevel->getPlayer().getLevelObject()->getPosition(), osg::Vec3(0,0,0), osg::Vec3(0,1,0));

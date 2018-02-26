@@ -41,6 +41,7 @@ namespace od
 
         inline FilePath getFilePath() const { return mLevelPath; }
         inline Player &getPlayer() { return mPlayer; }
+        inline Engine &getEngine() { return mEngine; }
 
         // implement AssetProvider
         virtual TexturePtr getTextureByRef(const AssetRef &ref) override;

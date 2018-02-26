@@ -24,6 +24,7 @@ namespace od
     	inline void setLevelObject(LevelObjectPtr obj) { mPlayerObject = obj; }
     	inline LevelObjectPtr getLevelObject() { return mPlayerObject; }
 
+    	void moveForward(float speed);
 
 
     private:

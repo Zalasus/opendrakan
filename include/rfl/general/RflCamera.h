@@ -20,11 +20,12 @@ namespace od
 		RflTrackingCamera();
 
 		virtual void probeFields(RflFieldProbe &probe) override;
+		virtual void spawn(LevelObject &obj) override;
 
 
 	private:
 
-		RflEnum		mTrackingMode;
+		RflEnum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
 		RflFloat    mRubberBandStrength;
 		RflFloat    mSpinSpeed;
 		RflFloat	mCrosshairDistance;

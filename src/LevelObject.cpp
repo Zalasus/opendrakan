@@ -25,6 +25,16 @@ namespace od
     {
     }
 
+    void LevelObject::setPosition(osg::Vec3f v)
+    {
+    	mPosition = v;
+
+    	if(mTransform != nullptr)
+    	{
+    		mTransform->setPosition(v);
+    	}
+    }
+
     void LevelObject::loadFromRecord(DataReader dr)
     {
         AssetRef classRef;
@@ -85,16 +95,16 @@ namespace od
 
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
-			osg::ref_ptr<osg::PositionAttitudeTransform> transform(new osg::PositionAttitudeTransform);
-			transform->setAttitude(osg::Quat(
+			mTransform = new osg::PositionAttitudeTransform;
+			mTransform->setAttitude(osg::Quat(
 				osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
 				osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
 				osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1)));
-			transform->setPosition(mPosition);
-			transform->setScale(osg::Vec3(xScale, yScale, zScale));
+			mTransform->setPosition(mPosition);
+			mTransform->setScale(osg::Vec3(xScale, yScale, zScale));
 
-			transform->addChild(mClass->getModel());
-			this->addChild(transform);
+			mTransform->addChild(mClass->getModel());
+			this->addChild(mTransform);
         }
     }
 
