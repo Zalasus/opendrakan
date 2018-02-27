@@ -16,8 +16,9 @@ namespace od
 	InputManager::InputManager(Engine &engine, Player &player, osgViewer::Viewer *viewer)
 	: mEngine(engine)
 	, mPlayer(player)
+	, mViewer(viewer)
 	{
-		viewer->addEventHandler(this);
+		mViewer->addEventHandler(this);
 	}
 
 	bool InputManager::handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa, osg::Object *obj, osg::NodeVisitor *nv)
@@ -50,6 +51,10 @@ namespace od
 		case osgGA::GUIEventAdapter::KEY_S:
 			mPlayer.moveForward(-1);
 			return true;
+
+		case osgGA::GUIEventAdapter::KEY_Escape:
+			mViewer->setDone(true);
+			break;
 
 		default:
 			break;

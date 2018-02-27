@@ -34,8 +34,10 @@ namespace od
 		inline DbManager &getDbManager() { return mDbManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player &getPlayer() { return getLevel().getPlayer(); }
+		inline Camera &getCamera() { return *mCamera; }
+		inline double getMaxFrameRate() const { return mMaxFrameRate; }
+		inline void setMaxFrameRate(double fps) { mMaxFrameRate = fps; } // 0 for no cap
 
-		Camera &getCamera();
 		void run();
 
 
@@ -47,6 +49,7 @@ namespace od
 		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		std::unique_ptr<Camera> mCamera;
+		double mMaxFrameRate;
 	};
 
 }

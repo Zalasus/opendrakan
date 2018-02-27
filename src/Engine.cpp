@@ -23,22 +23,8 @@ namespace od
 
 	Engine::Engine()
 	: mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere?
+	, mMaxFrameRate(60)
 	{
-	}
-
-	Camera &Engine::getCamera()
-	{
-		if(mCamera == nullptr)
-		{
-			if(mViewer == nullptr)
-			{
-				throw Exception("No camera available because no viewer created yet");
-			}
-
-			mCamera.reset(new Camera(mViewer->getCamera()));
-		}
-
-		return *mCamera.get();
 	}
 
 	void Engine::run()
@@ -55,16 +41,13 @@ namespace od
 		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 		mViewer->setSceneData(rootNode);
 
+		mCamera.reset(new Camera(*this, mViewer->getCamera()));
+
 		osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
 		statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
 		statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
 		mViewer->addEventHandler(statsHandler);
 
-		if(!mInitialLevelFile.exists())
-		{
-			Logger::error() << "Can't start engine. Initial level '" << mInitialLevelFile.str() << "' does not exist";
-			throw Exception("Can't start engine. Initial level not set/does not exist");
-		}
 		mLevel.reset(new od::Level(mInitialLevelFile, *this, rootNode));
 
 		if(mLevel->getPlayer().getLevelObject() == nullptr)
@@ -75,11 +58,27 @@ namespace od
 
 		mInputManager = new InputManager(*this, mLevel->getPlayer(), mViewer);
 
-		osgGA::TrackballManipulator *manip(new osgGA::TrackballManipulator);
-		manip->setHomePosition(mLevel->getPlayer().getLevelObject()->getPosition(), osg::Vec3(0,0,0), osg::Vec3(0,1,0));
-		mViewer->setCameraManipulator(manip);
+		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
+		mViewer->realize();
+		double simTime = 0;
+		while(!mViewer->done())
+		{
+			double minFrameTime = (mMaxFrameRate > 0.0) ? (1.0/mMaxFrameRate) : 0.0;
+			osg::Timer_t startFrameTick = osg::Timer::instance()->tick();
 
-		mViewer->run();
+			mViewer->advance(simTime);
+			mViewer->eventTraversal();
+			mViewer->updateTraversal();
+			mViewer->renderingTraversals();
+
+			osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
+			double frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
+			simTime += frameTime;
+			if(frameTime < minFrameTime)
+			{
+				OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0*(minFrameTime-frameTime)));
+			}
+		}
 
 		Logger::info() << "Shutting down gracefully";
 	}

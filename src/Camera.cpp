@@ -7,13 +7,62 @@
 
 #include "Camera.h"
 
+#include "Engine.h"
+
 namespace od
 {
 
-	Camera::Camera(osg::Camera *osgCam)
-	: mOsgCam(osgCam)
+	class CamUpdateCallback : public osg::NodeCallback
 	{
+	public:
+
+		CamUpdateCallback(Camera *cam)
+		: mCam(cam)
+		{
+		}
+
+		virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
+		{
+			osg::Camera* cam = static_cast<osg::Camera*>(node);
+
+			// traverse first to update animations, in case the camera is attached to an animated node
+			traverse(node, nv);
+
+			mCam->update();
+		}
+
+	private:
+
+		Camera *mCam;
+	};
+
+
+
+	Camera::Camera(Engine &engine, osg::Camera *osgCam)
+	: mEngine(engine)
+	, mOsgCam(osgCam)
+	{
+		mUpdateCallback = new CamUpdateCallback(this);
+		mOsgCam->addUpdateCallback(mUpdateCallback);
 	}
+
+	Camera::~Camera()
+    {
+        mOsgCam->removeUpdateCallback(mUpdateCallback);
+    }
+
+	void Camera::update()
+	{
+		Player &player = mEngine.getPlayer();
+
+		osg::Vec3f eye = player.getPosition();
+		osg::Vec3f front(1, 0, 0);
+		osg::Vec3f up(0, 1, 0);
+
+		mOsgCam->setViewMatrixAsLookAt(eye, eye + front, up);
+	}
+
+
 
 
 }

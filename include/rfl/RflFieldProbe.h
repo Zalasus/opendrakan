@@ -34,6 +34,8 @@ namespace od
 	    /// Registers a field in this probe. Should only be used by RflClass children.
 		virtual void registerField(RflField &field, const char *fieldName) = 0; // TODO: Could use std::string_view once we switch to C++17
 
+		RflFieldProbe &operator()(RflField &field, const char *fieldName) { registerField(field, fieldName); return *this; }
+		RflFieldProbe &operator()(const char *categoryName) { beginCategory(categoryName); return *this; }
 	};
 
 	class RflClassBuilder : public RflFieldProbe

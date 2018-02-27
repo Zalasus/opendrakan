@@ -23,4 +23,13 @@ namespace od
     	mPlayerObject->setPosition(pos);
     }
 
+    osg::Vec3f Player::getPosition()
+    {
+    	if(getLevelObject() == nullptr)
+    	{
+    		throw Exception("Can't get position. Player not yet spawned");
+    	}
+
+    	return getLevelObject()->getPosition();
+    }
 }

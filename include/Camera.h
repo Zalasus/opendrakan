@@ -9,27 +9,36 @@
 #define INCLUDE_CAMERA_H_
 
 #include <osg/Camera>
+#include <osg/NodeCallback>
 
 #include "LevelObject.h"
 
 namespace od
 {
 
+	class Engine;
+
+	/**
+	 * Camera wrapper enabling player tracking, rubber band stuff etc.
+	 */
 	class Camera
 	{
 	public:
 
-		Camera(osg::Camera *osgCam);
+		Camera(Engine &engine, osg::Camera *osgCam);
 		Camera(const Camera &c) = delete;
 		Camera(Camera &c) = delete;
-		~Camera() = default;
+		~Camera();
 
 
+		void update();
 
 
     private:
 
+		Engine &mEngine;
 		osg::ref_ptr<osg::Camera> mOsgCam;
+		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 
 	};
 

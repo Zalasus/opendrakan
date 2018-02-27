@@ -9,6 +9,7 @@
 
 #include "rfl/Rfl.h"
 #include "Level.h"
+#include "Engine.h"
 
 namespace od
 {
@@ -32,7 +33,7 @@ namespace od
 
 	void RflTrackingCamera::spawn(LevelObject &obj)
 	{
-		//obj.getLevel().getEngine().getCamera().setRubberBandStrength(mRubberBandStrength);
+		obj.getLevel().getEngine().getCamera();//.setRubberBandStrength(mRubberBandStrength);
 	}
 
 	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera", RflTrackingCamera);

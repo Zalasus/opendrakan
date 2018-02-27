@@ -33,6 +33,7 @@ namespace od
 
 		Engine &mEngine;
 		Player &mPlayer;
+		osg::ref_ptr<osgViewer::Viewer> mViewer;
 	};
 
 }

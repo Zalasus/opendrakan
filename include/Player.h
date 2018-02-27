@@ -25,6 +25,7 @@ namespace od
     	inline LevelObjectPtr getLevelObject() { return mPlayerObject; }
 
     	void moveForward(float speed);
+    	osg::Vec3f getPosition();
 
 
     private:

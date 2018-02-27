@@ -44,7 +44,7 @@ namespace od
 
     void Level::setSkyObject(LevelObject &obj)
     {
-    	// ...
+    	obj.getOrCreateStateSet()->setRenderBinDetails(-1, "RenderBin");
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them

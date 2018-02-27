@@ -34,7 +34,7 @@ namespace od
 
     void RflDomedSky::probeFields(RflFieldProbe &probe)
     {
-    	probe.beginCategory("Position");
+    	/*probe.beginCategory("Position");
     	probe.registerField(mPrimarySky, "Primary Sky");
 		probe.registerField(mFollowMode, "Follow Mode");
 		probe.registerField(mOffsetDown, "Offset Down");
@@ -49,7 +49,25 @@ namespace od
 		probe.registerField(mLightningWedgeAngle, "Lightning Wedge Angle");
 		probe.registerField(mLensFlare, "Lens Flare");
 		probe.registerField(mFlareElevation, "Flare Elevation (0 - 90)");
-		probe.registerField(mFlareDirection, "Flare Direction (0 - 359)");
+		probe.registerField(mFlareDirection, "Flare Direction (0 - 359)");*/
+
+		// not really clean code, but avoids the wall of text above. should we use this rather than calling the methods directly?
+		probe("Position")
+    		 (mPrimarySky, "Primary Sky")
+			 (mFollowMode, "Follow Mode")
+			 (mOffsetDown, "Offset Down")
+
+			 ("Effects")
+			 (mEffects, "Effects")
+			 (mLightningObject, "Lightning Object")
+		     (mAveLightningPeriod, "Ave Lightning Period")
+		     (mLightningHeight, "Lightning Height")
+		     (mMinLightningDist, "Min Lightning Dist")
+		     (mMaxLightningDist, "Max Lightning Dist")
+		     (mLightningWedgeAngle, "Lightning Wedge Angle")
+		     (mLensFlare, "Lens Flare")
+		     (mFlareElevation, "Flare Elevation (0 - 90)")
+		     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
     void RflDomedSky::spawn(LevelObject &obj)
