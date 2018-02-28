@@ -61,6 +61,7 @@ namespace od
 		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
 		mViewer->realize();
 		double simTime = 0;
+		double frameTime = 0;
 		while(!mViewer->done())
 		{
 			double minFrameTime = (mMaxFrameRate > 0.0) ? (1.0/mMaxFrameRate) : 0.0;
@@ -68,11 +69,14 @@ namespace od
 
 			mViewer->advance(simTime);
 			mViewer->eventTraversal();
+
+			mLevel->getPlayer().update(frameTime);
+
 			mViewer->updateTraversal();
 			mViewer->renderingTraversals();
 
 			osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
-			double frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
+			frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
 			simTime += frameTime;
 			if(frameTime < minFrameTime)
 			{

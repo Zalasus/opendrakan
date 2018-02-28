@@ -29,6 +29,7 @@ namespace od
 
 		bool _keyDown(int key);
 		bool _keyUp(int key);
+		bool _mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
 
 
 		Engine &mEngine;

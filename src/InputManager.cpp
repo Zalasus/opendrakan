@@ -33,6 +33,11 @@ namespace od
             return this->_keyUp(ea.getKey());
         	break;
 
+		case osgGA::GUIEventAdapter::DRAG:
+		case osgGA::GUIEventAdapter::MOVE:
+			return this->_mouseMove(ea, aa);
+			break;
+
         default:
             break;
         }
@@ -50,6 +55,14 @@ namespace od
 
 		case osgGA::GUIEventAdapter::KEY_S:
 			mPlayer.moveForward(-1);
+			return true;
+
+		case osgGA::GUIEventAdapter::KEY_A:
+			mPlayer.moveRight(-1);
+			return true;
+
+		case osgGA::GUIEventAdapter::KEY_D:
+			mPlayer.moveRight(1);
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_Escape:
@@ -72,10 +85,37 @@ namespace od
 			mPlayer.moveForward(0);
 			return true;
 
+		case osgGA::GUIEventAdapter::KEY_A:
+		case osgGA::GUIEventAdapter::KEY_D:
+			mPlayer.moveRight(0);
+			return true;
+
 		default:
 			break;
 		}
 
 		return false;
 	}
+
+	bool InputManager::_mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
+	{
+		float x = ea.getXnormalized();
+		float y = ea.getYnormalized();
+
+		float pitch = ( M_PI/2) * y;
+		float yaw   = (-M_PI) * x;
+
+		mPlayer.setPitch(pitch);
+		mPlayer.setYaw(yaw);
+
+		return true;
+	}
+
+
 }
+
+
+
+
+
+

@@ -55,9 +55,11 @@ namespace od
 	{
 		Player &player = mEngine.getPlayer();
 
+		osg::Quat lookDirection = osg::Quat(player.getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player.getYaw(), osg::Vec3f(0, 1, 0));
 		osg::Vec3f eye = player.getPosition();
-		osg::Vec3f front(1, 0, 0);
-		osg::Vec3f up(0, 1, 0);
+		eye += lookDirection * osg::Vec3f(-2, 0, 0);
+		osg::Vec3f front = lookDirection * osg::Vec3f(1, 0, 0);
+		osg::Vec3f up = lookDirection * osg::Vec3f(0, 1, 0);
 
 		mOsgCam->setViewMatrixAsLookAt(eye, eye + front, up);
 	}

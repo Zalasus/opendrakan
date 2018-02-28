@@ -31,6 +31,8 @@ namespace od
         inline ClassPtr getClass() { return mClass; }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mPosition; }
+        inline osg::Vec3f getScale() const { return mScale; }
+        inline osg::Quat getRotation() const { return mRotation; }
         void setPosition(osg::Vec3f v);
 
         void loadFromRecord(DataReader dr);
