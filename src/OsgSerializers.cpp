@@ -7,6 +7,7 @@
 
 #include <osg/Vec2f>
 #include <osg/Vec3f>
+#include <osg/Quat>
 
 #include "DataStream.h"
 
@@ -42,6 +43,21 @@ namespace od
 		v.set(x,y,z);
 
 		return *this;
+	}
+
+	template <>
+	DataReader &DataReader::operator >> <osg::Quat>(osg::Quat &q)
+	{
+	    float x;
+	    float y;
+	    float z;
+	    float w;
+
+	    (*this) >> x >> y >> z >> w;
+
+	    q.set(x,y,z,w);
+
+	    return *this;
 	}
 
 }
