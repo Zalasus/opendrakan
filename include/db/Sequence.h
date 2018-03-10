@@ -10,6 +10,9 @@
 
 #include <memory>
 #include <osg/Quat>
+#include <osg/Vec3f>
+#include <osg/Referenced>
+#include <osg/ref_ptr>
 
 #include "db/Asset.h"
 
@@ -92,6 +95,15 @@ namespace od
         uint32_t mRootNodeTranslationFlags;
     };
 
+    class ActionPlaySound : public Action
+    {
+    public:
+
+        ActionPlaySound(float timeOffset);
+
+        virtual void load(DataReader &dr) override;
+    };
+
 
     class Actor
     {
@@ -110,11 +122,13 @@ namespace od
 
     typedef std::shared_ptr<Actor> ActorPtr;
 
-	class Sequence : public Asset
+	class Sequence : public Asset, public osg::Referenced
 	{
 	public:
 
-		void loadSequenceRecord(DataReader dr);
+	    Sequence(Database &db, RecordId id);
+
+		virtual void loadFromRecord(DataReader &dr) override;
 
 		virtual const char *getAssetTypeName() const override { return "sequence"; }
 
@@ -125,6 +139,7 @@ namespace od
 		std::vector<ActorPtr> mActors;
 	};
 
+	typedef osg::ref_ptr<Sequence> SequencePtr;
 }
 
 #endif /* INCLUDE_DB_SEQUENCE_H_ */

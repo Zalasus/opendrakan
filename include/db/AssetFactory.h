@@ -130,6 +130,7 @@ namespace od
 
 		mAssetCache[assetId] = asset;
 	}
+
 }
 
 #endif /* INCLUDE_ASSETFACTORY_H_ */

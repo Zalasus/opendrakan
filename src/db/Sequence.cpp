@@ -63,6 +63,18 @@ namespace od
 
 
 
+    ActionPlaySound::ActionPlaySound(float timeOffset)
+    : Action(ActionType::PLAY_SOUND, timeOffset)
+    {
+    }
+
+    void ActionPlaySound::load(DataReader &dr)
+    {
+    }
+
+
+
+
     void Actor::load(DataReader &dr)
     {
         uint32_t actionCount;
@@ -101,8 +113,12 @@ namespace od
     }
 
 
+    Sequence::Sequence(Database &db, RecordId id)
+    : Asset(db, id)
+    {
+    }
 
-	void Sequence::loadSequenceRecord(DataReader dr)
+	void Sequence::loadFromRecord(DataReader &dr)
 	{
 		uint32_t actorCount;
 

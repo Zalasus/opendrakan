@@ -29,6 +29,9 @@ namespace od
 
 		virtual const char *getAssetTypeName() const = 0;
 
+		/// loader function for assets that are loadable from a single record. used by the generic asset factory. default implementation throws
+		virtual void loadFromRecord(DataReader &dr);
+
 
 	private:
 

@@ -33,7 +33,7 @@ namespace od
 	{
 	}
 
-	void Model::loadNameAndShading(ModelFactory &factory, DataReader dr)
+	void Model::loadNameAndShading(ModelFactory &factory, DataReader &&dr)
 	{
 		dr >> mModelName;
 
@@ -41,7 +41,7 @@ namespace od
 		dr >> shadingType;
 	}
 
-	void Model::loadVertices(ModelFactory &factory, DataReader dr)
+	void Model::loadVertices(ModelFactory &factory, DataReader &&dr)
 	{
 		uint16_t vertexCount;
 		dr >> vertexCount;
@@ -59,7 +59,7 @@ namespace od
 		mVerticesLoaded = true;
 	}
 
-	void Model::loadTextures(ModelFactory &factory, DataReader dr)
+	void Model::loadTextures(ModelFactory &factory, DataReader &&dr)
 	{
 		uint32_t textureCount;
 		dr >> textureCount;
@@ -76,7 +76,7 @@ namespace od
 		mTexturesLoaded = true;
 	}
 
-	void Model::loadFaces(ModelFactory &factory, DataReader dr)
+	void Model::loadFaces(ModelFactory &factory, DataReader &&dr)
 	{
 		if(!mTexturesLoaded || !mVerticesLoaded)
 		{
@@ -127,6 +127,11 @@ namespace od
 		}
 
 		mFacesLoaded = true;
+	}
+
+	void Model::loadCharacterData(ModelFactory &factory, DataReader &&dr)
+	{
+
 	}
 
 	void Model::buildGeometry()

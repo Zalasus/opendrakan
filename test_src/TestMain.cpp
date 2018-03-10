@@ -306,7 +306,7 @@ int main(int argc, char **argv)
 				{
 					srscFile.decompressRecord(outputPath, dirIt, true);
 
-					dirIt = srscFile.getDirIteratorById(extractRecordId, dirIt);
+					dirIt = srscFile.getDirIteratorById(extractRecordId, dirIt+1);
 				}
 
 			}else

@@ -90,6 +90,20 @@ namespace od
         return it->second.get().getClass(ref.assetId);
     }
 
+    SequencePtr Level::getSequenceByRef(const AssetRef &ref)
+    {
+        Logger::debug() << "Requested sequence " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+            throw NotFoundException("Can't get sequence. Database index not found in level dependencies");
+        }
+
+        return it->second.get().getSequence(ref.assetId);
+    }
+
     void Level::_loadLevel()
     {
     	Logger::info() << "Loading level " << mLevelPath.str();

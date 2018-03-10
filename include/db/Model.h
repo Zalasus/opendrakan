@@ -26,11 +26,12 @@ namespace od
 
 		Model(Database &db, RecordId modelId);
 
-		void loadNameAndShading(ModelFactory &factory, DataReader dr);
-		void loadVertices(ModelFactory &factory, DataReader dr);
-		void loadTextures(ModelFactory &factory, DataReader dr);
-		void loadFaces(ModelFactory &factory, DataReader dr);
-		void loadBoundingData(ModelFactory &factory, DataReader dr);
+		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
+		void loadVertices(ModelFactory &factory, DataReader &&dr);
+		void loadTextures(ModelFactory &factory, DataReader &&dr);
+		void loadFaces(ModelFactory &factory, DataReader &&dr);
+		void loadBoundingData(ModelFactory &factory, DataReader &&dr);
+		void loadCharacterData(ModelFactory &factory, DataReader &&dr);
 		void buildGeometry();
 
 		// implement Asset

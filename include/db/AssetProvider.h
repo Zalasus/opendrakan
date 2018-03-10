@@ -12,6 +12,7 @@
 #include "Texture.h"
 #include "Class.h"
 #include "Model.h"
+#include "Sequence.h"
 #include "Exception.h"
 
 namespace od
@@ -30,17 +31,19 @@ namespace od
 	    /*
 	     * These get assets from this provider or fetch them from a referenced dependency.
 	     */
-	    virtual TexturePtr getTextureByRef(const AssetRef &ref) = 0;
-	    virtual ClassPtr   getClassByRef(const AssetRef &ref) = 0;
-	    virtual ModelPtr   getModelByRef(const AssetRef &ref) = 0;
+	    virtual TexturePtr  getTextureByRef(const AssetRef &ref) = 0;
+	    virtual ClassPtr    getClassByRef(const AssetRef &ref) = 0;
+	    virtual ModelPtr    getModelByRef(const AssetRef &ref) = 0;
+	    virtual SequencePtr getSequenceByRef(const AssetRef &ref) = 0;
 
 	    /*
 	     * These get assets from this provider without indirection. Override if implementer can load
-	     * given asset from itself.
+	     * given asset from itself (basically only databases).
 	     */
-	    virtual TexturePtr getTexture(RecordId recordId) { throw Exception("Can't provide textures"); }
-	    virtual ClassPtr   getClass(RecordId recordId) { throw Exception("Can't provide textures"); }
-	    virtual ModelPtr   getModel(RecordId recordId) { throw Exception("Can't provide textures"); }
+	    virtual TexturePtr  getTexture(RecordId recordId) { throw Exception("Can't provide textures"); }
+	    virtual ClassPtr    getClass(RecordId recordId) { throw Exception("Can't provide classes"); }
+	    virtual ModelPtr    getModel(RecordId recordId) { throw Exception("Can't provide models"); }
+	    virtual SequencePtr getSequence(RecordId recordId) { throw Exception("Can't provide sequences"); }
 
 	};
 

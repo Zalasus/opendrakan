@@ -110,7 +110,7 @@ namespace od
 		{
 			std::string filename;
 			std::ostringstream ss;
-			ss << prefix << "rawrecord" << dirEntry.index << "-" << std::hex << dirEntry.recordId << "-" << dirEntry.groupId << std::dec << ".dat";
+			ss << prefix << "rawrecord" << dirEntry.index << "-" << std::hex << dirEntry.type << "-" << dirEntry.recordId << "-" << dirEntry.groupId << std::dec << ".dat";
 
 			std::ofstream out(ss.str(), std::ios::out | std::ios::binary);
 

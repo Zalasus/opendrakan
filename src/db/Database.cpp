@@ -215,6 +215,22 @@ namespace od
 		return it->second.get().getModel(ref.assetId);
 	}
 
+    SequencePtr Database::getSequenceByRef(const AssetRef &ref)
+    {
+        if(ref.dbIndex == 0)
+        {
+            return this->getSequence(ref.assetId);
+        }
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            throw Exception("Database has no dependency with given index");
+        }
+
+        return it->second.get().getSequence(ref.assetId);
+    }
+
 	TexturePtr Database::getTexture(RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
@@ -243,6 +259,12 @@ namespace od
 		}
 
 		return mModelFactory->getAsset(recordId);
+	}
+
+	SequencePtr Database::getSequence(RecordId recordId)
+	{
+        throw NotFoundException("Can't get sequence. Database has no model container");
+
 	}
 
 } 
