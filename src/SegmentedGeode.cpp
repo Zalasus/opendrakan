@@ -125,7 +125,9 @@ namespace od
 			TexturePtr textureImage = db.getTextureByRef(ggIt->texture);
 			if(textureImage->hasAlpha())
 			{
-				ggIt->geometry->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
+				osg::StateSet *ss = ggIt->geometry->getOrCreateStateSet();
+				ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+				ss->setRenderBinDetails(1, "DepthSortedBin");
 			}
 
 			osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(textureImage));
