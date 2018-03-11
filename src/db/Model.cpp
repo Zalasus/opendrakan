@@ -147,8 +147,6 @@ namespace od
 		for(int32_t i = 0; i < lodCount - 1; ++i)
 		{
 			dr >> lodNames[i];
-
-			Logger::info() << "Got LOD named " << lodNames[i];
 		}
 
 		// bone names
@@ -202,27 +200,30 @@ namespace od
 		}
 
 		// lod info
+		mLodMeshInfos.resize(lodCount);
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
 			uint16_t meshCount;
 			dr >> meshCount;
+
+			if(meshCount != 1)
+			{
+				throw UnsupportedException("Multi-mesh-models currently unsupported");
+			}
+
 			for(size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
 			{
-				float distThresh;
-				uint32_t usage;
-				uint32_t nodeIndex;
-				uint32_t firstVertexIndex;
-				uint32_t vertexCount;
-				uint32_t firstFaceIndex;
-				uint32_t faceCount;
+				LodMeshInfo &mesh = mLodMeshInfos[lodIndex];
 
-				dr >> distThresh
-				   >> usage
-				   >> nodeIndex
-				   >> firstVertexIndex
-				   >> vertexCount
-				   >> firstFaceIndex
-				   >> faceCount;
+				dr >> mesh.distanceThreshold
+				   >> mesh.usage
+				   >> mesh.nodeIndex
+				   >> mesh.firstVertexIndex
+				   >> mesh.vertexCount
+				   >> mesh.firstFaceIndex
+				   >> mesh.faceCount;
+
+				mesh.lodName = (lodIndex == 0) ? mModelName : lodNames[lodIndex - 1];
 			}
 		}
 	}
@@ -236,7 +237,22 @@ namespace od
 
 		Logger::debug() << "Building geometry for model " << std::hex << getAssetId() << std::dec;
 
-		SegmentedGeode::build(getDatabase(), mVertices, mFaces, mTextureRefs.size());
+		LodMeshInfo mesh;
+		if(mLodMeshInfos.size() == 0)
+		{
+			mesh.firstVertexIndex = 0;
+			mesh.vertexCount = mVertices.size();
+			mesh.firstFaceIndex = 0;
+			mesh.faceCount = mFaces.size();
+
+		}else
+		{
+			mesh = mLodMeshInfos[0];
+		}
+		std::vector<osg::Vec3f> vertices(mVertices.begin() + mesh.firstVertexIndex, mVertices.begin() + mesh.vertexCount);
+		std::vector<Face> faces(mFaces.begin() + mesh.firstFaceIndex, mFaces.begin() + mesh.faceCount);
+
+		SegmentedGeode::build(getDatabase(), vertices, faces, mTextureRefs.size());
 
 		osgUtil::SmoothingVisitor sm;
         this->accept(sm);

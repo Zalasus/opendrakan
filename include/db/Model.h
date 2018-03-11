@@ -18,6 +18,19 @@
 namespace od
 {
 
+	struct LodMeshInfo
+	{
+		std::string lodName;
+		float distanceThreshold;
+		uint32_t usage;
+		uint32_t nodeIndex;
+		uint32_t firstVertexIndex;
+		uint32_t vertexCount;
+		uint32_t firstFaceIndex;
+		uint32_t faceCount;
+	};
+
+
 	class ModelFactory;
 
 	class Model : public Asset, public SegmentedGeode
@@ -50,6 +63,7 @@ namespace od
 		size_t mTriangleCount;
 		size_t mQuadCount;
 		std::vector<AssetRef> mTextureRefs;
+		std::vector<LodMeshInfo> mLodMeshInfos;
 
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
