@@ -32,6 +32,7 @@ namespace od
 		MODEL_FACES         = 0x0204,
 		MODEL_TEXTURES      = 0x0206,
 		MODEL_BOUNDING      = 0x0207,
+		MODEL_LOD_BONES     = 0x0208,
 		MODEL_UNKNOWN2      = 0x0209,
 
 		SEQUENCE_UNKNOWN1   = 0x0310,

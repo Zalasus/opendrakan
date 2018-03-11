@@ -8,6 +8,8 @@
 #include <osg/Vec2f>
 #include <osg/Vec3f>
 #include <osg/Quat>
+#include <osg/BoundingSphere>
+#include <osg/Matrixf>
 
 #include "DataStream.h"
 
@@ -58,6 +60,41 @@ namespace od
 	    q.set(x,y,z,w);
 
 	    return *this;
+	}
+
+	template <>
+	DataReader &DataReader::operator >> <osg::Matrixf>(osg::Matrixf &m)
+	{
+	    float l[9]; // linear thingy
+	    osg::Vec3f t; // offset
+
+	    for(size_t i = 0; i < sizeof(l)/sizeof(float); ++i)
+	    {
+	    	(*this) >> l[i];
+	    }
+
+	    (*this) >> t;
+
+	    // TODO: that's how these work, right? because it doesn't make much sense to me to put the offset in row 4 rather than column 4
+	    m.set(l[0], l[1], l[2], 0,
+	    	  l[3], l[4], l[5], 0,
+			  l[6], l[7], l[8], 0,
+			  t[0], t[1], t[2], 1);
+
+	    return *this;
+	}
+
+	template <>
+	DataReader &DataReader::operator >> <osg::BoundingSpheref>(osg::BoundingSpheref &bs)
+	{
+		osg::Vec3f center;
+		float radius;
+
+		(*this) >> center >> radius;
+
+		bs.set(center, radius);
+
+		return *this;
 	}
 
 }

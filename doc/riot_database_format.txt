@@ -301,12 +301,12 @@ Record types
             sphere[num_shapes] spheres;
             
     [0x0208] Character data // LOD, scene tree, channels, animation refs, bounding info
-        struct node_info
+        struct node_info // 36 bytes
         {
             char[32]  name;
             int32     parent_index; // negative if no parent
         };
-        struct node_more_info
+        struct node_more_info // 64+ bytes
         {
             mat3x4f   inverted_model_rel_xform; // Inverted!!
             int32     mesh_index; // Unknown use. These values can be seen in the editor.
@@ -321,8 +321,7 @@ Record types
         };
         struct lod_mesh_info
         {
-            uint16    mesh_index;
-            uint16    unk;
+            float     distance_threshold;
             uint32    usage;
             uint32    node_index;
             uint32    first_vertex_index;

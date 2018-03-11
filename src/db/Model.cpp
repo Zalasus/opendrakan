@@ -18,6 +18,7 @@
 #include "OdDefines.h"
 #include "db/ModelFactory.h"
 #include "db/Texture.h"
+#include "db/Skeleton.h"
 
 namespace od
 {
@@ -129,9 +130,101 @@ namespace od
 		mFacesLoaded = true;
 	}
 
-	void Model::loadCharacterData(ModelFactory &factory, DataReader &&dr)
+	void Model::loadLodsAndBones(ModelFactory &factory, DataReader &&dr)
 	{
+		uint16_t lodCount;
+		std::vector<std::string> lodNames;
 
+		dr >> DataReader::Ignore(16*4) // bounding info (16 floats)
+		   >> lodCount;
+
+		if(lodCount == 0)
+		{
+			throw Exception("Expected at least one LOD in model");
+		}
+
+		lodNames.resize(lodCount - 1);
+		for(int32_t i = 0; i < lodCount - 1; ++i)
+		{
+			dr >> lodNames[i];
+
+			Logger::info() << "Got LOD named " << lodNames[i];
+		}
+
+		// bone names
+		uint16_t boneNameCount;
+		dr >> boneNameCount;
+		for(size_t i = 0; i < boneNameCount; ++i)
+		{
+			// NOTE: this may supposedly contain some empty entries
+			char boneName[33] = { 0 };
+			int32_t parentIndex;
+
+			dr.read(boneName, 32);
+			dr >> parentIndex;
+
+			std::string boneNameStr(boneName);
+		}
+
+		// bone data
+		uint16_t boneDataCount;
+		dr >> boneDataCount;
+
+		if(boneDataCount > boneNameCount)
+		{
+			throw Exception("More bone data than bones defined");
+		}
+
+		for(size_t boneIndex = 0; boneIndex < boneDataCount; ++boneIndex)
+		{
+			osg::Matrixf inverseBoneTransform;
+			int32_t meshIndex; // Unknown use. These values can be seen in the editor.
+            int32_t firstChildIndex; // negative if no children
+            int32_t nextSiblingIndex; // negative if end of parent's child list
+
+            dr >> inverseBoneTransform
+			   >> meshIndex
+			   >> firstChildIndex
+			   >> nextSiblingIndex;
+
+            for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+            {
+				uint16_t affectedVertexCount;
+				dr >> affectedVertexCount;
+				for(size_t vertexIndex = 0; vertexIndex < affectedVertexCount; ++vertexIndex)
+				{
+					uint32_t affectedVertexIndex;
+					float weight;
+					dr >> affectedVertexIndex
+					   >> weight;
+				}
+            }
+		}
+
+		// lod info
+		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+		{
+			uint16_t meshCount;
+			dr >> meshCount;
+			for(size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
+			{
+				float distThresh;
+				uint32_t usage;
+				uint32_t nodeIndex;
+				uint32_t firstVertexIndex;
+				uint32_t vertexCount;
+				uint32_t firstFaceIndex;
+				uint32_t faceCount;
+
+				dr >> distThresh
+				   >> usage
+				   >> nodeIndex
+				   >> firstVertexIndex
+				   >> vertexCount
+				   >> firstFaceIndex
+				   >> faceCount;
+			}
+		}
 	}
 
 	void Model::buildGeometry()

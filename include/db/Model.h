@@ -31,7 +31,7 @@ namespace od
 		void loadTextures(ModelFactory &factory, DataReader &&dr);
 		void loadFaces(ModelFactory &factory, DataReader &&dr);
 		void loadBoundingData(ModelFactory &factory, DataReader &&dr);
-		void loadCharacterData(ModelFactory &factory, DataReader &&dr);
+		void loadLodsAndBones(ModelFactory &factory, DataReader &&dr);
 		void buildGeometry();
 
 		// implement Asset

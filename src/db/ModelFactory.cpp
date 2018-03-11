@@ -30,6 +30,7 @@ namespace od
 
 		Logger::verbose() << "Loading model " << std::hex << id << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
+		// required records
 		ModelPtr model(new Model(getDatabase(), id));
 		model->loadNameAndShading(*this, DataReader(getSrscFile().getStreamForRecord(nameRecord)));
 
@@ -41,6 +42,14 @@ namespace od
 
 		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_FACES, id, nameRecord);
 		model->loadFaces(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
+
+
+		// optional records TODO: this regularly causes us to search the whole directory. maybe we should use the order of the records?
+		SrscFile::DirIterator lodRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_LOD_BONES, id, nameRecord);
+		if(lodRecord != getSrscFile().getDirectoryEnd())
+		{
+			model->loadLodsAndBones(*this, DataReader(getSrscFile().getStreamForRecord(lodRecord)));
+		}
 
 		model->buildGeometry();
 
