@@ -29,10 +29,15 @@ non-copyright-infringing means.
 Compiling
 ---------
 
-There are no makefiles yet, so you'd have to assemble these yourself or use
-whatever way of building a project suits you best.
+You'll need [zlib](https://www.zlib.net/) and [OpenSceneGraph](http://www.openscenegraph.org/) along
+with their respective dependencies, as well as [CMake](https://cmake.org/) to generate the Makefiles.
 
-Dependencies are [zlib](https://www.zlib.net/) and [OpenSceneGraph](http://www.openscenegraph.org/).
+Then fire up a terminal in the project root and do your usual CMake building routine:
+```
+$ mkdir build && cd build
+$ cmake ..
+$ make
+```
 
 
 License
@@ -41,3 +46,4 @@ License
 Despite it's early stage, I'm releasing this project under GPL 3.0 
 (see [LICENSE](https://github.com/Zalasus/opendrakan/blob/master/LICENSE) for 
 full license text).
+
