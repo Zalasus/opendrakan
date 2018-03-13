@@ -8,7 +8,9 @@
 #include "db/Model.h"
 
 #include <algorithm>
+#include <limits>
 #include <osg/Geometry>
+#include <osg/LOD>
 #include <osg/FrontFace>
 #include <osgUtil/SmoothingVisitor>
 
@@ -71,7 +73,10 @@ namespace od
 			AssetRef textureRef;
 			dr >> textureRef;
 
-			mTextureRefs.push_back(textureRef);
+			if(!textureRef.isNullTexture())
+			{
+				mTextureRefs.push_back(textureRef);
+			}
 		}
 
 		mTexturesLoaded = true;
@@ -97,7 +102,7 @@ namespace od
 			   >> vertexCount
 			   >> textureIndex;
 
-			Face f;
+			SegmentedGeode::Face f;
 			f.texture = mTextureRefs[textureIndex];
 			f.vertexCount = vertexCount;
 
@@ -235,27 +240,37 @@ namespace od
 			throw Exception("Must load at least vertices, textures and faces before building geometry");
 		}
 
-		Logger::debug() << "Building geometry for model " << std::hex << getAssetId() << std::dec;
-
-		LodMeshInfo mesh;
-		if(mLodMeshInfos.size() == 0)
+		if(mLodMeshInfos.size() > 0)
 		{
-			mesh.firstVertexIndex = 0;
-			mesh.vertexCount = mVertices.size();
-			mesh.firstFaceIndex = 0;
-			mesh.faceCount = mFaces.size();
+			osg::ref_ptr<osg::LOD> lodNode(new osg::LOD);
+			lodNode->setRangeMode(osg::LOD::DISTANCE_FROM_EYE_POINT);
+			lodNode->setCenterMode(osg::LOD::USE_BOUNDING_SPHERE_CENTER);
+
+			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
+			{
+				osg::ref_ptr<SegmentedGeode> newGeode(new SegmentedGeode);
+
+				// FIXME: LOD meshes have holes. somehow we don't cover all faces here
+				auto verticesBegin = mVertices.begin() + it->firstVertexIndex;
+				auto verticesEnd = mVertices.begin() + it->vertexCount + it->firstVertexIndex;
+				auto facesBegin = mFaces.begin() + it->firstFaceIndex;
+				auto facesEnd = mFaces.begin() + it->faceCount + it->firstFaceIndex;
+
+				newGeode->build(getDatabase(), verticesBegin, verticesEnd, facesBegin, facesEnd, mTextureRefs.size());
+
+				float minDistance = it->distanceThreshold;
+				float maxDistance = ((it+1) == mLodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
+				lodNode->addChild(newGeode, minDistance, maxDistance);
+			}
+
+			this->addChild(lodNode);
 
 		}else
 		{
-			mesh = mLodMeshInfos[0];
+			osg::ref_ptr<SegmentedGeode> newGeode(new SegmentedGeode);
+			newGeode->build(getDatabase(), mVertices.begin(), mVertices.end(), mFaces.begin(), mFaces.end(), mTextureRefs.size());
+			this->addChild(newGeode);
 		}
-		std::vector<osg::Vec3f> vertices(mVertices.begin() + mesh.firstVertexIndex, mVertices.begin() + mesh.vertexCount);
-		std::vector<Face> faces(mFaces.begin() + mesh.firstFaceIndex, mFaces.begin() + mesh.faceCount);
-
-		SegmentedGeode::build(getDatabase(), vertices, faces, mTextureRefs.size());
-
-		osgUtil::SmoothingVisitor sm;
-        this->accept(sm);
 
         // model faces are oriented CW for some reason
         this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);

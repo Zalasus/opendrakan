@@ -11,6 +11,7 @@
 #include <string>
 #include <osg/Vec3>
 #include <osg/Texture2D>
+#include <osg/Group>
 
 #include "Asset.h"
 #include "SegmentedGeode.h"
@@ -33,11 +34,14 @@ namespace od
 
 	class ModelFactory;
 
-	class Model : public Asset, public SegmentedGeode
+	class Model : public Asset, public osg::Group
 	{
 	public:
 
 		Model(Database &db, RecordId modelId);
+
+		// TODO: implement copy constructor etc. in a meaningful way for this macro to work
+		//META_Node(od, Model);
 
 		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
 		void loadVertices(ModelFactory &factory, DataReader &&dr);
@@ -50,16 +54,12 @@ namespace od
 		// implement Asset
         virtual const char *getAssetTypeName() const override { return "model"; }
 
-		// override osg::Group
-		virtual const char *libraryName() const override { return "od";    }
-        virtual const char *className()   const override { return "Model"; }
-
 
 	private:
 
 		std::string mModelName;
-		std::vector<osg::Vec3> mVertices;
-		std::vector<Face> mFaces;
+		std::vector<osg::Vec3f> mVertices;
+		std::vector<SegmentedGeode::Face> mFaces;
 		size_t mTriangleCount;
 		size_t mQuadCount;
 		std::vector<AssetRef> mTextureRefs;

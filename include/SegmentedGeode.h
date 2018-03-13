@@ -28,24 +28,25 @@ namespace od
 	{
 	public:
 
+		// TODO: implement copy constructor etc. in a meaningful way for this macro to work
+		//META_Node(od, SegmentedGeode);
+
 		struct Face
 		{
 			Face() : vertexCount(0), texture(0xffff,0xffff) {}
 
-			size_t    vertexCount;
-			AssetRef  texture;
-			size_t    vertexIndices[4];
-        	osg::Vec2 vertexUvCoords[4];
+			size_t     vertexCount;
+			AssetRef   texture;
+			size_t     vertexIndices[4];
+        	osg::Vec2f vertexUvCoords[4];
 		};
 
-		// override osg::Geode
-		virtual const char *libraryName() const override { return "od";    }
-        virtual const char *className()   const override { return "SegmentedGeode"; }
+		typedef std::vector<osg::Vec3f>::iterator VertexIter;
+		typedef std::vector<Face>::iterator FaceIter;
 
 
-	protected:
-
-		void build(AssetProvider &db, std::vector<osg::Vec3> &vertexArray, std::vector<Face> &faceArray, size_t textureCount = 0);
+		void build(AssetProvider &db, std::vector<osg::Vec3f> &vertexArray, std::vector<Face> &faceArray, size_t textureCount = 0);
+		void build(AssetProvider &db, VertexIter vertexBegin, VertexIter vertexEnd, FaceIter faceBegin, FaceIter faceEnd, size_t textureCount = 0);
 
 	};
 

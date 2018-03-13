@@ -17,11 +17,33 @@
 
 namespace od
 {
-
-	void SegmentedGeode::build(AssetProvider &db, std::vector<osg::Vec3> &vertexArray, std::vector<Face> &faceArray, size_t textureCount)
+	struct VertexInfo
 	{
+		VertexInfo() : visited(false), texture(0xffff, 0xffff) {}
+
+		bool visited;
+		osg::Vec2f uv;
+		AssetRef texture;
+		osg::Vec3f vertex;
+	};
+
+	void SegmentedGeode::build(AssetProvider &db, VertexIter vertexBegin, VertexIter vertexEnd, FaceIter faceBegin, FaceIter faceEnd, size_t textureCount)
+	{
+		// FIXME: really bad. doesn't use shared vertices at all, makes unneccessary copies etc.
+
 		auto pred = [](Face &left, Face &right){ return left.texture < right.texture; };
-		std::sort(faceArray.begin(), faceArray.end(), pred);
+		std::sort(faceBegin, faceEnd, pred); // most models are already sorted by texture, so this is O(n) most of the time
+
+		std::vector<osg::Vec3f> vertexArray(vertexBegin, vertexEnd);
+		/*std::vector<VertexInfo> vertexInfoArray;
+		vertexInfoArray.reserve(vertexEnd - vertexBegin);
+		for(auto it = vertexBegin; it != vertexEnd; ++it)
+		{
+			VertexInfo info;
+			info.vertex = *it;
+			info.visited = false;
+			vertexInfoArray.push_back(info);
+		}*/
 
 		struct GeomGroup
 		{
@@ -34,7 +56,7 @@ namespace od
 
 		std::vector<GeomGroup> geomGroups;
 		if(textureCount > 0) geomGroups.reserve(textureCount);
-		for(auto it = faceArray.begin(); it != faceArray.end(); ++it)
+		for(auto it = faceBegin; it != faceEnd; ++it)
 		{
 			if(geomGroups.size() == 0)
 			{
@@ -77,7 +99,7 @@ namespace od
 		}
 		if(geomGroups.size() > 0)
 		{
-			geomGroups.back().facesEnd = faceArray.end();
+			geomGroups.back().facesEnd = faceEnd;
 		}
 
 		// faces are now sorted and grouped by texture~ now build geometries from them
@@ -147,7 +169,83 @@ namespace od
 
 			this->addDrawable(ggIt->geometry);
 		}
-
 	}
+
+	void SegmentedGeode::build(AssetProvider &db, std::vector<osg::Vec3f> &vertexArray, std::vector<Face> &faceArray, size_t textureCount)
+	{
+		build(db, vertexArray.begin(), vertexArray.end(), faceArray.begin(), faceArray.end(), textureCount);
+	}
+
+
+	/*
+	{
+		auto pred = [](Face &left, Face &right){ return left.texture < right.texture; };
+		if(std::is_sorted(faceBegin, faceEnd, pred))
+		{
+			Logger::info() << "Begin building, faces are sorted";
+
+		}else
+		{
+			Logger::info() << "Begin building, faces are unsorted";
+		}
+
+
+		size_t hits = 0;
+		size_t uvMisses = 0;
+		size_t textureMisses = 0;
+		size_t maxUsage = 0;
+
+		std::vector<VertexBums> vbs;
+		vbs.resize(vertexEnd-vertexBegin);
+
+		for(FaceIter it = faceBegin; it != faceEnd; ++it)
+		{
+			for(size_t n = 0; n < it->vertexCount; ++n)
+			{
+				size_t vertIndex = it->vertexIndices[n];
+				osg::Vec2f uv = it->vertexUvCoords[n];
+				AssetRef texture = it->texture;
+
+				if(vertIndex >= vbs.size())
+				{
+					throw Exception("Vertex index out of bounds");
+				}
+
+				vbs[vertIndex].usage++;
+				maxUsage = std::max(vbs[vertIndex].usage, maxUsage);
+
+				if(vbs[vertIndex].visited == false)
+				{
+					vbs[vertIndex].uv = uv;
+					vbs[vertIndex].texture = texture;
+					vbs[vertIndex].visited = true;
+
+				}else
+				{
+					if(vbs[vertIndex].uv != uv)
+					{
+						uvMisses++;
+						//throw Exception("Buffer UV fucked up");
+
+					}
+
+					if(vbs[vertIndex].texture != texture)
+					{
+						textureMisses++;
+						//throw Exception("Buffer texture fucked up");
+
+					}else
+					{
+						hits++;
+						//Logger::info() << "Buffer seems nice";
+					}
+				}
+			}
+		}
+
+		Logger::info() << "textures=" << textureCount << " hits=" << hits << " uv_misses="
+				<< uvMisses << " texture_misses=" << textureMisses << " max_usage=" << maxUsage;
+	}
+	 */
 
 }
