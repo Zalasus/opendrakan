@@ -354,7 +354,7 @@ Record types
         node_info[uint16]                node_infos; // Contains some empty entries at the end.
         node_more_info[uint16]           more_node_infos; // The size of this array should be no greater than the size of node_infos.
         lod_mesh_info[uint16][num_lods]  lod_mesh_infos; // An array of mesh infos for each LOD.
-        uint16                           anim_ids; // Just IDs. It seems that only animations in the same DB can be referenced.
+        uint16[uint16]                   anim_ids; // Just IDs. It seems that only animations in the same DB can be referenced.
         channel[uint16]                  channels;
         
     [0x0209] ???
