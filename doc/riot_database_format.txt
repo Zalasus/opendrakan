@@ -279,7 +279,7 @@ Record types
         
         face[uint16]  faces;
         
-    [0x0205] ??? table // Rare. See Resources Powerups Fire02 for an example.
+    [0x0205] BSP Tree (?) // Rare. See Resources Powerups Fire02 for an example. Models added with "Generate BSP Tree" ticked have this
         struct table_entry
         {
             uint16[3]           vertices;
