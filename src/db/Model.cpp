@@ -154,9 +154,12 @@ namespace od
 			dr >> lodNames[i];
 		}
 
+		SkeletonBuilder sb(mModelName);
+
 		// bone names
 		uint16_t boneNameCount;
 		dr >> boneNameCount;
+		sb.reserveBones(boneNameCount);
 		for(size_t i = 0; i < boneNameCount; ++i)
 		{
 			// NOTE: this may supposedly contain some empty entries
@@ -166,22 +169,20 @@ namespace od
 			dr.read(boneName, 32);
 			dr >> parentIndex;
 
-			std::string boneNameStr(boneName);
+			sb.addBoneName(std::string(boneName), parentIndex);
 		}
 
 		// bone data
 		uint16_t boneDataCount;
 		dr >> boneDataCount;
-
 		if(boneDataCount > boneNameCount)
 		{
 			throw Exception("More bone data than bones defined");
 		}
-
 		for(size_t boneIndex = 0; boneIndex < boneDataCount; ++boneIndex)
 		{
 			osg::Matrixf inverseBoneTransform;
-			int32_t meshIndex; // Unknown use. These values can be seen in the editor.
+			int32_t meshIndex;
             int32_t firstChildIndex; // negative if no children
             int32_t nextSiblingIndex; // negative if end of parent's child list
 
@@ -189,6 +190,8 @@ namespace od
 			   >> meshIndex
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
+
+            sb.setBoneData(boneIndex, inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
 
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
@@ -203,6 +206,8 @@ namespace od
 				}
             }
 		}
+
+		sb.build();
 
 		// lod info
 		mLodMeshInfos.resize(lodCount);

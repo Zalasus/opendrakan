@@ -75,7 +75,8 @@ namespace od
 
 	    (*this) >> t;
 
-	    // TODO: that's how these work, right? because it doesn't make much sense to me to put the offset in row 4 rather than column 4
+	    // that's how these work, right? because it doesn't make much sense to me to put the offset in row 4 rather than column 4
+	    //  NOTE: it turns out OSG uses row-major notation with prefix operations v' = (v*M) and transposed vectors. so this makes sense
 	    m.set(l[0], l[1], l[2], 0,
 	    	  l[3], l[4], l[5], 0,
 			  l[6], l[7], l[8], 0,
