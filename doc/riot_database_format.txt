@@ -301,17 +301,19 @@ Record types
             sphere[num_shapes] spheres;
             
     [0x0208] Character data // LOD, scene tree, channels, animation refs, bounding info
+        // JOINT should be equivalent to what we call a bone, MESH and NULL are also JOINT. EFFECTOR and CHAIN seem like
+        //  they are used for IK stuff (like when Rynn grabs for things like levers/items).
         struct node_info // 36 bytes
         {
             char[32]  name;
-            int32     parent_index; // negative if no parent
+            int32     joint_info_index; // index in following table. -1 if node is not a joint (in that case, it is a child of the last joint encountered in the list) 
         };
-        struct node_more_info // 64+ bytes
+        struct joint_info
         {
             mat3x4f   inverted_model_rel_xform; // Inverted!!
-            int32     mesh_index; // Unknown use. These values can be seen in the editor.
-            int32     first_child_index; // negative if no children
-            int32     next_sibling_index; // negative if end of parent's child list
+            int32     mesh_index; // Unknown use. These values can be seen in the editor. Sometimes -1, which makes little sense
+            int32     first_child_index; // zero if no children
+            int32     next_sibling_index; // zero if last sibling
             vertex_weight[uint16][num_lods] vertex_weights_per_lod; // A list of vertex weights for each LOD that are affected by this bone.
         };
         struct vertex_weight
@@ -349,10 +351,10 @@ Record types
         };
         
         bounding_info                    bounding_info;
-        uint16                           num_lods;
-        string[num_lods - 1]             lod_names;  // The first LOD is unnamed.
-        node_info[uint16]                node_infos; // Contains some empty entries at the end.
-        node_more_info[uint16]           more_node_infos; // The size of this array should be no greater than the size of node_infos.
+        uint16                           num_lods; // always >= 1
+        string[num_lods - 1]             lod_names;  // first LODs name is the model name. Not listed here
+        node_info[uint16]                node_infos; // this contains references to entries of the following table for each node that is a joint
+        joint_info[uint16]               joint_infos;
         lod_mesh_info[uint16][num_lods]  lod_mesh_infos; // An array of mesh infos for each LOD.
         uint16[uint16]                   anim_ids; // Just IDs. It seems that only animations in the same DB can be referenced.
         channel[uint16]                  channels;
