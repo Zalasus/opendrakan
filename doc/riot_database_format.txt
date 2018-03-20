@@ -301,17 +301,18 @@ Record types
             sphere[num_shapes] spheres;
             
     [0x0208] Character data // LOD, scene tree, channels, animation refs, bounding info
+        // The modeler seems to use Softimage terminology:
         // JOINT should be equivalent to what we call a bone, MESH and NULL are also JOINT. EFFECTOR and CHAIN seem like
         //  they are used for IK stuff (like when Rynn grabs for things like levers/items).
         struct node_info // 36 bytes
         {
             char[32]  name;
-            int32     joint_info_index; // index in following table. -1 if node is not a joint (in that case, it is a child of the last joint encountered in the list) 
+            int32     joint_info_index; // index in joint info table. -1 if node is not a joint (in that case, it is a child of the previous node encountered in the list) 
         };
         struct joint_info
         {
             mat3x4f   inverted_model_rel_xform; // Inverted!!
-            int32     mesh_index; // Unknown use. These values can be seen in the editor. Sometimes -1, which makes little sense
+            int32     mesh_index; // which mesh is affected by this bone. is -1 for bones that are attachment points like for weapons
             int32     first_child_index; // zero if no children
             int32     next_sibling_index; // zero if last sibling
             vertex_weight[uint16][num_lods] vertex_weights_per_lod; // A list of vertex weights for each LOD that are affected by this bone.

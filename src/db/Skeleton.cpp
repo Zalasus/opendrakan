@@ -8,61 +8,40 @@
 #include "db/Skeleton.h"
 
 #include <algorithm>
+#include <iomanip>
 
 #include "Exception.h"
 
 namespace od
 {
 
-	Bone::Bone(const std::string &name, int32_t parentIndex)
+	SkeletonNode::SkeletonNode(const std::string &name, int32_t jointInfoIndex)
 	: mName(name)
-	, mParent(nullptr)
-	, mParentIndex(parentIndex)
+	, mJointInfoIndex(jointInfoIndex)
+	, mReferencedJointInfo(nullptr)
 	{
 	}
 
-	void Bone::setParent(Bone *parent)
-	{
-		// if we have a parent, remove ourself from our former parent's child list
-		if(mParent != nullptr)
-		{
-			auto it = std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this);
-			if(it != mParent->mChildren.end())
-			{
-				mParent->mChildren.erase(it);
-			}
-		}
-
-		mParent = parent;
-
-		if(mParent != nullptr)
-		{
-			// we've got a new parent. let's add ourself to our parent's child list if we aren't in there already
-			if(std::find(mParent->mChildren.begin(), mParent->mChildren.end(), this) == mParent->mChildren.end())
-			{
-				mParent->mChildren.push_back(this);
-			}
-		}
-	}
-
-	void Bone::setInverseBindPoseXform(const osg::Matrixf &inverseBindPoseXform)
-	{
-		mInverseBindPoseXform = inverseBindPoseXform;
-		mCurrentXform = osg::Matrixf::inverse(inverseBindPoseXform);
-	}
-
-	void Bone::debugLogBone(size_t depth)
+	void SkeletonNode::print(std::ostream &out, size_t depth)
 	{
 		for(size_t i = 0; i < depth; ++i)
 		{
-			std::cout << "   |";
+			out << "   |";
 
 			if(i + 1 == depth)
 			{
-				std::cout << "-";
+				out << "-";
 			}
 		}
-		std::cout << getName() << std::endl;
+
+		if(mJointInfoIndex < 0)
+		{
+			out << "(" << getName() << ")" << std::endl;
+
+		}else
+		{
+			out << getName() << std::endl;
+		}
 
 		for(auto it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
@@ -71,199 +50,164 @@ namespace od
 				continue;
 			}
 
-			(*it)->debugLogBone(depth+1);
-		}
-	}
-
-
-
-	Skeleton::Skeleton(size_t boneCount)
-	: mRootBone("[ROOT]", -1)
-	{
-		if(boneCount > 0)
-		{
-			mBones.reserve(boneCount);
-		}
-	}
-
-	Bone *Skeleton::addBone(const std::string &name, int32_t parentIndex)
-	{
-		osg::ref_ptr<Bone> b = new Bone(name, parentIndex);
-		mBones.push_back(b);
-		return b.get();
-	}
-
-	Bone *Skeleton::getRootBone()
-	{
-		return &mRootBone;
-	}
-
-	Bone *Skeleton::getBoneByIndex(size_t index)
-	{
-		if(index >= mBones.size())
-		{
-			throw NotFoundException("Bone index out of bounds");
-			return nullptr;
-		}
-
-		return mBones[index];
-	}
-
-	void Skeleton::buildBoneTree()
-	{
-		for(size_t i = 0; i < mBones.size(); ++i)
-		{
-			Bone *b = mBones[i].get();
-
-			if(b->getParentIndex() < 0)
-			{
-				mRootBone.mChildren.push_back(b);
-
-			}else
-			{
-				Bone *parentBone = mBones[b->getParentIndex()];
-
-				if(parentBone == nullptr)
-				{
-					throw Exception("Invalid parent index");
-				}
-
-				b->setParent(parentBone);
-			}
-		}
-	}
-
-	void Skeleton::debugLogSkeleton()
-	{
-		getRootBone()->debugLogBone(0);
-		std::cout << std::endl;
-	}
-
-
-
-
-	BuilderBone::BuilderBone(const std::string &name, int32_t parentIndex)
-	: mName(name)
-	, mParentIndex(parentIndex)
-	, mMeshIndex(-1)
-	, mFirstChildIndex(-1)
-	, mNextSiblingIndex(-1)
-	, mVisited(false)
-	{
-	}
-
-	void BuilderBone::setBoneData(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex)
-	{
-		mInverseBindPoseXform = boneXform;
-		mMeshIndex = meshIndex;
-		mFirstChildIndex = firstChildIndex;
-		mNextSiblingIndex = nextSiblingIndex;
-	}
-
-	void BuilderBone::print(size_t depth)
-	{
-		for(size_t i = 0; i < depth; ++i)
-		{
-			std::cout << "   |";
-
-			if(i + 1 == depth)
-			{
-				std::cout << "-";
-			}
-		}
-		std::cout << getName() << std::endl;
-
-		for(auto it = mChildren.begin(); it != mChildren.end(); ++it)
-		{
-			if(*it == nullptr)
-			{
-				continue;
-			}
-
-			(*it)->print(depth+1);
+			(*it)->print(out, depth+1);
 		}
 	}
 
 
 	SkeletonBuilder::SkeletonBuilder(const std::string &modelName)
 	: mModelName(modelName)
+	, mRootNode("[ROOT]", -9000)
+	, mLastJoint(nullptr)
 	{
 	}
 
-	void SkeletonBuilder::reserveBones(size_t boneCount)
+	void SkeletonBuilder::reserveNodes(size_t nodeCount)
 	{
-		if(boneCount > 0)
+		if(nodeCount > 0)
 		{
-			mBuilderBones.reserve(boneCount);
+			mNodes.reserve(nodeCount);
 		}
 	}
 
-	void SkeletonBuilder::addBoneName(const std::string &name, int32_t parentIndex)
+	void SkeletonBuilder::addNode(const std::string &name, int32_t jointInfoIndex)
 	{
-		mBuilderBones.push_back(BuilderBone(name, parentIndex));
+		mNodes.push_back(SkeletonNode(name, jointInfoIndex));
+
+		if(jointInfoIndex >= 0)
+		{
+			mLastJoint = &mNodes.back();
+
+		}else
+		{
+			if(mLastJoint == nullptr)
+			{
+				throw Exception("Found non-joint child before any actual joint node");
+			}
+
+			mLastJoint->addChild(mNodes.back());
+		}
 	}
 
-	void SkeletonBuilder::setBoneData(size_t boneIndex, osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex)
+	void SkeletonBuilder::addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex)
 	{
-		if(boneIndex >= mBuilderBones.size())
-		{
-			return; // throw whatever
-		}
-
-		mBuilderBones[boneIndex].setBoneData(boneXform, meshIndex, firstChildIndex, nextSiblingIndex);
+		SkeletonJointInfo jointInfo;
+		jointInfo.boneXform = boneXform;
+		jointInfo.meshIndex = meshIndex;
+		jointInfo.firstChildIndex = firstChildIndex;
+		jointInfo.nextSiblingIndex = nextSiblingIndex;
+		jointInfo.referencingNode = nullptr;
+		jointInfo.visited = false;
+		mJointInfos.push_back(jointInfo);
 	}
 
 	void SkeletonBuilder::build()
 	{
-		// for testing purposes, recurse through tree depth first while building the tree with references, then print it out
-
-		BuilderBone root("[ROOT] " + mModelName, -9000);
-		if(mBuilderBones.size() > 0)
+		// first, create links between nodes and joint infos
+		for(auto it = mNodes.begin(); it != mNodes.end(); ++it)
 		{
-			_buildRecursive(root, mBuilderBones[0]);
-
-			for(size_t i = 1; i < mBuilderBones.size(); ++i)
+			int32_t jointInfoIndex = it->getJointInfoIndex();
+			if(jointInfoIndex < 0)
 			{
-				BuilderBone &currentBone = mBuilderBones[i];
-				if(!currentBone.mVisited)
-				{
-					if(currentBone.mParentIndex >= 0)
-					{
-						_buildRecursive(mBuilderBones[currentBone.mParentIndex], currentBone);
+				continue;
 
-					}else
-					{
-						_buildRecursive(root, currentBone);
-					}
-				}
+			}else if(jointInfoIndex >= (int32_t)mJointInfos.size())
+			{
+				throw Exception("Node's joint info index out of bounds");
 			}
+			SkeletonJointInfo &jointInfo = mJointInfos[jointInfoIndex];
+
+			it->mReferencedJointInfo = &jointInfo;
+			jointInfo.referencingNode = &(*it);
 		}
 
-		root.print(0);
+		// for testing purposes, recurse through tree depth first for all joints while building the tree with references, then print it out
+		for(auto it = mNodes.begin(); it != mNodes.end(); ++it)
+		{
+			if(it->mReferencedJointInfo == nullptr)
+			{
+				continue;
+			}
+
+			if(!it->mReferencedJointInfo->visited)
+			{
+				_buildRecursive(mRootNode, *it);
+			}
+		}
 	}
 
-	// it looks elegant, but deep down you know it's bad...
-	void SkeletonBuilder::_buildRecursive(BuilderBone &parent, BuilderBone &current)
+	void SkeletonBuilder::printInfo(std::ostream &out)
 	{
-		if(current.mVisited)
+		out << "Skeleton info for model " << mModelName << std::endl;
+
+		out << std::endl << "Nodes:" << std::endl;
+		for(size_t i = 0; i < mNodes.size(); ++i)
+		{
+			SkeletonNode &currentNode = mNodes[i];
+
+			out << std::setw(3) << i << ": "
+				<< std::setw(16) << (std::string("'") + currentNode.getName() + "'")
+				<< " jointInfo=" << std::setw(4) << currentNode.getJointInfoIndex() << std::endl;
+		}
+
+		out << std::endl << "Joint info:" << std::endl;
+		for(size_t i = 0; i < mJointInfos.size(); ++i)
+		{
+			SkeletonJointInfo &jointInfo = mJointInfos[i];
+
+			out << std::setw(3) << i << ": "
+				<< "meshIndex=" << std::setw(4) << jointInfo.meshIndex << " "
+				<< "firstChild=" << std::setw(4) << jointInfo.firstChildIndex << " "
+				<< "nextSibling=" << std::setw(4) << jointInfo.nextSiblingIndex << std::endl;
+		}
+
+		out << std::endl << "Constructed bone tree: " << std::endl;
+		mRootNode.print(out, 0);
+	}
+
+	void SkeletonBuilder::_buildRecursive(SkeletonNode &parent, SkeletonNode &current)
+	{
+		if(current.mReferencedJointInfo->visited)
 		{
 			throw Exception("Bone tree is not a tree");
 
 		}else
 		{
-			current.mVisited = true;
+			current.mReferencedJointInfo->visited = true;
 		}
 
 		parent.addChild(current);
 
-		if(current.mFirstChildIndex > 0)
+		if(current.mReferencedJointInfo->firstChildIndex > 0)
 		{
-			_buildRecursive(current, mBuilderBones[current.mFirstChildIndex]);
+			if(current.mReferencedJointInfo->firstChildIndex >= (int32_t)mJointInfos.size())
+			{
+				throw Exception("First child index in joint info out of bounds");
+			}
+
+			SkeletonJointInfo &firstChildJointInfo = mJointInfos[current.mReferencedJointInfo->firstChildIndex];
+			if(firstChildJointInfo.referencingNode == nullptr)
+			{
+				throw Exception("First child joint info is unreferenced joint");
+			}
+
+			_buildRecursive(current, *firstChildJointInfo.referencingNode);
 		}
 
-		if(current.mNextSiblingIndex > 0)
+		if(current.mReferencedJointInfo->nextSiblingIndex > 0)
 		{
-			_buildRecursive(parent, mBuilderBones[current.mNextSiblingIndex]);
+			if(current.mReferencedJointInfo->nextSiblingIndex >= (int32_t)mJointInfos.size())
+			{
+				throw Exception("Next sibling index in joint info out of bounds");
+			}
+
+			SkeletonJointInfo &nextSiblingJointInfo = mJointInfos[current.mReferencedJointInfo->nextSiblingIndex];
+			if(nextSiblingJointInfo.referencingNode == nullptr)
+			{
+				throw Exception("Next sibling joint info is unreferenced joint");
+			}
+
+			_buildRecursive(parent, *nextSiblingJointInfo.referencingNode);
 		}
 	}
 

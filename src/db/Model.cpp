@@ -156,46 +156,43 @@ namespace od
 			dr >> lodNames[i];
 		}
 
+
 		SkeletonBuilder sb(mModelName);
 
-		// bone names
-		uint16_t boneNameCount;
-		dr >> boneNameCount;
-		sb.reserveBones(boneNameCount);
-		for(size_t i = 0; i < boneNameCount; ++i)
+		// node info
+		uint16_t nodeInfoCount;
+		dr >> nodeInfoCount;
+		sb.reserveNodes(nodeInfoCount);
+		for(size_t i = 0; i < nodeInfoCount; ++i)
 		{
-			// NOTE: this may supposedly contain some empty entries
-			char boneName[33] = { 0 };
-			int32_t parentIndex;
+			char nodeName[33] = { 0 };
+			int32_t jointInfoIndex;
 
-			dr.read(boneName, 32);
-			dr >> parentIndex;
+			dr.read(nodeName, 32);
+			dr >> jointInfoIndex;
 
-			sb.addBoneName(std::string(boneName), parentIndex);
+			sb.addNode(std::string(nodeName), jointInfoIndex);
 		}
 
-		// bone data
-		uint16_t boneDataCount;
-		dr >> boneDataCount;
-		if(boneDataCount > boneNameCount)
-		{
-			throw Exception("More bone data than bones defined");
-		}
+		// joint info
+		uint16_t jointInfoCount;
+		dr >> jointInfoCount;
 		int32_t maxVertexIndex = -1;
-		for(size_t boneIndex = 0; boneIndex < boneDataCount; ++boneIndex)
+		for(size_t jointIndex = 0; jointIndex < jointInfoCount; ++jointIndex)
 		{
 			osg::Matrixf inverseBoneTransform;
 			int32_t meshIndex;
-            int32_t firstChildIndex; // negative if no children
-            int32_t nextSiblingIndex; // negative if end of parent's child list
+            int32_t firstChildIndex;
+            int32_t nextSiblingIndex;
 
             dr >> inverseBoneTransform
 			   >> meshIndex
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
 
-            sb.setBoneData(boneIndex, inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
+            sb.addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
 
+            // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
 				uint16_t affectedVertexCount;
@@ -219,14 +216,14 @@ namespace od
             }
 		}
 
-        //sb.build();
+        sb.build();
 
 		size_t maxAffection = 0;
 		for(VertexAffection rv : mVertexAffections)
 		{
 		    maxAffection = std::max(rv.affectingBoneCount, maxAffection);
 		}
-		Logger::info() << "Max affecting bones per vertex: " << maxAffection;
+
 
 		// lod info
 		mLodMeshInfos.resize(lodCount);
@@ -257,8 +254,11 @@ namespace od
 		}
 
 		Logger::info() << "Model " << mModelName;
-		        Logger::info() << "Max affected vertex index: " << maxVertexIndex << " Vertex count: " << mVertices.size() << " Lod count: " << mLodMeshInfos.size();
-	}
+		Logger::info() << "Max affecting bones per vertex: " << maxAffection;
+		Logger::info() << "Max affected vertex index: " << maxVertexIndex << " Vertex count: " << mVertices.size() << " Lod count: " << mLodMeshInfos.size();
+		Logger::info() << "Printing skeleton stats:";
+		sb.printInfo(std::cout);
+ 	}
 
 	void Model::buildGeometry()
 	{

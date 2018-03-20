@@ -10,98 +10,47 @@
 
 #include <string>
 #include <vector>
+#include <ostream>
 #include <osg/Matrixf>
 #include <osg/Referenced>
 
 
 namespace od
 {
+	class SkeletonNode;
 
-	class Bone : public osg::Referenced
+	struct SkeletonJointInfo
 	{
-	public:
+		osg::Matrixf boneXform;
+		int32_t meshIndex;
+		int32_t firstChildIndex;
+		int32_t nextSiblingIndex;
 
-		friend class Skeleton;
-
-		Bone(const std::string &name, int32_t parentIndex);
-		Bone(Bone &b) = delete;
-		Bone(const Bone &b) = delete;
-		~Bone() = default;
-
-		inline Bone *getParent() { return mParent; }
-		inline int32_t getParentIndex() { return mParentIndex; }
-		inline std::string getName() { return mName; }
-
-		void setParent(Bone *parent);
-		void setInverseBindPoseXform(const osg::Matrixf &inverseBindPoseXform);
-
-		void debugLogBone(size_t depth);
-
-	private:
-
-		std::string mName;
-		osg::Matrixf mInverseBindPoseXform;
-		osg::Matrixf mCurrentXform;
-		Bone *mParent;
-		int32_t mParentIndex;
-		std::vector<Bone*> mChildren;
+		bool visited;
+		SkeletonNode *referencingNode;
 	};
 
-	/**
-	 * Class representing a rigged model's skeleton. Stores all bones in a flat
-	 * structure. The bones themselves define the skeleton hierarchy via children and parent pointers.
-	 */
-	class Skeleton : public osg::Referenced
-	{
-	public:
-
-		/// Constructs new Skeleton and reserves storage for \c boneCount bones
-		Skeleton(size_t boneCount = 0);
-		Skeleton(Skeleton&) = delete;
-		Skeleton(const Skeleton&) = delete;
-		~Skeleton() = default;
-
-		Bone *addBone(const std::string &name, int32_t parentIndex);
-		Bone *getBoneByIndex(size_t index);
-		Bone *getRootBone();
-
-		void buildBoneTree();
-
-		void debugLogSkeleton();
-
-	private:
-
-		Bone mRootBone;
-		std::vector<osg::ref_ptr<Bone>> mBones;
-	};
-
-
-	class BuilderBone
+	class SkeletonNode
 	{
 	public:
 
 		friend class SkeletonBuilder;
 
-		BuilderBone(const std::string &name, int32_t parentIndex);
+		SkeletonNode(const std::string &name, int32_t jointInfoIndex);
 
-
-		inline int32_t getParentIndex() { return mParentIndex; }
+		inline int32_t getJointInfoIndex() { return mJointInfoIndex; }
 		inline std::string getName() { return mName; }
 
-		void setBoneData(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
-		void addChild(BuilderBone &b) { mChildren.push_back(&b); }
-		void print(size_t depth);
+		void addChild(SkeletonNode &node) { mChildren.push_back(&node); }
+		void print(std::ostream &out, size_t depth);
+
 
 	private:
 
 		std::string mName;
-		osg::Matrixf mInverseBindPoseXform;
-		int32_t mParentIndex;
-		int32_t mMeshIndex;
-		int32_t mFirstChildIndex;
-		int32_t mNextSiblingIndex;
-		bool mVisited;
-		std::vector<BuilderBone*> mChildren;
+		int32_t mJointInfoIndex;
+		std::vector<SkeletonNode*> mChildren;
+		SkeletonJointInfo *mReferencedJointInfo;
 	};
 
 	class SkeletonBuilder
@@ -110,19 +59,22 @@ namespace od
 
 		SkeletonBuilder(const std::string &modelName);
 
-		void reserveBones(size_t boneCount);
-		void addBoneName(const std::string &name, int32_t parentIndex);
-		void setBoneData(size_t boneIndex, osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
+		void reserveNodes(size_t nodeCount);
+		void addNode(const std::string &name, int32_t jointInfoIndex);
+		void addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
 		void build();
+		void printInfo(std::ostream &out);
 
 
 	private:
 
-		void _buildRecursive(BuilderBone &parent, BuilderBone &current);
+		void _buildRecursive(SkeletonNode &parent, SkeletonNode &current);
 
 		std::string mModelName;
-		std::vector<BuilderBone> mBuilderBones;
-
+		SkeletonNode mRootNode;
+		std::vector<SkeletonNode> mNodes;
+		std::vector<SkeletonJointInfo> mJointInfos;
+		SkeletonNode *mLastJoint;
 	};
 
 }
