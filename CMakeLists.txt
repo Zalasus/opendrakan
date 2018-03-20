@@ -57,9 +57,6 @@ set(SOURCES
 find_package(ZLIB REQUIRED)
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 
-include_directories(${ZLIB_INCLUDE_DIRS})
-include_directories(${OPENSCENEGRAPH_INCLUDE_DIRS})
-
 
 # targets
 add_executable(opendrakan ${SOURCES})
