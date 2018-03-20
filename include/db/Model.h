@@ -39,6 +39,13 @@ namespace od
 	{
 	public:
 
+	    struct VertexAffection
+	    {
+	        VertexAffection() : affectingBoneCount(0) {}
+
+	        size_t affectingBoneCount;
+	    };
+
 		Model(Database &db, RecordId modelId);
 
 		// TODO: implement copy constructor etc. in a meaningful way for this macro to work
@@ -60,6 +67,7 @@ namespace od
 
 		std::string mModelName;
 		std::vector<osg::Vec3f> mVertices;
+		std::vector<VertexAffection> mVertexAffections;
 		std::vector<SegmentedGeode::Face> mFaces;
 		size_t mTriangleCount;
 		size_t mQuadCount;

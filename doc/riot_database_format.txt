@@ -265,7 +265,7 @@ Record types
     [0x0204] Faces
         struct face_vertex
         {
-            uint16 vertex_index;
+            uint16 vertex_index; // not absolute indices of vertex array but relative to where current LOD starts in vertex array
             vect2f uv;
         };
         
@@ -316,7 +316,7 @@ Record types
         };
         struct vertex_weight
         {
-            uint32    vertex_index;
+            uint32    vertex_index; // not absolute indices of vertex array but relative to where current LOD starts in vertex array
             float     weight;
         };
         struct lod_mesh_info

@@ -36,8 +36,8 @@ namespace od
     	}
 
     	osg::Vec3f pos = mPlayerObject->getPosition();
-    	pos += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(1, 0, 0) * mForwardSpeed * frameTime * 1.1; // 1.1 = default run speed
-    	pos += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(0, 0, 1) * mRightSpeed * frameTime * 0.5; // 0.4 = default side strafe speed
+    	pos += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(1, 0, 0) * mForwardSpeed * frameTime * 1.1 * 10; // 1.1 = default run speed
+    	pos += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(0, 0, 1) * mRightSpeed * frameTime * 0.5 * 10; // 0.4 = default side strafe speed
 
     	mPlayerObject->setPosition(pos);
     }

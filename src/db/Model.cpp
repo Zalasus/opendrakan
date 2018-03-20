@@ -137,6 +137,8 @@ namespace od
 
 	void Model::loadLodsAndBones(ModelFactory &factory, DataReader &&dr)
 	{
+	    mVertexAffections.resize(mVertices.size());
+
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
@@ -179,6 +181,7 @@ namespace od
 		{
 			throw Exception("More bone data than bones defined");
 		}
+		int32_t maxVertexIndex = -1;
 		for(size_t boneIndex = 0; boneIndex < boneDataCount; ++boneIndex)
 		{
 			osg::Matrixf inverseBoneTransform;
@@ -203,11 +206,27 @@ namespace od
 					float weight;
 					dr >> affectedVertexIndex
 					   >> weight;
+
+					maxVertexIndex = std::max(maxVertexIndex, (int32_t)affectedVertexIndex);
+
+					size_t lodBasedIndex = affectedVertexIndex;// + mLodMeshInfos[lodIndex].firstVertexIndex;
+					if(lodBasedIndex >= mVertexAffections.size())
+                    {
+                        throw Exception("Affected vertex's index in bone data out of bounds");
+                    }
+					mVertexAffections[lodBasedIndex].affectingBoneCount++;
 				}
             }
 		}
 
-		sb.build();
+        //sb.build();
+
+		size_t maxAffection = 0;
+		for(VertexAffection rv : mVertexAffections)
+		{
+		    maxAffection = std::max(rv.affectingBoneCount, maxAffection);
+		}
+		Logger::info() << "Max affecting bones per vertex: " << maxAffection;
 
 		// lod info
 		mLodMeshInfos.resize(lodCount);
@@ -236,6 +255,9 @@ namespace od
 				mesh.lodName = (lodIndex == 0) ? mModelName : lodNames[lodIndex - 1];
 			}
 		}
+
+		Logger::info() << "Model " << mModelName;
+		        Logger::info() << "Max affected vertex index: " << maxVertexIndex << " Vertex count: " << mVertices.size() << " Lod count: " << mLodMeshInfos.size();
 	}
 
 	void Model::buildGeometry()
