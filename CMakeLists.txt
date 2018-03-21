@@ -50,7 +50,7 @@ set(SOURCES
         "src/Exception.cpp"
         "src/LevelObject.cpp"
         "src/FilePath.cpp"
-        "test_src/TestMain.cpp")
+        "src/Main.cpp")
 
 
 # dependencies
