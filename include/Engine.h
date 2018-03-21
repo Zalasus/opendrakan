@@ -12,6 +12,7 @@
 #include <osgViewer/Viewer>
 
 #include "DbManager.h"
+#include "ShaderManager.h"
 #include "InputManager.h"
 #include "Level.h"
 #include "Camera.h"
@@ -32,6 +33,7 @@ namespace od
 		inline FilePath getInitialLevelFile() const { return mInitialLevelFile; }
 		inline void setInitialLevelFile(const FilePath &level) { mInitialLevelFile = level; }
 		inline DbManager &getDbManager() { return mDbManager; }
+		inline ShaderManager &getShaderManager() { return mShaderManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player &getPlayer() { return getLevel().getPlayer(); }
 		inline Camera &getCamera() { return *mCamera; }
@@ -44,6 +46,7 @@ namespace od
 	private:
 
 		DbManager mDbManager;
+		ShaderManager mShaderManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		FilePath mInitialLevelFile;
 		std::unique_ptr<Level> mLevel;

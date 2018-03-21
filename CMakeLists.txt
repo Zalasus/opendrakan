@@ -50,6 +50,7 @@ set(SOURCES
         "src/Exception.cpp"
         "src/LevelObject.cpp"
         "src/FilePath.cpp"
+        "src/ShaderManager.cpp"
         "src/Main.cpp")
 
 
