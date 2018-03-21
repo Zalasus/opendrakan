@@ -357,7 +357,7 @@ Record types
         node_info[uint16]                node_infos; // this contains references to entries of the following table for each node that is a joint
         joint_info[uint16]               joint_infos;
         lod_mesh_info[uint16][num_lods]  lod_mesh_infos; // An array of mesh infos for each LOD.
-        uint16[uint16]                   anim_ids; // Just IDs. It seems that only animations in the same DB can be referenced.
+        ref[uint16]                      anim_ids; // database index always 0
         channel[uint16]                  channels;
         
     [0x0209] ???

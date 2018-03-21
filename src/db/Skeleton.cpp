@@ -19,6 +19,7 @@ namespace od
 	: mName(name)
 	, mJointInfoIndex(jointInfoIndex)
 	, mReferencedJointInfo(nullptr)
+	, mIsChannel(false)
 	{
 	}
 
@@ -40,7 +41,12 @@ namespace od
 
 		}else
 		{
-			out << getName() << std::endl;
+			out << getName();
+			if(mIsChannel)
+			{
+				out << " [Channel]";
+			}
+			out << std::endl;
 		}
 
 		for(auto it = mChildren.begin(); it != mChildren.end(); ++it)
@@ -99,6 +105,25 @@ namespace od
 		jointInfo.referencingNode = nullptr;
 		jointInfo.visited = false;
 		mJointInfos.push_back(jointInfo);
+	}
+
+	void SkeletonBuilder::makeChannel(uint32_t jointIndex)
+	{
+		if(jointIndex >= mJointInfos.size())
+		{
+			Logger::warn() << "Channel joint index out of bounds: was " << jointIndex << ", joint count is " << mJointInfos.size();
+			//throw Exception("Channel joint index out of bounds");
+			return;
+		}
+
+		SkeletonJointInfo &jointInfo = mJointInfos[jointIndex];
+
+		if(jointInfo.referencingNode == nullptr)
+		{
+			throw Exception("Tried to turn unreferenced joint into channel. May need to build skeleton first before defining channels");
+		}
+
+		jointInfo.referencingNode->mIsChannel = true;
 	}
 
 	void SkeletonBuilder::build()

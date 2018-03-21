@@ -51,6 +51,7 @@ namespace od
 		int32_t mJointInfoIndex;
 		std::vector<SkeletonNode*> mChildren;
 		SkeletonJointInfo *mReferencedJointInfo;
+		bool mIsChannel;
 	};
 
 	class SkeletonBuilder
@@ -62,6 +63,7 @@ namespace od
 		void reserveNodes(size_t nodeCount);
 		void addNode(const std::string &name, int32_t jointInfoIndex);
 		void addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
+		void makeChannel(uint32_t jointIndex);
 		void build();
 		void printInfo(std::ostream &out);
 

@@ -73,6 +73,7 @@ namespace od
 		size_t mQuadCount;
 		std::vector<AssetRef> mTextureRefs;
 		std::vector<LodMeshInfo> mLodMeshInfos;
+		std::vector<AssetRef> mAnimationRefs;
 
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;

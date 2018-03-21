@@ -253,6 +253,63 @@ namespace od
 			}
 		}
 
+
+		// animations refs
+		uint16_t animCount;
+		dr >> animCount;
+		mAnimationRefs.resize(animCount);
+		for(size_t animIndex = 0; animIndex < animCount; ++animIndex)
+		{
+			// the database index of this is always zero. however, i see no reason not to support loading
+			//  animations cross-database, so we don't enforce this.
+			dr >> mAnimationRefs[animIndex];
+		}
+
+
+		// channels
+		uint16_t channelCount;
+		dr >> channelCount;
+		for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
+		{
+			uint32_t nodeIndex;
+			osg::Matrixf xformA;
+			osg::Matrixf xformB;
+            uint16_t capCount;
+
+            dr >> nodeIndex
+			   >> xformA
+			   >> xformB
+			   >> capCount;
+
+            sb.makeChannel(nodeIndex);
+
+            for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
+            {
+            	uint32_t firstCapFaceIndex;
+                uint32_t capFaceCount;
+                uint32_t firstPartFaceIndex;
+                uint32_t partFaceCount;
+                uint32_t unk;
+                uint16_t vertexCount;
+
+                dr >> firstCapFaceIndex
+				   >> capFaceCount
+				   >> firstPartFaceIndex
+				   >> partFaceCount
+				   >> unk
+				   >> vertexCount;
+
+				for(size_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+				{
+					uint32_t affectedVertexIndex;
+					float weight;
+					dr >> affectedVertexIndex
+					   >> weight;
+				}
+            }
+		}
+
+
 		Logger::info() << "Model " << mModelName;
 		Logger::info() << "Max affecting bones per vertex: " << maxAffection;
 		Logger::info() << "Max affected vertex index: " << maxVertexIndex << " Vertex count: " << mVertices.size() << " Lod count: " << mLodMeshInfos.size();
