@@ -39,7 +39,7 @@ namespace od
 		 * Constructs a new FilePath object from the given path. If that path is
 		 * relative, it is assumed to be relative to relativeTo.
 		 */
-		FilePath(const std::string &path, FilePath relativeTo);
+		FilePath(const std::string &path, const FilePath &relativeTo);
 
 		FilePath(const FilePath &p, size_t omitLastNComponents = 0);
 
@@ -115,10 +115,11 @@ namespace od
 		std::string _buildHostPath() const;
 
 		std::string mOriginalPath;
-
 		std::string mRoot;
 		PathRootStyle mRootStyle;
 		std::vector<std::string> mPathComponents;
+		mutable std::string mBuiltPathCache;
+		mutable bool mAlreadyBuiltPath;
 	};
 
 	std::ostream &operator<<(std::ostream &left, const FilePath &right);

@@ -32,13 +32,15 @@ namespace od
 	FilePath::FilePath(const std::string &path)
 	: mOriginalPath(path)
 	, mRootStyle(PathRootStyle::RELATIVE)
+	, mAlreadyBuiltPath(false)
 	{
 	    _parsePath(path);
 	}
 
-	FilePath::FilePath(const std::string &path, FilePath relativeTo)
+	FilePath::FilePath(const std::string &path, const FilePath &relativeTo)
 	: mOriginalPath(path)
 	, mRootStyle(PathRootStyle::RELATIVE)
+	, mAlreadyBuiltPath(false)
 	{
 	    _parsePath(relativeTo.str() + OD_FILEPATH_SEPERATOR + path);
 	}
@@ -48,6 +50,7 @@ namespace od
 	, mRoot(p.mRoot)
 	, mRootStyle(p.mRootStyle)
 	, mPathComponents(p.mPathComponents.begin(), p.mPathComponents.begin() + (p.mPathComponents.size() - omitLastNComponents))
+	, mAlreadyBuiltPath(false)
 	{
 	}
 
@@ -235,6 +238,11 @@ namespace od
 
 	std::string FilePath::_buildHostPath() const
 	{
+		if(mAlreadyBuiltPath)
+		{
+			return mBuiltPathCache;
+		}
+
 		std::ostringstream oss;
 
 		if(mRootStyle != PathRootStyle::RELATIVE)
@@ -260,6 +268,9 @@ namespace od
 				oss << OD_FILEPATH_SEPERATOR;
 			}
 		}
+
+		mBuiltPathCache = oss.str();
+		mAlreadyBuiltPath = true;
 
 		return oss.str();
 	}
