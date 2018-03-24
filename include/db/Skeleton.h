@@ -13,55 +13,63 @@
 #include <ostream>
 #include <osg/Matrixf>
 #include <osg/Referenced>
+#include <osg/NodeVisitor>
+#include <osg/Group>
+#include <osg/MatrixTransform>
 
 
 namespace od
 {
-	class SkeletonNode;
 
-	struct SkeletonJointInfo
-	{
-		osg::Matrixf boneXform;
-		int32_t meshIndex;
-		int32_t firstChildIndex;
-		int32_t nextSiblingIndex;
+    class BoneVisitor;
 
-		bool visited;
-		SkeletonNode *referencingNode;
-	};
+    /**
+     * Class representing a bone in a skeleton as a MatrixTransform. This way we can use the same
+     * method to animate bones as we use to move objects around in an interpolated manner.
+     */
+    class BoneNode : public osg::MatrixTransform
+    {
+    public:
 
-	class SkeletonNode
-	{
-	public:
+        BoneNode(const std::string &name, int32_t jointInfoIndex);
 
-		friend class SkeletonBuilder;
+        inline int32_t getJointInfoIndex() const { return mJointInfoIndex; }
 
-		SkeletonNode(const std::string &name, int32_t jointInfoIndex);
+        inline bool isChannel() const { return mIsChannel; }
+        inline void setIsChannel(bool b) { mIsChannel = b; }
 
-		inline int32_t getJointInfoIndex() { return mJointInfoIndex; }
-		inline std::string getName() { return mName; }
-
-		void addChild(SkeletonNode &node) { mChildren.push_back(&node); }
-		void print(std::ostream &out, size_t depth);
+        inline osg::Matrixf getInverseBindPoseXform() const { return mInverseBindPoseXform; }
+        void setInverseBindPoseXform(const osg::Matrixf &m);
 
 
-	private:
+        void accept(BoneVisitor &bv);
 
-		std::string mName;
-		int32_t mJointInfoIndex;
-		std::vector<SkeletonNode*> mChildren;
-		SkeletonJointInfo *mReferencedJointInfo;
-		bool mIsChannel;
-	};
+
+    private:
+
+        int32_t mJointInfoIndex;
+        osg::Matrixf mInverseBindPoseXform;
+        bool mIsChannel;
+    };
+
+
+    class BoneVisitor : public osg::NodeVisitor
+    {
+    public:
+
+        BoneVisitor(osg::Uniform &boneMatrixArray);
+
+        virtual void apply(BoneNode &b);
+
+    };
 
 	class SkeletonBuilder
 	{
 	public:
 
-		SkeletonBuilder(const std::string &modelName);
+		SkeletonBuilder();
 
-		void reserveNodes(size_t nodeCount);
-		void addNode(const std::string &name, int32_t jointInfoIndex);
+		void addBoneNode(const std::string &name, int32_t jointInfoIndex);
 		void addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
 		void makeChannel(uint32_t jointIndex);
 		void build();
@@ -70,13 +78,22 @@ namespace od
 
 	private:
 
-		void _buildRecursive(SkeletonNode &parent, SkeletonNode &current);
+		struct SkeletonJointInfo
+        {
+            osg::Matrixf boneXform;
+            int32_t meshIndex;
+            int32_t firstChildIndex;
+            int32_t nextSiblingIndex;
 
-		std::string mModelName;
-		SkeletonNode mRootNode;
-		std::vector<SkeletonNode> mNodes;
+            bool visited;
+            BoneNode *referencingBone;
+        };
+
+		void _buildRecursive(BoneNode &parent, SkeletonJointInfo &current);
+
+		std::vector<osg::ref_ptr<BoneNode>> mBoneNodes;
 		std::vector<SkeletonJointInfo> mJointInfos;
-		SkeletonNode *mLastJoint;
+		BoneNode mRootBone;
 	};
 
 }

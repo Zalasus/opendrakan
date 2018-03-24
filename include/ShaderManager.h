@@ -18,11 +18,13 @@
 namespace od
 {
 
+    class Engine;
+
 	class ShaderManager
 	{
 	public:
 
-		ShaderManager(const FilePath &shaderSourceRoot);
+		ShaderManager(Engine &engine, const FilePath &shaderSourceRoot);
 
 		/**
 		 * Creates a shader object from a shader source. If the shader is found in local cache,
@@ -42,6 +44,7 @@ namespace od
 
 	private:
 
+		Engine &mEngine;
 		FilePath mShaderSourceRoot;
 		std::map<std::string, osg::ref_ptr<osg::Shader>> mShaderCache;
 		std::map<std::pair<osg::ref_ptr<osg::Shader>,osg::ref_ptr<osg::Shader>>, osg::ref_ptr<osg::Program>> mProgramCache;

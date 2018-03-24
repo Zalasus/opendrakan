@@ -7,11 +7,14 @@
 
 #include "ShaderManager.h"
 
+#include "Engine.h"
+
 namespace od
 {
 
-	ShaderManager::ShaderManager(const FilePath &shaderSourceRoot)
-	: mShaderSourceRoot(shaderSourceRoot)
+	ShaderManager::ShaderManager(Engine &engine, const FilePath &shaderSourceRoot)
+	: mEngine(engine)
+	, mShaderSourceRoot(shaderSourceRoot)
 	{
 	}
 

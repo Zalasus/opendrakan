@@ -157,12 +157,11 @@ namespace od
 		}
 
 
-		SkeletonBuilder sb(mModelName);
+		SkeletonBuilder sb;
 
 		// node info
 		uint16_t nodeInfoCount;
 		dr >> nodeInfoCount;
-		sb.reserveNodes(nodeInfoCount);
 		for(size_t i = 0; i < nodeInfoCount; ++i)
 		{
 			char nodeName[33] = { 0 };
@@ -171,7 +170,7 @@ namespace od
 			dr.read(nodeName, 32);
 			dr >> jointInfoIndex;
 
-			sb.addNode(std::string(nodeName), jointInfoIndex);
+			sb.addBoneNode(std::string(nodeName), jointInfoIndex);
 		}
 
 		// joint info
@@ -206,12 +205,15 @@ namespace od
 
 					maxVertexIndex = std::max(maxVertexIndex, (int32_t)affectedVertexIndex);
 
-					size_t lodBasedIndex = affectedVertexIndex;// + mLodMeshInfos[lodIndex].firstVertexIndex;
-					if(lodBasedIndex >= mVertexAffections.size())
-                    {
-                        throw Exception("Affected vertex's index in bone data out of bounds");
-                    }
-					mVertexAffections[lodBasedIndex].affectingBoneCount++;
+					// count only for first lod as we don't have lod info yet
+					if(lodIndex == 0)
+					{
+                        if(affectedVertexIndex >= mVertexAffections.size())
+                        {
+                            throw Exception("Affected vertex's index in bone data out of bounds");
+                        }
+                        mVertexAffections[affectedVertexIndex].affectingBoneCount++;
+				    }
 				}
             }
 		}
@@ -313,8 +315,8 @@ namespace od
 		Logger::info() << "Model " << mModelName;
 		Logger::info() << "Max affecting bones per vertex: " << maxAffection;
 		Logger::info() << "Max affected vertex index: " << maxVertexIndex << " Vertex count: " << mVertices.size() << " Lod count: " << mLodMeshInfos.size();
-		Logger::info() << "Printing skeleton stats:";
-		sb.printInfo(std::cout);
+		//Logger::info() << "Printing skeleton stats:";
+		//sb.printInfo(std::cout);
  	}
 
 	void Model::buildGeometry()

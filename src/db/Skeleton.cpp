@@ -14,85 +14,37 @@
 
 namespace od
 {
+    BoneNode::BoneNode(const std::string &name, int32_t jointInfoIndex)
+    : mJointInfoIndex(jointInfoIndex)
+    , mIsChannel(false)
+    {
+        this->setName(name);
+    }
 
-	SkeletonNode::SkeletonNode(const std::string &name, int32_t jointInfoIndex)
-	: mName(name)
-	, mJointInfoIndex(jointInfoIndex)
-	, mReferencedJointInfo(nullptr)
-	, mIsChannel(false)
+    void BoneNode::setInverseBindPoseXform(const osg::Matrixf &m)
+    {
+        mInverseBindPoseXform = m;
+        _matrix.invert(m);
+    }
+
+
+
+    void BoneVisitor::apply(BoneNode &b)
+    {
+
+    }
+
+
+
+	SkeletonBuilder::SkeletonBuilder()
+	: mRootBone("[ROOT]", -9000)
 	{
 	}
 
-	void SkeletonNode::print(std::ostream &out, size_t depth)
+	void SkeletonBuilder::addBoneNode(const std::string &name, int32_t jointInfoIndex)
 	{
-		for(size_t i = 0; i < depth; ++i)
-		{
-			out << "   |";
-
-			if(i + 1 == depth)
-			{
-				out << "-";
-			}
-		}
-
-		if(mJointInfoIndex < 0)
-		{
-			out << "(" << getName() << ")" << std::endl;
-
-		}else
-		{
-			out << getName();
-			if(mIsChannel)
-			{
-				out << " [Channel]";
-			}
-			out << std::endl;
-		}
-
-		for(auto it = mChildren.begin(); it != mChildren.end(); ++it)
-		{
-			if(*it == nullptr)
-			{
-				continue;
-			}
-
-			(*it)->print(out, depth+1);
-		}
-	}
-
-
-	SkeletonBuilder::SkeletonBuilder(const std::string &modelName)
-	: mModelName(modelName)
-	, mRootNode("[ROOT]", -9000)
-	, mLastJoint(nullptr)
-	{
-	}
-
-	void SkeletonBuilder::reserveNodes(size_t nodeCount)
-	{
-		if(nodeCount > 0)
-		{
-			mNodes.reserve(nodeCount);
-		}
-	}
-
-	void SkeletonBuilder::addNode(const std::string &name, int32_t jointInfoIndex)
-	{
-		mNodes.push_back(SkeletonNode(name, jointInfoIndex));
-
-		if(jointInfoIndex >= 0)
-		{
-			mLastJoint = &mNodes.back();
-
-		}else
-		{
-			if(mLastJoint == nullptr)
-			{
-				throw Exception("Found non-joint child before any actual joint node");
-			}
-
-			mLastJoint->addChild(mNodes.back());
-		}
+	    osg::ref_ptr<BoneNode> newBoneNode(new BoneNode(name, jointInfoIndex));
+	    mBoneNodes.push_back(newBoneNode);
 	}
 
 	void SkeletonBuilder::addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex)
@@ -102,7 +54,7 @@ namespace od
 		jointInfo.meshIndex = meshIndex;
 		jointInfo.firstChildIndex = firstChildIndex;
 		jointInfo.nextSiblingIndex = nextSiblingIndex;
-		jointInfo.referencingNode = nullptr;
+		jointInfo.referencingBone = nullptr;
 		jointInfo.visited = false;
 		mJointInfos.push_back(jointInfo);
 	}
@@ -111,27 +63,28 @@ namespace od
 	{
 		if(jointIndex >= mJointInfos.size())
 		{
-			Logger::warn() << "Channel joint index out of bounds: was " << jointIndex << ", joint count is " << mJointInfos.size();
-			//throw Exception("Channel joint index out of bounds");
+			Logger::error() << "Channel joint index out of bounds: was " << jointIndex << ", joint count is " << mJointInfos.size();
+			throw Exception("Channel joint index out of bounds");
 			return;
 		}
 
 		SkeletonJointInfo &jointInfo = mJointInfos[jointIndex];
 
-		if(jointInfo.referencingNode == nullptr)
+		if(jointInfo.referencingBone == nullptr)
 		{
 			throw Exception("Tried to turn unreferenced joint into channel. May need to build skeleton first before defining channels");
 		}
 
-		jointInfo.referencingNode->mIsChannel = true;
+		jointInfo.referencingBone->setIsChannel(true);
 	}
 
 	void SkeletonBuilder::build()
 	{
 		// first, create links between nodes and joint infos
-		for(auto it = mNodes.begin(); it != mNodes.end(); ++it)
+		for(auto it = mBoneNodes.begin(); it != mBoneNodes.end(); ++it)
 		{
-			int32_t jointInfoIndex = it->getJointInfoIndex();
+		    BoneNode *currentBone = it->get();
+			int32_t jointInfoIndex = currentBone->getJointInfoIndex();
 			if(jointInfoIndex < 0)
 			{
 				continue;
@@ -140,30 +93,32 @@ namespace od
 			{
 				throw Exception("Node's joint info index out of bounds");
 			}
+
 			SkeletonJointInfo &jointInfo = mJointInfos[jointInfoIndex];
 
-			it->mReferencedJointInfo = &jointInfo;
-			jointInfo.referencingNode = &(*it);
+			currentBone->setInverseBindPoseXform(jointInfo.boneXform);
+			jointInfo.referencingBone = currentBone;
 		}
 
-		// for testing purposes, recurse through tree depth first for all joints while building the tree with references, then print it out
-		for(auto it = mNodes.begin(); it != mNodes.end(); ++it)
+		// for simplicity, recurse through tree depth first for all joints and build it inside the scenegraph
+		for(auto it = mJointInfos.begin(); it != mJointInfos.end(); ++it)
 		{
-			if(it->mReferencedJointInfo == nullptr)
+			if(it->referencingBone == nullptr)
 			{
 				continue;
 			}
 
-			if(!it->mReferencedJointInfo->visited)
+			if(!it->visited)
 			{
-				_buildRecursive(mRootNode, *it);
+				_buildRecursive(mRootBone, *it);
 			}
 		}
 	}
 
 	void SkeletonBuilder::printInfo(std::ostream &out)
 	{
-		out << "Skeleton info for model " << mModelName << std::endl;
+	    out << "Sorry, no info right now :/" << std::endl;
+		/*out << "Skeleton info for model " << mModelName << std::endl;
 
 		out << std::endl << "Nodes:" << std::endl;
 		for(size_t i = 0; i < mNodes.size(); ++i)
@@ -187,54 +142,52 @@ namespace od
 		}
 
 		out << std::endl << "Constructed bone tree: " << std::endl;
-		mRootNode.print(out, 0);
+		mRootNode.print(out, 0);*/
 	}
 
-	void SkeletonBuilder::_buildRecursive(SkeletonNode &parent, SkeletonNode &current)
+	void SkeletonBuilder::_buildRecursive(BoneNode &parent, SkeletonJointInfo &current)
 	{
-		if(current.mReferencedJointInfo->visited)
+		if(current.visited)
 		{
 			throw Exception("Bone tree is not a tree");
 
 		}else
 		{
-			current.mReferencedJointInfo->visited = true;
+			current.visited = true;
 		}
 
-		parent.addChild(current);
+		parent.addChild(current.referencingBone);
 
-		if(current.mReferencedJointInfo->firstChildIndex > 0)
+		if(current.firstChildIndex > 0)
 		{
-			if(current.mReferencedJointInfo->firstChildIndex >= (int32_t)mJointInfos.size())
+			if(current.firstChildIndex >= (int32_t)mJointInfos.size())
 			{
 				throw Exception("First child index in joint info out of bounds");
 			}
 
-			SkeletonJointInfo &firstChildJointInfo = mJointInfos[current.mReferencedJointInfo->firstChildIndex];
-			if(firstChildJointInfo.referencingNode == nullptr)
+			SkeletonJointInfo &firstChildJointInfo = mJointInfos[current.firstChildIndex];
+			if(firstChildJointInfo.referencingBone == nullptr)
 			{
 				throw Exception("First child joint info is unreferenced joint");
 			}
 
-			_buildRecursive(current, *firstChildJointInfo.referencingNode);
+			_buildRecursive(*current.referencingBone, firstChildJointInfo);
 		}
 
-		if(current.mReferencedJointInfo->nextSiblingIndex > 0)
+		if(current.nextSiblingIndex > 0)
 		{
-			if(current.mReferencedJointInfo->nextSiblingIndex >= (int32_t)mJointInfos.size())
+			if(current.nextSiblingIndex >= (int32_t)mJointInfos.size())
 			{
 				throw Exception("Next sibling index in joint info out of bounds");
 			}
 
-			SkeletonJointInfo &nextSiblingJointInfo = mJointInfos[current.mReferencedJointInfo->nextSiblingIndex];
-			if(nextSiblingJointInfo.referencingNode == nullptr)
+			SkeletonJointInfo &nextSiblingJointInfo = mJointInfos[current.nextSiblingIndex];
+			if(nextSiblingJointInfo.referencingBone == nullptr)
 			{
 				throw Exception("Next sibling joint info is unreferenced joint");
 			}
 
-			_buildRecursive(parent, *nextSiblingJointInfo.referencingNode);
+			_buildRecursive(parent, nextSiblingJointInfo);
 		}
 	}
-
-
 }
