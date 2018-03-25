@@ -7,7 +7,6 @@
 
 #include "ZStream.h"
 
-#include "Logger.h"
 #include "Exception.h"
 
 namespace od
@@ -68,7 +67,7 @@ namespace od
     	bool initialRun = false;
     	if(!mStreamActive && !mStreamEnded)
     	{
-    		Logger::debug() << "Zstream not yet active. Activating";
+    		//Logger::debug() << "Zstream not yet active. Activating";
 
     		mZlibDataStart = mInputStream.tellg();
 
@@ -93,7 +92,7 @@ namespace od
         	// fill input buffer if no input available anymore
 			if(mInputStart == mInputEnd)
 			{
-				Logger::debug() << "Filling input buffer";
+				//Logger::debug() << "Filling input buffer";
 				mInputStart = mInputBuffer.data();
 				mInputStream.read(reinterpret_cast<char*>(mInputBuffer.data()), mInputBuffer.size());
 				mInputEnd = mInputBuffer.data() + mInputStream.gcount();
@@ -105,14 +104,14 @@ namespace od
 				}
 			}
 
-			if(initialRun)
+			/*if(initialRun)
 			{
 				Logger::debug() << "First call to inflate. Header: " << std::hex << (int)(*mInputStart) << " " << (int)(*mInputStart+1) << std::dec;
 
 			}else
 			{
 				Logger::debug() << "Repeated call to inflate";
-			}
+			}*/
 
 			mZStream.next_in = mInputStart;
 			mZStream.avail_in = mInputEnd - mInputStart;
@@ -133,11 +132,11 @@ namespace od
 				// all zlib data has been decompressed. avail_in contains the amount of bytes
 				//  read from stream that we didn't use
 
-				Logger::debug() << "Zstream has ended";
+				//Logger::debug() << "Zstream has ended";
 
 				mInputStream.clear(); // important!! tellg tells rubbish otherwise
 				mZlibDataEnd = (int)mInputStream.tellg() - mZStream.avail_in;
-				Logger::debug() << "We have " << mZStream.avail_in << " bytes left in input buffer. ZlibEnd is at " << mZlibDataEnd;
+				//Logger::debug() << "We have " << mZStream.avail_in << " bytes left in input buffer. ZlibEnd is at " << mZlibDataEnd;
 				mStreamActive = false;
 				mStreamEnded = true;
 				inflateEnd(&mZStream);
