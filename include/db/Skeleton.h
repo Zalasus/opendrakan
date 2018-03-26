@@ -21,8 +21,6 @@
 namespace od
 {
 
-    class BoneVisitor;
-
     /**
      * Class representing a bone in a skeleton as a MatrixTransform. This way we can use the same
      * method to animate bones as we use to move objects around in an interpolated manner.
@@ -32,6 +30,7 @@ namespace od
     public:
 
         BoneNode(const std::string &name, int32_t jointInfoIndex);
+        BoneNode(const BoneNode &bn, const osg::CopyOp &copyop = osg::CopyOp::SHALLOW_COPY);
 
         inline int32_t getJointInfoIndex() const { return mJointInfoIndex; }
 
@@ -42,25 +41,11 @@ namespace od
         void setInverseBindPoseXform(const osg::Matrixf &m);
 
 
-        void accept(BoneVisitor &bv);
-
-
     private:
 
         int32_t mJointInfoIndex;
         osg::Matrixf mInverseBindPoseXform;
         bool mIsChannel;
-    };
-
-
-    class BoneVisitor : public osg::NodeVisitor
-    {
-    public:
-
-        BoneVisitor(osg::Uniform &boneMatrixArray);
-
-        virtual void apply(BoneNode &b);
-
     };
 
 	class SkeletonBuilder
@@ -72,7 +57,7 @@ namespace od
 		void addBoneNode(const std::string &name, int32_t jointInfoIndex);
 		void addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
 		void makeChannel(uint32_t jointIndex);
-		void build();
+		void build(osg::Group *rootNode);
 		void printInfo(std::ostream &out);
 
 
@@ -89,11 +74,12 @@ namespace od
             BoneNode *referencingBone;
         };
 
-		void _buildRecursive(BoneNode &parent, SkeletonJointInfo &current);
+		void _rebuildJointLinks();
+		void _buildRecursive(osg::Group &parent, SkeletonJointInfo &current);
 
 		std::vector<osg::ref_ptr<BoneNode>> mBoneNodes;
 		std::vector<SkeletonJointInfo> mJointInfos;
-		BoneNode mRootBone;
+		bool mJointLinksDirty;
 	};
 
 }

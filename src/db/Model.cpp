@@ -157,7 +157,7 @@ namespace od
 		}
 
 
-		SkeletonBuilder sb;
+		mSkeletonBuilder.reset(new SkeletonBuilder);
 
 		// node info
 		uint16_t nodeInfoCount;
@@ -170,7 +170,7 @@ namespace od
 			dr.read(nodeName, 32);
 			dr >> jointInfoIndex;
 
-			sb.addBoneNode(std::string(nodeName), jointInfoIndex);
+			mSkeletonBuilder->addBoneNode(std::string(nodeName), jointInfoIndex);
 		}
 
 		// joint info
@@ -189,7 +189,7 @@ namespace od
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
 
-            sb.addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeletonBuilder->addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
@@ -217,8 +217,6 @@ namespace od
 				}
             }
 		}
-
-        sb.build();
 
 		size_t maxAffection = 0;
 		for(VertexAffection rv : mVertexAffections)
@@ -283,7 +281,7 @@ namespace od
 			   >> xformB
 			   >> capCount;
 
-            sb.makeChannel(nodeIndex);
+            mSkeletonBuilder->makeChannel(nodeIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {

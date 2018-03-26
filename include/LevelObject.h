@@ -13,6 +13,7 @@
 #include <osg/PositionAttitudeTransform>
 
 #include "db/Class.h"
+#include "anim/SkeletonAnimation.h"
 
 namespace od
 {
@@ -35,6 +36,8 @@ namespace od
         inline osg::Quat getRotation() const { return mRotation; }
         void setPosition(osg::Vec3f v);
 
+
+
         void loadFromRecord(DataReader dr);
 
         // override osg::Group
@@ -56,6 +59,8 @@ namespace od
         osg::Quat  mRotation;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
+        osg::ref_ptr<osg::Group> mSkeletonRoot;
+        osg::ref_ptr<SkeletonAnimation> mSkeletonAnimation;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

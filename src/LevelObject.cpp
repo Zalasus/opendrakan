@@ -92,6 +92,7 @@ namespace od
         	Logger::debug() << "Could not instantiate class of level object";
         }
 
+        // FIXME: the visible flag is just the initial state. it can be toggled in-game, so we should load the model regardless of this flag
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
 			mTransform = new osg::PositionAttitudeTransform;
@@ -101,6 +102,15 @@ namespace od
 
 			mTransform->addChild(mClass->getModel());
 			this->addChild(mTransform);
+
+			if(mClass->getModel()->getSkeletonBuilder() != nullptr)
+			{
+				mSkeletonRoot = new osg::Group;
+				mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
+				mTransform->addChild(mSkeletonRoot);
+
+				mSkeletonAnimation = new SkeletonAnimation(mLevel.getEngine(), this, mSkeletonRoot);
+			}
         }
     }
 

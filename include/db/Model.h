@@ -8,6 +8,7 @@
 #ifndef INCLUDE_MODEL_H_
 #define INCLUDE_MODEL_H_
 
+#include <memory>
 #include <string>
 #include <osg/Vec3>
 #include <osg/Texture2D>
@@ -51,6 +52,9 @@ namespace od
 		// TODO: implement copy constructor etc. in a meaningful way for this macro to work
 		//META_Node(od, Model);
 
+		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
+		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
+
 		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
 		void loadVertices(ModelFactory &factory, DataReader &&dr);
 		void loadTextures(ModelFactory &factory, DataReader &&dr);
@@ -74,6 +78,7 @@ namespace od
 		std::vector<AssetRef> mTextureRefs;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
+		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
 
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;

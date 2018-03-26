@@ -38,9 +38,18 @@ namespace od
 		osg::ref_ptr<osg::Group> rootNode(new osg::Group);
 
 		mViewer = new osgViewer::Viewer;
+		mViewer->realize();
 		mViewer->setName("OpenDrakan");
 		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 		mViewer->setSceneData(rootNode);
+
+		// since we want to use the programmable pipeline, set things up so we can use modern GLSL
+		mViewer->getCamera()->getGraphicsContext()->getState()->setUseModelViewAndProjectionUniforms(true);
+		mViewer->getCamera()->getGraphicsContext()->getState()->setUseVertexAttributeAliasing(true);
+
+		// attach our default shaders to root node so we don't use the fixed function pipeline anymore
+		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager.makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
+		rootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
 
 		mCamera.reset(new Camera(*this, mViewer->getCamera()));
 
@@ -60,7 +69,6 @@ namespace od
 		mInputManager = new InputManager(*this, mLevel->getPlayer(), mViewer);
 
 		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
-		mViewer->realize();
 		double simTime = 0;
 		double frameTime = 0;
 		while(!mViewer->done())

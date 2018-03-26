@@ -38,6 +38,7 @@ namespace od
 
 		/**
 		 * Returns program from cache if available. If not, links shaders and caches the result.
+		 * Pass nullptr as shader argument to force linking of the default shader for that stage.
 		 */
 		osg::ref_ptr<osg::Program> makeProgram(osg::ref_ptr<osg::Shader> vertexShader, osg::ref_ptr<osg::Shader> fragmentShader);
 

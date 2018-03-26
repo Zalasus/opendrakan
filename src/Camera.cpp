@@ -23,9 +23,6 @@ namespace od
 
 		virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
 		{
-			osg::Camera* cam = static_cast<osg::Camera*>(node);
-
-			// traverse first to update animations, in case the camera is attached to an animated node
 			traverse(node, nv);
 
 			mCam->update();

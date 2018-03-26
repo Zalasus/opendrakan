@@ -8,6 +8,7 @@
 #include "ShaderManager.h"
 
 #include "Engine.h"
+#include "OdDefines.h"
 
 namespace od
 {
@@ -32,6 +33,7 @@ namespace od
 
 		osg::ref_ptr<osg::Shader> newShader(new osg::Shader(shaderType));
 		newShader->loadShaderSourceFromFile(shaderFilePath.str());
+		newShader->setName(shaderFileName);
 		mShaderCache.insert(std::make_pair(shaderFileName, newShader));
 		return newShader;
 	}
@@ -42,6 +44,16 @@ namespace od
 		if(it != mProgramCache.end())
 		{
 			return it->second;
+		}
+
+		if(vertexShader == nullptr)
+		{
+			vertexShader = loadShader(OD_SHADER_DEFAULT_VERTEX, osg::Shader::VERTEX);
+		}
+
+		if(fragmentShader == nullptr)
+		{
+			fragmentShader = loadShader(OD_SHADER_DEFAULT_FRAGMENT, osg::Shader::FRAGMENT);
 		}
 
 		osg::ref_ptr<osg::Program> newProgram(new osg::Program);

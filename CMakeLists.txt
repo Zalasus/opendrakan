@@ -35,6 +35,8 @@ set(SOURCES
         "src/rfl/dragon/RflHealthPack.cpp"
         "src/rfl/dragon/RflKey.cpp"
         "src/rfl/dragon/RflDragon.cpp"
+        "src/anim/Animator.cpp"
+        "src/anim/SkeletonAnimation.cpp"
         "src/Camera.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
@@ -52,7 +54,7 @@ set(SOURCES
         "src/FilePath.cpp"
         "src/ShaderManager.cpp"
         "src/Main.cpp")
-
+              
 
 # dependencies
 find_package(ZLIB REQUIRED)
@@ -62,5 +64,19 @@ find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 # targets
 add_executable(opendrakan ${SOURCES})
 target_link_libraries(opendrakan ${OPENSCENEGRAPH_LIBRARIES} ${ZLIB_LIBRARIES})
+
+
+
+
+# copy shader sources
+set(SHADER_SOURCES 
+        "shader_src/default_vertex.glsl"
+        "shader_src/default_fragment.glsl"
+        "shader_src/rigged_vertex.glsl")
+
+foreach(f ${SHADER_SOURCES})
+    # configure file creates dependencies between source and target
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/${f} COPYONLY)
+endforeach()
 
 
