@@ -97,10 +97,10 @@ namespace od
 		}
 
 		mBoneIndices = new osg::Vec4uiArray;
-		mBoneIndices->resize(begin - end, osg::Vec4ui(0, 0, 0, 0));
+		mBoneIndices->resize(end - begin, osg::Vec4ui(0, 0, 0, 0));
 		mBoneWeights = new osg::Vec4Array;
-		mBoneWeights->resize(begin - end, osg::Vec4f(0, 0, 0, 0)); // weight of 0 will make unused bones uneffective, regardless
-																  //  of index -> less logic in the vertex shader!
+		mBoneWeights->resize(end - begin, osg::Vec4f(0, 0, 0, 0)); // weight of 0 will make unused bones uneffective, regardless
+																   //  of index -> less logic in the vertex shader!
 		for(auto it = begin; it != end; ++it)
 		{
 			size_t index = it - begin;
@@ -121,6 +121,11 @@ namespace od
 
 	void GeodeBuilder::build(osg::Geode *geode)
 	{
+		if(mVertices == nullptr)
+		{
+			throw Exception("Need to add vertex vector to GeodeBuilder before building");
+		}
+
 		_buildNormals();
 		_disambiguateAndGenerateUvs();
 
@@ -239,7 +244,7 @@ namespace od
 					mNormals->push_back(mNormals->at(vertIndex));
 
 					// if there is bone affection info, duplicate that too
-					if(mBoneIndices != nullptr && mBoneWeights != nullptr)
+					if(mBoneIndices != nullptr && mBoneIndices->size() > vertIndex)
 					{
 						mBoneIndices->push_back(mBoneIndices->at(vertIndex));
 						mBoneWeights->push_back(mBoneWeights->at(vertIndex));

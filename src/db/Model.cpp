@@ -330,6 +330,12 @@ namespace od
 				auto polygonsEnd = mPolygons.begin() + it->polygonCount + it->firstPolygonIndex;
 				gb.setPolygonVector(polygonsBegin, polygonsEnd);
 
+				// currently we only load affections for the first LOD, so only use that data when building the first one
+				if(it == mLodMeshInfos.begin())
+				{
+					gb.setBoneAffectionVector(mVertexAffections.begin(), mVertexAffections.end());
+				}
+
 				osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
 				gb.build(newGeode);
 
@@ -345,6 +351,7 @@ namespace od
 			GeodeBuilder gb(getDatabase());
 			gb.setVertexVector(mVertices.begin(), mVertices.end());
 			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
+			gb.setBoneAffectionVector(mVertexAffections.begin(), mVertexAffections.end());
 
 			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
 			gb.build(newGeode);
