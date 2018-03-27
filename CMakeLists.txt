@@ -53,6 +53,7 @@ set(SOURCES
         "src/LevelObject.cpp"
         "src/FilePath.cpp"
         "src/ShaderManager.cpp"
+        "src/GeodeBuilder.cpp"
         "src/Main.cpp")
               
 

@@ -12,7 +12,6 @@
 #include <osg/Geometry>
 #include <osg/LOD>
 #include <osg/FrontFace>
-#include <osgUtil/SmoothingVisitor>
 
 #include "db/Asset.h"
 #include "Exception.h"
@@ -22,17 +21,17 @@
 #include "db/Texture.h"
 #include "db/Skeleton.h"
 
+#define OD_POLYGON_FLAG_DOUBLESIDED 0x02
+
 namespace od
 {
 
 	Model::Model(Database &db, RecordId modelId)
 	: Asset(db, modelId)
 	, mModelName("")
-	, mTriangleCount(0)
-	, mQuadCount(0)
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
-	, mFacesLoaded(false)
+	, mPolygonsLoaded(false)
 	{
 	}
 
@@ -82,57 +81,51 @@ namespace od
 		mTexturesLoaded = true;
 	}
 
-	void Model::loadFaces(ModelFactory &factory, DataReader &&dr)
+	void Model::loadPolygons(ModelFactory &factory, DataReader &&dr)
 	{
 		if(!mTexturesLoaded || !mVerticesLoaded)
 		{
-			throw Exception("Must load vertices and textures before loading faces!");
+			throw Exception("Must load vertices and textures before loading polygons!");
 		}
 
-		uint16_t faceCount;
-		dr >> faceCount;
+		uint16_t polygonCount;
+		dr >> polygonCount;
 
-		mFaces.reserve(faceCount);
-		for(size_t i = 0; i < faceCount; ++i)
+		mPolygons.reserve(polygonCount);
+		for(size_t i = 0; i < polygonCount; ++i)
 		{
+			uint16_t flags;
 			uint16_t textureIndex;
 			uint16_t vertexCount;
 
-			dr >> DataReader::Ignore(2)
+			dr >> flags
 			   >> vertexCount
 			   >> textureIndex;
 
-			SegmentedGeode::Face f;
-			f.texture = mTextureRefs[textureIndex];
-			f.vertexCount = vertexCount;
+			Polygon poly;
+			poly.doubleSided = flags & OD_POLYGON_FLAG_DOUBLESIDED;
+			poly.texture = mTextureRefs[textureIndex];
+			poly.vertexCount = vertexCount;
 
-			if(f.vertexCount == 3)
-			{
-				++mTriangleCount;
-
-			}else if(f.vertexCount == 4)
-			{
-				++mQuadCount;
-
-			}else
+			if(poly.vertexCount != 3 && poly.vertexCount != 4)
 			{
 				throw UnsupportedException("Can't load model with non-triangle/non-quad primitives");
 			}
 
-			for(size_t i = 0; i < f.vertexCount; ++i)
+			for(size_t i = 0; i < poly.vertexCount; ++i)
 			{
 				uint16_t vertexIndex;
 
 				dr >> vertexIndex
-				   >> f.vertexUvCoords[i];
+				   >> poly.uvCoords[i];
 
-				f.vertexIndices[i] = vertexIndex; // TODO: instead of doing it this way, maybe add a "readAs<type>" modifier?
+				poly.vertexIndices[i] = vertexIndex; // TODO: instead of doing it this way, maybe add a "readAs<type>" modifier?
 			}
 
-			mFaces.push_back(f);
+			mPolygons.push_back(poly);
 		}
 
-		mFacesLoaded = true;
+		mPolygonsLoaded = true;
 	}
 
 	void Model::loadLodsAndBones(ModelFactory &factory, DataReader &&dr)
@@ -176,7 +169,6 @@ namespace od
 		// joint info
 		uint16_t jointInfoCount;
 		dr >> jointInfoCount;
-		int32_t maxVertexIndex = -1;
 		for(size_t jointIndex = 0; jointIndex < jointInfoCount; ++jointIndex)
 		{
 			osg::Matrixf inverseBoneTransform;
@@ -203,27 +195,29 @@ namespace od
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					maxVertexIndex = std::max(maxVertexIndex, (int32_t)affectedVertexIndex);
-
-					// count only for first lod as we don't have lod info yet
-					if(lodIndex == 0)
+					if(lodIndex != 0) // for now, use only first lod as we don't have lod info yet
 					{
-                        if(affectedVertexIndex >= mVertexAffections.size())
-                        {
-                            throw Exception("Affected vertex's index in bone data out of bounds");
-                        }
-                        mVertexAffections[affectedVertexIndex].affectingBoneCount++;
-				    }
+						continue;
+					}
+
+					if(affectedVertexIndex >= mVertexAffections.size())
+					{
+						throw Exception("Affected vertex's index in bone data out of bounds");
+					}
+
+					BoneAffection &vAff = mVertexAffections[affectedVertexIndex];
+
+					if(vAff.affectingBoneCount >= 4) // ignore any bones past the fourth. there should be none anyways
+					{
+						continue;
+					}
+
+					vAff.boneIndices[vAff.affectingBoneCount] = jointIndex;
+					vAff.boneWeights[vAff.affectingBoneCount] = weight;
+					vAff.affectingBoneCount++;
 				}
             }
 		}
-
-		size_t maxAffection = 0;
-		for(VertexAffection rv : mVertexAffections)
-		{
-		    maxAffection = std::max(rv.affectingBoneCount, maxAffection);
-		}
-
 
 		// lod info
 		mLodMeshInfos.resize(lodCount);
@@ -246,8 +240,8 @@ namespace od
 				   >> mesh.nodeIndex
 				   >> mesh.firstVertexIndex
 				   >> mesh.vertexCount
-				   >> mesh.firstFaceIndex
-				   >> mesh.faceCount;
+				   >> mesh.firstPolygonIndex
+				   >> mesh.polygonCount;
 
 				mesh.lodName = (lodIndex == 0) ? mModelName : lodNames[lodIndex - 1];
 			}
@@ -308,20 +302,13 @@ namespace od
 				}
             }
 		}
-
-
-		Logger::info() << "Model " << mModelName;
-		Logger::info() << "Max affecting bones per vertex: " << maxAffection;
-		Logger::info() << "Max affected vertex index: " << maxVertexIndex << " Vertex count: " << mVertices.size() << " Lod count: " << mLodMeshInfos.size();
-		//Logger::info() << "Printing skeleton stats:";
-		//sb.printInfo(std::cout);
  	}
 
 	void Model::buildGeometry()
 	{
-		if(!mTexturesLoaded || !mVerticesLoaded || !mFacesLoaded)
+		if(!mTexturesLoaded || !mVerticesLoaded || !mPolygonsLoaded)
 		{
-			throw Exception("Must load at least vertices, textures and faces before building geometry");
+			throw Exception("Must load at least vertices, textures and polygons before building geometry");
 		}
 
 		if(mLodMeshInfos.size() > 0)
@@ -332,15 +319,19 @@ namespace od
 
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
-				osg::ref_ptr<SegmentedGeode> newGeode(new SegmentedGeode);
+				GeodeBuilder gb(getDatabase());
 
-				// FIXME: LOD meshes have holes. somehow we don't cover all faces here
+				// FIXME: LOD meshes have holes. somehow we don't cover all faces here. gotta be something with those "LOD caps"
 				auto verticesBegin = mVertices.begin() + it->firstVertexIndex;
 				auto verticesEnd = mVertices.begin() + it->vertexCount + it->firstVertexIndex;
-				auto facesBegin = mFaces.begin() + it->firstFaceIndex;
-				auto facesEnd = mFaces.begin() + it->faceCount + it->firstFaceIndex;
+				gb.setVertexVector(verticesBegin, verticesEnd);
 
-				newGeode->build(getDatabase(), verticesBegin, verticesEnd, facesBegin, facesEnd, mTextureRefs.size());
+				auto polygonsBegin = mPolygons.begin() + it->firstPolygonIndex;
+				auto polygonsEnd = mPolygons.begin() + it->polygonCount + it->firstPolygonIndex;
+				gb.setPolygonVector(polygonsBegin, polygonsEnd);
+
+				osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
+				gb.build(newGeode);
 
 				float minDistance = it->distanceThreshold;
 				float maxDistance = ((it+1) == mLodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
@@ -351,8 +342,13 @@ namespace od
 
 		}else
 		{
-			osg::ref_ptr<SegmentedGeode> newGeode(new SegmentedGeode);
-			newGeode->build(getDatabase(), mVertices.begin(), mVertices.end(), mFaces.begin(), mFaces.end(), mTextureRefs.size());
+			GeodeBuilder gb(getDatabase());
+			gb.setVertexVector(mVertices.begin(), mVertices.end());
+			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
+
+			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
+			gb.build(newGeode);
+
 			this->addChild(newGeode);
 		}
 

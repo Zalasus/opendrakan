@@ -271,7 +271,7 @@ Record types
         
         struct polygon
         {
-            uint16 unk0; // could contain a two-sided flag
+            uint16 flags; // 0x0002 = double sided (probably)
             uint16 vertex_count; // 3 or 4.
             uint16 texture_index; // Indexes into the model's texture list.
             poly_vertex[vertex_count] vertex_list;

@@ -10,8 +10,8 @@ uniform mat4 osg_ModelViewMatrix;
 uniform mat3 osg_NormalMatrix;
 uniform mat4 osg_ProjectionMatrix; 
 
-in uvec4 influencingBones;
-in vec4  vertexWeights;
+layout(location = 4) in uvec4 influencingBones;
+layout(location = 5) in  vec4 vertexWeights;
 uniform mat4 bones[64];
 
 out vec3 vertexNormal;

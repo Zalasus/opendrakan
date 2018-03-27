@@ -40,8 +40,8 @@ namespace od
 		SrscFile::DirIterator texRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_TEXTURES, id, nameRecord);
 		model->loadTextures(*this, DataReader(getSrscFile().getStreamForRecord(texRecord)));
 
-		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_FACES, id, nameRecord);
-		model->loadFaces(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
+		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_POLYGONS, id, nameRecord);
+		model->loadPolygons(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
 
 
 		// optional records TODO: this regularly causes us to search the whole directory. maybe we should use the order of the records?

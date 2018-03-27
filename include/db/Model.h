@@ -15,8 +15,8 @@
 #include <osg/Group>
 
 #include "Asset.h"
-#include "SegmentedGeode.h"
 #include "Skeleton.h"
+#include "GeodeBuilder.h"
 
 namespace od
 {
@@ -29,8 +29,8 @@ namespace od
 		uint32_t nodeIndex;
 		uint32_t firstVertexIndex;
 		uint32_t vertexCount;
-		uint32_t firstFaceIndex;
-		uint32_t faceCount;
+		uint32_t firstPolygonIndex;
+		uint32_t polygonCount;
 	};
 
 
@@ -39,13 +39,6 @@ namespace od
 	class Model : public Asset, public osg::Group
 	{
 	public:
-
-	    struct VertexAffection
-	    {
-	        VertexAffection() : affectingBoneCount(0) {}
-
-	        size_t affectingBoneCount;
-	    };
 
 		Model(Database &db, RecordId modelId);
 
@@ -58,7 +51,7 @@ namespace od
 		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
 		void loadVertices(ModelFactory &factory, DataReader &&dr);
 		void loadTextures(ModelFactory &factory, DataReader &&dr);
-		void loadFaces(ModelFactory &factory, DataReader &&dr);
+		void loadPolygons(ModelFactory &factory, DataReader &&dr);
 		void loadBoundingData(ModelFactory &factory, DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, DataReader &&dr);
 		void buildGeometry();
@@ -71,18 +64,16 @@ namespace od
 
 		std::string mModelName;
 		std::vector<osg::Vec3f> mVertices;
-		std::vector<VertexAffection> mVertexAffections;
-		std::vector<SegmentedGeode::Face> mFaces;
-		size_t mTriangleCount;
-		size_t mQuadCount;
 		std::vector<AssetRef> mTextureRefs;
+		std::vector<Polygon> mPolygons;
+		std::vector<BoneAffection> mVertexAffections;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
 
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
-		bool mFacesLoaded;
+		bool mPolygonsLoaded;
 	};
 
 	typedef osg::ref_ptr<Model> ModelPtr;

@@ -23,6 +23,9 @@ namespace od
 	 * them into segments with the same texture and converts quads to triangles.
 	 *
 	 * Construction is O(n*log(n)).
+	 *
+	 * @deprecated This is a really ugly implementation of the model splitting we
+	 * need. Look at GeodeBuilder for a better alternative that supports skinning.
 	 */
 	class SegmentedGeode : public osg::Geode
 	{
@@ -47,7 +50,6 @@ namespace od
 
 		void build(AssetProvider &db, std::vector<osg::Vec3f> &vertexArray, std::vector<Face> &faceArray, size_t textureCount = 0);
 		void build(AssetProvider &db, VertexIter vertexBegin, VertexIter vertexEnd, FaceIter faceBegin, FaceIter faceEnd, size_t textureCount = 0);
-
 	};
 
 }

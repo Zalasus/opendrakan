@@ -29,7 +29,7 @@ namespace od
 		MODEL_GROUP         = 0x0201,
 		MODEL_UNKNOWN1      = 0x0202,
 		MODEL_VERTICES      = 0x0203,
-		MODEL_FACES         = 0x0204,
+		MODEL_POLYGONS      = 0x0204,
 		MODEL_TEXTURES      = 0x0206,
 		MODEL_BOUNDING      = 0x0207,
 		MODEL_LOD_BONES     = 0x0208,
