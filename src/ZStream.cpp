@@ -64,7 +64,6 @@ namespace od
     		return traits_type::eof();
     	}
 
-    	bool initialRun = false;
     	if(!mStreamActive && !mStreamEnded)
     	{
     		//Logger::debug() << "Zstream not yet active. Activating";
@@ -82,7 +81,6 @@ namespace od
 			}
 
 			mStreamActive = true;
-			initialRun = true;
     	}
 
         // decompress
