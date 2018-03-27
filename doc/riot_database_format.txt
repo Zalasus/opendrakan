@@ -262,22 +262,22 @@ Record types
     [0x0203] Vertices
         vect3f[uint16]   vertices;
         
-    [0x0204] Faces
-        struct face_vertex
+    [0x0204] Polygons
+        struct poly_vertex
         {
             uint16 vertex_index; // not absolute indices of vertex array but relative to where current LOD starts in vertex array
             vect2f uv;
         };
         
-        struct face
+        struct polygon
         {
             uint16 unk0; // could contain a two-sided flag
             uint16 vertex_count; // 3 or 4.
             uint16 texture_index; // Indexes into the model's texture list.
-            face_vertex[vertex_count] vertex_list;
+            poly_vertex[vertex_count] vertex_list;
         };
         
-        face[uint16]  faces;
+        polygon[uint16]  polygons;
         
     [0x0205] BSP Tree (?) // Rare. See Resources Powerups Fire02 for an example. Models added with "Generate BSP Tree" ticked have this
         struct table_entry
