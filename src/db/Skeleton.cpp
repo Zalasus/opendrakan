@@ -9,11 +9,20 @@
 
 #include <algorithm>
 #include <iomanip>
+#include <osg/Shape>
+#include <osg/ShapeDrawable>
+#include <osg/Geode>
+#include <osg/Depth>
 
 #include "Exception.h"
 
 namespace od
 {
+	BoneNode::BoneNode()
+	: BoneNode("", -9000)
+	{
+	}
+
     BoneNode::BoneNode(const std::string &name, int32_t jointInfoIndex)
     : mJointInfoIndex(jointInfoIndex)
     , mIsChannel(false)
@@ -93,6 +102,20 @@ namespace od
 		for(auto it = mJointInfos.begin(); it != mJointInfos.end(); ++it)
 		{
 			it->visited = false;
+
+			/* draw all joints as balls for testing
+			osg::ref_ptr<osg::MatrixTransform> tf = new osg::MatrixTransform();
+			tf->setMatrix(osg::Matrix::inverse(it->boneXform));
+			osg::ref_ptr<osg::Geode> cylinder = new osg::Geode();
+			osg::ref_ptr<osg::Sphere> cylinderShape = new osg::Sphere(osg::Vec3(0,0,0), 0.01);
+			osg::ref_ptr<osg::ShapeDrawable> cylinderDrawable = new osg::ShapeDrawable(cylinderShape);
+			cylinderDrawable->setColor(osg::Vec4(1, 0, 0, 1));
+			cylinder->addDrawable(cylinderDrawable);
+			cylinder->getOrCreateStateSet()->setRenderBinDetails(5, "RenderBin");
+			cylinder->getOrCreateStateSet()->setAttributeAndModes(new osg::Depth(osg::Depth::ALWAYS), osg::StateAttribute::ON);
+			cylinder->getOrCreateStateSet()->setAttribute(new osg::Program);
+			tf->addChild(cylinder);
+			rootNode->addChild(tf);*/
 		}
 
 		if(rootNode != nullptr)

@@ -162,7 +162,7 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		LayerPtr layer(new Layer(*this));
+    		std::shared_ptr<Layer> layer(new Layer(*this));
     		layer->loadDefinition(dr);
 
     		mLayers.push_back(layer);
@@ -187,9 +187,7 @@ namespace od
 				throw IoException("ZStream read either too many or too few bytes");
 			}
 
-			mLayers[i]->buildGeometry();
-
-			mLayerGroup->addChild(mLayers[i].get());
+			mLayers[i]->buildGeometry(mLayerGroup);
     	}
     }
 

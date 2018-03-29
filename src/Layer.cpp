@@ -7,12 +7,12 @@
 
 #include "Layer.h"
 
-#include <osgUtil/SmoothingVisitor>
 #include <osg/Texture2D>
 #include <osg/FrontFace>
 
 #include "Level.h"
 #include "OdDefines.h"
+#include "GeodeBuilder.h"
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
@@ -123,13 +123,16 @@ namespace od
         }
     }
 
-    void Layer::buildGeometry()
+    void Layer::buildGeometry(osg::Group *layerGroup)
     {
         Logger::debug() << "Building geometry for layer " << mId;
 
         // generate vertices and UVs for SegmentedGeode
 
-        std::vector<osg::Vec3> vertices;
+        GeodeBuilder gb("layer " + mLayerName, mLevel);
+        gb.setClampTextures(true);
+
+        std::vector<osg::Vec3> vertices; // TODO: use internal vectors of GeodeBuilder. here we create two redundant vectors
         vertices.reserve(mVertices.size());
         for(size_t i = 0; i < mVertices.size(); ++i)
         {
@@ -140,19 +143,22 @@ namespace od
 
             vertices.push_back(osg::Vec3(aX, mVertices[i].absoluteHeight, aZ));
         }
+        gb.setVertexVector(vertices.begin(), vertices.end());
 
-        std::vector<Face> faces;
-        faces.reserve(mVisibleTriangles);
+        std::vector<Polygon> polygons;
+        polygons.reserve(mVisibleTriangles);
         for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
         {
             size_t cellIndex = triIndex/2;
             bool isLeft = (triIndex%2 == 0);
             Cell cell = mCells[cellIndex];
-            Face f;
-        	f.vertexCount = 3;
-        	f.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+            Polygon poly;
+        	poly.vertexCount = 3;
+        	poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+        	poly.doubleSided = false; // since for "between"-layers, all polys are double sided it is probably
+        	                          //  more efficient to just deactivate face culling for them
 
-        	if(f.texture.isNullTexture())
+        	if(poly.texture.isNullTexture())
         	{
         		continue;
         	}
@@ -179,78 +185,67 @@ namespace od
             {
                 if(isLeft)
                 {
-                    f.vertexIndices[0] = c;
-                    f.vertexIndices[1] = b;
-                    f.vertexIndices[2] = a;
-                    f.vertexUvCoords[0] = uvC;
-                    f.vertexUvCoords[1] = uvB;
-                    f.vertexUvCoords[2] = uvA;
+                    poly.vertexIndices[0] = c;
+                    poly.vertexIndices[1] = b;
+                    poly.vertexIndices[2] = a;
+                    poly.uvCoords[0] = uvC;
+                    poly.uvCoords[1] = uvB;
+                    poly.uvCoords[2] = uvA;
 
                 }else
                 {
-                	f.vertexIndices[0] = c;
-                    f.vertexIndices[1] = d;
-                    f.vertexIndices[2] = b;
-                    f.vertexUvCoords[0] = uvC;
-                    f.vertexUvCoords[1] = uvD;
-                    f.vertexUvCoords[2] = uvB;
+                	poly.vertexIndices[0] = c;
+                    poly.vertexIndices[1] = d;
+                    poly.vertexIndices[2] = b;
+                    poly.uvCoords[0] = uvC;
+                    poly.uvCoords[1] = uvD;
+                    poly.uvCoords[2] = uvB;
                 }
 
             }else // division = BACKSLASH
             {
                 if(isLeft)
                 {
-                    f.vertexIndices[0] = a;
-                    f.vertexIndices[1] = c;
-                    f.vertexIndices[2] = d;
-                    f.vertexUvCoords[0] = uvA;
-                    f.vertexUvCoords[1] = uvC;
-                    f.vertexUvCoords[2] = uvD;
+                    poly.vertexIndices[0] = a;
+                    poly.vertexIndices[1] = c;
+                    poly.vertexIndices[2] = d;
+                    poly.uvCoords[0] = uvA;
+                    poly.uvCoords[1] = uvC;
+                    poly.uvCoords[2] = uvD;
 
                 }else
                 {
-                    f.vertexIndices[0] = a;
-                    f.vertexIndices[1] = d;
-                    f.vertexIndices[2] = b;
-                    f.vertexUvCoords[0] = uvA;
-                    f.vertexUvCoords[1] = uvD;
-                    f.vertexUvCoords[2] = uvB;
+                    poly.vertexIndices[0] = a;
+                    poly.vertexIndices[1] = d;
+                    poly.vertexIndices[2] = b;
+                    poly.uvCoords[0] = uvA;
+                    poly.uvCoords[1] = uvD;
+                    poly.uvCoords[2] = uvB;
                 }
             }
 
-            faces.push_back(f);
+            polygons.push_back(poly);
         }
+        gb.setPolygonVector(polygons.begin(), polygons.end());
 
-        build(mLevel, vertices, faces);
+        mLayerGeode = new osg::Geode;
+        mLayerGeode->setName("layer " + mLayerName);
+        gb.build(mLayerGeode);
+        layerGroup->addChild(mLayerGeode);
 
         if(mType == TYPE_FLOOR)
         {
-        	this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::COUNTER_CLOCKWISE), osg::StateAttribute::ON);
+        	mLayerGeode->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::COUNTER_CLOCKWISE), osg::StateAttribute::ON);
 
         }else if(mType == TYPE_CEILING)
 		{
-			this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
+			mLayerGeode->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
 
 		}else if(mType == TYPE_BETWEEN)
 		{
 			// so both faces get rendered. that's what this "between" is, right?
-			this->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
+			mLayerGeode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
 		}
-
-        // generate normals
-        osgUtil::SmoothingVisitor sm;
-        this->accept(sm);
     }
-
-    const char *Layer::libraryName() const
-    {
-        return OD_LIB_NAME;
-    }
-
-    const char *Layer::className() const
-    {
-        return "Layer";
-    }
-
 }
 

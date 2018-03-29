@@ -54,6 +54,7 @@ namespace od
 		osg::ref_ptr<osg::MatrixTransform> mNode;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 		std::vector<Keyframe> mKeyframes;
+		osg::Matrix mOriginalXform;
 		int32_t mLastKeyframeIndex;
 		AnimationPlayState mPlayState;
 	};

@@ -31,6 +31,8 @@ namespace od
 		uint32_t vertexCount;
 		uint32_t firstPolygonIndex;
 		uint32_t polygonCount;
+
+		std::vector<BoneAffection> boneAffections;
 	};
 
 
@@ -66,7 +68,6 @@ namespace od
 		std::vector<osg::Vec3f> mVertices;
 		std::vector<AssetRef> mTextureRefs;
 		std::vector<Polygon> mPolygons;
-		std::vector<BoneAffection> mVertexAffections;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;

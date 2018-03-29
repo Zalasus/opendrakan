@@ -15,8 +15,10 @@
 namespace od
 {
 
-	GeodeBuilder::GeodeBuilder(AssetProvider &assetProvider)
-	: mAssetProvider(assetProvider)
+	GeodeBuilder::GeodeBuilder(const std::string &modelName, AssetProvider &assetProvider)
+	: mModelName(modelName)
+	, mAssetProvider(assetProvider)
+	, mClampTextures(false)
 	{
 	}
 
@@ -96,26 +98,39 @@ namespace od
 			return;
 		}
 
+		if(mVertices == nullptr)
+		{
+			throw Exception("Need to add vertex vector to GeodeBuilder before adding bone affections");
+		}
+
 		mBoneIndices = new osg::Vec4uiArray;
-		mBoneIndices->resize(end - begin, osg::Vec4ui(0, 0, 0, 0));
+		mBoneIndices->setName("influencingBones");
+		mBoneIndices->resize(mVertices->size(), osg::Vec4ui(0, 0, 0, 0));
 		mBoneWeights = new osg::Vec4Array;
-		mBoneWeights->resize(end - begin, osg::Vec4f(0, 0, 0, 0)); // weight of 0 will make unused bones uneffective, regardless
-																   //  of index -> less logic in the vertex shader!
+		mBoneWeights->setName("vertexWeights");
+		mBoneWeights->resize(mVertices->size(), osg::Vec4f(0, 0, 0, 0)); // weight of 0 will make unused bones uneffective, regardless
+																         //  of index -> less logic in the vertex shader!
+		std::vector<size_t> influencingBonesCount(mVertices->size(), 0);
+
 		for(auto it = begin; it != end; ++it)
 		{
-			size_t index = it - begin;
-
-			if(it->affectingBoneCount > 4)
+			if(it->vertexIndex >= mVertices->size())
 			{
-				// TODO: perhaps don't ignore everything past the fourth bone, but rather overwrite the one with lowest weight?
-				it->affectingBoneCount = 4;
+				Logger::error() << "Affected vertex index of bone out of bounds. Was " << it->vertexIndex << " where size was " << mVertices->size();
+				throw Exception("Affected vertex index of bone out of bounds");
 			}
 
-			for(size_t boneIndex = 0; boneIndex < it->affectingBoneCount; ++boneIndex)
+			size_t &currentBoneCount = influencingBonesCount[it->vertexIndex];
+			if(currentBoneCount >= 4)
 			{
-				mBoneIndices->at(index)[boneIndex] = it->boneIndices[boneIndex];
-				mBoneWeights->at(index)[boneIndex] = it->boneWeights[boneIndex];
+				Logger::warn() << "More than 4 bones per vertex";
+				// TODO: perhaps overwrite bone with lowest weight rather than ignoring all bones past the fourth?
+				continue;
 			}
+
+			mBoneIndices->at(it->vertexIndex)[currentBoneCount] = it->jointIndex;
+			mBoneWeights->at(it->vertexIndex)[currentBoneCount] = it->vertexWeight;
+			++currentBoneCount;
 		}
 	}
 
@@ -151,10 +166,9 @@ namespace od
 				geom->setTexCoordArray(0, mUvCoords);
 				if(mBoneIndices != nullptr && mBoneWeights != nullptr)
 				{
-					// FIXME: these locations may get inconsitent with what we use in the shader and override the default
-					//  locations for UV units 1 and 2.
-					geom->setVertexAttribArray(4, mBoneIndices);
-					geom->setVertexAttribArray(5, mBoneWeights);
+					// FIXME: these locations may get inconsistent with what we use in the shader
+					geom->setVertexAttribArray(14, mBoneIndices, osg::Array::BIND_PER_VERTEX);
+					geom->setVertexAttribArray(15, mBoneWeights, osg::Array::BIND_PER_VERTEX);
 				}
 
 				// IBO unique per geometry/texture
@@ -173,8 +187,18 @@ namespace od
 					}
 
 					osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(textureImage));
-					texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT); // this is the default for model textures. for layers we should use clamp to edge instead
-					texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+					if(!mClampTextures)
+					{
+						// this is the default for model textures
+						texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
+						texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+
+					}else
+					{
+						// for layers we should use clamp to border instead
+						texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+						texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+					}
 					ss->setTextureAttributeAndModes(0, texture);
 				}
 

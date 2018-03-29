@@ -10,8 +10,8 @@ uniform mat4 osg_ModelViewMatrix;
 uniform mat3 osg_NormalMatrix;
 uniform mat4 osg_ProjectionMatrix; 
 
-layout(location = 4) in uvec4 influencingBones;
-layout(location = 5) in  vec4 vertexWeights;
+layout(location = 14) in uvec4 influencingBones;
+layout(location = 15) in  vec4 vertexWeights;
 uniform mat4 bones[64];
 
 out vec3 vertexNormal;
@@ -19,19 +19,26 @@ out vec4 vertexColor;
 out vec2 texCoord;
 
 void main(void)
-{
-    vec4 newPos = vec4(0.0, 0.0, 0.0, 1.0);
-    vec4 newNormal = vec4(0.0, 0.0, 0.0, 0.0);
-    
+{   
+    mat4 totalBoneXform = mat4(0.0);
     for(int i = 0; i < 4; ++i)
     {
-        newPos += (bones[influencingBones[i]] * osg_Vertex) * vertexWeights[i];
-        newNormal += (bones[influencingBones[i]] * vec4(osg_Normal, 0.0)) * vertexWeights[i];
+        uint boneIndex = influencingBones[i];
+        if(boneIndex > 63u)
+        {
+            boneIndex = 63u;
+        }
+        
+        float vertexWeight = vertexWeights[i];
+        mat4 bone = bones[boneIndex];
+        
+        //vertexWeight = 0.25;
+        
+        totalBoneXform += bone * vertexWeight;
     }
     
-    // remove once we really upload bones and set influence attributes
-    newPos = osg_Vertex;
-    newNormal = vec4(osg_Normal, 0.0);
+    vec4 newPos = totalBoneXform * osg_Vertex;
+    vec4 newNormal = totalBoneXform * vec4(osg_Normal, 0.0);
     
     gl_Position = osg_ProjectionMatrix * osg_ModelViewMatrix * vec4(newPos.xyz, 1.0);
     vertexNormal = osg_NormalMatrix * newNormal.xyz;
@@ -39,3 +46,5 @@ void main(void)
     vertexColor = osg_Color;
     texCoord = osg_MultiTexCoord0.xy;
 }
+
+

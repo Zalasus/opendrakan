@@ -8,15 +8,17 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
+#include <osg/Group>
+#include <osg/Geode>
+
 #include "db/Asset.h"
-#include "SegmentedGeode.h"
 #include "DataStream.h"
 
 namespace od
 {
     class Level;
 
-    class Layer : public SegmentedGeode
+    class Layer
     {
     public:
 
@@ -40,15 +42,12 @@ namespace od
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
-        void buildGeometry();
+        void buildGeometry(osg::Group *layerGroup);
 
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
 
-        // override osg::Geode
-        virtual const char *libraryName() const override;
-        virtual const char *className() const override;
 
     private:
 
@@ -67,7 +66,7 @@ namespace od
             float absoluteHeight;
         };
 
-        Level              &mLevel;
+        Level              	   &mLevel;
         uint32_t                mId;
         uint32_t                mWidth;
         uint32_t                mHeight;
@@ -87,9 +86,8 @@ namespace od
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
+        osg::ref_ptr<osg::Geode> mLayerGeode;
     };
-
-    typedef osg::ref_ptr<Layer> LayerPtr;
 
 }
 

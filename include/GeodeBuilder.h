@@ -33,9 +33,9 @@ namespace od
 
 	struct BoneAffection
 	{
-		size_t affectingBoneCount;
-		size_t boneIndices[4];
-		float  boneWeights[4];
+		size_t jointIndex;
+		size_t vertexIndex;
+		float vertexWeight;
 	};
 
 	/**
@@ -49,11 +49,12 @@ namespace od
 	{
 	public:
 
-		GeodeBuilder(AssetProvider &assetProvider);
+		GeodeBuilder(const std::string &modelName, AssetProvider &assetProvider);
 
 		void setVertexVector(std::vector<osg::Vec3f>::iterator begin, std::vector<osg::Vec3f>::iterator end);
 		void setPolygonVector(std::vector<Polygon>::iterator begin, std::vector<Polygon>::iterator end);
 		void setBoneAffectionVector(std::vector<BoneAffection>::iterator begin, std::vector<BoneAffection>::iterator end);
+		void setClampTextures(bool b) { mClampTextures = b; }
 
 		void build(osg::Geode *geode);
 
@@ -70,6 +71,7 @@ namespace od
 		void _buildNormals();
 		void _disambiguateAndGenerateUvs();
 
+		std::string mModelName;
 		AssetProvider &mAssetProvider;
 
 		// arrays for the shared VBO. IBOs are uniquely generated per geometry.
@@ -79,6 +81,7 @@ namespace od
 		osg::ref_ptr<osg::Vec4Array>  mBoneWeights;
 		osg::ref_ptr<osg::Vec4uiArray> mBoneIndices;
 
+		bool mClampTextures;
 		std::vector<Triangle> mTriangles;
 	};
 

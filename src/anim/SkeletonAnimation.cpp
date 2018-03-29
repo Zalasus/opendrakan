@@ -13,6 +13,8 @@
 #include "OdDefines.h"
 #include "db/Skeleton.h"
 
+#include <iomanip>
+
 #define OD_MAX_BONE_COUNT 64
 
 namespace od
@@ -35,7 +37,7 @@ namespace od
 				return;
 			}
 
-			mBoneMatrixList->setElement(mBoneNode->getJointInfoIndex(), mBoneNode->getMatrix());
+			mBoneMatrixList->setElement(mBoneNode->getJointInfoIndex(), mBoneNode->getMatrix() * mBoneNode->getInverseBindPoseXform());
 
 			traverse(node, nv);
 		}
@@ -90,8 +92,15 @@ namespace od
 		// attach rigging shader to model node TODO: is this the right place to attach this? how to we ensure it is not overwritten?
 		osg::ref_ptr<osg::Shader> riggingShader = mEngine.getShaderManager().loadShader(OD_SHADER_RIGGED_VERTEX, osg::Shader::VERTEX);
 		mRiggingProgram = mEngine.getShaderManager().makeProgram(riggingShader, nullptr);
+		mRiggingProgram->addBindAttribLocation("influencingBones", 14);
+		mRiggingProgram->addBindAttribLocation("vertexWeights", 15);
 		mModelNode->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
 		mModelNode->getOrCreateStateSet()->addUniform(mBoneMatrixList, osg::StateAttribute::ON);
+
+		for(size_t i = 0; i < OD_MAX_BONE_COUNT; ++i)
+		{
+			mBoneMatrixList->setElement(i, osg::Matrixf::identity());
+		}
 
 		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
 	}

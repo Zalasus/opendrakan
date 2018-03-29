@@ -130,8 +130,6 @@ namespace od
 
 	void Model::loadLodsAndBones(ModelFactory &factory, DataReader &&dr)
 	{
-	    mVertexAffections.resize(mVertices.size());
-
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
@@ -142,6 +140,7 @@ namespace od
 		{
 			throw Exception("Expected at least one LOD in model");
 		}
+		mLodMeshInfos.resize(lodCount);
 
 		lodNames.resize(lodCount - 1);
 		for(int32_t i = 0; i < lodCount - 1; ++i)
@@ -186,8 +185,11 @@ namespace od
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
+            	std::vector<BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
+
 				uint16_t affectedVertexCount;
 				dr >> affectedVertexCount;
+				boneAffections.reserve(boneAffections.size() + affectedVertexCount);
 				for(size_t vertexIndex = 0; vertexIndex < affectedVertexCount; ++vertexIndex)
 				{
 					uint32_t affectedVertexIndex;
@@ -195,32 +197,16 @@ namespace od
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					if(lodIndex != 0) // for now, use only first lod as we don't have lod info yet
-					{
-						continue;
-					}
-
-					if(affectedVertexIndex >= mVertexAffections.size())
-					{
-						throw Exception("Affected vertex's index in bone data out of bounds");
-					}
-
-					BoneAffection &vAff = mVertexAffections[affectedVertexIndex];
-
-					if(vAff.affectingBoneCount >= 4) // ignore any bones past the fourth. there should be none anyways
-					{
-						continue;
-					}
-
-					vAff.boneIndices[vAff.affectingBoneCount] = jointIndex;
-					vAff.boneWeights[vAff.affectingBoneCount] = weight;
-					vAff.affectingBoneCount++;
+					BoneAffection bAff;
+					bAff.jointIndex = jointIndex;
+					bAff.vertexIndex = affectedVertexIndex;
+					bAff.vertexWeight = weight;
+					boneAffections.push_back(bAff);
 				}
             }
 		}
 
 		// lod info
-		mLodMeshInfos.resize(lodCount);
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
 			uint16_t meshCount;
@@ -247,7 +233,6 @@ namespace od
 			}
 		}
 
-
 		// animations refs
 		uint16_t animCount;
 		dr >> animCount;
@@ -265,35 +250,35 @@ namespace od
 		dr >> channelCount;
 		for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
 		{
-			uint32_t nodeIndex;
+			uint32_t jointIndex;
 			osg::Matrixf xformA;
 			osg::Matrixf xformB;
             uint16_t capCount;
 
-            dr >> nodeIndex
+            dr >> jointIndex
 			   >> xformA
 			   >> xformB
 			   >> capCount;
 
-            mSkeletonBuilder->makeChannel(nodeIndex);
+            mSkeletonBuilder->makeChannel(jointIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {
-            	uint32_t firstCapFaceIndex;
-                uint32_t capFaceCount;
-                uint32_t firstPartFaceIndex;
-                uint32_t partFaceCount;
+            	uint32_t firstCapPolygonIndex;
+                uint32_t capPolygonCount;
+                uint32_t firstPartPolygonIndex;
+                uint32_t partPolygonCount;
                 uint32_t unk;
-                uint16_t vertexCount;
+                uint16_t affectedVertexCount;
 
-                dr >> firstCapFaceIndex
-				   >> capFaceCount
-				   >> firstPartFaceIndex
-				   >> partFaceCount
+                dr >> firstCapPolygonIndex
+				   >> capPolygonCount
+				   >> firstPartPolygonIndex
+				   >> partPolygonCount
 				   >> unk
-				   >> vertexCount;
+				   >> affectedVertexCount;
 
-				for(size_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
+				for(size_t vertexIndex = 0; vertexIndex < affectedVertexCount; ++vertexIndex)
 				{
 					uint32_t affectedVertexIndex;
 					float weight;
@@ -319,22 +304,25 @@ namespace od
 
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
-				GeodeBuilder gb(getDatabase());
+				GeodeBuilder gb(it->lodName, getDatabase());
+				gb.setClampTextures(false);
 
-				// FIXME: LOD meshes have holes. somehow we don't cover all faces here. gotta be something with those "LOD caps"
+				// the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
+				//  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
+				size_t actualVertexCount = ((it+1 == mLodMeshInfos.end()) ? mVertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
+				size_t actualPolyCount = ((it+1 == mLodMeshInfos.end()) ? mPolygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
+
 				auto verticesBegin = mVertices.begin() + it->firstVertexIndex;
-				auto verticesEnd = mVertices.begin() + it->vertexCount + it->firstVertexIndex;
+				auto verticesEnd = mVertices.begin() + actualVertexCount + it->firstVertexIndex;
 				gb.setVertexVector(verticesBegin, verticesEnd);
 
 				auto polygonsBegin = mPolygons.begin() + it->firstPolygonIndex;
-				auto polygonsEnd = mPolygons.begin() + it->polygonCount + it->firstPolygonIndex;
+				auto polygonsEnd = mPolygons.begin() + actualPolyCount + it->firstPolygonIndex;
 				gb.setPolygonVector(polygonsBegin, polygonsEnd);
 
-				// currently we only load affections for the first LOD, so only use that data when building the first one
-				if(it == mLodMeshInfos.begin())
-				{
-					gb.setBoneAffectionVector(mVertexAffections.begin(), mVertexAffections.end());
-				}
+				auto bonesBegin = it->boneAffections.begin();
+				auto bonesEnd = it->boneAffections.end();
+				gb.setBoneAffectionVector(bonesBegin, bonesEnd);
 
 				osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
 				gb.build(newGeode);
@@ -348,10 +336,10 @@ namespace od
 
 		}else
 		{
-			GeodeBuilder gb(getDatabase());
+			GeodeBuilder gb(mModelName, getDatabase());
+			gb.setClampTextures(false);
 			gb.setVertexVector(mVertices.begin(), mVertices.end());
 			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
-			gb.setBoneAffectionVector(mVertexAffections.begin(), mVertexAffections.end());
 
 			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
 			gb.build(newGeode);

@@ -29,8 +29,11 @@ namespace od
     {
     public:
 
+    	BoneNode();
         BoneNode(const std::string &name, int32_t jointInfoIndex);
         BoneNode(const BoneNode &bn, const osg::CopyOp &copyop = osg::CopyOp::SHALLOW_COPY);
+
+        META_Node(od, BoneNode);
 
         inline int32_t getJointInfoIndex() const { return mJointInfoIndex; }
 
