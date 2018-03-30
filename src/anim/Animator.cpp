@@ -58,9 +58,7 @@ namespace od
 
 	void Animator::update(double simTime)
 	{
-		float angle = M_PI/2 * std::sin(simTime * M_PI);
 
-		mNode->setMatrix(mOriginalXform * osg::Matrix::rotate(angle, osg::Vec3(0,1,0)));
 	}
 
 	void Animator::reserveKeyframes(size_t count)

@@ -103,11 +103,14 @@ namespace od
 			throw Exception("Need to add vertex vector to GeodeBuilder before adding bone affections");
 		}
 
-		mBoneIndices = new osg::Vec4uiArray;
+		mBoneIndices = new osg::Vec4Array;
 		mBoneIndices->setName("influencingBones");
-		mBoneIndices->resize(mVertices->size(), osg::Vec4ui(0, 0, 0, 0));
+		mBoneIndices->setBinding(osg::Array::BIND_PER_VERTEX);
+		mBoneIndices->resize(mVertices->size(), osg::Vec4(0, 0, 0, 0));
+
 		mBoneWeights = new osg::Vec4Array;
 		mBoneWeights->setName("vertexWeights");
+		mBoneWeights->setBinding(osg::Array::BIND_PER_VERTEX);
 		mBoneWeights->resize(mVertices->size(), osg::Vec4f(0, 0, 0, 0)); // weight of 0 will make unused bones uneffective, regardless
 																         //  of index -> less logic in the vertex shader!
 		std::vector<size_t> influencingBonesCount(mVertices->size(), 0);
@@ -159,6 +162,7 @@ namespace od
 				geode->addDrawable(geom);
 
 				geom->setUseVertexBufferObjects(true);
+				geom->setUseDisplayList(false);
 
 				// shared VBOs
 				geom->setVertexArray(mVertices);

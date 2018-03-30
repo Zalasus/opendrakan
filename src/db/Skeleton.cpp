@@ -18,6 +18,60 @@
 
 namespace od
 {
+
+	class BoneInfoVisitor : public osg::NodeVisitor
+	{
+	public:
+
+		BoneInfoVisitor(std::ostream &out)
+		: osg::NodeVisitor(osg::NodeVisitor::TRAVERSE_ALL_CHILDREN)
+		, mOut(out)
+		, mDepth(1)
+		, mRootEncountered(false)
+		{
+		}
+
+		virtual void apply(osg::Group &node)
+		{
+			if(!mRootEncountered)
+			{
+				mOut << "[ROOT]" << std::endl;
+				mRootEncountered = true;
+			}
+			traverse(node);
+		}
+
+		virtual void apply(osg::MatrixTransform &node)
+        {
+			BoneNode *bn = dynamic_cast<BoneNode*>(&node);
+			if(bn != nullptr)
+			{
+				for(size_t i = 0; i < mDepth; ++i)
+				{
+					mOut << "  |";
+				}
+
+				mOut << "-" << bn->getName()
+					 << " (ji=" << bn->getJointInfoIndex() << " wc=" << bn->getWeightCount() << ")"
+					 << std::endl;
+			}
+
+			++mDepth;
+			traverse(node);
+			--mDepth;
+        }
+
+
+	private:
+
+		std::ostream &mOut;
+		size_t mDepth;
+		bool mRootEncountered;
+
+	};
+
+
+
 	BoneNode::BoneNode()
 	: BoneNode("", -9000)
 	{
@@ -26,6 +80,7 @@ namespace od
     BoneNode::BoneNode(const std::string &name, int32_t jointInfoIndex)
     : mJointInfoIndex(jointInfoIndex)
     , mIsChannel(false)
+    , mWeightCount(0)
     {
         this->setName(name);
     }
@@ -35,6 +90,7 @@ namespace od
     , mJointInfoIndex(bn.mJointInfoIndex)
     , mInverseBindPoseXform(bn.mInverseBindPoseXform)
     , mIsChannel(bn.mIsChannel)
+    , mWeightCount(bn.mWeightCount)
     {
     }
 
@@ -103,11 +159,11 @@ namespace od
 		{
 			it->visited = false;
 
-			/* draw all joints as balls for testing
-			osg::ref_ptr<osg::MatrixTransform> tf = new osg::MatrixTransform();
+			// draw all joints as balls for testing
+			/*osg::ref_ptr<osg::MatrixTransform> tf = new osg::MatrixTransform();
 			tf->setMatrix(osg::Matrix::inverse(it->boneXform));
 			osg::ref_ptr<osg::Geode> cylinder = new osg::Geode();
-			osg::ref_ptr<osg::Sphere> cylinderShape = new osg::Sphere(osg::Vec3(0,0,0), 0.01);
+			osg::ref_ptr<osg::Sphere> cylinderShape = new osg::Sphere(osg::Vec3(0,0,0), 0.005);
 			osg::ref_ptr<osg::ShapeDrawable> cylinderDrawable = new osg::ShapeDrawable(cylinderShape);
 			cylinderDrawable->setColor(osg::Vec4(1, 0, 0, 1));
 			cylinder->addDrawable(cylinderDrawable);
@@ -138,32 +194,11 @@ namespace od
 
 	void SkeletonBuilder::printInfo(std::ostream &out)
 	{
-	    out << "Sorry, no info right now :/" << std::endl;
-		/*out << "Skeleton info for model " << mModelName << std::endl;
+		osg::ref_ptr<osg::Group> root(new osg::Group);
+		this->build(root);
 
-		out << std::endl << "Nodes:" << std::endl;
-		for(size_t i = 0; i < mNodes.size(); ++i)
-		{
-			SkeletonNode &currentNode = mNodes[i];
-
-			out << std::setw(3) << i << ": "
-				<< std::setw(16) << (std::string("'") + currentNode.getName() + "'")
-				<< " jointInfo=" << std::setw(4) << currentNode.getJointInfoIndex() << std::endl;
-		}
-
-		out << std::endl << "Joint info:" << std::endl;
-		for(size_t i = 0; i < mJointInfos.size(); ++i)
-		{
-			SkeletonJointInfo &jointInfo = mJointInfos[i];
-
-			out << std::setw(3) << i << ": "
-				<< "meshIndex=" << std::setw(4) << jointInfo.meshIndex << " "
-				<< "firstChild=" << std::setw(4) << jointInfo.firstChildIndex << " "
-				<< "nextSibling=" << std::setw(4) << jointInfo.nextSiblingIndex << std::endl;
-		}
-
-		out << std::endl << "Constructed bone tree: " << std::endl;
-		mRootNode.print(out, 0);*/
+	    BoneInfoVisitor biv(out);
+	    root->accept(biv);
 	}
 
 	void SkeletonBuilder::_rebuildJointLinks()
@@ -186,6 +221,7 @@ namespace od
 				SkeletonJointInfo &jointInfo = mJointInfos[jointInfoIndex];
 
 				currentBone->setInverseBindPoseXform(jointInfo.boneXform);
+				currentBone->setWeightCount(jointInfo.weightCount);
 				jointInfo.referencingBone = currentBone;
 			}
 

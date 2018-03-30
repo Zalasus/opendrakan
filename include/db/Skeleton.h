@@ -36,6 +36,8 @@ namespace od
         META_Node(od, BoneNode);
 
         inline int32_t getJointInfoIndex() const { return mJointInfoIndex; }
+        inline size_t getWeightCount() const { return mWeightCount; }
+        inline void setWeightCount(size_t w) { mWeightCount = w; }
 
         inline bool isChannel() const { return mIsChannel; }
         inline void setIsChannel(bool b) { mIsChannel = b; }
@@ -49,6 +51,7 @@ namespace od
         int32_t mJointInfoIndex;
         osg::Matrixf mInverseBindPoseXform;
         bool mIsChannel;
+        size_t mWeightCount;
     };
 
 	class SkeletonBuilder
@@ -63,6 +66,7 @@ namespace od
 		void build(osg::Group *rootNode);
 		void printInfo(std::ostream &out);
 
+		void pfffSetWeightCount(size_t wc) { mJointInfos.back().weightCount = wc; }
 
 	private:
 
@@ -75,6 +79,8 @@ namespace od
 
             bool visited;
             BoneNode *referencingBone;
+
+            size_t weightCount;
         };
 
 		void _rebuildJointLinks();

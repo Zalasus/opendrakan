@@ -78,9 +78,10 @@ namespace od
 		osg::ref_ptr<osg::Vec3Array> mVertices;
 		osg::ref_ptr<osg::Vec3Array> mNormals;
 		osg::ref_ptr<osg::Vec2Array> mUvCoords;
-		osg::ref_ptr<osg::Vec4Array>  mBoneWeights;
-		osg::ref_ptr<osg::Vec4uiArray> mBoneIndices;
-
+		osg::ref_ptr<osg::Vec4Array> mBoneWeights;
+		osg::ref_ptr<osg::Vec4Array> mBoneIndices; // NOTE: this was an unsigned int vector before. turns out OSG somehow fails
+												   //  to upload that to the shader. or maybe the shader can't handle it. anyhow
+												   //  it took me like 10 hours to debug that shit. don't change it!
 		bool mClampTextures;
 		std::vector<Triangle> mTriangles;
 	};

@@ -1,5 +1,5 @@
 
-#version 330
+#version 330 core
 
 // default osg input stuff
 layout(location = 0) in vec4 osg_Vertex;
@@ -10,8 +10,8 @@ uniform mat4 osg_ModelViewMatrix;
 uniform mat3 osg_NormalMatrix;
 uniform mat4 osg_ProjectionMatrix; 
 
-layout(location = 14) in uvec4 influencingBones;
-layout(location = 15) in  vec4 vertexWeights;
+layout(location = 14) in vec4 influencingBones;
+layout(location = 15) in vec4 vertexWeights;
 uniform mat4 bones[64];
 
 out vec3 vertexNormal;
@@ -23,16 +23,10 @@ void main(void)
     mat4 totalBoneXform = mat4(0.0);
     for(int i = 0; i < 4; ++i)
     {
-        uint boneIndex = influencingBones[i];
-        if(boneIndex > 63u)
-        {
-            boneIndex = 63u;
-        }
+        int boneIndex = min(int(influencingBones[i]), 63);
         
         float vertexWeight = vertexWeights[i];
         mat4 bone = bones[boneIndex];
-        
-        //vertexWeight = 0.25;
         
         totalBoneXform += bone * vertexWeight;
     }

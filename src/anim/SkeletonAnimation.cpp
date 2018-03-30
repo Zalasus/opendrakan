@@ -42,6 +42,7 @@ namespace od
 			traverse(node, nv);
 		}
 
+
 	private:
 
 		osg::ref_ptr<BoneNode> mBoneNode;
@@ -73,6 +74,7 @@ namespace od
         	traverse(node);
         }
 
+
 	private:
 
         std::vector<osg::ref_ptr<Animator>> &mAnimatorList;
@@ -89,11 +91,13 @@ namespace od
 		CreateAnimatorsVisitor cav(mBoneMatrixList, mAnimators);
 		mSkeletonRoot->accept(cav);
 
+		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
+
 		// attach rigging shader to model node TODO: is this the right place to attach this? how to we ensure it is not overwritten?
 		osg::ref_ptr<osg::Shader> riggingShader = mEngine.getShaderManager().loadShader(OD_SHADER_RIGGED_VERTEX, osg::Shader::VERTEX);
 		mRiggingProgram = mEngine.getShaderManager().makeProgram(riggingShader, nullptr);
-		mRiggingProgram->addBindAttribLocation("influencingBones", 14);
-		mRiggingProgram->addBindAttribLocation("vertexWeights", 15);
+		mRiggingProgram->addBindAttribLocation("influencingBones", 13);
+		mRiggingProgram->addBindAttribLocation("vertexWeights", 14);
 		mModelNode->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
 		mModelNode->getOrCreateStateSet()->addUniform(mBoneMatrixList, osg::StateAttribute::ON);
 
@@ -101,8 +105,6 @@ namespace od
 		{
 			mBoneMatrixList->setElement(i, osg::Matrixf::identity());
 		}
-
-		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
 	}
 
 	SkeletonAnimation::~SkeletonAnimation()

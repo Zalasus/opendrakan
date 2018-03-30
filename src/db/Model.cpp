@@ -41,6 +41,8 @@ namespace od
 
 		uint32_t shadingType;
 		dr >> shadingType;
+
+		this->setName(mModelName);
 	}
 
 	void Model::loadVertices(ModelFactory &factory, DataReader &&dr)
@@ -203,7 +205,14 @@ namespace od
 					bAff.vertexWeight = weight;
 					boneAffections.push_back(bAff);
 				}
+
+				if(lodIndex == 0)
+				{
+					mSkeletonBuilder->pfffSetWeightCount(affectedVertexCount);
+				}
             }
+
+
 		}
 
 		// lod info
@@ -287,6 +296,9 @@ namespace od
 				}
             }
 		}
+
+		//Logger::info() << "Skel info for model " << mModelName;
+		//mSkeletonBuilder->printInfo(std::cout);
  	}
 
 	void Model::buildGeometry()
