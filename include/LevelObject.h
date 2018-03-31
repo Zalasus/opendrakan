@@ -8,12 +8,13 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
+
 #include <memory>
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
 
 #include "db/Class.h"
-#include "anim/SkeletonAnimation.h"
+#include "anim/SkeletonAnimationPlayer.h"
 
 namespace od
 {
@@ -35,8 +36,8 @@ namespace od
         inline osg::Vec3f getScale() const { return mScale; }
         inline osg::Quat getRotation() const { return mRotation; }
         void setPosition(osg::Vec3f v);
-
-
+        inline SkeletonAnimationPlayer *getSkeletonAnimationPlayer() { return mSkeletonAnimation; }
+        inline Model *getModel() { return mModel; }
 
         void loadFromRecord(DataReader dr);
 
@@ -59,8 +60,9 @@ namespace od
         osg::Quat  mRotation;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
+        osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
-        osg::ref_ptr<SkeletonAnimation> mSkeletonAnimation;
+        osg::ref_ptr<SkeletonAnimationPlayer> mSkeletonAnimation;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

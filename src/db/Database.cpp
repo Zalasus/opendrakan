@@ -143,6 +143,7 @@ namespace od
         	Logger::verbose() << "Database has no texture container";
         }
 
+
         FilePath modPath = mDbFilePath.ext(".mod");
         if(modPath.exists())
         {
@@ -154,6 +155,7 @@ namespace od
         	Logger::verbose() << "Database has no model container";
         }
 
+
         FilePath odbPath = mDbFilePath.ext(".odb");
         if(odbPath.exists())
         {
@@ -163,6 +165,18 @@ namespace od
         }else
         {
             Logger::verbose() << "Database has no class container";
+        }
+
+
+        FilePath adbPath = mDbFilePath.ext(".adb");
+        if(adbPath.exists())
+        {
+            mAnimFactory = std::unique_ptr<AnimationFactory>(new AnimationFactory(adbPath, *this));
+            Logger::verbose() << "Opened database animation container" << adbPath.str();
+
+        }else
+        {
+            Logger::verbose() << "Database has no animation container";
         }
 	}
 
@@ -231,6 +245,23 @@ namespace od
         return it->second.get().getSequence(ref.assetId);
     }
 
+    osg::ref_ptr<Animation> Database::getAnimationByRef(const AssetRef &ref)
+    {
+    	if(ref.dbIndex == 0)
+        {
+            return this->getAnimation(ref.assetId);
+        }
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            throw Exception("Database has no dependency with given index");
+        }
+
+        return it->second.get().getAnimation(ref.assetId);
+    }
+
+
 	TexturePtr Database::getTexture(RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
@@ -263,8 +294,17 @@ namespace od
 
 	SequencePtr Database::getSequence(RecordId recordId)
 	{
-        throw NotFoundException("Can't get sequence. Database has no model container");
+        throw NotFoundException("Can't get sequence. Database has no sequence container");
+	}
 
+	osg::ref_ptr<Animation> Database::getAnimation(RecordId recordId)
+	{
+		if(mAnimFactory == nullptr)
+		{
+			throw NotFoundException("Can't get animation. Database has no animation container");
+		}
+
+		return mAnimFactory->getAsset(recordId);
 	}
 
 } 

@@ -12,6 +12,7 @@
 #include <osg/MatrixTransform>
 
 #include "db/Skeleton.h"
+#include "db/Animation.h"
 
 namespace od
 {
@@ -20,6 +21,12 @@ namespace od
 		STOPPED,
 		PLAYING,
 		PLAYING_LOOPED
+	};
+
+	struct Keyframe
+	{
+		double time;
+		osg::Matrix xform;
 	};
 
 	/**
@@ -35,21 +42,15 @@ namespace od
 		~Animator();
 
 		inline AnimationPlayState getPlayState() const { return mPlayState; }
-		inline void setPlayState(AnimationPlayState state) { mPlayState = state; }
+
+		void setPlayState(AnimationPlayState state);
+		void setKeyframes(std::vector<AnimationKeyframe>::iterator begin, std::vector<AnimationKeyframe>::iterator end);
 
 		void update(double simTime);
 
-		void reserveKeyframes(size_t count);
-		void addKeyframe(double time, const osg::Matrix &xform);
 
 
-	private:
-
-		struct Keyframe
-		{
-			double time;
-			osg::Matrix xform;
-		};
+	protected:
 
 		osg::ref_ptr<osg::MatrixTransform> mNode;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
@@ -57,6 +58,21 @@ namespace od
 		osg::Matrix mOriginalXform;
 		int32_t mLastKeyframeIndex;
 		AnimationPlayState mPlayState;
+		bool mJustStarted;
+		double mStartTime;
+		std::vector<AnimationKeyframe>::iterator mAnimBegin;
+		std::vector<AnimationKeyframe>::iterator mAnimLastFrame;
+		std::vector<AnimationKeyframe>::iterator mAnimEnd;
+		std::vector<AnimationKeyframe>::iterator mCurrentFrame;
+
+		// matrix decompositions for interpolation
+		bool mDecompositionsDirty;
+		osg::Vec3f mLeftTrans;
+		osg::Quat  mLeftRot;
+		osg::Vec3f mLeftScale;
+		osg::Vec3f mRightTrans;
+		osg::Quat  mRightRot;
+		osg::Vec3f mRightScale;
 	};
 
 }

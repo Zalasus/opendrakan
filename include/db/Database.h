@@ -22,6 +22,7 @@
 #include "TextureFactory.h"
 #include "ModelFactory.h"
 #include "ClassFactory.h"
+#include "AnimationFactory.h"
 
 namespace od
 {
@@ -50,12 +51,14 @@ namespace od
 	    virtual ClassPtr     getClassByRef(const AssetRef &ref) override;
 	    virtual ModelPtr     getModelByRef(const AssetRef &ref) override;
 	    virtual SequencePtr  getSequenceByRef(const AssetRef &ref) override;
+	    virtual osg::ref_ptr<Animation> getAnimationByRef(const AssetRef &ref) override;
 
 	    // override AssetProvider
-	    virtual TexturePtr  getTexture(RecordId recordId) override;
-	    virtual ClassPtr    getClass(RecordId recordId) override;
-	    virtual ModelPtr    getModel(RecordId recordId) override;
-	    virtual SequencePtr getSequence(RecordId recordId) override;
+	    virtual TexturePtr   getTexture(RecordId recordId) override;
+	    virtual ClassPtr     getClass(RecordId recordId) override;
+	    virtual ModelPtr     getModel(RecordId recordId) override;
+	    virtual SequencePtr  getSequence(RecordId recordId) override;
+	    virtual osg::ref_ptr<Animation> getAnimation(RecordId recordId) override;
 
 
 	private:
@@ -70,6 +73,7 @@ namespace od
 		std::unique_ptr<TextureFactory> mTextureFactory;
 		std::unique_ptr<ModelFactory> mModelFactory;
 		std::unique_ptr<ClassFactory> mClassFactory;
+		std::unique_ptr<AnimationFactory> mAnimFactory;
 	};
 }
 

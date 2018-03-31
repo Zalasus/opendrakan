@@ -1,16 +1,14 @@
 /*
- * Animation.h
+ * AnimationPlayer.h
  *
  *  Created on: 25 Mar 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_ANIM_ANIMATION_H_
-#define INCLUDE_ANIM_ANIMATION_H_
+#ifndef INCLUDE_ANIM_ANIMATIONPLAYER_H_
+#define INCLUDE_ANIM_ANIMATIONPLAYER_H_
 
 #include <osg/Referenced>
-
-#include "anim/Animator.h"
 
 namespace od
 {
@@ -18,11 +16,11 @@ namespace od
 	/**
 	 * Class managing one or more Animator objects for interpolated handling of speed/acceleration of models.
 	 */
-	class Animation : public osg::Referenced
+	class AnimationPlayer : public osg::Referenced
 	{
 
 	};
 
 }
 
-#endif /* INCLUDE_ANIM_ANIMATION_H_ */
+#endif /* INCLUDE_ANIM_ANIMATIONPLAYER_H_ */

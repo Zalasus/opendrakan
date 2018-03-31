@@ -491,23 +491,24 @@ Record types
     ---------------------------
 
     [0x0501] Info
+        string animation_name;
         float duration;
         uint32 original_num_frames;
         uint32 num_frames;
-        uint32 unk0;
+        uint32 flags; // 0x01 = non-looping
         uint32 model_num_nodes;
         uint32 model_num_channels;
-        uint32 unk1; // Non-Looping flag?
+        uint32 unk1;
         uint32 ref_count;
         float rotation_threshold;
         float scale_threshold;
         float translation_threshold; // Probably.
         
-    [0x0202] Data
+    [0x0502] Data
         struct frame
         {
             float t;
-            mat3x4f xform; // Might be model-relative or parent-relative. Not sure yet.
+            mat3x4f xform; // seems like these are relative to parent joint
         };
         
         frame[uint16] frames;

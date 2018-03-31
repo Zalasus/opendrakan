@@ -46,10 +46,11 @@ namespace od
         void setSkyObject(LevelObject &obj);
 
         // implement AssetProvider
-        virtual TexturePtr  getTextureByRef(const AssetRef &ref) override;
-	    virtual ClassPtr    getClassByRef(const AssetRef &ref) override;
-	    virtual ModelPtr    getModelByRef(const AssetRef &ref) override;
-	    virtual SequencePtr getSequenceByRef(const AssetRef &ref) override;
+        virtual TexturePtr   getTextureByRef(const AssetRef &ref) override;
+	    virtual ClassPtr     getClassByRef(const AssetRef &ref) override;
+	    virtual ModelPtr     getModelByRef(const AssetRef &ref) override;
+	    virtual SequencePtr  getSequenceByRef(const AssetRef &ref) override;
+	    virtual osg::ref_ptr<Animation> getAnimationByRef(const AssetRef &ref) override;
 
 
     private:

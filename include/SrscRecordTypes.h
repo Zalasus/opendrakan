@@ -37,7 +37,11 @@ namespace od
 
 		SEQUENCE_UNKNOWN1   = 0x0310,
 		SEQUENCE            = 0x0311,
-		SEQUENCE_GROUP      = 0x0312
+		SEQUENCE_GROUP      = 0x0312,
+
+		ANIMATION_INFO      = 0x0501,
+        ANIMATION_FRAMES    = 0x0502,
+		ANIMATION_LOOKUP    = 0x0503
 	};
 
 }

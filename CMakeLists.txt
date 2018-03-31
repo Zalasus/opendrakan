@@ -9,6 +9,8 @@ project(OpenDrakan)
 include_directories("include")
 set(SOURCES 
         "src/StringUtils.cpp"
+        "src/db/Animation.cpp"
+        "src/db/AnimationFactory.cpp"
         "src/db/Skeleton.cpp"
         "src/db/Asset.cpp"
         "src/db/Sound.cpp"
@@ -36,7 +38,8 @@ set(SOURCES
         "src/rfl/dragon/RflKey.cpp"
         "src/rfl/dragon/RflDragon.cpp"
         "src/anim/Animator.cpp"
-        "src/anim/SkeletonAnimation.cpp"
+        "src/anim/BoneAnimator.cpp"
+        "src/anim/SkeletonAnimationPlayer.cpp"
         "src/Camera.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"

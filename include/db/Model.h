@@ -49,6 +49,7 @@ namespace od
 
 		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
+		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 
 		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
 		void loadVertices(ModelFactory &factory, DataReader &&dr);

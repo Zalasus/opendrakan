@@ -13,10 +13,10 @@
 #include <osg/LOD>
 #include <osg/FrontFace>
 
-#include "db/Asset.h"
-#include "Exception.h"
-#include "db/Database.h"
 #include "OdDefines.h"
+#include "Exception.h"
+#include "db/Asset.h"
+#include "db/Database.h"
 #include "db/ModelFactory.h"
 #include "db/Texture.h"
 #include "db/Skeleton.h"

@@ -5,7 +5,8 @@
  *      Author: zal
  */
 
-#include <LevelObject.h>
+#include "LevelObject.h"
+
 #include "Level.h"
 #include "Exception.h"
 #include "OdDefines.h"
@@ -95,12 +96,13 @@ namespace od
         // FIXME: the visible flag is just the initial state. it can be toggled in-game, so we should load the model regardless of this flag
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
+        	mModel = mClass->getModel();
 			mTransform = new osg::PositionAttitudeTransform;
 			mTransform->setAttitude(mRotation);
 			mTransform->setPosition(mPosition);
 			mTransform->setScale(mScale);
 
-			mTransform->addChild(mClass->getModel());
+			mTransform->addChild(mModel);
 			this->addChild(mTransform);
 
 			if(mClass->getModel()->getSkeletonBuilder() != nullptr)
@@ -109,7 +111,7 @@ namespace od
 				mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
 				mTransform->addChild(mSkeletonRoot);
 
-				mSkeletonAnimation = new SkeletonAnimation(mLevel.getEngine(), this, mSkeletonRoot);
+				mSkeletonAnimation = new SkeletonAnimationPlayer(mLevel.getEngine(), this, mSkeletonRoot);
 			}
         }
     }
