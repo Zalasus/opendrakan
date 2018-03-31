@@ -93,7 +93,7 @@ namespace od
 			throw Exception("Frame lookup entry in animation is out of bounds");
 		}
 
-		return AnimStartEndPair(mKeyframes.begin() + firstFrameIndex, mKeyframes.begin() + firstFrameIndex + frameCount);
+		return AnimStartEndPair(mKeyframes.cbegin() + firstFrameIndex, mKeyframes.cbegin() + firstFrameIndex + frameCount);
 	}
 
 }

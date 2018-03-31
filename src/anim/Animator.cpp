@@ -50,6 +50,7 @@ namespace od
 	, mKeyframeCount(0)
 	, mJustStarted(false)
 	, mStartTime(0)
+	, mTimeScale(1)
 	, mDecompositionsDirty(true)
 	{
 		mNode->addUpdateCallback(mUpdateCallback);
@@ -77,7 +78,7 @@ namespace od
 		}
 	}
 
-	void Animator::setKeyframes(std::vector<AnimationKeyframe>::iterator begin, std::vector<AnimationKeyframe>::iterator end)
+	void Animator::setKeyframes(std::vector<AnimationKeyframe>::const_iterator begin, std::vector<AnimationKeyframe>::const_iterator end)
 	{
 		if(mPlayState != AnimationPlayState::PLAYING)
 		{
@@ -122,7 +123,7 @@ namespace od
 		}
 
 		// if needed, advance current frame to the next frame whose time lies just past the current relative time
-		double relativeTime = simTime - mStartTime;
+		double relativeTime = mTimeScale*(simTime - mStartTime);
 		while(mCurrentFrame < mAnimLastFrame)
 		{
 			if(mCurrentFrame->time <= relativeTime && (mCurrentFrame+1)->time > relativeTime)
@@ -155,7 +156,7 @@ namespace od
 		// although better interpolation methods exist, for now we just decompose the two xforms into translation, rotation and scale
 		//  and interpolate these values linearaly
 		auto nextFrame = mCurrentFrame+1;
-		double delta = (nextFrame->time - mCurrentFrame->time)/relativeTime; // 0=exactly at current frame, 1=exactly at next frame
+		double delta = (relativeTime - mCurrentFrame->time)/(nextFrame->time - mCurrentFrame->time); // 0=exactly at current frame, 1=exactly at next frame
 		if(mDecompositionsDirty)
 		{
 			mCurrentFrame->xform.decompose(mLeftTrans, mLeftRot, mLeftScale, mLeftScaleOrient);

@@ -38,7 +38,7 @@ namespace od
 		inline osg::MatrixTransform *getNode() { return mNode; }
 
 		void setPlayState(AnimationPlayState state);
-		void setKeyframes(std::vector<AnimationKeyframe>::iterator begin, std::vector<AnimationKeyframe>::iterator end);
+		void setKeyframes(std::vector<AnimationKeyframe>::const_iterator begin, std::vector<AnimationKeyframe>::const_iterator end);
 
 		void update(double simTime);
 
@@ -53,10 +53,11 @@ namespace od
 		size_t mKeyframeCount;
 		bool mJustStarted;
 		double mStartTime;
-		std::vector<AnimationKeyframe>::iterator mAnimBegin;
-		std::vector<AnimationKeyframe>::iterator mAnimLastFrame;
-		std::vector<AnimationKeyframe>::iterator mAnimEnd;
-		std::vector<AnimationKeyframe>::iterator mCurrentFrame;
+		double mTimeScale;
+		std::vector<AnimationKeyframe>::const_iterator mAnimBegin;
+		std::vector<AnimationKeyframe>::const_iterator mAnimLastFrame;
+		std::vector<AnimationKeyframe>::const_iterator mAnimEnd;
+		std::vector<AnimationKeyframe>::const_iterator mCurrentFrame;
 
 		// matrix decompositions for interpolation
 		bool mDecompositionsDirty;

@@ -93,6 +93,7 @@ namespace od
 			simTime += frameTime;
 			if(frameTime < minFrameTime)
 			{
+				simTime += (minFrameTime-frameTime);
 				OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0*(minFrameTime-frameTime)));
 			}
 		}

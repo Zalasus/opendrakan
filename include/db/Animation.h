@@ -31,7 +31,7 @@ namespace od
 	{
 	public:
 
-		typedef std::pair<const std::vector<AnimationKeyframe>::iterator, const std::vector<AnimationKeyframe>::iterator> AnimStartEndPair;
+		typedef std::pair<std::vector<AnimationKeyframe>::const_iterator, std::vector<AnimationKeyframe>::const_iterator> AnimStartEndPair;
 
 		Animation(Database &db, RecordId id);
 
