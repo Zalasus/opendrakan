@@ -16,7 +16,7 @@
 #include <osg/Uniform>
 
 #include "anim/AnimationPlayer.h"
-#include "anim/BoneAnimator.h"
+#include "anim/Animator.h"
 #include "db/Animation.h"
 
 namespace od
@@ -49,8 +49,9 @@ namespace od
 		osg::ref_ptr<osg::Node> mModelNode;
 		osg::ref_ptr<osg::Group> mSkeletonRoot;
 		osg::ref_ptr<osg::Uniform> mBoneMatrixArray;
-		std::vector<osg::ref_ptr<BoneAnimator>> mAnimators;
+		std::vector<osg::ref_ptr<Animator>> mAnimators;
 		osg::ref_ptr<osg::Program> mRiggingProgram;
+		osg::ref_ptr<osg::NodeCallback> mUploadCallback;
 
 		osg::ref_ptr<Animation> mCurrentAnimation;
 		AnimationPlayState mPlayState;

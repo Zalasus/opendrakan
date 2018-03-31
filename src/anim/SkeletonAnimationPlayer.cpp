@@ -5,28 +5,27 @@
  *      Author: zal
  */
 
-#include <anim/SkeletonAnimationPlayer.h>
+#include "anim/SkeletonAnimationPlayer.h"
+
+#include <osg/Matrix>
+
 #include "Logger.h"
 #include "ShaderManager.h"
 #include "Engine.h"
 #include "OdDefines.h"
 #include "db/Skeleton.h"
 
-#include <iomanip>
-
 #define OD_MAX_BONE_COUNT 64
 
 namespace od
 {
-
 	class CreateAnimatorsVisitor : public osg::NodeVisitor
 	{
 	public:
 
-		CreateAnimatorsVisitor(osg::Uniform *boneMatrixArray, std::vector<osg::ref_ptr<BoneAnimator>> &animatorList)
+		CreateAnimatorsVisitor(std::vector<osg::ref_ptr<Animator>> &animatorList)
         : osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
 		, mAnimatorList(animatorList)
-		, mBoneMatrixArray(boneMatrixArray)
         {
         }
 
@@ -35,7 +34,7 @@ namespace od
         	BoneNode *bn = dynamic_cast<BoneNode*>(&node);
         	if(bn != nullptr)
         	{
-				osg::ref_ptr<BoneAnimator> animator(new BoneAnimator(bn, mBoneMatrixArray));
+				osg::ref_ptr<Animator> animator(new Animator(bn));
 				mAnimatorList.push_back(animator);
         	}
 
@@ -45,19 +44,89 @@ namespace od
 
 	private:
 
-        std::vector<osg::ref_ptr<BoneAnimator>> &mAnimatorList;
-        osg::ref_ptr<osg::Uniform> mBoneMatrixArray;
+        std::vector<osg::ref_ptr<Animator>> &mAnimatorList;
 	};
+
+
+
+	class BoneUploadVisitor : public osg::NodeVisitor
+	{
+	public:
+
+		BoneUploadVisitor(osg::Uniform *boneMatrixArray)
+        : osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
+		, mBoneMatrixArray(boneMatrixArray)
+		, mCurrentMatrix(osg::Matrixd::identity())
+        {
+        }
+
+        virtual void apply(osg::MatrixTransform &node)
+        {
+        	osg::Matrixd prevMatrix = mCurrentMatrix; // since i don't want to create a stack for that yet
+
+        	BoneNode *bn = dynamic_cast<BoneNode*>(&node);
+        	if(bn != nullptr)
+        	{
+        		mCurrentMatrix.preMult(bn->getMatrix() * bn->getInverseBindPoseXform());
+        		mBoneMatrixArray->setElement(bn->getJointInfoIndex(), mCurrentMatrix);
+
+        	}else
+        	{
+        		// handle non-bone transforms in bone tree the normal way, as we would ignore them completely otherwise
+        		node.computeLocalToWorldMatrix(mCurrentMatrix, this);
+        	}
+
+        	traverse(node);
+
+        	mCurrentMatrix = prevMatrix;
+        }
+
+
+	private:
+
+        osg::ref_ptr<osg::Uniform> mBoneMatrixArray;
+        osg::Matrixd mCurrentMatrix;
+	};
+
+
+
+	class BoneUploadCallback : public osg::NodeCallback
+	{
+	public:
+
+		BoneUploadCallback(osg::Uniform *boneMatrixArray)
+		: mBoneMatrixArray(boneMatrixArray)
+		{
+		}
+
+		virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
+		{
+			// first let update visitor traverse so all attached Animator object get updated
+			//  before we start to upload the new bone positions
+			traverse(node, nv);
+
+			BoneUploadVisitor buv(mBoneMatrixArray); // TODO: no need to create this everytime. maybe add as member and just call reset here
+			node->accept(buv);
+		}
+
+
+	private:
+
+		 osg::ref_ptr<osg::Uniform> mBoneMatrixArray;;
+	};
+
+
 
 	SkeletonAnimationPlayer::SkeletonAnimationPlayer(Engine &engine, osg::Node *modelNode, osg::Group *skeletonRoot)
 	: mEngine(engine)
 	, mModelNode(modelNode)
 	, mSkeletonRoot(skeletonRoot)
 	, mBoneMatrixArray(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", OD_MAX_BONE_COUNT))
+	, mUploadCallback(new BoneUploadCallback(mBoneMatrixArray))
 	, mPlayState(AnimationPlayState::STOPPED)
 	{
 		// create one animator for each MatrixTransform child of group
-		CreateAnimatorsVisitor cav(mBoneMatrixArray, mAnimators);
+		CreateAnimatorsVisitor cav(mAnimators);
 		mSkeletonRoot->accept(cav);
 
 		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
@@ -74,11 +143,14 @@ namespace od
 		{
 			mBoneMatrixArray->setElement(i, osg::Matrixf::identity());
 		}
+
+		mSkeletonRoot->addUpdateCallback(mUploadCallback);
 	}
 
 	SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
 	{
 		mModelNode->getOrCreateStateSet()->removeAttribute(mRiggingProgram);
+		mSkeletonRoot->removeUpdateCallback(mUploadCallback);
 	}
 
 	void SkeletonAnimationPlayer::setAnimation(osg::ref_ptr<Animation> anim)
@@ -92,7 +164,13 @@ namespace od
 
 		for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
 		{
-			int32_t jointIndex = (*it)->getBoneNode()->getJointInfoIndex();
+			BoneNode *bn = dynamic_cast<BoneNode*>((*it)->getNode());
+        	if(bn == nullptr)
+        	{
+        		continue;
+        	}
+
+			int32_t jointIndex = bn->getJointInfoIndex();
 
 			Animation::AnimStartEndPair startEnd = mCurrentAnimation->getKeyframesForNode(jointIndex);
 

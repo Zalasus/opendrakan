@@ -38,7 +38,6 @@ set(SOURCES
         "src/rfl/dragon/RflKey.cpp"
         "src/rfl/dragon/RflDragon.cpp"
         "src/anim/Animator.cpp"
-        "src/anim/BoneAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"
         "src/Camera.cpp"
         "src/Layer.cpp"

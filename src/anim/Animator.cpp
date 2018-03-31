@@ -46,8 +46,8 @@ namespace od
 	: mNode(node)
 	, mUpdateCallback(new AnimatorUpdateCallback(*this))
 	, mOriginalXform(mNode->getMatrix())
-	, mLastKeyframeIndex(-1)
 	, mPlayState(AnimationPlayState::STOPPED)
+	, mKeyframeCount(0)
 	, mJustStarted(false)
 	, mStartTime(0)
 	, mDecompositionsDirty(true)
@@ -79,18 +79,41 @@ namespace od
 
 	void Animator::setKeyframes(std::vector<AnimationKeyframe>::iterator begin, std::vector<AnimationKeyframe>::iterator end)
 	{
-		size_t frameCount = end - begin;
+		if(mPlayState != AnimationPlayState::PLAYING)
+		{
+			setPlayState(AnimationPlayState::STOPPED);
+		}
 
-		mAnimBegin = begin;
-		mAnimLastFrame = begin + frameCount;
-		mAnimEnd = end;
+		mKeyframeCount = end - begin;
+
+		if(mKeyframeCount == 0)
+		{
+			Logger::warn() << "Tried to give Animator empty keyframe list. Ignoring call";
+
+		}else if(mKeyframeCount == 1)
+		{
+			mAnimBegin = begin;
+
+		}else
+		{
+			mAnimBegin = begin;
+			mAnimLastFrame = begin + mKeyframeCount;
+			mAnimEnd = end;
+		}
 	}
 
 	void Animator::update(double simTime)
 	{
-		if(mPlayState == AnimationPlayState::STOPPED)
+		if(mPlayState == AnimationPlayState::STOPPED || mKeyframeCount == 0)
 		{
 			return;
+
+		}else if(mKeyframeCount == 1)
+		{
+			// single frame animation i.e. static pose. just apply transform and don't bother with interpolations etc.
+			mNode->setMatrix(mAnimBegin->xform * mOriginalXform);
+			mPlayState == AnimationPlayState::STOPPED;
+			mJustStarted = false;
 
 		}else if(mJustStarted)
 		{
@@ -130,25 +153,27 @@ namespace od
 
 		// anim is still running. need to interpolate between mCurrentFrame and mCurrentFrame+1
 		// although better interpolation methods exist, for now we just decompose the two xforms into translation, rotation and scale
-		//  and interpolate these values linaraly
+		//  and interpolate these values linearaly
 		auto nextFrame = mCurrentFrame+1;
 		double delta = (nextFrame->time - mCurrentFrame->time)/relativeTime; // 0=exactly at current frame, 1=exactly at next frame
 		if(mDecompositionsDirty)
 		{
-			osg::Quat  dummyOrient; // i don't think we need the scale orientation
-			mCurrentFrame->xform.decompose(mLeftTrans, mLeftRot, mLeftScale, dummyOrient);
-			nextFrame->xform.decompose(mRightTrans, mRightRot, mRightScale, dummyOrient);
+			mCurrentFrame->xform.decompose(mLeftTrans, mLeftRot, mLeftScale, mLeftScaleOrient);
+			nextFrame->xform.decompose(mRightTrans, mRightRot, mRightScale, mRightScaleOrient);
 			mDecompositionsDirty = false;
 		}
 
-		osg::Vec3f iTrans = mLeftTrans*delta + mRightTrans*(1-delta);
-		osg::Vec3f iScale = mLeftScale*delta + mRightScale*(1-delta);
+		osg::Vec3f iTrans = mLeftTrans*(1-delta) + mRightTrans*delta;
+		osg::Vec3f iScale = mLeftScale*(1-delta) + mRightScale*delta;
 		osg::Quat iRot;
 		iRot.slerp(delta, mLeftRot, mRightRot);
+		osg::Quat iOrient;
+		iOrient.slerp(delta, mLeftScaleOrient, mRightScaleOrient);
 
-		osg::Matrixf iXform = osg::Matrixf::translate(iTrans);
-		iXform.preMultRotate(iRot);
+		osg::Matrix iXform = mOriginalXform;
 		iXform.preMultScale(iScale);
+		iXform.preMultTranslate(iTrans);
+		iXform.preMultRotate(iRot);
 
 		mNode->setMatrix(iXform);
 	}

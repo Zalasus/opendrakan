@@ -11,7 +11,6 @@
 #include <vector>
 #include <osg/MatrixTransform>
 
-#include "db/Skeleton.h"
 #include "db/Animation.h"
 
 namespace od
@@ -21,12 +20,6 @@ namespace od
 		STOPPED,
 		PLAYING,
 		PLAYING_LOOPED
-	};
-
-	struct Keyframe
-	{
-		double time;
-		osg::Matrix xform;
 	};
 
 	/**
@@ -42,6 +35,7 @@ namespace od
 		~Animator();
 
 		inline AnimationPlayState getPlayState() const { return mPlayState; }
+		inline osg::MatrixTransform *getNode() { return mNode; }
 
 		void setPlayState(AnimationPlayState state);
 		void setKeyframes(std::vector<AnimationKeyframe>::iterator begin, std::vector<AnimationKeyframe>::iterator end);
@@ -54,10 +48,9 @@ namespace od
 
 		osg::ref_ptr<osg::MatrixTransform> mNode;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-		std::vector<Keyframe> mKeyframes;
 		osg::Matrix mOriginalXform;
-		int32_t mLastKeyframeIndex;
 		AnimationPlayState mPlayState;
+		size_t mKeyframeCount;
 		bool mJustStarted;
 		double mStartTime;
 		std::vector<AnimationKeyframe>::iterator mAnimBegin;
@@ -70,9 +63,11 @@ namespace od
 		osg::Vec3f mLeftTrans;
 		osg::Quat  mLeftRot;
 		osg::Vec3f mLeftScale;
+		osg::Quat  mLeftScaleOrient;
 		osg::Vec3f mRightTrans;
 		osg::Quat  mRightRot;
 		osg::Vec3f mRightScale;
+		osg::Quat  mRightScaleOrient;
 	};
 
 }
