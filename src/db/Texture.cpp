@@ -126,24 +126,24 @@ namespace od
 
             }else if(mAlphaBitsPerPixel == 1)
             {
-                redMask =   0xf800;
-                greenMask = 0x07c0;
-                blueMask =  0x003e;
-                alphaMask = 0x0001;
+                redMask =   0x7c00;
+                greenMask = 0x03e0;
+                blueMask =  0x001f;
+                alphaMask = 0x8000;
 
             }else if(mAlphaBitsPerPixel == 4)
             {
-                redMask =   0xf000;
-                greenMask = 0x0f00;
-                blueMask =  0x00f0;
-                alphaMask = 0x000f;
+                redMask =   0x0f00;
+                greenMask = 0x00f0;
+                blueMask =  0x000f;
+                alphaMask = 0xf000;
 
             }else if(mAlphaBitsPerPixel == 8)
             {
-                redMask =   0xe000;
-                greenMask = 0x1c00;
-                blueMask =  0x0300;
-                alphaMask = 0x00ff;
+                redMask =   0x00e0;
+                greenMask = 0x001c;
+                blueMask =  0x0003;
+                alphaMask = 0xff00;
 
             }else
             {

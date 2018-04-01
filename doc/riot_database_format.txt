@@ -559,10 +559,12 @@ Texture format
         If the alpha map is integrated into the texture (alpha channel, indicated by flag 0x02),
         the format used is determined by the alpha-bpp-field. The following formats have been found:
         
-            ABPP    R:G:B+A bits
-            1       5:5:5+1
-            4       4:4:4+4
-            8       3:3:2+8
+            ABPP    R:G:B+A bits   Bit pattern (LE adjusted!)
+            1       5:5:5+1        ARRRRRGG GGGBBBBB
+            4       4:4:4+4        AAAARRRR GGGGBBBB
+            8       3:3:2+8        AAAAAAAA RRRGGGBB
+            
+        
             
         The 8:8:8+8 is sometimes listed in the editor but reported as "not yet implemented", probably due to the
         fact the 8-alpha-bit setting is already occupied by the 3:3:2+8 format.
