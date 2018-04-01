@@ -66,10 +66,6 @@ namespace od
     		throw Exception("No HumanControl object present in level");
     	}
 
-		osg::ref_ptr<Animation> anim = mLevel->getPlayer().getLevelObject()->getModel()->getDatabase().getAnimation(0x29c);
-		mLevel->getPlayer().getLevelObject()->getSkeletonAnimationPlayer()->setAnimation(anim);
-		mLevel->getPlayer().getLevelObject()->getSkeletonAnimationPlayer()->setPlayState(AnimationPlayState::PLAYING_LOOPED);
-
 		mInputManager = new InputManager(*this, mLevel->getPlayer(), mViewer);
 
 		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
@@ -82,9 +78,6 @@ namespace od
 
 			mViewer->advance(simTime);
 			mViewer->eventTraversal();
-
-			mLevel->getPlayer().update(frameTime);
-
 			mViewer->updateTraversal();
 			mViewer->renderingTraversals();
 

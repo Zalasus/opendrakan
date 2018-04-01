@@ -139,6 +139,7 @@ namespace od
 		mModelNode->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
 		mModelNode->getOrCreateStateSet()->addUniform(mBoneMatrixArray, osg::StateAttribute::ON);
 
+		// set all bones to identity to force bind pose
 		for(size_t i = 0; i < OD_MAX_BONE_COUNT; ++i)
 		{
 			mBoneMatrixArray->setElement(i, osg::Matrixf::identity());

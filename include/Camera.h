@@ -30,7 +30,7 @@ namespace od
 		Camera(Camera &c) = delete;
 		~Camera();
 
-
+		osg::Vec3 getEyePoint();
 		void update();
 
 

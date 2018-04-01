@@ -43,8 +43,6 @@ namespace od
         inline Player &getPlayer() { return mPlayer; }
         inline Engine &getEngine() { return mEngine; }
 
-        void setSkyObject(LevelObject &obj);
-
         // implement AssetProvider
         virtual TexturePtr   getTextureByRef(const AssetRef &ref) override;
 	    virtual ClassPtr     getClassByRef(const AssetRef &ref) override;

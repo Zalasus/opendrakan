@@ -48,6 +48,17 @@ namespace od
         mOsgCam->removeUpdateCallback(mUpdateCallback);
     }
 
+	osg::Vec3 Camera::getEyePoint()
+	{
+		osg::Vec3 eye;
+		osg::Vec3 center;
+		osg::Vec3 up;
+
+		mOsgCam->getViewMatrixAsLookAt(eye, center, up);
+
+		return eye;
+	}
+
 	void Camera::update()
 	{
 		Player &player = mEngine.getPlayer();

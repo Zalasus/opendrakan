@@ -31,7 +31,7 @@ namespace od
     	inline void moveRight(float speed) { mRightSpeed = speed; }
 
     	osg::Vec3f getPosition();
-    	void update(double frameTime);
+    	void update(double simTime);
 
 
     private:
@@ -41,6 +41,7 @@ namespace od
     	float mPitch;
     	float mForwardSpeed;
     	float mRightSpeed;
+    	double mLastSimTime;
     };
 
 }

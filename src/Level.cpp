@@ -9,8 +9,7 @@
 #include "Level.h"
 
 #include <algorithm>
-#include <osg/LightSource>
-#include <osg/Material>
+#include <osg/Depth>
 
 #include "OdDefines.h"
 #include "SrscRecordTypes.h"
@@ -40,11 +39,6 @@ namespace od
 		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
 
         _loadLevel();
-    }
-
-    void Level::setSkyObject(LevelObject &obj)
-    {
-    	obj.getOrCreateStateSet()->setRenderBinDetails(-1, "RenderBin");
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them

@@ -8,6 +8,9 @@
 #ifndef INCLUDE_RFL_GENERAL_RFLSKY_H_
 #define INCLUDE_RFL_GENERAL_RFLSKY_H_
 
+#include <osg/Vec3>
+#include <osg/NodeCallback>
+
 #include "rfl/RflClass.h"
 
 namespace od
@@ -21,6 +24,8 @@ namespace od
 
         virtual void probeFields(RflFieldProbe &probe) override;
         virtual void spawn(LevelObject &obj) override;
+
+        void update(osg::Vec3 eyePoint);
 
 
     protected:
@@ -38,6 +43,11 @@ namespace od
 		RflClassRef		mLensFlare;
 		RflInteger		mFlareElevation;
 		RflInteger		mFlareDirection;
+
+
+    private:
+
+		osg::ref_ptr<LevelObject> mSkyObject;
 
     };
 

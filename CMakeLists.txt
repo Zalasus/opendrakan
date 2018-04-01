@@ -33,6 +33,7 @@ set(SOURCES
         "src/rfl/general/RflCamera.cpp"
         "src/rfl/general/RflSky.cpp"
         "src/rfl/general/RflPlayerControl.cpp"
+        "src/rfl/general/RflTimer.cpp"
         "src/rfl/RflField.cpp"
         "src/rfl/dragon/RflHealthPack.cpp"
         "src/rfl/dragon/RflKey.cpp"

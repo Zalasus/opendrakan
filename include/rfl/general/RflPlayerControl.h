@@ -155,186 +155,188 @@ namespace od
         virtual void spawn(LevelObject &obj) override;
 
 
-    protected:/*
-        channel		mRightWeaponChannel;
-		channel		mLeftWeaponChannel;
-		channel		mTorsoChannel;
-		channel		mLowerBodyChan;
-		channel		mRightArmChan
-		channel[]	mSolveToChans;
-		channel[]	mLeftLegChans;
-		channel[]	mRight Leg Chans
-		channel		mHair1 Channel
-		float		mMultiplayer Speed Scaling
-		float		mFall Start Dmg Speed (lu/s)
-		float		mFall Death Speed (lu/s)
-		anim		mDrown
-		sound		mDrown Sound
-		anim		mCombat Idle OneHand
-		anim		mCombat Idle TwoHand
-		anim		mWalk OneHanded
-		anim		mRun OneHanded
-		anim		mStrafe Left OneHanded
-		anim		mStrafe Right OneHanded
-		anim		mWalk Combat
-		anim		mRun Combat
-		anim		mRide (Air)
-		anim		mRide (Ground)
-		anim		mMount
-		anim		mDismount
-		anim		mJump
-		anim		mIn Air
-		anim		mLanding
-		anim		mLanding Small
-		anim		mLanding Run
-		anim		mNoncombat To Crouch
-		anim		mCombat To Crouch
-		anim		mNoncombat Crouched
-		anim		mCombat Crouched
-		anim		mWaddle Forward
-		anim		mRoll Left
-		anim		mRoll Right
-		anim		mRoll Forward
-		anim		mRoll Back
-		anim		mCartwheel L
-		anim		mCartwheel R
-		anim		mFlip Forward
-		anim		mFlip Back
-		anim		mPush Rollable
-		anim		mPush Slidable
-		anim		mLadder Up 1
-		anim		mLadder Up 2
-		anim		mLadder Down 1
-		anim		mLadder Down 2
-		anim		mLadder Up L Idle
-		anim		mLadder Up R Idle
-		anim		mLadder Down R Idle
-		anim		mGet On Ladder B
-		anim		mGet Off Ladder B
-		anim		mGet On Ladder T
-		anim		mGet Off Ladder T
-		anim		mStairs Up
-		anim		mStairs Down
-		anim		mStairs Up Idle L
-		anim		mStairs Up Idle R
-		anim		mStairs Down Idle L
-		anim		mStairs Down Idle R
-		anim		mHuh?
-		anim		m180 Turn
-		anim		mUse Magic Crystal
-		anim		mSlide Forward
-		anim		mSlide Backward
-		anim		mBalancing
-		anim		mThrow
-		anim		mShoot Gun
-		anim		mReload Gun
-		anim		mArcher Medium
-		anim		mArcher Low
-		float		mGunCam Horz Distance
-		float		mGunCam Vert Distance
-		anim		mOneHand RH
-		anim		mOneHand RM1
-		anim		mOneHand RM2
-		anim		mOneHand RM3
-		anim		mOneHand RL
-		anim		mOneHand SH
-		anim		mOneHand SM
-		anim		mOneHand SL
-		anim		mOneHand UB1
-		anim		mOneHand UB2
-		anim		mOneHand UB3
-		anim		mTwoHand RH
-		anim		mTwoHand RM1
-		anim		mTwoHand RM2
-		anim		mTwoHand RM3
-		anim		mTwoHand RL
-		anim		mTwoHand SH
-		anim		mTwoHand SM
-		anim		mTwoHand SL
-		anim		mTwoHand UB1
-		anim		mTwoHand UB2
-		anim		mTwoHand UB3
-		anim		mFire SA
-		anim		mIce SA
-		anim		mLightning SA
-		anim		mDeath SA
-		anim		mStrafe Attack L UB
-		anim		mStrafe Attack R UB
-		anim		mRoll L Attack
-		anim		mRoll R Attack
-		anim		mSpecial Attack Thrust
-		anim		mSpecial Attack Left
-		anim		mSpecial Attack Right
-		anim		mSpecial Attack Spin
-		anim		mSpecial Attack Swing 180
-		anim		mSpecial Attack Jump
-		float		mSA Thrust Damage Multiplier
-		float		mSA Left Damage Multiplier
-		float		mSA Right Damage Multiplier
-		float		mSA Spin Damage Multiplier
-		float		mSA Swing 180 Damage Multiplier
-		float		mSA Jump Damage Multiplier
-		anim		mBlock
-		anim		mCrouched Block
-		int32		mBlock Damage Reduction %
-		anim		mSheathe
-		anim		mUnsheathe
-		float		mRe-attack Window (s)
-		anim		mHitRxn HSL
-		anim		mHitRxn HSH
-		anim		mHitRxn OSL
-		anim		mHitRxn OSH
-		anim		mHitRxn FSL
-		anim		mHitRxn FSH
-		sound[]		mHitRxn HSL
-		sound[]		mHitRxn HSH
-		sound[]		mHitRxn OSL
-		sound[]		mHitRxn OSH
-		sound[]		mHitRxn FSL
-		sound[]		mHitRxn FSH
-		anim		mWalk Strafe L
-		anim		mWalk Strafe R
-		anim		mSlow Walk
-		anim		mRun Backwards
-		anim		mRun Backwards One Handed
-		anim		mNoncombat2Run
-		anim		mRun2Ready
-		anim		mRun2ReadyL
-		anim		mWalk2Ready
-		anim		mStrafeL2Ready
-		anim		mStrafeR2Ready
-		anim		mTurn Left
-		anim		mTurn Right
-		anim		mBump Into Wall
-		float		mSwim Forward Speed
-		float		mSwim Backward Speed
-		float		mAir Consumption Rate (%/sec)
-		float		mAir Replenishment Rate (%/sec)
-		anim		mInAir To Swan Dive
-		anim		mSwan Dive
-		anim		mSwim
-		anim		mBackswim
-		anim		mSwim To Backswim
-		anim		mBackswim To Swim
-		anim		mTread Water
-		anim		mIdle Underwater
-		anim		mIdleUW to Tread
-		anim		mSwim To Run
-		sound		mSlide Sound (looped)
-		sound		mHard Landing Sound
-		sound[]		mDragon Call Sound
-		sound[]		mHuh? Sound
-		sound[]		mCan't Reach Sound
-		sound[]		mCan't Use Sound
-		sound		mFall Into Water Sound
-		sound		mInventory Full Sound
-		sound		mNo Darts Sound
-		sound		mNo Arrows Sound
-		sound		mSheathe Sound
-		sound[]		mPush Object Sounds
-		sound[]		mAttack Grunts
-		sound[]		mGet-the-point Sounds
-		int32		mGet the point Snd Chance (0-100)*/
+    protected:
+
+        // 179 members, woo! TODO: maybe put them in an array or something? would need to extend our reflection concept a bit
+        /*RflCharChannel		mRightWeaponChannel;
+		RflCharChannel		mLeftWeaponChannel;
+		RflCharChannel		mTorsoChannel;
+		RflCharChannel		mLowerBodyChan;
+		RflCharChannel		mRightArmChan;
+		RflCharChannelArray	mSolveToChans;
+		RflCharChannelArray	mLeftLegChans;
+		RflCharChannelArray	mRightLegChans;
+		RflCharChannel		mHair1Channel;
+		RflFloat		    mMultiplayerSpeedScaling;
+		RflFloat		    mFallStartDmgSpeed;
+		RflFloat		    mFallDeathSpeed;
+		RflAnimRef		    mDrown;
+		RflSoundRef		    mDrownSound;
+		RflAnimRef		    mCombatIdleOneHand;
+		RflAnimRef		    mCombatIdleTwoHand;
+		RflAnimRef		    mWalkOneHanded;
+		RflAnimRef		    mRunOneHanded;
+		RflAnimRef		    mStrafeLeftOneHanded;
+		RflAnimRef		    mStrafeRightOneHanded;
+		RflAnimRef		    mWalkCombat;
+		RflAnimRef		    mRunCombat;
+		RflAnimRef		    mRideAir;
+		RflAnimRef		    mRideGround;
+		RflAnimRef		    mMount;
+		RflAnimRef		    mDismount;
+		RflAnimRef		    mJump;
+		RflAnimRef		    mInAir;
+		RflAnimRef		    mLanding;
+		RflAnimRef		    mLandingSmall;
+		RflAnimRef		    mLandingRun;
+		RflAnimRef		    mNoncombatToCrouch;
+		RflAnimRef		    mCombatToCrouch;
+		RflAnimRef		    mNoncombatCrouched;
+		RflAnimRef		    mCombatCrouched;
+		RflAnimRef		    mWaddleForward;
+		RflAnimRef		    mRollLeft;
+		RflAnimRef		    mRollRight;
+		RflAnimRef		    mRollForward;
+		RflAnimRef		    mRollBack;
+		RflAnimRef		    mCartwheelL;
+		RflAnimRef		    mCartwheelR;
+		RflAnimRef		    mFlipForward;
+		RflAnimRef		    mFlipBack;
+		RflAnimRef		    mPushRollable;
+		RflAnimRef		    mPushSlidable;
+		RflAnimRef		    mLadderUp1;
+		RflAnimRef		    mLadderUp2;
+		RflAnimRef		    mLadderDown1;
+		RflAnimRef		    mLadderDown2;
+		RflAnimRef		    mLadderUpLIdle;
+		RflAnimRef		    mLadderUpRIdle;
+		RflAnimRef		    mLadderDownRIdle;
+		RflAnimRef		    mGetOnLadderB;
+		RflAnimRef		    mGetOffLadderB;
+		RflAnimRef		    mGetOnLadderT;
+		RflAnimRef		    mGetOffLadderT;
+		RflAnimRef		    mStairsUp;
+		RflAnimRef		    mStairsDown;
+		RflAnimRef		    mStairsUpIdleL;
+		RflAnimRef		    mStairsUpIdleR;
+		RflAnimRef		    mStairsDownIdleL;
+		RflAnimRef		    mStairsDownIdleR;
+		RflAnimRef		    mHuh;
+		RflAnimRef		    m180Turn;
+		RflAnimRef		    mUseMagicCrystal;
+		RflAnimRef		    mSlideForward;
+		RflAnimRef		    mSlideBackward;
+		RflAnimRef		    mBalancing;
+		RflAnimRef		    mThrow;
+		RflAnimRef		    mShootGun;
+		RflAnimRef		    mReloadGun;
+		RflAnimRef		    mArcherMedium;
+		RflAnimRef		    mArcherLow;
+		RflFloat		    mGunCamHorzDistance;
+		RflFloat		    mGunCamVertDistance;
+		RflAnimRef		    mOneHandRH;
+		RflAnimRef		    mOneHandRM1;
+		RflAnimRef		    mOneHandRM2;
+		RflAnimRef		    mOneHandRM3;
+		RflAnimRef		    mOneHandRL;
+		RflAnimRef		    mOneHandSH;
+		RflAnimRef		    mOneHandSM;
+		RflAnimRef		    mOneHandSL;
+		RflAnimRef		    mOneHandUB1;
+		RflAnimRef		    mOneHandUB2;
+		RflAnimRef		    mOneHandUB3;
+		RflAnimRef		    mTwoHandRH;
+		RflAnimRef		    mTwoHandRM1;
+		RflAnimRef		    mTwoHandRM2;
+		RflAnimRef		    mTwoHandRM3;
+		RflAnimRef		    mTwoHandRL;
+		RflAnimRef		    mTwoHandSH;
+		RflAnimRef		    mTwoHandSM;
+		RflAnimRef		    mTwoHandSL;
+		RflAnimRef		    mTwoHandUB1;
+		RflAnimRef		    mTwoHandUB2;
+		RflAnimRef		    mTwoHandUB3;
+		RflAnimRef		    mFireSA;
+		RflAnimRef		    mIceSA;
+		RflAnimRef		    mLightningSA;
+		RflAnimRef		    mDeathSA;
+		RflAnimRef		    mStrafeAttackLUB;
+		RflAnimRef		    mStrafeAttackRUB;
+		RflAnimRef		    mRollLAttack;
+		RflAnimRef		    mRollRAttack;
+		RflAnimRef		    mSpecialAttackThrust;
+		RflAnimRef		    mSpecialAttackLeft;
+		RflAnimRef		    mSpecialAttackRight;
+		RflAnimRef		    mSpecialAttackSpin;
+		RflAnimRef		    mSpecialAttackSwing180;
+		RflAnimRef		    mSpecialAttackJump;
+		RflFloat		    mSAThrustDamageMultiplier;
+		RflFloat		    mSALeftDamageMultiplier;
+		RflFloat		    mSARightDamageMultiplier;
+		RflFloat		    mSASpinDamageMultiplier;
+		RflFloat		    mSASwing180DamageMultiplier;
+		RflFloat		    mSAJumpDamageMultiplier;
+		RflAnimRef		    mBlock;
+		RflAnimRef		    mCrouchedBlock;
+		RflInteger		    mBlockDamageReductionPercent;
+		RflAnimRef		    mSheathe;
+		RflAnimRef		    mUnsheathe;
+		RflFloat		    mReAttackWindow;
+		RflAnimRef		    mHitRxnHSLAnim;
+		RflAnimRef		    mHitRxnHSHAnim;
+		RflAnimRef		    mHitRxnOSLAnim;
+		RflAnimRef		    mHitRxnOSHAnim;
+		RflAnimRef		    mHitRxnFSLAnim;
+		RflAnimRef		    mHitRxnFSHAnim;
+		RflSoundRefArray	mHitRxnHSLSound;
+		RflSoundRefArray	mHitRxnHSHSound;
+		RflSoundRefArray	mHitRxnOSLSound;
+		RflSoundRefArray	mHitRxnOSHSound;
+		RflSoundRefArray	mHitRxnFSLSound;
+		RflSoundRefArray	mHitRxnFSHSound;
+		RflAnimRef		    mWalkStrafeL;
+		RflAnimRef		    mWalkStrafeR;
+		RflAnimRef		    mSlowWalk;
+		RflAnimRef		    mRunBackwards;
+		RflAnimRef		    mRunBackwardsOneHanded;
+		RflAnimRef		    mNoncombat2Run;
+		RflAnimRef		    mRun2Ready;
+		RflAnimRef		    mRun2ReadyL;
+		RflAnimRef		    mWalk2Ready;
+		RflAnimRef		    mStrafeL2Ready;
+		RflAnimRef		    mStrafeR2Ready;
+		RflAnimRef		    mTurnLeft;
+		RflAnimRef		    mTurnRight;
+		RflAnimRef		    mBumpIntoWall;
+		RflFloat		    mSwimForwardSpeed;
+		RflFloat		    mSwimBackwardSpeed;
+		RflFloat		    mAirConsumptionRate;
+		RflFloat		    mAirReplenishmentRate;
+		RflAnimRef		    mInAirToSwanDive;
+		RflAnimRef		    mSwanDive;
+		RflAnimRef		    mSwim;
+		RflAnimRef		    mBackswim;
+		RflAnimRef		    mSwimToBackswim;
+		RflAnimRef		    mBackswimToSwim;
+		RflAnimRef		    mTreadWater;
+		RflAnimRef		    mIdleUnderwater;
+		RflAnimRef		    mIdleUWtoTread;
+		RflAnimRef		    mSwimToRun;
+		RflSoundRef		    mSlideSound;
+		RflSoundRef		    mHardLandingSound;
+		RflSoundRefArray	mDragonCallSounds;
+		RflSoundRefArray	mHuhSounds;
+		RflSoundRefArray	mCantReachSounds;
+		RflSoundRefArray	mCantUseSounds;
+		RflSoundRef			mFallIntoWaterSound;
+		RflSoundRef			mInventoryFullSound;
+		RflSoundRef			mNoDartsSound;
+		RflSoundRef			mNoArrowsSound;
+		RflSoundRef			mSheatheSound;
+		RflSoundRefArray	mPushObjectSounds;
+		RflSoundRefArray	mAttackGrunts;
+		RflSoundRefArray	mGetThePointSounds;
+		RflInteger			mGetThePointSndChance;*/
     };
 }
 

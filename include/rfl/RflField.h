@@ -88,6 +88,9 @@ namespace od
 			dr >> mValue;
 		}
 
+		_DataType get() const { return mValue; }
+		operator _DataType () const { return mValue; }
+
 
 	private:
 

@@ -8,11 +8,42 @@
 
 #include "rfl/general/RflSky.h"
 
+#include <osg/Depth>
+
 #include "rfl/Rfl.h"
 #include "Level.h"
+#include "OdDefines.h"
+#include "Engine.h"
+#include "Camera.h"
 
 namespace od
 {
+
+
+	class SkyUpdateCallback : public osg::NodeCallback
+	{
+	public:
+
+		SkyUpdateCallback(RflDomedSky &sky)
+		: mSky(sky)
+		{
+		}
+
+		virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
+		{
+			// traverse first, in case the sky object is animated for some reason
+			traverse(node, nv);
+
+			mSky.update(nv->getEyePoint());
+		}
+
+
+	private:
+
+		RflDomedSky &mSky;
+
+	};
+
 
 
 	RflDomedSky::RflDomedSky()
@@ -72,8 +103,24 @@ namespace od
 
     void RflDomedSky::spawn(LevelObject &obj)
 	{
-    	obj.getLevel().setSkyObject(obj);
+    	mSkyObject = &obj;
+
+    	osg::StateSet *ss = mSkyObject->getOrCreateStateSet();
+    	ss->setRenderBinDetails(-1, "RenderBin");
+    	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
+		depth->setWriteMask(false);
+		ss->setAttributeAndModes(depth, osg::StateAttribute::ON);
+
+		mSkyObject->addUpdateCallback(new SkyUpdateCallback(*this));
 	}
+
+    void RflDomedSky::update(osg::Vec3 eyePoint)
+    {
+    	osg::Vec3 newSkyPos = mSkyObject->getLevel().getEngine().getCamera().getEyePoint();
+    	newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
+
+    	mSkyObject->setPosition(newSkyPos);
+    }
 
     OD_REGISTER_RFL_CLASS(0x001a, "Domed Sky", RflDomedSky);
 

@@ -287,6 +287,35 @@ namespace od
 
 
 
+
+    class PlayerUpdateCallback : public osg::NodeCallback
+	{
+	public:
+
+		PlayerUpdateCallback(Player &player)
+		: mPlayer(player)
+		{
+		}
+
+		virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
+		{
+			traverse(node, nv);
+
+			if(nv->getFrameStamp() != nullptr)
+			{
+				mPlayer.update(nv->getFrameStamp()->getSimulationTime());
+			}
+		}
+
+
+	private:
+
+		Player &mPlayer;
+
+	};
+
+
+
     RflHumanControl::RflHumanControl()
     {
 
@@ -306,6 +335,8 @@ namespace od
     			<< obj.getPosition().x() << "/"
 				<< obj.getPosition().y() << "/"
 				<< obj.getPosition().z();
+
+    	obj.addUpdateCallback(new PlayerUpdateCallback(obj.getLevel().getPlayer()));
     }
 
     OD_REGISTER_RFL_CLASS(0x0009, "Human Control", RflHumanControl);
