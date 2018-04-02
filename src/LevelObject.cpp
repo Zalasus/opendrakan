@@ -23,13 +23,12 @@ namespace od
     , mId(0)
     , mFlags(0)
     , mInitialEventCount(0)
+    , mTransform(new osg::PositionAttitudeTransform)
     {
     }
 
     void LevelObject::setPosition(osg::Vec3f v)
     {
-    	mPosition = v;
-
     	if(mTransform != nullptr)
     	{
     		mTransform->setPosition(v);
@@ -46,7 +45,7 @@ namespace od
         dr >> mId
            >> mClassRef
            >> DataReader::Ignore(4)
-           >> mPosition
+           >> mInitialPosition
            >> mFlags
            >> mInitialEventCount
 		   >> linkCount;
@@ -64,21 +63,25 @@ namespace od
 
         if(mFlags & OD_OBJECT_FLAG_SCALED)
         {
-            dr >> mScale;
+            dr >> mInitialScale;
 
         }else
         {
-        	mScale.set(1,1,1);
+        	mInitialScale.set(1,1,1);
         }
 
         odRfl::RflClassBuilder builder;
         builder.readFieldRecord(dr, true);
 
-        mPosition *= OD_WORLD_SCALE; // correct editor scaling
-        mRotation = osg::Quat(
+        mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
+        mInitialRotation = osg::Quat(
 				osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
 				osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
 				osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1));
+
+        mTransform->setAttitude(mInitialRotation);
+		mTransform->setPosition(mInitialPosition);
+		mTransform->setScale(mInitialScale);
 
         mClass = mLevel.getClassByRef(mClassRef);
 
@@ -97,11 +100,6 @@ namespace od
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
         	mModel = mClass->getModel();
-			mTransform = new osg::PositionAttitudeTransform;
-			mTransform->setAttitude(mRotation);
-			mTransform->setPosition(mPosition);
-			mTransform->setScale(mScale);
-
 			mTransform->addChild(mModel);
 			this->addChild(mTransform);
 
@@ -114,6 +112,16 @@ namespace od
 				mSkeletonAnimation = new SkeletonAnimationPlayer(mLevel.getEngine(), this, mSkeletonRoot);
 			}
         }
+    }
+
+    MotionAnimator *LevelObject::getOrCreateMotionAnim()
+    {
+    	if(mMotionAnimator == nullptr)
+    	{
+    		mMotionAnimator = new MotionAnimator(mTransform);
+    	}
+
+    	return mMotionAnimator;
     }
 
 }

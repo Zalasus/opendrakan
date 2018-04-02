@@ -151,6 +151,7 @@ namespace od
 	SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
 	{
 		mModelNode->getOrCreateStateSet()->removeAttribute(mRiggingProgram);
+		mModelNode->getOrCreateStateSet()->removeUniform(mBoneMatrixArray);
 		mSkeletonRoot->removeUpdateCallback(mUploadCallback);
 	}
 

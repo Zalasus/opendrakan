@@ -39,8 +39,9 @@ namespace od
 
         Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode);
 
+        inline Player *getPlayer() { return mPlayer; }
+        inline void setPlayer(Player *p) { mPlayer = p; }
         inline FilePath getFilePath() const { return mLevelPath; }
-        inline Player &getPlayer() { return mPlayer; }
         inline Engine &getEngine() { return mEngine; }
 
         // implement AssetProvider
@@ -73,7 +74,7 @@ namespace od
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
-		Player mPlayer;
+		Player *mPlayer;
     };
 
 

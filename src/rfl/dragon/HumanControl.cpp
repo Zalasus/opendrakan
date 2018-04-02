@@ -20,8 +20,8 @@ namespace odRfl
 	{
 	public:
 
-		PlayerUpdateCallback(od::Player &player)
-		: mPlayer(player)
+		PlayerUpdateCallback(HumanControl &hc)
+		: mHumanControl(hc)
 		{
 		}
 
@@ -31,23 +31,34 @@ namespace odRfl
 
 			if(nv->getFrameStamp() != nullptr)
 			{
-				mPlayer.update(nv->getFrameStamp()->getSimulationTime());
+				mHumanControl.update(nv->getFrameStamp()->getSimulationTime());
 			}
 		}
 
 
 	private:
 
-		od::Player &mPlayer;
+		HumanControl &mHumanControl;
 
 	};
 
 
 
 	HumanControl::HumanControl()
+	: mYaw(0)
+	, mPitch(0)
+	, mForwardSpeed(0)
+	, mRightSpeed(0)
     {
-
     }
+
+	HumanControl::~HumanControl()
+	{
+		if(mUpdateCallback != nullptr && mPlayerObject != nullptr)
+		{
+			mPlayerObject->removeUpdateCallback(mUpdateCallback);
+		}
+	}
 
     void HumanControl::probeFields(RflFieldProbe &probe)
     {
@@ -56,15 +67,50 @@ namespace odRfl
 
     void HumanControl::spawn(od::LevelObject &obj)
     {
-    	// all aboard the indirection train!
-    	obj.getLevel().getPlayer().setLevelObject(od::LevelObjectPtr(&obj));
+    	obj.getLevel().setPlayer(this);
+    	mPlayerObject = &obj;
 
     	Logger::verbose() << "Spawned Human Control at "
     			<< obj.getPosition().x() << "/"
 				<< obj.getPosition().y() << "/"
 				<< obj.getPosition().z();
 
-    	obj.addUpdateCallback(new PlayerUpdateCallback(obj.getLevel().getPlayer()));
+    	mUpdateCallback = new PlayerUpdateCallback(*this);
+    	obj.addUpdateCallback(mUpdateCallback);
+    }
+
+    void HumanControl::moveForward(float speed)
+    {
+    	mForwardSpeed = speed;
+    }
+
+	void HumanControl::moveRight(float speed)
+    {
+    	mRightSpeed = speed;
+    }
+
+	osg::Vec3f HumanControl::getPosition()
+    {
+    	if(mPlayerObject == nullptr)
+    	{
+    		return osg::Vec3f(0,0,0);
+    	}
+
+    	return mPlayerObject->getPosition();
+    }
+
+    void HumanControl::update(double simTime)
+    {
+    	_updateMotion();
+    }
+
+    void HumanControl::_updateMotion()
+    {
+    	osg::Vec3 velocity;
+    	velocity += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(1, 0, 0) * mForwardSpeed  * mRunSpeed;
+    	velocity += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(0, 0, 1) * mRightSpeed * mSideStrafeSpeed;
+
+    	mPlayerObject->getOrCreateMotionAnim()->setVelocity(velocity);
     }
 
     OD_REGISTER_RFL_CLASS(0x0009, "Human Control", HumanControl);

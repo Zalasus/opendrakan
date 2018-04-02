@@ -61,10 +61,14 @@ namespace od
 
 	void Camera::update()
 	{
-		Player &player = mEngine.getPlayer();
+		Player *player = mEngine.getPlayer();
+		if(player == nullptr)
+		{
+			return;
+		}
 
-		osg::Quat lookDirection = osg::Quat(player.getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player.getYaw(), osg::Vec3f(0, 1, 0));
-		osg::Vec3f eye = player.getPosition();
+		osg::Quat lookDirection = osg::Quat(player->getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player->getYaw(), osg::Vec3f(0, 1, 0));
+		osg::Vec3f eye = player->getPosition();
 		eye += lookDirection * osg::Vec3f(-2, 0, 0);
 		osg::Vec3f front = lookDirection * osg::Vec3f(1, 0, 0);
 		osg::Vec3f up = lookDirection * osg::Vec3f(0, 1, 0);

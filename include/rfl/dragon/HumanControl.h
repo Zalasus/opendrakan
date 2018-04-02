@@ -10,17 +10,33 @@
 
 #include "rfl/common/PlayerCommon.h"
 
+#include <osg/NodeCallback>
+
+#include "Player.h"
+
 namespace odRfl
 {
 
-	class HumanControl : public PlayerCommon
+	class HumanControl : public PlayerCommon, public od::Player
     {
     public:
 
         HumanControl();
+        virtual ~HumanControl();
 
         virtual void probeFields(RflFieldProbe &probe) override;
         virtual void spawn(od::LevelObject &obj) override;
+
+        // implement od::Player
+    	virtual float getYaw() const override { return mYaw; }
+    	virtual void setYaw(float f) override { mYaw = f; }
+    	virtual float getPitch() const override { return mPitch; }
+    	virtual void setPitch(float f) override { mPitch = f; }
+    	virtual void moveForward(float speed) override;
+    	virtual void moveRight(float speed) override;
+    	virtual osg::Vec3f getPosition() override;
+
+    	void update(double simTime);
 
 
     protected:
@@ -205,6 +221,19 @@ namespace odRfl
 		RflSoundRefArray	mAttackGrunts;
 		RflSoundRefArray	mGetThePointSounds;
 		RflInteger			mGetThePointSndChance;*/
+
+
+    private:
+
+    	void _updateMotion();
+
+    	float mYaw;
+    	float mPitch;
+    	float mForwardSpeed;
+    	float mRightSpeed;
+    	osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
+    	osg::ref_ptr<od::LevelObject> mPlayerObject;
+
     };
 
 }

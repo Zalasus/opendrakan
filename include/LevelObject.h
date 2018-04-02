@@ -15,6 +15,7 @@
 
 #include "db/Class.h"
 #include "anim/SkeletonAnimationPlayer.h"
+#include "anim/MotionAnimator.h"
 
 namespace od
 {
@@ -32,14 +33,15 @@ namespace od
         inline LevelObjectId getObjectId() const { return mId; }
         inline ClassPtr getClass() { return mClass; }
         inline Level &getLevel() { return mLevel; }
-        inline osg::Vec3f getPosition() const { return mPosition; }
-        inline osg::Vec3f getScale() const { return mScale; }
-        inline osg::Quat getRotation() const { return mRotation; }
+        inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
+        inline osg::Vec3f getScale() const { return mTransform->getScale(); }
+        inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
         void setPosition(osg::Vec3f v);
         inline SkeletonAnimationPlayer *getSkeletonAnimationPlayer() { return mSkeletonAnimation; }
         inline Model *getModel() { return mModel; }
 
         void loadFromRecord(DataReader dr);
+        MotionAnimator *getOrCreateMotionAnim();
 
         // override osg::Group
 		virtual const char *libraryName() const override { return "od";    }
@@ -52,17 +54,18 @@ namespace od
         AssetRef mClassRef;
         ClassPtr mClass;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
-        osg::Vec3f mPosition;
+        osg::Vec3f mInitialPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
         std::vector<uint16_t> mLinks;
-        osg::Vec3f mScale;
-        osg::Quat  mRotation;
+        osg::Vec3f mInitialScale;
+        osg::Quat  mInitialRotation;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         osg::ref_ptr<SkeletonAnimationPlayer> mSkeletonAnimation;
+        osg::ref_ptr<MotionAnimator> mMotionAnimator;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

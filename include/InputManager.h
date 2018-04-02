@@ -20,7 +20,7 @@ namespace od
 	{
 	public:
 
-		InputManager(Engine &engine, Player &player, osgViewer::Viewer *viewer);
+		InputManager(Engine &engine, osgViewer::Viewer *viewer);
 
 		virtual bool handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa, osg::Object *obj, osg::NodeVisitor *nv) override;
 
@@ -30,10 +30,11 @@ namespace od
 		bool _keyDown(int key);
 		bool _keyUp(int key);
 		bool _mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
+		void _playerMoveForward(float speed);
+		void _playerMoveRight(float speed);
 
 
 		Engine &mEngine;
-		Player &mPlayer;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 	};
 

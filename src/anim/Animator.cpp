@@ -113,7 +113,7 @@ namespace od
 		{
 			// single frame animation i.e. static pose. just apply transform and don't bother with interpolations etc.
 			mNode->setMatrix(mAnimBegin->xform * mOriginalXform);
-			mPlayState == AnimationPlayState::STOPPED;
+			mPlayState = AnimationPlayState::STOPPED;
 			mJustStarted = false;
 
 		}else if(mJustStarted)
@@ -146,7 +146,7 @@ namespace od
 
 			}else
 			{
-				mPlayState == AnimationPlayState::STOPPED;
+				mPlayState = AnimationPlayState::STOPPED;
 			}
 
 			return;

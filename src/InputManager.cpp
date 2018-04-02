@@ -13,9 +13,8 @@
 namespace od
 {
 
-	InputManager::InputManager(Engine &engine, Player &player, osgViewer::Viewer *viewer)
+	InputManager::InputManager(Engine &engine, osgViewer::Viewer *viewer)
 	: mEngine(engine)
-	, mPlayer(player)
 	, mViewer(viewer)
 	{
 		mViewer->addEventHandler(this);
@@ -50,19 +49,19 @@ namespace od
 		switch(key)
 		{
 		case osgGA::GUIEventAdapter::KEY_W:
-			mPlayer.moveForward(1);
+			_playerMoveForward(1);
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_S:
-			mPlayer.moveForward(-1);
+			_playerMoveForward(-1);
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_A:
-			mPlayer.moveRight(-1);
+			_playerMoveRight(-1);
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_D:
-			mPlayer.moveRight(1);
+			_playerMoveRight(1);
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_Escape:
@@ -82,12 +81,12 @@ namespace od
 		{
 		case osgGA::GUIEventAdapter::KEY_W:
 		case osgGA::GUIEventAdapter::KEY_S:
-			mPlayer.moveForward(0);
+			_playerMoveForward(0);
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_A:
 		case osgGA::GUIEventAdapter::KEY_D:
-			mPlayer.moveRight(0);
+			_playerMoveRight(0);
 			return true;
 
 		default:
@@ -99,18 +98,39 @@ namespace od
 
 	bool InputManager::_mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
 	{
+		if(mEngine.getPlayer() == nullptr)
+		{
+			return false;
+		}
+
 		float x = ea.getXnormalized();
 		float y = ea.getYnormalized();
 
 		float pitch = ( M_PI/2) * y;
 		float yaw   = (-M_PI) * x;
 
-		mPlayer.setPitch(pitch);
-		mPlayer.setYaw(yaw);
+		mEngine.getPlayer()->setPitch(pitch);
+		mEngine.getPlayer()->setYaw(yaw);
 
 		return true;
 	}
 
+
+	void InputManager::_playerMoveForward(float speed)
+	{
+		if(mEngine.getPlayer() != nullptr)
+		{
+			mEngine.getPlayer()->moveForward(speed);
+		}
+	}
+
+	void InputManager::_playerMoveRight(float speed)
+	{
+		if(mEngine.getPlayer() != nullptr)
+		{
+			mEngine.getPlayer()->moveRight(speed);
+		}
+	}
 
 }
 

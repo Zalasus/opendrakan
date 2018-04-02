@@ -79,7 +79,7 @@ namespace od
 
 	Animation::AnimStartEndPair Animation::getKeyframesForNode(int32_t nodeId)
 	{
-		if(nodeId >= mFrameLookup.size() || nodeId < 0)
+		if(nodeId < 0 || (size_t)nodeId >= mFrameLookup.size())
 		{
 			throw Exception("Animation has no keyframes for requested node");
 		}

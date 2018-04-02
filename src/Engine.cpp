@@ -63,13 +63,13 @@ namespace od
 
 		mLevel.reset(new od::Level(mInitialLevelFile, *this, rootNode));
 
-		if(mLevel->getPlayer().getLevelObject() == nullptr)
+		if(mLevel->getPlayer() == nullptr)
     	{
 			Logger::error() << "Can't start engine. Level does not contain a Human Control object";
     		throw Exception("No HumanControl object present in level");
     	}
 
-		mInputManager = new InputManager(*this, mLevel->getPlayer(), mViewer);
+		mInputManager = new InputManager(*this, mViewer);
 
 		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
 		double simTime = 0;

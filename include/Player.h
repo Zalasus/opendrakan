@@ -8,40 +8,29 @@
 #ifndef PLAYER_H_
 #define PLAYER_H_
 
-#include "LevelObject.h"
+#include <osg/Vec3>
 
 namespace od
 {
 
+	/**
+	 * @brief Interface for RFL class representing a player.
+	 *
+	 * This allows abstracting access to player-related functions between the engine and the RFL.
+	 */
     class Player
     {
     public:
 
-    	Player();
-    	Player(const Player &p) = delete;
-    	Player(Player &p) = delete;
+    	virtual ~Player() = default;
 
-    	inline void setLevelObject(LevelObjectPtr obj) { mPlayerObject = obj; }
-    	inline LevelObjectPtr getLevelObject() { return mPlayerObject; }
-    	inline float getYaw() const { return mYaw; }
-    	inline float getPitch() const { return mPitch; }
-    	inline void setYaw(float f) { mYaw = f; }
-    	inline void setPitch(float f) { mPitch = f; }
-    	inline void moveForward(float speed) { mForwardSpeed = speed; }
-    	inline void moveRight(float speed) { mRightSpeed = speed; }
-
-    	osg::Vec3f getPosition();
-    	void update(double simTime);
-
-
-    private:
-
-    	LevelObjectPtr mPlayerObject;
-    	float mYaw;
-    	float mPitch;
-    	float mForwardSpeed;
-    	float mRightSpeed;
-    	double mLastSimTime;
+    	virtual float getYaw() const = 0;
+    	virtual void setYaw(float f) = 0;
+    	virtual float getPitch() const = 0;
+    	virtual void setPitch(float f) = 0;
+    	virtual void moveForward(float speed) = 0;
+    	virtual void moveRight(float speed) = 0;
+    	virtual osg::Vec3f getPosition() = 0;
     };
 
 }

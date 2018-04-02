@@ -36,7 +36,7 @@ namespace od
 		inline DbManager &getDbManager() { return mDbManager; }
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
-		inline Player &getPlayer() { return getLevel().getPlayer(); }
+		inline Player *getPlayer() { return getLevel().getPlayer(); }
 		inline Camera &getCamera() { return *mCamera; }
 		inline double getMaxFrameRate() const { return mMaxFrameRate; }
 		inline void setMaxFrameRate(double fps) { mMaxFrameRate = fps; } // 0 for no cap
