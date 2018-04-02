@@ -26,7 +26,7 @@ namespace od
 
         Texture(Database &db, RecordId id);
 
-        inline bool hasAlpha() const { return mAlphaBitsPerPixel != 0; };
+        inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         void loadFromRecord(TextureFactory &factory, DataReader dr);
         void exportToPng(const FilePath &path);
@@ -57,6 +57,7 @@ namespace od
         uint32_t mCompressionLevel;
         uint32_t mCompressedSize;
 
+        bool mHasAlphaChannel;
         ClassPtr mClass;
         std::unique_ptr<odRfl::Material> mMaterial;
     };

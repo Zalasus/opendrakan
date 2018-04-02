@@ -44,6 +44,7 @@ namespace od
     , mUsageCount(0)
     , mCompressionLevel(0)
     , mCompressedSize(0)
+    , mHasAlphaChannel(false)
     {
 
     }
@@ -82,6 +83,14 @@ namespace od
         {
             throw UnsupportedException("Can't handle uncompressed textures right now");
         }
+
+        // take apart color key so we can compare it more efficiently
+        bool hasColorKey = (mColorKey != 0xffffffff);
+        uint8_t keyRed   = (mColorKey & 0xff0000) >> 16;
+        uint8_t keyGreen = (mColorKey & 0x00ff00) >> 8;
+        uint8_t keyBlue  = (mColorKey & 0x0000ff);
+
+        mHasAlphaChannel = (mAlphaBitsPerPixel != 0) || hasColorKey;
 
         ZStream zstr(dr.getStream());
         DataReader zdr(zstr);
@@ -200,9 +209,26 @@ namespace od
         unsigned char *pixBuffer = new unsigned char[mWidth*mHeight*4]; // no need for RAII, osg takes ownership
         for(size_t i = 0; i < mWidth*mHeight*4; i += 4)
         {
-            pixelReaderFunc(pixBuffer[i], pixBuffer[i+1], pixBuffer[i+2], pixBuffer[i+3]);
+        	uint8_t red;
+        	uint8_t green;
+        	uint8_t blue;
+        	uint8_t alpha;
+
+            pixelReaderFunc(red, green, blue, alpha);
+
+            if(hasColorKey && red == keyRed && green == keyGreen && blue == keyBlue)
+            {
+            	alpha = 0;
+            }
+
+            pixBuffer[i]   = red;
+            pixBuffer[i+1] = green;
+            pixBuffer[i+2] = blue;
+            pixBuffer[i+3] = alpha;
         }
         zstr.seekToEndOfZlib();
+
+
 
         this->setImage(mWidth, mHeight, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
 
