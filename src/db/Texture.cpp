@@ -105,11 +105,11 @@ namespace od
         }else if(mBitsPerPixel == 16)
         {
             /*
-             * ABPP    R:G:B+A bits
-             *  0       5:6:5+0      RRRRRGGG GGGBBBBB
-             *  1       5:5:5+1      RRRRRGGG GGBBBBBA
-             *  4       4:4:4+4      RRRRGGGG BBBBAAAA
-             *  8       3:3:2+8      RRRGGGBB AAAAAAAA
+             * ABPP    R:G:B+A bits   Bit pattern (LE adjusted!)
+             * 0       5:6:5+0        RRRRRGGG GGGBBBBB
+             * 1       5:5:5+1        ARRRRRGG GGGBBBBB
+             * 4       4:4:4+4        AAAARRRR GGGGBBBB
+             * 8       3:3:2+8        AAAAAAAA RRRGGGBB
              */
 
         	uint32_t redMask;

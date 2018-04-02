@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <osgViewer/Viewer>
+#include <osgViewer/ViewerEventHandlers>
 
 #include "DbManager.h"
 #include "ShaderManager.h"
@@ -51,6 +52,7 @@ namespace od
 		FilePath mInitialLevelFile;
 		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
+		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
 		std::unique_ptr<Camera> mCamera;
 		double mMaxFrameRate;
 	};

@@ -560,6 +560,7 @@ Texture format
         the format used is determined by the alpha-bpp-field. The following formats have been found:
         
             ABPP    R:G:B+A bits   Bit pattern (LE adjusted!)
+            0       5:6:5+0        RRRRRGGG GGGBBBBB
             1       5:5:5+1        ARRRRRGG GGGBBBBB
             4       4:4:4+4        AAAARRRR GGGGBBBB
             8       3:3:2+8        AAAAAAAA RRRGGGBB

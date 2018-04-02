@@ -8,9 +8,6 @@
 
 #include "Engine.h"
 
-#include <osgViewer/ViewerEventHandlers>
-#include <osgGA/TrackballManipulator>
-
 #include "Exception.h"
 #include "Logger.h"
 #include "Level.h"
@@ -42,6 +39,12 @@ namespace od
 		mViewer->setName("OpenDrakan");
 		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 		mViewer->setSceneData(rootNode);
+
+		osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =
+				new osgViewer::ScreenCaptureHandler::WriteToFile("screenshot", "png", osgViewer::ScreenCaptureHandler::WriteToFile::SEQUENTIAL_NUMBER);
+		mScreenshotHandler = new osgViewer::ScreenCaptureHandler(captureOp, 1);
+		mScreenshotHandler->setKeyEventTakeScreenShot(osgGA::GUIEventAdapter::KEY_F12);
+		mViewer->addEventHandler(mScreenshotHandler);
 
 		// since we want to use the programmable pipeline, set things up so we can use modern GLSL
 		mViewer->getCamera()->getGraphicsContext()->getState()->setUseModelViewAndProjectionUniforms(true);
