@@ -16,12 +16,12 @@
 #include "rfl/RflClass.h"
 
 #define OD_REGISTER_RFL_CLASS(classId, className, classCppClass) \
-	static od::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);
+	static odRfl::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);
 
 #define OD_REGISTER_RFL(rflName) \
-	od::Rfl::RflNameSetter sRflNameSetter(rflName);
+	odRfl::Rfl::RflNameSetter sRflNameSetter(rflName);
 
-namespace od
+namespace odRfl
 {
 
 	typedef uint16_t RflClassId;

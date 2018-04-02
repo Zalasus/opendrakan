@@ -1,17 +1,17 @@
 /*
- * RflAbstractItem.cpp
+ * ItemCommon.cpp
  *
  *  Created on: 14 Feb 2018
  *      Author: zal
  */
 
 
-#include "rfl/general/RflAbstractItem.h"
+#include "rfl/common/ItemCommon.h"
 
-namespace od
+namespace odRfl
 {
 
-	RflAbstractItem::RflAbstractItem()
+	ItemCommon::ItemCommon()
 	: mDisplayName("")
 	, mQuantity(1)
 	, mGrouped(0)
@@ -19,16 +19,16 @@ namespace od
 	, mIconIndex(1)
 	, mIconSlotSize(1)
 	, mPlayerSlot(0)
-	, mPowerupObject(AssetRef::NULL_REF)
-	, mActivateSound(AssetRef::NULL_REF)
-	, mDroppedSound(AssetRef::NULL_REF)
-	, mPickedUpSound(AssetRef::NULL_REF)
+	, mPowerupObject(od::AssetRef::NULL_REF)
+	, mActivateSound(od::AssetRef::NULL_REF)
+	, mDroppedSound(od::AssetRef::NULL_REF)
+	, mPickedUpSound(od::AssetRef::NULL_REF)
 	, mDroppable(0)
 	, mFadeTime(60)
 	{
 	}
 
-	void RflAbstractItem::probeFields(RflFieldProbe &probe)
+	void ItemCommon::probeFields(RflFieldProbe &probe)
     {
 	    probe.beginCategory("Item");
 	    probe.registerField(mDisplayName, "DisplayName");

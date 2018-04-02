@@ -29,7 +29,7 @@ namespace od
 	{
 		Logger::info() << "Starting OpenDrakan...";
 
-		Rfl &rfl = od::Rfl::getSingleton();
+		odRfl::Rfl &rfl = odRfl::Rfl::getSingleton();
 		Logger::info() << "OpenDrakan linked against RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered classes";
 
 		osg::ref_ptr<osg::Group> rootNode(new osg::Group);

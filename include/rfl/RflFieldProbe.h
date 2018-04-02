@@ -11,11 +11,9 @@
 #include <string>
 #include <vector>
 
-#include "DataStream.h"
 #include "RflField.h"
-#include "Exception.h"
 
-namespace od
+namespace odRfl
 {
 
     /**
@@ -44,7 +42,7 @@ namespace od
 
 	    RflClassBuilder();
 
-		void readFieldRecord(DataReader &dr, bool isObjectRecord);
+		void readFieldRecord(od::DataReader &dr, bool isObjectRecord);
 
 		/// Resets internal index counter so this builder can be used to build another class.
 		void resetIndexCounter();

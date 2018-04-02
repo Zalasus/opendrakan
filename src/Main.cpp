@@ -112,51 +112,51 @@ static void statClasses(od::SrscFile &file)
 
         	switch(type & 0xff)
         	{
-        	case od::RflField::INTEGER:
+        	case odRfl::RflField::INTEGER:
         		std::cout << "RflInteger";
         		break;
 
-            case od::RflField::FLOAT:
+            case odRfl::RflField::FLOAT:
             	std::cout << "RflFloat";
         		break;
 
-            case od::RflField::CLASS:
+            case odRfl::RflField::CLASS:
             	std::cout << "RflClassRef";
         		break;
 
-            case od::RflField::MODEL:
+            case odRfl::RflField::MODEL:
             	std::cout << "RflModelRef";
         		break;
 
-            case od::RflField::SOUND:
+            case odRfl::RflField::SOUND:
             	std::cout << "RflSoundRef";
         		break;
 
-            case od::RflField::ENUM:
+            case odRfl::RflField::ENUM:
             	std::cout << "RflEnum";
         		break;
 
-            case od::RflField::CHAR_CHANNEL:
+            case odRfl::RflField::CHAR_CHANNEL:
             	std::cout << "RflCharChannel";
         		break;
 
-            case od::RflField::ANIMATION:
+            case odRfl::RflField::ANIMATION:
             	std::cout << "RflAnimRef";
         		break;
 
-            case od::RflField::STRING:
+            case odRfl::RflField::STRING:
             	std::cout << "RflString";
         		break;
 
-            case od::RflField::SEUQUENCE:
+            case odRfl::RflField::SEUQUENCE:
             	std::cout << "RflSequenceRef";
         		break;
 
-            case od::RflField::TEXTURE:
+            case odRfl::RflField::TEXTURE:
             	std::cout << "RflTextureRef";
         		break;
 
-            case od::RflField::COLOR:
+            case odRfl::RflField::COLOR:
             	std::cout << "RflColor";
         		break;
 
@@ -197,7 +197,7 @@ void printUsage()
 
 int main(int argc, char **argv)
 {
-	od::Logger::LogLevel logLevel = od::Logger::LOGLEVEL_INFO;
+	Logger::LogLevel logLevel = Logger::LOGLEVEL_INFO;
 	std::string filename;
 	std::string outputPath = "out/";
 	bool extract = false;
@@ -235,9 +235,9 @@ int main(int argc, char **argv)
 			break;
 
 		case 'v':
-			if(logLevel < od::Logger::LOGLEVEL_DEBUG)
+			if(logLevel < Logger::LOGLEVEL_DEBUG)
 			{
-				logLevel = static_cast<od::Logger::LogLevel>(1 + static_cast<int>(logLevel)); // i know, yucky enum abuse
+				logLevel = static_cast<Logger::LogLevel>(1 + static_cast<int>(logLevel)); // i know, yucky enum abuse
 			}
 			break;
 
@@ -285,7 +285,7 @@ int main(int argc, char **argv)
 
 	try
 	{
-		od::Logger::getDefaultLogger().setOutputLogLevel(logLevel);
+		Logger::getDefaultLogger().setOutputLogLevel(logLevel);
 
 		if(stat)
 		{

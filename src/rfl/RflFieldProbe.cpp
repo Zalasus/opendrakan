@@ -9,7 +9,9 @@
 
 #include <algorithm>
 
-namespace od
+#include "Exception.h"
+
+namespace odRfl
 {
 
     RflClassBuilder::RflClassBuilder()
@@ -17,7 +19,7 @@ namespace od
     {
     }
 
-    void RflClassBuilder::readFieldRecord(DataReader &dr, bool isObjectRecord)
+    void RflClassBuilder::readFieldRecord(od::DataReader &dr, bool isObjectRecord)
     {
     	uint32_t fieldCount;
     	uint32_t dwordCount;
@@ -80,26 +82,26 @@ namespace od
 
         if(it->fieldType != field.getFieldType())
         {
-            throw Exception("Type mismatch in RflClass. Field type as defined in RflClass does not match the one found in record.");
+            throw od::Exception("Type mismatch in RflClass. Field type as defined in RflClass does not match the one found in record.");
         }
 
         if(it->fieldName != fieldName) // TODO: costly comparison. might want to make this optional
         {
             Logger::error() << "Field name mismatch: Field in RflClass was named '" << fieldName << "' where field in record was named '" << it->fieldName << "'";
-            throw Exception("Field name mismatch in RflClass. Field name as defined in RflClass does not match the one found in record.");
+            throw od::Exception("Field name mismatch in RflClass. Field name as defined in RflClass does not match the one found in record.");
         }
 
         if(it->isArray != field.isArray())
         {
             Logger::error() << "Field array flag mismatch: Field '" << fieldName << "' was array in RFL or file while in the other it was not.";
-            throw Exception("Field as defined in RflClass does not match array state as found in record.");
+            throw od::Exception("Field as defined in RflClass does not match array state as found in record.");
         }
 
         // field seems reasonable. let's fill it
 
-        MemBuffer buf(mFieldData.data(), mFieldData.data() + mFieldData.size());
+        od::MemBuffer buf(mFieldData.data(), mFieldData.data() + mFieldData.size());
         std::istream dataStr(&buf);
-        DataReader dr(dataStr);
+        od::DataReader dr(dataStr);
 
         dr.seek(it->dataOffset);
         if(!it->isArray)

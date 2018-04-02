@@ -14,7 +14,7 @@
 
 #include "db/Asset.h"
 
-namespace od
+namespace odRfl
 {
     class RflFieldProbe;
 
@@ -49,8 +49,8 @@ namespace od
 		virtual bool isArray() const = 0;
 		virtual RflFieldType getFieldType() const = 0;
 
-		virtual void fill(DataReader &dr);
-		virtual void fillArray(uint16_t size, DataReader &dr);
+		virtual void fill(od::DataReader &dr);
+		virtual void fillArray(uint16_t size, od::DataReader &dr);
 	};
 
 	class RflString : public RflField
@@ -62,7 +62,7 @@ namespace od
 		virtual bool isArray() const override { return true; }
 		virtual RflFieldType getFieldType() const { return STRING; }
 
-		virtual void fillArray(uint16_t size, DataReader &dr) override;
+		virtual void fillArray(uint16_t size, od::DataReader &dr) override;
 
 
 	private:
@@ -83,7 +83,7 @@ namespace od
 		virtual bool isArray() const override { return false; }
 		virtual RflFieldType getFieldType() const { return _Type; }
 
-		virtual void fill(DataReader &dr) override
+		virtual void fill(od::DataReader &dr) override
 		{
 			dr >> mValue;
 		}
@@ -104,11 +104,11 @@ namespace od
 	typedef RflEnum                             RflEnumYesNo; // TODO: give these a list of allowed values once we implement that feature
 	typedef RflEnum                             RflEnumPlayerSlot;
 	typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
-	typedef RflPOD<AssetRef, RflField::CLASS>     RflClassRef;
-    typedef RflPOD<AssetRef, RflField::SOUND>     RflSoundRef;
-    typedef RflPOD<AssetRef, RflField::TEXTURE>   RflTextureRef;
-    typedef RflPOD<AssetRef, RflField::SEUQUENCE> RflSequenceRef;
-    typedef RflPOD<AssetRef, RflField::ANIMATION> RflAnimRef;
+	typedef RflPOD<od::AssetRef, RflField::CLASS>     RflClassRef;
+    typedef RflPOD<od::AssetRef, RflField::SOUND>     RflSoundRef;
+    typedef RflPOD<od::AssetRef, RflField::TEXTURE>   RflTextureRef;
+    typedef RflPOD<od::AssetRef, RflField::SEUQUENCE> RflSequenceRef;
+    typedef RflPOD<od::AssetRef, RflField::ANIMATION> RflAnimRef;
 
 
 	template <typename _DataType, RflField::RflFieldType _Type>
@@ -124,7 +124,7 @@ namespace od
 		virtual bool isArray() const override { return true; }
 		virtual RflFieldType getFieldType() const { return _Type; }
 
-		virtual void fillArray(uint16_t size, DataReader &dr) override
+		virtual void fillArray(uint16_t size, od::DataReader &dr) override
 		{
 			mValues.clear();
 			mValues.reserve(size);
@@ -144,9 +144,9 @@ namespace od
 
 	};
 
-	typedef RflPODArray<AssetRef, RflField::SOUND> RflSoundRefArray;
-	typedef RflPODArray<AssetRef, RflField::CLASS> RflClassRefArray;
-	typedef RflPODArray<AssetRef, RflField::ANIMATION> RflAnimRefArray;
+	typedef RflPODArray<od::AssetRef, RflField::SOUND> RflSoundRefArray;
+	typedef RflPODArray<od::AssetRef, RflField::CLASS> RflClassRefArray;
+	typedef RflPODArray<od::AssetRef, RflField::ANIMATION> RflAnimRefArray;
 	typedef RflPODArray<uint32_t, RflField::CHAR_CHANNEL> RflCharChannelArray;
 }
 

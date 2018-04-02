@@ -1,12 +1,12 @@
 /*
- * RflSky.cpp
+ * Sky.cpp
  *
  *  Created on: 26 Feb 2018
  *      Author: zal
  */
 
 
-#include "rfl/general/RflSky.h"
+#include "rfl/dragon/Sky.h"
 
 #include <osg/Depth>
 
@@ -16,15 +16,14 @@
 #include "Engine.h"
 #include "Camera.h"
 
-namespace od
+namespace odRfl
 {
-
 
 	class SkyUpdateCallback : public osg::NodeCallback
 	{
 	public:
 
-		SkyUpdateCallback(RflDomedSky &sky)
+		SkyUpdateCallback(DomedSky &sky)
 		: mSky(sky)
 		{
 		}
@@ -40,30 +39,30 @@ namespace od
 
 	private:
 
-		RflDomedSky &mSky;
+		DomedSky &mSky;
 
 	};
 
 
 
-	RflDomedSky::RflDomedSky()
+	DomedSky::DomedSky()
 	: mPrimarySky(1) // yes
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)
 	, mEffects(0) // none
-	, mLightningObject(AssetRef::NULL_REF)
+	, mLightningObject(od::AssetRef::NULL_REF)
 	, mAveLightningPeriod(5.0)
 	, mLightningHeight(30)
 	, mMinLightningDist(10)
 	, mMaxLightningDist(20)
 	, mLightningWedgeAngle(90.0)
-	, mLensFlare(AssetRef::NULL_REF)
+	, mLensFlare(od::AssetRef::NULL_REF)
 	, mFlareElevation(0)
 	, mFlareDirection(0)
 	{
 	}
 
-    void RflDomedSky::probeFields(RflFieldProbe &probe)
+    void DomedSky::probeFields(RflFieldProbe &probe)
     {
     	/*probe.beginCategory("Position");
     	probe.registerField(mPrimarySky, "Primary Sky");
@@ -101,7 +100,7 @@ namespace od
 		     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
-    void RflDomedSky::spawn(LevelObject &obj)
+    void DomedSky::spawn(od::LevelObject &obj)
 	{
     	mSkyObject = &obj;
 
@@ -114,7 +113,7 @@ namespace od
 		mSkyObject->addUpdateCallback(new SkyUpdateCallback(*this));
 	}
 
-    void RflDomedSky::update(osg::Vec3 eyePoint)
+    void DomedSky::update(osg::Vec3 eyePoint)
     {
     	osg::Vec3 newSkyPos = mSkyObject->getLevel().getEngine().getCamera().getEyePoint();
     	newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
@@ -122,6 +121,6 @@ namespace od
     	mSkyObject->setPosition(newSkyPos);
     }
 
-    OD_REGISTER_RFL_CLASS(0x001a, "Domed Sky", RflDomedSky);
+    OD_REGISTER_RFL_CLASS(0x001a, "Domed Sky", DomedSky);
 
 }

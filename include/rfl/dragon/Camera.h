@@ -1,26 +1,26 @@
 /*
- * RflCamera.h
+ * Camera.h
  *
  *  Created on: 14 Feb 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_RFL_GENERAL_RFLCAMERA_H_
-#define INCLUDE_RFL_GENERAL_RFLCAMERA_H_
+#ifndef INCLUDE_RFL_DRAGON_CAMERA_H_
+#define INCLUDE_RFL_DRAGON_CAMERA_H_
 
 #include "rfl/RflClass.h"
 
-namespace od
+namespace odRfl
 {
 
-	class RflTrackingCamera : public RflClass
+	class TrackingCamera : public RflClass
 	{
 	public:
 
-		RflTrackingCamera();
+		TrackingCamera();
 
 		virtual void probeFields(RflFieldProbe &probe) override;
-		virtual void spawn(LevelObject &obj) override;
+		virtual void spawn(od::LevelObject &obj) override;
 
 
 	private:
@@ -29,8 +29,9 @@ namespace od
 		RflFloat    mRubberBandStrength;
 		RflFloat    mSpinSpeed;
 		RflFloat	mCrosshairDistance;
+
 	};
 
 }
 
-#endif /* INCLUDE_RFL_GENERAL_RFLCAMERA_H_ */
+#endif /* INCLUDE_RFL_DRAGON_CAMERA_H_ */

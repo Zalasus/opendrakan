@@ -47,15 +47,15 @@ namespace od
         }
     }
 
-    std::unique_ptr<RflClass> Class::makeInstance()
+    std::unique_ptr<odRfl::RflClass> Class::makeInstance()
 	{
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
     	try
         {
-        	RflClassRegistrar &cr = Rfl::getSingleton().getClassRegistrarById(mRflClassId);
+        	odRfl::RflClassRegistrar &cr = odRfl::Rfl::getSingleton().getClassRegistrarById(mRflClassId);
 
-        	std::unique_ptr<RflClass> newInstance = cr.createClassInstance();// FIXME: make sure this does not throw NotFoundException or cause unwanted catches
+        	std::unique_ptr<odRfl::RflClass> newInstance = cr.createClassInstance();// FIXME: make sure this does not throw NotFoundException or cause unwanted catches
         	mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
         	newInstance->probeFields(mClassBuilder);
 

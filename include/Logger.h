@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
-namespace od
-{
+//namespace od
+//{
     class ILoggerListener;
 
     class Logger;
@@ -143,6 +143,6 @@ namespace od
 
 		return LoggerStreamProxy(*this);
 	}
-}
+//}
 
 #endif /* INCLUDE_LOGGER_H_ */

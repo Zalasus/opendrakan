@@ -13,8 +13,8 @@
 
 #include "Exception.h"
 
-namespace od
-{
+//namespace od
+//{
 
 	static const char *getTimestamp()
 	{
@@ -225,6 +225,6 @@ namespace od
 
     }
 
-}
+//}
 
 

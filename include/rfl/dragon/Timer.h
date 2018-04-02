@@ -1,26 +1,26 @@
 /*
- * RflTimer.h
+ * Timer.h
  *
  *  Created on: 1 Apr 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_RFL_GENERAL_RFLTIMER_H_
-#define INCLUDE_RFL_GENERAL_RFLTIMER_H_
+#ifndef INCLUDE_RFL_DRAGON_TIMER_H_
+#define INCLUDE_RFL_DRAGON_TIMER_H_
 
 #include "rfl/RflClass.h"
 
-namespace od
+namespace odRfl
 {
 
-	class RflTimer : public RflClass
+	class Timer : public RflClass
 	{
 	public:
 
-		RflTimer();
+		Timer();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawn(LevelObject &obj) override;
+        virtual void spawn(od::LevelObject &obj) override;
 
 
 	protected:
@@ -37,4 +37,4 @@ namespace od
 
 }
 
-#endif /* INCLUDE_RFL_GENERAL_RFLTIMER_H_ */
+#endif /* INCLUDE_RFL_DRAGON_TIMER_H_ */

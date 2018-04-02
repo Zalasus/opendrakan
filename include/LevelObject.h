@@ -51,7 +51,7 @@ namespace od
         LevelObjectId mId;
         AssetRef mClassRef;
         ClassPtr mClass;
-        std::unique_ptr<RflClass> mRflClassInstance;
+        std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         osg::Vec3f mPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;

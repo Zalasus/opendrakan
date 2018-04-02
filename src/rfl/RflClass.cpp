@@ -9,11 +9,11 @@
 
 #include "LevelObject.h"
 
-namespace od
+namespace odRfl
 {
 
 
-	void RflClass::spawn(LevelObject &obj)
+	void RflClass::spawn(od::LevelObject &obj)
 	{
 	}
 

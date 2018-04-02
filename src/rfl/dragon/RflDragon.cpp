@@ -8,7 +8,7 @@
 
 #include "rfl/Rfl.h"
 
-namespace od
+namespace odRfl
 {
 
 	OD_REGISTER_RFL("Dragon");

@@ -31,7 +31,7 @@ namespace od
         inline std::string getName() const { return mClassName; }
 
         void loadFromRecord(ClassFactory &factory, DataReader dr);
-        std::unique_ptr<RflClass> makeInstance();
+        std::unique_ptr<odRfl::RflClass> makeInstance();
 
         // implement Asset
         virtual const char *getAssetTypeName() const override { return "class"; }
@@ -43,7 +43,7 @@ namespace od
         AssetRef mModelRef;
         ModelPtr mModel;
         uint16_t mRflClassId;
-        RflClassBuilder mClassBuilder;
+        odRfl::RflClassBuilder mClassBuilder;
         uint16_t mIconNumber;
 
 	};

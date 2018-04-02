@@ -13,7 +13,7 @@
 #include "SrscFile.h"
 #include "Asset.h"
 #include "Class.h"
-#include "rfl/general/RflMaterial.h"
+#include "rfl/dragon/Material.h"
 
 namespace od
 {
@@ -58,7 +58,7 @@ namespace od
         uint32_t mCompressedSize;
 
         ClassPtr mClass;
-        std::unique_ptr<RflMaterial> mMaterial;
+        std::unique_ptr<odRfl::Material> mMaterial;
     };
 
     typedef osg::ref_ptr<Texture> TexturePtr;

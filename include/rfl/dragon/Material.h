@@ -1,23 +1,23 @@
 /*
- * RflMaterial.h
+ * Material.h
  *
  *  Created on: 13 Feb 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_RFL_RFLMATERIAL_H_
-#define INCLUDE_RFL_RFLMATERIAL_H_
+#ifndef INCLUDE_RFL_DRAGON_MATERIAL_H_
+#define INCLUDE_RFL_DRAGON_MATERIAL_H_
 
 #include "rfl/RflClass.h"
 
-namespace od
+namespace odRfl
 {
 
-	class RflMaterial : public RflClass
+	class Material : public RflClass
 	{
 	public:
 
-		RflMaterial();
+		Material();
 
 		virtual void probeFields(RflFieldProbe &probe) override;
 
@@ -44,11 +44,11 @@ namespace od
 	};
 
 
-	class RflBlendedMaterial : public RflMaterial
+	class BlendedMaterial : public Material
 	{
 	public:
 
-		RflBlendedMaterial();
+		BlendedMaterial();
 
 		virtual void probeFields(RflFieldProbe &probe) override;
 
@@ -64,4 +64,4 @@ namespace od
 
 }
 
-#endif /* INCLUDE_RFL_RFLMATERIAL_H_ */
+#endif /* INCLUDE_RFL_DRAGON_MATERIAL_H_ */

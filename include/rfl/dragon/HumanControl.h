@@ -1,158 +1,26 @@
 /*
- * RflPlayerControl.h
+ * HumanControl.h
  *
- *  Created on: 16 Feb 2018
+ *  Created on: 2 Apr 2018
  *      Author: zal
  */
 
-#ifndef RFLPLAYERCONTROL_H_
-#define RFLPLAYERCONTROL_H_
+#ifndef INCLUDE_RFL_DRAGON_HUMANCONTROL_H_
+#define INCLUDE_RFL_DRAGON_HUMANCONTROL_H_
 
-#include "rfl/RflClass.h"
+#include "rfl/common/PlayerCommon.h"
 
-namespace od
+namespace odRfl
 {
 
-    class RflPlayerCommon : public RflClass
+	class HumanControl : public PlayerCommon
     {
     public:
 
-        RflPlayerCommon();
+        HumanControl();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-
-
-    protected:
-
-        RflSoundRefArray    mSeparatedSounds;
-        RflInteger          mSeparatedSoundChance;
-        RflFloat            mCameraHorzDistance;
-        RflFloat            mCameraVertDistance;
-        RflFloat            mCameraTiltFactor;
-        RflFloat            mCameraCollisionTiltFactor;
-        RflFloat            mMaxProximity;
-        RflAnimRef          mReadyAnim;
-        RflAnimRef          mWalkAnim;
-        RflAnimRef          mRunAnim;
-        RflAnimRef          mGroundStrafeLAnim;
-        RflAnimRef          mGroundStrafeRAnim;
-        RflAnimRefArray     mIdleAnims;
-        RflFloat            mRunSpeed;
-        RflFloat            mWalkSpeed;
-        RflFloat            mWalkBackSpeed;
-        RflFloat            mThrottleAccel;
-        RflFloat            mThrottleDecel;
-        RflFloat            mSideStrafeSpeed;
-        RflFloat            mRollSpeed;
-        RflFloat            mPitchSpeed;
-        RflFloat            mSideAccel;
-        RflFloat            mRollDamping;
-        RflFloat            mPitchDamping;
-        RflCharChannel      mNeckChannel;
-        RflCharChannel      mHeadChannel;
-        RflInteger          mFootSphere;
-        RflInteger          mBeginHealth;
-        RflClassRef         mGotHitBloodGen;
-        RflAnimRefArray     mGroundDeathAnims;
-        RflClassRef         m3DExplosion;
-        RflSoundRef         mDeathSound;
-        RflClassRef         mAmputationBloodGen;
-        RflClassRef         mBodyPart;
-        RflClassRef         mBodyPartLarge;
-        RflFloat            mBodyPartPercentage;
-        RflCharChannelArray mChoppableChansAlive;
-        RflInteger          mGibCutoff;
-        RflClassRefArray    mGibGensLarge;
-        RflClassRefArray    mGibGensSmall;
-        RflCharChannelArray mLargeGibChans;
-        RflFloat            mBodyPartVelocity;
-    };
-
-
-    class RflDragonControl : public RflPlayerCommon
-    {
-    public:
-
-        RflDragonControl();
-
-        virtual void probeFields(RflFieldProbe &probe) override;
-
-
-    protected:
-
-        RflAnimRef			mWalkBackwardAnim;
-		RflFloat			mAirCamHorzDistance;
-		RflFloat			mAirCamVertDistance;
-		RflCharChannel		mSaddleChannel;
-		RflCharChannel		mJawChannel;
-		RflCharChannel		mNeck2Channel;
-		RflInteger			mBiteDamage;
-		RflSoundRefArray	mGotHitSounds;
-		RflSoundRefArray	mCrashSounds;
-		RflInteger			mCrashSoundChance;
-		RflSoundRefArray	mWingFlapSounds;
-		RflSoundRefArray	mBiteSounds;
-		RflSoundRefArray	mDoneMountingSounds;
-		RflInteger			mPercentChanceOfDoneMountingSound;
-		RflAnimRef			mAirDeathStartAnim;
-		RflAnimRef			mAirDeathLoopAnim;
-		RflAnimRef			mAirDeathImpactAnim;
-		RflAnimRef			mMountAnim;
-		RflAnimRef			mDismountAnim;
-		RflAnimRef			mFlyAnim;
-		RflAnimRef			mFlyToHoverAnim;
-		RflAnimRef			mHoverAnim;
-		RflAnimRef			mHoverBackwardsAnim;
-		RflAnimRef			mSoarAnim;
-		RflAnimRef			mStrafeLeftAirAnim;
-		RflAnimRef			mStrafeRightAirAnim;
-		RflAnimRef			mStrafeUpAnim;
-		RflAnimRef			mTurnLeftGndAnim;
-		RflAnimRef			mTurnRightGndAnim;
-		RflAnimRef			mLandingAnim;
-		RflAnimRef			mRunIntoWallAnim;
-		RflAnimRef			mFlyIntoWallAnim;
-		RflAnimRef			mBiteAnim;
-		RflFloat			mMinFlySpeed;
-		RflFloat			mMaxFlySpeed;
-		RflFloat			mAirStrafeLRSpeed;
-		RflFloat			mStartHoverAnimSpeed;
-		RflFloat			mStartFlyAnimSpeed;
-		RflFloat			mUpStrafeSpeed;
-		RflFloat			mUpAccel;
-		RflFloat			mTurnDamping;
-		RflFloat			mClimbFactor;
-		RflFloat			mDiveFactor;
-		RflFloat			mSoarAngle;
-		RflFloat			mNoFlyHeadroom;
-		RflEnum				mInitialMode; // Air, Ground Human, Ground Dragon
-		RflClassRef			mDefaultWeapon;
-		RflFloat			mFollowHumanDistance;
-		RflSoundRefArray	mCantLandSounds;
-		RflSoundRefArray	mCallResponseSounds;
-		RflSoundRefArray	mImCloseEnoughSounds;
-		RflSoundRefArray	mCantFlySounds;
-		RflSoundRefArray	mMeetAtCaveEntranceSounds;
-		RflSoundRefArray	mKilledEnemySounds;
-		RflSoundRefArray	mHealthLowSounds;
-		RflSoundRefArray	mGotHitByRynnSounds;
-		RflSoundRefArray	mGetOutOfMyWaySounds;
-		RflFloat			mRechargeRatePerSecond;
-		RflSoundRefArray	mTakeOffSounds;
-		RflInteger			mTakeOffSoundChance;
-		RflSoundRefArray	mDoneDismountingSounds;
-		RflInteger			mDoneDismountSndChance;
-    };
-
-
-    class RflHumanControl : public RflPlayerCommon
-    {
-    public:
-
-        RflHumanControl();
-
-        virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawn(LevelObject &obj) override;
+        virtual void spawn(od::LevelObject &obj) override;
 
 
     protected:
@@ -338,6 +206,7 @@ namespace od
 		RflSoundRefArray	mGetThePointSounds;
 		RflInteger			mGetThePointSndChance;*/
     };
+
 }
 
-#endif /* RFLPLAYERCONTROL_H_ */
+#endif /* INCLUDE_RFL_DRAGON_HUMANCONTROL_H_ */

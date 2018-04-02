@@ -1,22 +1,20 @@
 /*
- * RflAbstractItem.h
+ * ItemCommon.h
  *
  *  Created on: 27 Jan 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_RFL_RFLABSTRACTITEM_H_
-#define INCLUDE_RFL_RFLABSTRACTITEM_H_
-
-#include <string>
+#ifndef INCLUDE_RFL_COMMON_ITEMCOMMON_H_
+#define INCLUDE_RFL_COMMON_ITEMCOMMON_H_
 
 #include "rfl/RflField.h"
 #include "rfl/RflClass.h"
 
-namespace od
+namespace odRfl
 {
 
-	class RflAbstractItem : public RflClass
+	class ItemCommon : public RflClass
 	{
 	public:
 
@@ -25,7 +23,7 @@ namespace od
 
 	protected:
 
-        RflAbstractItem();
+        ItemCommon();
 
 
 	private:
@@ -47,4 +45,4 @@ namespace od
 
 }
 
-#endif /* INCLUDE_RFL_RFLABSTRACTITEM_H_ */
+#endif /* INCLUDE_RFL_COMMON_ITEMCOMMON_H_ */

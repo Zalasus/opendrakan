@@ -1,15 +1,16 @@
 /*
- * RiotFunctionLibrary.cpp
+ * Rfl.cpp
  *
  *  Created on: 27 Jan 2018
  *      Author: zal
  */
 
-#include <rfl/Rfl.h>
+#include "rfl/Rfl.h"
+
 #include "Logger.h"
 #include "Exception.h"
 
-namespace od
+namespace odRfl
 {
 
 	RflClassRegistrar::RflClassRegistrar(RflClassId classId, const std::string &className)
@@ -44,7 +45,7 @@ namespace od
 	    auto it = mRegistrarMap.find(id);
 		if(it == mRegistrarMap.end())
 		{
-			throw NotFoundException("Given class ID is not registered in RFL");
+			throw od::NotFoundException("Given class ID is not registered in RFL");
 		}
 
 		return it->second;

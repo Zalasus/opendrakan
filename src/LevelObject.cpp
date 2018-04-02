@@ -71,7 +71,7 @@ namespace od
         	mScale.set(1,1,1);
         }
 
-        RflClassBuilder builder;
+        odRfl::RflClassBuilder builder;
         builder.readFieldRecord(dr, true);
 
         mPosition *= OD_WORLD_SCALE; // correct editor scaling

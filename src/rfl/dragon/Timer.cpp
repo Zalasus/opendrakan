@@ -1,19 +1,19 @@
 /*
- * RflTimer.cpp
+ * Timer.cpp
  *
  *  Created on: 1 Apr 2018
  *      Author: zal
  */
 
 
-#include "rfl/general/RflTimer.h"
+#include "rfl/dragon/Timer.h"
 
 #include "rfl/Rfl.h"
 
-namespace od
+namespace odRfl
 {
 
-	RflTimer::RflTimer()
+	Timer::Timer()
 	: mTimeUntilTrigger(5.0)
 	, mStartMode(1) // Run When Triggered
 	, mRepeat(0)
@@ -24,7 +24,7 @@ namespace od
 	{
 	}
 
-	void RflTimer::probeFields(RflFieldProbe &probe)
+	void Timer::probeFields(RflFieldProbe &probe)
 	{
 		probe("Timer")
 				(mTimeUntilTrigger, "Time Until Trigger")
@@ -36,12 +36,12 @@ namespace od
 				(mDisableReenableMessage, "Disable/Re-Enable Message");
 	}
 
-	void RflTimer::spawn(LevelObject &obj)
+	void Timer::spawn(od::LevelObject &obj)
 	{
 
 	}
 
 
-	OD_REGISTER_RFL_CLASS(0x003e, "Timer", RflTimer);
+	OD_REGISTER_RFL_CLASS(0x003e, "Timer", Timer);
 
 }

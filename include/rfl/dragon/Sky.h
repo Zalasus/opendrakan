@@ -1,29 +1,29 @@
 /*
- * RflSky.h
+ * Sky.h
  *
  *  Created on: 26 Feb 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_RFL_GENERAL_RFLSKY_H_
-#define INCLUDE_RFL_GENERAL_RFLSKY_H_
+#ifndef INCLUDE_RFL_DRAGON_SKY_H_
+#define INCLUDE_RFL_DRAGON_SKY_H_
 
 #include <osg/Vec3>
 #include <osg/NodeCallback>
 
 #include "rfl/RflClass.h"
 
-namespace od
+namespace odRfl
 {
 
-    class RflDomedSky : public RflClass
+    class DomedSky : public RflClass
     {
     public:
 
-        RflDomedSky();
+        DomedSky();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawn(LevelObject &obj) override;
+        virtual void spawn(od::LevelObject &obj) override;
 
         void update(osg::Vec3 eyePoint);
 
@@ -47,10 +47,10 @@ namespace od
 
     private:
 
-		osg::ref_ptr<LevelObject> mSkyObject;
+		osg::ref_ptr<od::LevelObject> mSkyObject;
 
     };
 
 }
 
-#endif /* INCLUDE_RFL_GENERAL_RFLSKY_H_ */
+#endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

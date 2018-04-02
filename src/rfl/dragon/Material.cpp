@@ -1,18 +1,18 @@
 /*
- * RflMaterial.cpp
+ * Material.cpp
  *
  *  Created on: 14 Feb 2018
  *      Author: zal
  */
 
-#include "rfl/general/RflMaterial.h"
+#include "rfl/dragon/Material.h"
 
 #include "rfl/Rfl.h"
 
-namespace od
+namespace odRfl
 {
 
-	RflMaterial::RflMaterial()
+	Material::Material()
 	: mRynnFootSounds({})
 	, mDragonFootSounds({})
 	, mWalkerFootSounds({})
@@ -21,18 +21,18 @@ namespace od
 	, mWeaponHitSounds({})
 	, mWeaponFreqShiftRange(0)
 	, mMaterialDensity(0.5)
-	, mWaterEffectProperties(AssetRef::NULL_REF)
+	, mWaterEffectProperties(od::AssetRef::NULL_REF)
 	, mDamagePerSec(0)
 	, mFlammability(1)
-	, mLavaSizzleSound(AssetRef::NULL_REF)
-	, mBurnEffect(AssetRef::NULL_REF)
+	, mLavaSizzleSound(od::AssetRef::NULL_REF)
+	, mBurnEffect(od::AssetRef::NULL_REF)
 	, mLandable(1)
-	, mDetailTexture(AssetRef::NULL_REF)
+	, mDetailTexture(od::AssetRef::NULL_REF)
 	, mDetailScaling(0.25)
 	{
 	}
 
-	void RflMaterial::probeFields(RflFieldProbe &probe)
+	void Material::probeFields(RflFieldProbe &probe)
 	{
 	    probe.beginCategory("Solid Ground Sounds");
 	    probe.registerField(mRynnFootSounds, "Rynn Foot Sounds");
@@ -57,22 +57,22 @@ namespace od
 	    probe.registerField(mDetailScaling, "Detail Scaling");
 	}
 
-    OD_REGISTER_RFL_CLASS(0x004b, "Standard Material", RflMaterial);
+    OD_REGISTER_RFL_CLASS(0x004b, "Standard Material", Material);
 
 
 
-	RflBlendedMaterial::RflBlendedMaterial()
-	: mFirstTexture(AssetRef::NULL_REF)
-	, mSecondTexture(AssetRef::NULL_REF)
+	BlendedMaterial::BlendedMaterial()
+	: mFirstTexture(od::AssetRef::NULL_REF)
+	, mSecondTexture(od::AssetRef::NULL_REF)
 	, mDirectionOfFlow(0)
 	, mFirstSpeed(0.1)
 	, mSecondSpeed(-0.1)
 	{
 	}
 
-	void RflBlendedMaterial::probeFields(RflFieldProbe &probe)
+	void BlendedMaterial::probeFields(RflFieldProbe &probe)
     {
-	    RflMaterial::probeFields(probe);
+	    Material::probeFields(probe);
 
 	    probe.beginCategory("Blended Material");
         probe.registerField(mFirstTexture, "First Texture");
@@ -82,6 +82,6 @@ namespace od
         probe.registerField(mSecondSpeed, "Second Speed (lu/s)");
     }
 
-    OD_REGISTER_RFL_CLASS(0x0072, "Blended Material", RflBlendedMaterial);
+    OD_REGISTER_RFL_CLASS(0x0072, "Blended Material", BlendedMaterial);
 
 }

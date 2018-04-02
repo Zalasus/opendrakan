@@ -1,20 +1,20 @@
 /*
- * RflCamera.cpp
+ * Camera.cpp
  *
  *  Created on: 14 Feb 2018
  *      Author: zal
  */
 
-#include "rfl/general/RflCamera.h"
+#include "rfl/dragon/Camera.h"
 
 #include "rfl/Rfl.h"
 #include "Level.h"
 #include "Engine.h"
 
-namespace od
+namespace odRfl
 {
 
-	RflTrackingCamera::RflTrackingCamera()
+	TrackingCamera::TrackingCamera()
 	: mTrackingMode(1)
 	, mRubberBandStrength(2)
 	, mSpinSpeed(20)
@@ -22,7 +22,7 @@ namespace od
 	{
 	}
 
-	void RflTrackingCamera::probeFields(RflFieldProbe &probe)
+	void TrackingCamera::probeFields(RflFieldProbe &probe)
 	{
 	    probe.beginCategory("Camera Options");
 	    probe.registerField(mTrackingMode, "Tracking Mode");
@@ -31,10 +31,9 @@ namespace od
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
 	}
 
-	void RflTrackingCamera::spawn(LevelObject &obj)
+	void TrackingCamera::spawn(od::LevelObject &obj)
 	{
-		obj.getLevel().getEngine().getCamera();//.setRubberBandStrength(mRubberBandStrength);
 	}
 
-	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera", RflTrackingCamera);
+	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera", TrackingCamera);
 }

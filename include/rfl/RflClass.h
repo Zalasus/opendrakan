@@ -12,8 +12,11 @@
 
 namespace od
 {
+	class LevelObject;
+}
 
-    class LevelObject;
+namespace odRfl
+{
 
 	class RflClass
 	{
@@ -24,7 +27,7 @@ namespace od
 		virtual void probeFields(RflFieldProbe &probe) = 0;
 
 		// TODO: maybe create an "EventHandler" interface for this?
-		virtual void spawn(LevelObject &obj); // does nothing by default
+		virtual void spawn(od::LevelObject &obj); // does nothing by default
 
 	};
 

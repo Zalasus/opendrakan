@@ -55,7 +55,7 @@ namespace od
 
         FilePath rflPath(rflPathStr, getDatabase().getDbFilePath().dir());
 
-        if(!StringUtils::compareIgnoringCase(rflPath.fileStrNoExt(), Rfl::getSingleton().getName()))
+        if(!StringUtils::compareIgnoringCase(rflPath.fileStrNoExt(), odRfl::Rfl::getSingleton().getName()))
         {
             throw UnsupportedException("Class database uses different RFL than linked into engine");
         }
