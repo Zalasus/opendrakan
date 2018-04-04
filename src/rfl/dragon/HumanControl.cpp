@@ -67,6 +67,8 @@ namespace odRfl
 
     void HumanControl::spawn(od::LevelObject &obj)
     {
+    	mDbWalkAnim = obj.getClass()->getDatabase().getAnimationByRef(mWalkAnim);
+
     	obj.getLevel().setPlayer(this);
     	mPlayerObject = &obj;
 
@@ -111,6 +113,16 @@ namespace odRfl
     	velocity += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(0, 0, 1) * mRightSpeed * mSideStrafeSpeed;
 
     	mPlayerObject->getOrCreateMotionAnim()->setVelocity(velocity);
+
+    	if(mForwardSpeed > 0)
+    	{
+    		od::SkeletonAnimationPlayer *ap = mPlayerObject->getSkeletonAnimationPlayer();
+    		if(ap != nullptr && ap->getPlayState() == od::AnimationPlayState::STOPPED)
+    		{
+    			ap->setAnimation(mDbWalkAnim);
+    			ap->setPlayState(od::AnimationPlayState::PLAYING);
+    		}
+    	}
     }
 
     OD_REGISTER_RFL_CLASS(0x0009, "Human Control", HumanControl);

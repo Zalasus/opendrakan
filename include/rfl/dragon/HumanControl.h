@@ -12,6 +12,7 @@
 
 #include <osg/NodeCallback>
 
+#include "db/Animation.h"
 #include "Player.h"
 
 namespace odRfl
@@ -233,6 +234,7 @@ namespace odRfl
     	float mRightSpeed;
     	osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
     	osg::ref_ptr<od::LevelObject> mPlayerObject;
+    	osg::ref_ptr<od::Animation> mDbWalkAnim;
 
     };
 

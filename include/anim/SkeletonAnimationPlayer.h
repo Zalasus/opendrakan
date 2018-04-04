@@ -37,11 +37,11 @@ namespace od
 		~SkeletonAnimationPlayer();
 
 		inline osg::Uniform *getBoneMatrixArrayUniform() { return mBoneMatrixArray.get(); }
-		AnimationPlayState getPlayState() const { return mPlayState; }
+
 
 		void setAnimation(osg::ref_ptr<Animation> anim);
 		void setPlayState(AnimationPlayState state);
-
+		AnimationPlayState getPlayState();
 
 	private:
 
@@ -54,7 +54,6 @@ namespace od
 		osg::ref_ptr<osg::NodeCallback> mUploadCallback;
 
 		osg::ref_ptr<Animation> mCurrentAnimation;
-		AnimationPlayState mPlayState;
 	};
 
 }

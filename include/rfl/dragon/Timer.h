@@ -29,9 +29,9 @@ namespace odRfl
 		RflEnum  		mStartMode;
 		RflEnumYesNo	mRepeat;
 		RflEnumYesNo    mDestroyAfterTimeout;
-		RflEnum    		mTriggerMessage;
+		RflEnumMessage  mTriggerMessage;
 		RflEnumYesNo    mToggle;
-		RflEnum			mDisableReenableMessage;
+		RflEnumMessage  mDisableReenableMessage;
 
 	};
 

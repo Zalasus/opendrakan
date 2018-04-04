@@ -39,6 +39,7 @@ set(SOURCES
         "src/rfl/dragon/Key.cpp"
         "src/rfl/dragon/HumanControl.cpp"
         "src/rfl/dragon/DragonControl.cpp"
+        "src/rfl/dragon/Building.cpp"
         "src/anim/Animator.cpp"
         "src/anim/MotionAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"

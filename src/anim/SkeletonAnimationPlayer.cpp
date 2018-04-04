@@ -123,7 +123,6 @@ namespace od
 	, mSkeletonRoot(skeletonRoot)
 	, mBoneMatrixArray(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", OD_MAX_BONE_COUNT))
 	, mUploadCallback(new BoneUploadCallback(mBoneMatrixArray))
-	, mPlayState(AnimationPlayState::STOPPED)
 	{
 		// create one animator for each MatrixTransform child of group
 		CreateAnimatorsVisitor cav(mAnimators);
@@ -182,11 +181,41 @@ namespace od
 
 	void SkeletonAnimationPlayer::setPlayState(AnimationPlayState state)
 	{
-		mPlayState = state;
-
 		for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
 		{
 			(*it)->setPlayState(state);
+		}
+	}
+
+	AnimationPlayState SkeletonAnimationPlayer::getPlayState()
+	{
+		// FIXME: use timer or callback instead of polling all animators everytime
+
+		bool playing = false;
+		bool looped = false;
+
+		for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
+		{
+			AnimationPlayState ps = (*it)->getPlayState();
+
+			if(ps == AnimationPlayState::PLAYING)
+			{
+				playing = true;
+
+			}else if(ps == AnimationPlayState::PLAYING_LOOPED)
+			{
+				playing = true;
+				looped = true;
+			}
+		}
+
+		if(playing)
+		{
+			return looped ? AnimationPlayState::PLAYING_LOOPED : AnimationPlayState::PLAYING;
+
+		}else
+		{
+			return AnimationPlayState::STOPPED;
 		}
 	}
 

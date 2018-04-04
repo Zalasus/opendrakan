@@ -103,6 +103,7 @@ namespace odRfl
 	typedef RflPOD<uint32_t,    RflField::ENUM> RflEnum;
 	typedef RflEnum                             RflEnumYesNo; // TODO: give these a list of allowed values once we implement that feature
 	typedef RflEnum                             RflEnumPlayerSlot;
+	typedef RflEnum 							RflEnumMessage;
 	typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
 	typedef RflPOD<od::AssetRef, RflField::CLASS>     RflClassRef;
     typedef RflPOD<od::AssetRef, RflField::SOUND>     RflSoundRef;
@@ -147,6 +148,7 @@ namespace odRfl
 	typedef RflPODArray<od::AssetRef, RflField::SOUND> RflSoundRefArray;
 	typedef RflPODArray<od::AssetRef, RflField::CLASS> RflClassRefArray;
 	typedef RflPODArray<od::AssetRef, RflField::ANIMATION> RflAnimRefArray;
+	typedef RflPODArray<od::AssetRef, RflField::MODEL> RflModelRefArray;
 	typedef RflPODArray<uint32_t, RflField::CHAR_CHANNEL> RflCharChannelArray;
 }
 
