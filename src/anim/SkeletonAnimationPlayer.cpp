@@ -15,17 +15,16 @@
 #include "OdDefines.h"
 #include "db/Skeleton.h"
 
-#define OD_MAX_BONE_COUNT 64
-
 namespace od
 {
 	class CreateAnimatorsVisitor : public osg::NodeVisitor
 	{
 	public:
 
-		CreateAnimatorsVisitor(std::vector<osg::ref_ptr<Animator>> &animatorList)
+		CreateAnimatorsVisitor(std::vector<osg::ref_ptr<Animator>> &animatorList, osg::PositionAttitudeTransform *accumXform)
         : osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
 		, mAnimatorList(animatorList)
+		, mAccumulatingXform(accumXform)
         {
         }
 
@@ -36,6 +35,11 @@ namespace od
         	{
 				osg::ref_ptr<Animator> animator(new Animator(bn));
 				mAnimatorList.push_back(animator);
+
+				if(mAccumulatingXform != nullptr && bn->isRoot())
+				{
+					animator->setAccumulatingXform(mAccumulatingXform);
+				}
         	}
 
         	traverse(node);
@@ -45,6 +49,7 @@ namespace od
 	private:
 
         std::vector<osg::ref_ptr<Animator>> &mAnimatorList;
+        osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
 	};
 
 
@@ -117,15 +122,16 @@ namespace od
 
 
 
-	SkeletonAnimationPlayer::SkeletonAnimationPlayer(Engine &engine, osg::Node *modelNode, osg::Group *skeletonRoot)
+	SkeletonAnimationPlayer::SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, osg::PositionAttitudeTransform *accumulatingXform)
 	: mEngine(engine)
-	, mModelNode(modelNode)
+	, mObjectRoot(objectRoot)
 	, mSkeletonRoot(skeletonRoot)
+	, mAccumulatingXform(accumulatingXform)
 	, mBoneMatrixArray(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", OD_MAX_BONE_COUNT))
 	, mUploadCallback(new BoneUploadCallback(mBoneMatrixArray))
 	{
 		// create one animator for each MatrixTransform child of group
-		CreateAnimatorsVisitor cav(mAnimators);
+		CreateAnimatorsVisitor cav(mAnimators, mAccumulatingXform);
 		mSkeletonRoot->accept(cav);
 
 		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
@@ -135,8 +141,8 @@ namespace od
 		mRiggingProgram = mEngine.getShaderManager().makeProgram(riggingShader, nullptr);
 		mRiggingProgram->addBindAttribLocation("influencingBones", 13);
 		mRiggingProgram->addBindAttribLocation("vertexWeights", 14);
-		mModelNode->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
-		mModelNode->getOrCreateStateSet()->addUniform(mBoneMatrixArray, osg::StateAttribute::ON);
+		mObjectRoot->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
+		mObjectRoot->getOrCreateStateSet()->addUniform(mBoneMatrixArray, osg::StateAttribute::ON);
 
 		// set all bones to identity to force bind pose
 		for(size_t i = 0; i < OD_MAX_BONE_COUNT; ++i)
@@ -149,8 +155,8 @@ namespace od
 
 	SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
 	{
-		mModelNode->getOrCreateStateSet()->removeAttribute(mRiggingProgram);
-		mModelNode->getOrCreateStateSet()->removeUniform(mBoneMatrixArray);
+		mObjectRoot->getOrCreateStateSet()->removeAttribute(mRiggingProgram);
+		mObjectRoot->getOrCreateStateSet()->removeUniform(mBoneMatrixArray);
 		mSkeletonRoot->removeUpdateCallback(mUploadCallback);
 	}
 

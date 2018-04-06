@@ -38,9 +38,9 @@ namespace od
         inline int32_t getJointInfoIndex() const { return mJointInfoIndex; }
         inline size_t getWeightCount() const { return mWeightCount; }
         inline void setWeightCount(size_t w) { mWeightCount = w; }
-
         inline bool isChannel() const { return mIsChannel; }
         inline void setIsChannel(bool b) { mIsChannel = b; }
+        inline bool isRoot() const { return mJointInfoIndex == 0; } // TODO: replace with better condition as we can have multiple roots in theory
 
         inline osg::Matrixf getInverseBindPoseXform() const { return mInverseBindPoseXform; }
         void setInverseBindPoseXform(const osg::Matrixf &m);
@@ -51,6 +51,7 @@ namespace od
         int32_t mJointInfoIndex;
         osg::Matrixf mInverseBindPoseXform;
         bool mIsChannel;
+        bool mIsRoot;
         size_t mWeightCount;
     };
 

@@ -112,7 +112,7 @@ namespace odRfl
     	velocity += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(1, 0, 0) * mForwardSpeed  * mRunSpeed;
     	velocity += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(0, 0, 1) * mRightSpeed * mSideStrafeSpeed;
 
-    	mPlayerObject->getOrCreateMotionAnim()->setVelocity(velocity);
+    	//mPlayerObject->getOrCreateMotionAnim()->setVelocity(velocity);
 
     	if(mForwardSpeed > 0)
     	{

@@ -109,7 +109,7 @@ namespace od
 				mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
 				mTransform->addChild(mSkeletonRoot);
 
-				mSkeletonAnimation = new SkeletonAnimationPlayer(mLevel.getEngine(), this, mSkeletonRoot);
+				mSkeletonAnimation = new SkeletonAnimationPlayer(mLevel.getEngine(), this, mSkeletonRoot, mTransform);
 			}
         }
     }

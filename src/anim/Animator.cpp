@@ -176,6 +176,13 @@ namespace od
 		iXform.preMultTranslate(iTrans);
 		iXform.preMultRotate(iRot);
 
+		if(mAccumulatingXform != nullptr)
+		{
+			osg::Vec3 relTranslation = iTrans - mLastITranslation;
+			mAccumulatingXform->setPosition(relTranslation + mAccumulatingXform->getPosition());
+			mLastITranslation = iTrans;
+		}
+
 		mNode->setMatrix(iXform);
 	}
 

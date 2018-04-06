@@ -15,6 +15,7 @@
 #include <osg/Depth>
 
 #include "Exception.h"
+#include "OdDefines.h"
 
 namespace od
 {
@@ -80,6 +81,7 @@ namespace od
     BoneNode::BoneNode(const std::string &name, int32_t jointInfoIndex)
     : mJointInfoIndex(jointInfoIndex)
     , mIsChannel(false)
+    , mIsRoot(false)
     , mWeightCount(0)
     {
         this->setName(name);
@@ -90,6 +92,7 @@ namespace od
     , mJointInfoIndex(bn.mJointInfoIndex)
     , mInverseBindPoseXform(bn.mInverseBindPoseXform)
     , mIsChannel(bn.mIsChannel)
+    , mIsRoot(bn.mIsRoot)
     , mWeightCount(bn.mWeightCount)
     {
     }
@@ -116,6 +119,11 @@ namespace od
 
 	void SkeletonBuilder::addJointInfo(osg::Matrixf &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex)
 	{
+		if(mJointInfos.size() >= OD_MAX_BONE_COUNT)
+		{
+			throw Exception("Can't add more bones. Maximum bone count reached");
+		}
+
 		SkeletonJointInfo jointInfo;
 		jointInfo.boneXform = boneXform;
 		jointInfo.meshIndex = meshIndex;

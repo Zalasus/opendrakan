@@ -47,6 +47,7 @@ namespace od
 		virtual const char *libraryName() const override { return "od";    }
         virtual const char *className()   const override { return "LevelObject"; }
 
+
     private:
 
         Level &mLevel;

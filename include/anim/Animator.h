@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <osg/MatrixTransform>
+#include <osg/PositionAttitudeTransform>
 
 #include "db/Animation.h"
 
@@ -36,6 +37,7 @@ namespace od
 
 		inline AnimationPlayState getPlayState() const { return mPlayState; }
 		inline osg::MatrixTransform *getNode() { return mNode; }
+		inline void setAccumulatingXform(osg::PositionAttitudeTransform *xform) { mAccumulatingXform = xform; }
 
 		void setPlayState(AnimationPlayState state);
 		void setKeyframes(std::vector<AnimationKeyframe>::const_iterator begin, std::vector<AnimationKeyframe>::const_iterator end);
@@ -69,6 +71,9 @@ namespace od
 		osg::Quat  mRightRot;
 		osg::Vec3f mRightScale;
 		osg::Quat  mRightScaleOrient;
+
+		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
+		osg::Vec3 mLastITranslation;
 	};
 
 }
