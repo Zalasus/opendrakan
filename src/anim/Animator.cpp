@@ -119,6 +119,7 @@ namespace od
 		}else if(mJustStarted)
 		{
 			mStartTime = simTime;
+            mLastITranslation = osg::Vec3(0,0,0);
 			mJustStarted = false;
 		}
 
@@ -154,7 +155,7 @@ namespace od
 
 		// anim is still running. need to interpolate between mCurrentFrame and mCurrentFrame+1
 		// although better interpolation methods exist, for now we just decompose the two xforms into translation, rotation and scale
-		//  and interpolate these values linearaly
+		//  and interpolate these values linearly
 		auto nextFrame = mCurrentFrame+1;
 		double delta = (relativeTime - mCurrentFrame->time)/(nextFrame->time - mCurrentFrame->time); // 0=exactly at current frame, 1=exactly at next frame
 		if(mDecompositionsDirty)
@@ -176,14 +177,18 @@ namespace od
 		iXform.preMultTranslate(iTrans);
 		iXform.preMultRotate(iRot);
 
+		// FIXME: this behaviour could be modeled better by making the skeleton root the model root and animating it relative to it's starting xform
 		if(mAccumulatingXform != nullptr)
 		{
 			osg::Vec3 relTranslation = iTrans - mLastITranslation;
+			relTranslation = relTranslation * osg::Matrix::rotate(-M_PI/2, osg::Vec3(0, 1, 0));
 			mAccumulatingXform->setPosition(relTranslation + mAccumulatingXform->getPosition());
 			mLastITranslation = iTrans;
-		}
 
-		mNode->setMatrix(iXform);
+		}else
+		{
+		    mNode->setMatrix(iXform);
+		}
 	}
 
 }

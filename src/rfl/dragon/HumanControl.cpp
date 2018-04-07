@@ -11,6 +11,8 @@
 #include "LevelObject.h"
 #include "Level.h"
 #include "Player.h"
+#include "Engine.h"
+#include "Camera.h"
 
 namespace odRfl
 {
@@ -67,7 +69,7 @@ namespace odRfl
 
     void HumanControl::spawn(od::LevelObject &obj)
     {
-    	mDbWalkAnim = obj.getClass()->getDatabase().getAnimationByRef(mWalkAnim);
+    	mDbWalkAnim = obj.getClass()->getDatabase().getAnimationByRef(mRunAnim);
 
     	obj.getLevel().setPlayer(this);
     	mPlayerObject = &obj;
@@ -104,6 +106,8 @@ namespace odRfl
     void HumanControl::update(double simTime)
     {
     	_updateMotion();
+
+    	mPlayerObject->getLevel().getEngine().getCamera().update();
     }
 
     void HumanControl::_updateMotion()
