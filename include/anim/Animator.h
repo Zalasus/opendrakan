@@ -9,6 +9,7 @@
 #define INCLUDE_ANIMATOR_H_
 
 #include <vector>
+#include <deque>
 #include <osg/MatrixTransform>
 #include <osg/PositionAttitudeTransform>
 
@@ -16,13 +17,6 @@
 
 namespace od
 {
-	enum class AnimationPlayState
-	{
-		STOPPED,
-		PLAYING,
-		PLAYING_LOOPED
-	};
-
 	/**
 	 * Class managing interpolated animation of a single osg::MatrixTransform.
 	 */
@@ -30,20 +24,22 @@ namespace od
 	{
 	public:
 
+	    typedef std::vector<AnimationKeyframe>::const_iterator KfIterator;
+
 		Animator(osg::MatrixTransform *node);
 		Animator(const Animator &) = delete;
 		Animator(Animator &) = delete;
 		~Animator();
 
-		inline AnimationPlayState getPlayState() const { return mPlayState; }
 		inline osg::MatrixTransform *getNode() { return mNode; }
 		inline void setAccumulatingXform(osg::PositionAttitudeTransform *xform) { mAccumulatingXform = xform; }
+		inline bool isPlaying() const { return mPlaying; }
 
-		void setPlayState(AnimationPlayState state);
-		void setKeyframes(std::vector<AnimationKeyframe>::const_iterator begin, std::vector<AnimationKeyframe>::const_iterator end);
+		void setKeyframes(KfIterator begin, KfIterator end, double startDelay = 0.0f);
+		void play(bool looping);
+		void stop();
 
 		void update(double simTime);
-
 
 
 	protected:
@@ -51,29 +47,35 @@ namespace od
 		osg::ref_ptr<osg::MatrixTransform> mNode;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 		osg::Matrix mOriginalXform;
-		AnimationPlayState mPlayState;
+        osg::Matrix mLastInterpolatedTransform;
 		size_t mKeyframeCount;
+		bool mPlaying;
+		bool mLooping;
 		bool mJustStarted;
+		double mStartDelay;
 		double mStartTime;
 		double mTimeScale;
-		std::vector<AnimationKeyframe>::const_iterator mAnimBegin;
-		std::vector<AnimationKeyframe>::const_iterator mAnimLastFrame;
-		std::vector<AnimationKeyframe>::const_iterator mAnimEnd;
-		std::vector<AnimationKeyframe>::const_iterator mCurrentFrame;
+		KfIterator mAnimBegin;
+		KfIterator mAnimLastFrame;
+		KfIterator mAnimEnd;
+		KfIterator mCurrentFrame;
+
+		double mLeftTime;
+		double mRightTime;
 
 		// matrix decompositions for interpolation
-		bool mDecompositionsDirty;
-		osg::Vec3f mLeftTrans;
-		osg::Quat  mLeftRot;
+		osg::Vec3f mLeftTranslation;
+		osg::Quat  mLeftRotation;
 		osg::Vec3f mLeftScale;
-		osg::Quat  mLeftScaleOrient;
-		osg::Vec3f mRightTrans;
-		osg::Quat  mRightRot;
+		osg::Quat  mLeftScaleOrientation;
+		osg::Vec3f mRightTranslation;
+		osg::Quat  mRightRotation;
 		osg::Vec3f mRightScale;
-		osg::Quat  mRightScaleOrient;
+		osg::Quat  mRightScaleOrientation;
 
 		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
 		osg::Vec3 mLastITranslation;
+		osg::Quat mLastIRot;
 	};
 
 }

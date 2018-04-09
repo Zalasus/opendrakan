@@ -69,7 +69,8 @@ namespace odRfl
 
     void HumanControl::spawn(od::LevelObject &obj)
     {
-    	mDbWalkAnim = obj.getClass()->getDatabase().getAnimationByRef(mRunAnim);
+    	mDbRunAnim = obj.getClass()->getDatabase().getAnimationByRef(mRunAnim);
+    	mDbIdleAnim = obj.getClass()->getDatabase().getAnimationByRef(mReadyAnim);
 
     	obj.getLevel().setPlayer(this);
     	mPlayerObject = &obj;
@@ -117,14 +118,18 @@ namespace odRfl
     	velocity += osg::Quat(mYaw, osg::Vec3f(0, 1, 0)) * osg::Vec3(0, 0, 1) * mRightSpeed * mSideStrafeSpeed;
 
     	//mPlayerObject->getOrCreateMotionAnim()->setVelocity(velocity);
+    	od::SkeletonAnimationPlayer *ap = mPlayerObject->getSkeletonAnimationPlayer();
+        if(ap != nullptr)
+        {
+            if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mDbRunAnim)
+            {
+    			ap->setAnimation(mDbRunAnim, 0.2);
+    			ap->play(true);
 
-    	if(mForwardSpeed > 0)
-    	{
-    		od::SkeletonAnimationPlayer *ap = mPlayerObject->getSkeletonAnimationPlayer();
-    		if(ap != nullptr && ap->getPlayState() == od::AnimationPlayState::STOPPED)
+    		}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mDbIdleAnim)
     		{
-    			ap->setAnimation(mDbWalkAnim);
-    			ap->setPlayState(od::AnimationPlayState::PLAYING);
+    		    ap->setAnimation(mDbIdleAnim, 0.2);
+                ap->play(true);
     		}
     	}
     }

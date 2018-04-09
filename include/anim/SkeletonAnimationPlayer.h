@@ -43,12 +43,12 @@ namespace od
 		~SkeletonAnimationPlayer();
 
 		inline osg::Uniform *getBoneMatrixArrayUniform() { return mBoneMatrixArray.get(); }
+		inline Animation *getCurrentAnimation() { return mCurrentAnimation; }
 
-
-		void setAnimation(osg::ref_ptr<Animation> anim);
-		void setPlayState(AnimationPlayState state);
-		AnimationPlayState getPlayState();
-
+		void setAnimation(osg::ref_ptr<Animation> anim, double startDelay = 0.0);
+		void play(bool looping);
+		void stop();
+		bool isPlaying();
 
 	private:
 

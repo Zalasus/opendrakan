@@ -46,12 +46,16 @@ namespace od
 	: mNode(node)
 	, mUpdateCallback(new AnimatorUpdateCallback(*this))
 	, mOriginalXform(mNode->getMatrix())
-	, mPlayState(AnimationPlayState::STOPPED)
+	, mLastInterpolatedTransform(osg::Matrix::identity())
 	, mKeyframeCount(0)
+	, mPlaying(false)
+	, mLooping(false)
 	, mJustStarted(false)
-	, mStartTime(0)
-	, mTimeScale(1)
-	, mDecompositionsDirty(true)
+	, mStartDelay(0.0)
+	, mStartTime(0.0)
+	, mTimeScale(1.0)
+	, mLeftTime(0.0)
+	, mRightTime(0.0)
 	{
 		mNode->addUpdateCallback(mUpdateCallback);
 	}
@@ -61,123 +65,124 @@ namespace od
 		mNode->removeUpdateCallback(mUpdateCallback);
 	}
 
-	void Animator::setPlayState(AnimationPlayState state)
+	void Animator::setKeyframes(KfIterator begin, KfIterator end, double startDelay)
 	{
-		mPlayState = state;
+	    size_t kfCount = end - begin;
+	    if(kfCount <= 0)
+	    {
+	        Logger::warn() << "Tried to apply animation with zero or less frames to Animator. Ignoring call";
+	        return;
+	    }
 
-		switch(state)
-		{
-		case AnimationPlayState::PLAYING:
-		case AnimationPlayState::PLAYING_LOOPED:
-			mCurrentFrame = mAnimBegin;
-			mJustStarted = true;
-			break;
+	    mKeyframeCount = kfCount;
+	    mStartDelay = startDelay;
+	    mJustStarted = true;
 
-		default:
-			break;
-		}
+	    mAnimBegin = begin;
+	    mCurrentFrame = mAnimBegin;
+	    mAnimEnd = end;
+	    mAnimLastFrame = begin + (kfCount - 1);
+
+	    mLeftTime = -startDelay;
+        mRightTime = mAnimBegin->time;
+        mLastInterpolatedTransform.decompose(mLeftTranslation, mLeftRotation, mLeftScale, mLeftScaleOrientation);
+        mAnimBegin->xform.decompose(mRightTranslation, mRightRotation, mRightScale, mRightScaleOrientation);
 	}
 
-	void Animator::setKeyframes(std::vector<AnimationKeyframe>::const_iterator begin, std::vector<AnimationKeyframe>::const_iterator end)
+	void Animator::play(bool looping)
 	{
-		if(mPlayState != AnimationPlayState::PLAYING)
-		{
-			setPlayState(AnimationPlayState::STOPPED);
-		}
+	    mPlaying = true;
+	    mLooping = looping;
 
-		mKeyframeCount = end - begin;
-
-		if(mKeyframeCount == 0)
-		{
-			Logger::warn() << "Tried to give Animator empty keyframe list. Ignoring call";
-
-		}else if(mKeyframeCount == 1)
-		{
-			mAnimBegin = begin;
-
-		}else
-		{
-			mAnimBegin = begin;
-			mAnimLastFrame = begin + mKeyframeCount;
-			mAnimEnd = end;
-		}
+	    mJustStarted = true;
 	}
+
+    void Animator::stop()
+    {
+        mPlaying = false;
+    }
 
 	void Animator::update(double simTime)
 	{
-		if(mPlayState == AnimationPlayState::STOPPED || mKeyframeCount == 0)
+	    if(!mPlaying || mKeyframeCount == 0)
 		{
 			return;
-
-		}else if(mKeyframeCount == 1)
-		{
-			// single frame animation i.e. static pose. just apply transform and don't bother with interpolations etc.
-			mNode->setMatrix(mAnimBegin->xform * mOriginalXform);
-			mPlayState = AnimationPlayState::STOPPED;
-			mJustStarted = false;
-
-		}else if(mJustStarted)
-		{
-			mStartTime = simTime;
-            mLastITranslation = osg::Vec3(0,0,0);
-			mJustStarted = false;
 		}
 
-		// if needed, advance current frame to the next frame whose time lies just past the current relative time
-		double relativeTime = mTimeScale*(simTime - mStartTime);
-		while(mCurrentFrame < mAnimLastFrame)
+	    if(mJustStarted)
+	    {
+	        mStartTime = simTime;
+	        mJustStarted = false;
+	    }
+
+		double relativeTime = simTime - mStartTime - mStartDelay;
+		if(relativeTime >= mRightTime)
 		{
-			if(mCurrentFrame->time <= relativeTime && (mCurrentFrame+1)->time > relativeTime)
-			{
-				break;
-			}
+		    if(mKeyframeCount == 1)
+		    {
+		        // FIXME: this ignores accumulating nodes when they only have one kf
+		        mNode->setMatrix(mCurrentFrame->xform * mOriginalXform);
+		        mPlaying = false;
+		        return;
+		    }
 
-			++mCurrentFrame;
-			mDecompositionsDirty = true;
-		}
+		    // advance until we are at valid position again
+            while(mCurrentFrame < mAnimLastFrame)
+            {
+                if(mCurrentFrame->time <= relativeTime && (mCurrentFrame+1)->time > relativeTime)
+                {
+                    break;
+                }
 
-		// did we advance past the last frame? if yes, stop animation or loop
-		if(mCurrentFrame >= mAnimLastFrame)
-		{
-			mCurrentFrame = mAnimBegin;
+                ++mCurrentFrame;
+            }
 
-			if(mPlayState == AnimationPlayState::PLAYING_LOOPED)
-			{
-				mJustStarted = true;
+            // did we advance past the last frame? if yes, stop animation or loop
+            if(mCurrentFrame >= mAnimLastFrame)
+            {
+                mCurrentFrame = mAnimBegin;
 
-			}else
-			{
-				mPlayState = AnimationPlayState::STOPPED;
-			}
+                if(mLooping)
+                {
+                    // when looping, it is important that we update relativeTime to incorporate any time we might have moved past the last frame
+                    relativeTime = relativeTime - mAnimLastFrame->time;
+                    mStartDelay = 0.0;
+                    mStartTime = simTime - relativeTime;
+                    mLastITranslation = osg::Vec3(0,0,0);
+                    mLastIRot = osg::Quat(0, osg::Vec3(0,1,0));
 
-			return;
+                }else
+                {
+                    mPlaying = false;
+                }
+            }
+
+            mLeftTime = mCurrentFrame->time;
+            mRightTime = (mCurrentFrame+1)->time;
+
+            mCurrentFrame->xform.decompose(mLeftTranslation, mLeftRotation, mLeftScale, mLeftScaleOrientation);
+            (mCurrentFrame+1)->xform.decompose(mRightTranslation, mRightRotation, mRightScale, mRightScaleOrientation);
 		}
 
 		// anim is still running. need to interpolate between mCurrentFrame and mCurrentFrame+1
 		// although better interpolation methods exist, for now we just decompose the two xforms into translation, rotation and scale
 		//  and interpolate these values linearly
-		auto nextFrame = mCurrentFrame+1;
-		double delta = (relativeTime - mCurrentFrame->time)/(nextFrame->time - mCurrentFrame->time); // 0=exactly at current frame, 1=exactly at next frame
-		if(mDecompositionsDirty)
-		{
-			mCurrentFrame->xform.decompose(mLeftTrans, mLeftRot, mLeftScale, mLeftScaleOrient);
-			nextFrame->xform.decompose(mRightTrans, mRightRot, mRightScale, mRightScaleOrient);
-			mDecompositionsDirty = false;
-		}
+		double delta = (relativeTime - mLeftTime)/(mRightTime - mLeftTime); // 0=exactly at current frame, 1=exactly at next frame
 
-		osg::Vec3f iTrans = mLeftTrans*(1-delta) + mRightTrans*delta;
+		osg::Vec3f iTrans = mLeftTranslation*(1-delta) + mRightTranslation*delta;
 		osg::Vec3f iScale = mLeftScale*(1-delta) + mRightScale*delta;
 		osg::Quat iRot;
-		iRot.slerp(delta, mLeftRot, mRightRot);
+		iRot.slerp(delta, mLeftRotation, mRightRotation);
 		osg::Quat iOrient;
-		iOrient.slerp(delta, mLeftScaleOrient, mRightScaleOrient);
+		iOrient.slerp(delta, mLeftScaleOrientation, mRightScaleOrientation);
 
 		osg::Matrix iXform = mOriginalXform;
 		iXform.preMultScale(iScale);
 		iXform.preMultTranslate(iTrans);
 		iXform.preMultRotate(iRot);
 
-		// FIXME: this behaviour could be modeled better by making the skeleton root the model root and animating it relative to it's starting xform
+		mLastInterpolatedTransform = iXform;
+
 		if(mAccumulatingXform != nullptr)
 		{
 			osg::Vec3 relTranslation = iTrans - mLastITranslation;
@@ -185,10 +190,11 @@ namespace od
 			mAccumulatingXform->setPosition(relTranslation + mAccumulatingXform->getPosition());
 			mLastITranslation = iTrans;
 
+			mAccumulatingXform->setAttitude(iRot * osg::Quat(-M_PI/2, osg::Vec3(0, 1, 0)));
+
 		}else
 		{
 		    mNode->setMatrix(iXform);
 		}
 	}
-
 }

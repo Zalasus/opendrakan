@@ -160,7 +160,7 @@ namespace od
 		mSkeletonRoot->removeUpdateCallback(mUploadCallback);
 	}
 
-	void SkeletonAnimationPlayer::setAnimation(osg::ref_ptr<Animation> anim)
+	void SkeletonAnimationPlayer::setAnimation(osg::ref_ptr<Animation> anim, double startDelay)
 	{
 		if(anim->getModelNodeCount() != mAnimators.size())
 		{
@@ -181,48 +181,37 @@ namespace od
 
 			Animation::AnimStartEndPair startEnd = mCurrentAnimation->getKeyframesForNode(jointIndex);
 
-			(*it)->setKeyframes(startEnd.first, startEnd.second);
+			(*it)->setKeyframes(startEnd.first, startEnd.second, startDelay);
 		}
 	}
 
-	void SkeletonAnimationPlayer::setPlayState(AnimationPlayState state)
+	void SkeletonAnimationPlayer::play(bool looping)
 	{
 		for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
 		{
-			(*it)->setPlayState(state);
+			(*it)->play(looping);
 		}
 	}
 
-	AnimationPlayState SkeletonAnimationPlayer::getPlayState()
+	void SkeletonAnimationPlayer::stop()
 	{
-		// FIXME: use timer or callback instead of polling all animators everytime
+	    for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
+        {
+            (*it)->stop();
+        }
+	}
 
-		bool playing = false;
-		bool looped = false;
+	bool SkeletonAnimationPlayer::isPlaying()
+	{
+	    for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
+        {
+            if((*it)->isPlaying())
+            {
+                return true;
+            }
+        }
 
-		for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
-		{
-			AnimationPlayState ps = (*it)->getPlayState();
-
-			if(ps == AnimationPlayState::PLAYING)
-			{
-				playing = true;
-
-			}else if(ps == AnimationPlayState::PLAYING_LOOPED)
-			{
-				playing = true;
-				looped = true;
-			}
-		}
-
-		if(playing)
-		{
-			return looped ? AnimationPlayState::PLAYING_LOOPED : AnimationPlayState::PLAYING;
-
-		}else
-		{
-			return AnimationPlayState::STOPPED;
-		}
+	    return false;
 	}
 
 }
