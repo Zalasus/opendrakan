@@ -47,7 +47,6 @@ namespace od
 		osg::ref_ptr<osg::MatrixTransform> mNode;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 		osg::Matrix mOriginalXform;
-        osg::Matrix mLastInterpolatedTransform;
 		size_t mKeyframeCount;
 		bool mPlaying;
 		bool mLooping;
@@ -67,11 +66,12 @@ namespace od
 		osg::Vec3f mLeftTranslation;
 		osg::Quat  mLeftRotation;
 		osg::Vec3f mLeftScale;
-		osg::Quat  mLeftScaleOrientation;
 		osg::Vec3f mRightTranslation;
 		osg::Quat  mRightRotation;
 		osg::Vec3f mRightScale;
-		osg::Quat  mRightScaleOrientation;
+		osg::Vec3f mLastInterpolatedTranslation;
+		osg::Quat  mLastInterpolatedRotation;
+		osg::Vec3f mLastInterpolatedScale;
 
 		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
 		osg::Vec3 mLastITranslation;

@@ -46,7 +46,6 @@ namespace od
 	: mNode(node)
 	, mUpdateCallback(new AnimatorUpdateCallback(*this))
 	, mOriginalXform(mNode->getMatrix())
-	, mLastInterpolatedTransform(osg::Matrix::identity())
 	, mKeyframeCount(0)
 	, mPlaying(false)
 	, mLooping(false)
@@ -56,6 +55,7 @@ namespace od
 	, mTimeScale(1.0)
 	, mLeftTime(0.0)
 	, mRightTime(0.0)
+	, mLastInterpolatedScale(1,1,1)
 	{
 		mNode->addUpdateCallback(mUpdateCallback);
 	}
@@ -75,7 +75,6 @@ namespace od
 	    }
 
 	    mKeyframeCount = kfCount;
-	    mStartDelay = startDelay;
 	    mJustStarted = true;
 
 	    mAnimBegin = begin;
@@ -84,9 +83,16 @@ namespace od
 	    mAnimLastFrame = begin + (kfCount - 1);
 
 	    mLeftTime = -startDelay;
-        mRightTime = mAnimBegin->time;
-        mLastInterpolatedTransform.decompose(mLeftTranslation, mLeftRotation, mLeftScale, mLeftScaleOrientation);
-        mAnimBegin->xform.decompose(mRightTranslation, mRightRotation, mRightScale, mRightScaleOrientation);
+		mRightTime = mAnimBegin->time;
+		mStartDelay = startDelay;
+
+        // use last interpolated transform as starting point so we can lerp between animations
+        mLeftTranslation = mLastInterpolatedTranslation;
+        mLeftRotation    = mLastInterpolatedRotation;
+        mLeftScale       = mLastInterpolatedScale;
+
+        osg::Quat dummyOrientation; // scale orientation can be safely ignored here
+        mAnimBegin->xform.decompose(mRightTranslation, mRightRotation, mRightScale, dummyOrientation);
 	}
 
 	void Animator::play(bool looping)
@@ -160,8 +166,9 @@ namespace od
             mLeftTime = mCurrentFrame->time;
             mRightTime = (mCurrentFrame+1)->time;
 
-            mCurrentFrame->xform.decompose(mLeftTranslation, mLeftRotation, mLeftScale, mLeftScaleOrientation);
-            (mCurrentFrame+1)->xform.decompose(mRightTranslation, mRightRotation, mRightScale, mRightScaleOrientation);
+            osg::Quat dummyOrientation; // scale orientation can be safely ignored here
+            mCurrentFrame->xform.decompose(mLeftTranslation, mLeftRotation, mLeftScale, dummyOrientation);
+            (mCurrentFrame+1)->xform.decompose(mRightTranslation, mRightRotation, mRightScale, dummyOrientation);
 		}
 
 		// anim is still running. need to interpolate between mCurrentFrame and mCurrentFrame+1
@@ -173,15 +180,15 @@ namespace od
 		osg::Vec3f iScale = mLeftScale*(1-delta) + mRightScale*delta;
 		osg::Quat iRot;
 		iRot.slerp(delta, mLeftRotation, mRightRotation);
-		osg::Quat iOrient;
-		iOrient.slerp(delta, mLeftScaleOrientation, mRightScaleOrientation);
 
 		osg::Matrix iXform = mOriginalXform;
 		iXform.preMultScale(iScale);
 		iXform.preMultTranslate(iTrans);
 		iXform.preMultRotate(iRot);
 
-		mLastInterpolatedTransform = iXform;
+		mLastInterpolatedTranslation = iTrans;
+		mLastInterpolatedRotation    = iRot;
+		mLastInterpolatedScale       = iScale;
 
 		if(mAccumulatingXform != nullptr)
 		{
