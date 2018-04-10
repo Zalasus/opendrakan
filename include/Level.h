@@ -45,11 +45,11 @@ namespace od
         inline Engine &getEngine() { return mEngine; }
 
         // implement AssetProvider
-        virtual TexturePtr   getTextureByRef(const AssetRef &ref) override;
-	    virtual ClassPtr     getClassByRef(const AssetRef &ref) override;
-	    virtual ModelPtr     getModelByRef(const AssetRef &ref) override;
-	    virtual SequencePtr  getSequenceByRef(const AssetRef &ref) override;
-	    virtual osg::ref_ptr<Animation> getAnimationByRef(const AssetRef &ref) override;
+        virtual Texture   *getTextureByRef(const AssetRef &ref) override;
+        virtual Class     *getClassByRef(const AssetRef &ref) override;
+        virtual Model     *getModelByRef(const AssetRef &ref) override;
+        virtual Sequence  *getSequenceByRef(const AssetRef &ref) override;
+        virtual Animation *getAnimationByRef(const AssetRef &ref) override;
 
 
     private:

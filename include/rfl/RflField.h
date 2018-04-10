@@ -11,8 +11,11 @@
 #include <initializer_list>
 #include <string>
 #include <cstring>
+#include <osg/ref_ptr>
 
 #include "db/Asset.h"
+#include "db/AssetProvider.h"
+#include "db/Animation.h"
 
 namespace odRfl
 {
@@ -44,7 +47,7 @@ namespace odRfl
         RflField() = default;
 		RflField(const RflField &f) = delete;
 		RflField(RflField &f) = delete;
-		virtual ~RflField() {}
+		virtual ~RflField() = default;
 
 		virtual bool isArray() const = 0;
 		virtual RflFieldType getFieldType() const = 0;
@@ -81,7 +84,7 @@ namespace odRfl
 		}
 
 		virtual bool isArray() const override { return false; }
-		virtual RflFieldType getFieldType() const { return _Type; }
+		virtual RflFieldType getFieldType() const override { return _Type; }
 
 		virtual void fill(od::DataReader &dr) override
 		{
@@ -92,11 +95,61 @@ namespace odRfl
 		operator _DataType () const { return mValue; }
 
 
-	private:
+	protected:
 
 		_DataType mValue;
 
 	};
+
+	template <typename _AssetType, RflField::RflFieldType _Type>
+	class RflAssetRef : public RflPOD<od::AssetRef, _Type>
+	{
+	public:
+
+	    RflAssetRef()
+	    : RflPOD<od::AssetRef, _Type>(od::AssetRef::NULL_REF)
+        {
+        }
+
+	    RflAssetRef(const od::AssetRef &ref)
+        : RflPOD<od::AssetRef, _Type>(ref)
+        {
+        }
+
+        _AssetType *getOrFetchAsset(od::AssetProvider &ap)
+        {
+            if(mReferencedAsset == nullptr)
+            {
+                try
+                {
+                    mReferencedAsset = ap.getAssetByRef<_AssetType>(this->get());
+
+                }catch(od::NotFoundException &e)
+                {
+                    throw od::NotFoundException("Asset referenced by class could not be found");
+                }
+            }
+
+            return mReferencedAsset;
+        }
+
+        _AssetType *getAsset()
+        {
+            return mReferencedAsset;
+        }
+
+	protected:
+
+	    osg::ref_ptr<_AssetType> mReferencedAsset;
+
+	};
+
+    typedef RflPOD<od::AssetRef, RflField::CLASS>     RflClassRef;
+    typedef RflPOD<od::AssetRef, RflField::SOUND>     RflSoundRef;
+    typedef RflPOD<od::AssetRef, RflField::TEXTURE>   RflTextureRef;
+    typedef RflPOD<od::AssetRef, RflField::SEUQUENCE> RflSequenceRef;
+    typedef RflAssetRef<od::Animation, RflField::ANIMATION> RflAnimRef;
+
 
 	typedef RflPOD< int32_t, RflField::INTEGER> RflInteger;
 	typedef RflPOD<   float,   RflField::FLOAT> RflFloat;
@@ -105,11 +158,6 @@ namespace odRfl
 	typedef RflEnum                             RflEnumPlayerSlot;
 	typedef RflEnum 							RflEnumMessage;
 	typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
-	typedef RflPOD<od::AssetRef, RflField::CLASS>     RflClassRef;
-    typedef RflPOD<od::AssetRef, RflField::SOUND>     RflSoundRef;
-    typedef RflPOD<od::AssetRef, RflField::TEXTURE>   RflTextureRef;
-    typedef RflPOD<od::AssetRef, RflField::SEUQUENCE> RflSequenceRef;
-    typedef RflPOD<od::AssetRef, RflField::ANIMATION> RflAnimRef;
 
 
 	template <typename _DataType, RflField::RflFieldType _Type>

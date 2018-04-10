@@ -181,7 +181,7 @@ namespace od
 	}
 
 	// TODO: the following methods look pretty redundant. find clever template interface for them
-	TexturePtr Database::getTextureByRef(const AssetRef &ref)
+	Texture *Database::getTextureByRef(const AssetRef &ref)
 	{
 		if(ref.dbIndex == 0)
 		{
@@ -197,7 +197,7 @@ namespace od
 		return it->second.get().getTexture(ref.assetId);
 	}
 
-	ClassPtr Database::getClassByRef(const AssetRef &ref)
+	Class *Database::getClassByRef(const AssetRef &ref)
 	{
 		if(ref.dbIndex == 0)
 		{
@@ -213,7 +213,7 @@ namespace od
 		return it->second.get().getClass(ref.assetId);
 	}
 
-	ModelPtr Database::getModelByRef(const AssetRef &ref)
+	Model *Database::getModelByRef(const AssetRef &ref)
 	{
 		if(ref.dbIndex == 0)
 		{
@@ -229,7 +229,7 @@ namespace od
 		return it->second.get().getModel(ref.assetId);
 	}
 
-    SequencePtr Database::getSequenceByRef(const AssetRef &ref)
+    Sequence *Database::getSequenceByRef(const AssetRef &ref)
     {
         if(ref.dbIndex == 0)
         {
@@ -245,7 +245,7 @@ namespace od
         return it->second.get().getSequence(ref.assetId);
     }
 
-    osg::ref_ptr<Animation> Database::getAnimationByRef(const AssetRef &ref)
+    Animation *Database::getAnimationByRef(const AssetRef &ref)
     {
     	if(ref.dbIndex == 0)
         {
@@ -262,49 +262,57 @@ namespace od
     }
 
 
-	TexturePtr Database::getTexture(RecordId recordId)
+	Texture *Database::getTexture(RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
 		{
 			throw NotFoundException("Can't get texture. Database has no texture container");
 		}
 
-		return mTextureFactory->getAsset(recordId);
+		osg::ref_ptr<Texture> asset = mTextureFactory->getAsset(recordId);
+
+		return asset.release();
 	}
 
-	ClassPtr Database::getClass(RecordId recordId)
+	Class *Database::getClass(RecordId recordId)
 	{
 		if(mClassFactory == nullptr)
 		{
 			throw NotFoundException("Can't get class. Database has no class container");
 		}
 
-		return mClassFactory->getAsset(recordId);
+		osg::ref_ptr<Class> asset = mClassFactory->getAsset(recordId);
+
+		return asset.release();
 	}
 
-	ModelPtr Database::getModel(RecordId recordId)
+	Model *Database::getModel(RecordId recordId)
 	{
 		if(mModelFactory == nullptr)
 		{
 			throw NotFoundException("Can't get model. Database has no model container");
 		}
 
-		return mModelFactory->getAsset(recordId);
+		osg::ref_ptr<Model> asset = mModelFactory->getAsset(recordId);
+
+        return asset.release();
 	}
 
-	SequencePtr Database::getSequence(RecordId recordId)
+	Sequence *Database::getSequence(RecordId recordId)
 	{
         throw NotFoundException("Can't get sequence. Database has no sequence container");
 	}
 
-	osg::ref_ptr<Animation> Database::getAnimation(RecordId recordId)
+	Animation *Database::getAnimation(RecordId recordId)
 	{
 		if(mAnimFactory == nullptr)
 		{
 			throw NotFoundException("Can't get animation. Database has no animation container");
 		}
 
-		return mAnimFactory->getAsset(recordId);
+		osg::ref_ptr<Animation> asset = mAnimFactory->getAsset(recordId);
+
+		return asset.release();
 	}
 
 } 

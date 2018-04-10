@@ -234,9 +234,6 @@ namespace odRfl
     	float mRightSpeed;
     	osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
     	osg::ref_ptr<od::LevelObject> mPlayerObject;
-    	osg::ref_ptr<od::Animation> mDbRunAnim;
-    	osg::ref_ptr<od::Animation> mDbIdleAnim;
-
     };
 
 }

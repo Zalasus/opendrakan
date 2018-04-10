@@ -14,6 +14,7 @@
 #include <memory>
 
 #include "rfl/RflClass.h"
+#include "Logger.h"
 
 #define OD_REGISTER_RFL_CLASS(classId, className, classCppClass) \
 	static odRfl::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);

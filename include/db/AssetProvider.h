@@ -9,15 +9,16 @@
 #define INCLUDE_ASSETPROVIDER_H_
 
 #include "Asset.h"
-#include "Texture.h"
-#include "Class.h"
-#include "Model.h"
-#include "Sequence.h"
-#include "Animation.h"
 #include "Exception.h"
 
 namespace od
 {
+
+    class Texture;
+    class Class;
+    class Model;
+    class Sequence;
+    class Animation;
 
 	/**
 	 * Common interface for classes with means to translate DB indices to
@@ -31,25 +32,32 @@ namespace od
 
 	    /*
 	     * These get assets from this provider or fetch them from a referenced dependency.
+	     * Note that these functions transfer ownership. It is vital that their return value is stored in a ref_ptr.
 	     */
-	    virtual TexturePtr   getTextureByRef(const AssetRef &ref) = 0;
-	    virtual ClassPtr     getClassByRef(const AssetRef &ref) = 0;
-	    virtual ModelPtr     getModelByRef(const AssetRef &ref) = 0;
-	    virtual SequencePtr  getSequenceByRef(const AssetRef &ref) = 0;
-	    virtual osg::ref_ptr<Animation> getAnimationByRef(const AssetRef &ref) = 0;
+	    virtual Texture   *getTextureByRef(const AssetRef &ref) = 0;
+	    virtual Class     *getClassByRef(const AssetRef &ref) = 0;
+	    virtual Model     *getModelByRef(const AssetRef &ref) = 0;
+	    virtual Sequence  *getSequenceByRef(const AssetRef &ref) = 0;
+	    virtual Animation *getAnimationByRef(const AssetRef &ref) = 0;
 
 	    /*
 	     * These get assets from this provider without indirection. Override if implementer can load
 	     * given asset from itself (basically only databases).
+	     * Note that these functions transfer ownership. It is vital that their return value is stored in a ref_ptr.
 	     */
-	    virtual TexturePtr   getTexture(RecordId recordId) { throw Exception("Can't provide textures"); }
-	    virtual ClassPtr     getClass(RecordId recordId) { throw Exception("Can't provide classes"); }
-	    virtual ModelPtr     getModel(RecordId recordId) { throw Exception("Can't provide models"); }
-	    virtual SequencePtr  getSequence(RecordId recordId) { throw Exception("Can't provide sequences"); }
-	    virtual osg::ref_ptr<Animation> getAnimation(RecordId recordId) { throw Exception("Can't provide animations"); }
+	    virtual Texture   *getTexture(RecordId recordId) { throw Exception("Can't provide textures"); }
+	    virtual Class     *getClass(RecordId recordId) { throw Exception("Can't provide classes"); }
+	    virtual Model     *getModel(RecordId recordId) { throw Exception("Can't provide models"); }
+	    virtual Sequence  *getSequence(RecordId recordId) { throw Exception("Can't provide sequences"); }
+	    virtual Animation *getAnimation(RecordId recordId) { throw Exception("Can't provide animations"); }
+
+	    template <typename _AssetType>
+	    _AssetType *getAssetByRef(const AssetRef &ref);
 
 	};
 
+	template<>
+    Animation *AssetProvider::getAssetByRef<Animation>(const AssetRef &ref);
 
 }
 

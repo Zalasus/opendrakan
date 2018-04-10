@@ -42,7 +42,7 @@ namespace od
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them
-    TexturePtr Level::getTextureByRef(const AssetRef &ref)
+    Texture *Level::getTextureByRef(const AssetRef &ref)
 	{
     	Logger::debug() << "Requested texture " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -56,7 +56,7 @@ namespace od
         return it->second.get().getTexture(ref.assetId);
     }
 
-    ModelPtr Level::getModelByRef(const AssetRef &ref)
+    Model *Level::getModelByRef(const AssetRef &ref)
     {
     	Logger::debug() << "Requested model " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -70,7 +70,7 @@ namespace od
         return it->second.get().getModel(ref.assetId);
     }
 
-    ClassPtr Level::getClassByRef(const AssetRef &ref)
+    Class *Level::getClassByRef(const AssetRef &ref)
     {
         Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -84,7 +84,7 @@ namespace od
         return it->second.get().getClass(ref.assetId);
     }
 
-    SequencePtr Level::getSequenceByRef(const AssetRef &ref)
+    Sequence *Level::getSequenceByRef(const AssetRef &ref)
     {
         Logger::debug() << "Requested sequence " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 
@@ -98,7 +98,7 @@ namespace od
         return it->second.get().getSequence(ref.assetId);
     }
 
-    osg::ref_ptr<Animation> Level::getAnimationByRef(const AssetRef &ref)
+    Animation *Level::getAnimationByRef(const AssetRef &ref)
     {
     	Logger::debug() << "Requested animation " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
 

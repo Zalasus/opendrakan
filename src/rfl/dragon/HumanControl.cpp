@@ -69,9 +69,6 @@ namespace odRfl
 
     void HumanControl::spawn(od::LevelObject &obj)
     {
-    	mDbRunAnim = obj.getClass()->getDatabase().getAnimationByRef(mRunAnim);
-    	mDbIdleAnim = obj.getClass()->getDatabase().getAnimationByRef(mReadyAnim);
-
     	obj.getLevel().setPlayer(this);
     	mPlayerObject = &obj;
 
@@ -121,14 +118,14 @@ namespace odRfl
     	od::SkeletonAnimationPlayer *ap = mPlayerObject->getSkeletonAnimationPlayer();
         if(ap != nullptr)
         {
-            if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mDbRunAnim)
+            if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
             {
-    			ap->setAnimation(mDbRunAnim, 0.2);
+    			ap->setAnimation(mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.2);
     			ap->play(true);
 
-    		}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mDbIdleAnim)
+    		}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
     		{
-    		    ap->setAnimation(mDbIdleAnim, 0.2);
+    		    ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.2);
                 ap->play(true);
     		}
     	}

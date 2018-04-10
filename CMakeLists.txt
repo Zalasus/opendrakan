@@ -9,6 +9,7 @@ project(OpenDrakan)
 include_directories("include")
 set(SOURCES 
         "src/StringUtils.cpp"
+        "src/db/AssetProvider.cpp"
         "src/db/Animation.cpp"
         "src/db/AnimationFactory.cpp"
         "src/db/Skeleton.cpp"

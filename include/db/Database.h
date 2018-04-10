@@ -47,18 +47,18 @@ namespace od
 
 
 		// implement AssetProvider
-		virtual TexturePtr   getTextureByRef(const AssetRef &ref) override;
-	    virtual ClassPtr     getClassByRef(const AssetRef &ref) override;
-	    virtual ModelPtr     getModelByRef(const AssetRef &ref) override;
-	    virtual SequencePtr  getSequenceByRef(const AssetRef &ref) override;
-	    virtual osg::ref_ptr<Animation> getAnimationByRef(const AssetRef &ref) override;
+		virtual Texture   *getTextureByRef(const AssetRef &ref) override;
+        virtual Class     *getClassByRef(const AssetRef &ref) override;
+        virtual Model     *getModelByRef(const AssetRef &ref) override;
+        virtual Sequence  *getSequenceByRef(const AssetRef &ref) override;
+        virtual Animation *getAnimationByRef(const AssetRef &ref) override;
 
 	    // override AssetProvider
-	    virtual TexturePtr   getTexture(RecordId recordId) override;
-	    virtual ClassPtr     getClass(RecordId recordId) override;
-	    virtual ModelPtr     getModel(RecordId recordId) override;
-	    virtual SequencePtr  getSequence(RecordId recordId) override;
-	    virtual osg::ref_ptr<Animation> getAnimation(RecordId recordId) override;
+        virtual Texture   *getTexture(RecordId recordId) override;
+        virtual Class     *getClass(RecordId recordId) override;
+        virtual Model     *getModel(RecordId recordId) override;
+        virtual Sequence  *getSequence(RecordId recordId) override;
+        virtual Animation *getAnimation(RecordId recordId) override;
 
 
 	private:
