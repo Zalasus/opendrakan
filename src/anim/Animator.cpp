@@ -82,9 +82,16 @@ namespace od
 	    mAnimEnd = end;
 	    mAnimLastFrame = begin + (kfCount - 1);
 
-	    mLeftTime = -startDelay;
+		mLeftTime = -startDelay;
 		mRightTime = mAnimBegin->time;
 		mStartDelay = startDelay;
+
+		if(mAccumulatingXform != nullptr)
+		{
+			mLastInterpolatedTranslation = osg::Vec3(0,0,0);
+			mLastInterpolatedRotation = osg::Quat(0, osg::Vec3(0,1,0));
+			mLastInterpolatedScale = osg::Vec3(1,1,1);
+		}
 
         // use last interpolated transform as starting point so we can lerp between animations
         mLeftTranslation = mLastInterpolatedTranslation;
@@ -154,8 +161,9 @@ namespace od
                     relativeTime = relativeTime - mAnimLastFrame->time;
                     mStartDelay = 0.0;
                     mStartTime = simTime - relativeTime;
-                    mLastITranslation = osg::Vec3(0,0,0);
-                    mLastIRot = osg::Quat(0, osg::Vec3(0,1,0));
+                    mLastInterpolatedTranslation = osg::Vec3(0,0,0);
+                    mLastInterpolatedRotation = osg::Quat(0, osg::Vec3(0,1,0));
+                    mLastInterpolatedScale = osg::Vec3(1,1,1);
 
                 }else
                 {
@@ -186,16 +194,11 @@ namespace od
 		iXform.preMultTranslate(iTrans);
 		iXform.preMultRotate(iRot);
 
-		mLastInterpolatedTranslation = iTrans;
-		mLastInterpolatedRotation    = iRot;
-		mLastInterpolatedScale       = iScale;
-
 		if(mAccumulatingXform != nullptr)
 		{
-			osg::Vec3 relTranslation = iTrans - mLastITranslation;
+			osg::Vec3 relTranslation = iTrans - mLastInterpolatedTranslation;
 			relTranslation = relTranslation * osg::Matrix::rotate(-M_PI/2, osg::Vec3(0, 1, 0));
 			mAccumulatingXform->setPosition(relTranslation + mAccumulatingXform->getPosition());
-			mLastITranslation = iTrans;
 
 			mAccumulatingXform->setAttitude(iRot * osg::Quat(-M_PI/2, osg::Vec3(0, 1, 0)));
 
@@ -203,5 +206,9 @@ namespace od
 		{
 		    mNode->setMatrix(iXform);
 		}
+
+		mLastInterpolatedTranslation = iTrans;
+		mLastInterpolatedRotation    = iRot;
+		mLastInterpolatedScale       = iScale;
 	}
 }

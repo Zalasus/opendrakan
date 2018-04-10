@@ -120,12 +120,12 @@ namespace odRfl
         {
             if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
             {
-    			ap->setAnimation(mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.2);
+    			ap->setAnimation(mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.01);
     			ap->play(true);
 
     		}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
     		{
-    		    ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.2);
+    		    ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.15);
                 ap->play(true);
     		}
     	}

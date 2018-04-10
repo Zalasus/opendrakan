@@ -74,8 +74,6 @@ namespace od
 		osg::Vec3f mLastInterpolatedScale;
 
 		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
-		osg::Vec3 mLastITranslation;
-		osg::Quat mLastIRot;
 	};
 
 }
