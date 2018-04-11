@@ -57,7 +57,21 @@ namespace od
 	};
 
 	template<>
+    Texture *AssetProvider::getAssetByRef<Texture>(const AssetRef &ref);
+
+	template<>
+    Class *AssetProvider::getAssetByRef<Class>(const AssetRef &ref);
+
+	template<>
+    Model *AssetProvider::getAssetByRef<Model>(const AssetRef &ref);
+
+	template<>
+    Sequence *AssetProvider::getAssetByRef<Sequence>(const AssetRef &ref);
+
+	template<>
     Animation *AssetProvider::getAssetByRef<Animation>(const AssetRef &ref);
+
+
 
 }
 
