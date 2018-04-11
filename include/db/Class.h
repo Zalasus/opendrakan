@@ -14,8 +14,12 @@
 
 #include "Asset.h"
 #include "Model.h"
-#include "rfl/RflClass.h"
 #include "rfl/RflFieldProbe.h"
+
+namespace odRfl
+{
+    class RflClass;
+}
 
 namespace od
 {

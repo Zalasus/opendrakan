@@ -18,6 +18,7 @@
 #include "StringUtils.h"
 #include "db/Database.h"
 #include "SrscRecordTypes.h"
+#include "rfl/RflField.h"
 
 
 static void srscStat(od::SrscFile &file)

@@ -12,6 +12,7 @@
 #include <osg/NodeCallback>
 
 #include "rfl/RflClass.h"
+#include "rfl/RflField.h"
 
 namespace odRfl
 {

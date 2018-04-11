@@ -13,7 +13,11 @@
 #include "SrscFile.h"
 #include "Asset.h"
 #include "Class.h"
-#include "rfl/dragon/Material.h"
+
+namespace odRfl
+{
+    class Material;
+}
 
 namespace od
 {

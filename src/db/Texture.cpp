@@ -16,6 +16,7 @@
 #include "Exception.h"
 #include "db/TextureFactory.h"
 #include "db/Database.h"
+#include "rfl/dragon/Material.h"
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040

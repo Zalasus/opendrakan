@@ -15,6 +15,10 @@
 
 #include "db/Asset.h"
 #include "db/AssetProvider.h"
+#include "db/Texture.h"
+#include "db/Model.h"
+#include "db/Class.h"
+#include "db/Sequence.h"
 #include "db/Animation.h"
 
 namespace odRfl
@@ -144,10 +148,10 @@ namespace odRfl
 
 	};
 
-    typedef RflPOD<od::AssetRef, RflField::CLASS>     RflClassRef;
+    typedef RflAssetRef<od::Class, RflField::CLASS>         RflClassRef;
     typedef RflPOD<od::AssetRef, RflField::SOUND>     RflSoundRef;
-    typedef RflPOD<od::AssetRef, RflField::TEXTURE>   RflTextureRef;
-    typedef RflPOD<od::AssetRef, RflField::SEUQUENCE> RflSequenceRef;
+    typedef RflAssetRef<od::Texture, RflField::TEXTURE>     RflTextureRef;
+    typedef RflAssetRef<od::Sequence, RflField::SEUQUENCE>  RflSequenceRef;
     typedef RflAssetRef<od::Animation, RflField::ANIMATION> RflAnimRef;
 
 

@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "Exception.h"
+#include "rfl/RflField.h"
 
 namespace odRfl
 {
@@ -53,7 +54,7 @@ namespace odRfl
     		dr >> type
 			   >> name;
 
-    		mFieldEntries[i].fieldType = static_cast<RflField::RflFieldType>(type & 0xff);
+    		mFieldEntries[i].fieldType = type & 0xff;
     		mFieldEntries[i].fieldName = name;
     		mFieldEntries[i].index = isObjectRecord ? fieldIndices[i] : i;
     		mFieldEntries[i].dataOffset = i*4;

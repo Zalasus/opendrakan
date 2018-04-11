@@ -11,10 +11,15 @@
 #include <string>
 #include <vector>
 
-#include "RflField.h"
+namespace od
+{
+    class DataReader;
+}
 
 namespace odRfl
 {
+
+    class RflField;
 
     /**
      * Common interface for classes that can be used to probe an RflClass for it's fields,
@@ -55,7 +60,7 @@ namespace odRfl
 
 		struct FieldEntry
 		{
-			RflField::RflFieldType fieldType;
+			uint32_t fieldType;
 			bool isArray;
 			uint16_t index;
 			size_t dataOffset; // offset of entry in mFieldData

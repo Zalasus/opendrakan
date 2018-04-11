@@ -9,6 +9,7 @@
 #define INCLUDE_RFL_DRAGON_TIMER_H_
 
 #include "rfl/RflClass.h"
+#include "rfl/RflField.h"
 
 namespace odRfl
 {

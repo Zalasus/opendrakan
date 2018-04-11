@@ -9,6 +9,7 @@
 #define INCLUDE_RFL_COMMON_PLAYERCOMMON_H_
 
 #include "rfl/RflClass.h"
+#include "rfl/RflField.h"
 
 namespace odRfl
 {
