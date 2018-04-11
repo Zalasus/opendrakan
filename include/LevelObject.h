@@ -36,7 +36,8 @@ namespace od
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }
         inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
-        void setPosition(osg::Vec3f v);
+        inline void setPosition(osg::Vec3f v) { mTransform->setPosition(v); }
+        inline void setRotation(osg::Quat q) { mTransform->setAttitude(q); }
         inline SkeletonAnimationPlayer *getSkeletonAnimationPlayer() { return mSkeletonAnimation; }
         inline Model *getModel() { return mModel; }
 

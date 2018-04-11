@@ -37,13 +37,13 @@ namespace odRfl
     	virtual void moveRight(float speed) override;
     	virtual osg::Vec3f getPosition() override;
 
-    	void update(double simTime);
+    	void update(double simTime, double relTime);
 
 
     protected:
 
         // 179 members, woo! TODO: maybe put them in an array or something? would need to extend our reflection concept a bit
-        /*RflCharChannel		mRightWeaponChannel;
+        RflCharChannel		mRightWeaponChannel;
 		RflCharChannel		mLeftWeaponChannel;
 		RflCharChannel		mTorsoChannel;
 		RflCharChannel		mLowerBodyChan;
@@ -221,15 +221,16 @@ namespace odRfl
 		RflSoundRefArray	mPushObjectSounds;
 		RflSoundRefArray	mAttackGrunts;
 		RflSoundRefArray	mGetThePointSounds;
-		RflInteger			mGetThePointSndChance;*/
+		RflInteger			mGetThePointSndChance;
 
 
     private:
 
-    	void _updateMotion();
+    	void _updateMotion(double relTime);
 
     	float mYaw;
     	float mPitch;
+    	float mPrevYaw;
     	float mForwardSpeed;
     	float mRightSpeed;
     	osg::ref_ptr<osg::NodeCallback> mUpdateCallback;

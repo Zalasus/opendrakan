@@ -27,14 +27,6 @@ namespace od
     {
     }
 
-    void LevelObject::setPosition(osg::Vec3f v)
-    {
-    	if(mTransform != nullptr)
-    	{
-    		mTransform->setPosition(v);
-    	}
-    }
-
     void LevelObject::loadFromRecord(DataReader dr)
     {
         uint16_t xRot;

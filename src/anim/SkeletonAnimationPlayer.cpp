@@ -39,6 +39,7 @@ namespace od
 				if(mAccumulatingXform != nullptr && bn->isRoot())
 				{
 					animator->setAccumulatingXform(mAccumulatingXform);
+					animator->setAccumulationFactors(osg::Vec3(1,0,1));
 				}
         	}
 

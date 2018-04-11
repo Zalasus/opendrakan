@@ -56,6 +56,7 @@ namespace od
 	, mLeftTime(0.0)
 	, mRightTime(0.0)
 	, mLastInterpolatedScale(1,1,1)
+	, mAccumulationFactors(1,1,1)
 	{
 		mNode->addUpdateCallback(mUpdateCallback);
 	}
@@ -189,21 +190,26 @@ namespace od
 		osg::Quat iRot;
 		iRot.slerp(delta, mLeftRotation, mRightRotation);
 
-		osg::Matrix iXform = mOriginalXform;
-		iXform.preMultScale(iScale);
-		iXform.preMultTranslate(iTrans);
-		iXform.preMultRotate(iRot);
+
 
 		if(mAccumulatingXform != nullptr)
 		{
 			osg::Vec3 relTranslation = iTrans - mLastInterpolatedTranslation;
-			relTranslation = relTranslation * osg::Matrix::rotate(-M_PI/2, osg::Vec3(0, 1, 0));
+			relTranslation = mAccumulatingXform->getAttitude() * relTranslation;
+			relTranslation = osg::componentMultiply(relTranslation, mAccumulationFactors);
 			mAccumulatingXform->setPosition(relTranslation + mAccumulatingXform->getPosition());
 
-			mAccumulatingXform->setAttitude(iRot * osg::Quat(-M_PI/2, osg::Vec3(0, 1, 0)));
+			osg::Matrix iXform = mOriginalXform;
+			iXform.preMultScale(iScale);
+			iXform.preMultRotate(iRot);
+		    mNode->setMatrix(iXform);
 
 		}else
 		{
+			osg::Matrix iXform = mOriginalXform;
+			iXform.preMultScale(iScale);
+			iXform.preMultTranslate(iTrans);
+			iXform.preMultRotate(iRot);
 		    mNode->setMatrix(iXform);
 		}
 

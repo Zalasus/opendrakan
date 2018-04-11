@@ -33,6 +33,7 @@ namespace od
 
 		inline osg::MatrixTransform *getNode() { return mNode; }
 		inline void setAccumulatingXform(osg::PositionAttitudeTransform *xform) { mAccumulatingXform = xform; }
+		inline void setAccumulationFactors(osg::Vec3 v) { mAccumulationFactors = v; }
 		inline bool isPlaying() const { return mPlaying; }
 
 		void setKeyframes(KfIterator begin, KfIterator end, double startDelay = 0.0f);
@@ -74,6 +75,7 @@ namespace od
 		osg::Vec3f mLastInterpolatedScale;
 
 		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
+		osg::Vec3 mAccumulationFactors;
 	};
 
 }
