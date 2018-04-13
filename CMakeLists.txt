@@ -19,6 +19,7 @@ set(SOURCES
         "src/db/ClassFactory.cpp"
         "src/db/TextureFactory.cpp"
         "src/db/Model.cpp"
+        "src/db/ModelBounds.cpp"
         "src/db/Texture.cpp"
         "src/db/Sequence.cpp"
         "src/db/ModelFactory.cpp"

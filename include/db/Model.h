@@ -15,6 +15,7 @@
 #include <osg/Group>
 
 #include "Asset.h"
+#include "ModelBounds.h"
 #include "Skeleton.h"
 #include "GeodeBuilder.h"
 
@@ -50,6 +51,8 @@ namespace od
 		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
+		inline bool isCharacter() const { return mSkeletonBuilder != nullptr; }
+		inline bool hasBounds() const { return mModelBounds != nullptr; }
 
 		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
 		void loadVertices(ModelFactory &factory, DataReader &&dr);
@@ -71,8 +74,8 @@ namespace od
 		std::vector<Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
+		std::unique_ptr<ModelBounds> mModelBounds;
 		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
-
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;

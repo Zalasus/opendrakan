@@ -43,12 +43,17 @@ namespace od
 		SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_POLYGONS, id, nameRecord);
 		model->loadPolygons(*this, DataReader(getSrscFile().getStreamForRecord(faceRecord)));
 
-
-		// optional records TODO: this regularly causes us to search the whole directory. maybe we should use the order of the records?
+		// optional records FIXME: this regularly causes us to search the whole directory. maybe we should use the order of the records?
 		SrscFile::DirIterator lodRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_LOD_BONES, id, nameRecord);
 		if(lodRecord != getSrscFile().getDirectoryEnd())
 		{
 			model->loadLodsAndBones(*this, DataReader(getSrscFile().getStreamForRecord(lodRecord)));
+		}
+
+		SrscFile::DirIterator boundingRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_BOUNDING, id, nameRecord);
+		if(boundingRecord != getSrscFile().getDirectoryEnd())
+		{
+			model->loadBoundingData(*this, DataReader(getSrscFile().getStreamForRecord(boundingRecord)));
 		}
 
 		model->buildGeometry();

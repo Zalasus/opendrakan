@@ -130,8 +130,69 @@ namespace od
 		mPolygonsLoaded = true;
 	}
 
+	void Model::loadBoundingData(ModelFactory &factory, DataReader &&dr)
+	{
+		if(isCharacter())
+		{
+			throw Exception("Character models can't have bounds info");
+		}
+
+		osg::BoundingSpheref mainBs;
+		OrientedBoundingBox mainObb;
+		uint16_t shapeCount;
+		uint16_t shapeType; // 0 = spheres, 1 = boxes
+
+		dr >> mainBs
+		   >> mainObb
+		   >> shapeCount
+		   >> shapeType;
+
+		ModelBounds::ShapeType type = (shapeType == 0) ? ModelBounds::SPHERES : ModelBounds::BOXES;
+		mModelBounds.reset(new ModelBounds(type, shapeCount));
+		mModelBounds->setMainBounds(mainBs, mainObb);
+
+		for(size_t i = 0; i < shapeCount; ++i)
+		{
+			uint16_t firstChildIndex;
+			uint16_t nextSiblingIndex;
+			dr >> firstChildIndex
+			   >> nextSiblingIndex;
+
+			mModelBounds->addHierarchyEntry(firstChildIndex, nextSiblingIndex);
+		}
+
+		for(size_t i = 0; i < shapeCount; ++i)
+		{
+			if(shapeType == 0)
+			{
+				osg::BoundingSpheref bs;
+				dr >> bs;
+				mModelBounds->addSphere(bs);
+
+			}else
+			{
+				OrientedBoundingBox obb;
+				dr >> obb;
+				mModelBounds->addBox(obb);
+
+				// ignore the field of words after each box
+				uint16_t unkPolyCount;
+				dr >> unkPolyCount;
+				dr.ignore(unkPolyCount*2);
+			}
+		}
+
+		Logger::info() << "Bounding data for model " << mModelName;
+		mModelBounds->printInfo();
+	}
+
 	void Model::loadLodsAndBones(ModelFactory &factory, DataReader &&dr)
 	{
+		if(hasBounds())
+		{
+			throw Exception("Character models can't have bounds info");
+		}
+
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 

@@ -290,24 +290,24 @@ Record types
     [0x0206] Texture list
         ref[uint32]  textures;
         
-    [0x0207] Bounding data // Possibly for culling. Possibly for physics.
+    [0x0207] Bounding data // Possibly for culling. Possibly for physics. Only found on non-character models
         bounding_info bounding_info;
         uint16        num_shapes;
         uint16        is_obb;
-        pair<uint16, uint16>[num_shapes] unk_links; // These are unknown shape indices.
+        pair<uint16, uint16>[num_shapes] hierarchy; // first = first child index, second = first sibling index
         if is_obb:
             obb_ex[num_shapes] boxes;
         else:
             sphere[num_shapes] spheres;
             
     [0x0208] Character data // LOD, scene tree, channels, animation refs, bounding info
-        // The modeler seems to use Softimage terminology:
-        // JOINT should be equivalent to what we call a bone, MESH and NULL are also JOINT. EFFECTOR and CHAIN seem like
-        //  they are used for IK stuff (like when Rynn grabs for things like levers/items).
+        // Node info contains all nodes from the original bone tree as created by the original modeler (probably Softimage),
+        //  but only some of them are used (only joints). Effector and chain node names are kept, but seem to be unused otherwise.
+        //  Information on the type of non-joint nodes is lost upon importing a REC into the editor.
         struct node_info // 36 bytes
         {
             char[32]  name;
-            int32     joint_info_index; // index in joint info table. -1 if node is not a joint (in that case, it is a child of the previous node encountered in the list) 
+            int32     joint_info_index; // index in joint info table. -1 if node is not a joint
         };
         struct joint_info
         {
