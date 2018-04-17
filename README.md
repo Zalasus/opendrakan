@@ -46,7 +46,7 @@ $ make
 Running
 -------
 
-Run the opendrakan executeable in the root directory of the game (same directory that contains the Drakan.exe) to
+Run the opendrakan executable in the root directory of the game (same directory that contains the Drakan.exe) to
 load the intro level. To load a specific level, run OpenDrakan with the path to the *.lvl file as an argument.
 
 Right now, OpenDrakan has a few command line options to inspect Drakan resource files and extract data from them to aid
