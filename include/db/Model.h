@@ -44,9 +44,7 @@ namespace od
 	public:
 
 		Model(Database &db, RecordId modelId);
-
-		// TODO: implement copy constructor etc. in a meaningful way for this macro to work
-		//META_Node(od, Model);
+        Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
 
 		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
