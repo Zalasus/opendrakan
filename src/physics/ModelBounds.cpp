@@ -5,8 +5,12 @@
  *      Author: zal
  */
 
-#include "db/ModelBounds.h"
+#include "physics/ModelBounds.h"
 
+#include <BulletCollision/CollisionShapes/btSphereShape.h>
+#include <BulletCollision/CollisionShapes/btBoxShape.h>
+
+#include "physics/BulletAdapter.h"
 #include "Exception.h"
 
 namespace od
@@ -18,14 +22,17 @@ namespace od
 
 	OrientedBoundingBox::OrientedBoundingBox(const OrientedBoundingBox &obb)
 	: mMidPoint(obb.mMidPoint)
-	, mTransform(obb.mTransform)
+	, mExtends(obb.mExtends)
+	, mOrientation(obb.mOrientation)
 	{
+
 	}
 
 	OrientedBoundingBox &OrientedBoundingBox::operator=(const OrientedBoundingBox &obb)
 	{
 		mMidPoint = obb.getMidPoint();
-		mTransform = obb.getTransform();
+		mExtends = obb.getExtends();
+		mOrientation = obb.getOrientation();
 
 		return *this;
 	}
@@ -48,8 +55,15 @@ namespace od
 			  t[6], t[7], t[8], 0,
 			     0,    0,    0, 1);
 
+	    osg::Vec3f dummyTranslate;
+	    osg::Quat  orientation;
+	    osg::Vec3f scale;
+	    osg::Quat  dummySo;
+	    m.decompose(dummyTranslate, orientation, scale, dummySo);
+
 	    obb.setMidPoint(midpoint);
-	    obb.setTransform(m);
+	    obb.setExtends(scale);
+	    obb.setOrientation(orientation);
 
 	    return *this;
 	}
@@ -57,6 +71,7 @@ namespace od
 
 	ModelBounds::ModelBounds(ModelBounds::ShapeType type, size_t shapeCount)
 	: mType(type)
+	, mShapeCount(shapeCount)
 	{
 		mHierarchy.reserve(shapeCount);
 
@@ -99,6 +114,43 @@ namespace od
 		}
 
 		mBoxes.push_back(box);
+	}
+
+	btCollisionShape *ModelBounds::getCollisionShape()
+	{
+	    if(mCompoundShape != nullptr)
+	    {
+	        return mCompoundShape.get();
+	    }
+
+	    mCompoundShape.reset(new btCompoundShape(true, mShapeCount));
+	    for(size_t i = 0; i < mShapeCount; ++i)
+	    {
+	        // Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
+	        //  leafs in the bounding hierarchy here and ignore all shapes that have children
+	        if(mHierarchy[i].first != 0)
+	        {
+	            continue;
+	        }
+
+	        if(mType == SPHERES)
+	        {
+	            btTransform t = BulletAdapter::makeBulletTransform(mSpheres[i].center(), osg::Quat(0,0,0,1));
+	            std::unique_ptr<btCollisionShape> sphere(new btSphereShape(mSpheres[i].radius()));
+	            mCompoundShape->addChildShape(t, sphere.get());
+	            mChildShapes.push_back(std::move(sphere));
+
+	        }else
+	        {
+	            btTransform t = BulletAdapter::makeBulletTransform(mBoxes[i].getMidPoint(), mBoxes[i].getOrientation());
+	            btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[i].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
+	            std::unique_ptr<btCollisionShape> box(new btBoxShape(halfExtends));
+	            mCompoundShape->addChildShape(t, box.get());
+	            mChildShapes.push_back(std::move(box));
+	        }
+	    }
+
+	    return mCompoundShape.get();
 	}
 
 	void ModelBounds::printInfo()

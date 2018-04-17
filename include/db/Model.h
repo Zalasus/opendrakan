@@ -14,8 +14,8 @@
 #include <osg/Texture2D>
 #include <osg/Group>
 
+#include "physics/ModelBounds.h"
 #include "Asset.h"
-#include "ModelBounds.h"
 #include "Skeleton.h"
 #include "GeodeBuilder.h"
 
@@ -50,6 +50,7 @@ namespace od
 
 		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
+		inline ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 		inline bool isCharacter() const { return mSkeletonBuilder != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }

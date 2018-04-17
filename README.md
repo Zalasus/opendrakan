@@ -29,15 +29,28 @@ non-copyright-infringing means.
 Compiling
 ---------
 
-You'll need [zlib](https://www.zlib.net/) and [OpenSceneGraph](http://www.openscenegraph.org/) along
-with their respective dependencies, as well as [CMake](https://cmake.org/) to generate the Makefiles.
+You'll need [zlib](https://www.zlib.net/), [Bullet](http://bulletphysics.org/wordpress/) and
+[OpenSceneGraph](http://www.openscenegraph.org/) along with their respective dependencies, 
+as well as [CMake](https://cmake.org/) to generate the Makefiles.
+On Linux, these should be provided by your distro, so simply installing the appropriate packages
+should suffice to compile OpenDrakan. This was tested successfully on Debian and Arch Linux.
 
-Then fire up a terminal in the project root and do your usual CMake building routine:
+Once you have all dependencies, fire up a terminal in the project root and do your usual CMake building routine:
 ```
 $ mkdir build && cd build
 $ cmake ..
 $ make
 ```
+
+
+Running
+-------
+
+Run the opendrakan executeable in the root directory of the game (same directory that contains the Drakan.exe) to
+load the intro level. To load a specific level, run OpenDrakan with the path to the *.lvl file as an argument.
+
+Right now, OpenDrakan has a few command line options to inspect Drakan resource files and extract data from them to aid
+in reverse-engineering. You can get an overview of these using the -h option.
 
 
 License

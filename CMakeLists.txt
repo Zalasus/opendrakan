@@ -19,12 +19,12 @@ set(SOURCES
         "src/db/ClassFactory.cpp"
         "src/db/TextureFactory.cpp"
         "src/db/Model.cpp"
-        "src/db/ModelBounds.cpp"
         "src/db/Texture.cpp"
         "src/db/Sequence.cpp"
         "src/db/ModelFactory.cpp"
         "src/db/Database.cpp"
         "src/db/SequenceFactory.cpp"
+        "src/physics/ModelBounds.cpp"
         "src/SrscFile.cpp"
         "src/rfl/RflClass.cpp"
         "src/rfl/Rfl.cpp"
@@ -68,13 +68,13 @@ set(SOURCES
 # dependencies
 find_package(ZLIB REQUIRED)
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
+find_package(Bullet REQUIRED Collision Dynamics LinearMath)
 
 
 # targets
 add_executable(opendrakan ${SOURCES})
-target_link_libraries(opendrakan ${OPENSCENEGRAPH_LIBRARIES} ${ZLIB_LIBRARIES})
-
-
+target_link_libraries(opendrakan ${OPENSCENEGRAPH_LIBRARIES} ${ZLIB_LIBRARIES} ${BULLET_LIBRARIES})
+target_include_directories(opendrakan PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
 
 
 # copy shader sources
