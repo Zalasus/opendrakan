@@ -12,10 +12,11 @@
 #include <osg/Group>
 #include <osg/Geode>
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
-#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
+#include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 #include "db/Asset.h"
 #include "DataStream.h"
+#include "OdDefines.h"
 
 namespace od
 {
@@ -46,11 +47,14 @@ namespace od
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
         void buildGeometry(osg::Group *layerGroup);
-        void buildCollisionShape();
+        btCollisionShape *getCollisionShape();
 
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
+        inline uint32_t getOriginX() const { return mOriginX; }
+        inline uint32_t getOriginZ() const { return mOriginZ; }
+        inline float getWorldHeightLu() const { return mWorldHeight * OD_WORLD_SCALE; }
 
 
     private:
@@ -93,7 +97,7 @@ namespace od
         osg::ref_ptr<osg::Geode> mLayerGeode;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
-        std::unique_ptr<btBvhTriangleMeshShape> mCollisionShape;
+        std::unique_ptr<btCollisionShape> mCollisionShape;
     };
 
 }

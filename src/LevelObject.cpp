@@ -11,6 +11,7 @@
 #include "Exception.h"
 #include "OdDefines.h"
 #include "rfl/RflClass.h"
+#include "physics/BulletAdapter.h"
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -114,6 +115,17 @@ namespace od
     	}
 
     	return mMotionAnimator;
+    }
+
+    void LevelObject::getWorldTransform(btTransform& worldTrans) const
+    {
+    	worldTrans = BulletAdapter::makeBulletTransform(getPosition(), getRotation());
+    }
+
+    void LevelObject::setWorldTransform(const btTransform& worldTrans)
+    {
+    	setPosition(BulletAdapter::toOsg(worldTrans.getOrigin()));
+    	setRotation(BulletAdapter::toOsg(worldTrans.getRotation()));
     }
 
 }

@@ -12,6 +12,7 @@
 #include <memory>
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
+#include <LinearMath/btMotionState.h>
 
 #include "db/Class.h"
 #include "anim/SkeletonAnimationPlayer.h"
@@ -24,7 +25,7 @@ namespace od
 
     typedef uint32_t LevelObjectId;
 
-    class LevelObject : public osg::Group
+    class LevelObject : public osg::Group, public btMotionState
     {
     public:
 
@@ -47,6 +48,10 @@ namespace od
         // override osg::Group
 		virtual const char *libraryName() const override { return "od";    }
         virtual const char *className()   const override { return "LevelObject"; }
+
+        // implement btMotionState
+        virtual void getWorldTransform(btTransform& worldTrans) const override;
+		virtual void setWorldTransform(const btTransform& worldTrans) override;
 
 
     private:

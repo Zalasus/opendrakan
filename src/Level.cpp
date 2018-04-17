@@ -38,6 +38,8 @@ namespace od
 
 		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
 
+		mPhysicsManager.reset(new PhysicsManager(mLevelRootNode));
+
         _loadLevel();
     }
 
@@ -196,7 +198,8 @@ namespace od
 			}
 
 			mLayers[i]->buildGeometry(mLayerGroup);
-			mLayers[i]->buildCollisionShape();
+
+			mPhysicsManager->addLayer(*mLayers[i]);
     	}
     }
 
@@ -250,6 +253,8 @@ namespace od
     		object->loadFromRecord(dr);
 
     		mObjectGroup->addChild(object);
+
+    		mPhysicsManager->addObject(*object);
     	}
 
     	// disable lighting for objects as models will show up mostly black right now

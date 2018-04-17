@@ -27,6 +27,7 @@
 #include "TextureAtlas.h"
 #include "Layer.h"
 #include "Player.h"
+#include "physics/PhysicsManager.h"
 
 namespace od
 {
@@ -75,6 +76,8 @@ namespace od
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
 		Player *mPlayer;
+
+		std::unique_ptr<PhysicsManager> mPhysicsManager;
     };
 
 
