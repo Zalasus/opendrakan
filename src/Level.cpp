@@ -196,6 +196,7 @@ namespace od
 			}
 
 			mLayers[i]->buildGeometry(mLayerGroup);
+			mLayers[i]->buildCollisionShape();
     	}
     }
 

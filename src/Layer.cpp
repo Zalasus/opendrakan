@@ -247,5 +247,77 @@ namespace od
 			mLayerGeode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
 		}
     }
+
+    void Layer::buildCollisionShape()
+    {
+        if(mCollisionShape != nullptr)
+        {
+            return;
+        }
+
+        bool mustUse32BitIndices = (mVertices.size() - 1 > 0xffff); // should save us some memory most of the time
+        mBulletMesh.reset(new btTriangleMesh(mustUse32BitIndices, false));
+        btTriangleMesh *mesh = mBulletMesh.get(); // because we call members very often and unique_ptr has some overhead
+
+        // first, add all vertices in grid to shape
+        mesh->preallocateVertices(mVertices.size());
+        for(size_t i = 0; i < mVertices.size(); ++i)
+        {
+            size_t aXRel = i%(mWidth+1);
+            size_t aZRel = i/(mWidth+1); // has to be an integer operation to floor it
+            float aX = aXRel; // ignore origin so shape is relative to layer origin. we place it in world coords via the collision object
+            float aZ = aZRel;
+
+            mesh->findOrAddVertex(btVector3(aX, mVertices[i].absoluteHeight, aZ), false);
+        }
+
+        // second, push indices for each triangle, ignoring those without texture as these define holes the player can walk/fall through
+        mesh->preallocateIndices(mVisibleTriangles * 3);
+        for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
+        {
+            size_t cellIndex = triIndex/2;
+            bool isLeft = (triIndex%2 == 0);
+            Cell cell = mCells[cellIndex];
+            AssetRef texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+
+            if(texture.isNullTexture())
+            {
+                continue;
+            }
+
+            int aZRel = cellIndex/mWidth; // has to be an integer operation to floor it
+
+            // calculate indices of corner vertices. same as in buildGeometry()
+            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
+            size_t b = a + 1;
+            size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
+            size_t d = c + 1;
+
+            if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
+            {
+                if(isLeft)
+                {
+                    mesh->addTriangleIndices(c, b, a);
+
+                }else
+                {
+                    mesh->addTriangleIndices(c, d, b);
+                }
+
+            }else // division = BACKSLASH
+            {
+                if(isLeft)
+                {
+                    mesh->addTriangleIndices(a, c, d);
+
+                }else
+                {
+                    mesh->addTriangleIndices(a, d, b);
+                }
+            }
+        }
+
+        mCollisionShape.reset(new btBvhTriangleMeshShape(mesh, true, false));
+    }
 }
 

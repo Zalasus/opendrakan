@@ -8,8 +8,11 @@
 #ifndef LAYER_H_
 #define LAYER_H_
 
+#include <memory>
 #include <osg/Group>
 #include <osg/Geode>
+#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 #include "db/Asset.h"
 #include "DataStream.h"
@@ -43,6 +46,7 @@ namespace od
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
         void buildGeometry(osg::Group *layerGroup);
+        void buildCollisionShape();
 
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
@@ -87,6 +91,9 @@ namespace od
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
         osg::ref_ptr<osg::Geode> mLayerGeode;
+
+        std::unique_ptr<btTriangleMesh> mBulletMesh;
+        std::unique_ptr<btBvhTriangleMeshShape> mCollisionShape;
     };
 
 }
