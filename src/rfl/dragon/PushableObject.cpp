@@ -65,6 +65,11 @@ namespace odRfl
 
     }
 
+    ObjectPhysicsType PushableObject::getPhysicsType()
+    {
+        return ObjectPhysicsType::RIGID_BODY;
+    }
+
     OD_REGISTER_RFL_CLASS(0x0010, "Pushable Object", PushableObject);
 
 }
