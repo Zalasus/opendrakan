@@ -33,6 +33,7 @@ namespace od
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline ClassPtr getClass() { return mClass; }
+        inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }

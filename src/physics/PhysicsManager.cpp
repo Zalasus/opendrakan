@@ -15,6 +15,7 @@
 
 #include "Layer.h"
 #include "LevelObject.h"
+#include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
 
 namespace od
@@ -72,6 +73,8 @@ namespace od
 
 		mDynamicsWorld.reset(new btDiscreteDynamicsWorld(mDispatcher.get(), mBroadphase.get(), mConstraintSolver.get(), mCollisionConfiguration.get()));
 
+		mDynamicsWorld->setGravity(btVector3(0, -1, 0));
+
 		// for now, hook physics simulation into update traversal. we might want to put this somewhere else once we do threading
 		mLevelRoot->addUpdateCallback(mTickCallback);
 	}
@@ -105,12 +108,14 @@ namespace od
 
 	void PhysicsManager::addObject(LevelObject &o)
 	{
-		if(o.getModel() == nullptr || o.getModel()->getModelBounds() == nullptr)
+		if(o.getModel() == nullptr || o.getModel()->getModelBounds() == nullptr || o.getClassInstance() == nullptr)
 		{
 			return;
 		}
 
-		btRigidBody::btRigidBodyConstructionInfo info(0.5, &o, o.getModel()->getModelBounds()->getCollisionShape());
+		float mass = (o.getClassInstance()->getPhysicsType() == odRfl::ObjectPhysicsType::RIGID_BODY) ? 0.5 : 0;
+
+		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
 
 		btRigidBody *body = new btRigidBody(info);
 

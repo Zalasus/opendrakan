@@ -17,4 +17,9 @@ namespace odRfl
 	{
 	}
 
+	ObjectPhysicsType RflClass::getPhysicsType()
+	{
+	    return ObjectPhysicsType::STATIC;
+	}
+
 }
