@@ -17,6 +17,8 @@
 #include <osg/Group>
 #include <osg/NodeCallback>
 
+#include "physics/DebugDrawer.h"
+
 namespace od
 {
 
@@ -57,6 +59,8 @@ namespace od
         std::unique_ptr<btCollisionDispatcher> mDispatcher; // depends on mCollisionConfiguration. init after that
         std::unique_ptr<btConstraintSolver> mConstraintSolver;
         std::unique_ptr<btDynamicsWorld> mDynamicsWorld;
+
+        std::unique_ptr<DebugDrawer> mDebugDrawer;
 	};
 
 }

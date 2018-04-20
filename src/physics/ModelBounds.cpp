@@ -179,7 +179,8 @@ namespace od
 		{
 			OrientedBoundingBox &obb = mBoxes[index];
 
-			std::cout << "[] x=" << obb.getMidPoint().x() << " y=" << obb.getMidPoint().y() << " z=" << obb.getMidPoint().z();
+			std::cout << "[] x=" << obb.getMidPoint().x() << " y=" << obb.getMidPoint().y() << " z=" << obb.getMidPoint().z()
+                      << " ex="<< obb.getExtends().x() << " y=" << obb.getExtends().y() << " z=" << obb.getExtends().z();
 
 		}else
 		{

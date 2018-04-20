@@ -77,16 +77,22 @@ namespace od
 
 		// for now, hook physics simulation into update traversal. we might want to put this somewhere else once we do threading
 		mLevelRoot->addUpdateCallback(mTickCallback);
+
+		mDebugDrawer.reset(new DebugDrawer(mLevelRoot, mDynamicsWorld.get()));
+		mDynamicsWorld->setDebugDrawer(mDebugDrawer.get());
 	}
 
 	PhysicsManager::~PhysicsManager()
 	{
 		mLevelRoot->removeUpdateCallback(mTickCallback);
+		mDynamicsWorld->setDebugDrawer(nullptr);
 	}
 
 	void PhysicsManager::stepSimulation(double dt)
 	{
 		mDynamicsWorld->stepSimulation(dt, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
+
+		mDebugDrawer->step();
 	}
 
 	void PhysicsManager::addLayer(Layer &l)
@@ -118,6 +124,8 @@ namespace od
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
 
 		btRigidBody *body = new btRigidBody(info);
+		body->setAngularFactor(1);
+		if(mass > 0) body->setAngularVelocity(btVector3(0, 1, 0));
 
 		mDynamicsWorld->addRigidBody(body, CollisionGroups::OBJECT, CollisionGroups::ALL);
 	}

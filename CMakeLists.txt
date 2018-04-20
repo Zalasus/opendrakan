@@ -26,6 +26,7 @@ set(SOURCES
         "src/db/SequenceFactory.cpp"
         "src/physics/ModelBounds.cpp"
         "src/physics/PhysicsManager.cpp"
+        "src/physics/DebugDrawer.cpp"
         "src/SrscFile.cpp"
         "src/rfl/RflClass.cpp"
         "src/rfl/Rfl.cpp"
