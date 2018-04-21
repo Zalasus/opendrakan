@@ -80,6 +80,7 @@ namespace od
 
 		mDebugDrawer.reset(new DebugDrawer(mLevelRoot, mDynamicsWorld.get()));
 		mDynamicsWorld->setDebugDrawer(mDebugDrawer.get());
+		mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	}
 
 	PhysicsManager::~PhysicsManager()
@@ -122,10 +123,9 @@ namespace od
 		float mass = (o.getClassInstance()->getPhysicsType() == odRfl::ObjectPhysicsType::RIGID_BODY) ? 0.5 : 0;
 
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
+		o.getModel()->getModelBounds()->getCollisionShape()->calculateLocalInertia(mass, info.m_localInertia);
 
 		btRigidBody *body = new btRigidBody(info);
-		body->setAngularFactor(1);
-		if(mass > 0) body->setAngularVelocity(btVector3(0, 1, 0));
 
 		mDynamicsWorld->addRigidBody(body, CollisionGroups::OBJECT, CollisionGroups::ALL);
 	}

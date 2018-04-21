@@ -77,7 +77,7 @@ namespace od
 
     int DebugDrawer::getDebugMode() const
     {
-        return mDebugOn;
+        return mDebugOn ? btIDebugDraw::DBG_DrawWireframe : 0;
     }
 
 }
