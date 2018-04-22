@@ -80,7 +80,7 @@ namespace od
 
 		mDebugDrawer.reset(new DebugDrawer(mLevelRoot, mDynamicsWorld.get()));
 		mDynamicsWorld->setDebugDrawer(mDebugDrawer.get());
-		mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+		//mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
 	}
 
 	PhysicsManager::~PhysicsManager()

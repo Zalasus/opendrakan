@@ -146,7 +146,7 @@ namespace od
 
 				}else
 				{
-					myTranslation = mBoxes[index].getMidPoint();
+					myTranslation = mBoxes[index].getBottomLeft() + mBoxes[index].getOrientation() * (mBoxes[index].getExtends() * 0.5);
 					myRotation = mBoxes[index].getOrientation();
 
 					btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
@@ -207,58 +207,6 @@ namespace od
 		size_t nextSibling = mHierarchy[index].second;
 		if(nextSibling != 0)
 			_recursivePrint(nextSibling, depth);
-	}
-
-	void ModelBounds::_recursiveBuild(osg::Vec3f parentTranslation, osg::Quat parentRotation, size_t index, size_t depth)
-	{
-		// FIXME: needs some kind of "already visited" flag
-		if(index >= mHierarchy.size() || depth > 100)
-		{
-			return;
-		}
-
-		size_t firstChild = mHierarchy[index].first;
-		size_t nextSibling = mHierarchy[index].second;
-		osg::Vec3f myTranslation = parentTranslation;
-		osg::Quat myRotation = parentRotation;
-
-		// Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
-		//  leafs in the bounding hierarchy here and ignore all shapes that have children
-		if(firstChild == 0)
-		{
-			std::unique_ptr<btCollisionShape> newShape;
-
-			if(mType == SPHERES)
-			{
-				myTranslation += mSpheres[index].center();
-				//myRotation = osg::Quat(0,0,0,1);
-
-				newShape.reset(new btSphereShape(mSpheres[index].radius()));
-
-			}else
-			{
-				myTranslation += mBoxes[index].getMidPoint();
-				myRotation *= mBoxes[index].getOrientation();
-
-				btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
-				newShape.reset(new btBoxShape(halfExtends));
-			}
-
-			btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);
-			mCompoundShape->addChildShape(t, newShape.get());
-			mChildShapes.push_back(std::move(newShape));
-		}
-
-
-		if(firstChild != 0)
-		{
-			_recursiveBuild(myTranslation, myRotation, firstChild, depth+1);
-		}
-
-		if(nextSibling != 0)
-		{
-			_recursiveBuild(parentTranslation, parentRotation, nextSibling, depth);
-		}
 	}
 
 }
