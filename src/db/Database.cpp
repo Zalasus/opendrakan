@@ -178,6 +178,17 @@ namespace od
         {
             Logger::verbose() << "Database has no animation container";
         }
+
+        FilePath sdbPath = mDbFilePath.ext(".sdb");
+        if(sdbPath.exists())
+        {
+            mSoundFactory = std::unique_ptr<SoundFactory>(new SoundFactory(sdbPath, *this));
+            Logger::verbose() << "Opened database sound container" << sdbPath.str();
+
+        }else
+        {
+            Logger::verbose() << "Database has no sound container";
+        }
 	}
 
 	// TODO: the following methods look pretty redundant. find clever template interface for them
@@ -261,6 +272,22 @@ namespace od
         return it->second.get().getAnimation(ref.assetId);
     }
 
+    Sound *Database::getSoundByRef(const AssetRef &ref)
+    {
+        if(ref.dbIndex == 0)
+        {
+            return this->getSound(ref.assetId);
+        }
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            throw Exception("Database has no dependency with given index");
+        }
+
+        return it->second.get().getSound(ref.assetId);
+    }
+
 
 	Texture *Database::getTexture(RecordId recordId)
 	{
@@ -314,6 +341,18 @@ namespace od
 
 		return asset.release();
 	}
+
+	Sound *Database::getSound(RecordId recordId)
+    {
+        if(mAnimFactory == nullptr)
+        {
+            throw NotFoundException("Can't get animation. Database has no animation container");
+        }
+
+        osg::ref_ptr<Sound> asset = mSoundFactory->getAsset(recordId);
+
+        return asset.release();
+    }
 
 } 
 

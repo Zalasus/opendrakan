@@ -50,6 +50,7 @@ namespace od
         virtual Model     *getModelByRef(const AssetRef &ref) override;
         virtual Sequence  *getSequenceByRef(const AssetRef &ref) override;
         virtual Animation *getAnimationByRef(const AssetRef &ref) override;
+        virtual Sound     *getSoundByRef(const AssetRef &ref) override;
 
 
     private:

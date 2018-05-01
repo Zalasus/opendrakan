@@ -35,6 +35,9 @@ namespace od
 		MODEL_LOD_BONES     = 0x0208,
 		MODEL_UNKNOWN2      = 0x0209,
 
+		SOUND_GROUP         = 0x0301,
+		SOUND               = 0x0302,
+
 		SEQUENCE_UNKNOWN1   = 0x0310,
 		SEQUENCE            = 0x0311,
 		SEQUENCE_GROUP      = 0x0312,

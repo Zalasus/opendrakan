@@ -23,6 +23,7 @@
 #include "ModelFactory.h"
 #include "ClassFactory.h"
 #include "AnimationFactory.h"
+#include "SoundFactory.h"
 
 namespace od
 {
@@ -52,6 +53,7 @@ namespace od
         virtual Model     *getModelByRef(const AssetRef &ref) override;
         virtual Sequence  *getSequenceByRef(const AssetRef &ref) override;
         virtual Animation *getAnimationByRef(const AssetRef &ref) override;
+        virtual Sound     *getSoundByRef(const AssetRef &ref) override;
 
 	    // override AssetProvider
         virtual Texture   *getTexture(RecordId recordId) override;
@@ -59,10 +61,10 @@ namespace od
         virtual Model     *getModel(RecordId recordId) override;
         virtual Sequence  *getSequence(RecordId recordId) override;
         virtual Animation *getAnimation(RecordId recordId) override;
+        virtual Sound     *getSound(RecordId recordId) override;
 
 
 	private:
-
 
 		FilePath mDbFilePath;
 		DbManager &mDbManager;
@@ -74,6 +76,7 @@ namespace od
 		std::unique_ptr<ModelFactory> mModelFactory;
 		std::unique_ptr<ClassFactory> mClassFactory;
 		std::unique_ptr<AnimationFactory> mAnimFactory;
+		std::unique_ptr<SoundFactory> mSoundFactory;
 	};
 }
 

@@ -41,4 +41,10 @@ namespace od
         return this->getAnimationByRef(ref);
     }
 
+    template<>
+    Sound *AssetProvider::getAssetByRef<Sound>(const AssetRef &ref)
+    {
+        return this->getSoundByRef(ref);
+    }
+
 }
