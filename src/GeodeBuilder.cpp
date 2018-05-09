@@ -114,7 +114,7 @@ namespace od
 		mBoneWeights->resize(mVertices->size(), osg::Vec4f(0, 0, 0, 0)); // weight of 0 will make unused bones uneffective, regardless
 																         //  of index -> less logic in the vertex shader!
 		std::vector<size_t> influencingBonesCount(mVertices->size(), 0);
-
+		bool alreadyWarned = false; // flag preventing spamming of log if many verts exceed bone limit
 		for(auto it = begin; it != end; ++it)
 		{
 			if(it->vertexIndex >= mVertices->size())
@@ -126,8 +126,13 @@ namespace od
 			size_t &currentBoneCount = influencingBonesCount[it->vertexIndex];
 			if(currentBoneCount >= 4)
 			{
-				Logger::warn() << "More than 4 bones per vertex";
 				// TODO: perhaps overwrite bone with lowest weight rather than ignoring all bones past the fourth?
+				if(!alreadyWarned)
+				{
+					Logger::warn() << "Found vertex with more than 4 affecting bones in model '" << mModelName << "'. Ignoring excess bones";
+					alreadyWarned = true;
+				}
+
 				continue;
 			}
 
