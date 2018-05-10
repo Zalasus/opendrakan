@@ -32,6 +32,7 @@ namespace od
     , mLevelRootNode(levelRootNode)
     , mLayerGroup(new osg::Group)
     , mObjectGroup(new osg::Group)
+    , mPlayer(nullptr)
     {
     	mLevelRootNode->addChild(mLayerGroup);
     	mLevelRootNode->addChild(mObjectGroup);
