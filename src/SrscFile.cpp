@@ -141,7 +141,7 @@ namespace od
 		}
 
 		in >> mVersion;
-		if(mVersion != 0x100)
+		if(mVersion != 0x100 && mVersion != 0x101)
 		{
 			throw UnsupportedException("Unsupported SRSC version");
 		}
@@ -170,8 +170,3 @@ namespace od
 		}
 	}
 }
-
-
-
-
-
