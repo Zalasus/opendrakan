@@ -4,10 +4,12 @@ cmake_minimum_required(VERSION 2.6.3)
 
 project(OpenDrakan)
 
+set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_BUILD_TYPE Debug)
 
 # project sources
 include_directories("include")
-set(SOURCES 
+set(SOURCES
         "src/StringUtils.cpp"
         "src/db/AssetProvider.cpp"
         "src/db/Animation.cpp"
@@ -65,7 +67,7 @@ set(SOURCES
         "src/ShaderManager.cpp"
         "src/GeodeBuilder.cpp"
         "src/Main.cpp")
-              
+
 
 # dependencies
 find_package(ZLIB REQUIRED)
@@ -80,7 +82,7 @@ target_include_directories(opendrakan PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${Z
 
 
 # copy shader sources
-set(SHADER_SOURCES 
+set(SHADER_SOURCES
         "shader_src/default_vertex.glsl"
         "shader_src/default_fragment.glsl"
         "shader_src/rigged_vertex.glsl")
@@ -89,5 +91,3 @@ foreach(f ${SHADER_SOURCES})
     # configure file creates dependencies between source and target
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/${f} COPYONLY)
 endforeach()
-
-
