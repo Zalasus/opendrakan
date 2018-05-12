@@ -67,7 +67,7 @@ namespace odRfl
 		RflString(const std::string &defaultValue);
 
 		virtual bool isArray() const override { return true; }
-		virtual RflFieldType getFieldType() const { return STRING; }
+		RflFieldType getFieldType() const override { return STRING; }
 
 		virtual void fillArray(uint16_t size, od::DataReader &dr) override;
 
@@ -175,7 +175,7 @@ namespace odRfl
 		}
 
 		virtual bool isArray() const override { return true; }
-		virtual RflFieldType getFieldType() const { return _Type; }
+		RflFieldType getFieldType() const override { return _Type; }
 
 		virtual void fillArray(uint16_t size, od::DataReader &dr) override
 		{
