@@ -205,7 +205,14 @@
     	}
     }
 
-	LoggerStreamProxy::LoggerStreamProxy(LoggerStreamProxy &p)
+    LoggerStreamProxy::LoggerStreamProxy(LoggerStreamProxy &p)
+	: mLogger(p.mLogger)
+	, mIWasCopied(false)
+	{
+		p.mIWasCopied = true;
+	}
+
+	LoggerStreamProxy::LoggerStreamProxy(LoggerStreamProxy &&p)
 	: mLogger(p.mLogger)
 	, mIWasCopied(false)
 	{
