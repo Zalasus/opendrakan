@@ -140,8 +140,8 @@ namespace od
 		// attach rigging shader to model node TODO: is this the right place to attach this? how to we ensure it is not overwritten?
 		osg::ref_ptr<osg::Shader> riggingShader = mEngine.getShaderManager().loadShader(OD_SHADER_RIGGED_VERTEX, osg::Shader::VERTEX);
 		mRiggingProgram = mEngine.getShaderManager().makeProgram(riggingShader, nullptr);
-		mRiggingProgram->addBindAttribLocation("influencingBones", 13);
-		mRiggingProgram->addBindAttribLocation("vertexWeights", 14);
+		mRiggingProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
+		mRiggingProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
 		mObjectRoot->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
 		mObjectRoot->getOrCreateStateSet()->addUniform(mBoneMatrixArray, osg::StateAttribute::ON);
 

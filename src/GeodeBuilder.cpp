@@ -5,11 +5,13 @@
  *      Author: zal
  */
 
-#include <GeodeBuilder.h>
+#include "GeodeBuilder.h"
+
 #include <algorithm>
 #include <osg/Geometry>
 
 #include "Exception.h"
+#include "OdDefines.h"
 #include "db/Database.h"
 
 namespace od
@@ -176,8 +178,8 @@ namespace od
 				if(mBoneIndices != nullptr && mBoneWeights != nullptr)
 				{
 					// FIXME: these locations may get inconsistent with what we use in the shader
-					geom->setVertexAttribArray(14, mBoneIndices, osg::Array::BIND_PER_VERTEX);
-					geom->setVertexAttribArray(15, mBoneWeights, osg::Array::BIND_PER_VERTEX);
+					geom->setVertexAttribArray(OD_ATTRIB_INFLUENCE_LOCATION, mBoneIndices, osg::Array::BIND_PER_VERTEX);
+					geom->setVertexAttribArray(OD_ATTRIB_WEIGHT_LOCATION, mBoneWeights, osg::Array::BIND_PER_VERTEX);
 				}
 
 				// IBO unique per geometry/texture
