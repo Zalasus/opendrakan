@@ -39,6 +39,12 @@ namespace od
 		mViewer->setName("OpenDrakan");
 		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 		mViewer->setSceneData(rootNode);
+		osgViewer::Viewer::Windows windows;
+		mViewer->getWindows(windows);
+		if(!windows.empty())
+		{
+			windows.back()->setWindowName(mViewer->getName());
+		}
 
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =
 				new osgViewer::ScreenCaptureHandler::WriteToFile("screenshot", "png", osgViewer::ScreenCaptureHandler::WriteToFile::SEQUENTIAL_NUMBER);
