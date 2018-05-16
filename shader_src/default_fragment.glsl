@@ -1,5 +1,5 @@
 
-#version 330
+#version 130
 
 // from vertex shader
 in vec3 vertexNormal;

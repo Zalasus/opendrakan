@@ -35,6 +35,7 @@
 
 		LoggerStreamProxy(Logger &l);
 		LoggerStreamProxy(LoggerStreamProxy &p);
+		LoggerStreamProxy(LoggerStreamProxy &&p);
 
 
 		Logger &mLogger;

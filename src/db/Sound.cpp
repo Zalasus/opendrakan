@@ -12,8 +12,9 @@
 namespace od
 {
 
-	Sound::Sound()
-	: mSoundName("")
+	Sound::Sound(Database &db, RecordId id)
+	: Asset(db, id)
+	, mSoundName("")
 	, mFlags(0)
 	, mChannels(0)
     , mBits(0)
@@ -27,16 +28,9 @@ namespace od
     {
     }
 
-	Sound::~Sound()
-	{
-	}
-
-    void Sound::loadFromRecord(SrscFile &srscFile, RecordId id)
+    void Sound::loadFromRecord(DataReader &dr)
     {
-        DataReader dr(srscFile.getStreamForRecordTypeId(0x0302, id));
-
-        dr
-			>> mSoundName
+        dr  >> mSoundName
 			>> mFlags
 			>> mChannels
             >> mBits
@@ -50,7 +44,7 @@ namespace od
 
         if(mBits != 8 && mBits != 16)
         {
-        	throw UnsupportedException("Unsupported bit count");
+        	throw UnsupportedException("Unsupported bit count per sample");
         }
 
         if(mChannels != 1)
@@ -80,12 +74,6 @@ namespace od
         	}
         }
     }
-
-    std::string Sound::getName()
-    {
-        return mSoundName;
-    }
-
 }
 
 

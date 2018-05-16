@@ -25,7 +25,7 @@ namespace od
 
 	void Asset::loadFromRecord(DataReader &dr)
 	{
-	    throw UnsupportedException(std::string(this->getAssetTypeName()) + " can't be loaded from a single record. Need to use custom loader function and factory");
+	    throw UnsupportedException(std::string(this->getAssetTypeName()) + " assets can't be loaded from a single record. Need to use custom loader function and factory");
 	}
 
 

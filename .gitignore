@@ -4,3 +4,4 @@ build/
 .settings/
 .project
 .cproject
+.vscode/

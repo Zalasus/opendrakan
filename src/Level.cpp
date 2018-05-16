@@ -32,6 +32,7 @@ namespace od
     , mLevelRootNode(levelRootNode)
     , mLayerGroup(new osg::Group)
     , mObjectGroup(new osg::Group)
+    , mPlayer(nullptr)
     {
     	mLevelRootNode->addChild(mLayerGroup);
     	mLevelRootNode->addChild(mObjectGroup);
@@ -112,6 +113,20 @@ namespace od
         }
 
         return it->second.get().getAnimation(ref.assetId);
+    }
+
+    Sound *Level::getSoundByRef(const AssetRef &ref)
+    {
+        Logger::debug() << "Requested sound " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
+
+        auto it = mDependencyMap.find(ref.dbIndex);
+        if(it == mDependencyMap.end())
+        {
+            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
+            throw NotFoundException("Can't get sound. Database index not found in level dependencies");
+        }
+
+        return it->second.get().getSound(ref.assetId);
     }
 
     void Level::_loadLevel()

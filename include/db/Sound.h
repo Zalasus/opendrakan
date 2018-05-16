@@ -9,6 +9,7 @@
 #define INCLUDE_SOUND_H_
 
 #include <vector>
+#include <osg/Referenced>
 
 #include "Asset.h"
 
@@ -18,19 +19,16 @@
 namespace od
 {
 
-	class Sound
+	class Sound : public Asset, public osg::Referenced
 	{
 	public:
 
-		Sound();
-		virtual ~Sound();
+		Sound(Database &db, RecordId id);
 
-		virtual void loadFromRecord(SrscFile &srscFile, RecordId id);
+		virtual void loadFromRecord(DataReader &dr) override;
 
-		virtual std::string getName();
-
-		uint32_t getFlags();
-
+		// implement Asset
+        virtual const char *getAssetTypeName() const override { return "sound"; }
 
 
 	private:

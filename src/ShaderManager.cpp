@@ -59,6 +59,7 @@ namespace od
 		osg::ref_ptr<osg::Program> newProgram(new osg::Program);
 		newProgram->addShader(vertexShader);
 		newProgram->addShader(fragmentShader);
+		newProgram->setName(vertexShader->getName() + ":" + fragmentShader->getName());
 		mProgramCache.insert(std::make_pair(std::make_pair(vertexShader, fragmentShader), newProgram));
 		return newProgram;
 	}

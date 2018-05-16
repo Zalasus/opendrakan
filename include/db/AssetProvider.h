@@ -19,6 +19,7 @@ namespace od
     class Model;
     class Sequence;
     class Animation;
+    class Sound;
 
 	/**
 	 * Common interface for classes with means to translate DB indices to
@@ -39,6 +40,7 @@ namespace od
 	    virtual Model     *getModelByRef(const AssetRef &ref) = 0;
 	    virtual Sequence  *getSequenceByRef(const AssetRef &ref) = 0;
 	    virtual Animation *getAnimationByRef(const AssetRef &ref) = 0;
+	    virtual Sound     *getSoundByRef(const AssetRef &ref) = 0;
 
 	    /*
 	     * These get assets from this provider without indirection. Override if implementer can load
@@ -50,6 +52,7 @@ namespace od
 	    virtual Model     *getModel(RecordId recordId) { throw Exception("Can't provide models"); }
 	    virtual Sequence  *getSequence(RecordId recordId) { throw Exception("Can't provide sequences"); }
 	    virtual Animation *getAnimation(RecordId recordId) { throw Exception("Can't provide animations"); }
+	    virtual Sound     *getSound(RecordId recordId) { throw Exception("Can't provide sounds"); }
 
 	    template <typename _AssetType>
 	    _AssetType *getAssetByRef(const AssetRef &ref);
@@ -71,6 +74,8 @@ namespace od
 	template<>
     Animation *AssetProvider::getAssetByRef<Animation>(const AssetRef &ref);
 
+	template<>
+    Sound *AssetProvider::getAssetByRef<Sound>(const AssetRef &ref);
 
 
 }
