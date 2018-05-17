@@ -44,6 +44,7 @@ namespace od
         inline void setPlayer(Player *p) { mPlayer = p; }
         inline FilePath getFilePath() const { return mLevelPath; }
         inline Engine &getEngine() { return mEngine; }
+        inline PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
 
         // implement AssetProvider
         virtual Texture   *getTextureByRef(const AssetRef &ref) override;
@@ -77,8 +78,7 @@ namespace od
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
 		Player *mPlayer;
-
-		std::unique_ptr<PhysicsManager> mPhysicsManager;
+		PhysicsManager mPhysicsManager;
     };
 
 

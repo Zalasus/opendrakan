@@ -13,13 +13,12 @@ namespace odRfl
 {
 
 
-	void RflClass::spawn(od::LevelObject &obj)
+	void RflClass::spawned(od::LevelObject &obj)
 	{
 	}
 
-	ObjectPhysicsType RflClass::getPhysicsType()
+	void RflClass::despawned(od::LevelObject &obj)
 	{
-	    return ObjectPhysicsType::STATIC;
 	}
 
 }

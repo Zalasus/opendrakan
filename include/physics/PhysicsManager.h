@@ -45,7 +45,7 @@ namespace od
 		void stepSimulation(double dt);
 
 		void addLayer(Layer &l);
-		void addObject(LevelObject &o);
+		void addObject(LevelObject &o, float mass);
 
 
 	private:

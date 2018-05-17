@@ -18,14 +18,6 @@ namespace od
 namespace odRfl
 {
 
-    enum class ObjectPhysicsType
-    {
-        NONE,
-        STATIC,
-        KINEMATIC,
-        RIGID_BODY
-    };
-
 	class RflClass
 	{
 	public:
@@ -35,9 +27,8 @@ namespace odRfl
 		virtual void probeFields(RflFieldProbe &probe) = 0;
 
 		// TODO: maybe create an "EventHandler" interface for this?
-		virtual void spawn(od::LevelObject &obj); // does nothing by default
-		virtual ObjectPhysicsType getPhysicsType();
-
+		virtual void spawned(od::LevelObject &obj); // does nothing by default
+		virtual void despawned(od::LevelObject &obj);
 	};
 
 }

@@ -8,6 +8,9 @@
 #include "rfl/dragon/PushableObject.h"
 
 #include "rfl/Rfl.h"
+#include "Level.h"
+#include "Engine.h"
+#include "physics/PhysicsManager.h"
 
 namespace odRfl
 {
@@ -60,14 +63,9 @@ namespace odRfl
                 (mDamagePlayer, "Damage Player");
     }
 
-    void PushableObject::spawn(od::LevelObject &obj)
+    void PushableObject::spawned(od::LevelObject &obj)
     {
-
-    }
-
-    ObjectPhysicsType PushableObject::getPhysicsType()
-    {
-        return ObjectPhysicsType::RIGID_BODY;
+    	obj.getLevel().getPhysicsManager().addObject(obj, 0.8);
     }
 
     OD_REGISTER_RFL_CLASS(0x0010, "Pushable Object", PushableObject);

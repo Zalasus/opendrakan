@@ -82,7 +82,6 @@ namespace od
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->probeFields(builder); // let builder override fields
-            mRflClassInstance->spawn(*this);
 
         }else
         {
@@ -115,6 +114,22 @@ namespace od
     	}
 
     	return mMotionAnimator;
+    }
+
+    void LevelObject::spawned()
+    {
+    	if(mRflClassInstance != nullptr)
+    	{
+    		mRflClassInstance->spawned(*this);
+    	}
+    }
+
+    void LevelObject::despawned()
+    {
+    	if(mRflClassInstance != nullptr)
+		{
+			mRflClassInstance->despawned(*this);
+		}
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

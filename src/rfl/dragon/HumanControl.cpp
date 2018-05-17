@@ -468,7 +468,7 @@ namespace odRfl
 			   (mGetThePointSndChance, "Get the point Snd Chance (0-100)");
     }
 
-    void HumanControl::spawn(od::LevelObject &obj)
+    void HumanControl::spawned(od::LevelObject &obj)
     {
     	obj.getLevel().setPlayer(this);
     	mPlayerObject = &obj;

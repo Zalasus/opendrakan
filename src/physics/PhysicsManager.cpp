@@ -113,14 +113,12 @@ namespace od
 		mDynamicsWorld->addRigidBody(body, CollisionGroups::LAYER, CollisionGroups::OBJECT);
 	}
 
-	void PhysicsManager::addObject(LevelObject &o)
+	void PhysicsManager::addObject(LevelObject &o, float mass)
 	{
 		if(o.getModel() == nullptr || o.getModel()->getModelBounds() == nullptr || o.getClassInstance() == nullptr)
 		{
 			return;
 		}
-
-		float mass = (o.getClassInstance()->getPhysicsType() == odRfl::ObjectPhysicsType::RIGID_BODY) ? 0.5 : 0;
 
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
 		o.getModel()->getModelBounds()->getCollisionShape()->calculateLocalInertia(mass, info.m_localInertia);

@@ -45,6 +45,8 @@ namespace od
 
         void loadFromRecord(DataReader dr);
         MotionAnimator *getOrCreateMotionAnim();
+        void spawned();
+        void despawned();
 
         // override osg::Group
 		virtual const char *libraryName() const override { return "od";    }

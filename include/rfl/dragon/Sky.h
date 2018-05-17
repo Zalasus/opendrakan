@@ -24,7 +24,7 @@ namespace odRfl
         DomedSky();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawn(od::LevelObject &obj) override;
+        virtual void spawned(od::LevelObject &obj) override;
 
         void update(osg::Vec3 eyePoint);
 

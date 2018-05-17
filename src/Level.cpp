@@ -33,13 +33,12 @@ namespace od
     , mLayerGroup(new osg::Group)
     , mObjectGroup(new osg::Group)
     , mPlayer(nullptr)
+    , mPhysicsManager(levelRootNode)
     {
     	mLevelRootNode->addChild(mLayerGroup);
     	mLevelRootNode->addChild(mObjectGroup);
 
 		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
-
-		mPhysicsManager.reset(new PhysicsManager(mLevelRootNode));
 
         _loadLevel();
     }
@@ -214,7 +213,7 @@ namespace od
 
 			mLayers[i]->buildGeometry(mLayerGroup);
 
-			mPhysicsManager->addLayer(*mLayers[i]);
+			mPhysicsManager.addLayer(*mLayers[i]);
     	}
     }
 
@@ -269,7 +268,7 @@ namespace od
 
     		mObjectGroup->addChild(object);
 
-    		mPhysicsManager->addObject(*object);
+    		object->spawned();
     	}
 
     	// disable lighting for objects as models will show up mostly black right now

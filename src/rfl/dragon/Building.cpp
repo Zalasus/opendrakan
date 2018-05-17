@@ -8,6 +8,9 @@
 #include "rfl/dragon/Building.h"
 
 #include "rfl/Rfl.h"
+#include "Level.h"
+#include "Engine.h"
+#include "physics/PhysicsManager.h"
 
 namespace odRfl
 {
@@ -63,9 +66,9 @@ namespace odRfl
 				(mMessageToSendAfterPushed, "Message to Send After Pushed");
     }
 
-    void Building::spawn(od::LevelObject &obj)
+    void Building::spawned(od::LevelObject &obj)
 	{
-
+    	obj.getLevel().getPhysicsManager().addObject(obj, 0);
 	}
 
     OD_REGISTER_RFL_CLASS(0x0011, "Building", Building);
