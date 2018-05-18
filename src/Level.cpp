@@ -43,6 +43,15 @@ namespace od
         _loadLevel();
     }
 
+    Level::~Level()
+    {
+    	// despawn all remaining objects
+    	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+    	{
+    		it->second->despawned();
+    	}
+    }
+
     // TODO: the following methods look pretty redundant. find clever template interface for them
     Texture *Level::getTextureByRef(const AssetRef &ref)
 	{
@@ -265,6 +274,8 @@ namespace od
     	{
     		LevelObjectPtr object(new od::LevelObject(*this));
     		object->loadFromRecord(dr);
+
+    		mLevelObjects[object->getObjectId()] = object;
 
     		mObjectGroup->addChild(object);
 

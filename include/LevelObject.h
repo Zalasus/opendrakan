@@ -30,6 +30,7 @@ namespace od
     public:
 
         LevelObject(Level &level);
+        ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline ClassPtr getClass() { return mClass; }
@@ -76,6 +77,7 @@ namespace od
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         osg::ref_ptr<SkeletonAnimationPlayer> mSkeletonAnimation;
         osg::ref_ptr<MotionAnimator> mMotionAnimator;
+        bool mSpawned;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

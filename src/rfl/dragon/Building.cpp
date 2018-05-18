@@ -71,6 +71,11 @@ namespace odRfl
     	obj.getLevel().getPhysicsManager().addObject(obj, 0);
 	}
 
+    void Building::despawned(od::LevelObject &obj)
+    {
+    	obj.getLevel().getPhysicsManager().removeObject(obj);
+    }
+
     OD_REGISTER_RFL_CLASS(0x0011, "Building", Building);
 
 }

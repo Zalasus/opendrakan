@@ -22,6 +22,7 @@ namespace odRfl
 
         virtual void probeFields(RflFieldProbe &probe) override;
         virtual void spawned(od::LevelObject &obj) override;
+        virtual void despawned(od::LevelObject &obj) override;
 
 
     protected:

@@ -9,6 +9,7 @@
 #define INCLUDE_PHYSICS_PHYSICSMANAGER_H_
 
 #include <memory>
+#include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletDynamics/ConstraintSolver/btConstraintSolver.h>
 #include <BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>
@@ -45,7 +46,10 @@ namespace od
 		void stepSimulation(double dt);
 
 		void addLayer(Layer &l);
+		void removeLayer(Layer &l);
+
 		void addObject(LevelObject &o, float mass);
+		void removeObject(LevelObject &o);
 
 
 	private:
@@ -61,6 +65,9 @@ namespace od
         std::unique_ptr<btDynamicsWorld> mDynamicsWorld;
 
         std::unique_ptr<DebugDrawer> mDebugDrawer;
+
+        std::map<uint32_t, std::unique_ptr<btRigidBody>> mLevelObjectMap;
+        std::map<uint32_t, std::unique_ptr<btRigidBody>> mLayerMap;
 	};
 
 }

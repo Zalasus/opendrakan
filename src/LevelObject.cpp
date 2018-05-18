@@ -25,7 +25,19 @@ namespace od
     , mFlags(0)
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
+    , mSpawned(false)
     {
+    }
+
+    LevelObject::~LevelObject()
+    {
+    	// make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
+    	if(mSpawned)
+    	{
+    		Logger::warn() << "Level object deleted while still spawned";
+
+    		despawned();
+    	}
     }
 
     void LevelObject::loadFromRecord(DataReader dr)
@@ -122,6 +134,10 @@ namespace od
     	{
     		mRflClassInstance->spawned(*this);
     	}
+
+    	Logger::debug() << "Object " << getObjectId() << " spawned";
+
+		mSpawned = true;
     }
 
     void LevelObject::despawned()
@@ -130,6 +146,10 @@ namespace od
 		{
 			mRflClassInstance->despawned(*this);
 		}
+
+    	Logger::debug() << "Object " << getObjectId() << " despawned";
+
+    	mSpawned = false;
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

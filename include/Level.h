@@ -39,6 +39,7 @@ namespace od
     public:
 
         Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode);
+        ~Level();
 
         inline Player *getPlayer() { return mPlayer; }
         inline void setPlayer(Player *p) { mPlayer = p; }
@@ -73,6 +74,7 @@ namespace od
         uint32_t mMaxHeight;
         std::map<uint16_t, DbRefWrapper> mDependencyMap;
         std::vector<std::shared_ptr<Layer>> mLayers;
+        std::map<uint32_t, osg::ref_ptr<LevelObject>> mLevelObjects;
         osg::ref_ptr<osg::Group> mLevelRootNode;
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;

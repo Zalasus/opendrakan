@@ -68,6 +68,11 @@ namespace odRfl
     	obj.getLevel().getPhysicsManager().addObject(obj, 0.8);
     }
 
+    void PushableObject::despawned(od::LevelObject &obj)
+    {
+    	obj.getLevel().getPhysicsManager().removeObject(obj);
+    }
+
     OD_REGISTER_RFL_CLASS(0x0010, "Pushable Object", PushableObject);
 
 }
