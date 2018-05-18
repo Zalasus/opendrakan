@@ -50,6 +50,12 @@ namespace od
     	{
     		it->second->despawned();
     	}
+
+    	// TODO: this needs a proper mechanism and a map~ we will be doing this on the fly later
+    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+    	{
+    		mPhysicsManager.removeLayer(*it->get());
+    	}
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them
