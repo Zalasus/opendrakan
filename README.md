@@ -2,6 +2,8 @@
 OpenDrakan
 ==========
 
+[![Build Status](https://travis-ci.org/Zalasus/opendrakan.svg?branch=master)](https://travis-ci.org/Zalasus/opendrakan)
+
 An effort te reverse-engineer and hopefully reimplement Surreal Software's
 Riot Engine with the ultimate goal to be able to run the game 
 "Drakan: Order of the Flame" on a modern GNU/Linux system.
