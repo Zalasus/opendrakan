@@ -1,18 +1,19 @@
 
-#version 130
+#version 120
 
 // from vertex shader
-in vec3 vertexNormal;
-in vec4 vertexColor;
-in vec2 texCoord;
+varying vec3 vertexNormal;
+varying vec4 vertexColor;
+varying vec2 texCoord;
 
 // textures
 uniform sampler2D texture0; 
 
-out vec4 colorOut;
+//out vec4 colorOut;
 
 void main(void)
 {
     vec4 texelColor = texture2D(texture0, texCoord.xy);
-    colorOut = texelColor;
+    //colorOut = texelColor;
+    gl_FragColor = texelColor;
 }
