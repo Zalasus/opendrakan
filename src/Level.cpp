@@ -228,7 +228,10 @@ namespace od
 
 			mLayers[i]->buildGeometry(mLayerGroup);
 
-			mPhysicsManager.addLayer(*mLayers[i]);
+			if(mLayers[i]->getCollisionShape() != nullptr)
+			{
+				mPhysicsManager.addLayer(*mLayers[i]);
+			}
     	}
     }
 

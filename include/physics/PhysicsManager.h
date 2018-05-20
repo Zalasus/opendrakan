@@ -45,10 +45,10 @@ namespace od
 
 		void stepSimulation(double dt);
 
-		void addLayer(Layer &l);
+		btRigidBody *addLayer(Layer &l);
 		void removeLayer(Layer &l);
 
-		void addObject(LevelObject &o, float mass);
+		btRigidBody *addObject(LevelObject &o, float mass);
 		void removeObject(LevelObject &o);
 
 

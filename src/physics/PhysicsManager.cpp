@@ -15,6 +15,7 @@
 
 #include "Layer.h"
 #include "LevelObject.h"
+#include "Exception.h"
 #include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
 
@@ -98,12 +99,12 @@ namespace od
 		mDebugDrawer->step();
 	}
 
-	void PhysicsManager::addLayer(Layer &l)
+	btRigidBody *PhysicsManager::addLayer(Layer &l)
 	{
 		btCollisionShape *cs = l.getCollisionShape();
 		if(cs == nullptr)
 		{
-			return;
+			throw Exception("Tried to add layer without collision shape to PhysicsManager");
 		}
 
 		btRigidBody::btRigidBodyConstructionInfo info(0, nullptr, cs);
@@ -115,6 +116,8 @@ namespace od
 		mLayerMap[l.getId()] = std::move(body);
 
 		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::LAYER, CollisionGroups::OBJECT);
+
+		return bodyPtr;
 	}
 
 	void PhysicsManager::removeLayer(Layer &l)
@@ -128,11 +131,11 @@ namespace od
 		}
 	}
 
-	void PhysicsManager::addObject(LevelObject &o, float mass)
+	btRigidBody *PhysicsManager::addObject(LevelObject &o, float mass)
 	{
 		if(o.getModel() == nullptr || o.getModel()->getModelBounds() == nullptr || o.getClassInstance() == nullptr)
 		{
-			return;
+			throw Exception("Tried to add object without model or collision shape to PhysicsManager");
 		}
 
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
@@ -143,6 +146,8 @@ namespace od
 		mLevelObjectMap[o.getObjectId()] = std::move(body);
 
 		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::OBJECT, CollisionGroups::ALL);
+
+		return bodyPtr;
 	}
 
 	void PhysicsManager::removeObject(LevelObject &o)

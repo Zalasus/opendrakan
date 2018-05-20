@@ -68,7 +68,10 @@ namespace odRfl
 
     void Building::spawned(od::LevelObject &obj)
 	{
-    	obj.getLevel().getPhysicsManager().addObject(obj, 0);
+    	if(obj.getModel() != nullptr && obj.getModel()->getModelBounds() != nullptr)
+		{
+    		obj.getLevel().getPhysicsManager().addObject(obj, 0);
+    	}
 	}
 
     void Building::despawned(od::LevelObject &obj)
