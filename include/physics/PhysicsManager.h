@@ -34,16 +34,19 @@ namespace od
 	};
 
 	class Layer;
+	class Level;
 	class LevelObject;
 
 	class PhysicsManager
 	{
 	public:
 
-		PhysicsManager(osg::Group *levelRoot);
+		PhysicsManager(Level &level, osg::Group *levelRoot);
 		~PhysicsManager();
 
 		void stepSimulation(double dt);
+
+		bool toggleDebugDraw();
 
 		btRigidBody *addLayer(Layer &l);
 		void removeLayer(Layer &l);
@@ -54,6 +57,7 @@ namespace od
 
 	private:
 
+		Level &mLevel;
 		osg::ref_ptr<osg::Group> mLevelRoot;
 		osg::ref_ptr<osg::NodeCallback> mTickCallback;
 

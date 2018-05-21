@@ -19,6 +19,7 @@ namespace od
     : mParentNode(parentNode)
     , mDynamicsWorld(world)
     , mDebugOn(false)
+    , mCullingActive(false)
     {
         mGeode = new osg::Geode;
 
@@ -49,10 +50,27 @@ namespace od
         mGeometry->dirtyBound();
     }
 
+    void DebugDrawer::setCullingSphere(float radius, osg::Vec3f center)
+    {
+    	mCullingSphere.set(center, radius);
+    	mCullingActive = (radius != 0);
+    }
+
     void DebugDrawer::drawLine(const btVector3& from,const btVector3& to,const btVector3& color)
     {
-        mVertices->push_back(BulletAdapter::toOsg(from));
-        mVertices->push_back(BulletAdapter::toOsg(to));
+    	osg::Vec3f oFrom = BulletAdapter::toOsg(from);
+    	osg::Vec3f oTo   = BulletAdapter::toOsg(to);
+
+    	if(mCullingActive)
+    	{
+    		if(!mCullingSphere.contains(oFrom) && !mCullingSphere.contains(oTo))
+    		{
+    			return;
+    		}
+    	}
+
+        mVertices->push_back(oFrom);
+        mVertices->push_back(oTo);
     }
 
     void DebugDrawer::drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color)

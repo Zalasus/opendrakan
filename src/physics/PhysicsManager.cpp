@@ -15,6 +15,7 @@
 
 #include "Layer.h"
 #include "LevelObject.h"
+#include "Level.h"
 #include "Exception.h"
 #include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
@@ -63,9 +64,10 @@ namespace od
 	};
 
 
-	PhysicsManager::PhysicsManager(osg::Group *levelRoot)
+	PhysicsManager::PhysicsManager(Level &level, osg::Group *levelRoot)
 	: mLevelRoot(levelRoot)
 	, mTickCallback(new PhysicsTickCallback(*this))
+	, mLevel(level)
 	{
 		mBroadphase.reset(new btDbvtBroadphase());
 		mCollisionConfiguration.reset(new btDefaultCollisionConfiguration());
@@ -96,7 +98,25 @@ namespace od
 	{
 		mDynamicsWorld->stepSimulation(dt, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
 
+		if(mLevel.getPlayer() != nullptr)
+		{
+			mDebugDrawer->setCullingSphere(16, mLevel.getPlayer()->getPosition());
+		}
+
 		mDebugDrawer->step();
+	}
+
+	bool PhysicsManager::toggleDebugDraw()
+	{
+		if(mDebugDrawer == nullptr)
+		{
+			return false;
+		}
+
+		bool prevState = mDebugDrawer->getDebugMode();
+		mDebugDrawer->setDebugMode(!prevState);
+
+		return prevState;
 	}
 
 	btRigidBody *PhysicsManager::addLayer(Layer &l)

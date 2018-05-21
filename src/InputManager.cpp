@@ -89,6 +89,10 @@ namespace od
 			_playerMoveRight(0);
 			return true;
 
+		case osgGA::GUIEventAdapter::KEY_F2:
+			mEngine.getLevel().getPhysicsManager().toggleDebugDraw();
+			return true;
+
 		default:
 			break;
 		}

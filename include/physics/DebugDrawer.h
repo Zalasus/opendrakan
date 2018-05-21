@@ -13,6 +13,7 @@
 #include <osg/Group>
 #include <osg/Geode>
 #include <osg/Array>
+#include <osg/BoundingSphere>
 
 namespace od
 {
@@ -28,6 +29,7 @@ namespace od
         ~DebugDrawer();
 
         void step();
+        void setCullingSphere(float radius, osg::Vec3f center);
 
         virtual void drawLine(const btVector3& from,const btVector3& to,const btVector3& color) override;
         virtual void drawContactPoint(const btVector3& PointOnB,const btVector3& normalOnB,btScalar distance,int lifeTime,const btVector3& color) override;
@@ -46,6 +48,8 @@ namespace od
         osg::ref_ptr<osg::DrawArrays> mDrawArrays;
         osg::ref_ptr<osg::Vec3Array> mVertices;
         bool mDebugOn;
+        bool mCullingActive;
+        osg::BoundingSpheref mCullingSphere;
 	};
 
 }
