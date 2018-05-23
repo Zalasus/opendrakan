@@ -26,10 +26,11 @@ namespace od
 		OrientedBoundingBox();
 		OrientedBoundingBox(const OrientedBoundingBox &obb);
 
-		inline osg::Vec3f getMidPoint() const { return mMidPoint; }
+		inline osg::Vec3f getBottomLeft() const { return mBottomLeft; }
+		inline osg::Vec3f getMidPoint() const { return mBottomLeft + mExtends * 0.5; }
 		inline osg::Vec3f getExtends() const { return mExtends; }
 		inline osg::Quat  getOrientation() const { return mOrientation; }
-		inline void setMidPoint(const osg::Vec3f &v) { mMidPoint = v; }
+		inline void setBottomLeft(const osg::Vec3f &v) { mBottomLeft = v; }
 		inline void setExtends(const osg::Vec3f &v) { mExtends = v;}
 		inline void setOrientation(const osg::Quat &q) { mOrientation = q; }
 
@@ -38,7 +39,7 @@ namespace od
 
 	private:
 
-		osg::Vec3f mMidPoint;
+		osg::Vec3f mBottomLeft;
 		osg::Vec3f mExtends;
 		osg::Quat  mOrientation;
 	};
@@ -61,7 +62,7 @@ namespace od
 		void addBox(const OrientedBoundingBox &box);
 
 		/// Gets or creates a collision shape to be used for Bullet dynamics. The returned pointer looses validity once
-		///  the \¢ ModelBounds object is destroyed.
+		///  the \c ModelBounds object is destroyed.
 		btCollisionShape *getCollisionShape();
 
 		void printInfo();
@@ -70,6 +71,7 @@ namespace od
 	private:
 
 		void _recursivePrint(size_t index, size_t depth);
+		void _recursiveBuild(osg::Vec3f parentTranslation, osg::Quat parentRotation, size_t index, size_t depth);
 
 		ShapeType mType;
 		size_t mShapeCount;

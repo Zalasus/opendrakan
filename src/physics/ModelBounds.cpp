@@ -21,7 +21,7 @@ namespace od
 	}
 
 	OrientedBoundingBox::OrientedBoundingBox(const OrientedBoundingBox &obb)
-	: mMidPoint(obb.mMidPoint)
+	: mBottomLeft(obb.mBottomLeft)
 	, mExtends(obb.mExtends)
 	, mOrientation(obb.mOrientation)
 	{
@@ -30,7 +30,7 @@ namespace od
 
 	OrientedBoundingBox &OrientedBoundingBox::operator=(const OrientedBoundingBox &obb)
 	{
-		mMidPoint = obb.getMidPoint();
+		mBottomLeft = obb.getMidPoint();
 		mExtends = obb.getExtends();
 		mOrientation = obb.getOrientation();
 
@@ -40,8 +40,8 @@ namespace od
 	template <>
 	DataReader &DataReader::operator >> <OrientedBoundingBox>(OrientedBoundingBox &obb)
 	{
-	    osg::Vec3f midpoint;
-	    (*this) >> midpoint;
+	    osg::Vec3f bottomLeftCorner;
+	    (*this) >> bottomLeftCorner;
 
 	    float t[9];
 	    osg::Matrixf m; // don't read transform matrix directly, as the deserializer for osg::Matrix reads a 3x4 matrix!!!
@@ -61,7 +61,7 @@ namespace od
 	    osg::Quat  dummySo;
 	    m.decompose(dummyTranslate, orientation, scale, dummySo);
 
-	    obb.setMidPoint(midpoint);
+	    obb.setBottomLeft(bottomLeftCorner);
 	    obb.setExtends(scale);
 	    obb.setOrientation(orientation);
 
@@ -124,31 +124,40 @@ namespace od
 	    }
 
 	    mCompoundShape.reset(new btCompoundShape(true, mShapeCount));
-	    for(size_t i = 0; i < mShapeCount; ++i)
+	    for(size_t index = 0; index < mShapeCount; ++index)
 	    {
-	        // Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
-	        //  leafs in the bounding hierarchy here and ignore all shapes that have children
-	        if(mHierarchy[i].first != 0)
-	        {
-	            continue;
-	        }
+	    	size_t firstChild = mHierarchy[index].first;
+			size_t nextSibling = mHierarchy[index].second;
+			osg::Vec3f myTranslation;
+			osg::Quat myRotation;
 
-	        if(mType == SPHERES)
-	        {
-	            btTransform t = BulletAdapter::makeBulletTransform(mSpheres[i].center(), osg::Quat(0,0,0,1));
-	            std::unique_ptr<btCollisionShape> sphere(new btSphereShape(mSpheres[i].radius()));
-	            mCompoundShape->addChildShape(t, sphere.get());
-	            mChildShapes.push_back(std::move(sphere));
+			// Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
+			//  leafs in the bounding hierarchy here and ignore all shapes that have children
+			if(firstChild == 0)
+			{
+				std::unique_ptr<btCollisionShape> newShape;
 
-	        }else
-	        {
-	            btTransform t = BulletAdapter::makeBulletTransform(mBoxes[i].getMidPoint(), mBoxes[i].getOrientation());
-	            btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[i].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
-	            std::unique_ptr<btCollisionShape> box(new btBoxShape(halfExtends));
-	            mCompoundShape->addChildShape(t, box.get());
-	            mChildShapes.push_back(std::move(box));
-	        }
-	    }
+				if(mType == SPHERES)
+				{
+					myTranslation = mSpheres[index].center();
+					myRotation = osg::Quat(0,0,0,1);
+
+					newShape.reset(new btSphereShape(mSpheres[index].radius()));
+
+				}else
+				{
+					myTranslation = mBoxes[index].getBottomLeft() + mBoxes[index].getOrientation() * (mBoxes[index].getExtends() * 0.5);
+					myRotation = mBoxes[index].getOrientation();
+
+					btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
+					newShape.reset(new btBoxShape(halfExtends));
+				}
+
+				btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);
+				mCompoundShape->addChildShape(t, newShape.get());
+				mChildShapes.push_back(std::move(newShape));
+			}
+		}
 
 	    return mCompoundShape.get();
 	}
@@ -179,7 +188,8 @@ namespace od
 		{
 			OrientedBoundingBox &obb = mBoxes[index];
 
-			std::cout << "[] x=" << obb.getMidPoint().x() << " y=" << obb.getMidPoint().y() << " z=" << obb.getMidPoint().z();
+			std::cout << "[] x=" << obb.getBottomLeft().x() << " y=" << obb.getBottomLeft().y() << " z=" << obb.getBottomLeft().z()
+                      << " ex="<< obb.getExtends().x() << " y=" << obb.getExtends().y() << " z=" << obb.getExtends().z();
 
 		}else
 		{

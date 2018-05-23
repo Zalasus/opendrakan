@@ -9,9 +9,9 @@
 
 #include <osg/Texture2D>
 #include <osg/FrontFace>
+#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 #include "Level.h"
-#include "OdDefines.h"
 #include "GeodeBuilder.h"
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
@@ -248,11 +248,16 @@ namespace od
 		}
     }
 
-    void Layer::buildCollisionShape()
+    btCollisionShape *Layer::getCollisionShape()
     {
         if(mCollisionShape != nullptr)
         {
-            return;
+            return mCollisionShape.get();
+        }
+
+        if(mVisibleTriangles == 0)
+        {
+        	return nullptr;
         }
 
         bool mustUse32BitIndices = (mVertices.size() - 1 > 0xffff); // should save us some memory most of the time
@@ -260,7 +265,7 @@ namespace od
         btTriangleMesh *mesh = mBulletMesh.get(); // because we call members very often and unique_ptr has some overhead
 
         // first, add all vertices in grid to shape
-        mesh->preallocateVertices(mVertices.size());
+        mesh->preallocateVertices(mVertices.size() * 3); // bullet seems to be buggy here. it actually needs 3 times the space it reserves
         for(size_t i = 0; i < mVertices.size(); ++i)
         {
             size_t aXRel = i%(mWidth+1);
@@ -268,7 +273,7 @@ namespace od
             float aX = aXRel; // ignore origin so shape is relative to layer origin. we place it in world coords via the collision object
             float aZ = aZRel;
 
-            mesh->findOrAddVertex(btVector3(aX, mVertices[i].absoluteHeight, aZ), false);
+            mesh->findOrAddVertex(btVector3(aX, mVertices[i].heightOffset * OD_WORLD_SCALE, aZ), false);
         }
 
         // second, push indices for each triangle, ignoring those without texture as these define holes the player can walk/fall through
@@ -317,7 +322,9 @@ namespace od
             }
         }
 
-        mCollisionShape.reset(new btBvhTriangleMeshShape(mesh, true, false));
+        mCollisionShape.reset(new btBvhTriangleMeshShape(mesh, true, true));
+
+        return mCollisionShape.get();
     }
 }
 

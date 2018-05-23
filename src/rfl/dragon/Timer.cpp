@@ -36,7 +36,7 @@ namespace odRfl
 				(mDisableReenableMessage, "Disable/Re-Enable Message");
 	}
 
-	void Timer::spawn(od::LevelObject &obj)
+	void Timer::spawned(od::LevelObject &obj)
 	{
 
 	}

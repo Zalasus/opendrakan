@@ -11,6 +11,7 @@
 #include "Exception.h"
 #include "OdDefines.h"
 #include "rfl/RflClass.h"
+#include "physics/BulletAdapter.h"
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -24,7 +25,19 @@ namespace od
     , mFlags(0)
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
+    , mSpawned(false)
     {
+    }
+
+    LevelObject::~LevelObject()
+    {
+    	// make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
+    	if(mSpawned)
+    	{
+    		Logger::warn() << "Level object deleted while still spawned";
+
+    		despawned();
+    	}
     }
 
     void LevelObject::loadFromRecord(DataReader dr)
@@ -81,7 +94,6 @@ namespace od
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->probeFields(builder); // let builder override fields
-            mRflClassInstance->spawn(*this);
 
         }else
         {
@@ -114,6 +126,41 @@ namespace od
     	}
 
     	return mMotionAnimator;
+    }
+
+    void LevelObject::spawned()
+    {
+    	if(mRflClassInstance != nullptr)
+    	{
+    		mRflClassInstance->spawned(*this);
+    	}
+
+    	Logger::debug() << "Object " << getObjectId() << " spawned";
+
+		mSpawned = true;
+    }
+
+    void LevelObject::despawned()
+    {
+    	if(mRflClassInstance != nullptr)
+		{
+			mRflClassInstance->despawned(*this);
+		}
+
+    	Logger::debug() << "Object " << getObjectId() << " despawned";
+
+    	mSpawned = false;
+    }
+
+    void LevelObject::getWorldTransform(btTransform& worldTrans) const
+    {
+    	worldTrans = BulletAdapter::makeBulletTransform(getPosition(), getRotation());
+    }
+
+    void LevelObject::setWorldTransform(const btTransform& worldTrans)
+    {
+    	setPosition(BulletAdapter::toOsg(worldTrans.getOrigin()));
+    	setRotation(BulletAdapter::toOsg(worldTrans.getRotation()));
     }
 
 }

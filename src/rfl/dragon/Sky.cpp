@@ -100,7 +100,7 @@ namespace odRfl
 		     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
-    void DomedSky::spawn(od::LevelObject &obj)
+    void DomedSky::spawned(od::LevelObject &obj)
 	{
     	mSkyObject = &obj;
 

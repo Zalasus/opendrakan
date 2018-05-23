@@ -12,6 +12,7 @@
 #include <memory>
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
+#include <LinearMath/btMotionState.h>
 
 #include "db/Class.h"
 #include "anim/SkeletonAnimationPlayer.h"
@@ -24,14 +25,16 @@ namespace od
 
     typedef uint32_t LevelObjectId;
 
-    class LevelObject : public osg::Group
+    class LevelObject : public osg::Group, public btMotionState
     {
     public:
 
         LevelObject(Level &level);
+        ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline ClassPtr getClass() { return mClass; }
+        inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }
@@ -43,10 +46,16 @@ namespace od
 
         void loadFromRecord(DataReader dr);
         MotionAnimator *getOrCreateMotionAnim();
+        void spawned();
+        void despawned();
 
         // override osg::Group
 		virtual const char *libraryName() const override { return "od";    }
         virtual const char *className()   const override { return "LevelObject"; }
+
+        // implement btMotionState
+        virtual void getWorldTransform(btTransform& worldTrans) const override;
+		virtual void setWorldTransform(const btTransform& worldTrans) override;
 
 
     private:
@@ -68,6 +77,7 @@ namespace od
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         osg::ref_ptr<SkeletonAnimationPlayer> mSkeletonAnimation;
         osg::ref_ptr<MotionAnimator> mMotionAnimator;
+        bool mSpawned;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

@@ -33,6 +33,7 @@ namespace od
     , mLayerGroup(new osg::Group)
     , mObjectGroup(new osg::Group)
     , mPlayer(nullptr)
+    , mPhysicsManager(*this, levelRootNode)
     {
     	mLevelRootNode->addChild(mLayerGroup);
     	mLevelRootNode->addChild(mObjectGroup);
@@ -40,6 +41,21 @@ namespace od
 		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
 
         _loadLevel();
+    }
+
+    Level::~Level()
+    {
+    	// despawn all remaining objects
+    	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+    	{
+    		it->second->despawned();
+    	}
+
+    	// TODO: this needs a proper mechanism and a map~ we will be doing this on the fly later
+    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+    	{
+    		mPhysicsManager.removeLayer(*it->get());
+    	}
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them
@@ -211,7 +227,11 @@ namespace od
 			}
 
 			mLayers[i]->buildGeometry(mLayerGroup);
-			mLayers[i]->buildCollisionShape();
+
+			if(mLayers[i]->getCollisionShape() != nullptr)
+			{
+				mPhysicsManager.addLayer(*mLayers[i]);
+			}
     	}
     }
 
@@ -264,7 +284,11 @@ namespace od
     		LevelObjectPtr object(new od::LevelObject(*this));
     		object->loadFromRecord(dr);
 
+    		mLevelObjects[object->getObjectId()] = object;
+
     		mObjectGroup->addChild(object);
+
+    		object->spawned();
     	}
 
     	// disable lighting for objects as models will show up mostly black right now

@@ -21,7 +21,7 @@ namespace odRfl
 		TrackingCamera();
 
 		virtual void probeFields(RflFieldProbe &probe) override;
-		virtual void spawn(od::LevelObject &obj) override;
+		virtual void spawned(od::LevelObject &obj) override;
 
 
 	private:

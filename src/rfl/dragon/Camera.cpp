@@ -31,7 +31,7 @@ namespace odRfl
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
 	}
 
-	void TrackingCamera::spawn(od::LevelObject &obj)
+	void TrackingCamera::spawned(od::LevelObject &obj)
 	{
 	}
 
