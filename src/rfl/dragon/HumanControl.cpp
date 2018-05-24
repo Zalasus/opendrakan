@@ -60,7 +60,7 @@ namespace odRfl
 
 
 
-	HumanControl::HumanControl()
+	HumanControlFields::HumanControlFields()
 	: mRightWeaponChannel(0)
 	, mLeftWeaponChannel(0)
 	, mTorsoChannel(0)
@@ -240,23 +240,14 @@ namespace odRfl
 	, mAttackGrunts({})
 	, mGetThePointSounds({})
 	, mGetThePointSndChance(50)
-	, mYaw(0)
-	, mPrevYaw(0)
-	, mPitch(0)
-	, mForwardSpeed(0)
-	, mRightSpeed(0)
     {
     }
 
-	HumanControl::~HumanControl()
+	HumanControlFields::~HumanControlFields()
 	{
-		if(mUpdateCallback != nullptr && mPlayerObject != nullptr)
-		{
-			mPlayerObject->removeUpdateCallback(mUpdateCallback);
-		}
 	}
 
-    void HumanControl::probeFields(RflFieldProbe &probe)
+    void HumanControlFields::probeFields(RflFieldProbe &probe)
     {
     	PlayerCommon::probeFields(probe);
 
@@ -466,6 +457,26 @@ namespace odRfl
 		   ("Ambient Comments")
 			   (mGetThePointSounds, "Get-the-point Sounds")
 			   (mGetThePointSndChance, "Get the point Snd Chance (0-100)");
+    }
+
+
+
+    HumanControl::HumanControl()
+    : mYaw(0)
+	, mPrevYaw(0)
+	, mPitch(0)
+	, mForwardSpeed(0)
+	, mRightSpeed(0)
+    {
+
+    }
+
+    HumanControl::~HumanControl()
+    {
+    	if(mUpdateCallback != nullptr && mPlayerObject != nullptr)
+		{
+			mPlayerObject->removeUpdateCallback(mUpdateCallback);
+		}
     }
 
     void HumanControl::spawned(od::LevelObject &obj)

@@ -18,31 +18,22 @@
 namespace odRfl
 {
 
-	class HumanControl : public PlayerCommon, public od::Player
+	/**
+	 * Seperate container class for the RFL fields in HumanControl. This exists just so the actual
+	 * RFL class HumanControl is not cluttered with the 179 members this class defines. Keeps logic and RFL stuff seperate.
+	 */
+	class HumanControlFields : public PlayerCommon
     {
     public:
 
-        HumanControl();
-        virtual ~HumanControl();
+		HumanControlFields();
+        virtual ~HumanControlFields();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawned(od::LevelObject &obj) override;
-
-        // implement od::Player
-    	virtual float getYaw() const override { return mYaw; }
-    	virtual void setYaw(float f) override { mYaw = f; }
-    	virtual float getPitch() const override { return mPitch; }
-    	virtual void setPitch(float f) override { mPitch = f; }
-    	virtual void moveForward(float speed) override;
-    	virtual void moveRight(float speed) override;
-    	virtual osg::Vec3f getPosition() override;
-
-    	void update(double simTime, double relTime);
 
 
     protected:
 
-        // 179 members, woo! TODO: maybe put them in an array or something? would need to extend our reflection concept a bit
         RflCharChannel		mRightWeaponChannel;
 		RflCharChannel		mLeftWeaponChannel;
 		RflCharChannel		mTorsoChannel;
@@ -222,20 +213,44 @@ namespace odRfl
 		RflSoundRefArray	mAttackGrunts;
 		RflSoundRefArray	mGetThePointSounds;
 		RflInteger			mGetThePointSndChance;
-
-
-    private:
-
-    	void _updateMotion(double relTime);
-
-    	float mYaw;
-    	float mPitch;
-    	float mPrevYaw;
-    	float mForwardSpeed;
-    	float mRightSpeed;
-    	osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-    	osg::ref_ptr<od::LevelObject> mPlayerObject;
     };
+
+
+
+	class HumanControl : public HumanControlFields, public od::Player
+	{
+	public:
+
+		HumanControl();
+		virtual ~HumanControl();
+
+		virtual void spawned(od::LevelObject &obj) override;
+
+		// implement od::Player
+		virtual float getYaw() const override { return mYaw; }
+		virtual void setYaw(float f) override { mYaw = f; }
+		virtual float getPitch() const override { return mPitch; }
+		virtual void setPitch(float f) override { mPitch = f; }
+		virtual void moveForward(float speed) override;
+		virtual void moveRight(float speed) override;
+		virtual osg::Vec3f getPosition() override;
+
+		void update(double simTime, double relTime);
+
+
+	 private:
+
+		void _updateMotion(double relTime);
+
+		float mYaw;
+		float mPitch;
+		float mPrevYaw;
+		float mForwardSpeed;
+		float mRightSpeed;
+		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
+		osg::ref_ptr<od::LevelObject> mPlayerObject;
+
+	};
 
 }
 
