@@ -360,9 +360,9 @@ Record types
         ref[uint16]                      anim_ids; // database index always 0
         channel[uint16]                  channels;
         
-    [0x0209] ???
+    [0x0209] ??? 
         uint8[6]    ???
-        (these records are consistently 6 bytes long and contained only zeroes in at least one tested model)
+        (These could be related to model rotations. Some models appear incorrectly rotated, and this is always non-zero for those)
         
 
     Sound (0x0301 - 0x0302)
