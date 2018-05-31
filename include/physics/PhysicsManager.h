@@ -36,10 +36,13 @@ namespace od
 	class Layer;
 	class Level;
 	class LevelObject;
+	class CharacterController;
 
 	class PhysicsManager
 	{
 	public:
+
+		friend class CharacterController;
 
 		PhysicsManager(Level &level, osg::Group *levelRoot);
 		~PhysicsManager();
@@ -50,9 +53,9 @@ namespace od
 
 		btRigidBody *addLayer(Layer &l);
 		void removeLayer(Layer &l);
-
 		btRigidBody *addObject(LevelObject &o, float mass);
 		void removeObject(LevelObject &o);
+		void addCharacterController(CharacterController &cc);
 
 
 	private:

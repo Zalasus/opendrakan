@@ -30,6 +30,7 @@ set(SOURCES
         "src/physics/ModelBounds.cpp"
         "src/physics/PhysicsManager.cpp"
         "src/physics/DebugDrawer.cpp"
+        "src/physics/CharacterController.cpp"
         "src/SrscFile.cpp"
         "src/rfl/RflClass.cpp"
         "src/rfl/Rfl.cpp"
