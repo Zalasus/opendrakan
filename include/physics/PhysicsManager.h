@@ -13,6 +13,7 @@
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletDynamics/ConstraintSolver/btConstraintSolver.h>
 #include <BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>
+#include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <osg/Group>
@@ -27,9 +28,10 @@ namespace od
 	{
 		enum Masks
 		{
-			LAYER  = 0x0002,
-			OBJECT = 0x004,
-			ALL    = 0xffff
+			RAYCAST = 0x0001, // do not use. this is just here because bullet reserves bit 0 for raytests
+			LAYER   = 0x0002,
+			OBJECT  = 0x0004,
+			ALL     = 0xffff
 		};
 	};
 
@@ -55,7 +57,6 @@ namespace od
 		void removeLayer(Layer &l);
 		btRigidBody *addObject(LevelObject &o, float mass);
 		void removeObject(LevelObject &o);
-		void addCharacterController(CharacterController &cc);
 
 
 	private:
@@ -69,6 +70,7 @@ namespace od
         std::unique_ptr<btCollisionConfiguration> mCollisionConfiguration;
         std::unique_ptr<btCollisionDispatcher> mDispatcher; // depends on mCollisionConfiguration. init after that
         std::unique_ptr<btConstraintSolver> mConstraintSolver;
+        std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btDynamicsWorld> mDynamicsWorld;
 
         std::unique_ptr<DebugDrawer> mDebugDrawer;

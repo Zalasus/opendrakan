@@ -84,6 +84,10 @@ namespace od
 		mDebugDrawer.reset(new DebugDrawer(mLevelRoot, mDynamicsWorld.get()));
 		mDynamicsWorld->setDebugDrawer(mDebugDrawer.get());
 		//mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+
+		// so we get ghost object interaction
+		mGhostPairCallback.reset(new btGhostPairCallback);
+		mDynamicsWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
 	}
 
 	PhysicsManager::~PhysicsManager()
