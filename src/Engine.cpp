@@ -52,10 +52,6 @@ namespace od
 		mScreenshotHandler->setKeyEventTakeScreenShot(osgGA::GUIEventAdapter::KEY_F12);
 		mViewer->addEventHandler(mScreenshotHandler);
 
-		// since we want to use the programmable pipeline, set things up so we can use modern GLSL
-		mViewer->getCamera()->getGraphicsContext()->getState()->setUseModelViewAndProjectionUniforms(true);
-		mViewer->getCamera()->getGraphicsContext()->getState()->setUseVertexAttributeAliasing(true);
-
 		// attach our default shaders to root node so we don't use the fixed function pipeline anymore
 		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager.makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
 		rootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
