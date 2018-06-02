@@ -5,7 +5,11 @@ cmake_minimum_required(VERSION 2.6.3)
 project(OpenDrakan CXX)
 
 set (CMAKE_CXX_STANDARD 14)
-set (CMAKE_BUILD_TYPE Debug)
+
+if(NOT CMAKE_BUILD_TYPE)
+    message("No CMAKE_BUILD_TYPE specified. Defaulting to Debug")
+    set(CMAKE_BUILD_TYPE Debug)
+endif()
 
 # project sources
 include_directories("include")
