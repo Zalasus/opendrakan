@@ -89,7 +89,7 @@ namespace od
 			_playerMoveRight(0);
 			return true;
 
-		case osgGA::GUIEventAdapter::KEY_F2:
+		case osgGA::GUIEventAdapter::KEY_F3:
 			mEngine.getLevel().getPhysicsManager().toggleDebugDraw();
 			return true;
 
