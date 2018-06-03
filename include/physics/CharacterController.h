@@ -52,6 +52,8 @@ namespace od
 		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
 		LevelObject &mCharObject;
+		btScalar mRadius;
+		btScalar mHeight;
 		PhysicsManager &mPhysicsManager;
 		std::unique_ptr<btCapsuleShape> mCharShape;
 		std::unique_ptr<btPairCachingGhostObject> mGhostObject;
@@ -62,6 +64,7 @@ namespace od
 		btVector3 mRelativeLowPoint;
 		btVector3 mRelativeHighPoint;
 		btVector3 mVelocity;
+		btVector3 mDesiredDirection;
 		btVector3 mDesiredPosition;
 
 		btManifoldArray mManifoldArray;

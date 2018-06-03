@@ -78,6 +78,8 @@ namespace od
 
 	CharacterController::CharacterController(LevelObject &charObject, float radius, float height)
 	: mCharObject(charObject)
+	, mRadius(radius)
+	, mHeight(height)
 	, mPhysicsManager(charObject.getLevel().getPhysicsManager())
 	, mCharacterState(CharacterState::Ok)
 	, mStepHeight(0.07)
@@ -100,15 +102,34 @@ namespace od
 
     void CharacterController::moveRelative(const osg::Vec3f &v)
     {
-        osg::Vec3f moveTarget = mCharObject.getRotation()*v + mCharObject.getPosition();
+        osg::Vec3f moveDirection = mCharObject.getRotation()*v;
+        osg::Vec3f moveTarget = moveDirection + mCharObject.getPosition();
 
+        mDesiredDirection = BulletAdapter::toBullet(moveDirection/moveDirection.length());
         mDesiredPosition = BulletAdapter::toBullet(moveTarget);
     }
 
 	void CharacterController::update(double dt)
 	{
 		// simulate slide, ignoring collisions
-		mCurrentPosition = mDesiredPosition;
+	    btTransform from;
+	    from.setIdentity();
+	    from.setOrigin(mCurrentPosition);
+
+	    btTransform to;
+	    to.setIdentity();
+	    to.setOrigin(mDesiredPosition);
+
+        ClosestNotMeConvexResultCallback callback(mGhostObject.get());
+        mGhostObject->convexSweepTest(mCharShape.get(), from, to, callback, mPhysicsManager.mDynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
+        if(callback.hasHit() && _needsCollision(callback.m_hitCollisionObject, mGhostObject.get()))
+        {
+            //mCurrentPosition += (callback.m_closestHitFraction - mRadius) * mDesiredDirection;
+
+        }else
+        {
+            mCurrentPosition = mDesiredPosition;
+        }
 
 		_step(true); // step up
 		bool onGround = _step(false); // step down
