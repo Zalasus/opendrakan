@@ -16,8 +16,17 @@ namespace od
 	InputManager::InputManager(Engine &engine, osgViewer::Viewer *viewer)
 	: mEngine(engine)
 	, mViewer(viewer)
+	, mMouseWarped(false)
 	{
 		mViewer->addEventHandler(this);
+
+		// hide cursor
+		osgViewer::Viewer::Windows windows;
+		viewer->getWindows(windows);
+		for(auto it = windows.begin(); it != windows.end(); ++it)
+		{
+			(*it)->setCursor(osgViewer::GraphicsWindow::NoCursor);
+		}
 	}
 
 	bool InputManager::handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa, osg::Object *obj, osg::NodeVisitor *nv)
@@ -102,6 +111,12 @@ namespace od
 
 	bool InputManager::_mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
 	{
+		if(mMouseWarped)
+		{
+			mMouseWarped = false;
+			return true;
+		}
+
 		if(mEngine.getPlayer() == nullptr)
 		{
 			return false;
@@ -115,6 +130,18 @@ namespace od
 
 		mEngine.getPlayer()->setPitch(pitch);
 		mEngine.getPlayer()->setYaw(yaw);
+
+		// wrap cursor when hitting left or right border
+		float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel
+		if(x <= -1 + epsilon || x >= 1 - epsilon)
+		{
+			float newX = (x <= -1 + epsilon) ? (1 - 2*epsilon) : (-1 + 2*epsilon);
+
+			float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
+
+			aa.requestWarpPointer(denormX, ea.getY());
+			mMouseWarped = true;
+		}
 
 		return true;
 	}

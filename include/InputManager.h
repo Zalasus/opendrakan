@@ -36,6 +36,7 @@ namespace od
 
 		Engine &mEngine;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
+		bool mMouseWarped; // flag to prevent handling mouseMove events caused by warping cursor
 	};
 
 }
