@@ -24,6 +24,7 @@ namespace od
 {
 
 	class Engine;
+	class TransformAccumulator;
 
 	/**
 	 * Extension of AnimationPlayer allowing to load animations from riot database assets and distributing their keyframes
@@ -35,11 +36,12 @@ namespace od
 	public:
 
 		/**
+		 * @param[in]   engine             Engine instance. Required for loading rigging shader.
 		 * @param[in]   objectRoot         Parent node of the geometry. Rigging shader is attached to this.
 		 * @param[in]   skeletonRoot       Parent group containing bone tree. The bone upload callback is attached to this.
-		 * @param[in]   accumulatingXform  Transform accumulating relative movement of root node. May be nullptr.
+		 * @param[in]   accumulator        TransformAccumulator to receive relative movement of root node. May be nullptr if none needed.
 		 */
-		SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, osg::PositionAttitudeTransform *accumulatingXform); // we need an engine instance to load the rigging shader
+		SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, TransformAccumulator *accumulator);
 		~SkeletonAnimationPlayer();
 
 		inline osg::Uniform *getBoneMatrixArrayUniform() { return mBoneMatrixArray.get(); }
@@ -55,7 +57,7 @@ namespace od
 		Engine &mEngine;
 		osg::ref_ptr<osg::Node> mObjectRoot;
 		osg::ref_ptr<osg::Group> mSkeletonRoot;
-		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
+		TransformAccumulator *mAccumulator;
 		osg::ref_ptr<osg::Uniform> mBoneMatrixArray;
 		std::vector<osg::ref_ptr<Animator>> mAnimators;
 		osg::ref_ptr<osg::Program> mRiggingProgram;

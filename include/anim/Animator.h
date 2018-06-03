@@ -17,6 +17,8 @@
 
 namespace od
 {
+    class TransformAccumulator;
+
 	/**
 	 * Class managing interpolated animation of a single osg::MatrixTransform.
 	 */
@@ -32,7 +34,7 @@ namespace od
 		~Animator();
 
 		inline osg::MatrixTransform *getNode() { return mNode; }
-		inline void setAccumulatingXform(osg::PositionAttitudeTransform *xform) { mAccumulatingXform = xform; }
+		inline void setAccumulator(TransformAccumulator *accumulator) { mAccumulator = accumulator; }
 		inline void setAccumulationFactors(osg::Vec3 v) { mAccumulationFactors = v; }
 		inline bool isPlaying() const { return mPlaying; }
 
@@ -74,7 +76,7 @@ namespace od
 		osg::Quat  mLastInterpolatedRotation;
 		osg::Vec3f mLastInterpolatedScale;
 
-		osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
+		TransformAccumulator *mAccumulator;
 		osg::Vec3 mAccumulationFactors;
 	};
 

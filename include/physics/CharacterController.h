@@ -15,6 +15,7 @@
 #include <osg/Vec3f>
 
 #include "physics/BulletAdapter.h"
+#include "anim/TransformAccumulator.h"
 
 namespace od
 {
@@ -29,7 +30,7 @@ namespace od
 		Falling
 	};
 
-	class CharacterController
+	class CharacterController : public od::TransformAccumulator
 	{
 	public:
 
@@ -37,6 +38,9 @@ namespace od
 
 		inline CharacterState getCharacterState() const { return mCharacterState; }
 		inline void setVelocity(const osg::Vec3f &v) { mVelocity = BulletAdapter::toBullet(v); }
+
+		// implement od::TransformAccumulator
+        virtual void moveRelative(const osg::Vec3f &v);
 
 		void update(double dt);
 
@@ -58,6 +62,7 @@ namespace od
 		btVector3 mRelativeLowPoint;
 		btVector3 mRelativeHighPoint;
 		btVector3 mVelocity;
+		btVector3 mDesiredPosition;
 
 		btManifoldArray mManifoldArray;
 

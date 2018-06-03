@@ -10,6 +10,7 @@
 #include <cmath>
 #include <osg/Matrix>
 
+#include "anim/TransformAccumulator.h"
 #include "Logger.h"
 #include "Exception.h"
 
@@ -56,6 +57,7 @@ namespace od
 	, mLeftTime(0.0)
 	, mRightTime(0.0)
 	, mLastInterpolatedScale(1,1,1)
+	, mAccumulator(nullptr)
 	, mAccumulationFactors(1,1,1)
 	{
 		mNode->addUpdateCallback(mUpdateCallback);
@@ -87,7 +89,7 @@ namespace od
 		mRightTime = mAnimBegin->time;
 		mStartDelay = startDelay;
 
-		if(mAccumulatingXform != nullptr)
+		if(mAccumulator != nullptr)
 		{
 			mLastInterpolatedTranslation = osg::Vec3(0,0,0);
 			mLastInterpolatedRotation = osg::Quat(0, osg::Vec3(0,1,0));
@@ -192,12 +194,11 @@ namespace od
 
 
 
-		if(mAccumulatingXform != nullptr)
+		if(mAccumulator != nullptr)
 		{
 			osg::Vec3 relTranslation = iTrans - mLastInterpolatedTranslation;
-			relTranslation = mAccumulatingXform->getAttitude() * relTranslation;
 			relTranslation = osg::componentMultiply(relTranslation, mAccumulationFactors);
-			mAccumulatingXform->setPosition(relTranslation + mAccumulatingXform->getPosition());
+			mAccumulator->moveRelative(relTranslation);
 
 			osg::Matrix iXform = mOriginalXform;
 			iXform.preMultScale(iScale);

@@ -501,7 +501,7 @@ namespace odRfl
     	{
     		mCharacterController.reset(new od::CharacterController(obj, 0.05, 0.3));
 
-			mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), obj.getPositionAttitudeTransform());
+			mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), mCharacterController.get());
     	}
 
     	// prefetch animations

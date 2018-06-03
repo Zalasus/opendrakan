@@ -89,19 +89,26 @@ namespace od
 		mGhostObject->setCollisionShape(mCharShape.get());
 		mGhostObject->setCollisionFlags(mGhostObject->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_CHARACTER_OBJECT);
 		mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(charObject.getPosition(), charObject.getRotation()));
-		mCurrentPosition = BulletAdapter::toBullet(mCharObject.getPosition());
 		mPhysicsManager.mDynamicsWorld->addCollisionObject(mGhostObject.get(), CollisionGroups::OBJECT, CollisionGroups::ALL);
+
+		mCurrentPosition = BulletAdapter::toBullet(mCharObject.getPosition());
+        mDesiredPosition = mCurrentPosition;
 
 		mRelativeLowPoint = mUp * -(radius+height*0.5);
 		mRelativeHighPoint = mUp * (radius+height*0.5);
 	}
 
+    void CharacterController::moveRelative(const osg::Vec3f &v)
+    {
+        osg::Vec3f moveTarget = mCharObject.getRotation()*v + mCharObject.getPosition();
+
+        mDesiredPosition = BulletAdapter::toBullet(moveTarget);
+    }
+
 	void CharacterController::update(double dt)
 	{
-		btVector3 targetPos = BulletAdapter::toBullet(mCharObject.getPosition());
-
 		// simulate slide, ignoring collisions
-		mCurrentPosition = targetPos;
+		mCurrentPosition = mDesiredPosition;
 
 		_step(true); // step up
 		bool onGround = _step(false); // step down

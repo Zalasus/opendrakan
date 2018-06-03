@@ -21,10 +21,10 @@ namespace od
 	{
 	public:
 
-		CreateAnimatorsVisitor(std::vector<osg::ref_ptr<Animator>> &animatorList, osg::PositionAttitudeTransform *accumXform)
+		CreateAnimatorsVisitor(std::vector<osg::ref_ptr<Animator>> &animatorList, TransformAccumulator *accumulator)
         : osg::NodeVisitor(TRAVERSE_ALL_CHILDREN)
 		, mAnimatorList(animatorList)
-		, mAccumulatingXform(accumXform)
+		, mAccumulator(accumulator)
         {
         }
 
@@ -36,10 +36,10 @@ namespace od
 				osg::ref_ptr<Animator> animator(new Animator(bn));
 				mAnimatorList.push_back(animator);
 
-				if(mAccumulatingXform != nullptr && bn->isRoot())
+				if(mAccumulator != nullptr && bn->isRoot())
 				{
-					animator->setAccumulatingXform(mAccumulatingXform);
-					animator->setAccumulationFactors(osg::Vec3(1,0,1));
+					animator->setAccumulator(mAccumulator);
+					animator->setAccumulationFactors(osg::Vec3(1,0,1)); // FIXME: provide parameters for this (or remove once physics make sure we don't accumulate height error)
 				}
         	}
 
@@ -50,7 +50,7 @@ namespace od
 	private:
 
         std::vector<osg::ref_ptr<Animator>> &mAnimatorList;
-        osg::ref_ptr<osg::PositionAttitudeTransform> mAccumulatingXform;
+        TransformAccumulator *mAccumulator;
 	};
 
 
@@ -123,16 +123,16 @@ namespace od
 
 
 
-	SkeletonAnimationPlayer::SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, osg::PositionAttitudeTransform *accumulatingXform)
+	SkeletonAnimationPlayer::SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, TransformAccumulator *accumulator)
 	: mEngine(engine)
 	, mObjectRoot(objectRoot)
 	, mSkeletonRoot(skeletonRoot)
-	, mAccumulatingXform(accumulatingXform)
+	, mAccumulator(accumulator)
 	, mBoneMatrixArray(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", OD_MAX_BONE_COUNT))
 	, mUploadCallback(new BoneUploadCallback(mBoneMatrixArray))
 	{
 		// create one animator for each MatrixTransform child of group
-		CreateAnimatorsVisitor cav(mAnimators, mAccumulatingXform);
+		CreateAnimatorsVisitor cav(mAnimators, mAccumulator);
 		mSkeletonRoot->accept(cav);
 
 		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
