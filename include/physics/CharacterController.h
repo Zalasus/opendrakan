@@ -14,6 +14,8 @@
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 #include <osg/Vec3f>
 
+#include "physics/BulletAdapter.h"
+
 namespace od
 {
 
@@ -33,17 +35,15 @@ namespace od
 
 		CharacterController(LevelObject &charObject, float radius, float height);
 
-		bool canWalkInDirection(const osg::Vec3f &direction);
-		bool canJump();
 		inline CharacterState getCharacterState() const { return mCharacterState; }
+		inline void setVelocity(const osg::Vec3f &v) { mVelocity = BulletAdapter::toBullet(v); }
 
 		void update(double dt);
 
 
 	private:
 
-		bool _stepUp();
-		bool _stepDown(); // returns true if falling
+		bool _step(bool up); // returns true if object was hit during stepping
 		bool _hasInvalidPenetrations();
 		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
@@ -55,8 +55,8 @@ namespace od
 		CharacterState mCharacterState;
 		btScalar mStepHeight;
 		btVector3 mUp;
-		btVector3 mGravity;
 		btVector3 mRelativeLowPoint;
+		btVector3 mRelativeHighPoint;
 		btVector3 mVelocity;
 
 		btManifoldArray mManifoldArray;

@@ -10,7 +10,6 @@
 #include "LevelObject.h"
 #include "Level.h"
 #include "physics/PhysicsManager.h"
-#include "physics/BulletAdapter.h"
 
 namespace od
 {
@@ -24,6 +23,8 @@ namespace od
 		: btCollisionWorld::ClosestRayResultCallback(from, to)
 		, mMe(me)
 		{
+			m_collisionFilterGroup = mMe->getBroadphaseHandle()->m_collisionFilterGroup;
+			m_collisionFilterMask = mMe->getBroadphaseHandle()->m_collisionFilterMask;
 		}
 
 		virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
@@ -49,6 +50,8 @@ namespace od
 		: btCollisionWorld::ClosestConvexResultCallback(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0))
 		, mMe(me)
 		{
+			m_collisionFilterGroup = mMe->getBroadphaseHandle()->m_collisionFilterGroup;
+			m_collisionFilterMask = mMe->getBroadphaseHandle()->m_collisionFilterMask;
 		}
 
 		virtual btScalar addSingleResult(btCollisionWorld::LocalConvexResult& convexResult, bool normalInWorldSpace)
@@ -79,81 +82,52 @@ namespace od
 	, mCharacterState(CharacterState::Ok)
 	, mStepHeight(0.07)
 	, mUp(0, 1, 0)
-	, mGravity(0, -0.1, 0)
+	, mVelocity(0, -1, 0)
 	{
 		mCharShape.reset(new btCapsuleShape(radius, height));
 		mGhostObject.reset(new btPairCachingGhostObject());
 		mGhostObject->setCollisionShape(mCharShape.get());
 		mGhostObject->setCollisionFlags(mGhostObject->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_CHARACTER_OBJECT);
-		mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(charObject.getPosition() + osg::Vec3(0, 10, 0), charObject.getRotation()));
+		mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(charObject.getPosition(), charObject.getRotation()));
+		mCurrentPosition = BulletAdapter::toBullet(mCharObject.getPosition());
 		mPhysicsManager.mDynamicsWorld->addCollisionObject(mGhostObject.get(), CollisionGroups::OBJECT, CollisionGroups::ALL);
 
 		mRelativeLowPoint = mUp * -(radius+height*0.5);
+		mRelativeHighPoint = mUp * (radius+height*0.5);
 	}
 
 	void CharacterController::update(double dt)
 	{
-		mCurrentPosition = BulletAdapter::toBullet(mCharObject.getPosition());
+		btVector3 targetPos = BulletAdapter::toBullet(mCharObject.getPosition());
+
+		// simulate slide, ignoring collisions
+		mCurrentPosition = targetPos;
+
+		_step(true); // step up
+		bool onGround = _step(false); // step down
+
+		//bool penetration = _hasInvalidPenetrations();
+		//mCharacterState = penetration ? CharacterState::Penetrated_Object : CharacterState::Ok;
+
 		mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
-
-		//mCurrentPosition += mVelocity;
-
-		_stepUp();
-		bool falling = _stepDown();
-		if(falling)
-		{
-			if(mVelocity.length() < 1)
-			{
-				mVelocity += mGravity * dt;
-			}
-
-		}else
-		{
-			mVelocity.setZero();
-		}
-
-		bool penetration = _hasInvalidPenetrations();
-		mCharacterState = penetration ? CharacterState::Penetrated_Object : CharacterState::Ok;
-
 		mCharObject.setPosition(BulletAdapter::toOsg(mCurrentPosition));
 	}
 
-	bool CharacterController::_stepUp()
+	bool CharacterController::_step(bool up)
 	{
-		btVector3 prevPos = mCurrentPosition;
-
-		mCurrentPosition += mUp*mStepHeight;
-		mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
-
-		if(_hasInvalidPenetrations())
-		{
-			// undo up-stepping
-			mCurrentPosition = prevPos;
-			mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
-			return false;
-
-		}else
-		{
-			return true;
-		}
-	}
-
-	bool CharacterController::_stepDown()
-	{
-		btVector3 rayStart = mCurrentPosition + mRelativeLowPoint;
-		btVector3 rayEnd = rayStart - mUp*mStepHeight;
+		btVector3 rayStart = mCurrentPosition + (up ? mRelativeHighPoint : mRelativeLowPoint);
+		btVector3 rayEnd = rayStart + mUp*(up ? mStepHeight : -mStepHeight);
 		ClosestNotMeRayResultCallback callback(rayStart, rayEnd, mGhostObject.get());
 		mPhysicsManager.mDynamicsWorld->rayTest(rayStart, rayEnd, callback);
-		if(callback.hasHit() && callback.m_collisionObject != nullptr && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
+		if(callback.hasHit() && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
 		{
-			mCurrentPosition -= mUp*callback.m_closestHitFraction*mStepHeight;
-			return false;
+			mCurrentPosition += mUp*callback.m_closestHitFraction*mStepHeight*(up ? 1 : -1);
+			return true;
 
 		}else
 		{
-			// falling
-			mCurrentPosition -= mUp*mStepHeight;
-			return true;
+			mCurrentPosition += mUp*mStepHeight*(up ? 1 : -1);
+			return false;
 		}
 	}
 
