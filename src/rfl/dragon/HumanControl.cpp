@@ -13,6 +13,7 @@
 #include "Player.h"
 #include "Engine.h"
 #include "Camera.h"
+#include "anim/SkeletonAnimationPlayer.h"
 
 namespace odRfl
 {
@@ -492,7 +493,20 @@ namespace odRfl
     	mUpdateCallback = new PlayerUpdateCallback(*this);
     	obj.addUpdateCallback(mUpdateCallback);
 
-    	mCharacterController.reset(new od::CharacterController(obj, 0.05, 0.3));
+    	if(obj.getSkeletonRoot() == nullptr)
+    	{
+    		Logger::error() << "HumanControl class used on object without skeleton. Prepare for chaos";
+
+    	}else
+    	{
+    		mCharacterController.reset(new od::CharacterController(obj, 0.05, 0.3));
+
+			mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), obj.getPositionAttitudeTransform());
+    	}
+
+    	// prefetch animations
+    	mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
+    	mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
     }
 
     void HumanControl::moveForward(float speed)
@@ -526,25 +540,19 @@ namespace odRfl
 
     void HumanControl::_updateMotion(double relTime)
     {
-    	od::SkeletonAnimationPlayer *ap = mPlayerObject->getSkeletonAnimationPlayer();
-        if(ap == nullptr)
-        {
-        	return;
-        }
-
         osg::Quat rot = osg::Quat(mYaw, osg::Vec3(0, 1, 0));
         mPlayerObject->setRotation(rot);
         mPrevYaw = mYaw;
 
         if(mCharacterController->getCharacterState() == od::CharacterState::Penetrated_Object)
         {
-        	if(ap->getCurrentAnimation() == mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
+        	if(mAnimationPlayer->getCurrentAnimation() == mReadyAnim.getAsset())
 			{
         		return;
 			}
 
-        	ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.15);
-			ap->play(true);
+        	mAnimationPlayer->setAnimation(mReadyAnim.getAsset(), 0.15);
+			mAnimationPlayer->play(true);
 
         }else
         {
@@ -552,15 +560,15 @@ namespace odRfl
 			/*float yawSpeed = (mYaw - mPrevYaw)/relTime;
 			*/
 
-			if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
+			if(mForwardSpeed > 0 && mAnimationPlayer->getCurrentAnimation() != mRunAnim.getAsset())
 			{
-				ap->setAnimation(mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.01);
-				ap->play(true);
+				mAnimationPlayer->setAnimation(mRunAnim.getAsset(), 0.01);
+				mAnimationPlayer->play(true);
 
-			}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
+			}else if(mForwardSpeed == 0 && mAnimationPlayer->getCurrentAnimation() != mReadyAnim.getAsset())
 			{
-				ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.15);
-				ap->play(true);
+				mAnimationPlayer->setAnimation(mReadyAnim.getAsset(), 0.15);
+				mAnimationPlayer->play(true);
 			}
         }
     }

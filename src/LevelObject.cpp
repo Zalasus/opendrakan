@@ -107,13 +107,12 @@ namespace od
 			mTransform->addChild(mModel);
 			this->addChild(mTransform);
 
+			// if model defines a skeleton, create an instance of that skeleton for this object
 			if(mClass->getModel()->getSkeletonBuilder() != nullptr)
 			{
 				mSkeletonRoot = new osg::Group;
 				mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
 				mTransform->addChild(mSkeletonRoot);
-
-				mSkeletonAnimation = new SkeletonAnimationPlayer(mLevel.getEngine(), this, mSkeletonRoot, mTransform);
 			}
         }
     }

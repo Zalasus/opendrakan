@@ -16,6 +16,13 @@
 #include "physics/CharacterController.h"
 #include "Player.h"
 
+namespace od
+{
+
+	class SkeletonAnimationPlayer;
+
+}
+
 namespace odRfl
 {
 
@@ -250,6 +257,7 @@ namespace odRfl
 		float mRightSpeed;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 		osg::ref_ptr<od::LevelObject> mPlayerObject;
+		osg::ref_ptr<od::SkeletonAnimationPlayer> mAnimationPlayer;
 		std::unique_ptr<od::CharacterController> mCharacterController;
 
 	};

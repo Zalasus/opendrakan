@@ -40,8 +40,9 @@ namespace od
         inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
         inline void setPosition(osg::Vec3f v) { mTransform->setPosition(v); }
         inline void setRotation(osg::Quat q) { mTransform->setAttitude(q); }
-        inline SkeletonAnimationPlayer *getSkeletonAnimationPlayer() { return mSkeletonAnimation; }
         inline Model *getModel() { return mModel; }
+        inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
+        inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
 
         void loadFromRecord(DataReader dr);
         void spawned();
@@ -73,7 +74,6 @@ namespace od
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
-        osg::ref_ptr<SkeletonAnimationPlayer> mSkeletonAnimation;
         bool mSpawned;
     };
 
