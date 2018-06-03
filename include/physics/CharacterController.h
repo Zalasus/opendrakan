@@ -20,6 +20,13 @@ namespace od
 	class LevelObject;
 	class PhysicsManager;
 
+	enum class CharacterState
+	{
+		Ok,
+		Penetrated_Object,
+		Falling
+	};
+
 	class CharacterController
 	{
 	public:
@@ -28,17 +35,31 @@ namespace od
 
 		bool canWalkInDirection(const osg::Vec3f &direction);
 		bool canJump();
+		inline CharacterState getCharacterState() const { return mCharacterState; }
 
-		void update();
+		void update(double dt);
 
 
 	private:
+
+		bool _stepUp();
+		bool _stepDown(); // returns true if falling
+		bool _hasInvalidPenetrations();
+		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
 		LevelObject &mCharObject;
 		PhysicsManager &mPhysicsManager;
 		std::unique_ptr<btCapsuleShape> mCharShape;
 		std::unique_ptr<btPairCachingGhostObject> mGhostObject;
-		std::unique_ptr<btKinematicCharacterController> mBtController;
+		btVector3 mCurrentPosition;
+		CharacterState mCharacterState;
+		btScalar mStepHeight;
+		btVector3 mUp;
+		btVector3 mGravity;
+		btVector3 mRelativeLowPoint;
+		btVector3 mVelocity;
+
+		btManifoldArray mManifoldArray;
 
 	};
 

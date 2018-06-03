@@ -491,6 +491,8 @@ namespace odRfl
 
     	mUpdateCallback = new PlayerUpdateCallback(*this);
     	obj.addUpdateCallback(mUpdateCallback);
+
+    	mCharacterController.reset(new od::CharacterController(obj, 0.05, 0.3));
     }
 
     void HumanControl::moveForward(float speed)
@@ -515,6 +517,8 @@ namespace odRfl
 
     void HumanControl::update(double simTime, double relTime)
     {
+    	mCharacterController->update(relTime);
+
     	_updateMotion(relTime);
 
     	mPlayerObject->getLevel().getEngine().getCamera().update();
@@ -528,24 +532,37 @@ namespace odRfl
         	return;
         }
 
-        osg::Quat rot = mPlayerObject->getRotation();
-        rot *= osg::Quat(mYaw - mPrevYaw, osg::Vec3(0,1,0));
+        osg::Quat rot = osg::Quat(mYaw, osg::Vec3(0, 1, 0));
         mPlayerObject->setRotation(rot);
         mPrevYaw = mYaw;
 
-        /*float yawSpeed = (mYaw - mPrevYaw)/relTime;
-        */
+        if(mCharacterController->getCharacterState() == od::CharacterState::Penetrated_Object)
+        {
+        	if(ap->getCurrentAnimation() == mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
+			{
+        		return;
+			}
 
-		if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
-		{
-			ap->setAnimation(mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.01);
+        	ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.15);
 			ap->play(true);
 
-		}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
-		{
-			ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.15);
-			ap->play(true);
-		}
+        }else
+        {
+
+			/*float yawSpeed = (mYaw - mPrevYaw)/relTime;
+			*/
+
+			if(mForwardSpeed > 0 && ap->getCurrentAnimation() != mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
+			{
+				ap->setAnimation(mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.01);
+				ap->play(true);
+
+			}else if(mForwardSpeed == 0 && ap->getCurrentAnimation() != mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()))
+			{
+				ap->setAnimation(mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase()), 0.15);
+				ap->play(true);
+			}
+        }
     }
 
     OD_REGISTER_RFL_CLASS(0x0009, "Human Control", HumanControl);

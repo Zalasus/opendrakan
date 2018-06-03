@@ -13,6 +13,7 @@
 #include <osg/NodeCallback>
 
 #include "db/Animation.h"
+#include "physics/CharacterController.h"
 #include "Player.h"
 
 namespace odRfl
@@ -249,6 +250,7 @@ namespace odRfl
 		float mRightSpeed;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 		osg::ref_ptr<od::LevelObject> mPlayerObject;
+		std::unique_ptr<od::CharacterController> mCharacterController;
 
 	};
 
