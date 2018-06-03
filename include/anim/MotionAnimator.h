@@ -15,6 +15,11 @@ namespace od
 
 	/**
 	 * Class for animating a single PositionAttitudeTransform with velocity and acceleration vectors.
+	 *
+	 * @deprecated This is completely unused and will probably stay that way. Motion is either animated by
+	 * keyframes or via the physics system, so there's really no apparent reason for this class to exist.
+	 * Even particles can be implemented better by using osg's particle system.
+	 * This class will probably get removed soon.
 	 */
 	class MotionAnimator : public osg::Referenced
 	{

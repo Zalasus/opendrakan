@@ -16,7 +16,6 @@
 
 #include "db/Class.h"
 #include "anim/SkeletonAnimationPlayer.h"
-#include "anim/MotionAnimator.h"
 
 namespace od
 {
@@ -45,7 +44,6 @@ namespace od
         inline Model *getModel() { return mModel; }
 
         void loadFromRecord(DataReader dr);
-        MotionAnimator *getOrCreateMotionAnim();
         void spawned();
         void despawned();
 
@@ -76,7 +74,6 @@ namespace od
         osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         osg::ref_ptr<SkeletonAnimationPlayer> mSkeletonAnimation;
-        osg::ref_ptr<MotionAnimator> mMotionAnimator;
         bool mSpawned;
     };
 

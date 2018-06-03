@@ -118,16 +118,6 @@ namespace od
         }
     }
 
-    MotionAnimator *LevelObject::getOrCreateMotionAnim()
-    {
-    	if(mMotionAnimator == nullptr)
-    	{
-    		mMotionAnimator = new MotionAnimator(mTransform);
-    	}
-
-    	return mMotionAnimator;
-    }
-
     void LevelObject::spawned()
     {
     	if(mRflClassInstance != nullptr)
