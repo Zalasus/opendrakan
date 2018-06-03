@@ -123,6 +123,59 @@ namespace od
 		return prevState;
 	}
 
+	size_t PhysicsManager::raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results)
+	{
+	    results.clear();
+
+	    btVector3 bStart = BulletAdapter::toBullet(start);
+	    btVector3 bEnd =  BulletAdapter::toBullet(end);
+	    btCollisionWorld::AllHitsRayResultCallback callback(bStart, bEnd);
+	    mDynamicsWorld->rayTest(bStart, bEnd, callback);
+
+	    if(!callback.hasHit())
+	    {
+	        return 0;
+	    }
+
+	    size_t hitObjectCount = callback.m_collisionObjects.size();
+	    results.reserve(hitObjectCount);
+	    for(size_t i = 0; i < hitObjectCount; ++i)
+	    {
+	        const btCollisionObject *hitObject = callback.m_collisionObjects[i];
+
+	        RaycastResult result;
+	        result.hitBulletObject = hitObject;
+	        result.hitPoint = BulletAdapter::toOsg(callback.m_hitPointWorld[i]);
+	        result.hitNormal = BulletAdapter::toOsg(callback.m_hitNormalWorld[i]);
+
+	        // determine hit object
+	        result.hitLayer = nullptr;
+	        result.hitLevelObject = nullptr;
+	        if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::LAYER)
+	        {
+	            auto it = mLayerMap.find(hitObject->getUserIndex());
+	            if(it != mLayerMap.end())
+	            {
+	                result.hitLayer = it->second.first;
+	            }
+
+	        }
+
+	        if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::OBJECT)
+	        {
+	            auto it = mLevelObjectMap.find(hitObject->getUserIndex());
+                if(it != mLevelObjectMap.end())
+                {
+                    result.hitLevelObject = it->second.first;
+                }
+	        }
+
+	        results.push_back(result);
+	    }
+
+	    return hitObjectCount;
+	}
+
 	btRigidBody *PhysicsManager::addLayer(Layer &l)
 	{
 		btCollisionShape *cs = l.getCollisionShape();
@@ -135,9 +188,14 @@ namespace od
 		info.m_startWorldTransform.setOrigin(btVector3(l.getOriginX(), l.getWorldHeightLu(), l.getOriginZ()));
 		info.m_friction = 0.8;
 
-		std::unique_ptr<btRigidBody> body(new btRigidBody(info));
-		btRigidBody *bodyPtr = body.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
-		mLayerMap[l.getId()] = std::move(body);
+		LayerBodyPair layerBodyPair;
+		layerBodyPair.first = &l;
+		layerBodyPair.second.reset(new btRigidBody(info));
+
+		btRigidBody *bodyPtr = layerBodyPair.second.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
+		bodyPtr->setUserIndex(l.getId());
+
+		mLayerMap[l.getId()] = std::move(layerBodyPair);
 
 		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::LAYER, CollisionGroups::OBJECT);
 
@@ -149,7 +207,7 @@ namespace od
 		auto it = mLayerMap.find(l.getId());
 		if(it != mLayerMap.end())
 		{
-			mDynamicsWorld->removeRigidBody(it->second.get());
+			mDynamicsWorld->removeRigidBody(it->second.second.get());
 
 			mLayerMap.erase(it);
 		}
@@ -165,9 +223,13 @@ namespace od
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
 		o.getModel()->getModelBounds()->getCollisionShape()->calculateLocalInertia(mass, info.m_localInertia);
 
-		std::unique_ptr<btRigidBody> body(new btRigidBody(info));
-		btRigidBody *bodyPtr = body.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
-		mLevelObjectMap[o.getObjectId()] = std::move(body);
+		ObjectBodyPair objectBodyPair;
+		objectBodyPair.second.reset(new btRigidBody(info));
+
+		btRigidBody *bodyPtr = objectBodyPair.second.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
+		bodyPtr->setUserIndex(o.getObjectId());
+
+		mLevelObjectMap[o.getObjectId()] = std::move(objectBodyPair);
 
 		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::OBJECT, CollisionGroups::ALL);
 
@@ -179,7 +241,7 @@ namespace od
 		auto it = mLevelObjectMap.find(o.getObjectId());
 		if(it != mLevelObjectMap.end())
 		{
-			mDynamicsWorld->removeRigidBody(it->second.get());
+			mDynamicsWorld->removeRigidBody(it->second.second.get());
 
 			mLevelObjectMap.erase(it);
 		}

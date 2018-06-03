@@ -40,6 +40,22 @@ namespace od
 	class LevelObject;
 	class CharacterController;
 
+	struct RaycastResult
+    {
+        const btCollisionObject *hitBulletObject;
+
+        osg::Vec3f hitPoint;
+        osg::Vec3f hitNormal;
+
+        union
+        {
+            Layer *hitLayer;
+            LevelObject *hitLevelObject;
+        };
+    };
+
+	typedef std::vector<RaycastResult> RaycastResultArray;
+
 	class PhysicsManager
 	{
 	public:
@@ -52,6 +68,13 @@ namespace od
 		void stepSimulation(double dt);
 
 		bool toggleDebugDraw();
+
+		/**
+		 * Casts a ray into the scene, returning all hit objects sorted by distance from start point.
+		 *
+		 * @returns Number of hit objects.
+		 */
+		size_t raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results);
 
 		btRigidBody *addLayer(Layer &l);
 		void removeLayer(Layer &l);
@@ -75,8 +98,10 @@ namespace od
 
         std::unique_ptr<DebugDrawer> mDebugDrawer;
 
-        std::map<uint32_t, std::unique_ptr<btRigidBody>> mLevelObjectMap;
-        std::map<uint32_t, std::unique_ptr<btRigidBody>> mLayerMap;
+        typedef std::pair<Layer*, std::unique_ptr<btRigidBody>> LayerBodyPair;
+        typedef std::pair<LevelObject*, std::unique_ptr<btRigidBody>> ObjectBodyPair;
+        std::map<uint32_t, ObjectBodyPair> mLevelObjectMap;
+        std::map<uint32_t, LayerBodyPair> mLayerMap;
 	};
 
 }
