@@ -28,7 +28,7 @@ namespace od
 	{
 		enum Masks
 		{
-			RAYCAST = 0x0001, // do not use. this is just here because bullet reserves bit 0 for raytests
+			RAYCAST = 0x0001, // bit 0 reserved by bullet for raytests
 			LAYER   = 0x0002,
 			OBJECT  = 0x0004,
 			ALL     = 0xffff

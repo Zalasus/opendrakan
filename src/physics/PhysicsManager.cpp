@@ -252,7 +252,7 @@ namespace od
 
 		mLayerMap[l.getId()] = std::move(layerBodyPair);
 
-		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::LAYER, CollisionGroups::OBJECT);
+		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::LAYER, CollisionGroups::OBJECT | CollisionGroups::RAYCAST);
 
 		return bodyPtr;
 	}
