@@ -529,6 +529,11 @@ namespace odRfl
     	return mPlayerObject->getPosition();
     }
 
+	od::LevelObject &HumanControl::getLevelObject()
+	{
+	    return *mPlayerObject;
+	}
+
     void HumanControl::update(double simTime, double relTime)
     {
     	mCharacterController->update(relTime);

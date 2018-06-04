@@ -19,6 +19,7 @@
 #include "Exception.h"
 #include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
+#include "physics/BulletCallbacks.h"
 
 namespace od
 {
@@ -62,6 +63,8 @@ namespace od
 		double mPrevTime;
 
 	};
+
+
 
 
 	PhysicsManager::PhysicsManager(Level &level, osg::Group *levelRoot)
@@ -174,6 +177,58 @@ namespace od
 	    }
 
 	    return hitObjectCount;
+	}
+
+	bool PhysicsManager::raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude)
+	{
+	    btCollisionObject *me = nullptr;
+	    if(exclude != nullptr)
+	    {
+	        auto it = mLevelObjectMap.find(exclude->getObjectId());
+	        if(it != mLevelObjectMap.end())
+	        {
+	            me = it->second.second.get();
+	        }
+	    }
+
+	    btVector3 bStart = BulletAdapter::toBullet(start);
+	    btVector3 bEnd = BulletAdapter::toBullet(end);
+	    ClosestNotMeRayResultCallback callback(bStart, bEnd, me);
+	    mDynamicsWorld->rayTest(bStart, bEnd, callback);
+
+	    result.hitLayer = nullptr;
+        result.hitLevelObject = nullptr;
+	    if(!callback.hasHit())
+	    {
+	        return false;
+	    }
+
+	    const btCollisionObject *hitObject = callback.m_collisionObject;
+        result.hitBulletObject = hitObject;
+        result.hitPoint = BulletAdapter::toOsg(callback.m_hitPointWorld);
+        result.hitNormal = BulletAdapter::toOsg(callback.m_hitNormalWorld);
+
+        // determine hit object
+        if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::LAYER)
+        {
+            auto it = mLayerMap.find(hitObject->getUserIndex());
+            if(it != mLayerMap.end())
+            {
+                result.hitLayer = it->second.first;
+            }
+
+        }
+
+        if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::OBJECT)
+        {
+            auto it = mLevelObjectMap.find(hitObject->getUserIndex());
+            if(it != mLevelObjectMap.end())
+            {
+                result.hitLevelObject = it->second.first;
+            }
+        }
+
+        return true;
 	}
 
 	btRigidBody *PhysicsManager::addLayer(Layer &l)

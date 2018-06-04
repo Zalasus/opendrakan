@@ -13,6 +13,8 @@
 namespace od
 {
 
+    class LevelObject;
+
 	/**
 	 * @brief Interface for RFL class representing a player.
 	 *
@@ -31,6 +33,7 @@ namespace od
     	virtual void moveForward(float speed) = 0;
     	virtual void moveRight(float speed) = 0;
     	virtual osg::Vec3f getPosition() = 0;
+    	virtual LevelObject &getLevelObject() = 0;
     };
 
 }

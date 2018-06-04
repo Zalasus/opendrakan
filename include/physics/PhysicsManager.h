@@ -76,6 +76,8 @@ namespace od
 		 */
 		size_t raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results);
 
+		bool raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr);
+
 		btRigidBody *addLayer(Layer &l);
 		void removeLayer(Layer &l);
 		btRigidBody *addObject(LevelObject &o, float mass);

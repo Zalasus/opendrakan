@@ -35,6 +35,7 @@ set(SOURCES
         "src/physics/PhysicsManager.cpp"
         "src/physics/DebugDrawer.cpp"
         "src/physics/CharacterController.cpp"
+        "src/physics/BulletCallbacks.cpp"
         "src/SrscFile.cpp"
         "src/rfl/RflClass.cpp"
         "src/rfl/Rfl.cpp"

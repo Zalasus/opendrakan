@@ -242,6 +242,7 @@ namespace odRfl
 		virtual void moveForward(float speed) override;
 		virtual void moveRight(float speed) override;
 		virtual osg::Vec3f getPosition() override;
+		virtual od::LevelObject &getLevelObject() override;
 
 		void update(double simTime, double relTime);
 

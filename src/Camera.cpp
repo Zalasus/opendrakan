@@ -67,11 +67,25 @@ namespace od
 			return;
 		}
 
-		osg::Quat lookDirection = osg::Quat(player->getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player->getYaw() + M_PI/2, osg::Vec3f(0, 1, 0));
 		osg::Vec3f eye = player->getPosition();
-		eye += lookDirection * osg::Vec3f(-2, 0, 0);
+		osg::Quat lookDirection = osg::Quat(player->getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player->getYaw() + M_PI/2, osg::Vec3f(0, 1, 0));
 		osg::Vec3f front = lookDirection * osg::Vec3f(1, 0, 0);
 		osg::Vec3f up = lookDirection * osg::Vec3f(0, 1, 0);
+
+		// perform raycast to find obstacle closest point with unobstructed view of player
+		osg::Vec3f from = player->getPosition();
+		osg::Vec3f to = from + lookDirection * osg::Vec3f(-3, 0, 0);
+		RaycastResult result;
+		bool hit = mEngine.getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
+		if(!hit)
+		{
+		    eye = to;
+
+		}else
+		{
+		    eye = result.hitPoint;
+		}
+
 
 		mOsgCam->setViewMatrixAsLookAt(eye, eye + front, up);
 	}
