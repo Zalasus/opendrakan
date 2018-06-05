@@ -94,6 +94,7 @@ namespace od
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->probeFields(builder); // let builder override fields
+            mRflClassInstance->loaded(mLevel.getEngine(), this);
 
         }else
         {

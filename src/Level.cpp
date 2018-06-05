@@ -155,6 +155,14 @@ namespace od
         _loadObjects(file);
 
         Logger::info() << "Level loaded successfully";
+
+
+        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            mObjectGroup->addChild(it->second);
+            it->second->spawned();
+        }
     }
 
     void Level::_loadNameAndDeps(SrscFile &file)
@@ -285,10 +293,6 @@ namespace od
     		object->loadFromRecord(dr);
 
     		mLevelObjects[object->getObjectId()] = object;
-
-    		mObjectGroup->addChild(object);
-
-    		object->spawned();
     	}
 
     	// disable lighting for objects as models will show up mostly black right now

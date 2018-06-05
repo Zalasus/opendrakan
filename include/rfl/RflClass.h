@@ -13,6 +13,7 @@
 namespace od
 {
 	class LevelObject;
+	class Engine;
 }
 
 namespace odRfl
@@ -27,7 +28,17 @@ namespace odRfl
 		virtual void probeFields(RflFieldProbe &probe) = 0;
 
 		// TODO: maybe create an "EventHandler" interface for this?
-		virtual void spawned(od::LevelObject &obj); // does nothing by default
+		/**
+		 * Called when this RFL class is first instantiated from a database class, but after fields have been filled.
+		 * This may also happen to non-level object classes like materials, in which case \c obj will be nullptr.
+		 *
+		 * This hook should be used when an RFL class needs to register itself as an interface with the engine, while
+		 * calls to the engine that require that a different RFL class already registered itself should be made in the
+		 * \c spawned() hook. This should prevent issues arising from scenarios in which an object is loaded after one
+		 * that depends on it.
+		 */
+		virtual void loaded(od::Engine &e, od::LevelObject *obj);
+		virtual void spawned(od::LevelObject &obj);
 		virtual void despawned(od::LevelObject &obj);
 	};
 

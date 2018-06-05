@@ -18,7 +18,8 @@
 namespace od
 {
 
-    DbManager::DbManager()
+    DbManager::DbManager(Engine &engine)
+    : mEngine(engine)
     {
     }
 

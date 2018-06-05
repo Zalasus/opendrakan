@@ -16,6 +16,7 @@
 #include "Exception.h"
 #include "db/TextureFactory.h"
 #include "db/Database.h"
+#include "DbManager.h"
 #include "rfl/dragon/Material.h"
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
@@ -238,6 +239,7 @@ namespace od
         	mClass = getDatabase().getClassByRef(mClassRef);
         	std::unique_ptr<odRfl::RflClass> rflClass = mClass->makeInstance();
         	mMaterial = std::unique_ptr<odRfl::Material>(dynamic_cast<odRfl::Material*>(rflClass.release()));
+        	mMaterial->loaded(getDatabase().getDbManager().getEngine(), nullptr);
         }
 
         Logger::debug() << "Texture successfully loaded";

@@ -17,13 +17,16 @@ namespace od
 {
 
     class Database;
+    class Engine;
 
 	class DbManager
 	{
 	public:
 
-		DbManager();
+		DbManager(Engine &engine);
 		~DbManager();
+
+		inline Engine &getEngine() { return mEngine; }
 
 		bool isDbLoaded(const FilePath &dbFilePath) const;
 
@@ -40,6 +43,7 @@ namespace od
 
 	private:
 
+		Engine &mEngine;
 		std::vector<std::shared_ptr<Database>> mRiotDbs;
 	};
 

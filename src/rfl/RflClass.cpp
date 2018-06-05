@@ -13,6 +13,10 @@ namespace odRfl
 {
 
 
+    void RflClass::loaded(od::Engine &e, od::LevelObject *obj)
+    {
+    }
+
 	void RflClass::spawned(od::LevelObject &obj)
 	{
 	}

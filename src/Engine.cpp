@@ -19,7 +19,8 @@ namespace od
 {
 
 	Engine::Engine()
-	: mShaderManager(*this, FilePath("shader_src"))
+	: mDbManager(*this)
+	, mShaderManager(*this, FilePath("shader_src"))
 	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere?
 	, mMaxFrameRate(60)
 	{

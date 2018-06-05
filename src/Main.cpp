@@ -319,7 +319,8 @@ int main(int argc, char **argv)
 
         }else if(texture)
         {
-        	od::DbManager dbm;
+            od::Engine engine;
+        	od::DbManager dbm(engine);
         	od::Database &db = dbm.loadDb(filename);
 
         	od::AssetRef ref;
