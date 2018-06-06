@@ -121,6 +121,8 @@ namespace odRfl
             eye = result.hitPoint;
         }
 
+        mCameraLevelObject->setPosition(eye);
+        mCameraLevelObject->setRotation(lookDirection);
 
         mOsgCamera->setViewMatrixAsLookAt(eye, eye + front, up);
     }
