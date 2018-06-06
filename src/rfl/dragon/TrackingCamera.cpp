@@ -98,6 +98,16 @@ namespace odRfl
         mOsgCamera = osgCam;
     }
 
+    od::LevelObject &TrackingCamera::getLevelObject()
+    {
+        if(mCameraLevelObject == nullptr)
+        {
+            throw od::Exception("No level object assigned to RFL camera");
+        }
+
+        return *mCameraLevelObject;
+    }
+
     void TrackingCamera::update()
     {
         od::Player *player = mCameraLevelObject->getLevel().getPlayer();

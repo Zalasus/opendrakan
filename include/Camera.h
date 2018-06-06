@@ -23,6 +23,7 @@ namespace od
 
 	    virtual ~Camera() = default;
 
+	    virtual LevelObject &getLevelObject() = 0;
 		virtual osg::Vec3f getEyePoint() const = 0;
 		virtual void setOsgCamera(osg::Camera *osgCam) = 0;
 	};

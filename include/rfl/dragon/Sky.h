@@ -9,7 +9,6 @@
 #define INCLUDE_RFL_DRAGON_SKY_H_
 
 #include <osg/Vec3>
-#include <osg/NodeCallback>
 
 #include "rfl/RflClass.h"
 #include "rfl/RflField.h"

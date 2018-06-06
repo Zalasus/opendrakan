@@ -20,32 +20,6 @@
 namespace odRfl
 {
 
-	class SkyUpdateCallback : public osg::NodeCallback
-	{
-	public:
-
-		SkyUpdateCallback(DomedSky &sky)
-		: mSky(sky)
-		{
-		}
-
-		virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
-		{
-			// traverse first, in case the sky object is animated for some reason
-			traverse(node, nv);
-
-			mSky.update(nv->getEyePoint());
-		}
-
-
-	private:
-
-		DomedSky &mSky;
-
-	};
-
-
-
 	DomedSky::DomedSky()
 	: mPrimarySky(1) // yes
 	, mFollowMode(0) // original height
@@ -111,21 +85,12 @@ namespace odRfl
 		depth->setWriteMask(false);
 		ss->setAttributeAndModes(depth, osg::StateAttribute::ON);
 
-		mSkyObject->addUpdateCallback(new SkyUpdateCallback(*this));
-
-		//osg::Vec3 newSkyPos = obj.getLevel().getPlayer()->getLevelObject().getPosition();
-        //newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
-        //mSkyObject->setPosition(newSkyPos);
-		//mSkyObject->attachTo(&obj.getLevel().getPlayer()->getLevelObject(), true, false);
+		od::LevelObject &camObject = obj.getLevel().getEngine().getCamera()->getLevelObject();
+		osg::Vec3 newSkyPos = camObject.getPosition();
+        newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
+        mSkyObject->setPosition(newSkyPos);
+		mSkyObject->attachTo(&camObject, true, false);
 	}
-
-    void DomedSky::update(osg::Vec3 eyePoint)
-    {
-    	osg::Vec3 newSkyPos = mSkyObject->getLevel().getEngine().getCamera()->getEyePoint();
-    	newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
-
-    	mSkyObject->setPosition(newSkyPos);
-    }
 
     OD_REGISTER_RFL_CLASS(0x001a, "Domed Sky", DomedSky);
 

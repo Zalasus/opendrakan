@@ -32,6 +32,7 @@ namespace odRfl
 		// implement od::Camera
 		virtual osg::Vec3f getEyePoint() const override;
         virtual void setOsgCamera(osg::Camera *osgCam) override;
+        virtual od::LevelObject  &getLevelObject() override;
 
         void update();
 
