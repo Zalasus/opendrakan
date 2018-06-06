@@ -480,11 +480,24 @@ namespace odRfl
 		}
     }
 
+    void HumanControl::loaded(od::Engine &engine, od::LevelObject *obj)
+    {
+        if(engine.getPlayer() != nullptr)
+        {
+            Logger::warn() << "Duplicate HumanControl objects found in level. Ignoring.";
+            return;
+        }
+
+        mPlayerObject = obj;
+        engine.getLevel().setPlayer(this);
+
+        // prefetch animations
+        mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
+        mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
+    }
+
     void HumanControl::spawned(od::LevelObject &obj)
     {
-    	obj.getLevel().setPlayer(this);
-    	mPlayerObject = &obj;
-
     	Logger::verbose() << "Spawned Human Control at "
     			<< obj.getPosition().x() << "/"
 				<< obj.getPosition().y() << "/"
@@ -503,10 +516,6 @@ namespace odRfl
 
 			mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), mCharacterController.get());
     	}
-
-    	// prefetch animations
-    	mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
-    	mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
     }
 
     void HumanControl::moveForward(float speed)
