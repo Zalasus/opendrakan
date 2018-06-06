@@ -47,6 +47,8 @@ namespace od
         inline Engine &getEngine() { return mEngine; }
         inline PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
 
+        void loadLevel();
+
         // implement AssetProvider
         virtual Texture   *getTextureByRef(const AssetRef &ref) override;
         virtual Class     *getClassByRef(const AssetRef &ref) override;
@@ -58,7 +60,6 @@ namespace od
 
     private:
 
-        void _loadLevel();
         void _loadNameAndDeps(SrscFile &file);
         void _loadLayers(SrscFile &file);
         void _loadLayerGroups(SrscFile &file);

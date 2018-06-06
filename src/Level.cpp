@@ -39,8 +39,6 @@ namespace od
     	mLevelRootNode->addChild(mObjectGroup);
 
 		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
-
-        _loadLevel();
     }
 
     Level::~Level()
@@ -56,6 +54,28 @@ namespace od
     	{
     		mPhysicsManager.removeLayer(*it->get());
     	}
+    }
+
+    void Level::loadLevel()
+    {
+        Logger::info() << "Loading level " << mLevelPath.str();
+
+        SrscFile file(mLevelPath);
+
+        _loadNameAndDeps(file);
+        _loadLayers(file);
+        //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
+        _loadObjects(file);
+
+        Logger::info() << "Level loaded successfully";
+
+
+        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            mObjectGroup->addChild(it->second);
+            it->second->spawned();
+        }
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them
@@ -141,28 +161,6 @@ namespace od
         }
 
         return it->second.get().getSound(ref.assetId);
-    }
-
-    void Level::_loadLevel()
-    {
-    	Logger::info() << "Loading level " << mLevelPath.str();
-
-        SrscFile file(mLevelPath);
-
-        _loadNameAndDeps(file);
-        _loadLayers(file);
-        //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
-        _loadObjects(file);
-
-        Logger::info() << "Level loaded successfully";
-
-
-        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
-        {
-            mObjectGroup->addChild(it->second);
-            it->second->spawned();
-        }
     }
 
     void Level::_loadNameAndDeps(SrscFile &file)

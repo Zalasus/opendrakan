@@ -65,7 +65,9 @@ namespace od
 		mViewer->addEventHandler(statsHandler);
 
 		mLevel.reset(new od::Level(mInitialLevelFile, *this, rootNode));
+		mLevel->loadLevel();
 
+		// level loaded. check whether all required interfaces are available through loaded RFL classes
 		if(mLevel->getPlayer() == nullptr)
     	{
 			Logger::error() << "Can't start engine. Level does not contain a Human Control object";
