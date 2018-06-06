@@ -68,8 +68,10 @@ namespace od
         _loadObjects(file);
 
         Logger::info() << "Level loaded successfully";
+    }
 
-
+    void Level::spawnAllObjects()
+    {
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {

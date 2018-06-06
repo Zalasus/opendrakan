@@ -548,8 +548,6 @@ namespace odRfl
     	mCharacterController->update(relTime);
 
     	_updateMotion(relTime);
-
-    	mPlayerObject->getLevel().getEngine().getCamera().update();
     }
 
     void HumanControl::_updateMotion(double relTime)

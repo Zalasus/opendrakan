@@ -37,7 +37,8 @@ namespace od
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return getLevel().getPlayer(); }
-		inline Camera &getCamera() { return *mCamera; }
+		inline void setCamera(Camera *cam) { mCamera = cam; }
+		inline Camera *getCamera() { return mCamera; }
 		inline double getMaxFrameRate() const { return mMaxFrameRate; }
 		inline void setMaxFrameRate(double fps) { mMaxFrameRate = fps; } // 0 for no cap
 
@@ -53,7 +54,7 @@ namespace od
 		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
-		std::unique_ptr<Camera> mCamera;
+		Camera *mCamera;
 		double mMaxFrameRate;
 	};
 

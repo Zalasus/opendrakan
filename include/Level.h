@@ -48,6 +48,7 @@ namespace od
         inline PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
 
         void loadLevel();
+        void spawnAllObjects();
 
         // implement AssetProvider
         virtual Texture   *getTextureByRef(const AssetRef &ref) override;

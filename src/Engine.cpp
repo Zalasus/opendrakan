@@ -22,6 +22,7 @@ namespace od
 	: mDbManager(*this)
 	, mShaderManager(*this, FilePath("shader_src"))
 	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere?
+	, mCamera(nullptr)
 	, mMaxFrameRate(60)
 	{
 	}
@@ -57,12 +58,13 @@ namespace od
 		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager.makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
 		rootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
 
-		mCamera.reset(new Camera(*this, mViewer->getCamera()));
-
 		osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
 		statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
 		statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
 		mViewer->addEventHandler(statsHandler);
+
+        mInputManager = new InputManager(*this, mViewer);
+
 
 		mLevel.reset(new od::Level(mInitialLevelFile, *this, rootNode));
 		mLevel->loadLevel();
@@ -74,7 +76,21 @@ namespace od
     		throw Exception("No HumanControl object present in level");
     	}
 
-		mInputManager = new InputManager(*this, mViewer);
+		if(mCamera == nullptr)
+		{
+		    Logger::error() << "Can't start engine. Level does not contain a camera object";
+            throw Exception("No camera object present in level");
+
+		}else
+		{
+		    mCamera->setOsgCamera(mViewer->getCamera());
+		}
+
+		mLevel->spawnAllObjects();
+
+
+		Logger::verbose() << "Everything set up. Starting main loop";
+
 
 		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
 		double simTime = 0;

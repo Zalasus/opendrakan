@@ -11,6 +11,7 @@
 #include "Level.h"
 #include "Engine.h"
 #include "physics/PhysicsManager.h"
+#include "LevelObject.h"
 
 namespace odRfl
 {

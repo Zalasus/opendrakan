@@ -15,6 +15,7 @@
 #include "OdDefines.h"
 #include "Engine.h"
 #include "Camera.h"
+#include "LevelObject.h"
 
 namespace odRfl
 {
@@ -111,11 +112,16 @@ namespace odRfl
 		ss->setAttributeAndModes(depth, osg::StateAttribute::ON);
 
 		mSkyObject->addUpdateCallback(new SkyUpdateCallback(*this));
+
+		//osg::Vec3 newSkyPos = obj.getLevel().getPlayer()->getLevelObject().getPosition();
+        //newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
+        //mSkyObject->setPosition(newSkyPos);
+		//mSkyObject->attachTo(&obj.getLevel().getPlayer()->getLevelObject(), true, false);
 	}
 
     void DomedSky::update(osg::Vec3 eyePoint)
     {
-    	osg::Vec3 newSkyPos = mSkyObject->getLevel().getEngine().getCamera().getEyePoint();
+    	osg::Vec3 newSkyPos = mSkyObject->getLevel().getEngine().getCamera()->getEyePoint();
     	newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
 
     	mSkyObject->setPosition(newSkyPos);

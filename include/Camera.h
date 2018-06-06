@@ -8,38 +8,23 @@
 #ifndef INCLUDE_CAMERA_H_
 #define INCLUDE_CAMERA_H_
 
+#include <osg/Vec3f>
 #include <osg/Camera>
-#include <osg/NodeCallback>
-
-#include "LevelObject.h"
 
 namespace od
 {
 
-	class Engine;
-
 	/**
-	 * Camera wrapper enabling player tracking, rubber band stuff etc.
+	 * Interface for exposing the RFL provided camera object to the engine
 	 */
 	class Camera
 	{
 	public:
 
-		Camera(Engine &engine, osg::Camera *osgCam);
-		Camera(const Camera &c) = delete;
-		Camera(Camera &c) = delete;
-		~Camera();
+	    virtual ~Camera() = default;
 
-		osg::Vec3 getEyePoint();
-		void update();
-
-
-    private:
-
-		Engine &mEngine;
-		osg::ref_ptr<osg::Camera> mOsgCam;
-		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-
+		virtual osg::Vec3f getEyePoint() const = 0;
+		virtual void setOsgCamera(osg::Camera *osgCam) = 0;
 	};
 
 }
