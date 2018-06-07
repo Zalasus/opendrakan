@@ -10,6 +10,7 @@
 
 
 #include <memory>
+#include <list>
 #include <osg/Group>
 #include <osg/PositionAttitudeTransform>
 #include <LinearMath/btMotionState.h>
@@ -38,8 +39,6 @@ namespace od
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }
         inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
-        inline void setPosition(osg::Vec3f v) { mTransform->setPosition(v); }
-        inline void setRotation(osg::Quat q) { mTransform->setAttitude(q); }
         inline Model *getModel() { return mModel; }
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
@@ -47,6 +46,9 @@ namespace od
         void loadFromRecord(DataReader dr);
         void spawned();
         void despawned();
+
+        void setPosition(const osg::Vec3f &v);
+        void setRotation(const osg::Quat &q);
 
         /**
          * @brief Attaches this object to target object.
@@ -81,9 +83,9 @@ namespace od
         void attachToChannel(LevelObject *target, size_t channelIndex, bool clearOffset = false);
 
         /**
-         * @brief Detaches this object from any objects. Returns object it was previously attached to or \c nullptr if it wasn't attached.
+         * @brief Detaches this object from any objects. Will do nothing if this object was not attached to anything.
          */
-        LevelObject *detach();
+        void detach();
 
         // override osg::Group
         virtual const char *libraryName() const override { return "od";    }
@@ -95,6 +97,10 @@ namespace od
 
 
     private:
+
+        void _attachmentTargetPositionUpdated();
+        void _detachAllAttachedObjects();
+
 
         Level &mLevel;
         LevelObjectId mId;
@@ -112,7 +118,11 @@ namespace od
         osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         bool mSpawned;
-        osg::ref_ptr<osg::NodeCallback> mAttachmentCallback;
+
+        osg::ref_ptr<od::LevelObject> mAttachmentTarget;
+        osg::Vec3f mAttachmentTranslationOffset;
+        bool mIgnoreAttachmentRotation;
+        std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

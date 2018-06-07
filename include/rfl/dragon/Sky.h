@@ -25,8 +25,6 @@ namespace odRfl
         virtual void probeFields(RflFieldProbe &probe) override;
         virtual void spawned(od::LevelObject &obj) override;
 
-        void update(osg::Vec3 eyePoint);
-
 
     protected:
 

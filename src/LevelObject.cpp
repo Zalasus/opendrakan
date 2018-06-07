@@ -7,6 +7,8 @@
 
 #include "LevelObject.h"
 
+#include <algorithm>
+
 #include "Level.h"
 #include "Exception.h"
 #include "OdDefines.h"
@@ -19,67 +21,6 @@
 namespace od
 {
 
-    class AttachmentUpdateCallback : public osg::NodeCallback
-    {
-    public:
-
-        AttachmentUpdateCallback(LevelObject &attachedObject, LevelObject &targetObject, bool ignoreRotation)
-        : mAttachedObject(attachedObject)
-        , mTargetObject(targetObject)
-        , mIgnoreRotation(ignoreRotation)
-        {
-            mTranslationOffset = (mAttachedObject.getPosition() - mTargetObject.getPosition());
-            mInitialAttachedRotation = mAttachedObject.getRotation();
-            mInitialTargetRotation = mTargetObject.getRotation();
-        }
-
-        LevelObject &getAttachedObject()
-        {
-            return mAttachedObject;
-        }
-
-        LevelObject &getTargetObject()
-        {
-            return mTargetObject;
-        }
-
-        virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
-        {
-            // traverse first, so any updates to the target object's position are applied before updating ours
-            traverse(node, nv);
-
-            osg::Vec3f newPosition;
-            osg::Quat newRotation;
-
-            if(!mIgnoreRotation)
-            {
-                newPosition = mTargetObject.getPosition() + mInitialTargetRotation.inverse()*mTargetObject.getRotation()*mTranslationOffset;
-                newRotation = mTargetObject.getRotation() * mAttachedObject.getRotation();
-
-            }else
-            {
-                newPosition = mTargetObject.getPosition() + mTranslationOffset;
-                newRotation = mAttachedObject.getRotation();
-            }
-
-            mAttachedObject.setPosition(newPosition);
-            mAttachedObject.setRotation(newRotation);
-        }
-
-
-    private:
-
-        LevelObject &mAttachedObject;
-        LevelObject &mTargetObject;
-        bool mIgnoreRotation;
-        osg::Vec3f mTranslationOffset;
-        osg::Quat mInitialAttachedRotation;
-        osg::Quat mInitialTargetRotation;
-    };
-
-
-
-
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
@@ -87,6 +28,7 @@ namespace od
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
     , mSpawned(false)
+    , mIgnoreAttachmentRotation(true)
     {
     }
 
@@ -200,12 +142,36 @@ namespace od
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
 
+        // detach this from any object it may be attached to, and detach all objects attached to this
+        detach();
+        _detachAllAttachedObjects();
+
         mSpawned = false;
+    }
+
+    void LevelObject::setPosition(const osg::Vec3f &v)
+    {
+        mTransform->setPosition(v);
+
+        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
+        {
+            (*it)->_attachmentTargetPositionUpdated();
+        }
+    }
+
+    void LevelObject::setRotation(const osg::Quat &q)
+    {
+        mTransform->setAttitude(q);
+
+        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
+        {
+            (*it)->_attachmentTargetPositionUpdated();
+        }
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreRotation, bool clearOffset)
     {
-        if(target == nullptr)
+        if(target == nullptr || mAttachmentTarget != nullptr)
         {
             detach();
             return;
@@ -217,8 +183,15 @@ namespace od
             setRotation(target->getRotation());
         }
 
-        mAttachmentCallback = new AttachmentUpdateCallback(*this, *target, ignoreRotation);
-        target->addUpdateCallback(mAttachmentCallback);
+        if(!ignoreRotation)
+        {
+            throw UnsupportedException("Attachment with rotation not implemented yet");
+        }
+
+        mAttachmentTarget = target;
+        mIgnoreAttachmentRotation = ignoreRotation;
+        mAttachmentTranslationOffset = getPosition() - target->getPosition();
+        target->mAttachedObjects.push_back(osg::ref_ptr<od::LevelObject>(this));
     }
 
     void LevelObject::attachToChannel(LevelObject *target, size_t channelIndex, bool clearOffset)
@@ -228,20 +201,24 @@ namespace od
         throw UnsupportedException("Attaching to channels not yet implemented.");
     }
 
-    LevelObject *LevelObject::detach()
+    void LevelObject::detach()
     {
-        if(mAttachmentCallback == nullptr)
+        if(mAttachmentTarget == nullptr)
         {
-            return nullptr;
+            return;
         }
 
-        AttachmentUpdateCallback *callback = static_cast<AttachmentUpdateCallback*>(mAttachmentCallback.get());
-        LevelObject *target = &callback->getTargetObject();
+        auto it = std::find(mAttachmentTarget->mAttachedObjects.begin(), mAttachmentTarget->mAttachedObjects.end(), osg::ref_ptr<od::LevelObject>(this));
+        if(it != mAttachmentTarget->mAttachedObjects.end())
+        {
+            mAttachmentTarget->mAttachedObjects.erase(it);
 
-        // FIXME: will segfault if target object despawned prior to detaching
-        target->removeUpdateCallback(callback);
+        }else
+        {
+            Logger::warn() << "Inconsistency when detaching object: Attachment target didn't have attached object in it's list of attached objects";
+        }
 
-        return target;
+        mAttachmentTarget = nullptr;
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const
@@ -253,6 +230,46 @@ namespace od
     {
         setPosition(BulletAdapter::toOsg(worldTrans.getOrigin()));
         setRotation(BulletAdapter::toOsg(worldTrans.getRotation()));
+    }
+
+    void LevelObject::_attachmentTargetPositionUpdated()
+    {
+        if(mAttachmentTarget == nullptr)
+        {
+            // uhmm.... wat?
+            Logger::error() << "Attachment inconsistency: Level object that was not attached to anything was asked to update to attachment target position";
+            return;
+        }
+
+        osg::Vec3f newPosition;
+        osg::Quat newRotation;
+
+        if(mIgnoreAttachmentRotation)
+        {
+            newPosition = mAttachmentTarget->getPosition() + mAttachmentTranslationOffset;
+            newRotation = getRotation();
+
+        }else
+        {
+            // TODO: implement
+            //newPosition = mAttachmentTarget->getPosition() + mInitialTargetRotation.inverse()*mTargetObject.getRotation()*mTranslationOffset;
+            //newRotation = mTargetObject.getRotation() * mAttachedObject.getRotation();
+        }
+
+        setPosition(newPosition);
+        setRotation(newRotation);
+    }
+
+    void LevelObject::_detachAllAttachedObjects()
+    {
+        // note: we don't call detach() on all attached objects here, as that would cause every single one of them
+        //  to search itself in mAttachedObjects, unecessarily making this O(n^2)
+        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
+        {
+            (*it)->mAttachmentTarget = nullptr;
+        }
+
+        mAttachedObjects.clear();
     }
 
 }
