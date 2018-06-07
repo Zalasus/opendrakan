@@ -39,47 +39,26 @@ namespace odRfl
 
     void DomedSky::probeFields(RflFieldProbe &probe)
     {
-    	/*probe.beginCategory("Position");
-    	probe.registerField(mPrimarySky, "Primary Sky");
-		probe.registerField(mFollowMode, "Follow Mode");
-		probe.registerField(mOffsetDown, "Offset Down");
-
-		probe.beginCategory("Effects");
-		probe.registerField(mEffects, "Effects");
-		probe.registerField(mLightningObject, "Lightning Object");
-		probe.registerField(mAveLightningPeriod, "Ave Lightning Period");
-		probe.registerField(mLightningHeight, "Lightning Height");
-		probe.registerField(mMinLightningDist, "Min Lightning Dist");
-		probe.registerField(mMaxLightningDist, "Max Lightning Dist");
-		probe.registerField(mLightningWedgeAngle, "Lightning Wedge Angle");
-		probe.registerField(mLensFlare, "Lens Flare");
-		probe.registerField(mFlareElevation, "Flare Elevation (0 - 90)");
-		probe.registerField(mFlareDirection, "Flare Direction (0 - 359)");*/
-
-		// not really clean code, but avoids the wall of text above. should we use this rather than calling the methods directly?
 		probe("Position")
-    		 (mPrimarySky, "Primary Sky")
-			 (mFollowMode, "Follow Mode")
-			 (mOffsetDown, "Offset Down")
-
+    		     (mPrimarySky, "Primary Sky")
+			     (mFollowMode, "Follow Mode")
+			     (mOffsetDown, "Offset Down")
 			 ("Effects")
-			 (mEffects, "Effects")
-			 (mLightningObject, "Lightning Object")
-		     (mAveLightningPeriod, "Ave Lightning Period")
-		     (mLightningHeight, "Lightning Height")
-		     (mMinLightningDist, "Min Lightning Dist")
-		     (mMaxLightningDist, "Max Lightning Dist")
-		     (mLightningWedgeAngle, "Lightning Wedge Angle")
-		     (mLensFlare, "Lens Flare")
-		     (mFlareElevation, "Flare Elevation (0 - 90)")
-		     (mFlareDirection, "Flare Direction (0 - 359)");
+			     (mEffects, "Effects")
+			     (mLightningObject, "Lightning Object")
+			     (mAveLightningPeriod, "Ave Lightning Period")
+			     (mLightningHeight, "Lightning Height")
+			     (mMinLightningDist, "Min Lightning Dist")
+			     (mMaxLightningDist, "Max Lightning Dist")
+			     (mLightningWedgeAngle, "Lightning Wedge Angle")
+			     (mLensFlare, "Lens Flare")
+			     (mFlareElevation, "Flare Elevation (0 - 90)")
+			     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
     void DomedSky::spawned(od::LevelObject &obj)
 	{
-    	mSkyObject = &obj;
-
-    	osg::StateSet *ss = mSkyObject->getOrCreateStateSet();
+    	osg::StateSet *ss = obj.getOrCreateStateSet();
     	ss->setRenderBinDetails(-1, "RenderBin");
     	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
 		depth->setWriteMask(false);
@@ -88,9 +67,10 @@ namespace odRfl
 		od::LevelObject &camObject = obj.getLevel().getEngine().getCamera()->getLevelObject();
 		osg::Vec3 newSkyPos = camObject.getPosition();
         newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
-        mSkyObject->setPosition(newSkyPos);
-		mSkyObject->attachTo(&camObject, true, false);
+        obj.setPosition(newSkyPos);
+		obj.attachTo(&camObject, true, false);
 	}
+
 
     OD_REGISTER_RFL_CLASS(0x001a, "Domed Sky", DomedSky);
 

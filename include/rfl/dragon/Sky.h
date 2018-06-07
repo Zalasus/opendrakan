@@ -42,11 +42,6 @@ namespace odRfl
 		RflInteger		mFlareElevation;
 		RflInteger		mFlareDirection;
 
-
-    private:
-
-		osg::ref_ptr<od::LevelObject> mSkyObject;
-
     };
 
 }
