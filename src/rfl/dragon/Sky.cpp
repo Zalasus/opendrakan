@@ -21,7 +21,7 @@ namespace odRfl
 {
 
 	DomedSky::DomedSky()
-	: mPrimarySky(1) // yes
+	: mPrimarySky(true)
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)
 	, mEffects(0) // none

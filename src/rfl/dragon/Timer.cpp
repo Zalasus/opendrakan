@@ -16,11 +16,11 @@ namespace odRfl
 	Timer::Timer()
 	: mTimeUntilTrigger(5.0)
 	, mStartMode(1) // Run When Triggered
-	, mRepeat(0)
-	, mDestroyAfterTimeout(1)
-	, mTriggerMessage(1) // On
-	, mToggle(0)
-	, mDisableReenableMessage(0) // Off
+	, mRepeat(true)
+	, mDestroyAfterTimeout(true)
+	, mTriggerMessage(RflMessage::On)
+	, mToggle(false)
+	, mDisableReenableMessage(RflMessage::Off)
 	{
 	}
 

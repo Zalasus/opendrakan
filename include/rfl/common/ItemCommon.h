@@ -14,6 +14,23 @@
 namespace odRfl
 {
 
+    enum class PlayerSlot
+    {
+        None,
+        RightHand,
+        LeftHand,
+        EitherHand,
+        Body,
+        Head,
+        Feet,
+        Wrists,
+        Any
+    };
+
+    typedef RflEnumImpl<PlayerSlot, 0, 8> RflEnumPlayerSlot;
+
+
+
 	class ItemCommon : public RflClass
 	{
 	public:

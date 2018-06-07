@@ -11,6 +11,7 @@
 #include <initializer_list>
 #include <string>
 #include <cstring>
+#include <limits>
 #include <osg/ref_ptr>
 
 #include "db/Asset.h"
@@ -60,6 +61,8 @@ namespace odRfl
 		virtual void fillArray(uint16_t size, od::DataReader &dr);
 	};
 
+
+
 	class RflString : public RflField
 	{
 	public:
@@ -76,6 +79,8 @@ namespace odRfl
 
 		std::string mValue;
 	};
+
+
 
 	template <typename _DataType, RflField::RflFieldType _Type>
 	class RflPOD : public RflField
@@ -104,6 +109,67 @@ namespace odRfl
 		_DataType mValue;
 
 	};
+
+
+
+	template <typename _EnumType, uint32_t _MinValue = std::numeric_limits<uint32_t>::min(), uint32_t _MaxValue = std::numeric_limits<uint32_t>::max()>
+    class RflEnumImpl : public RflField
+    {
+    public:
+
+        RflEnumImpl(_EnumType defaultValue)
+        : mValue(defaultValue)
+        {
+        }
+
+        virtual bool isArray() const override { return false; }
+        virtual RflFieldType getFieldType() const override { return RflField::ENUM; }
+
+        virtual void fill(od::DataReader &dr) override
+        {
+            uint32_t value;
+            dr >> value;
+
+            if(value < _MinValue || value > _MaxValue)
+            {
+                // FIXME: is this really helpful? i don't think so
+                Logger::warn() << "Enum value in RFL class exceeds that enum's allowed value range";
+            }
+
+            mValue = static_cast<_EnumType>(value);
+        }
+
+        _EnumType get() const { return mValue; }
+        operator _EnumType () const { return mValue; }
+
+
+    protected:
+
+        _EnumType mValue;
+
+    };
+
+	typedef RflEnumImpl<uint32_t> RflEnum;
+
+    typedef RflEnumImpl<bool, 0, 1> RflEnumYesNo;
+
+    enum class RflMessage
+    {
+        Off,
+        On,
+        Lock,
+        Unlock,
+        PlaySequence,
+        BlowUp,
+        Triggered,
+        MoveToWaypoint,
+        ImDead,
+        Gib
+    };
+
+    typedef RflEnumImpl<RflMessage, 0, 9> RflEnumMessage;
+
+
 
 	template <typename _AssetType, RflField::RflFieldType _Type>
 	class RflAssetRef : public RflPOD<od::AssetRef, _Type>
@@ -157,10 +223,6 @@ namespace odRfl
 
 	typedef RflPOD< int32_t, RflField::INTEGER> RflInteger;
 	typedef RflPOD<   float,   RflField::FLOAT> RflFloat;
-	typedef RflPOD<uint32_t,    RflField::ENUM> RflEnum;
-	typedef RflEnum                             RflEnumYesNo; // TODO: give these a list of allowed values once we implement that feature
-	typedef RflEnum                             RflEnumPlayerSlot;
-	typedef RflEnum 							RflEnumMessage;
 	typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
 
 
@@ -202,6 +264,7 @@ namespace odRfl
 	typedef RflPODArray<od::AssetRef, RflField::ANIMATION> RflAnimRefArray;
 	typedef RflPODArray<od::AssetRef, RflField::MODEL> RflModelRefArray;
 	typedef RflPODArray<uint32_t, RflField::CHAR_CHANNEL> RflCharChannelArray;
+
 }
 
 #endif /* INCLUDE_RFL_RFLFIELD_H_ */

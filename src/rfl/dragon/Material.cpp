@@ -26,7 +26,7 @@ namespace odRfl
 	, mFlammability(1)
 	, mLavaSizzleSound(od::AssetRef::NULL_REF)
 	, mBurnEffect(od::AssetRef::NULL_REF)
-	, mLandable(1)
+	, mLandable(true)
 	, mDetailTexture(od::AssetRef::NULL_REF)
 	, mDetailScaling(0.25)
 	{
