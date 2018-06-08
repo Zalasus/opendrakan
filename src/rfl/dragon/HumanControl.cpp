@@ -442,6 +442,7 @@ namespace odRfl
         if(engine.getPlayer() != nullptr)
         {
             Logger::warn() << "Duplicate HumanControl objects found in level. Ignoring.";
+            // FIXME: instead of just ignoring the issue, perhaps request the duplicate objects to be destroyed?
             return;
         }
 
@@ -455,6 +456,12 @@ namespace odRfl
 
     void HumanControl::spawned(od::LevelObject &obj)
     {
+        if(mPlayerObject == nullptr)
+        {
+            // this means we ignored the load call because of duplicate HumanControl objects, so we should ignore the spawn as well
+            return;
+        }
+
     	Logger::verbose() << "Spawned Human Control at "
     			<< obj.getPosition().x() << "/"
 				<< obj.getPosition().y() << "/"
