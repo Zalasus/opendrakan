@@ -26,6 +26,14 @@ namespace od
 
     typedef uint32_t LevelObjectId;
 
+    enum class LevelObjectState
+    {
+        NotLoaded,
+        Loaded,
+        Spawned,
+        Destroyed
+    };
+
     class LevelObject : public osg::Group, public btMotionState
     {
     public:
@@ -43,6 +51,7 @@ namespace od
         inline Model *getModel() { return mModel; }
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
+        inline LevelObjectState getState() const { return mState; }
 
         void loadFromRecord(DataReader dr);
         void spawned();
@@ -90,8 +99,15 @@ namespace od
          */
         void detach();
 
+        /**
+         * @brief Enables or disables the RFL update hook.
+         *
+         * Do not disable the update callback by calling this method from the update hook itself! Doing so messes with
+         * OSG's update traversal and will likely cause it to segfault.
+         */
         void setEnableRflUpdateHook(bool enableHook);
         void messageAllLinkedObjects(odRfl::RflMessage message);
+        void requestDestruction();
 
         // override osg::Group
         virtual const char *libraryName() const override { return "od";    }
@@ -123,7 +139,7 @@ namespace od
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
-        bool mSpawned;
+        LevelObjectState mState;
 
         std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
 

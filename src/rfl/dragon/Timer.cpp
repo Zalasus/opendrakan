@@ -61,7 +61,16 @@ namespace odRfl
 
 	        obj.messageAllLinkedObjects(mTriggerMessage);
 
-	        mTimerStarted = mRepeat ? true : false;
+	        mTimerStarted = false;
+
+	        if(mDestroyAfterTimeout)
+	        {
+	            obj.requestDestruction();
+
+	        }else if(mRepeat)
+	        {
+	            mTimerStarted = true;
+	        }
 	    }
 	}
 

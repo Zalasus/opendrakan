@@ -33,4 +33,8 @@ namespace odRfl
 	{
 	}
 
+	void RflClass::destroyed(od::LevelObject &obj)
+	{
+	}
+
 }

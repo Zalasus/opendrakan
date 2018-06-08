@@ -67,7 +67,7 @@ namespace od
     , mFlags(0)
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
-    , mSpawned(false)
+    , mState(LevelObjectState::NotLoaded)
     , mIgnoreAttachmentRotation(true)
     {
     }
@@ -75,7 +75,7 @@ namespace od
     LevelObject::~LevelObject()
     {
         // make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
-        if(mSpawned)
+        if(mState == LevelObjectState::Spawned)
         {
             Logger::warn() << "Level object deleted while still spawned";
 
@@ -182,7 +182,7 @@ namespace od
 
         Logger::debug() << "Object " << getObjectId() << " spawned";
 
-        mSpawned = true;
+        mState = LevelObjectState::Spawned;
     }
 
     void LevelObject::despawned()
@@ -200,11 +200,16 @@ namespace od
 
         setEnableRflUpdateHook(false);
 
-        mSpawned = false;
+        mState = LevelObjectState::Loaded;
     }
 
     void LevelObject::update(double simTime, double relTime)
     {
+        if(mState != LevelObjectState::Spawned)
+        {
+            return;
+        }
+
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->update(*this, simTime, relTime);
@@ -213,6 +218,11 @@ namespace od
 
     void LevelObject::messageReceived(LevelObject &sender, odRfl::RflMessage message)
     {
+        if(mState == LevelObjectState::Destroyed)
+        {
+            return;
+        }
+
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->messageReceived(*this, sender, message);
@@ -323,6 +333,27 @@ namespace od
         {
             (*it)->messageReceived(*this, message);
         }
+    }
+
+    void LevelObject::requestDestruction()
+    {
+        // for now, just call the hook and set the state.
+        //  despawning from here will cause too much trouble right now (can't remove update callback from within update callback)
+
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->destroyed(*this);
+        }
+
+        // remove us from scenegraph if we are still in there
+        if(this->getNumParents() > 0)
+        {
+            this->getParent(0)->removeChild(this);
+        }
+
+        Logger::verbose() << "Object " << getObjectId() << " destroyed";
+
+        mState = LevelObjectState::Destroyed;
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

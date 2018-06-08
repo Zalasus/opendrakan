@@ -43,6 +43,7 @@ namespace odRfl
 		virtual void despawned(od::LevelObject &obj);
 		virtual void update(od::LevelObject &obj, double simTime, double relTime);
 		virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
+		virtual void destroyed(od::LevelObject &obj);
 	};
 
 }
