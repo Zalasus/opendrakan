@@ -57,7 +57,7 @@ namespace odRfl
 
 	    if(mTimeElapsed >= mTimeUntilTrigger)
 	    {
-	        Logger::debug() << "Timer " << obj.getObjectId() << " triggered at simTime=" << simTime;
+	        Logger::verbose() << "Timer " << obj.getObjectId() << " triggered at simTime=" << simTime << "s";
 
 	        obj.messageAllLinkedObjects(mTriggerMessage);
 

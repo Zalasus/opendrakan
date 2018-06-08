@@ -8,6 +8,7 @@
 #ifndef INCLUDE_RFL_RFLMESSAGE_H_
 #define INCLUDE_RFL_RFLMESSAGE_H_
 
+#include <ostream>
 
 namespace odRfl
 {
@@ -25,6 +26,9 @@ namespace odRfl
         ImDead,
         Gib
     };
+
+
+    std::ostream &operator<<(std::ostream &out, RflMessage message);
 
 }
 

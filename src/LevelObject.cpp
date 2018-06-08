@@ -216,7 +216,7 @@ namespace od
             mRflClassInstance->messageReceived(*this, sender, message);
         }
 
-        Logger::verbose() << "Object " << getObjectId() << " received message";
+        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
     }
 
     void LevelObject::setPosition(const osg::Vec3f &v)
