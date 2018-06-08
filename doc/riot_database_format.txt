@@ -166,7 +166,8 @@ Record types
         uint32        height; // editor allows arbitrary height
         uint32        pitch;
         uint16        bits_per_pixel; // indicates 5 5 5+1, 4 4 4+4 or 3 3 2+8 formats for alpha channels. 8 8 8+8 format is reported as "not yet implemented"
-        uint32        alpha_bits_per_pixel;
+        uint16        alpha_bits_per_pixel;
+        uint16        unknown;
         uint32        colour_key;
         ref           mip_map;
         ref           alternate_texture;
@@ -483,6 +484,14 @@ Record types
     
     Misc
     ----
+    
+    [0x0400] Encrypted string 
+        uint8[*] string;  // no length field. string fills entire record
+        (found in Dragon.rrc, used for localization. XOR encrypted with key 0D 6A 57 BF FD EE 74... complete key unknown)
+
+    [0x0401] Plaintext string
+        uint8[*] string;  // no length field. string fills entire record
+        found in Dragon.rrc, used for localization, credits, gui)
 
     [0x0402] End record?
         (one of these appears in many databases, often last. it's size seems to always be 4)
