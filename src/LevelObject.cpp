@@ -197,6 +197,14 @@ namespace od
         }
     }
 
+    void LevelObject::messageReceived(LevelObject &sender, odRfl::RflMessage message)
+    {
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->messageReceived(*this, sender, message);
+        }
+    }
+
     void LevelObject::setPosition(const osg::Vec3f &v)
     {
         mTransform->setPosition(v);
@@ -291,6 +299,12 @@ namespace od
             this->removeUpdateCallback(mUpdateCallback);
             mUpdateCallback = nullptr;
         }
+    }
+
+    void LevelObject::messageAllLinkedObjects(odRfl::RflMessage message)
+    {
+        Logger::debug() << "messageAllLinkedObjects is a stub";
+        // TODO: stub. implement
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

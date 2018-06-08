@@ -29,4 +29,8 @@ namespace odRfl
 	{
 	}
 
+	void RflClass::messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+	{
+	}
+
 }

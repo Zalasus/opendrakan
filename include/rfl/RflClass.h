@@ -9,6 +9,7 @@
 #define INCLUDE_RFL_RFLCLASS_H_
 
 #include "rfl/RflFieldProbe.h"
+#include "rfl/RflMessage.h"
 
 namespace od
 {
@@ -41,6 +42,7 @@ namespace odRfl
 		virtual void spawned(od::LevelObject &obj);
 		virtual void despawned(od::LevelObject &obj);
 		virtual void update(od::LevelObject &obj, double simTime, double relTime);
+		virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 	};
 
 }

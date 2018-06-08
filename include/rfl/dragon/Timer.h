@@ -14,6 +14,15 @@
 namespace odRfl
 {
 
+    enum class TimerStartMode
+    {
+        RunInstantly,
+        RunWhenTriggered
+    };
+
+    typedef RflEnumImpl<TimerStartMode, 0, 1> RflEnumTimerStartMode;
+
+
 	class Timer : public RflClass
 	{
 	public:
@@ -22,17 +31,24 @@ namespace odRfl
 
         virtual void probeFields(RflFieldProbe &probe) override;
         virtual void spawned(od::LevelObject &obj) override;
+        virtual void update(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
 
 
 	protected:
 
-		RflFloat 		mTimeUntilTrigger;
-		RflEnum  		mStartMode;
-		RflEnumYesNo	mRepeat;
-		RflEnumYesNo    mDestroyAfterTimeout;
-		RflEnumMessage  mTriggerMessage;
-		RflEnumYesNo    mToggle;
-		RflEnumMessage  mDisableReenableMessage;
+		RflFloat 		        mTimeUntilTrigger;
+		RflEnumTimerStartMode   mStartMode;
+		RflEnumYesNo	        mRepeat;
+		RflEnumYesNo            mDestroyAfterTimeout;
+		RflEnumMessage          mTriggerMessage;
+		RflEnumYesNo            mToggle;
+		RflEnumMessage          mDisableReenableMessage;
+
+	private:
+
+		bool mTimerStarted;
+		double mTimeElapsed;
 
 	};
 

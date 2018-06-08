@@ -17,6 +17,7 @@
 
 #include "db/Class.h"
 #include "anim/SkeletonAnimationPlayer.h"
+#include "rfl/RflMessage.h"
 
 namespace od
 {
@@ -47,6 +48,7 @@ namespace od
         void spawned();
         void despawned();
         void update(double simTime, double relTime);
+        void messageReceived(LevelObject &sender, odRfl::RflMessage message);
 
         void setPosition(const osg::Vec3f &v);
         void setRotation(const osg::Quat &q);
@@ -89,6 +91,7 @@ namespace od
         void detach();
 
         void setEnableRflUpdateHook(bool enableHook);
+        void messageAllLinkedObjects(odRfl::RflMessage message);
 
         // override osg::Group
         virtual const char *libraryName() const override { return "od";    }
