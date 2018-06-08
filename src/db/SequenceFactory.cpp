@@ -26,7 +26,7 @@ namespace od
             throw NotFoundException("Sequence not found in database");
         }
 
-        Logger::verbose() << "Loading sequence " << std::hex << assetId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+        Logger::debug() << "Loading sequence " << std::hex << assetId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
         SequencePtr sequence(new Sequence(getDatabase(), assetId));
         DataReader dr(getSrscFile().getStreamForRecord(dirIt));

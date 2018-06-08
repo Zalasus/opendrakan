@@ -29,7 +29,7 @@ namespace od
             throw NotFoundException("Given animation not found in database");
         }
 
-		Logger::verbose() << "Loading animation " << std::hex << animId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+		Logger::debug() << "Loading animation " << std::hex << animId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
         osg::ref_ptr<Animation> newAnim(new Animation(getDatabase(), animId));
         newAnim->loadInfo(DataReader(getSrscFile().getStreamForRecord(infoRecord)));

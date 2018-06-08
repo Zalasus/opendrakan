@@ -60,7 +60,7 @@ namespace od
     	    // not loaded -> load
     	}
 
-    	Logger::info() << "Loading db: " << dbFilePath.str() << (dependencyDepth ? " due to dependency" : "");
+    	Logger::info() << "Loading database " << dbFilePath.str();
 
         std::shared_ptr<Database> db(new Database(actualFilePath, *this));
 

@@ -136,7 +136,7 @@ namespace od
         if(txdPath.exists())
         {
         	mTextureFactory = std::unique_ptr<TextureFactory>(new TextureFactory(txdPath, *this));
-        	Logger::verbose() << "Opened database texture container" << txdPath.str();
+        	Logger::verbose() << "Opened database texture container " << txdPath.str();
 
         }else
         {
@@ -160,7 +160,7 @@ namespace od
         if(odbPath.exists())
         {
             mClassFactory = std::unique_ptr<ClassFactory>(new ClassFactory(odbPath, *this));
-            Logger::verbose() << "Opened database class container" << odbPath.str();
+            Logger::verbose() << "Opened database class container " << odbPath.str();
 
         }else
         {
@@ -172,7 +172,7 @@ namespace od
         if(adbPath.exists())
         {
             mAnimFactory = std::unique_ptr<AnimationFactory>(new AnimationFactory(adbPath, *this));
-            Logger::verbose() << "Opened database animation container" << adbPath.str();
+            Logger::verbose() << "Opened database animation container " << adbPath.str();
 
         }else
         {
@@ -183,7 +183,7 @@ namespace od
         if(sdbPath.exists())
         {
             mSoundFactory = std::unique_ptr<SoundFactory>(new SoundFactory(sdbPath, *this));
-            Logger::verbose() << "Opened database sound container" << sdbPath.str();
+            Logger::verbose() << "Opened database sound container " << sdbPath.str();
 
         }else
         {

@@ -53,7 +53,7 @@ namespace od
 
     void Texture::loadFromRecord(TextureFactory &factory, DataReader dr)
     {
-    	Logger::verbose() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
+    	Logger::debug() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
 
         uint32_t rowSpacing;
 

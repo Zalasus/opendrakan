@@ -41,7 +41,7 @@ namespace od
 			throw NotFoundException("Texture not found in database");
 		}
 
-		Logger::verbose() << "Loading texture " << std::hex << textureId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+		Logger::debug() << "Loading texture " << std::hex << textureId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
 		TexturePtr texture(new Texture(getDatabase(), textureId));
 		texture->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(dirIt)));

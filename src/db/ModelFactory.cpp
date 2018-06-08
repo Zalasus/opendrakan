@@ -28,7 +28,7 @@ namespace od
 			throw NotFoundException("Given model not found in database");
 		}
 
-		Logger::verbose() << "Loading model " << std::hex << id << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+		Logger::debug() << "Loading model " << std::hex << id << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
 		// required records
 		ModelPtr model(new Model(getDatabase(), id));

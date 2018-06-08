@@ -31,7 +31,7 @@ namespace od
             throw NotFoundException("Given class not found in database");
         }
 
-		Logger::verbose() << "Loading class " << std::hex << classId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+		Logger::debug() << "Loading class " << std::hex << classId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
         ClassPtr newClass(new Class(getDatabase(), classId));
         newClass->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(it)));

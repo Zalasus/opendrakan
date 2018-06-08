@@ -200,7 +200,7 @@ namespace od
             FilePath dbPath(dbPathStr, mLevelPath.dir());
             Database &db = mDbManager.loadDb(dbPath.adjustCase());
 
-            Logger::verbose() << "Level dependency index " << dbIndex << ": " << dbPath;
+            Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
 
             mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(dbIndex, db));
         }

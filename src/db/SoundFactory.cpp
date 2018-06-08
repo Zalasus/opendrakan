@@ -26,7 +26,7 @@ namespace od
             throw NotFoundException("Texture not found in database");
         }
 
-        Logger::verbose() << "Loading sound " << std::hex << soundId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+        Logger::debug() << "Loading sound " << std::hex << soundId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
 
         osg::ref_ptr<Sound> sound(new Sound(getDatabase(), soundId));
         DataReader dr(getSrscFile().getStreamForRecord(dirIt));
