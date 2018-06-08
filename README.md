@@ -4,25 +4,24 @@ OpenDrakan
 
 [![Build Status](https://travis-ci.org/Zalasus/opendrakan.svg?branch=master)](https://travis-ci.org/Zalasus/opendrakan)
 
-An effort te reverse-engineer and hopefully reimplement Surreal Software's
-Riot Engine with the ultimate goal to be able to run the game 
-"Drakan: Order of the Flame" on a modern GNU/Linux system.
+A project to reverse-engineer and recreate Surreal Software's Riot Engine with the ultimate goal to be
+able to run the game *Drakan: Order of the Flame* on a modern GNU/Linux system.
 
-This project is still in a very early stage. So far it includes only the 
-documentation on the partially decoded database format, code to read the engine's assets and
-a very basic level viewer. Everything is still WIP and no extensive project planning has been done yet.
+This project is still in an early stage. Many things are still work-in-progress and the current state of
+the engine differs from the original game in many ways.
 
 My documentation on the Riot Engine's SRSC file format can be found 
 [here](https://github.com/Zalasus/opendrakan/blob/master/doc/riot_database_format.txt).
+Additional documentation can be found in the [OpenDrakan wiki](https://github.com/Zalasus/opendrakan/wiki).
 
 
 Copyright notice
 ----------------
 
-Everything in this project was created by me or was taken from other open-source projects in
-accordance with their respective license. This project does not and will never distribute any 
+Everything in this project was created specifically for OpenDrakan or was taken from other open-source
+projects in accordance with their respective license. This project does not and will never distribute any 
 copyrighted material by Surreal Software or Warner Bros. Interactive Entertainment (who aquired
-Surreal Software in 2009).
+Surreal Software in 2009). __OpenDrakan will not enable you to play Drakan without owning a legal copy!__
 
 All information on the Riot Engine has been aquired through reverse engineering or by other, 
 non-copyright-infringing means.
@@ -38,7 +37,7 @@ On Linux, these should be provided by your distro, so simply installing the appr
 should suffice to compile OpenDrakan. This was tested successfully on Debian and Arch Linux.
 
 Once you have all dependencies, fire up a terminal in the project root and do your usual CMake building routine:
-```
+```bash
 $ mkdir build && cd build
 $ cmake ..
 $ make
@@ -54,11 +53,14 @@ load the intro level. To load a specific level, run OpenDrakan with the path to 
 Right now, OpenDrakan has a few command line options to inspect Drakan resource files and extract data from them to aid
 in reverse-engineering. You can get an overview of these using the -h option.
 
+Depending on the current state of the project, your results may vary. Right now, some levels load while others don't.
+Most testing has been done on the "Ruined Village" level, so that's the one you probably want to try out OpenDrakan with.
+
 
 License
 -------
 
-Despite it's early stage, I'm releasing this project under GPL 3.0 
+OpenDrakan is released under GPL 3.0 
 (see [LICENSE](https://github.com/Zalasus/opendrakan/blob/master/LICENSE) for 
 full license text).
 
