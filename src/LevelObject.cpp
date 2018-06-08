@@ -168,6 +168,18 @@ namespace od
             mRflClassInstance->spawned(*this);
         }
 
+        // build vector of linked object pointers from the stored indices if we haven't done that yet
+        if(mLinkedObjects.size() != mLinks.size())
+        {
+            mLinkedObjects.reserve(mLinks.size());
+
+            for(auto it = mLinks.begin(); it != mLinks.end(); ++it)
+            {
+                LevelObject &obj = mLevel.getLevelObjectByIndex(*it);
+                mLinkedObjects.push_back(osg::ref_ptr<LevelObject>(&obj));
+            }
+        }
+
         Logger::debug() << "Object " << getObjectId() << " spawned";
 
         mSpawned = true;
@@ -203,6 +215,8 @@ namespace od
         {
             mRflClassInstance->messageReceived(*this, sender, message);
         }
+
+        Logger::verbose() << "Object " << getObjectId() << " received message";
     }
 
     void LevelObject::setPosition(const osg::Vec3f &v)
@@ -303,8 +317,10 @@ namespace od
 
     void LevelObject::messageAllLinkedObjects(odRfl::RflMessage message)
     {
-        Logger::debug() << "messageAllLinkedObjects is a stub";
-        // TODO: stub. implement
+        for(auto it = mLinkedObjects.begin(); it != mLinkedObjects.end(); ++it)
+        {
+            (*it)->messageReceived(*this, message);
+        }
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

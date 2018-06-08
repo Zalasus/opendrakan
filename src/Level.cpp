@@ -46,7 +46,7 @@ namespace od
     	// despawn all remaining objects
     	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
     	{
-    		it->second->despawned();
+    		(*it)->despawned();
     	}
 
     	// TODO: this needs a proper mechanism and a map~ we will be doing this on the fly later
@@ -75,9 +75,19 @@ namespace od
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
-            mObjectGroup->addChild(it->second);
-            it->second->spawned();
+            mObjectGroup->addChild(*it);
+            (*it)->spawned();
         }
+    }
+
+    LevelObject &Level::getLevelObjectByIndex(uint16_t index)
+    {
+        if(index >= mLevelObjects.size())
+        {
+            throw NotFoundException("Level object with given index not found");
+        }
+
+        return *mLevelObjects[index];
     }
 
     // TODO: the following methods look pretty redundant. find clever template interface for them
@@ -287,12 +297,13 @@ namespace od
 
     	Logger::verbose() << "Level has " << objectCount << " objects";
 
+    	mLevelObjects.resize(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)
     	{
     		LevelObjectPtr object(new od::LevelObject(*this));
     		object->loadFromRecord(dr);
 
-    		mLevelObjects[object->getObjectId()] = object;
+    		mLevelObjects[i] = object;
     	}
 
     	// disable lighting for objects as models will show up mostly black right now

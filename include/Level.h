@@ -50,6 +50,8 @@ namespace od
         void loadLevel();
         void spawnAllObjects();
 
+        LevelObject &getLevelObjectByIndex(uint16_t index);
+
         // implement AssetProvider
         virtual Texture   *getTextureByRef(const AssetRef &ref) override;
         virtual Class     *getClassByRef(const AssetRef &ref) override;
@@ -76,7 +78,7 @@ namespace od
         uint32_t mMaxHeight;
         std::map<uint16_t, DbRefWrapper> mDependencyMap;
         std::vector<std::shared_ptr<Layer>> mLayers;
-        std::map<uint32_t, osg::ref_ptr<LevelObject>> mLevelObjects;
+        std::vector<osg::ref_ptr<LevelObject>> mLevelObjects;
         osg::ref_ptr<osg::Group> mLevelRootNode;
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;

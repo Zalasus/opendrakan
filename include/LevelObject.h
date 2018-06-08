@@ -125,6 +125,8 @@ namespace od
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         bool mSpawned;
 
+        std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
+
         osg::ref_ptr<od::LevelObject> mAttachmentTarget;
         osg::Vec3f mAttachmentTranslationOffset;
         bool mIgnoreAttachmentRotation;
