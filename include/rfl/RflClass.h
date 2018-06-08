@@ -40,6 +40,7 @@ namespace odRfl
 		virtual void loaded(od::Engine &e, od::LevelObject *obj);
 		virtual void spawned(od::LevelObject &obj);
 		virtual void despawned(od::LevelObject &obj);
+		virtual void update(od::LevelObject &obj, double simTime, double relTime);
 	};
 
 }

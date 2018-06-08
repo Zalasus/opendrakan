@@ -21,6 +21,46 @@
 namespace od
 {
 
+    class LevelObjectUpdateCallback : public osg::NodeCallback
+    {
+        public:
+
+        LevelObjectUpdateCallback(LevelObject &obj)
+        : mLevelObject(obj)
+        , mLastSimTime(0)
+        , mFirstUpdate(true)
+        {
+        }
+
+        virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
+        {
+            const osg::FrameStamp *fs = nv->getFrameStamp();
+            double simTime = 0;
+            if(fs != nullptr)
+            {
+                if(mFirstUpdate)
+                {
+                    mLastSimTime = fs->getSimulationTime();
+                    mFirstUpdate = false;
+                }
+
+                simTime = fs->getSimulationTime();
+            }
+
+            mLevelObject.update(simTime, simTime - mLastSimTime);
+
+            traverse(node, nv);
+        }
+
+    private:
+
+        LevelObject &mLevelObject;
+        double mLastSimTime;
+        bool mFirstUpdate;
+    };
+
+
+
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
@@ -149,6 +189,14 @@ namespace od
         mSpawned = false;
     }
 
+    void LevelObject::update(double simTime, double relTime)
+    {
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->update(*this, simTime, relTime);
+        }
+    }
+
     void LevelObject::setPosition(const osg::Vec3f &v)
     {
         mTransform->setPosition(v);
@@ -219,6 +267,30 @@ namespace od
         }
 
         mAttachmentTarget = nullptr;
+    }
+
+    void LevelObject::setEnableRflUpdateHook(bool enableHook)
+    {
+        if(enableHook)
+        {
+            if(mUpdateCallback != nullptr)
+            {
+                return;
+            }
+
+            mUpdateCallback = new LevelObjectUpdateCallback(*this);
+            this->addUpdateCallback(mUpdateCallback);
+
+        }else
+        {
+            if(mUpdateCallback == nullptr)
+            {
+                return;
+            }
+
+            this->removeUpdateCallback(mUpdateCallback);
+            mUpdateCallback = nullptr;
+        }
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

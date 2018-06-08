@@ -46,6 +46,7 @@ namespace od
         void loadFromRecord(DataReader dr);
         void spawned();
         void despawned();
+        void update(double simTime, double relTime);
 
         void setPosition(const osg::Vec3f &v);
         void setRotation(const osg::Quat &q);
@@ -87,6 +88,8 @@ namespace od
          */
         void detach();
 
+        void setEnableRflUpdateHook(bool enableHook);
+
         // override osg::Group
         virtual const char *libraryName() const override { return "od";    }
         virtual const char *className()   const override { return "LevelObject"; }
@@ -123,6 +126,8 @@ namespace od
         osg::Vec3f mAttachmentTranslationOffset;
         bool mIgnoreAttachmentRotation;
         std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
+
+        osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
     };
 
     typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;

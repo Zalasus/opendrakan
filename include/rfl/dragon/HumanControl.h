@@ -234,6 +234,8 @@ namespace odRfl
 
 		virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
 		virtual void spawned(od::LevelObject &obj) override;
+		virtual void update(od::LevelObject &obj, double simTime, double relTime) override;
+
 
 		// implement od::Player
 		virtual float getYaw() const override { return mYaw; }
@@ -244,8 +246,6 @@ namespace odRfl
 		virtual void moveRight(float speed) override;
 		virtual osg::Vec3f getPosition() override;
 		virtual od::LevelObject &getLevelObject() override;
-
-		void update(double simTime, double relTime);
 
 
 	 private:

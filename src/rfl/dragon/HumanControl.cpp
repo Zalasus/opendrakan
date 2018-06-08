@@ -18,49 +18,6 @@
 namespace odRfl
 {
 
-
-	class PlayerUpdateCallback : public osg::NodeCallback
-	{
-	public:
-
-		PlayerUpdateCallback(HumanControl &hc)
-		: mHumanControl(hc)
-		, mFirstUpdate(true)
-		, mPrevTime(0)
-		{
-		}
-
-		virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
-		{
-			traverse(node, nv);
-
-			if(nv->getFrameStamp() != nullptr)
-			{
-				double simTime = nv->getFrameStamp()->getSimulationTime();
-
-				if(mFirstUpdate)
-				{
-					mPrevTime = simTime; // so we avoid massive jumps at first update
-					mFirstUpdate = false;
-				}
-
-				mHumanControl.update(simTime, simTime - mPrevTime);
-
-				mPrevTime = simTime;
-			}
-		}
-
-
-	private:
-
-		HumanControl &mHumanControl;
-		bool mFirstUpdate;
-		double mPrevTime;
-
-	};
-
-
-
 	HumanControlFields::HumanControlFields()
 	: mRightWeaponChannel(0)
 	, mLeftWeaponChannel(0)
@@ -503,8 +460,7 @@ namespace odRfl
 				<< obj.getPosition().y() << "/"
 				<< obj.getPosition().z();
 
-    	mUpdateCallback = new PlayerUpdateCallback(*this);
-    	obj.addUpdateCallback(mUpdateCallback);
+    	obj.setEnableRflUpdateHook(true);
 
     	if(obj.getSkeletonRoot() == nullptr)
     	{
@@ -516,6 +472,13 @@ namespace odRfl
 
 			mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), mCharacterController.get());
     	}
+    }
+
+    void HumanControl::update(od::LevelObject &obj, double simTime, double relTime)
+    {
+        mCharacterController->update(relTime);
+
+        _updateMotion(relTime);
     }
 
     void HumanControl::moveForward(float speed)
@@ -542,13 +505,6 @@ namespace odRfl
 	{
 	    return *mPlayerObject;
 	}
-
-    void HumanControl::update(double simTime, double relTime)
-    {
-    	mCharacterController->update(relTime);
-
-    	_updateMotion(relTime);
-    }
 
     void HumanControl::_updateMotion(double relTime)
     {
