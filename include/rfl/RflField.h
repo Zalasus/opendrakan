@@ -14,6 +14,7 @@
 #include <limits>
 #include <osg/ref_ptr>
 
+#include "rfl/RflMessage.h"
 #include "db/Asset.h"
 #include "db/AssetProvider.h"
 #include "db/Texture.h"
@@ -152,20 +153,6 @@ namespace odRfl
 	typedef RflEnumImpl<uint32_t> RflEnum;
 
     typedef RflEnumImpl<bool, 0, 1> RflEnumYesNo;
-
-    enum class RflMessage
-    {
-        Off,
-        On,
-        Lock,
-        Unlock,
-        PlaySequence,
-        BlowUp,
-        Triggered,
-        MoveToWaypoint,
-        ImDead,
-        Gib
-    };
 
     typedef RflEnumImpl<RflMessage, 0, 9> RflEnumMessage;
 
