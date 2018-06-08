@@ -198,6 +198,8 @@ namespace od
         detach();
         _detachAllAttachedObjects();
 
+        setEnableRflUpdateHook(false);
+
         mSpawned = false;
     }
 
