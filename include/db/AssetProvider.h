@@ -35,12 +35,12 @@ namespace od
 	     * These get assets from this provider or fetch them from a referenced dependency.
 	     * Note that these functions transfer ownership. It is vital that their return value is stored in a ref_ptr.
 	     */
-	    virtual Texture   *getTextureByRef(const AssetRef &ref) = 0;
-	    virtual Class     *getClassByRef(const AssetRef &ref) = 0;
-	    virtual Model     *getModelByRef(const AssetRef &ref) = 0;
-	    virtual Sequence  *getSequenceByRef(const AssetRef &ref) = 0;
-	    virtual Animation *getAnimationByRef(const AssetRef &ref) = 0;
-	    virtual Sound     *getSoundByRef(const AssetRef &ref) = 0;
+	    virtual Texture   *getTextureByRef(const AssetRef &ref) { throw Exception("Can't provide textures"); }
+	    virtual Class     *getClassByRef(const AssetRef &ref) { throw Exception("Can't provide classes"); }
+	    virtual Model     *getModelByRef(const AssetRef &ref) { throw Exception("Can't provide models"); }
+	    virtual Sequence  *getSequenceByRef(const AssetRef &ref) { throw Exception("Can't provide sequences"); }
+	    virtual Animation *getAnimationByRef(const AssetRef &ref) { throw Exception("Can't provide animations"); }
+	    virtual Sound     *getSoundByRef(const AssetRef &ref) { throw Exception("Can't provide sounds"); }
 
 	    /*
 	     * These get assets from this provider without indirection. Override if implementer can load

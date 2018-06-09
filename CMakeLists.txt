@@ -59,6 +59,7 @@ set(SOURCES
         "src/anim/Animator.cpp"
         "src/anim/MotionAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"
+        "src/gui/GuiManager.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"
