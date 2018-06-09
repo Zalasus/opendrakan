@@ -132,10 +132,11 @@ namespace od
 
         // now that the database is loaded, create the various asset factories
 
-        _tryOpeningAssetContainer(mClassFactory, mClassContainer, ".odb");
-        _tryOpeningAssetContainer(mModelFactory, mModelContainer, ".mod");
-        _tryOpeningAssetContainer(mAnimFactory,  mAnimContainer,  ".adb");
-        _tryOpeningAssetContainer(mSoundFactory, mSoundContainer, ".sdb");
+        _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
+        _tryOpeningAssetContainer(mModelFactory,    mModelContainer,    ".mod");
+        _tryOpeningAssetContainer(mAnimFactory,     mAnimContainer,     ".adb");
+        _tryOpeningAssetContainer(mSoundFactory,    mSoundContainer,    ".sdb");
+        _tryOpeningAssetContainer(mSequenceFactory, mSequenceContainer, ".ssd");
 
         // texture container is different. it needs an engine reference
         FilePath txdPath = mDbFilePath.ext(".txd");
@@ -288,7 +289,14 @@ namespace od
 
 	Sequence *Database::getSequence(RecordId recordId)
 	{
-        throw NotFoundException("Can't get sequence. Database has no sequence container");
+        if(mSequenceFactory == nullptr)
+        {
+            throw NotFoundException("Can't get sequence. Database has no sequence container");
+        }
+
+        osg::ref_ptr<Sequence> asset = mSequenceFactory->getAsset(recordId);
+
+        return asset.release();
 	}
 
 	Animation *Database::getAnimation(RecordId recordId)

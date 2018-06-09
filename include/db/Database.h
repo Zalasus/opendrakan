@@ -24,6 +24,7 @@
 #include "ClassFactory.h"
 #include "AnimationFactory.h"
 #include "SoundFactory.h"
+#include "SequenceFactory.h"
 
 namespace od
 {
@@ -91,6 +92,9 @@ namespace od
 
 		std::unique_ptr<SoundFactory> mSoundFactory;
 		std::unique_ptr<SrscFile> mSoundContainer;
+
+		std::unique_ptr<SequenceFactory> mSequenceFactory;
+        std::unique_ptr<SrscFile> mSequenceContainer;
 	};
 
 	template <typename T>
