@@ -10,13 +10,13 @@
 #include "Exception.h"
 #include "SrscRecordTypes.h"
 #include "Logger.h"
-#include "db/Database.h"
 
 namespace od
 {
 
-	TextureFactory::TextureFactory(const FilePath &txdFilePath, Database &database)
-	: AssetFactory<Texture>(txdFilePath, database)
+	TextureFactory::TextureFactory(AssetProvider &ap, SrscFile &textureContainer, Engine &engine)
+	: AssetFactory<Texture>(ap, textureContainer)
+	, mEngine(engine)
 	{
 		_loadPalette();
 	}
@@ -32,18 +32,15 @@ namespace od
 		return mPalette[index];
 	}
 
-	TexturePtr TextureFactory::loadAsset(RecordId textureId)
+	osg::ref_ptr<Texture> TextureFactory::loadAsset(RecordId textureId)
 	{
 		SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::TEXTURE, textureId);
 		if(dirIt == getSrscFile().getDirectoryEnd())
 		{
-			Logger::error() << "Texture " << std::hex << textureId << std::dec << " not found in database " << getDatabase().getShortName();
-			throw NotFoundException("Texture not found in database");
+			return nullptr;
 		}
 
-		Logger::debug() << "Loading texture " << std::hex << textureId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
-
-		TexturePtr texture(new Texture(getDatabase(), textureId));
+		osg::ref_ptr<Texture> texture(new Texture(getAssetProvider(), textureId));
 		texture->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(dirIt)));
 
 		return texture;

@@ -32,8 +32,8 @@
 namespace od
 {
 
-    Texture::Texture(Database &db, RecordId id)
-    : Asset(db, id)
+    Texture::Texture(AssetProvider &ap, RecordId id)
+    : Asset(ap, id)
     , mWidth(0)
     , mHeight(0)
     , mBitsPerPixel(0)
@@ -236,10 +236,10 @@ namespace od
 
         if(!mClassRef.isNull())
         {
-        	mClass = getDatabase().getClassByRef(mClassRef);
+        	mClass = this->getAssetProvider().getClassByRef(mClassRef);
         	std::unique_ptr<odRfl::RflClass> rflClass = mClass->makeInstance();
         	mMaterial = std::unique_ptr<odRfl::Material>(dynamic_cast<odRfl::Material*>(rflClass.release()));
-        	mMaterial->loaded(getDatabase().getDbManager().getEngine(), nullptr);
+        	mMaterial->loaded(factory.getEngine(), nullptr);
         }
 
         Logger::debug() << "Texture successfully loaded";

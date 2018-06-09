@@ -13,31 +13,35 @@
 namespace od
 {
 
-	class Database;
+	class AssetProvider;
 
 	class Asset
 	{
 	public:
 
-		Asset(Database &db, RecordId assetId);
+		Asset(AssetProvider &ap, RecordId assetId);
 		Asset(Asset &a) = delete;
 		Asset(const Asset &a) = delete;
 		virtual ~Asset();
 
 		inline RecordId getAssetId() const { return mId; }
-		inline Database &getDatabase() { return mDb; }
-
-		virtual const char *getAssetTypeName() const = 0;
-
-		/// loader function for assets that are loadable from a single record. used by the generic asset factory. default implementation throws
-		virtual void loadFromRecord(DataReader &dr);
+		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
 
 
 	private:
 
-		Database &mDb;
+		AssetProvider &mAssetProvider;
 		RecordId mId;
 
+	};
+
+	template <typename T>
+	struct AssetTraits
+	{
+	    static const char *name()
+	    {
+	        return "<N/A>";
+	    }
 	};
 
 	/**

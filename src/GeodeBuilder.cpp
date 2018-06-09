@@ -189,7 +189,7 @@ namespace od
 				// texture also unique per geometry
 				if(!it->texture.isNullTexture())
 				{
-					TexturePtr textureImage = mAssetProvider.getTextureByRef(it->texture);
+					osg::ref_ptr<Texture> textureImage = mAssetProvider.getTextureByRef(it->texture);
 					osg::StateSet *ss = geom->getOrCreateStateSet();
 					if(textureImage->hasAlpha())
 					{

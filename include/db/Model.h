@@ -43,7 +43,7 @@ namespace od
 	{
 	public:
 
-		Model(Database &db, RecordId modelId);
+		Model(AssetProvider &ap, RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
 
 		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
@@ -61,9 +61,6 @@ namespace od
 		void loadLodsAndBones(ModelFactory &factory, DataReader &&dr);
 		void buildGeometry();
 
-		// implement Asset
-        virtual const char *getAssetTypeName() const override { return "model"; }
-
 
 	private:
 
@@ -80,7 +77,15 @@ namespace od
 		bool mPolygonsLoaded;
 	};
 
-	typedef osg::ref_ptr<Model> ModelPtr;
+	template <>
+    struct AssetTraits<Model>
+    {
+        static const char *name()
+        {
+            return "Model";
+        }
+    };
+
 }
 
 #endif /* INCLUDE_MODEL_H_ */

@@ -8,8 +8,6 @@
 #ifndef INCLUDE_TEXTUREFACTORY_H_
 #define INCLUDE_TEXTUREFACTORY_H_
 
-#include <osg/Observer>
-
 #include "Asset.h"
 #include "AssetFactory.h"
 #include "FilePath.h"
@@ -18,9 +16,10 @@
 
 namespace od
 {
-	class Database;
 
-	class TextureFactory : public AssetFactory<Texture>
+    class Engine;
+
+    class TextureFactory : public AssetFactory<Texture>
 	{
 	public:
 
@@ -32,7 +31,12 @@ namespace od
 			uint8_t dummy;
 		};
 
-		TextureFactory(const FilePath &txdFilePath, Database &database);
+		/**
+         * This needs an engine instance because classes pass it to the RFL loaded hook.
+         */
+		TextureFactory(AssetProvider &ap, SrscFile &textureContainer, Engine &engine);
+
+		inline Engine &getEngine() { return mEngine; }
 
 		PaletteColor getPaletteColor(size_t index);
 
@@ -40,13 +44,14 @@ namespace od
 	protected:
 
 		// implement AssetFactory<Texture>
-		TexturePtr loadAsset(RecordId textureId) override;
+		virtual osg::ref_ptr<Texture> loadAsset(RecordId textureId) override;
 
 
 	private:
 
 		void _loadPalette();
 
+		Engine &mEngine;
 		std::vector<PaletteColor> mPalette;
 	};
 

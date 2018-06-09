@@ -7,25 +7,19 @@
 
 #include "db/Asset.h"
 
-#include "db/Database.h"
 #include "Exception.h"
 
 namespace od
 {
 
-	Asset::Asset(Database &db, RecordId assetId)
-	: mDb(db)
+	Asset::Asset(AssetProvider &ap, RecordId assetId)
+	: mAssetProvider(ap)
 	, mId(assetId)
 	{
 	}
 
 	Asset::~Asset()
 	{
-	}
-
-	void Asset::loadFromRecord(DataReader &dr)
-	{
-	    throw UnsupportedException(std::string(this->getAssetTypeName()) + " assets can't be loaded from a single record. Need to use custom loader function and factory");
 	}
 
 

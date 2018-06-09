@@ -42,6 +42,8 @@ namespace od
 		SEQUENCE            = 0x0311,
 		SEQUENCE_GROUP      = 0x0312,
 
+		LOCALIZED_STRING    = 0x0400,
+
 		ANIMATION_INFO      = 0x0501,
         ANIMATION_FRAMES    = 0x0502,
 		ANIMATION_LOOKUP    = 0x0503

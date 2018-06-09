@@ -22,7 +22,7 @@ namespace od
     {
     }
 
-    void TextureAtlas::addTexture(const AssetRef &textureRef, TexturePtr texture)
+    void TextureAtlas::addTexture(const AssetRef &textureRef, osg::ref_ptr<Texture> texture)
     {
         if(mFinished)
         {

@@ -8,16 +8,17 @@
 #include "db/Class.h"
 
 #include "Logger.h"
-#include "db/Database.h"
+#include "Exception.h"
 #include "db/ClassFactory.h"
+#include "db/AssetProvider.h"
 #include "rfl/Rfl.h"
 #include "rfl/RflFieldProbe.h"
 
 namespace od
 {
 
-    Class::Class(Database &db, RecordId classId)
-    : Asset(db, classId)
+    Class::Class(AssetProvider &ap, RecordId classId)
+    : Asset(ap, classId)
     , mRflClassId(0)
     , mIconNumber(0)
     {
@@ -37,7 +38,7 @@ namespace od
         {
             try
             {
-                mModel = getDatabase().getModelByRef(mModelRef);
+                mModel = this->getAssetProvider().getModelByRef(mModelRef);
 
             }catch(NotFoundException &e)
             {

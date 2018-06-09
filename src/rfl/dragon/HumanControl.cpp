@@ -450,8 +450,8 @@ namespace odRfl
         engine.getLevel().setPlayer(this);
 
         // prefetch animations
-        mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
-        mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getDatabase());
+        mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getAssetProvider());
+        mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getAssetProvider());
     }
 
     void HumanControl::spawned(od::LevelObject &obj)

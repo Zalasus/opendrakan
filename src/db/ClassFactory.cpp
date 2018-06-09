@@ -16,24 +16,21 @@
 namespace od
 {
 
-	ClassFactory::ClassFactory(const FilePath &odbFilePath, Database &database)
-    : AssetFactory<Class>(odbFilePath, database)
+	ClassFactory::ClassFactory(AssetProvider &ap, SrscFile &classContainer)
+    : AssetFactory<Class>(ap, classContainer)
     {
         _loadRflRecord();
     }
 
-    ClassPtr ClassFactory::loadAsset(RecordId classId)
+    osg::ref_ptr<Class> ClassFactory::loadAsset(RecordId classId)
     {
         SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(SrscRecordType::CLASS, classId);
         if(it == getSrscFile().getDirectoryEnd())
         {
-        	Logger::error() << "Class " << std::hex << classId << std::dec << " not found in database " << getDatabase().getShortName();
-            throw NotFoundException("Given class not found in database");
+        	return nullptr;
         }
 
-		Logger::debug() << "Loading class " << std::hex << classId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
-
-        ClassPtr newClass(new Class(getDatabase(), classId));
+        osg::ref_ptr<Class> newClass(new Class(getAssetProvider(), classId));
         newClass->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(it)));
 
         return newClass;
@@ -53,7 +50,7 @@ namespace od
         dr >> DataReader::Ignore(8)
            >> rflPathStr;
 
-        FilePath rflPath(rflPathStr, getDatabase().getDbFilePath().dir());
+        FilePath rflPath(rflPathStr, getSrscFile().getFilePath().dir());
 
         if(!StringUtils::compareIgnoringCase(rflPath.fileStrNoExt(), odRfl::Rfl::getSingleton().getName()))
         {

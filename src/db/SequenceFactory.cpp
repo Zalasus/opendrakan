@@ -12,28 +12,24 @@
 namespace od
 {
 
-    SequenceFactory::SequenceFactory(const FilePath &sdbFilePath, Database &database)
-    : AssetFactory<Sequence>(sdbFilePath, database)
+    SequenceFactory::SequenceFactory(AssetProvider &ap, SrscFile &sequenceContainer)
+    : AssetFactory<Sequence>(ap, sequenceContainer)
     {
     }
 
-    SequencePtr SequenceFactory::loadAsset(RecordId assetId)
+    osg::ref_ptr<Sequence> SequenceFactory::loadAsset(RecordId assetId)
     {
         SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::SEQUENCE, assetId);
         if(dirIt == getSrscFile().getDirectoryEnd())
         {
-            Logger::error() << "Sequence " << std::hex << assetId << std::dec << " not found in database " << getDatabase().getShortName();
-            throw NotFoundException("Sequence not found in database");
+            return nullptr;
         }
 
-        Logger::debug() << "Loading sequence " << std::hex << assetId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
-
-        SequencePtr sequence(new Sequence(getDatabase(), assetId));
+        osg::ref_ptr<Sequence> sequence(new Sequence(getAssetProvider(), assetId));
         DataReader dr(getSrscFile().getStreamForRecord(dirIt));
         sequence->loadFromRecord(dr);
 
         return sequence;
     }
-
 }
 

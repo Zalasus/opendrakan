@@ -15,10 +15,12 @@
 #include "FilePath.h"
 #include "SrscFile.h"
 #include "Logger.h"
+#include "Exception.h"
+#include "db/Asset.h"
 
 namespace od
 {
-	class Database;
+	class AssetProvider;
 
 	/**
 	 * Common interface for TextureFactory, AssetFactory etc.
@@ -28,11 +30,13 @@ namespace od
 	{
 	public:
 
+	    typedef _AssetType AssetType;
+
 		AssetFactory(AssetFactory &f) = delete;
 		AssetFactory(const AssetFactory &f) = delete;
 		virtual ~AssetFactory();
 
-		inline Database &getDatabase() { return mDatabase; }
+		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
 		inline SrscFile &getSrscFile() { return mSrscFile; }
 
 		osg::ref_ptr<_AssetType> getAsset(RecordId assetId);
@@ -40,9 +44,15 @@ namespace od
 
 	protected:
 
-		AssetFactory(const FilePath &containerFilePath, Database &database);
+		AssetFactory(AssetProvider &ap, SrscFile &assetContainer);
 
-		// interface
+		/**
+		 * @brief Interface method for asking child factories to load uncached asset.
+		 *
+		 * This method will get called by AssetFactory when an asset that is not yet cached is requested.
+		 * The implementing class must load the asset with the given ID and return it, or return nullptr if
+		 * it could not be found. In the latter case, AssetFactory will produce an appropriate error message and exception.
+		 */
 		virtual osg::ref_ptr<_AssetType> loadAsset(RecordId id) = 0;
 
 		// override osg::Observer
@@ -54,16 +64,16 @@ namespace od
 		_AssetType *_getAssetFromCache(RecordId id);
 		void _addAssetToCache(RecordId id, _AssetType *asset);
 
-		Database &mDatabase;
-		SrscFile mSrscFile;
+		AssetProvider &mAssetProvider;
+		SrscFile &mSrscFile;
 
 		std::map<RecordId, _AssetType*> mAssetCache;
 	};
 
 	template <typename _AssetType>
-	AssetFactory<_AssetType>::AssetFactory(const FilePath &containerPath, Database &database)
-	: mDatabase(database)
-	, mSrscFile(containerPath)
+	AssetFactory<_AssetType>::AssetFactory(AssetProvider &ap, SrscFile &assetContainer)
+	: mAssetProvider(ap)
+	, mSrscFile(assetContainer)
 	{
 	}
 
@@ -78,11 +88,18 @@ namespace od
 		_AssetType *cached = this->_getAssetFromCache(assetId);
 	    if(cached != nullptr)
 	    {
-	        Logger::debug() << "Found " << cached->getAssetTypeName() << " " << std::hex << assetId << std::dec << " in cache";
+	        Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
 	        return osg::ref_ptr<_AssetType>(cached);
 	    }
 
+	    // not cached. let implementation handle loading
+	    Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile.getFilePath().fileStr();
 	    osg::ref_ptr<_AssetType> loaded = this->loadAsset(assetId);
+	    if(loaded == nullptr)
+	    {
+	        Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
+            throw NotFoundException("Asset not found in cache or asset container");
+	    }
 	    this->_addAssetToCache(assetId, loaded.get());
 
 	    return loaded;
@@ -94,13 +111,13 @@ namespace od
 		_AssetType *asset = dynamic_cast<_AssetType*>(static_cast<osg::Referenced*>(object)); // a bit unsafe but osg gives us no choice
 	    if(asset == nullptr)
 	    {
-	        Logger::warn() << "Asset factory was notified of deletion of non-asset object";
+	        Logger::warn() << AssetTraits<_AssetType>::name() << " factory was notified of deletion of non-" << AssetTraits<_AssetType>::name() << " object";
 	        return;
 	    }
 
 	    RecordId assetId = asset->getAssetId();
 
-	    Logger::debug() << "Unregistering " << asset->getAssetTypeName() << " " << std::hex << assetId << std::dec << " from cache";
+	    Logger::debug() << "Unregistering " << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " from cache";
 
 	    mAssetCache.erase(assetId);
 	}
@@ -122,7 +139,7 @@ namespace od
 	{
 		if(_getAssetFromCache(assetId) != nullptr)
 		{
-			Logger::warn() << "Ignoring double caching of " << asset->getAssetTypeName() << " " << std::hex << assetId << std::dec;
+			Logger::warn() << "Ignoring double caching of " << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec;
 			return;
 		}
 

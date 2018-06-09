@@ -30,7 +30,7 @@ namespace od
          *
          * Once the atlas has been built, this must not be called anymore or the method will throw.
          */
-        void addTexture(const AssetRef &ref, TexturePtr texture);
+        void addTexture(const AssetRef &ref, osg::ref_ptr<Texture> texture);
         void build();
 
         /**
@@ -49,7 +49,7 @@ namespace od
 
         struct AtlasEntry
         {
-            TexturePtr texture;
+            osg::ref_ptr<Texture> texture;
             osg::Vec2 uvA;
             osg::Vec2 uvB;
             osg::Vec2 uvC;

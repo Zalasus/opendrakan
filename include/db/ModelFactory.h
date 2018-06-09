@@ -9,26 +9,23 @@
 #define INCLUDE_MODELFACTORY_H_
 
 #include "AssetFactory.h"
-#include "FilePath.h"
 #include "SrscFile.h"
 #include "Model.h"
 
 namespace od
 {
 
-	class Database;
-
 	class ModelFactory : public AssetFactory<Model>
 	{
 	public:
 
-		ModelFactory(const FilePath &modFilePath, Database &database);
+		ModelFactory(AssetProvider &ap, SrscFile &modelContainer);
 
 
 	protected:
 
 		// implement AssetFactory<Model>
-		virtual ModelPtr loadAsset(RecordId id) override;
+		virtual osg::ref_ptr<Model> loadAsset(RecordId id) override;
 
 	};
 

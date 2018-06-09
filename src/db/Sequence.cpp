@@ -113,8 +113,8 @@ namespace od
     }
 
 
-    Sequence::Sequence(Database &db, RecordId id)
-    : Asset(db, id)
+    Sequence::Sequence(AssetProvider &ap, RecordId id)
+    : Asset(ap, id)
     {
     }
 
