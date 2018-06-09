@@ -12,8 +12,8 @@
 namespace od
 {
 
-    SoundFactory::SoundFactory(const FilePath &sdbFilePath, Database &database)
-    : AssetFactory<Sound>(sdbFilePath, database)
+    SoundFactory::SoundFactory(AssetProvider &ap, SrscFile &soundContainer)
+    : AssetFactory<Sound>(ap, soundContainer)
     {
     }
 
@@ -22,13 +22,10 @@ namespace od
         SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::SOUND, soundId);
         if(dirIt == getSrscFile().getDirectoryEnd())
         {
-            Logger::error() << "Sound " << std::hex << soundId << std::dec << " not found in database " << getDatabase().getShortName();
-            throw NotFoundException("Texture not found in database");
+            return nullptr;
         }
 
-        Logger::debug() << "Loading sound " << std::hex << soundId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
-
-        osg::ref_ptr<Sound> sound(new Sound(getDatabase(), soundId));
+        osg::ref_ptr<Sound> sound(new Sound(getAssetProvider(), soundId));
         DataReader dr(getSrscFile().getStreamForRecord(dirIt));
         sound->loadFromRecord(dr);
 

@@ -14,17 +14,19 @@
 namespace od
 {
 
+    class Engine;
+
     class ClassFactory : public AssetFactory<Class>
     {
     public:
 
-        ClassFactory(const FilePath &odbFilePath, Database &database);
+        ClassFactory(AssetProvider &ap, SrscFile &classContainer);
 
 
     protected:
 
         // implement AssetFactory<ClassFactory>
-        virtual ClassPtr loadAsset(RecordId classId) override;
+        virtual osg::ref_ptr<Class> loadAsset(RecordId classId) override;
 
 
     private:

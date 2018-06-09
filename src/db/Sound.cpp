@@ -12,8 +12,8 @@
 namespace od
 {
 
-	Sound::Sound(Database &db, RecordId id)
-	: Asset(db, id)
+	Sound::Sound(AssetProvider &ap, RecordId id)
+	: Asset(ap, id)
 	, mSoundName("")
 	, mFlags(0)
 	, mChannels(0)

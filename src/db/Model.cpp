@@ -16,7 +16,6 @@
 #include "OdDefines.h"
 #include "Exception.h"
 #include "db/Asset.h"
-#include "db/Database.h"
 #include "db/ModelFactory.h"
 #include "db/Texture.h"
 #include "db/Skeleton.h"
@@ -26,8 +25,8 @@
 namespace od
 {
 
-	Model::Model(Database &db, RecordId modelId)
-	: Asset(db, modelId)
+	Model::Model(AssetProvider &ap, RecordId modelId)
+	: Asset(ap, modelId)
 	, mModelName("")
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
@@ -379,7 +378,7 @@ namespace od
 
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
-				GeodeBuilder gb(it->lodName, getDatabase());
+				GeodeBuilder gb(it->lodName, this->getAssetProvider());
 				gb.setClampTextures(false);
 
 				// the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
@@ -411,7 +410,7 @@ namespace od
 
 		}else
 		{
-			GeodeBuilder gb(mModelName, getDatabase());
+			GeodeBuilder gb(mModelName, this->getAssetProvider());
 			gb.setClampTextures(false);
 			gb.setVertexVector(mVertices.begin(), mVertices.end());
 			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());

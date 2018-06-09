@@ -9,29 +9,25 @@
 
 #include "Exception.h"
 #include "SrscRecordTypes.h"
-#include "db/Database.h"
 
 namespace od
 {
 
-	ModelFactory::ModelFactory(const FilePath &modFilePath, Database &database)
-	: AssetFactory<Model>(modFilePath, database)
+	ModelFactory::ModelFactory(AssetProvider &ap, SrscFile &modelContainer)
+	: AssetFactory<Model>(ap, modelContainer)
 	{
 	}
 
-	ModelPtr ModelFactory::loadAsset(RecordId id)
+	osg::ref_ptr<Model> ModelFactory::loadAsset(RecordId id)
 	{
 		SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_NAME, id);
 		if(nameRecord == getSrscFile().getDirectoryEnd())
 		{
-			Logger::error() << "Model " << std::hex << id << std::dec << " not found in database " << getDatabase().getShortName();
-			throw NotFoundException("Given model not found in database");
+			return nullptr;
 		}
 
-		Logger::debug() << "Loading model " << std::hex << id << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
-
 		// required records
-		ModelPtr model(new Model(getDatabase(), id));
+		osg::ref_ptr<Model> model(new Model(getAssetProvider(), id));
 		model->loadNameAndShading(*this, DataReader(getSrscFile().getStreamForRecord(nameRecord)));
 
 		SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::MODEL_VERTICES, id, nameRecord);
@@ -60,6 +56,5 @@ namespace od
 
 		return model;
 	}
-
 
 }

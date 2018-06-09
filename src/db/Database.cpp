@@ -132,62 +132,24 @@ namespace od
 
         // now that the database is loaded, create the various asset factories
 
+        _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
+        _tryOpeningAssetContainer(mModelFactory,    mModelContainer,    ".mod");
+        _tryOpeningAssetContainer(mAnimFactory,     mAnimContainer,     ".adb");
+        _tryOpeningAssetContainer(mSoundFactory,    mSoundContainer,    ".sdb");
+        _tryOpeningAssetContainer(mSequenceFactory, mSequenceContainer, ".ssd");
+
+        // texture container is different. it needs an engine reference
         FilePath txdPath = mDbFilePath.ext(".txd");
         if(txdPath.exists())
         {
-        	mTextureFactory = std::unique_ptr<TextureFactory>(new TextureFactory(txdPath, *this));
-        	Logger::verbose() << "Opened database texture container " << txdPath.str();
+            mTextureContainer.reset(new SrscFile(txdPath));
+            mTextureFactory.reset(new TextureFactory(*this, *mTextureContainer, mDbManager.getEngine()));
+
+            Logger::verbose() << "Opened database texture container " << txdPath.str();
 
         }else
         {
-        	Logger::verbose() << "Database has no texture container";
-        }
-
-
-        FilePath modPath = mDbFilePath.ext(".mod");
-        if(modPath.exists())
-        {
-        	mModelFactory = std::unique_ptr<ModelFactory>(new ModelFactory(modPath, *this));
-        	Logger::verbose() << "Opened database model container " << modPath.str();
-
-        }else
-        {
-        	Logger::verbose() << "Database has no model container";
-        }
-
-
-        FilePath odbPath = mDbFilePath.ext(".odb");
-        if(odbPath.exists())
-        {
-            mClassFactory = std::unique_ptr<ClassFactory>(new ClassFactory(odbPath, *this));
-            Logger::verbose() << "Opened database class container " << odbPath.str();
-
-        }else
-        {
-            Logger::verbose() << "Database has no class container";
-        }
-
-
-        FilePath adbPath = mDbFilePath.ext(".adb");
-        if(adbPath.exists())
-        {
-            mAnimFactory = std::unique_ptr<AnimationFactory>(new AnimationFactory(adbPath, *this));
-            Logger::verbose() << "Opened database animation container " << adbPath.str();
-
-        }else
-        {
-            Logger::verbose() << "Database has no animation container";
-        }
-
-        FilePath sdbPath = mDbFilePath.ext(".sdb");
-        if(sdbPath.exists())
-        {
-            mSoundFactory = std::unique_ptr<SoundFactory>(new SoundFactory(sdbPath, *this));
-            Logger::verbose() << "Opened database sound container " << sdbPath.str();
-
-        }else
-        {
-            Logger::verbose() << "Database has no sound container";
+            Logger::verbose() << "Database has no texture container";
         }
 	}
 
@@ -327,7 +289,14 @@ namespace od
 
 	Sequence *Database::getSequence(RecordId recordId)
 	{
-        throw NotFoundException("Can't get sequence. Database has no sequence container");
+        if(mSequenceFactory == nullptr)
+        {
+            throw NotFoundException("Can't get sequence. Database has no sequence container");
+        }
+
+        osg::ref_ptr<Sequence> asset = mSequenceFactory->getAsset(recordId);
+
+        return asset.release();
 	}
 
 	Animation *Database::getAnimation(RecordId recordId)

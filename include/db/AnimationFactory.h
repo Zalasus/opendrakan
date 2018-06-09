@@ -18,7 +18,7 @@ namespace od
     {
     public:
 
-        AnimationFactory(const FilePath &adbFilePath, Database &database);
+        AnimationFactory(AssetProvider &ap, SrscFile &animationContainer);
 
 
     protected:

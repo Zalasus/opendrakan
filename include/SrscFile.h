@@ -41,6 +41,7 @@ namespace od
 		SrscFile(const FilePath &filePath);
 		~SrscFile();
 
+		inline const FilePath &getFilePath() const { return mFilePath; }
 		inline uint16_t getVersion() const { return mVersion; };
 		inline size_t getRecordCount() const { return mDirectory.size(); };
 		inline const std::vector<DirEntry> &getDirectory() const { return mDirectory; };

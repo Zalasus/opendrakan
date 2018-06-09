@@ -12,8 +12,8 @@
 #include <osg/ref_ptr>
 #include <memory>
 
-#include "Asset.h"
-#include "Model.h"
+#include "db/Asset.h"
+#include "db/Model.h"
 #include "rfl/RflFieldProbe.h"
 
 namespace odRfl
@@ -29,31 +29,35 @@ namespace od
 	{
 	public:
 
-		Class(Database &db, RecordId classId);
+		Class(AssetProvider &ap, RecordId classId);
 
 		inline bool hasModel() const { return mModel != nullptr; }
-        inline ModelPtr getModel() { return mModel; }
+        inline osg::ref_ptr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
 
         void loadFromRecord(ClassFactory &factory, DataReader dr);
         std::unique_ptr<odRfl::RflClass> makeInstance();
-
-        // implement Asset
-        virtual const char *getAssetTypeName() const override { return "class"; }
 
 
 	private:
 
         std::string mClassName;
         AssetRef mModelRef;
-        ModelPtr mModel;
+        osg::ref_ptr<Model> mModel;
         uint16_t mRflClassId;
         odRfl::RflClassBuilder mClassBuilder;
         uint16_t mIconNumber;
 
 	};
 
-	typedef osg::ref_ptr<Class> ClassPtr;
+	template <>
+    struct AssetTraits<Class>
+    {
+        static const char *name()
+        {
+            return "Class";
+        }
+    };
 
 }
 

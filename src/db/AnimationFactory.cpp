@@ -15,8 +15,8 @@
 namespace od
 {
 
-	AnimationFactory::AnimationFactory(const FilePath &adbFilePath, Database &database)
-	: AssetFactory<Animation>(adbFilePath, database)
+	AnimationFactory::AnimationFactory(AssetProvider &ap, SrscFile &animationContainer)
+	: AssetFactory<Animation>(ap, animationContainer)
 	{
 	}
 
@@ -25,13 +25,11 @@ namespace od
 		SrscFile::DirIterator infoRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::ANIMATION_INFO, animId);
         if(infoRecord == getSrscFile().getDirectoryEnd())
         {
-        	Logger::error() << "Animation " << std::hex << animId << std::dec << " not found in database " << getDatabase().getShortName();
-            throw NotFoundException("Given animation not found in database");
+        	return nullptr;
         }
 
-		Logger::debug() << "Loading animation " << std::hex << animId << std::dec << " from database '" << getDatabase().getDbFilePath().fileStrNoExt() << "'";
+        osg::ref_ptr<Animation> newAnim(new Animation(getAssetProvider(), animId));
 
-        osg::ref_ptr<Animation> newAnim(new Animation(getDatabase(), animId));
         newAnim->loadInfo(DataReader(getSrscFile().getStreamForRecord(infoRecord)));
 
         SrscFile::DirIterator animFramesRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::ANIMATION_FRAMES, animId, infoRecord);

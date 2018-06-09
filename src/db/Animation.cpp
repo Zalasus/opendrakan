@@ -12,8 +12,8 @@
 namespace od
 {
 
-	Animation::Animation(Database &db, RecordId id)
-	: Asset(db, id)
+	Animation::Animation(AssetProvider &ap, RecordId id)
+	: Asset(ap, id)
 	, mDuration(0)
 	, mOriginalFrameCount(0)
 	, mFrameCount(0)

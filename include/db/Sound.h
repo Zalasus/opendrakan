@@ -23,12 +23,9 @@ namespace od
 	{
 	public:
 
-		Sound(Database &db, RecordId id);
+		Sound(AssetProvider &ap, RecordId id);
 
-		virtual void loadFromRecord(DataReader &dr) override;
-
-		// implement Asset
-        virtual const char *getAssetTypeName() const override { return "sound"; }
+		void loadFromRecord(DataReader &dr);
 
 
 	private:
@@ -47,6 +44,15 @@ namespace od
 
         std::vector<int16_t> mPcmBuffer;
 	};
+
+	template <>
+    struct AssetTraits<Sound>
+    {
+        static const char *name()
+        {
+            return "Sound";
+        }
+    };
 
 }
 

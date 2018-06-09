@@ -18,13 +18,13 @@ namespace od
     {
     public:
 
-        SequenceFactory(const FilePath &sdbFilePath, Database &database);
+        SequenceFactory(AssetProvider &ap, SrscFile &sequenceContainer);
 
 
     protected:
 
         // implement AssetFactory<Sequence>
-        SequencePtr loadAsset(RecordId textureId) override;
+        virtual osg::ref_ptr<Sequence> loadAsset(RecordId textureId) override;
 
     };
 

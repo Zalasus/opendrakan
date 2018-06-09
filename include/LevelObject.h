@@ -42,7 +42,7 @@ namespace od
         ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
-        inline ClassPtr getClass() { return mClass; }
+        inline osg::ref_ptr<Class> getClass() { return mClass; }
         inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
@@ -127,7 +127,7 @@ namespace od
         Level &mLevel;
         LevelObjectId mId;
         AssetRef mClassRef;
-        ClassPtr mClass;
+        osg::ref_ptr<Class> mClass;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         osg::Vec3f mInitialPosition;
         uint32_t mFlags;

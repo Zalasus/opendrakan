@@ -19,13 +19,15 @@ namespace od
     {
     public:
 
-        SoundFactory(const FilePath &sdbFilePath, Database &database);
+        SoundFactory(AssetProvider &ap, SrscFile &soundContainer);
 
 
     protected:
 
         // implement AssetFactory<Texture>
-        osg::ref_ptr<Sound> loadAsset(RecordId soundId) override;
+        virtual osg::ref_ptr<Sound> loadAsset(RecordId soundId) override;
+
+
     };
 }
 

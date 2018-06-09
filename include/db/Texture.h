@@ -28,15 +28,12 @@ namespace od
     {
     public:
 
-        Texture(Database &db, RecordId id);
+        Texture(AssetProvider &ap, RecordId id);
 
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         void loadFromRecord(TextureFactory &factory, DataReader dr);
         void exportToPng(const FilePath &path);
-
-        // implement Asset
-        virtual const char *getAssetTypeName() const override { return "texture"; }
 
         // override osg::Image
         virtual const char *libraryName() const override { return "od";    }
@@ -62,11 +59,19 @@ namespace od
         uint32_t mCompressedSize;
 
         bool mHasAlphaChannel;
-        ClassPtr mClass;
+        osg::ref_ptr<Class> mClass;
         std::unique_ptr<odRfl::Material> mMaterial;
     };
 
-    typedef osg::ref_ptr<Texture> TexturePtr;
+    template <>
+    struct AssetTraits<Texture>
+    {
+        static const char *name()
+        {
+            return "Texture";
+        }
+    };
+
 }
 
 

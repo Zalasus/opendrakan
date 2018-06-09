@@ -24,6 +24,7 @@
 #include "ClassFactory.h"
 #include "AnimationFactory.h"
 #include "SoundFactory.h"
+#include "SequenceFactory.h"
 
 namespace od
 {
@@ -67,6 +68,10 @@ namespace od
 
 	private:
 
+        template <typename T>
+        void _tryOpeningAssetContainer(std::unique_ptr<T> &factoryPtr, std::unique_ptr<SrscFile> &containerPtr, const char *extension);
+
+
 		FilePath mDbFilePath;
 		DbManager &mDbManager;
 
@@ -74,11 +79,40 @@ namespace od
 		std::map<uint16_t, DbRefWrapper> mDependencyMap;
 
 		std::unique_ptr<TextureFactory> mTextureFactory;
+		std::unique_ptr<SrscFile> mTextureContainer;
+
 		std::unique_ptr<ModelFactory> mModelFactory;
+		std::unique_ptr<SrscFile> mModelContainer;
+
 		std::unique_ptr<ClassFactory> mClassFactory;
+		std::unique_ptr<SrscFile> mClassContainer;
+
 		std::unique_ptr<AnimationFactory> mAnimFactory;
+		std::unique_ptr<SrscFile> mAnimContainer;
+
 		std::unique_ptr<SoundFactory> mSoundFactory;
+		std::unique_ptr<SrscFile> mSoundContainer;
+
+		std::unique_ptr<SequenceFactory> mSequenceFactory;
+        std::unique_ptr<SrscFile> mSequenceContainer;
 	};
+
+	template <typename T>
+    void Database::_tryOpeningAssetContainer(std::unique_ptr<T> &factoryPtr, std::unique_ptr<SrscFile> &containerPtr, const char *extension)
+    {
+        FilePath path = mDbFilePath.ext(extension);
+        if(path.exists())
+        {
+            containerPtr.reset(new SrscFile(path));
+            factoryPtr.reset(new T(*this, *containerPtr));
+
+            Logger::verbose() << AssetTraits<typename T::AssetType>::name() << " container of database opened";
+
+        }else
+        {
+            Logger::verbose() << "Database has no " << AssetTraits<typename T::AssetType>::name() << " container";
+        }
+    }
 }
 
 #endif /* INCLUDE_DATABASE_H_ */

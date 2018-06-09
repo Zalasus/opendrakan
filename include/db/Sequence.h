@@ -126,11 +126,9 @@ namespace od
 	{
 	public:
 
-	    Sequence(Database &db, RecordId id);
+	    Sequence(AssetProvider &ap, RecordId id);
 
-		virtual void loadFromRecord(DataReader &dr) override;
-
-		virtual const char *getAssetTypeName() const override { return "sequence"; }
+		void loadFromRecord(DataReader &dr);
 
 
 	private:
@@ -139,7 +137,16 @@ namespace od
 		std::vector<ActorPtr> mActors;
 	};
 
-	typedef osg::ref_ptr<Sequence> SequencePtr;
+
+	template <>
+    struct AssetTraits<Sequence>
+    {
+        static const char *name()
+        {
+            return "Sequence";
+        }
+    };
+
 }
 
 #endif /* INCLUDE_DB_SEQUENCE_H_ */

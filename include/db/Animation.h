@@ -33,7 +33,7 @@ namespace od
 
 		typedef std::pair<std::vector<AnimationKeyframe>::const_iterator, std::vector<AnimationKeyframe>::const_iterator> AnimStartEndPair;
 
-		Animation(Database &db, RecordId id);
+		Animation(AssetProvider &ap, RecordId id);
 
 		inline std::string getName() const { return mAnimationName; }
 		inline uint32_t getModelNodeCount() const { return mModelNodeCount; }
@@ -43,8 +43,6 @@ namespace od
 		void loadFrameLookup(DataReader &&dr);
 
 		AnimStartEndPair getKeyframesForNode(int32_t nodeId);
-
-		virtual const char *getAssetTypeName() const { return "animation"; }
 
 
 	private:
@@ -65,6 +63,15 @@ namespace od
         std::vector<AnimationKeyframe> mKeyframes;
         std::vector<FrameLookupEntry> mFrameLookup;
 	};
+
+	template <>
+    struct AssetTraits<Animation>
+    {
+        static const char *name()
+        {
+            return "Animation";
+        }
+    };
 }
 
 #endif /* INCLUDE_DB_ANIMATION_H_ */
