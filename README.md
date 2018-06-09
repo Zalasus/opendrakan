@@ -7,8 +7,11 @@ OpenDrakan
 A project to reverse-engineer and recreate Surreal Software's Riot Engine with the ultimate goal to be
 able to run the game *Drakan: Order of the Flame* on a modern GNU/Linux system.
 
-This project is still in an early stage. Many things are still work-in-progress and the current state of
-the engine differs from the original game in many ways.
+__This project is still in an early stage__. Most things are still work-in-progress and the current state of
+the engine differs from the original game in a significant way. OpenDrakan is definetly not a worthy replacement 
+for the original engine yet. Until that is the case, I'd recommend to check out the AiO patch, found among other
+downloads on [Arokh's Lair](http://www.arokhslair.net/wp/downloads/). It fixes some issues with the original
+game that might prevent you from playing otherwise.
 
 My documentation on the Riot Engine's SRSC file format can be found 
 [here](https://github.com/Zalasus/opendrakan/blob/master/doc/riot_database_format.txt).
@@ -53,7 +56,7 @@ load the intro level. To load a specific level, run OpenDrakan with the path to 
 Right now, OpenDrakan has a few command line options to inspect Drakan resource files and extract data from them to aid
 in reverse-engineering. You can get an overview of these using the -h option.
 
-Depending on the current state of the project, your results may vary. Right now, some levels load while others don't.
+*Depending on the current state of the project, your results may vary*. Right now, some levels load while others don't.
 Most testing has been done on the "Ruined Village" level, so that's the one you probably want to try out OpenDrakan with.
 
 
