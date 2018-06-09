@@ -40,6 +40,7 @@ namespace od
         std::string localizeString(const std::string &s);
 
         void dumpStrings();
+        void dumpTextures();
 
         // implement AssetProvider
         virtual Texture *getTextureByRef(const AssetRef &ref) override;

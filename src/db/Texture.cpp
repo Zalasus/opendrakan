@@ -247,6 +247,10 @@ namespace od
 
     void Texture::exportToPng(const FilePath &path)
     {
+        Logger::verbose() << "Exporting texture " << std::hex << getAssetId() << std::dec
+                << " with dimensions " << mWidth << "x" << mHeight
+                << " to file '" << path.str() << "'";
+
 		osgDB::writeImageFile(*this, path.str());
     }
 

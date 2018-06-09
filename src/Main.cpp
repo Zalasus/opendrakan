@@ -19,6 +19,7 @@
 #include "db/Database.h"
 #include "SrscRecordTypes.h"
 #include "rfl/RflField.h"
+#include "gui/GuiManager.h"
 
 
 static void srscStat(od::SrscFile &file)
@@ -189,6 +190,7 @@ void printUsage()
 		<< "    -i <id>    Limit extraction to records with ID <id>" << std::endl
 		<< "    -s         Print SRSC statistics" << std::endl
 		<< "    -c         Create class statistics" << std::endl
+		<< "    -r         Extract textures and strings from passed Dragon.rrc"
 		<< "    -v         Increase verbosity of logger" << std::endl
 		<< "    -h         Display this message and exit" << std::endl
 		<< "If no option is given, the file is loaded as a level." << std::endl
@@ -205,9 +207,10 @@ int main(int argc, char **argv)
 	bool texture = false;
 	bool stat = false;
 	bool classStat = false;
+	bool rrcExtract = false;
 	uint16_t extractRecordId = 0;
 	int c;
-	while((c = getopt(argc, argv, "i:o:txscvh")) != -1)
+	while((c = getopt(argc, argv, "i:o:txscvhr")) != -1)
 	{
 		switch(c)
 		{
@@ -250,6 +253,10 @@ int main(int argc, char **argv)
 			outputPath = std::string(optarg);
 			break;
 
+		case 'r':
+		    rrcExtract = true;
+		    break;
+
 		case 'h':
 			printUsage();
 			return 0;
@@ -272,7 +279,7 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if((stat || extract || texture || classStat) && (optind >= argc))
+	if((stat || extract || texture || classStat || rrcExtract) && (optind >= argc))
 	{
 		std::cout << "Need at least a file argument." << std::endl;
 		printUsage();
@@ -340,6 +347,15 @@ int main(int argc, char **argv)
 			od::SrscFile srscFile(filename);
 
 		    statClasses(srscFile);
+
+        }else if(rrcExtract)
+        {
+            std::cout << "Dumping RRC contents to /out" << std::endl;
+
+            od::Engine engine;
+            od::GuiManager gm(engine, od::FilePath(filename));
+
+            gm.dumpTextures();
 
         }else
 		{

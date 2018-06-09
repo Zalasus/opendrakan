@@ -78,6 +78,28 @@ namespace od
         }
     }
 
+    void GuiManager::dumpTextures()
+    {
+        auto dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::TEXTURE);
+        while(dirIt != mRrcFile.getDirectoryEnd())
+        {
+            std::ostringstream oss;
+            oss << "out/gui_tex_" << std::hex << dirIt->recordId << ".png";
+
+            try
+            {
+                osg::ref_ptr<Texture> tex = getTexture(dirIt->recordId);
+                tex->exportToPng(FilePath(oss.str()));
+
+            }catch(UnsupportedException &e)
+            {
+                Logger::warn() << "Can't dump texture " << oss.str() << " (" << e.what() << ")";
+            }
+
+            dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::TEXTURE, dirIt+1);
+        }
+    }
+
     Texture *GuiManager::getTextureByRef(const AssetRef &ref)
     {
         if(ref.dbIndex != 0)
@@ -90,7 +112,9 @@ namespace od
 
     Texture *GuiManager::getTexture(RecordId recordId)
     {
-        return mTextureFactory.getAsset(recordId);
+        osg::ref_ptr<Texture> tex = mTextureFactory.getAsset(recordId);
+
+        return tex.release();
     }
 
 
