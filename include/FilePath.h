@@ -44,6 +44,13 @@ namespace od
 		FilePath(const FilePath &p, size_t omitLastNComponents = 0);
 
 		/**
+		 * @brief Returns this path's depth in the file system.
+		 *
+		 * The file system root or current directory in case of relative paths has depth 0.
+		 */
+		inline size_t depth() const { return mPathComponents.size(); }
+
+		/**
 		 * If this object represents a path to a file, this method returns a FilePath for the directory
 		 * it is contained in. If this object is itself a directory, this method will return a FilePath for it's
 		 * parent directory.

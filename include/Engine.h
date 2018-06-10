@@ -26,13 +26,14 @@ namespace od
 	{
 	public:
 
-		Engine();
+	    Engine();
 		Engine(Engine &e) = delete;
 		Engine(const Engine &e) = delete;
 		~Engine() = default;
 
-		inline FilePath getInitialLevelFile() const { return mInitialLevelFile; }
+		inline const FilePath &getInitialLevelFile() const { return mInitialLevelFile; }
 		inline void setInitialLevelFile(const FilePath &level) { mInitialLevelFile = level; }
+		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline DbManager &getDbManager() { return mDbManager; }
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
@@ -47,10 +48,13 @@ namespace od
 
 	private:
 
+		void _findEngineRoot();
+
 		DbManager mDbManager;
 		ShaderManager mShaderManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		FilePath mInitialLevelFile;
+		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;

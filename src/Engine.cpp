@@ -21,7 +21,8 @@ namespace od
 	Engine::Engine()
 	: mDbManager(*this)
 	, mShaderManager(*this, FilePath("shader_src"))
-	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere?
+	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere? EDIT: yes, it is. in the interface class db
+	, mEngineRootDir("")
 	, mCamera(nullptr)
 	, mMaxFrameRate(60)
 	{
@@ -33,6 +34,8 @@ namespace od
 
 		odRfl::Rfl &rfl = odRfl::Rfl::getSingleton();
 		Logger::info() << "OpenDrakan linked against RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered classes";
+
+		_findEngineRoot();
 
 		osg::ref_ptr<osg::Group> rootNode(new osg::Group);
 
@@ -116,6 +119,26 @@ namespace od
 		}
 
 		Logger::info() << "Shutting down gracefully";
+	}
+
+	void Engine::_findEngineRoot()
+	{
+	    // ascend in the passed initial level file path until we find a Dragon.rrc
+        FilePath path("Dragon.rrc", mInitialLevelFile.dir());
+        while(!path.exists() && path.depth() > 1)
+        {
+            path = FilePath("Dragon.rrc", path.dir().dir());
+        }
+
+        if(!path.exists())
+        {
+            Logger::error() << "Could not find engine root in passed level path. "
+                    << "Make sure your level is located in the same directory or a subdirectory of Dragon.rrc";
+            throw Exception("Could not find engine root in passed level path");
+        }
+
+        Logger::verbose() << "Found Dragon.rrc here: " << path.str();
+        mEngineRootDir = path.dir();
 	}
 
 }

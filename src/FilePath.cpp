@@ -56,6 +56,11 @@ namespace od
 
 	FilePath FilePath::dir() const
 	{
+	    if(mPathComponents.size() == 0)
+	    {
+	        throw Exception("Tried to ascend above path root with FilePath::dir()");
+	    }
+
 		return FilePath(*this, 1);
 	}
 
