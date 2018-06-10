@@ -24,7 +24,7 @@ namespace od
 		mInputStream.open(mFilePath.str().c_str(), std::ios::in | std::ios::binary);
 		if(mInputStream.fail())
 		{
-			throw IoException("Could not open SRSC file");
+			throw IoException("Could not open SRSC file '" + mFilePath.str() + "'");
 		}
 
 		_readHeaderAndDirectory();
