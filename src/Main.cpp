@@ -356,6 +356,7 @@ int main(int argc, char **argv)
             od::GuiManager gm(engine, od::FilePath(filename));
 
             gm.dumpTextures();
+            gm.dumpStrings();
 
         }else
 		{

@@ -10,8 +10,12 @@
 #include <sstream>
 #include <algorithm>
 #include <iomanip>
+#include <fstream>
 
 #include "SrscRecordTypes.h"
+#include "Engine.h"
+
+#define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
 namespace od
 {
@@ -19,8 +23,9 @@ namespace od
 
     GuiManager::GuiManager(Engine &engine, const FilePath &rrcPath)
     : mEngine(engine)
-    , mRrcFile(rrcPath)
+    , mRrcFile(FilePath(rrcPath))
     , mTextureFactory(*this, mRrcFile, mEngine)
+    , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, rrcPath.dir()).adjustCase()))
     {
     }
 
@@ -57,6 +62,15 @@ namespace od
         uint8_t key[] = { 0x0D, 0x6A, 0x57, 0xBF, 0xFD, 0xEE, 0x74 };
         size_t keylength = sizeof(key);
 
+        std::ofstream out("out/gui_strings.txt");
+        if(out.fail())
+        {
+            throw IoException("Could not open 'out/gui_strings.txt' for dumping strings");
+        }
+
+        out << "Strings found in Dragon.rrc. Only first " << keylength << " characters decrypted, "
+                " as we don't know more bytes of the key yet." << std::endl << std::endl;
+
         auto dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::LOCALIZED_STRING);
         while(dirIt != mRrcFile.getDirectoryEnd())
         {
@@ -72,7 +86,7 @@ namespace od
                 str[i] ^= key[i];
             }
 
-            Logger::info() << "STR " << std::hex << std::setw(4) << dirIt->recordId << std::dec << ": " << str;
+            out << "STR " << std::hex << std::setw(4) << dirIt->recordId << std::dec << ": " << str << std::endl;
 
             dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::LOCALIZED_STRING, dirIt+1);
         }

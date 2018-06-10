@@ -14,6 +14,7 @@
 #include "SrscFile.h"
 #include "db/TextureFactory.h"
 #include "db/AssetProvider.h"
+#include "db/Database.h"
 
 namespace od
 {
@@ -65,6 +66,7 @@ namespace od
         Engine &mEngine;
         SrscFile mRrcFile;
         TextureFactory mTextureFactory;
+        Database &mInterfaceDb;
 
     };
 
