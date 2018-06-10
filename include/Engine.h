@@ -48,7 +48,7 @@ namespace od
 
 	private:
 
-		void _findEngineRoot();
+		void _findEngineRoot(const std::string &rrcFileName);
 
 		DbManager mDbManager;
 		ShaderManager mShaderManager;

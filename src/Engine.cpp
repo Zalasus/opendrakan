@@ -35,7 +35,7 @@ namespace od
 		odRfl::Rfl &rfl = odRfl::Rfl::getSingleton();
 		Logger::info() << "OpenDrakan linked against RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered classes";
 
-		_findEngineRoot();
+		_findEngineRoot("Dragon.rrc");
 
 		osg::ref_ptr<osg::Group> rootNode(new osg::Group);
 
@@ -121,24 +121,24 @@ namespace od
 		Logger::info() << "Shutting down gracefully";
 	}
 
-	void Engine::_findEngineRoot()
+	void Engine::_findEngineRoot(const std::string &rrcFileName)
 	{
 	    // ascend in the passed initial level file path until we find a Dragon.rrc
-        FilePath path("Dragon.rrc", mInitialLevelFile.dir());
+        FilePath path = FilePath(rrcFileName, mInitialLevelFile.dir()).adjustCase();
         while(!path.exists() && path.depth() > 1)
         {
-            path = FilePath("Dragon.rrc", path.dir().dir());
+            path = FilePath(rrcFileName, path.dir().dir()).adjustCase();
         }
 
         if(!path.exists())
         {
             Logger::error() << "Could not find engine root in passed level path. "
-                    << "Make sure your level is located in the same directory or a subdirectory of Dragon.rrc";
+                    << "Make sure your level is located in the same directory or a subdirectory of " << rrcFileName;
             throw Exception("Could not find engine root in passed level path");
         }
 
-        Logger::verbose() << "Found Dragon.rrc here: " << path.str();
         mEngineRootDir = path.dir();
+        Logger::verbose() << "Found engine root here: " << mEngineRootDir.str();
 	}
 
 }
