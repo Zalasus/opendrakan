@@ -59,32 +59,23 @@ namespace od
 
     void GuiManager::dumpStrings()
     {
-        uint8_t key[] = { 0x0D, 0x6A, 0x57, 0xBF, 0xFD, 0xEE, 0x74 };
-        size_t keylength = sizeof(key);
-
         std::ofstream out("out/gui_strings.txt");
         if(out.fail())
         {
             throw IoException("Could not open 'out/gui_strings.txt' for dumping strings");
         }
 
-        out << "Strings found in Dragon.rrc. Only first " << keylength << " characters decrypted, "
-                " as we don't know more bytes of the key yet." << std::endl << std::endl;
+        out << "Strings found in Dragon.rrc:" << std::endl << std::endl;
 
         auto dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::LOCALIZED_STRING);
         while(dirIt != mRrcFile.getDirectoryEnd())
         {
             std::istream &in = mRrcFile.getStreamForRecord(dirIt);
 
-            char str[128] = {0};
-            size_t readMax = std::min((uint32_t)keylength, dirIt->dataSize);
-            in.read(str, readMax);
+            char str[256] = {0};
+            in.read(str, dirIt->dataSize);
             size_t readBytes = in.gcount();
-
-            for(size_t i = 0; i < keylength && i < readBytes; ++i)
-            {
-                str[i] ^= key[i];
-            }
+            _decryptString(str, readBytes);
 
             out << "STR " << std::hex << std::setw(4) << dirIt->recordId << std::dec << ": " << str << std::endl;
 
@@ -131,5 +122,15 @@ namespace od
         return tex.release();
     }
 
+    inline void GuiManager::_decryptString(char * const str, const size_t len)
+    {
+        uint32_t key = 0x5FDD390D;
+
+        for(size_t i = 0; i < len; ++i)
+        {
+            str[i] ^= key & 0xFF;
+            key = (key<<3) | (key>>(32-3));
+        }
+    }
 
 }

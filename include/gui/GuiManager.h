@@ -62,6 +62,7 @@ namespace od
         using AssetProvider::getAnimation;
         using AssetProvider::getSound;
 
+        inline void _decryptString(char * const str, const size_t len);
 
         Engine &mEngine;
         SrscFile mRrcFile;
