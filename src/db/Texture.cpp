@@ -81,11 +81,6 @@ namespace od
         	throw UnsupportedException("Alpha maps unsupported right now");
         }
 
-        if(mCompressionLevel == 0)
-        {
-            throw UnsupportedException("Can't handle uncompressed textures right now");
-        }
-
         // take apart color key so we can compare it more efficiently
         bool hasColorKey = (mColorKey != 0xffffffff);
         uint8_t keyRed   = (mColorKey & 0xff0000) >> 16;
@@ -94,8 +89,12 @@ namespace od
 
         mHasAlphaChannel = (mAlphaBitsPerPixel != 0) || hasColorKey;
 
-        ZStream zstr(dr.getStream());
-        DataReader zdr(zstr);
+        std::unique_ptr<ZStream> zstr;
+        if(mCompressionLevel != 0)
+        {
+            zstr.reset(new ZStream(dr.getStream()));
+        }
+        DataReader zdr(mCompressionLevel != 0 ? *zstr : dr.getStream()); // that's a bit... unelegant?
 
         std::function<void(unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)> pixelReaderFunc;
         if(mBitsPerPixel == 8)
@@ -228,7 +227,10 @@ namespace od
             pixBuffer[i+2] = blue;
             pixBuffer[i+3] = alpha;
         }
-        zstr.seekToEndOfZlib();
+        if(zstr != nullptr)
+        {
+            zstr->seekToEndOfZlib();
+        }
 
 
 
