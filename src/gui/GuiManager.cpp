@@ -36,7 +36,7 @@ namespace od
             return s;
         }
 
-        uint16_t stringId;
+        RecordId stringId;
         std::istringstream iss(s.substr(3, 4));
         iss >> std::hex >> stringId;
         if(iss.fail())
@@ -46,15 +46,45 @@ namespace od
 
         Logger::debug() << "Localized string " << std::hex << stringId << " requested from RRC";
 
+        try
+        {
+            return getStringById(stringId);
+
+        }catch(NotFoundException &e)
+        {
+        }
+
+        // string not found. return unlocalized one
+        return s.substr(8, std::string::npos);
+    }
+
+    std::string GuiManager::getStringById(RecordId stringId)
+    {
         auto dirIt = mRrcFile.getDirIteratorByTypeId(SrscRecordType::LOCALIZED_STRING, stringId);
         if(dirIt == mRrcFile.getDirectoryEnd())
         {
-            Logger::debug() << "Could not find string in RRC. Leaving unlocalized";
-            return s.substr(8, std::string::npos);
+            std::ostringstream oss;
+            oss << "String with ID 0x" << std::hex << stringId << std::dec << " not found";
+
+            throw NotFoundException(oss.str());
         }
 
-        // now we got the string record, but i still don't know the key. return unlocalized one
-        return s.substr(8, std::string::npos);
+        if(dirIt->dataSize > 255)
+        {
+            throw Exception("String buffer too small");
+        }
+
+        std::istream &in = mRrcFile.getStreamForRecord(dirIt);
+
+        char str[256] = {0}; // should be big enough. might alloc it dynamically but can't be bothered right now
+        in.read(str, dirIt->dataSize);
+        size_t readBytes = in.gcount();
+
+        _decryptString(str, readBytes);
+
+        // TODO: Transcode from Latin-1 or what you got to UTF-8
+
+        return std::string(str);
     }
 
     void GuiManager::dumpStrings()
@@ -72,12 +102,19 @@ namespace od
         {
             std::istream &in = mRrcFile.getStreamForRecord(dirIt);
 
-            char str[256] = {0};
-            in.read(str, dirIt->dataSize);
-            size_t readBytes = in.gcount();
-            _decryptString(str, readBytes);
+            if(dirIt->dataSize > 255)
+            {
+                Logger::warn() << "String 0x" << dirIt->recordId << " too long for buffer. Skipping";
 
-            out << "STR " << std::hex << std::setw(4) << dirIt->recordId << std::dec << ": " << str << std::endl;
+            }else
+            {
+                char str[256] = {0};
+                in.read(str, dirIt->dataSize);
+                size_t readBytes = in.gcount();
+                _decryptString(str, readBytes);
+
+                out << "STR " << std::hex << std::setw(4) << dirIt->recordId << std::dec << ": " << str << std::endl;
+            }
 
             dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::LOCALIZED_STRING, dirIt+1);
         }

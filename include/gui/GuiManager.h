@@ -40,6 +40,11 @@ namespace od
          */
         std::string localizeString(const std::string &s);
 
+        /**
+         * @brief Returns the string with the given ID or throws if string can not be found.
+         */
+        std::string getStringById(RecordId stringId);
+
         void dumpStrings();
         void dumpTextures();
 
