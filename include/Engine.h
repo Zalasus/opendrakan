@@ -22,6 +22,8 @@
 namespace od
 {
 
+    class GuiManager;
+
 	class Engine
 	{
 	public:
@@ -36,6 +38,7 @@ namespace od
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline DbManager &getDbManager() { return mDbManager; }
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
+		inline GuiManager &getGuiManager() { return *mGuiManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return getLevel().getPlayer(); }
 		inline void setCamera(Camera *cam) { mCamera = cam; }
@@ -43,6 +46,7 @@ namespace od
 		inline double getMaxFrameRate() const { return mMaxFrameRate; }
 		inline void setMaxFrameRate(double fps) { mMaxFrameRate = fps; } // 0 for no cap
 
+		void setUp();
 		void run();
 
 
@@ -53,13 +57,16 @@ namespace od
 		DbManager mDbManager;
 		ShaderManager mShaderManager;
 		osg::ref_ptr<InputManager> mInputManager;
+		std::unique_ptr<GuiManager> mGuiManager;
 		FilePath mInitialLevelFile;
 		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;
+		osg::ref_ptr<osg::Group> mRootNode;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
 		Camera *mCamera;
 		double mMaxFrameRate;
+		bool mSetUp;
 	};
 
 }

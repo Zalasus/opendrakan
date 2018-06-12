@@ -21,11 +21,11 @@ namespace od
 {
 
 
-    GuiManager::GuiManager(Engine &engine, const FilePath &rrcPath)
+    GuiManager::GuiManager(Engine &engine, osg::Group *rootNode)
     : mEngine(engine)
-    , mRrcFile(FilePath(rrcPath))
+    , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
-    , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, rrcPath.dir()).adjustCase()))
+    , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
     {
     }
 

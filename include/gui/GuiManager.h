@@ -29,7 +29,7 @@ namespace od
     {
     public:
 
-        GuiManager(Engine &engine, const FilePath &rrcPath);
+        GuiManager(Engine &engine, osg::Group *rootNode);
 
         /**
          * @brief Localizes string with localization tag.

@@ -353,7 +353,14 @@ int main(int argc, char **argv)
             std::cout << "Dumping RRC contents to /out" << std::endl;
 
             od::Engine engine;
-            od::GuiManager gm(engine, od::FilePath(filename));
+
+            if(!filename.empty())
+            {
+                engine.setInitialLevelFile(filename);
+            }
+
+            engine.setUp();
+            od::GuiManager &gm = engine.getGuiManager();
 
             gm.dumpTextures();
             gm.dumpStrings();

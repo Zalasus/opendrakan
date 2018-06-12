@@ -14,6 +14,7 @@
 #include "LevelObject.h"
 #include "Player.h"
 #include "rfl/Rfl.h"
+#include "gui/GuiManager.h"
 
 namespace od
 {
@@ -25,7 +26,24 @@ namespace od
 	, mEngineRootDir("")
 	, mCamera(nullptr)
 	, mMaxFrameRate(60)
+	, mSetUp(false)
 	{
+	}
+
+	void Engine::setUp()
+	{
+	    if(mSetUp)
+	    {
+	        return;
+	    }
+
+	    _findEngineRoot("Dragon.rrc");
+
+	    mRootNode = new osg::Group();
+
+	    mGuiManager.reset(new GuiManager(*this, mRootNode));
+
+	    mSetUp = true;
 	}
 
 	void Engine::run()
@@ -35,15 +53,16 @@ namespace od
 		odRfl::Rfl &rfl = odRfl::Rfl::getSingleton();
 		Logger::info() << "OpenDrakan linked against RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered classes";
 
-		_findEngineRoot("Dragon.rrc");
-
-		osg::ref_ptr<osg::Group> rootNode(new osg::Group);
+		if(!mSetUp)
+		{
+		    setUp();
+		}
 
 		mViewer = new osgViewer::Viewer;
 		mViewer->realize();
 		mViewer->setName("OpenDrakan");
 		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-		mViewer->setSceneData(rootNode);
+		mViewer->setSceneData(mRootNode);
 		osgViewer::Viewer::Windows windows;
 		mViewer->getWindows(windows);
 		if(!windows.empty())
@@ -59,7 +78,7 @@ namespace od
 
 		// attach our default shaders to root node so we don't use the fixed function pipeline anymore
 		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager.makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
-		rootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
+		mRootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
 
 		osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
 		statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
@@ -69,7 +88,7 @@ namespace od
         mInputManager = new InputManager(*this, mViewer);
 
 
-		mLevel.reset(new od::Level(mInitialLevelFile, *this, rootNode));
+		mLevel.reset(new od::Level(mInitialLevelFile, *this, mRootNode));
 		mLevel->loadLevel();
 
 		// level loaded. check whether all required interfaces are available through loaded RFL classes
