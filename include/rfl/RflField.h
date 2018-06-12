@@ -22,6 +22,7 @@
 #include "db/Class.h"
 #include "db/Sequence.h"
 #include "db/Animation.h"
+#include "db/Sound.h"
 
 namespace odRfl
 {
@@ -202,10 +203,11 @@ namespace odRfl
 	};
 
     typedef RflAssetRef<od::Class, RflField::CLASS>         RflClassRef;
-    typedef RflPOD<od::AssetRef, RflField::SOUND>     RflSoundRef;
+    typedef RflAssetRef<od::Sound, RflField::SOUND>         RflSoundRef;
     typedef RflAssetRef<od::Texture, RflField::TEXTURE>     RflTextureRef;
     typedef RflAssetRef<od::Sequence, RflField::SEUQUENCE>  RflSequenceRef;
     typedef RflAssetRef<od::Animation, RflField::ANIMATION> RflAnimRef;
+    typedef RflAssetRef<od::Model, RflField::MODEL>         RflModelRef;
 
 
 	typedef RflPOD< int32_t, RflField::INTEGER> RflInteger;

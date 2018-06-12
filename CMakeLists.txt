@@ -56,6 +56,7 @@ set(SOURCES
         "src/rfl/dragon/Building.cpp"
         "src/rfl/dragon/PushableObject.cpp"
         "src/rfl/dragon/CountDownToZero.cpp"
+        "src/rfl/dragon/UserInterfaceProperties.cpp"
         "src/anim/Animator.cpp"
         "src/anim/MotionAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"
