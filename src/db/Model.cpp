@@ -73,7 +73,7 @@ namespace od
 			AssetRef textureRef;
 			dr >> textureRef;
 
-			if(!textureRef.isNullTexture())
+			if(!textureRef.isNull())
 			{
 				mTextureRefs.push_back(textureRef);
 			}

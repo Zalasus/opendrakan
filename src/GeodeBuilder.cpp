@@ -187,7 +187,7 @@ namespace od
 				geom->addPrimitiveSet(drawElements);
 
 				// texture also unique per geometry
-				if(!it->texture.isNullTexture())
+				if(!it->texture.isNull())
 				{
 					osg::ref_ptr<Texture> textureImage = mAssetProvider.getTextureByRef(it->texture);
 					osg::StateSet *ss = geom->getOrCreateStateSet();

@@ -111,12 +111,12 @@ namespace od
 
             mCells.push_back(c);
 
-            if(!c.leftTextureRef.isNullTexture())
+            if(!c.leftTextureRef.isNullLayerTexture())
             {
             	++mVisibleTriangles;
             }
 
-            if(!c.rightTextureRef.isNullTexture())
+            if(!c.rightTextureRef.isNullLayerTexture())
             {
             	++mVisibleTriangles;
             }
@@ -158,7 +158,7 @@ namespace od
         	poly.doubleSided = false; // since for "between"-layers, all polys are double sided it is probably
         	                          //  more efficient to just deactivate face culling for them
 
-        	if(poly.texture.isNullTexture())
+        	if(poly.texture.isNullLayerTexture())
         	{
         		continue;
         	}
@@ -285,7 +285,7 @@ namespace od
             Cell cell = mCells[cellIndex];
             AssetRef texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
 
-            if(texture.isNullTexture())
+            if(texture.isNullLayerTexture())
             {
                 continue;
             }

@@ -63,9 +63,9 @@ namespace od
 		inline bool operator!=(const AssetRef &right) const { return !(this->operator==(right)); }
 
 		/**
-		 * @brief Checks if this ref is a null texture (layer textures use 0xffff:0xffff for none instead of 0:0)
+		 * @brief Checks if this ref is a null layer texture (layer textures use 0xffff:0xffff for none instead of 0:0)
 		 */
-		inline bool isNullTexture() const { return dbIndex == 0xffff || assetId == 0xffff; }
+		inline bool isNullLayerTexture() const { return dbIndex == 0xffff || assetId == 0xffff; }
 
 		/**
 		 * @brief Checks if this is a null reference i.e. not referencing anything. Not applicable to layer textures.
@@ -73,6 +73,7 @@ namespace od
 		inline bool isNull() const { return dbIndex == 0 && assetId == 0; }
 
 		static const AssetRef NULL_REF;
+		static const AssetRef NULL_LAYER_TEXTURE_REF;
 	};
 
 	DataReader &operator>>(DataReader &left, AssetRef &right);

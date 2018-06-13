@@ -34,8 +34,8 @@ namespace od
     	return (dbIndex == right.dbIndex) && (assetId == right.assetId);
 	}
 
-    const AssetRef AssetRef::NULL_REF(0xffff, 0xffff); // FIXME: there should be a NULL_REF and a NULL_TEXTURE_REF as one uses 0:0 and the other 0xffff:0xffff
-
+    const AssetRef AssetRef::NULL_REF(0, 0);
+    const AssetRef AssetRef::NULL_LAYER_TEXTURE_REF(0xffff, 0xffff);
 
     DataReader &operator>>(DataReader &left, AssetRef &right)
     {
