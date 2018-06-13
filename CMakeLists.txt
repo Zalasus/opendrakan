@@ -42,6 +42,7 @@ set(SOURCES
         "src/rfl/RflFieldProbe.cpp"
         "src/rfl/RflField.cpp"
         "src/rfl/RflMessage.cpp"
+        "src/rfl/PrefetchProbe.cpp"
         "src/rfl/common/ItemCommon.cpp"
         "src/rfl/common/PlayerCommon.cpp"
         "src/rfl/dragon/RflDragon.cpp"

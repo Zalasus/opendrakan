@@ -15,6 +15,20 @@
 namespace odRfl
 {
 
+    void RflFieldProbe::beginCategory(const char *categoryName)
+    {
+    }
+
+    void RflFieldProbe::registerField(RflField &field, const char *fieldName)
+    {
+    }
+
+    void RflFieldProbe::registerField(RflAssetRef &field, const char *fieldName)
+    {
+        this->registerField((RflField&)field, fieldName);
+    }
+
+
     RflClassBuilder::RflClassBuilder()
     : mRegistrationIndex(0)
     {

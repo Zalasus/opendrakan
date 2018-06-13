@@ -8,6 +8,7 @@
 #include "rfl/dragon/HumanControl.h"
 
 #include "rfl/Rfl.h"
+#include "rfl/PrefetchProbe.h"
 #include "LevelObject.h"
 #include "Level.h"
 #include "Player.h"
@@ -449,9 +450,9 @@ namespace odRfl
         mPlayerObject = obj;
         engine.getLevel().setPlayer(this);
 
-        // prefetch animations
-        mRunAnim.getOrFetchAsset(mPlayerObject->getClass()->getAssetProvider());
-        mReadyAnim.getOrFetchAsset(mPlayerObject->getClass()->getAssetProvider());
+        // prefetch referenced assets
+        PrefetchProbe probe(mPlayerObject->getClass()->getAssetProvider());
+        this->probeFields(probe);
     }
 
     void HumanControl::spawned(od::LevelObject &obj)

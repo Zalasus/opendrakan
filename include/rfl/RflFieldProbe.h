@@ -14,12 +14,14 @@
 namespace od
 {
     class DataReader;
+    class AssetProvider;
 }
 
 namespace odRfl
 {
 
     class RflField;
+    class RflAssetRef;
 
     /**
      * Common interface for classes that can be used to probe an RflClass for it's fields,
@@ -32,13 +34,19 @@ namespace odRfl
 	    virtual ~RflFieldProbe() = default;
 
 	    /// Starts a new category. Categories may appear more than once. Fields will be added to the previous definition
-	    virtual void beginCategory(const char *categoryName) = 0;
+	    virtual void beginCategory(const char *categoryName);
 
 	    /// Registers a field in this probe. Should only be used by RflClass children.
-		virtual void registerField(RflField &field, const char *fieldName) = 0; // TODO: Could use std::string_view once we switch to C++17
+		virtual void registerField(RflField &field, const char *fieldName); // TODO: Could use std::string_view once we switch to C++17
 
-		RflFieldProbe &operator()(RflField &field, const char *fieldName) { registerField(field, fieldName); return *this; }
+		/// Registers an asset ref field in this probe. Default behaviour is to pass field to generic method.
+		virtual void registerField(RflAssetRef &field, const char *fieldName);
+
 		RflFieldProbe &operator()(const char *categoryName) { beginCategory(categoryName); return *this; }
+
+		template <typename T>
+		inline RflFieldProbe &operator()(T &field, const char *fieldName) { registerField(field, fieldName); return *this; }
+
 	};
 
 	class RflClassBuilder : public RflFieldProbe

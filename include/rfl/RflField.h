@@ -112,6 +112,9 @@ namespace odRfl
 
 	};
 
+    typedef RflPOD< int32_t, RflField::INTEGER>      RflInteger;
+    typedef RflPOD<   float,   RflField::FLOAT>      RflFloat;
+    typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
 
 
 	template <typename _EnumType, uint32_t _MinValue = std::numeric_limits<uint32_t>::min(), uint32_t _MaxValue = std::numeric_limits<uint32_t>::max()>
@@ -158,34 +161,54 @@ namespace odRfl
     typedef RflEnumImpl<RflMessage, 0, 9> RflEnumMessage;
 
 
+    class RflAssetRef : public RflField
+    {
+    public:
 
-	template <typename _AssetType, RflField::RflFieldType _Type>
-	class RflAssetRef : public RflPOD<od::AssetRef, _Type>
+        virtual ~RflAssetRef() = default;
+
+        virtual void fetchAssets(od::AssetProvider &ap) = 0;
+
+    };
+
+	template <typename _AssetType, RflField::RflFieldType _FieldType>
+	class RflAssetRefImpl : public RflAssetRef
 	{
 	public:
 
-	    RflAssetRef()
-	    : RflPOD<od::AssetRef, _Type>(od::AssetRef::NULL_REF)
+	    RflAssetRefImpl(const od::AssetRef &ref)
+	    : mReference(ref)
         {
         }
 
-	    RflAssetRef(const od::AssetRef &ref)
-        : RflPOD<od::AssetRef, _Type>(ref)
+	    virtual bool isArray() const override { return false; }
+        virtual RflFieldType getFieldType() const override { return _FieldType; }
+
+        virtual void fill(od::DataReader &dr) override
         {
+            dr >> mReference;
         }
 
-        _AssetType *getOrFetchAsset(od::AssetProvider &ap)
-        {
-            if(mReferencedAsset == nullptr)
+	    virtual void fetchAssets(od::AssetProvider &ap) override
+	    {
+	        if(mReferencedAsset == nullptr && !mReference.isNull())
             {
                 try
                 {
-                    mReferencedAsset = ap.getAssetByRef<_AssetType>(this->get());
+                    mReferencedAsset = ap.getAssetByRef<_AssetType>(mReference);
 
                 }catch(od::NotFoundException &e)
                 {
                     throw od::NotFoundException("Asset referenced by class could not be found");
                 }
+            }
+	    }
+
+        _AssetType *getOrFetchAsset(od::AssetProvider &ap)
+        {
+            if(mReferencedAsset == nullptr)
+            {
+                fetchAssets(ap);
             }
 
             return mReferencedAsset;
@@ -198,21 +221,18 @@ namespace odRfl
 
 	protected:
 
+        od::AssetRef mReference;
 	    osg::ref_ptr<_AssetType> mReferencedAsset;
 
 	};
 
-    typedef RflAssetRef<od::Class, RflField::CLASS>         RflClassRef;
-    typedef RflAssetRef<od::Sound, RflField::SOUND>         RflSoundRef;
-    typedef RflAssetRef<od::Texture, RflField::TEXTURE>     RflTextureRef;
-    typedef RflAssetRef<od::Sequence, RflField::SEUQUENCE>  RflSequenceRef;
-    typedef RflAssetRef<od::Animation, RflField::ANIMATION> RflAnimRef;
-    typedef RflAssetRef<od::Model, RflField::MODEL>         RflModelRef;
+    typedef RflAssetRefImpl<od::Class, RflField::CLASS>         RflClassRef;
+    typedef RflAssetRefImpl<od::Sound, RflField::SOUND>         RflSoundRef;
+    typedef RflAssetRefImpl<od::Texture, RflField::TEXTURE>     RflTextureRef;
+    typedef RflAssetRefImpl<od::Sequence, RflField::SEUQUENCE>  RflSequenceRef;
+    typedef RflAssetRefImpl<od::Animation, RflField::ANIMATION> RflAnimRef;
+    typedef RflAssetRefImpl<od::Model, RflField::MODEL>         RflModelRef;
 
-
-	typedef RflPOD< int32_t, RflField::INTEGER> RflInteger;
-	typedef RflPOD<   float,   RflField::FLOAT> RflFloat;
-	typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
 
 
 	template <typename _DataType, RflField::RflFieldType _Type>
