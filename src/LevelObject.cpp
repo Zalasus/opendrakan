@@ -49,6 +49,8 @@ namespace od
 
             mLevelObject.update(simTime, simTime - mLastSimTime);
 
+            mLastSimTime = simTime;
+
             traverse(node, nv);
         }
 
