@@ -235,6 +235,83 @@ namespace odRfl
 
 
 
+    template <typename _AssetType, RflField::RflFieldType _FieldType>
+    class RflAssetRefArrayImpl : public RflAssetRef
+    {
+    public:
+
+        RflAssetRefArrayImpl()
+        {
+        }
+
+        RflAssetRefArrayImpl(const std::initializer_list<od::AssetRef> defaultRefs)
+        : mReferences(defaultRefs)
+        {
+        }
+
+        virtual bool isArray() const override { return true; }
+        virtual RflFieldType getFieldType() const override { return _FieldType; }
+
+        virtual void fillArray(uint16_t size, od::DataReader &dr) override
+        {
+            mReferences.clear();
+            mReferences.reserve(size);
+            for(size_t i = 0; i < size; ++i)
+            {
+                od::AssetRef v;
+                dr >> v;
+                mReferences.push_back(v);
+            }
+            mReferences.shrink_to_fit();
+        }
+
+        virtual void fetchAssets(od::AssetProvider &ap) override
+        {
+            mReferencedAssets.reserve(mReferences.size());
+            try
+            {
+                for(auto it = mReferences.begin(); it != mReferences.end(); ++it)
+                {
+                    osg::ref_ptr<_AssetType> asset = ap.getAssetByRef<_AssetType>(*it);
+                    mReferencedAssets.push_back(asset);
+                }
+
+            }catch(od::NotFoundException &e)
+            {
+                throw od::NotFoundException("Asset referenced by class could not be found");
+            }
+        }
+
+        size_t getAssetCount()
+        {
+            return mReferencedAssets.size();
+        }
+
+        _AssetType *getAsset(size_t i)
+        {
+            if(i >= mReferencedAssets.size())
+            {
+                throw od::Exception("Index of asset ref array access out of bounds");
+            }
+
+            return mReferencedAssets[i];
+        }
+
+
+    protected:
+
+        std::vector<od::AssetRef> mReferences;
+        std::vector<osg::ref_ptr<_AssetType>> mReferencedAssets;
+
+    };
+
+    typedef RflAssetRefArrayImpl<od::Sound, RflField::SOUND>            RflSoundRefArray;
+    typedef RflAssetRefArrayImpl<od::Class, RflField::CLASS>            RflClassRefArray;
+    typedef RflAssetRefArrayImpl<od::Animation, RflField::ANIMATION>    RflAnimRefArray;
+    typedef RflAssetRefArrayImpl<od::Model, RflField::MODEL>            RflModelRefArray;
+
+
+
 	template <typename _DataType, RflField::RflFieldType _Type>
 	class RflPODArray : public RflField
 	{
@@ -268,10 +345,6 @@ namespace odRfl
 
 	};
 
-	typedef RflPODArray<od::AssetRef, RflField::SOUND> RflSoundRefArray;
-	typedef RflPODArray<od::AssetRef, RflField::CLASS> RflClassRefArray;
-	typedef RflPODArray<od::AssetRef, RflField::ANIMATION> RflAnimRefArray;
-	typedef RflPODArray<od::AssetRef, RflField::MODEL> RflModelRefArray;
 	typedef RflPODArray<uint32_t, RflField::CHAR_CHANNEL> RflCharChannelArray;
 
 }
