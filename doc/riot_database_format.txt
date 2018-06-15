@@ -351,6 +351,20 @@ Record types
             mat3x4f         xform_b; // Unknown.
             lod_cap[uint16] lod_caps;
         };
+        struct char_bounds
+        {
+            struct char_sphere
+            {
+                uint16    first_child;  // 0 if none
+                uint16    next_sibling; // 0 if none
+                uint32    unknown1;
+                float     sphere_radius;
+                uint16    channel_index;
+                uint16    unknown2;
+            };
+            
+            char_sphere[uint16]  bounding_spheres;
+        };
         
         bounding_info                    bounding_info;
         uint16                           num_lods; // always >= 1
@@ -360,6 +374,7 @@ Record types
         lod_mesh_info[uint16][num_lods]  lod_mesh_infos; // An array of mesh infos for each LOD.
         ref[uint16]                      anim_ids; // database index always 0
         channel[uint16]                  channels;
+        char_bounds[uint16]              char_bounds; // one for each LOD. length field seems to be redundant with num_lods
         
     [0x0209] ??? 
         uint8[6]    ???
