@@ -133,17 +133,6 @@ namespace od
 
         mClass = mLevel.getClassByRef(mClassRef);
 
-        mRflClassInstance = mClass->makeInstance();
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->probeFields(builder); // let builder override fields
-            mRflClassInstance->loaded(mLevel.getEngine(), this);
-
-        }else
-        {
-            Logger::debug() << "Could not instantiate class of level object";
-        }
-
         // FIXME: the visible flag is just the initial state. it can be toggled in-game, so we should load the model regardless of this flag
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
@@ -158,6 +147,17 @@ namespace od
                 mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
                 mTransform->addChild(mSkeletonRoot);
             }
+        }
+
+        mRflClassInstance = mClass->makeInstance();
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->probeFields(builder); // let builder override fields
+            mRflClassInstance->loaded(mLevel.getEngine(), this);
+
+        }else
+        {
+            Logger::debug() << "Could not instantiate class of level object";
         }
     }
 
