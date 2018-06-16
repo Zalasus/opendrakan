@@ -361,6 +361,38 @@ namespace od
 
 		//Logger::info() << "Skel info for model " << mModelName;
 		//mSkeletonBuilder->printInfo(std::cout);
+
+		dr >> DataReader::Expect<uint16_t>(lodCount);
+		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
+		{
+		    uint16_t shapeCount;
+		    dr >> shapeCount;
+
+		    for(size_t shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
+		    {
+		        uint16_t firstChild;
+		        uint16_t nextSibling;
+		        float radius;
+		        uint16_t channelIndex;
+
+		        dr >> firstChild
+		           >> nextSibling
+		           >> DataReader::Ignore(4)
+		           >> radius
+		           >> channelIndex
+		           >> DataReader::Ignore(2);
+
+		        // where do the spheres go? there is no field in the structure for that. are they placed exactly at their joint?
+
+		        /*Logger::info() << "Model '" << mModelName << "' lod=" << lodIndex
+		                       << " ch=" << channelIndex
+		                       << " fc="
+		                       << firstChild
+		                       << " ns="
+		                       << nextSibling
+		                       << " r=" << radius;*/
+		    }
+		}
  	}
 
 	void Model::buildGeometry()
