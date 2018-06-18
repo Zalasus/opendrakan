@@ -4,11 +4,21 @@ cmake_minimum_required(VERSION 2.6.3)
 
 project(OpenDrakan CXX)
 
-set (CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 14)
 
 if(NOT CMAKE_BUILD_TYPE)
     message("No CMAKE_BUILD_TYPE specified. Defaulting to Debug")
     set(CMAKE_BUILD_TYPE Debug)
+endif()
+
+# enable compiler warnings when generating debug makefiles
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+    endif()
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
 endif()
 
 # project sources
