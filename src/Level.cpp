@@ -300,7 +300,7 @@ namespace od
     	mLevelObjects.resize(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)
     	{
-    		LevelObjectPtr object(new od::LevelObject(*this));
+    		osg::ref_ptr<od::LevelObject> object(new od::LevelObject(*this));
     		object->loadFromRecord(dr);
 
     		mLevelObjects[i] = object;

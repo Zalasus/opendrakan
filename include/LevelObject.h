@@ -151,7 +151,6 @@ namespace od
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
     };
 
-    typedef osg::ref_ptr<od::LevelObject> LevelObjectPtr;
 }
 
 
