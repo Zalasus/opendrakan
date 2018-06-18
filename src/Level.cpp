@@ -32,7 +32,6 @@ namespace od
     , mLevelRootNode(levelRootNode)
     , mLayerGroup(new osg::Group)
     , mObjectGroup(new osg::Group)
-    , mPlayer(nullptr)
     , mPhysicsManager(*this, levelRootNode)
     {
     	mLevelRootNode->addChild(mLayerGroup);

@@ -26,7 +26,6 @@
 #include "db/Database.h"
 #include "TextureAtlas.h"
 #include "Layer.h"
-#include "Player.h"
 #include "physics/PhysicsManager.h"
 
 namespace od
@@ -41,8 +40,6 @@ namespace od
         Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode);
         ~Level();
 
-        inline Player *getPlayer() { return mPlayer; }
-        inline void setPlayer(Player *p) { mPlayer = p; }
         inline FilePath getFilePath() const { return mLevelPath; }
         inline Engine &getEngine() { return mEngine; }
         inline PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
@@ -83,7 +80,6 @@ namespace od
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
-		Player *mPlayer;
 		PhysicsManager mPhysicsManager;
     };
 

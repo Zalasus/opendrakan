@@ -13,6 +13,7 @@
 #include "Level.h"
 #include "LevelObject.h"
 #include "Engine.h"
+#include "Player.h"
 
 namespace odRfl
 {
@@ -72,14 +73,24 @@ namespace odRfl
 	        Logger::error() << "Camera object spawned with no OSG camera assigned. Prepare for chaos";
 	    }
 
+	    if(mEngine->getPlayer() == nullptr)
+	    {
+	        Logger::warn() << "Tracking camera placed in level without player object. Destroying camera. What should it track?";
+	        obj.requestDestruction();
+	        return;
+	    }
+
 	    // attach update callback to player so we always get updated after player
 	    mCamUpdateCallback = new CamUpdateCallback(this);
-	    obj.getLevel().getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
+	    mEngine->getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
 	}
 
 	void TrackingCamera::despawned(od::LevelObject &obj)
 	{
-	    obj.getLevel().getPlayer()->getLevelObject().removeUpdateCallback(mCamUpdateCallback);
+	    if(mCamUpdateCallback != nullptr && mEngine->getPlayer() != nullptr)
+	    {
+	        mEngine->getPlayer()->getLevelObject().removeUpdateCallback(mCamUpdateCallback);
+	    }
 	}
 
 	osg::Vec3f TrackingCamera::getEyePoint() const
@@ -110,7 +121,11 @@ namespace odRfl
 
     void TrackingCamera::update()
     {
-        od::Player *player = mCameraLevelObject->getLevel().getPlayer();
+        od::Player *player = mEngine->getPlayer();
+        if(player == nullptr)
+        {
+            return;
+        }
 
         osg::Vec3f eye = player->getPosition();
         osg::Quat lookDirection = osg::Quat(player->getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player->getYaw() + M_PI/2, osg::Vec3f(0, 1, 0));

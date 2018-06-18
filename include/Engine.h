@@ -16,13 +16,13 @@
 #include "ShaderManager.h"
 #include "InputManager.h"
 #include "Level.h"
-#include "Camera.h"
-#include "Player.h"
 
 namespace od
 {
 
     class GuiManager;
+    class Player;
+    class Camera;
 
 	class Engine
 	{
@@ -40,7 +40,8 @@ namespace od
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
 		inline GuiManager &getGuiManager() { return *mGuiManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
-		inline Player *getPlayer() { return getLevel().getPlayer(); }
+		inline Player *getPlayer() { return mPlayer; }
+        inline void setPlayer(Player *p) { mPlayer = p; }
 		inline void setCamera(Camera *cam) { mCamera = cam; }
 		inline Camera *getCamera() { return mCamera; }
 		inline double getMaxFrameRate() const { return mMaxFrameRate; }
@@ -65,6 +66,7 @@ namespace od
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
 		Camera *mCamera;
+		Player *mPlayer;
 		double mMaxFrameRate;
 		bool mSetUp;
 	};

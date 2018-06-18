@@ -15,6 +15,7 @@
 #include "Player.h"
 #include "rfl/Rfl.h"
 #include "gui/GuiManager.h"
+#include "Camera.h"
 
 namespace od
 {
@@ -25,6 +26,7 @@ namespace od
 	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere? EDIT: yes, it is. in the interface class db
 	, mEngineRootDir("")
 	, mCamera(nullptr)
+	, mPlayer(nullptr)
 	, mMaxFrameRate(60)
 	, mSetUp(false)
 	{
@@ -91,19 +93,7 @@ namespace od
 		mLevel.reset(new od::Level(mInitialLevelFile, *this, mRootNode));
 		mLevel->loadLevel();
 
-		// level loaded. check whether all required interfaces are available through loaded RFL classes
-		if(mLevel->getPlayer() == nullptr)
-    	{
-			Logger::error() << "Can't start engine. Level does not contain a Human Control object";
-    		throw Exception("No HumanControl object present in level");
-    	}
-
-		if(mCamera == nullptr)
-		{
-		    Logger::error() << "Can't start engine. Level does not contain a camera object";
-            throw Exception("No camera object present in level");
-
-		}else
+		if(mCamera != nullptr)
 		{
 		    mCamera->setOsgCamera(mViewer->getCamera());
 		}

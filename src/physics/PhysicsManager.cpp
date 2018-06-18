@@ -20,6 +20,8 @@
 #include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
 #include "physics/BulletCallbacks.h"
+#include "Engine.h"
+#include "Player.h"
 
 namespace od
 {
@@ -105,9 +107,9 @@ namespace od
 	{
 		mDynamicsWorld->stepSimulation(dt, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
 
-		if(mLevel.getPlayer() != nullptr)
+		if(mLevel.getEngine().getPlayer() != nullptr)
 		{
-			mDebugDrawer->setCullingSphere(16, mLevel.getPlayer()->getPosition());
+			mDebugDrawer->setCullingSphere(16, mLevel.getEngine().getPlayer()->getPosition());
 		}
 
 		mDebugDrawer->step();

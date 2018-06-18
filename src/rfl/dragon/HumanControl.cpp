@@ -448,7 +448,7 @@ namespace odRfl
         }
 
         mPlayerObject = obj;
-        engine.getLevel().setPlayer(this);
+        engine.setPlayer(this);
 
         // prefetch referenced assets
         PrefetchProbe probe(mPlayerObject->getClass()->getAssetProvider());
