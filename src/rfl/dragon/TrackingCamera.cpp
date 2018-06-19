@@ -73,10 +73,12 @@ namespace odRfl
 	        Logger::error() << "Camera object spawned with no OSG camera assigned. Prepare for chaos";
 	    }
 
+	    // set initial view matrix
+	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
+
 	    if(mEngine->getPlayer() == nullptr)
 	    {
-	        Logger::warn() << "Tracking camera placed in level without player object. Destroying camera. What should it track?";
-	        obj.requestDestruction();
+	        // no player to track~ however, the camera object is tracked by the sky, so it still should be present
 	        return;
 	    }
 
@@ -129,8 +131,6 @@ namespace odRfl
 
         osg::Vec3f eye = player->getPosition();
         osg::Quat lookDirection = osg::Quat(player->getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player->getYaw() + M_PI/2, osg::Vec3f(0, 1, 0));
-        osg::Vec3f front = lookDirection * osg::Vec3f(1, 0, 0);
-        osg::Vec3f up = lookDirection * osg::Vec3f(0, 1, 0);
 
         // perform raycast to find obstacle closest point with unobstructed view of player
         osg::Vec3f from = player->getPosition();
@@ -146,10 +146,18 @@ namespace odRfl
             eye = result.hitPoint;
         }
 
-        mCameraLevelObject->setPosition(eye);
+        _setObjectPositionAndViewMatrix(eye, lookDirection);
+    }
+
+    void TrackingCamera::_setObjectPositionAndViewMatrix(const osg::Vec3f &eyepoint, const osg::Quat &lookDirection)
+    {
+        osg::Vec3f front = lookDirection * osg::Vec3f(1, 0, 0);
+        osg::Vec3f up = lookDirection * osg::Vec3f(0, 1, 0);
+
+        mCameraLevelObject->setPosition(eyepoint);
         mCameraLevelObject->setRotation(lookDirection);
 
-        mOsgCamera->setViewMatrixAsLookAt(eye, eye + front, up);
+        mOsgCamera->setViewMatrixAsLookAt(eyepoint, eyepoint + front, up);
     }
 
 	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera", TrackingCamera);

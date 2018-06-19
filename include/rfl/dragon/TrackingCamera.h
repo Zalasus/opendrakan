@@ -39,6 +39,8 @@ namespace odRfl
 
 	private:
 
+        void _setObjectPositionAndViewMatrix(const osg::Vec3f &eyepoint, const osg::Quat &lookDirection);
+
 		RflEnum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
 		RflFloat    mRubberBandStrength;
 		RflFloat    mSpinSpeed;
