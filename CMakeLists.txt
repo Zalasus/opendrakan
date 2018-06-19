@@ -13,7 +13,7 @@ endif()
 
 # enable compiler warnings when generating debug makefiles
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
     endif()
     if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
