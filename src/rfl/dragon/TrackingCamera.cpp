@@ -32,7 +32,7 @@ namespace odRfl
         {
             traverse(node, nv);
 
-            mCam->update();
+            mCam->updateCamera();
         }
 
     private:
@@ -121,7 +121,7 @@ namespace odRfl
         return *mCameraLevelObject;
     }
 
-    void TrackingCamera::update()
+    void TrackingCamera::updateCamera()
     {
         od::Player *player = mEngine->getPlayer();
         if(player == nullptr)

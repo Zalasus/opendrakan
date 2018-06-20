@@ -70,9 +70,9 @@ namespace od
 
 
 	PhysicsManager::PhysicsManager(Level &level, osg::Group *levelRoot)
-	: mLevelRoot(levelRoot)
+	: mLevel(level)
+	, mLevelRoot(levelRoot)
 	, mTickCallback(new PhysicsTickCallback(*this))
-	, mLevel(level)
 	{
 		mBroadphase.reset(new btDbvtBroadphase());
 		mCollisionConfiguration.reset(new btDefaultCollisionConfiguration());

@@ -422,8 +422,8 @@ namespace odRfl
 
     HumanControl::HumanControl()
     : mYaw(0)
-	, mPrevYaw(0)
 	, mPitch(0)
+    , mPrevYaw(0)
 	, mForwardSpeed(0)
 	, mRightSpeed(0)
     {

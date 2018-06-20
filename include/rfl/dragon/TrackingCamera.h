@@ -34,7 +34,7 @@ namespace odRfl
         virtual void setOsgCamera(osg::Camera *osgCam) override;
         virtual od::LevelObject  &getLevelObject() override;
 
-        void update();
+        void updateCamera();
 
 
 	private:
