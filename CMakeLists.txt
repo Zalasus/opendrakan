@@ -73,6 +73,7 @@ set(SOURCES
         "src/anim/MotionAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"
         "src/gui/GuiManager.cpp"
+        "src/gui/TexturedQuad.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"
