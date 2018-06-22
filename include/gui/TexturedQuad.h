@@ -26,9 +26,11 @@ namespace od
     public:
 
         TexturedQuad();
-        TexturedQuad(const TexturedQuad& geometry, const osg::CopyOp &copyop = osg::CopyOp::SHALLOW_COPY);
+        TexturedQuad(const TexturedQuad& quad, const osg::CopyOp &copyop = osg::CopyOp::SHALLOW_COPY);
 
-        META_Node(od, TexturedQuad);
+        // note: Even though Geometry is now a osg::Node, in the version of osg available on Ubuntu Trusty,
+        //  it still isn't. So don't use META_Node here unless you want to break our CI.
+        META_Object(od, TexturedQuad);
 
         void setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setTexture(Texture *texture);
