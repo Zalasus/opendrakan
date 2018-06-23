@@ -43,6 +43,7 @@ namespace od
         osg::ref_ptr<osg::Vec3Array> mVertexArray;
         osg::ref_ptr<osg::Vec2Array> mTextureCoordArray;
         osg::ref_ptr<osg::Vec4Array> mColorArray;
+        osg::ref_ptr<osg::DrawElementsUByte> mDrawElements;
         osg::ref_ptr<osg::Texture2D> mTexture;
         osg::ref_ptr<Texture> mTextureAsset;
         float mZCoord;

@@ -23,6 +23,10 @@ namespace od
         this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
         this->setColorArray(mColorArray, osg::Array::BIND_PER_VERTEX);
 
+        GLubyte elements[] = { 0, 2, 1, 1, 2, 3 };
+        mDrawElements = new osg::DrawElementsUByte(GL_TRIANGLES, 6, elements);
+        this->addPrimitiveSet(mDrawElements);
+
         this->getOrCreateStateSet()->setTextureAttribute(0, mTexture);
 
         this->setDataVariance(osg::Object::DYNAMIC);
