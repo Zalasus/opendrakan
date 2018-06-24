@@ -13,6 +13,7 @@
 
 #include "Level.h"
 #include "GeodeBuilder.h"
+#include "NodeMasks.h"
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
@@ -230,6 +231,7 @@ namespace od
 
         mLayerGeode = new osg::Geode;
         mLayerGeode->setName("layer " + mLayerName);
+        mLayerGeode->setNodeMask(NodeMasks::Layer);
         gb.build(mLayerGeode);
         layerGroup->addChild(mLayerGeode);
 

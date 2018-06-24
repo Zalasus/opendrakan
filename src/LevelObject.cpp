@@ -12,6 +12,7 @@
 #include "Level.h"
 #include "Exception.h"
 #include "OdDefines.h"
+#include "NodeMasks.h"
 #include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
 
@@ -72,6 +73,7 @@ namespace od
     , mState(LevelObjectState::NotLoaded)
     , mIgnoreAttachmentRotation(true)
     {
+        this->setNodeMask(NodeMasks::Object);
     }
 
     LevelObject::~LevelObject()
