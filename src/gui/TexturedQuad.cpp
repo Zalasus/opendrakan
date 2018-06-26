@@ -21,13 +21,18 @@ namespace od
     {
         this->setVertexArray(mVertexArray);
         this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
+
+        for(size_t i = 0; i < 4; ++i)
+        {
+            mColorArray->at(i) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        }
         this->setColorArray(mColorArray, osg::Array::BIND_PER_VERTEX);
 
         GLubyte elements[] = { 0, 2, 1, 1, 2, 3 };
         mDrawElements = new osg::DrawElementsUByte(GL_TRIANGLES, 6, elements);
         this->addPrimitiveSet(mDrawElements);
 
-        this->getOrCreateStateSet()->setTextureAttribute(0, mTexture);
+        this->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTexture);
 
         this->setDataVariance(osg::Object::DYNAMIC);
         this->setUseDisplayList(false);

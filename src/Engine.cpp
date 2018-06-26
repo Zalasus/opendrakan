@@ -15,6 +15,8 @@
 #include "Player.h"
 #include "rfl/Rfl.h"
 #include "gui/GuiManager.h"
+#include "gui/Window.h"
+#include "gui/LoadingBar.h"
 #include "Camera.h"
 
 namespace od
@@ -41,9 +43,30 @@ namespace od
 
 	    _findEngineRoot("Dragon.rrc");
 
-	    mRootNode = new osg::Group();
+	    mViewer = new osgViewer::Viewer;
+        mViewer->realize();
+        mViewer->setName("OpenDrakan");
+        mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
 
-	    mGuiManager.reset(new GuiManager(*this, mRootNode));
+        mRootNode = new osg::Group();
+        mViewer->setSceneData(mRootNode);
+
+        // set window title
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(!windows.empty())
+        {
+            windows.back()->setWindowName(mViewer->getName());
+        }
+
+	    mGuiManager.reset(new GuiManager(*this, mViewer));
+
+	    osg::ref_ptr<Window> progWindow = new Window(*mGuiManager);
+	    osg::ref_ptr<LoadingBar> bar = new LoadingBar(*mGuiManager);
+	    progWindow->setOrigin(WindowOrigin::Center);
+	    progWindow->setPosition(osg::Vec2(0, 0));
+	    progWindow->setChildWidget(bar);
+	    mGuiManager->addWindow(progWindow);
 
 	    mSetUp = true;
 	}
@@ -58,18 +81,6 @@ namespace od
 		if(!mSetUp)
 		{
 		    setUp();
-		}
-
-		mViewer = new osgViewer::Viewer;
-		mViewer->realize();
-		mViewer->setName("OpenDrakan");
-		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-		mViewer->setSceneData(mRootNode);
-		osgViewer::Viewer::Windows windows;
-		mViewer->getWindows(windows);
-		if(!windows.empty())
-		{
-			windows.back()->setWindowName(mViewer->getName());
 		}
 
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =

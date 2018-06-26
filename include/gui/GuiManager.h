@@ -10,6 +10,8 @@
 
 #include <string>
 
+#include <osgViewer/Viewer>
+
 #include "FilePath.h"
 #include "SrscFile.h"
 #include "db/TextureFactory.h"
@@ -21,6 +23,8 @@ namespace od
 
     class Engine;
 
+    class Window;
+
     /**
      * Class for managing the game's GUI, as well as an interface for accessing the
      * RRC file which contains GUI textures and localized GUI text.
@@ -29,7 +33,11 @@ namespace od
     {
     public:
 
-        GuiManager(Engine &engine, osg::Group *rootNode);
+        GuiManager(Engine &engine, osgViewer::Viewer *viewer);
+
+        osg::Vec2 getScreenResolution();
+
+        void addWindow(Window *window);
 
         /**
          * @brief Localizes string with localization tag.
@@ -70,10 +78,13 @@ namespace od
         inline void _decryptString(char * const str, const size_t len);
 
         Engine &mEngine;
+        osg::ref_ptr<osgViewer::Viewer> mViewer;
         SrscFile mRrcFile;
         TextureFactory mTextureFactory;
         Database &mInterfaceDb;
 
+        osg::ref_ptr<osg::Camera> mGuiCamera;
+        osg::ref_ptr<osg::Group>  mGuiRoot;
     };
 
 }

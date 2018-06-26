@@ -14,6 +14,7 @@
 
 #include "SrscRecordTypes.h"
 #include "Engine.h"
+#include "gui/Window.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -21,12 +22,73 @@ namespace od
 {
 
 
-    GuiManager::GuiManager(Engine &engine, osg::Group *rootNode)
+    GuiManager::GuiManager(Engine &engine, osgViewer::Viewer *viewer)
     : mEngine(engine)
+    , mViewer(viewer)
     , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
     {
+        if(mViewer != nullptr)
+        {
+            mGuiCamera = new osg::Camera;
+            mGuiCamera->setViewMatrix(osg::Matrix::identity());
+            mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
+            mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+            mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
+            mGuiCamera->setAllowEventFocus(false);
+
+            /*osgViewer::Viewer::Windows windows;
+            mViewer->getWindows(windows);
+            if(windows.empty())
+            {
+                throw Exception("Could not create secondary camera. No windows found");
+            }
+            mGuiCamera->setGraphicsContext(windows[0]);
+            mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);*/
+
+            mGuiRoot = new osg::Group;
+            mGuiCamera->addChild(mGuiRoot);
+
+            mGuiRoot->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+            //mViewer->addSlave(mGuiCamera, false);
+
+            static_cast<osg::Group*>(mViewer->getSceneData())->addChild(mGuiCamera);
+        }
+    }
+
+    osg::Vec2 GuiManager::getScreenResolution()
+    {
+        if(mViewer == nullptr)
+        {
+            throw Exception("Could not access screen resolution. No viewer passed to GuiManager");
+        }
+
+        int width = 0;
+        int height = 0;
+        int dummy = 0;
+
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(windows.empty())
+        {
+            throw Exception("Could not access screen resolution. No windows found");
+        }
+
+        windows.back()->getWindowRectangle(dummy, dummy, width, height);
+
+        return osg::Vec2(width, height);
+    }
+
+    void GuiManager::addWindow(Window *window)
+    {
+        if(window == nullptr || mGuiRoot == nullptr)
+        {
+            return;
+        }
+
+        mGuiRoot->addChild(window);
     }
 
     std::string GuiManager::localizeString(const std::string &s)
