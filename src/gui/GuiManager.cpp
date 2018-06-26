@@ -15,6 +15,7 @@
 #include "SrscRecordTypes.h"
 #include "Engine.h"
 #include "gui/Window.h"
+#include "gui/TexturedQuad.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -32,29 +33,31 @@ namespace od
         if(mViewer != nullptr)
         {
             mGuiCamera = new osg::Camera;
+            mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
             mGuiCamera->setViewMatrix(osg::Matrix::identity());
             mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
             mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
             mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
             mGuiCamera->setAllowEventFocus(false);
 
-            /*osgViewer::Viewer::Windows windows;
+            osgViewer::Viewer::Windows windows;
             mViewer->getWindows(windows);
             if(windows.empty())
             {
                 throw Exception("Could not create secondary camera. No windows found");
             }
             mGuiCamera->setGraphicsContext(windows[0]);
-            mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);*/
+            mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
 
             mGuiRoot = new osg::Group;
             mGuiCamera->addChild(mGuiRoot);
 
             mGuiRoot->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
-            //mViewer->addSlave(mGuiCamera, false);
+            mViewer->addSlave(mGuiCamera, false);
 
-            static_cast<osg::Group*>(mViewer->getSceneData())->addChild(mGuiCamera);
+            mGuiRoot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
+            mGuiRoot->getOrCreateStateSet()->setRenderBinDetails(0, "DepthSortedBin");
         }
     }
 

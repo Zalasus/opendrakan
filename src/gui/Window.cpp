@@ -69,7 +69,7 @@ namespace od
 
         osg::Matrix matrix = osg::Matrix::identity();
 
-        osg::Vec2 origin; // note that this also needs to take the flipped y axis into account
+        osg::Vec2 origin;
         switch(mOrigin)
         {
         case WindowOrigin::TopRight:
@@ -94,6 +94,8 @@ namespace od
             break;
         }
 
+        matrix.postMultTranslate(osg::Vec3(-origin, 0.0));
+
         // flip y axis
         matrix.postMultScale(osg::Vec3(1.0, -1.0, 1.0));
 
@@ -102,8 +104,7 @@ namespace od
 
         matrix.postMultScale(osg::Vec3(widgetSizeInScreenSpace, 1.0));
 
-        osg::Vec2 originOffset = osg::componentMultiply(origin, widgetSizeInScreenSpace) - mPositionInScreenSpace;
-        matrix.postMultTranslate(osg::Vec3(originOffset, 0.0));
+        matrix.postMultTranslate(osg::Vec3(-mPositionInScreenSpace, 0.0));
 
         this->setMatrix(matrix);
     }
