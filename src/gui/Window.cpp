@@ -69,19 +69,19 @@ namespace od
 
         osg::Matrix matrix = osg::Matrix::identity();
 
-        osg::Vec2 origin;
+        osg::Vec2 origin; // note that this also needs to take the flipped y axis into account
         switch(mOrigin)
         {
         case WindowOrigin::TopRight:
-            origin = osg::Vec2(1.0, 0.0);
-            break;
-
-        case WindowOrigin::BottomRight:
             origin = osg::Vec2(1.0, 1.0);
             break;
 
+        case WindowOrigin::BottomRight:
+            origin = osg::Vec2(1.0, 0.0);
+            break;
+
         case WindowOrigin::BottomLeft:
-            origin = osg::Vec2(0.0, 1.0);
+            origin = osg::Vec2(0.0, 0.0);
             break;
 
         case WindowOrigin::Center:
@@ -90,21 +90,20 @@ namespace od
 
         case WindowOrigin::TopLeft:
         default:
-            origin = osg::Vec2(0.0, 0.0);
+            origin = osg::Vec2(0.0, 1.0);
             break;
         }
+
+        // flip y axis
+        matrix.postMultScale(osg::Vec3(1.0, -1.0, 1.0));
 
         osg::Vec2 widgetSizePixel = osg::componentMultiply(mChildWidget->getFullScaleDimensions(), mScale);
         osg::Vec2 widgetSizeInScreenSpace = osg::componentDivide(widgetSizePixel*2.0, mGuiManager.getScreenResolution());
 
-        osg::Vec2 originOffset = mPositionInScreenSpace - osg::componentMultiply(origin, widgetSizeInScreenSpace);
-        matrix.postMultTranslate(osg::Vec3(-originOffset, 0.0));
+        matrix.postMultScale(osg::Vec3(widgetSizeInScreenSpace, 1.0));
 
-        osg::Vec2 scaleFactor = osg::componentDivide(osg::Vec2(1.0, 1.0), widgetSizeInScreenSpace);
-        matrix.postMultScale(osg::Vec3(scaleFactor, 1.0));
-
-        // flip y axis
-        matrix.postMultScale(osg::Vec3(1.0, -1.0, 1.0));
+        osg::Vec2 originOffset = osg::componentMultiply(origin, widgetSizeInScreenSpace) - mPositionInScreenSpace;
+        matrix.postMultTranslate(osg::Vec3(originOffset, 0.0));
 
         this->setMatrix(matrix);
     }
