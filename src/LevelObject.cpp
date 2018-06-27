@@ -207,6 +207,13 @@ namespace od
         mState = LevelObjectState::Loaded;
     }
 
+    void LevelObject::destroyed()
+    {
+        Logger::verbose() << "Object " << getObjectId() << " destroyed";
+
+        mState = LevelObjectState::Destroyed;
+    }
+
     void LevelObject::update(double simTime, double relTime)
     {
         if(mState != LevelObjectState::Spawned)
@@ -341,23 +348,7 @@ namespace od
 
     void LevelObject::requestDestruction()
     {
-        // for now, just call the hook and set the state.
-        //  despawning from here will cause too much trouble right now (can't remove update callback from within update callback)
-
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->destroyed(*this);
-        }
-
-        // remove us from scenegraph if we are still in there
-        if(this->getNumParents() > 0)
-        {
-            this->getParent(0)->removeChild(this);
-        }
-
-        Logger::verbose() << "Object " << getObjectId() << " destroyed";
-
-        mState = LevelObjectState::Destroyed;
+        mLevel.requestLevelObjectDestruction(this);
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const

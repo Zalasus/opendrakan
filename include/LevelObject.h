@@ -56,6 +56,7 @@ namespace od
         void loadFromRecord(DataReader dr);
         void spawned();
         void despawned();
+        void destroyed();
         void update(double simTime, double relTime);
         void messageReceived(LevelObject &sender, odRfl::RflMessage message);
 
