@@ -49,13 +49,12 @@ namespace od
         ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
-        inline osg::ref_ptr<Class> getClass() { return mClass; }
+        inline Class *getClass() { return mClass; }
         inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }
         inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
-        inline Model *getModel() { return mModel; }
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
         inline LevelObjectState getState() const { return mState; }
@@ -146,7 +145,6 @@ namespace od
         osg::Quat  mInitialRotation;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
-        osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
         SpawnStrategy mSpawnStrategy;

@@ -141,8 +141,7 @@ namespace od
         // FIXME: the visible flag is just the initial state. it can be toggled in-game, so we should load the model regardless of this flag
         if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
         {
-            mModel = mClass->getModel();
-            mTransform->addChild(mModel);
+            mTransform->addChild(mClass->getModel());
             this->addChild(mTransform);
 
             // if model defines a skeleton, create an instance of that skeleton for this object

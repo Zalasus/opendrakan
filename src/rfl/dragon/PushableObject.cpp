@@ -66,7 +66,7 @@ namespace odRfl
 
     void PushableObject::spawned(od::LevelObject &obj)
     {
-    	if(obj.getModel() != nullptr && obj.getModel()->getModelBounds() != nullptr)
+    	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
     	{
     		obj.getLevel().getPhysicsManager().addObject(obj, 0.8);
     	}
