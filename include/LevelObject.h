@@ -34,6 +34,13 @@ namespace od
         Destroyed
     };
 
+    enum class SpawnStrategy
+    {
+        Never,
+        WhenInSight,
+        Always
+    };
+
     class LevelObject : public osg::Group, public btMotionState
     {
     public:
@@ -52,6 +59,7 @@ namespace od
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
         inline LevelObjectState getState() const { return mState; }
+        inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
 
         void loadFromRecord(DataReader dr);
         void spawned();
@@ -141,6 +149,7 @@ namespace od
         osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
+        SpawnStrategy mSpawnStrategy;
 
         std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
 

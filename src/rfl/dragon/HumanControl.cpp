@@ -440,12 +440,20 @@ namespace odRfl
 
     void HumanControl::loaded(od::Engine &engine, od::LevelObject *obj)
     {
+        if(obj == nullptr)
+        {
+            Logger::warn() << "Human Control class created without a level object";
+            return;
+        }
+
         if(engine.getPlayer() != nullptr)
         {
             Logger::warn() << "Duplicate HumanControl objects found in level. Destroying duplicate";
             obj->requestDestruction();
             return;
         }
+
+        obj->setSpawnStrategy(od::SpawnStrategy::Always);
 
         mPlayerObject = obj;
         engine.setPlayer(this);

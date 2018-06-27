@@ -37,6 +37,17 @@ namespace odRfl
                (mResetMessage, "Reset Message");
     }
 
+    void CountDownToZero::loaded(od::Engine &engine, od::LevelObject *obj)
+    {
+        if(obj == nullptr)
+        {
+            Logger::warn() << "Count Down To Zero created without a level object";
+            return;
+        }
+
+        obj->setSpawnStrategy(od::SpawnStrategy::Always);
+    }
+
     void CountDownToZero::spawned(od::LevelObject &obj)
     {
         mCounterValue = mInitialCounterValue;

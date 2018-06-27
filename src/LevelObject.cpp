@@ -71,6 +71,7 @@ namespace od
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
     , mState(LevelObjectState::NotLoaded)
+    , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIgnoreAttachmentRotation(true)
     {
         this->setNodeMask(NodeMasks::Object);

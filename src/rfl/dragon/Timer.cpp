@@ -39,6 +39,17 @@ namespace odRfl
 				(mDisableReenableMessage, "Disable/Re-Enable Message");
 	}
 
+	void Timer::loaded(od::Engine &engine, od::LevelObject *obj)
+	{
+	    if(obj == nullptr)
+	    {
+	        Logger::warn() << "Timer created without a level object";
+	        return;
+	    }
+
+	    obj->setSpawnStrategy(od::SpawnStrategy::Always);
+	}
+
 	void Timer::spawned(od::LevelObject &obj)
 	{
 	    obj.setEnableRflUpdateHook(true);

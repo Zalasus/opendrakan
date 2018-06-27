@@ -30,6 +30,7 @@ namespace odRfl
 		Timer();
 
         virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
         virtual void spawned(od::LevelObject &obj) override;
         virtual void update(od::LevelObject &obj, double simTime, double relTime) override;
         virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
