@@ -22,7 +22,8 @@ namespace odRfl
 	, mTriggerMessage(RflMessage::On)
 	, mToggle(false)
 	, mDisableReenableMessage(RflMessage::Off)
-	, mTimerStarted(false)
+	, mGotStartTrigger(false)
+	, mTimerRunning(false)
 	, mTimeElapsed(0.0)
 	{
 	}
@@ -54,12 +55,12 @@ namespace odRfl
 	{
 	    obj.setEnableRflUpdateHook(true);
 
-	    mTimerStarted = (mStartMode == TimerStartMode::RunInstantly);
+	    mTimerRunning = (mStartMode == TimerStartMode::RunInstantly);
 	}
 
 	void Timer::update(od::LevelObject &obj, double simTime, double relTime)
 	{
-	    if(!mTimerStarted)
+	    if(!mTimerRunning)
 	    {
 	        return;
 	    }
@@ -72,7 +73,7 @@ namespace odRfl
 
 	        obj.messageAllLinkedObjects(mTriggerMessage);
 
-	        mTimerStarted = false;
+	        mTimerRunning = false;
 
 	        if(mDestroyAfterTimeout)
 	        {
@@ -80,17 +81,28 @@ namespace odRfl
 
 	        }else if(mRepeat)
 	        {
-	            mTimerStarted = true;
+	            mTimerRunning = true;
+	            mTimeElapsed = 0.0;
 	        }
 	    }
 	}
 
 	void Timer::messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
 	{
-	    if(!mTimerStarted)
+	    if(mStartMode == TimerStartMode::RunWhenTriggered && !mGotStartTrigger)
 	    {
 	        // i assume any message will trigger the timer. there is no field that would indicate otherwise
-	        mTimerStarted = true;
+	        mTimerRunning = true;
+	        mGotStartTrigger = true;
+
+	        Logger::verbose() << "Timer " << obj.getObjectId() << " started by object " << sender.getObjectId();
+
+	    }else if(mToggle && message == mDisableReenableMessage)
+	    {
+	        mTimerRunning = !mTimerRunning;
+
+	        Logger::verbose() << "Timer " << obj.getObjectId() << " " << (mTimerRunning ? "enabled" : "disabled")
+	                          << " by object " << sender.getObjectId();
 	    }
 	}
 

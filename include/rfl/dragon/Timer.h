@@ -42,13 +42,14 @@ namespace odRfl
 		RflEnumTimerStartMode   mStartMode;
 		RflEnumYesNo	        mRepeat;
 		RflEnumYesNo            mDestroyAfterTimeout;
-		RflEnumMessage          mTriggerMessage;
+		RflEnumMessage          mTriggerMessage; // message that will be sent upon timeout
 		RflEnumYesNo            mToggle;
 		RflEnumMessage          mDisableReenableMessage;
 
 	private:
 
-		bool mTimerStarted;
+		bool mGotStartTrigger;
+		bool mTimerRunning;
 		double mTimeElapsed;
 
 	};
