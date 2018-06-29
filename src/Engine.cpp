@@ -17,6 +17,7 @@
 #include "gui/GuiManager.h"
 #include "gui/Window.h"
 #include "gui/LoadingBar.h"
+#include "gui/MainMenu.h"
 #include "Camera.h"
 
 namespace od
@@ -62,11 +63,11 @@ namespace od
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
 	    osg::ref_ptr<Window> progWindow = new Window(*mGuiManager);
-	    osg::ref_ptr<LoadingBar> bar = new LoadingBar(*mGuiManager);
+	    osg::ref_ptr<MainMenu> bar = new MainMenu(*mGuiManager);
 	    progWindow->setOrigin(WindowOrigin::Center);
 	    progWindow->setPosition(osg::Vec2(0, 0));
 	    progWindow->setChildWidget(bar);
-	    bar->setProgress(0.9);
+	    progWindow->setScale(2);
 	    mGuiManager->addWindow(progWindow);
 
 	    mSetUp = true;

@@ -17,7 +17,7 @@ namespace od
     , mTextureCoordArray(new osg::Vec2Array(4))
     , mColorArray(new osg::Vec4Array(4))
     , mTexture(new osg::Texture2D)
-    , mZCoord(1)
+    , mZCoord(0.0)
     {
         this->setVertexArray(mVertexArray);
         this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
@@ -37,6 +37,9 @@ namespace od
         this->setDataVariance(osg::Object::DYNAMIC);
         this->setUseDisplayList(false);
         this->setUseVertexBufferObjects(true);
+
+        // set default texture coords spanning whole texture
+        setTextureCoords(osg::Vec2(0.0, 1.0), osg::Vec2(1.0, 0.0));
     }
 
     TexturedQuad::TexturedQuad(const TexturedQuad& quad, const osg::CopyOp &copyop)

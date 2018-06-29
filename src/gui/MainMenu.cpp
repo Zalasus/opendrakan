@@ -1,0 +1,44 @@
+/*
+ * MainMenu.cpp
+ *
+ *  Created on: 29 Jun 2018
+ *      Author: zal
+ */
+
+#include "gui/MainMenu.h"
+
+#include "gui/GuiManager.h"
+#include "gui/TexturedQuad.h"
+
+namespace od
+{
+
+    MainMenu::MainMenu(GuiManager &gm)
+    {
+        osg::ref_ptr<TexturedQuad> topLeft = new TexturedQuad;
+        topLeft->setTexture(gm.getTexture(0x1410));
+        topLeft->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(0.5, 0.5));
+        this->addGeometry(topLeft);
+
+        osg::ref_ptr<TexturedQuad> topRight = new TexturedQuad;
+        topRight->setTexture(gm.getTexture(0x1411));
+        topRight->setVertexCoords(osg::Vec2(0.5, 0.0), osg::Vec2(1, 0.5));
+        this->addGeometry(topRight);
+
+        osg::ref_ptr<TexturedQuad> bottomLeft = new TexturedQuad;
+        bottomLeft->setTexture(gm.getTexture(0x1412));
+        bottomLeft->setVertexCoords(osg::Vec2(0.0, 0.5), osg::Vec2(0.5, 1));
+        this->addGeometry(bottomLeft);
+
+        osg::ref_ptr<TexturedQuad> bottomRight = new TexturedQuad;
+        bottomRight->setTexture(gm.getTexture(0x1413));
+        bottomRight->setVertexCoords(osg::Vec2(0.5, 0.5), osg::Vec2(1.0, 1.0));
+        this->addGeometry(bottomRight);
+    }
+
+    osg::Vec2 MainMenu::getFullScaleDimensions() const
+    {
+        return osg::Vec2(512.0, 512.0);
+    }
+
+}
