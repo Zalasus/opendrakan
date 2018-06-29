@@ -72,6 +72,7 @@ namespace od
     , mTransform(new osg::PositionAttitudeTransform)
     , mState(LevelObjectState::NotLoaded)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
+    , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
     {
         this->setNodeMask(NodeMasks::Object);
@@ -138,8 +139,8 @@ namespace od
 
         mClass = mLevel.getClassByRef(mClassRef);
 
-        // FIXME: the visible flag is just the initial state. it can be toggled in-game, so we should load the model regardless of this flag
-        if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
+        // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
+        if(mClass->hasModel())
         {
             mTransform->addChild(mClass->getModel());
             this->addChild(mTransform);
@@ -152,6 +153,8 @@ namespace od
                 mTransform->addChild(mSkeletonRoot);
             }
         }
+
+        _setVisible(mFlags & OD_OBJECT_FLAG_VISIBLE);
 
         mRflClassInstance = mClass->makeInstance();
         if(mRflClassInstance != nullptr)
@@ -234,12 +237,12 @@ namespace od
             return;
         }
 
+        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
+
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->messageReceived(*this, sender, message);
         }
-
-        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
     }
 
     void LevelObject::setPosition(const osg::Vec3f &v)
@@ -260,6 +263,13 @@ namespace od
         {
             (*it)->_attachmentTargetPositionUpdated();
         }
+    }
+
+    void LevelObject::setVisible(bool v)
+    {
+        _setVisible(v);
+
+        Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreRotation, bool clearOffset)
@@ -400,6 +410,16 @@ namespace od
         }
 
         mAttachedObjects.clear();
+    }
+
+    void LevelObject::_setVisible(bool v)
+    {
+        mIsVisible = v;
+
+        if(mTransform != nullptr)
+        {
+            mTransform->setNodeMask(v ? NodeMasks::Object : NodeMasks::Hidden);
+        }
     }
 
 }

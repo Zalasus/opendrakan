@@ -59,6 +59,8 @@ namespace od
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
         inline LevelObjectState getState() const { return mState; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
+        inline const std::vector<osg::ref_ptr<LevelObject>> &getLinkedObjects() const { return mLinkedObjects; }
+        inline bool isVisible() const { return mIsVisible; }
 
         void loadFromRecord(DataReader dr);
         void spawned();
@@ -69,6 +71,7 @@ namespace od
 
         void setPosition(const osg::Vec3f &v);
         void setRotation(const osg::Quat &q);
+        void setVisible(bool v);
 
         /**
          * @brief Attaches this object to target object.
@@ -130,6 +133,7 @@ namespace od
 
         void _attachmentTargetPositionUpdated();
         void _detachAllAttachedObjects();
+        void _setVisible(bool b); // just so we can switch visibility internally without producing logs everytime
 
 
         Level &mLevel;
@@ -148,6 +152,7 @@ namespace od
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
         SpawnStrategy mSpawnStrategy;
+        bool mIsVisible;
 
         std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
 
