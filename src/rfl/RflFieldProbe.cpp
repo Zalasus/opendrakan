@@ -92,6 +92,7 @@ namespace odRfl
         auto it = std::find_if(mFieldEntries.begin(), mFieldEntries.end(), pred); // FIXME: O(n) lookup. might split into classbuilder and objectbuilder, one with map and one with array
         if(it == mFieldEntries.end())
         {
+            mRegistrationIndex++;
             return; // FIXME: this should be an error when building a class
         }
 
