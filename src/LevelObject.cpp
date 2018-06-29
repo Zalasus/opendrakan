@@ -71,6 +71,8 @@ namespace od
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
     , mState(LevelObjectState::NotLoaded)
+    , mSpawnStrategy(SpawnStrategy::WhenInSight)
+    , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
     {
         this->setNodeMask(NodeMasks::Object);
@@ -137,11 +139,10 @@ namespace od
 
         mClass = mLevel.getClassByRef(mClassRef);
 
-        // FIXME: the visible flag is just the initial state. it can be toggled in-game, so we should load the model regardless of this flag
-        if(mClass->hasModel() && (mFlags & OD_OBJECT_FLAG_VISIBLE))
+        // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
+        if(mClass->hasModel())
         {
-            mModel = mClass->getModel();
-            mTransform->addChild(mModel);
+            mTransform->addChild(mClass->getModel());
             this->addChild(mTransform);
 
             // if model defines a skeleton, create an instance of that skeleton for this object
@@ -152,6 +153,8 @@ namespace od
                 mTransform->addChild(mSkeletonRoot);
             }
         }
+
+        _setVisible(mFlags & OD_OBJECT_FLAG_VISIBLE);
 
         mRflClassInstance = mClass->makeInstance();
         if(mRflClassInstance != nullptr)
@@ -207,6 +210,13 @@ namespace od
         mState = LevelObjectState::Loaded;
     }
 
+    void LevelObject::destroyed()
+    {
+        Logger::verbose() << "Object " << getObjectId() << " destroyed";
+
+        mState = LevelObjectState::Destroyed;
+    }
+
     void LevelObject::update(double simTime, double relTime)
     {
         if(mState != LevelObjectState::Spawned)
@@ -227,12 +237,12 @@ namespace od
             return;
         }
 
+        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
+
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->messageReceived(*this, sender, message);
         }
-
-        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
     }
 
     void LevelObject::setPosition(const osg::Vec3f &v)
@@ -253,6 +263,13 @@ namespace od
         {
             (*it)->_attachmentTargetPositionUpdated();
         }
+    }
+
+    void LevelObject::setVisible(bool v)
+    {
+        _setVisible(v);
+
+        Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreRotation, bool clearOffset)
@@ -341,23 +358,7 @@ namespace od
 
     void LevelObject::requestDestruction()
     {
-        // for now, just call the hook and set the state.
-        //  despawning from here will cause too much trouble right now (can't remove update callback from within update callback)
-
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->destroyed(*this);
-        }
-
-        // remove us from scenegraph if we are still in there
-        if(this->getNumParents() > 0)
-        {
-            this->getParent(0)->removeChild(this);
-        }
-
-        Logger::verbose() << "Object " << getObjectId() << " destroyed";
-
-        mState = LevelObjectState::Destroyed;
+        mLevel.requestLevelObjectDestruction(this);
     }
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const
@@ -409,6 +410,16 @@ namespace od
         }
 
         mAttachedObjects.clear();
+    }
+
+    void LevelObject::_setVisible(bool v)
+    {
+        mIsVisible = v;
+
+        if(mTransform != nullptr)
+        {
+            mTransform->setNodeMask(v ? NodeMasks::Object : NodeMasks::Hidden);
+        }
     }
 
 }

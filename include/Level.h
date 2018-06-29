@@ -15,6 +15,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <deque>
 
 #include <osg/Group>
 #include <osg/Geode>
@@ -46,6 +47,9 @@ namespace od
 
         void loadLevel();
         void spawnAllObjects();
+        void requestLevelObjectDestruction(LevelObject *obj);
+
+        void update();
 
         LevelObject &getLevelObjectByIndex(uint16_t index);
 
@@ -81,6 +85,8 @@ namespace od
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
 		PhysicsManager mPhysicsManager;
+
+		std::deque<osg::ref_ptr<LevelObject>> mDestructionQueue;
     };
 
 

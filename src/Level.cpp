@@ -79,6 +79,27 @@ namespace od
         }
     }
 
+    void Level::requestLevelObjectDestruction(LevelObject *obj)
+    {
+        mDestructionQueue.push_back(osg::ref_ptr<LevelObject>(obj));
+    }
+
+    void Level::update()
+    {
+        if(!mDestructionQueue.empty())
+        {
+            auto it = mDestructionQueue.begin();
+            while(it != mDestructionQueue.end())
+            {
+                (*it)->despawned();
+                (*it)->destroyed();
+                mObjectGroup->removeChild(*it);
+
+                it = mDestructionQueue.erase(it);
+            }
+        }
+    }
+
     LevelObject &Level::getLevelObjectByIndex(uint16_t index)
     {
         if(index >= mLevelObjects.size())

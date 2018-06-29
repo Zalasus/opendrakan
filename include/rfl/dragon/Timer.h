@@ -30,6 +30,7 @@ namespace odRfl
 		Timer();
 
         virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
         virtual void spawned(od::LevelObject &obj) override;
         virtual void update(od::LevelObject &obj, double simTime, double relTime) override;
         virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
@@ -41,13 +42,14 @@ namespace odRfl
 		RflEnumTimerStartMode   mStartMode;
 		RflEnumYesNo	        mRepeat;
 		RflEnumYesNo            mDestroyAfterTimeout;
-		RflEnumMessage          mTriggerMessage;
+		RflEnumMessage          mTriggerMessage; // message that will be sent upon timeout
 		RflEnumYesNo            mToggle;
 		RflEnumMessage          mDisableReenableMessage;
 
 	private:
 
-		bool mTimerStarted;
+		bool mGotStartTrigger;
+		bool mTimerRunning;
 		double mTimeElapsed;
 
 	};

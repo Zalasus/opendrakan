@@ -32,11 +32,11 @@ namespace odRfl
 
     void RflString::fillArray(uint16_t size, od::DataReader &dr)
 	{
-		char *dataBuffer = new char[size*4+1]; // FIXME: RAII, maybe?
-		dr.read(dataBuffer, size*4);
+		std::vector<char> dataBuffer(size*4+1);
+		dr.read(dataBuffer.data(), size*4);
 		dataBuffer[size] = '\0';
 
-		mValue = std::string(dataBuffer);
+		mValue = std::string(dataBuffer.data());
 	}
 
 }

@@ -61,9 +61,17 @@ namespace odRfl
 
 	void TrackingCamera::loaded(od::Engine &engine, od::LevelObject *obj)
 	{
+	    if(obj == nullptr)
+	    {
+	        Logger::warn() << "Tracking Camera created without a level object";
+	        return;
+	    }
+
 	    mEngine = &engine;
 	    mCameraLevelObject = obj;
 	    engine.setCamera(this);
+
+	    obj->setSpawnStrategy(od::SpawnStrategy::Always);
 	}
 
 	void TrackingCamera::spawned(od::LevelObject &obj)

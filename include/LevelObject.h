@@ -34,6 +34,13 @@ namespace od
         Destroyed
     };
 
+    enum class SpawnStrategy
+    {
+        Never,
+        WhenInSight,
+        Always
+    };
+
     class LevelObject : public osg::Group, public btMotionState
     {
     public:
@@ -42,25 +49,29 @@ namespace od
         ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
-        inline osg::ref_ptr<Class> getClass() { return mClass; }
+        inline Class *getClass() { return mClass; }
         inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }
         inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
-        inline Model *getModel() { return mModel; }
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
         inline LevelObjectState getState() const { return mState; }
+        inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
+        inline const std::vector<osg::ref_ptr<LevelObject>> &getLinkedObjects() const { return mLinkedObjects; }
+        inline bool isVisible() const { return mIsVisible; }
 
         void loadFromRecord(DataReader dr);
         void spawned();
         void despawned();
+        void destroyed();
         void update(double simTime, double relTime);
         void messageReceived(LevelObject &sender, odRfl::RflMessage message);
 
         void setPosition(const osg::Vec3f &v);
         void setRotation(const osg::Quat &q);
+        void setVisible(bool v);
 
         /**
          * @brief Attaches this object to target object.
@@ -122,6 +133,7 @@ namespace od
 
         void _attachmentTargetPositionUpdated();
         void _detachAllAttachedObjects();
+        void _setVisible(bool b); // just so we can switch visibility internally without producing logs everytime
 
 
         Level &mLevel;
@@ -137,9 +149,10 @@ namespace od
         osg::Quat  mInitialRotation;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
-        osg::ref_ptr<Model> mModel;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
+        SpawnStrategy mSpawnStrategy;
+        bool mIsVisible;
 
         std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
 

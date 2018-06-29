@@ -272,13 +272,13 @@ namespace od
 
 	btRigidBody *PhysicsManager::addObject(LevelObject &o, float mass)
 	{
-		if(o.getModel() == nullptr || o.getModel()->getModelBounds() == nullptr || o.getClassInstance() == nullptr)
+		if(o.getClass() == nullptr || o.getClass()->getModel() == nullptr || o.getClass()->getModel()->getModelBounds() == nullptr)
 		{
 			throw Exception("Tried to add object without model or collision shape to PhysicsManager");
 		}
 
-		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getModel()->getModelBounds()->getCollisionShape());
-		o.getModel()->getModelBounds()->getCollisionShape()->calculateLocalInertia(mass, info.m_localInertia);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getClass()->getModel()->getModelBounds()->getCollisionShape());
+		o.getClass()->getModel()->getModelBounds()->getCollisionShape()->calculateLocalInertia(mass, info.m_localInertia);
 
 		ObjectBodyPair objectBodyPair;
 		objectBodyPair.second.reset(new btRigidBody(info));

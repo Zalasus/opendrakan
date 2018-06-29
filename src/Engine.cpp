@@ -126,6 +126,12 @@ namespace od
 
 			mViewer->advance(simTime);
 			mViewer->eventTraversal();
+
+			if(mLevel != nullptr)
+			{
+			    mLevel->update(); // TODO: put in update callback
+			}
+
 			mViewer->updateTraversal();
 			mViewer->renderingTraversals();
 
