@@ -20,18 +20,18 @@ namespace od
     {
         osg::ref_ptr<Texture> barTexture = gm.getTexture(0x1400);
 
-        osg::Vec2 foreTl(0.0, 1.0);
-        osg::Vec2 foreBr(1.0, 1.0 - 50.0/128);
-        mForegroundQuad->setTextureCoords(foreTl, foreBr);
+        osg::Vec2i foreTl(0, 0);
+        osg::Vec2i foreBr(127, 50);
+        mForegroundQuad->setTexture(barTexture);
+        mForegroundQuad->setTextureCoordsFromPixels(foreTl, foreBr);
         mForegroundQuad->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1.0, 1.0));
         mForegroundQuad->setZCoord(-0.4);
-        mForegroundQuad->setTexture(barTexture);
         this->addGeometry(mForegroundQuad);
 
-        mBarQuad->setTextureCoords(osg::Vec2(0.0, 1.0 - 51.0/128), osg::Vec2(mProgress, 1.0 - 80.0/128));
+        mBarQuad->setTexture(barTexture);
+        mBarQuad->setTextureCoordsFromPixels(osg::Vec2i(0, 51), osg::Vec2i(mProgress*127, 80));
         mBarQuad->setVertexCoords(osg::Vec2(0.0, 9.0/50), osg::Vec2(mProgress, 40.0/50));
         mBarQuad->setZCoord(-0.3);
-        mBarQuad->setTexture(barTexture);
         this->addGeometry(mBarQuad);
     }
 
@@ -44,7 +44,7 @@ namespace od
     {
         mProgress = f;
 
-        mBarQuad->setTextureCoords(osg::Vec2(0.0, 1.0 - 51.0/128), osg::Vec2(mProgress, 1.0 - 80.0/128));
+        mBarQuad->setTextureCoordsFromPixels(osg::Vec2i(0, 51), osg::Vec2i(mProgress*127, 80));
         mBarQuad->setVertexCoords(osg::Vec2(0.0, 9.0/50), osg::Vec2(mProgress, 40.0/50));
     }
 

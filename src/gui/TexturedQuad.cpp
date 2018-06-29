@@ -32,6 +32,8 @@ namespace od
         mDrawElements = new osg::DrawElementsUByte(GL_TRIANGLES, 6, elements);
         this->addPrimitiveSet(mDrawElements);
 
+        mTexture->setWrap(osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE);
+        mTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
         this->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTexture);
 
         this->setDataVariance(osg::Object::DYNAMIC);
@@ -58,6 +60,26 @@ namespace od
         mTextureCoordArray->at(1) = osg::Vec2(bottomRight.x(), topLeft.y());
         mTextureCoordArray->at(2) = osg::Vec2(topLeft.x(), bottomRight.y());
         mTextureCoordArray->at(3) = bottomRight;
+    }
+
+    void TexturedQuad::setTextureCoordsFromPixels(const osg::Vec2i &topLeft, const osg::Vec2i &bottomRight)
+    {
+        if(mTextureAsset == nullptr)
+        {
+            return;
+        }
+
+        osg::Vec2 textureDimensions(mTextureAsset->s(), mTextureAsset->t());
+
+        osg::Vec2 tl(topLeft.x() + 0.5, topLeft.y() + 0.5);
+        tl = osg::componentDivide(tl, textureDimensions);
+        tl.y() = 1.0 - tl.y();
+
+        osg::Vec2 br(bottomRight.x() + 0.5, bottomRight.y() + 0.5);
+        br = osg::componentDivide(br, textureDimensions);
+        br.y() = 1.0 - br.y();
+
+        setTextureCoords(tl, br);
     }
 
     void TexturedQuad::setTexture(Texture *texture)

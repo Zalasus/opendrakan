@@ -33,6 +33,14 @@ namespace od
         META_Object(od, TexturedQuad);
 
         void setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
+        /**
+         * @brief Sets texture coordinates from image pixel coordinates.
+         *
+         * This will set the texture coordinates to be placed exactly at the specified pixels (including half pixel offset).
+         * The coordinate origin is at the top left corner, as is common in image processing.
+         * For this to work, a texture asset must have been assigned to this TexturedQuad. Otherwise, the call will be ignored.
+         */
+        void setTextureCoordsFromPixels(const osg::Vec2i &topLeft, const osg::Vec2i &bottomRight);
         void setTexture(Texture *texture);
         void setVertexCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setZCoord(float z);
