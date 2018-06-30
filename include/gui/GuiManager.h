@@ -35,9 +35,17 @@ namespace od
 
         GuiManager(Engine &engine, osgViewer::Viewer *viewer);
 
+        inline void setMenuMode(bool b) { mMenuMode = b; }
+        inline bool isMenuMode() const { return mMenuMode; }
+
         osg::Vec2 getScreenResolution();
 
         void addWindow(Window *window);
+
+        /**
+         * @brief Positions cursor in screen space.
+         */
+        void setCursorPosition(const osg::Vec2 &pos);
 
         /**
          * @brief Localizes string with localization tag.
@@ -82,6 +90,7 @@ namespace od
         SrscFile mRrcFile;
         TextureFactory mTextureFactory;
         Database &mInterfaceDb;
+        bool mMenuMode;
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;

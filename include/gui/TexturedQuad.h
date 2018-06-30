@@ -40,7 +40,7 @@ namespace od
          * The coordinate origin is at the top left corner, as is common in image processing.
          * For this to work, a texture asset must have been assigned to this TexturedQuad. Otherwise, the call will be ignored.
          */
-        void setTextureCoordsFromPixels(const osg::Vec2i &topLeft, const osg::Vec2i &bottomRight);
+        void setTextureCoordsFromPixels(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setTexture(Texture *texture);
         void setVertexCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setZCoord(float z);

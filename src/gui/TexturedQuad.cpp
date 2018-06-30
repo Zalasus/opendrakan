@@ -62,7 +62,7 @@ namespace od
         mTextureCoordArray->at(3) = bottomRight;
     }
 
-    void TexturedQuad::setTextureCoordsFromPixels(const osg::Vec2i &topLeft, const osg::Vec2i &bottomRight)
+    void TexturedQuad::setTextureCoordsFromPixels(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
     {
         if(mTextureAsset == nullptr)
         {

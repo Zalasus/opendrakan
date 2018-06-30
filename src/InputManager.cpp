@@ -9,6 +9,7 @@
 
 #include "Engine.h"
 #include "Player.h"
+#include "gui/GuiManager.h"
 
 namespace od
 {
@@ -125,22 +126,32 @@ namespace od
 		float x = ea.getXnormalized();
 		float y = ea.getYnormalized();
 
-		float pitch = ( M_PI/2) * y;
-		float yaw   = (-M_PI) * x;
-
-		mEngine.getPlayer()->setPitch(pitch);
-		mEngine.getPlayer()->setYaw(yaw);
-
-		// wrap cursor when hitting left or right border
-		float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel
-		if(x <= -1 + epsilon || x >= 1 - epsilon)
+		if(mEngine.getGuiManager().isMenuMode())
 		{
-			float newX = (x <= -1 + epsilon) ? (1 - 2*epsilon) : (-1 + 2*epsilon);
 
-			float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
+		    mEngine.getGuiManager().setCursorPosition(osg::Vec2(x, y));
 
-			aa.requestWarpPointer(denormX, ea.getY());
-			mMouseWarped = true;
+		}else
+		{
+		    // not menu mode. apply mouse movement to player view
+
+		    float pitch = ( M_PI/2) * y;
+            float yaw   = (-M_PI) * x;
+
+            mEngine.getPlayer()->setPitch(pitch);
+            mEngine.getPlayer()->setYaw(yaw);
+
+            // wrap cursor when hitting left or right border
+            float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel
+            if(x <= -1 + epsilon || x >= 1 - epsilon)
+            {
+                float newX = (x <= -1 + epsilon) ? (1 - 2*epsilon) : (-1 + 2*epsilon);
+
+                float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
+
+                aa.requestWarpPointer(denormX, ea.getY());
+                mMouseWarped = true;
+            }
 		}
 
 		return true;

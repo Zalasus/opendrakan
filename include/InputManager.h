@@ -33,7 +33,6 @@ namespace od
 		void _playerMoveForward(float speed);
 		void _playerMoveRight(float speed);
 
-
 		Engine &mEngine;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		bool mMouseWarped; // flag to prevent handling mouseMove events caused by warping cursor

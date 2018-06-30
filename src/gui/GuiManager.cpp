@@ -29,6 +29,7 @@ namespace od
     , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
+    , mMenuMode(false)
     {
         if(mViewer != nullptr)
         {
@@ -92,6 +93,11 @@ namespace od
         }
 
         mGuiRoot->addChild(window);
+    }
+
+    void GuiManager::setCursorPosition(const osg::Vec2 &pos)
+    {
+
     }
 
     std::string GuiManager::localizeString(const std::string &s)

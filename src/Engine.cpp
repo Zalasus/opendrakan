@@ -63,12 +63,12 @@ namespace od
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
 	    osg::ref_ptr<Window> progWindow = new Window(*mGuiManager);
-	    osg::ref_ptr<LoadingBar> bar = new LoadingBar(*mGuiManager);
+	    osg::ref_ptr<MainMenu> bar = new MainMenu(*mGuiManager);
 	    progWindow->setOrigin(WindowOrigin::Center);
 	    progWindow->setPosition(osg::Vec2(0, 0));
 	    progWindow->setChildWidget(bar);
 	    progWindow->setScale(1.5);
-	    bar->setProgress(0.6);
+	    //bar->setProgress(0.6);
 	    mGuiManager->addWindow(progWindow);
 
 	    mSetUp = true;
