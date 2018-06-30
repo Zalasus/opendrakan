@@ -73,15 +73,15 @@ namespace od
         switch(mOrigin)
         {
         case WindowOrigin::TopRight:
-            origin = osg::Vec2(1.0, 1.0);
-            break;
-
-        case WindowOrigin::BottomRight:
             origin = osg::Vec2(1.0, 0.0);
             break;
 
+        case WindowOrigin::BottomRight:
+            origin = osg::Vec2(1.0, 1.0);
+            break;
+
         case WindowOrigin::BottomLeft:
-            origin = osg::Vec2(0.0, 0.0);
+            origin = osg::Vec2(0.0, 1.0);
             break;
 
         case WindowOrigin::Center:
@@ -90,7 +90,7 @@ namespace od
 
         case WindowOrigin::TopLeft:
         default:
-            origin = osg::Vec2(0.0, 1.0);
+            origin = osg::Vec2(0.0, 0.0);
             break;
         }
 
@@ -104,7 +104,7 @@ namespace od
 
         matrix.postMultScale(osg::Vec3(widgetSizeInScreenSpace, 1.0));
 
-        matrix.postMultTranslate(osg::Vec3(-mPositionInScreenSpace, 0.0));
+        matrix.postMultTranslate(osg::Vec3(mPositionInScreenSpace, 0.0));
 
         this->setMatrix(matrix);
     }
