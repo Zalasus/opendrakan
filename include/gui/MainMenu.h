@@ -21,7 +21,8 @@ namespace od
 
         MainMenu(GuiManager &gm);
 
-        virtual osg::Vec2 getFullScaleDimensions() const override;
+        virtual WidgetDimensionType getDimensionType() const override;
+        virtual osg::Vec2 getDimensions() const override;
 
     };
 

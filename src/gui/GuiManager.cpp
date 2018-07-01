@@ -14,9 +14,7 @@
 
 #include "SrscRecordTypes.h"
 #include "Engine.h"
-#include "gui/Window.h"
 #include "gui/TexturedQuad.h"
-#include "gui/Cursor.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -32,11 +30,17 @@ namespace od
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
     , mMenuMode(true)
     {
+        mWidgetToScreenSpaceXform.makeIdentity();
+        mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, 1.0));
+        mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, 0));
+
+        mScreenToWidgetSpaceXform.invert(mWidgetToScreenSpaceXform);
+
         if(mViewer != nullptr)
         {
             mGuiCamera = new osg::Camera;
             mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-            mGuiCamera->setViewMatrix(osg::Matrix::identity());
+            mGuiCamera->setViewMatrix(mWidgetToScreenSpaceXform);
             mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
             mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
             mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
@@ -61,10 +65,9 @@ namespace od
             mGuiRoot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
             mGuiRoot->getOrCreateStateSet()->setRenderBinDetails(0, "DepthSortedBin");
 
-            mCursorWindow = new Window(*this);
-            mCursorWindow->setChildWidget(new Cursor(*this));
-            mCursorWindow->setOrigin(WindowOrigin::TopLeft);
-            this->addWindow(mCursorWindow);
+            mCursorWidget = new Cursor(*this);
+            mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
+            this->addWidget(mCursorWidget);
         }
     }
 
@@ -91,19 +94,29 @@ namespace od
         return osg::Vec2(width, height);
     }
 
-    void GuiManager::addWindow(Window *window)
+    void GuiManager::addWidget(Widget *widget)
     {
-        if(window == nullptr || mGuiRoot == nullptr)
+        if(widget == nullptr || mGuiRoot == nullptr)
         {
             return;
         }
 
-        mGuiRoot->addChild(window);
+        mGuiRoot->addChild(widget);
+
+        widget->setParent(nullptr);
     }
 
     void GuiManager::setCursorPosition(const osg::Vec2 &pos)
     {
-        mCursorWindow->setPosition(pos);
+        if(mCursorWidget == nullptr)
+        {
+            return;
+        }
+
+        // pos is in screen space, we need it in widget space
+        osg::Vec3 posWs = osg::Vec3(pos, 0.0) * mScreenToWidgetSpaceXform;
+
+        mCursorWidget->setPosition(osg::Vec2(posWs.x(), posWs.y()));
     }
 
     std::string GuiManager::localizeString(const std::string &s)

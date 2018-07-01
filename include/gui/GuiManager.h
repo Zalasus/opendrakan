@@ -17,14 +17,14 @@
 #include "db/TextureFactory.h"
 #include "db/AssetProvider.h"
 #include "db/Database.h"
-#include "gui/Window.h"
+#include "gui/Cursor.h"
 
 namespace od
 {
 
     class Engine;
 
-    class Window;
+    class Widget;
 
     /**
      * Class for managing the game's GUI, as well as an interface for accessing the
@@ -41,7 +41,7 @@ namespace od
 
         osg::Vec2 getScreenResolution();
 
-        void addWindow(Window *window);
+        void addWidget(Widget *widget);
 
         /**
          * @brief Positions cursor in screen space.
@@ -95,7 +95,10 @@ namespace od
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;
-        osg::ref_ptr<Window> mCursorWindow;
+        osg::ref_ptr<Cursor> mCursorWidget;
+
+        osg::Matrix mWidgetToScreenSpaceXform;
+        osg::Matrix mScreenToWidgetSpaceXform;
     };
 
 }

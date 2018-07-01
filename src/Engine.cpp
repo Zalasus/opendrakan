@@ -15,7 +15,6 @@
 #include "Player.h"
 #include "rfl/Rfl.h"
 #include "gui/GuiManager.h"
-#include "gui/Window.h"
 #include "gui/LoadingBar.h"
 #include "gui/MainMenu.h"
 #include "Camera.h"
@@ -62,14 +61,11 @@ namespace od
 
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
-	    osg::ref_ptr<Window> progWindow = new Window(*mGuiManager);
-	    osg::ref_ptr<MainMenu> bar = new MainMenu(*mGuiManager);
-	    progWindow->setOrigin(WindowOrigin::Center);
-	    progWindow->setPosition(osg::Vec2(0, 0));
-	    progWindow->setChildWidget(bar);
-	    progWindow->setScale(1);
+	    osg::ref_ptr<MainMenu> mainMenu = new MainMenu(*mGuiManager);
+	    mainMenu->setOrigin(WidgetOrigin::Center);
+	    mainMenu->setPosition(osg::Vec2(0.5, 0.5));
 	    //bar->setProgress(0.6);
-	    mGuiManager->addWindow(progWindow);
+	    mGuiManager->addWidget(mainMenu);
 
 	    mSetUp = true;
 	}

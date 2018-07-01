@@ -76,7 +76,6 @@ set(SOURCES
         "src/gui/GuiManager.cpp"
         "src/gui/TexturedQuad.cpp"
         "src/gui/Widget.cpp"
-        "src/gui/Window.cpp"
         "src/gui/LoadingBar.cpp"
         "src/gui/MainMenu.cpp"
         "src/gui/Cursor.cpp"

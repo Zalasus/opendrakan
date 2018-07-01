@@ -14,6 +14,7 @@ namespace od
 {
 
     Cursor::Cursor(GuiManager &gm)
+    : Widget(gm)
     {
         osg::ref_ptr<TexturedQuad> cursorQuad = new TexturedQuad;
         cursorQuad->setTextureImage(gm.getTexture(GuiTextures::Cursor));
@@ -25,10 +26,17 @@ namespace od
         cursorQuad->setTextureCoordsFromPixels(osg::Vec2(-2.5, 0), osg::Vec2(29.5, 32));
 
         cursorQuad->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1, 1));
-        this->addGeometry(cursorQuad);
+        this->addDrawable(cursorQuad);
+
+        this->setOrigin(WidgetOrigin::TopLeft);
     }
 
-    osg::Vec2 Cursor::getFullScaleDimensions() const
+    WidgetDimensionType Cursor::getDimensionType() const
+    {
+        return WidgetDimensionType::Pixels;
+    }
+
+    osg::Vec2 Cursor::getDimensions() const
     {
         return osg::Vec2(32, 32);
     }
