@@ -8,6 +8,7 @@
 #include "gui/LoadingBar.h"
 
 #include "gui/GuiManager.h"
+#include "gui/GuiTextures.h"
 #include "db/Texture.h"
 
 namespace od
@@ -18,7 +19,7 @@ namespace od
     , mForegroundQuad(new TexturedQuad)
     , mBarQuad(new TexturedQuad)
     {
-        osg::ref_ptr<Texture> barTexture = gm.getTexture(0x1400);
+        osg::ref_ptr<Texture> barTexture = gm.getTexture(GuiTextures::LoadingBar);
 
         osg::Vec2 foreTl(0, 0);
         osg::Vec2 foreBr(127, 50);

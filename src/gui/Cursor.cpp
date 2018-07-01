@@ -8,6 +8,7 @@
 #include "gui/Cursor.h"
 
 #include "gui/GuiManager.h"
+#include "gui/GuiTextures.h"
 
 namespace od
 {
@@ -15,7 +16,7 @@ namespace od
     Cursor::Cursor(GuiManager &gm)
     {
         osg::ref_ptr<TexturedQuad> cursorQuad = new TexturedQuad;
-        cursorQuad->setTextureImage(gm.getTexture(0x16));
+        cursorQuad->setTextureImage(gm.getTexture(GuiTextures::Cursor));
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping
         //  over to the right. maybe this is due to some strange way in which they implemented the
