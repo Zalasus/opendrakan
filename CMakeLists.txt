@@ -79,6 +79,7 @@ set(SOURCES
         "src/gui/Window.cpp"
         "src/gui/LoadingBar.cpp"
         "src/gui/MainMenu.cpp"
+        "src/gui/Cursor.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"

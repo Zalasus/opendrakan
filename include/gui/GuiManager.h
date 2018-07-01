@@ -17,6 +17,7 @@
 #include "db/TextureFactory.h"
 #include "db/AssetProvider.h"
 #include "db/Database.h"
+#include "gui/Window.h"
 
 namespace od
 {
@@ -94,6 +95,7 @@ namespace od
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;
+        osg::ref_ptr<Window> mCursorWindow;
     };
 
 }

@@ -16,6 +16,7 @@
 #include "Engine.h"
 #include "gui/Window.h"
 #include "gui/TexturedQuad.h"
+#include "gui/Cursor.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -29,7 +30,7 @@ namespace od
     , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
-    , mMenuMode(false)
+    , mMenuMode(true)
     {
         if(mViewer != nullptr)
         {
@@ -59,6 +60,11 @@ namespace od
 
             mGuiRoot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
             mGuiRoot->getOrCreateStateSet()->setRenderBinDetails(0, "DepthSortedBin");
+
+            mCursorWindow = new Window(*this);
+            mCursorWindow->setChildWidget(new Cursor(*this));
+            mCursorWindow->setOrigin(WindowOrigin::TopLeft);
+            this->addWindow(mCursorWindow);
         }
     }
 
@@ -97,7 +103,7 @@ namespace od
 
     void GuiManager::setCursorPosition(const osg::Vec2 &pos)
     {
-
+        mCursorWindow->setPosition(pos);
     }
 
     std::string GuiManager::localizeString(const std::string &s)
