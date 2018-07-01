@@ -22,6 +22,30 @@ namespace od
         _loadRflRecord();
     }
 
+	RecordId ClassFactory::findFirstClassOfType(uint16_t rflClassType)
+    {
+	    auto it = this->getSrscFile().getDirIteratorByType(SrscRecordType::CLASS);
+	    while(it != this->getSrscFile().getDirectoryEnd())
+	    {
+	        DataReader dr(this->getSrscFile().getStreamForRecord(it));
+
+	        std::string classname;
+	        uint16_t type;
+	        dr >> classname
+	           >> DataReader::Ignore(6)
+	           >> type;
+
+	        if(type == rflClassType)
+	        {
+	            return it->recordId;
+	        }
+
+	        it = this->getSrscFile().getDirIteratorByType(SrscRecordType::CLASS, it+1);
+	    }
+
+	    return AssetRef::NULL_REF.assetId;
+    }
+
     osg::ref_ptr<Class> ClassFactory::loadAsset(RecordId classId)
     {
         SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(SrscRecordType::CLASS, classId);
