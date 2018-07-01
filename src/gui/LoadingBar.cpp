@@ -22,13 +22,13 @@ namespace od
 
         osg::Vec2 foreTl(0, 0);
         osg::Vec2 foreBr(127, 50);
-        mForegroundQuad->setTexture(barTexture);
+        mForegroundQuad->setTextureImage(barTexture);
         mForegroundQuad->setTextureCoordsFromPixels(foreTl, foreBr);
         mForegroundQuad->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1.0, 1.0));
         mForegroundQuad->setZCoord(-0.4);
         this->addGeometry(mForegroundQuad);
 
-        mBarQuad->setTexture(barTexture);
+        mBarQuad->setTextureImage(barTexture);
         mBarQuad->setTextureCoordsFromPixels(osg::Vec2(0, 51), osg::Vec2(mProgress*127, 80));
         mBarQuad->setVertexCoords(osg::Vec2(0.0, 9.0/50), osg::Vec2(mProgress, 40.0/50));
         mBarQuad->setZCoord(-0.3);

@@ -67,7 +67,7 @@ namespace od
 	    progWindow->setOrigin(WindowOrigin::Center);
 	    progWindow->setPosition(osg::Vec2(0, 0));
 	    progWindow->setChildWidget(bar);
-	    progWindow->setScale(1.5);
+	    progWindow->setScale(1);
 	    //bar->setProgress(0.6);
 	    mGuiManager->addWindow(progWindow);
 
