@@ -190,7 +190,7 @@ void printUsage()
 		<< "    -i <id>    Limit extraction to records with ID <id>" << std::endl
 		<< "    -s         Print SRSC statistics" << std::endl
 		<< "    -c         Create class statistics" << std::endl
-		<< "    -r         Extract textures and strings from passed Dragon.rrc"
+		<< "    -r         Extract textures and strings from passed Dragon.rrc" << std::endl
 		<< "    -v         Increase verbosity of logger" << std::endl
 		<< "    -h         Display this message and exit" << std::endl
 		<< "If no option is given, the file is loaded as a level." << std::endl
