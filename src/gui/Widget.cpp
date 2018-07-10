@@ -19,6 +19,7 @@ namespace od
     : mGuiManager(gm)
     , mOrigin(WidgetOrigin::TopLeft)
     , mPositionInParentSpace(0.0, 0.0)
+    , mZIndexInParentSpace(0)
     , mParentWidget(nullptr)
     {
         this->setNodeMask(NodeMasks::Gui);
@@ -42,6 +43,11 @@ namespace od
         return (mParentWidget != nullptr) ? mParentWidget->getDimensionsInPixels() : mGuiManager.getScreenResolution();
     }
 
+    std::pair<int32_t, int32_t> Widget::getParentZRange()
+    {
+        return (mParentWidget != nullptr) ? mParentWidget->getZRange() : mGuiManager.getWidgetZRange();
+    }
+
     void Widget::setOrigin(WidgetOrigin origin)
     {
         mOrigin = origin;
@@ -56,6 +62,13 @@ namespace od
         _updateMatrix();
     }
 
+    void Widget::setZIndex(int32_t z)
+    {
+        mZIndexInParentSpace = z;
+
+        _updateMatrix();
+    }
+
     void Widget::setVisible(bool b)
     {
         this->setNodeMask(b ? NodeMasks::Gui : NodeMasks::Hidden);
@@ -66,17 +79,6 @@ namespace od
         mParentWidget = parent;
 
         _updateMatrix();
-    }
-
-    void Widget::addDrawable(osg::Drawable *drawable)
-    {
-        if(mGeode == nullptr)
-        {
-            mGeode = new osg::Geode;
-            this->addChild(mGeode);
-        }
-
-        mGeode->addDrawable(drawable);
     }
 
     void Widget::_updateMatrix()
@@ -111,14 +113,15 @@ namespace od
         matrix.postMultTranslate(osg::Vec3(-origin, 0.0));
 
         osg::Vec2 widgetSizeInParentSpace = osg::componentDivide(this->getDimensionsInPixels(), this->getParentDimensionsInPixels());
-
         matrix.postMultScale(osg::Vec3(widgetSizeInParentSpace, 1.0));
 
         matrix.postMultTranslate(osg::Vec3(mPositionInParentSpace, 0.0));
 
+        std::pair<int32_t, int32_t> parentZRange = this->getParentZRange();
+        float newZPosition = (mZIndexInParentSpace + parentZRange.first)/(parentZRange.second - parentZRange.first + 0.1);
+        matrix.postMultTranslate(osg::Vec3(0.0, 0.0, newZPosition));
+
         this->setMatrix(matrix);
     }
-
-
 
 }

@@ -30,45 +30,7 @@ namespace od
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
     , mMenuMode(true)
     {
-        mWidgetToScreenSpaceXform.makeIdentity();
-        mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, 1.0));
-        mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, 0));
-
-        mScreenToWidgetSpaceXform.invert(mWidgetToScreenSpaceXform);
-
-        if(mViewer != nullptr)
-        {
-            mGuiCamera = new osg::Camera;
-            mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-            mGuiCamera->setViewMatrix(mWidgetToScreenSpaceXform);
-            mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
-            mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
-            mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
-            mGuiCamera->setAllowEventFocus(false);
-
-            osgViewer::Viewer::Windows windows;
-            mViewer->getWindows(windows);
-            if(windows.empty())
-            {
-                throw Exception("Could not create secondary camera. No windows found");
-            }
-            mGuiCamera->setGraphicsContext(windows[0]);
-            mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
-
-            mGuiRoot = new osg::Group;
-            mGuiCamera->addChild(mGuiRoot);
-
-            mGuiRoot->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-            mViewer->addSlave(mGuiCamera, false);
-
-            mGuiRoot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
-            mGuiRoot->getOrCreateStateSet()->setRenderBinDetails(0, "DepthSortedBin");
-
-            mCursorWidget = new Cursor(*this);
-            mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
-            this->addWidget(mCursorWidget);
-        }
+        _setupGui();
     }
 
     osg::Vec2 GuiManager::getScreenResolution()
@@ -102,8 +64,38 @@ namespace od
         }
 
         mGuiRoot->addChild(widget);
+        mWidgets.push_back(osg::ref_ptr<Widget>(widget));
 
         widget->setParent(nullptr);
+
+        for(auto it = mWidgets.begin(); it != mWidgets.end(); ++it)
+        {
+            (*it)->_updateMatrix();
+        }
+    }
+
+    size_t GuiManager::getWidgetCount()
+    {
+        return mWidgets.size();
+    }
+
+    std::pair<int32_t, int32_t> GuiManager::getWidgetZRange()
+    {
+        if(mWidgets.size() == 0)
+        {
+            return std::pair<int32_t, int32_t>(0, 0);
+        }
+
+        int32_t minZ = std::numeric_limits<int32_t>::max();
+        int32_t maxZ = std::numeric_limits<int32_t>::min();
+        for(auto it = mWidgets.begin(); it != mWidgets.end(); ++it)
+        {
+            int32_t z = (*it)->getZIndex();
+            minZ = std::min(minZ, z);
+            maxZ = std::max(maxZ, z);
+        }
+
+        return std::pair<int32_t, int32_t>(minZ, maxZ);
     }
 
     void GuiManager::setCursorPosition(const osg::Vec2 &pos)
@@ -260,4 +252,50 @@ namespace od
         }
     }
 
+    void GuiManager::_setupGui()
+    {
+        if(mViewer == nullptr)
+        {
+            return;
+        }
+
+        mWidgetToScreenSpaceXform.makeIdentity();
+        mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, 1.0));
+        mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, 0.0));
+
+        mScreenToWidgetSpaceXform.invert(mWidgetToScreenSpaceXform);
+
+        mGuiCamera = new osg::Camera;
+        mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+        mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
+        mGuiCamera->setViewMatrix(mWidgetToScreenSpaceXform);
+        mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+        mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
+        mGuiCamera->setAllowEventFocus(false);
+
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(windows.empty())
+        {
+            throw Exception("Could not create secondary camera. No windows found");
+        }
+        mGuiCamera->setGraphicsContext(windows[0]);
+        mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
+
+        mGuiRoot = new osg::Group;
+        mGuiCamera->addChild(mGuiRoot);
+
+        mGuiRoot->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+        mGuiRoot->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+
+        mViewer->addSlave(mGuiCamera, false);
+
+        mGuiRoot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
+        mGuiRoot->getOrCreateStateSet()->setRenderBinDetails(0, "DepthSortedBin");
+
+        mCursorWidget = new Cursor(*this);
+        mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
+        mCursorWidget->setZIndex(-1000);
+        this->addWidget(mCursorWidget);
+    }
 }

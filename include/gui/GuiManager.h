@@ -42,6 +42,8 @@ namespace od
         osg::Vec2 getScreenResolution();
 
         void addWidget(Widget *widget);
+        size_t getWidgetCount();
+        std::pair<int32_t, int32_t> getWidgetZRange();
 
         /**
          * @brief Positions cursor in screen space.
@@ -85,6 +87,7 @@ namespace od
         using AssetProvider::getSound;
 
         inline void _decryptString(char * const str, const size_t len);
+        void _setupGui();
 
         Engine &mEngine;
         osg::ref_ptr<osgViewer::Viewer> mViewer;
@@ -95,6 +98,7 @@ namespace od
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;
+        std::deque<osg::ref_ptr<Widget>> mWidgets;
         osg::ref_ptr<Cursor> mCursorWidget;
 
         osg::Matrix mWidgetToScreenSpaceXform;

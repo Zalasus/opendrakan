@@ -11,6 +11,7 @@
 #include <osg/Vec2>
 #include <osg/MatrixTransform>
 #include <osg/Geode>
+#include <osg/BoundingBox>
 
 namespace od
 {
@@ -40,9 +41,12 @@ namespace od
      * Widget space is similar to the window space as used by many windowing systems, where 0/0 is the widget's
      * upper left and 1/1 it's lower right corner).
      *
-     * Widgets have a position, which is always given in it's parent's widget space. If a widget has no parent, it's
+     * Widgets have a XY position, which is always given in it's parent's widget space. If a widget has no parent, it's
      * position is specified in a simulated widget space, where 0/0 is the screen's top left and 1/1 it's bottom right corner.
      * The position of a widget is relative to it's origin. The default origin is the widget's top left corner.
+     *
+     * Widgets also have a Z position, which is used to control stacking of widgets. A widget with a lower Z coordinate is
+     * always on top of other widgets with lower Z coordinates.
      *
      * Widgets must be able to report their dimensions by implementing getDimensions(). These can be either
      * given in absolute pixels or relative to the widget's parent's size. The type of the dimensions reported by
@@ -57,16 +61,21 @@ namespace od
     {
     public:
 
+        friend class GuiManager;
+
         Widget(GuiManager &gm);
         virtual ~Widget() = default;
 
         inline GuiManager &getGuiManager() { return mGuiManager; }
+        inline int32_t getZIndex() const { return mZIndexInParentSpace; }
 
         virtual WidgetDimensionType getDimensionType() const = 0;
         virtual osg::Vec2 getDimensions() const = 0;
+        virtual std::pair<int32_t, int32_t> getZRange() const = 0;
 
         osg::Vec2 getDimensionsInPixels();
         osg::Vec2 getParentDimensionsInPixels();
+        std::pair<int32_t, int32_t> getParentZRange();
 
         void setVisible(bool b);
 
@@ -74,6 +83,8 @@ namespace od
 
         /// @brief Sets position of widget origin in parent widget space
         void setPosition(const osg::Vec2 &pos);
+
+        void setZIndex(int32_t z);
 
         void setParent(Widget *parent);
 
@@ -90,8 +101,7 @@ namespace od
         GuiManager &mGuiManager;
         WidgetOrigin mOrigin;
         osg::Vec2 mPositionInParentSpace;
-        osg::ref_ptr<osg::Geode> mGeode;
-
+        int32_t mZIndexInParentSpace;
         Widget *mParentWidget;
     };
 

@@ -15,7 +15,7 @@ namespace od
 {
 
     LoadingBar::LoadingBar(GuiManager &gm)
-    : Widget(gm)
+    : DrawableWidget(gm)
     , mProgress(0.0)
     , mForegroundQuad(new TexturedQuad)
     , mBarQuad(new TexturedQuad)
@@ -27,13 +27,13 @@ namespace od
         mForegroundQuad->setTextureImage(barTexture);
         mForegroundQuad->setTextureCoordsFromPixels(foreTl, foreBr);
         mForegroundQuad->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1.0, 1.0));
-        mForegroundQuad->setZCoord(-0.4);
+        mForegroundQuad->setZCoord(0.1);
         this->addDrawable(mForegroundQuad);
 
         mBarQuad->setTextureImage(barTexture);
         mBarQuad->setTextureCoordsFromPixels(osg::Vec2(0, 51), osg::Vec2(mProgress*127, 80));
         mBarQuad->setVertexCoords(osg::Vec2(0.0, 9.0/50), osg::Vec2(mProgress, 40.0/50));
-        mBarQuad->setZCoord(-0.3);
+        mBarQuad->setZCoord(0.2);
         this->addDrawable(mBarQuad);
     }
 

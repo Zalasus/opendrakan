@@ -15,7 +15,7 @@ namespace od
 {
 
     MainMenu::MainMenu(GuiManager &gm)
-    : Widget(gm)
+    : DrawableWidget(gm)
     {
         osg::ref_ptr<TexturedQuad> topLeft = new TexturedQuad;
         topLeft->setTextureImage(gm.getTexture(GuiTextures::MainMenu_TopLeft));

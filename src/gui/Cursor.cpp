@@ -14,7 +14,7 @@ namespace od
 {
 
     Cursor::Cursor(GuiManager &gm)
-    : Widget(gm)
+    : DrawableWidget(gm)
     {
         osg::ref_ptr<TexturedQuad> cursorQuad = new TexturedQuad;
         cursorQuad->setTextureImage(gm.getTexture(GuiTextures::Cursor));

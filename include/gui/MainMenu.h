@@ -8,14 +8,14 @@
 #ifndef INCLUDE_GUI_MAINMENU_H_
 #define INCLUDE_GUI_MAINMENU_H_
 
-#include "gui/Widget.h"
+#include "gui/DrawableWidget.h"
 
 namespace od
 {
 
     class GuiManager;
 
-    class MainMenu : public Widget
+    class MainMenu : public DrawableWidget
     {
     public:
 

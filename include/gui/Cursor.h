@@ -9,14 +9,14 @@
 #define INCLUDE_GUI_CURSOR_H_
 
 #include "gui/TexturedQuad.h"
-#include "gui/Widget.h"
+#include "gui/DrawableWidget.h"
 
 namespace od
 {
 
     class GuiManager;
 
-    class Cursor : public Widget
+    class Cursor : public DrawableWidget
     {
     public:
 
