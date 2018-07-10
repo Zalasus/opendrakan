@@ -89,11 +89,6 @@ namespace od
         void setParent(Widget *parent);
 
 
-    protected:
-
-        void addDrawable(osg::Drawable *drawable);
-
-
     private:
 
         void _updateMatrix();
