@@ -80,6 +80,7 @@ set(SOURCES
         "src/gui/MainMenu.cpp"
         "src/gui/Cursor.cpp"
         "src/gui/DrawableWidget.cpp"
+        "src/gui/WidgetGroup.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"

@@ -15,6 +15,7 @@
 #include "SrscRecordTypes.h"
 #include "Engine.h"
 #include "gui/TexturedQuad.h"
+#include "gui/WidgetGroup.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -81,7 +82,7 @@ namespace od
 
     std::pair<int32_t, int32_t> GuiManager::getWidgetZRange()
     {
-        if(mWidgets.size() == 0)
+        /*if(mWidgets.size() == 0)
         {
             return std::pair<int32_t, int32_t>(0, 0);
         }
@@ -95,7 +96,9 @@ namespace od
             maxZ = std::max(maxZ, z);
         }
 
-        return std::pair<int32_t, int32_t>(minZ, maxZ);
+        return std::pair<int32_t, int32_t>(minZ, maxZ);*/
+
+        return std::pair<int32_t, int32_t>(-1000, 1000);
     }
 
     void GuiManager::setCursorPosition(const osg::Vec2 &pos)
@@ -261,7 +264,7 @@ namespace od
 
         mWidgetToScreenSpaceXform.makeIdentity();
         mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, 1.0));
-        mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, 0.0));
+        mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, -0.5));
 
         mScreenToWidgetSpaceXform.invert(mWidgetToScreenSpaceXform);
 
@@ -282,16 +285,18 @@ namespace od
         mGuiCamera->setGraphicsContext(windows[0]);
         mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
 
-        mGuiRoot = new osg::Group;
+        mGuiRoot = new WidgetGroup;
+
+        mGuiRoot->setCullingActive(false);
+        osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
+        ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
+        ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+        ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+        ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+        //ss->setRenderBinDetails(0, "DepthSortedBin");
+
         mGuiCamera->addChild(mGuiRoot);
-
-        mGuiRoot->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-        mGuiRoot->getOrCreateStateSet()->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
-
         mViewer->addSlave(mGuiCamera, false);
-
-        mGuiRoot->getOrCreateStateSet()->setMode(GL_BLEND, osg::StateAttribute::ON);
-        mGuiRoot->getOrCreateStateSet()->setRenderBinDetails(0, "DepthSortedBin");
 
         mCursorWidget = new Cursor(*this);
         mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));

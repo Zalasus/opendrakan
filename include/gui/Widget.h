@@ -33,6 +33,13 @@ namespace od
         ParentRelative
     };
 
+    enum class WidgetZPolicy
+    {
+        Normal,
+        AlwaysOnTop,
+        AlwaysOnBottom
+    };
+
     /**
      * Base class for UI elements. Widgets can group together other Widgets (see Container)
      * and/or define their own geometry.

@@ -118,7 +118,7 @@ namespace od
         matrix.postMultTranslate(osg::Vec3(mPositionInParentSpace, 0.0));
 
         std::pair<int32_t, int32_t> parentZRange = this->getParentZRange();
-        float newZPosition = (mZIndexInParentSpace + parentZRange.first)/(parentZRange.second - parentZRange.first + 0.1);
+        float newZPosition = (mZIndexInParentSpace - parentZRange.first)/(parentZRange.second - parentZRange.first);
         matrix.postMultTranslate(osg::Vec3(0.0, 0.0, newZPosition));
 
         this->setMatrix(matrix);
