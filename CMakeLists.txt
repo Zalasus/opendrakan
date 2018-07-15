@@ -81,6 +81,7 @@ set(SOURCES
         "src/gui/Cursor.cpp"
         "src/gui/DrawableWidget.cpp"
         "src/gui/WidgetGroup.cpp"
+        "src/gui/ContainerWidget.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"
