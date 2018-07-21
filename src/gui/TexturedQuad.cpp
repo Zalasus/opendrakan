@@ -16,7 +16,7 @@ namespace od
     : mVertexArray(new osg::Vec3Array(4))
     , mTextureCoordArray(new osg::Vec2Array(4))
     , mColorArray(new osg::Vec4Array(4))
-    , mTexture(new osg::Texture2D)
+    , mTexture(nullptr)
     , mZCoord(0.0)
     {
         this->setVertexArray(mVertexArray);
@@ -31,8 +31,6 @@ namespace od
         GLubyte elements[] = { 0, 2, 1, 1, 2, 3 };
         mDrawElements = new osg::DrawElementsUByte(GL_TRIANGLES, 6, elements);
         this->addPrimitiveSet(mDrawElements);
-
-        this->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTexture);
 
         this->setDataVariance(osg::Object::DYNAMIC);
         this->setUseDisplayList(false);
@@ -50,6 +48,23 @@ namespace od
         mTextureCoordArray = static_cast<osg::Vec2Array*>(this->getTexCoordArray(0));
         mColorArray = static_cast<osg::Vec4Array*>(this->getColorArray());
         mTexture = static_cast<osg::Texture2D*>(this->getOrCreateStateSet()->getTextureAttribute(0, osg::StateAttribute::TEXTURE));
+    }
+
+    void TexturedQuad::setTextureImage(Texture *t)
+    {
+        if(t == nullptr && mTexture != nullptr)
+        {
+            this->getOrCreateStateSet()->removeTextureAttribute(0, mTexture);
+            mTexture = nullptr;
+            return;
+
+        }else if(t != nullptr && mTexture == nullptr)
+        {
+            mTexture = new osg::Texture2D;
+            this->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTexture);
+        }
+
+        mTexture->setImage(t);
     }
 
     void TexturedQuad::setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
@@ -94,12 +109,20 @@ namespace od
     {
         mZCoord = z;
 
-        mVertexArray->at(0).z() = z;
-        mVertexArray->at(1).z() = z;
-        mVertexArray->at(2).z() = z;
-        mVertexArray->at(3).z() = z;
+        for(size_t i = 0; i < 4; ++i)
+        {
+            mVertexArray->at(i).z() = z;
+        }
 
         this->dirtyBound();
+    }
+
+    void TexturedQuad::setColor(const osg::Vec4 &color)
+    {
+        for(size_t i = 0; i < 4; ++i)
+        {
+            mColorArray->at(i) = color;
+        }
     }
 
 

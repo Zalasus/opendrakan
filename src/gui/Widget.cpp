@@ -52,21 +52,21 @@ namespace od
     {
         mOrigin = origin;
 
-        _updateMatrix();
+        updateMatrix();
     }
 
     void Widget::setPosition(const osg::Vec2 &pos)
     {
         mPositionInParentSpace = pos;
 
-        _updateMatrix();
+        updateMatrix();
     }
 
     void Widget::setZIndex(int32_t z)
     {
         mZIndexInParentSpace = z;
 
-        _updateMatrix();
+        updateMatrix();
     }
 
     void Widget::setVisible(bool b)
@@ -78,10 +78,10 @@ namespace od
     {
         mParentWidget = parent;
 
-        _updateMatrix();
+        updateMatrix();
     }
 
-    void Widget::_updateMatrix()
+    void Widget::updateMatrix()
     {
         osg::Matrix matrix = osg::Matrix::identity();
 
@@ -118,8 +118,11 @@ namespace od
         matrix.postMultTranslate(osg::Vec3(mPositionInParentSpace, 0.0));
 
         std::pair<int32_t, int32_t> parentZRange = this->getParentZRange();
-        float newZPosition = (mZIndexInParentSpace - parentZRange.first)/(parentZRange.second - parentZRange.first);
-        matrix.postMultTranslate(osg::Vec3(0.0, 0.0, newZPosition));
+        if((parentZRange.second - parentZRange.first) != 0)
+        {
+            float newZPosition = (mZIndexInParentSpace - parentZRange.first)/(parentZRange.second - parentZRange.first);
+            matrix.postMultTranslate(osg::Vec3(0.0, 0.0, newZPosition));
+        }
 
         this->setMatrix(matrix);
     }

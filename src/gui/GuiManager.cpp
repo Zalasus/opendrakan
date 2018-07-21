@@ -71,7 +71,7 @@ namespace od
 
         for(auto it = mWidgets.begin(); it != mWidgets.end(); ++it)
         {
-            (*it)->_updateMatrix();
+            (*it)->updateMatrix();
         }
     }
 

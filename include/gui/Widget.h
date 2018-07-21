@@ -68,8 +68,6 @@ namespace od
     {
     public:
 
-        friend class GuiManager;
-
         Widget(GuiManager &gm);
         virtual ~Widget() = default;
 
@@ -95,10 +93,10 @@ namespace od
 
         void setParent(Widget *parent);
 
+        void updateMatrix();
+
 
     private:
-
-        void _updateMatrix();
 
         GuiManager &mGuiManager;
         WidgetOrigin mOrigin;

@@ -32,8 +32,15 @@ namespace od
         //  it still isn't. So don't use META_Node here unless you want to break our CI.
         META_Object(od, TexturedQuad);
 
+        /**
+         * @brief Return osg::Texture object used. Might return nullptr if no texture has been set yet.
+         */
         inline osg::Texture2D *getTexture() { return mTexture; }
-        inline void setTextureImage(Texture *t) { mTexture->setImage(t); }
+
+        /**
+         * @brief Set texture image to be used. Pass nullptr to disable texturing for this quad.
+         */
+        void setTextureImage(Texture *t);
 
         void setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         /**
@@ -46,6 +53,7 @@ namespace od
         void setTextureCoordsFromPixels(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setVertexCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setZCoord(float z);
+        void setColor(const osg::Vec4 &color);
 
 
     private:

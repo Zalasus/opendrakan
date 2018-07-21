@@ -8,6 +8,8 @@
 #ifndef INCLUDE_GUI_CONTAINERWIDGET_H_
 #define INCLUDE_GUI_CONTAINERWIDGET_H_
 
+#include <deque>
+
 #include "gui/Widget.h"
 
 namespace od
@@ -19,19 +21,16 @@ namespace od
 
         ContainerWidget(GuiManager &gm);
 
-        inline void setDimensionType(WidgetDimensionType dt) { mDimType = dt; this->updateMatrix(); }
-        inline void setDimensions(const osg::Vec2 &dim) { mDimensions = dim; this->updateMatrix(); }
-
-        virtual WidgetDimensionType getDimensionType() const override;
-        virtual osg::Vec2 getDimensions() const override;
+        virtual std::pair<int32_t, int32_t> getZRange() const override;
 
         void addWidget(Widget *w);
 
 
     private:
 
-        WidgetDimensionType mDimType;
-        osg::Vec2 mDimensions;
+        osg::ref_ptr<osg::Group> mChildWidgetGroup;
+        std::deque<osg::ref_ptr<Widget>> mChildWidgets;
+
     };
 
 }
