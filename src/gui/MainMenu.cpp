@@ -67,7 +67,7 @@ namespace od
         {
             osg::ref_ptr<TexturedQuad> bg = new TexturedQuad;
             bg->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1.0, 1.0));
-            bg->setColor(osg::Vec4(0.0, 0.0, 0.0, 0.7));
+            bg->setColor(osg::Vec4(0.0, 0.0, 0.0, 0.5));
             this->addDrawable(bg);
         }
 

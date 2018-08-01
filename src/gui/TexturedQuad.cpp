@@ -20,7 +20,6 @@ namespace od
     , mZCoord(0.0)
     {
         this->setVertexArray(mVertexArray);
-        this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
 
         for(size_t i = 0; i < 4; ++i)
         {
@@ -56,12 +55,17 @@ namespace od
         {
             this->getOrCreateStateSet()->removeTextureAttribute(0, mTexture);
             mTexture = nullptr;
+
+            this->setTexCoordArray(0, nullptr);
+
             return;
 
         }else if(t != nullptr && mTexture == nullptr)
         {
             mTexture = new osg::Texture2D;
             this->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTexture);
+
+            this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
         }
 
         mTexture->setImage(t);

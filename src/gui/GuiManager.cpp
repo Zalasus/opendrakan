@@ -293,7 +293,6 @@ namespace od
         ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
-        //ss->setRenderBinDetails(0, "DepthSortedBin");
 
         mGuiCamera->addChild(mGuiRoot);
         mViewer->addSlave(mGuiCamera, false);

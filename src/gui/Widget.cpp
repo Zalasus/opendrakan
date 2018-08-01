@@ -113,16 +113,9 @@ namespace od
         matrix.postMultTranslate(osg::Vec3(-origin, 0.0));
 
         osg::Vec2 widgetSizeInParentSpace = osg::componentDivide(this->getDimensionsInPixels(), this->getParentDimensionsInPixels());
-        matrix.postMultScale(osg::Vec3(widgetSizeInParentSpace, 1.0));
+        matrix.postMultScale(osg::Vec3(widgetSizeInParentSpace, 0.0)); // remove z component
 
         matrix.postMultTranslate(osg::Vec3(mPositionInParentSpace, 0.0));
-
-        std::pair<int32_t, int32_t> parentZRange = this->getParentZRange();
-        if((parentZRange.second - parentZRange.first) != 0)
-        {
-            float newZPosition = (mZIndexInParentSpace - parentZRange.first)/(parentZRange.second - parentZRange.first);
-            matrix.postMultTranslate(osg::Vec3(0.0, 0.0, newZPosition));
-        }
 
         this->setMatrix(matrix);
     }
