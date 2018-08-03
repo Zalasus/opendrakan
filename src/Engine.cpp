@@ -47,6 +47,7 @@ namespace od
         mViewer->realize();
         mViewer->setName("OpenDrakan");
         mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
+        mViewer->setKeyEventSetsDone(0); // we handle the escape key ourselves
 
         mRootNode = new osg::Group();
         mViewer->setSceneData(mRootNode);
@@ -60,19 +61,6 @@ namespace od
         }
 
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
-
-	    osg::ref_ptr<LoadingBar> loadingBar = new LoadingBar(*mGuiManager);
-        loadingBar->setOrigin(WidgetOrigin::Center);
-        loadingBar->setPosition(osg::Vec2(0.5, 0.5));
-        loadingBar->setProgress(0.5);
-        loadingBar->setZIndex(0);
-        mGuiManager->addWidget(loadingBar);
-
-	    osg::ref_ptr<MainMenu> mainMenu = new MainMenu(*mGuiManager);
-	    mainMenu->setOrigin(WidgetOrigin::Center);
-	    mainMenu->setPosition(osg::Vec2(0.5, 0.5));
-	    mainMenu->setZIndex(1);
-	    mGuiManager->addWidget(mainMenu);
 
 	    mSetUp = true;
 	}

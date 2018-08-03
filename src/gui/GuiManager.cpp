@@ -101,6 +101,18 @@ namespace od
         return std::pair<int32_t, int32_t>(-1000, 1000);
     }
 
+    void GuiManager::setMenuMode(bool b)
+    {
+        mMenuMode = b;
+        mCursorWidget->setVisible(b);
+    }
+
+    void GuiManager::setShowMainMenu(bool b)
+    {
+        setMenuMode(b);
+        mMainMenuWidget->setVisible(b);
+    }
+
     void GuiManager::setCursorPosition(const osg::Vec2 &pos)
     {
         if(mCursorWidget == nullptr)
@@ -301,5 +313,12 @@ namespace od
         mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
         mCursorWidget->setZIndex(-1000);
         this->addWidget(mCursorWidget);
+
+        mMainMenuWidget = new MainMenu(*this);
+        mMainMenuWidget->setOrigin(WidgetOrigin::Center);
+        mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
+        mMainMenuWidget->setZIndex(1);
+        this->addWidget(mMainMenuWidget);
+
     }
 }

@@ -18,6 +18,7 @@
 #include "db/AssetProvider.h"
 #include "db/Database.h"
 #include "gui/Cursor.h"
+#include "gui/MainMenu.h"
 
 namespace od
 {
@@ -36,7 +37,6 @@ namespace od
 
         GuiManager(Engine &engine, osgViewer::Viewer *viewer);
 
-        inline void setMenuMode(bool b) { mMenuMode = b; }
         inline bool isMenuMode() const { return mMenuMode; }
 
         osg::Vec2 getScreenResolution();
@@ -44,6 +44,9 @@ namespace od
         void addWidget(Widget *widget);
         size_t getWidgetCount();
         std::pair<int32_t, int32_t> getWidgetZRange();
+
+        void setMenuMode(bool b);
+        void setShowMainMenu(bool b);
 
         /**
          * @brief Positions cursor in screen space.
@@ -100,6 +103,7 @@ namespace od
         osg::ref_ptr<osg::Group>  mGuiRoot;
         std::deque<osg::ref_ptr<Widget>> mWidgets;
         osg::ref_ptr<Cursor> mCursorWidget;
+        osg::ref_ptr<MainMenu> mMainMenuWidget;
 
         osg::Matrix mWidgetToScreenSpaceXform;
         osg::Matrix mScreenToWidgetSpaceXform;

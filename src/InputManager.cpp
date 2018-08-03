@@ -18,6 +18,10 @@ namespace od
 	: mEngine(engine)
 	, mViewer(viewer)
 	, mMouseWarped(false)
+	, mLastCursorX(0)
+    , mLastCursorY(0)
+    , mPreMenuCursorX(0)
+    , mPreMenuCursorY(0)
 	{
 		mViewer->addEventHandler(this);
 
@@ -35,7 +39,7 @@ namespace od
         switch(ea.getEventType())
         {
         case osgGA::GUIEventAdapter::KEYDOWN:
-            return this->_keyDown(ea.getKey());
+            return this->_keyDown(ea.getKey(), aa);
         	break;
 
 		case osgGA::GUIEventAdapter::KEYUP:
@@ -54,7 +58,7 @@ namespace od
         return false;
     }
 
-	bool InputManager::_keyDown(int key)
+	bool InputManager::_keyDown(int key, osgGA::GUIActionAdapter &aa)
 	{
 		switch(key)
 		{
@@ -75,8 +79,8 @@ namespace od
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_Escape:
-			mViewer->setDone(true);
-			break;
+		    _toggleMainMenu(aa);
+			return true;
 
 		default:
 			break;
@@ -112,6 +116,9 @@ namespace od
 
 	bool InputManager::_mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
 	{
+	    mLastCursorX = ea.getX();
+	    mLastCursorY = ea.getY();
+
 		if(mMouseWarped)
 		{
 			mMouseWarped = false;
@@ -126,12 +133,10 @@ namespace od
 		float x = ea.getXnormalized();
 		float y = ea.getYnormalized();
 
-		if(mEngine.getGuiManager().isMenuMode())
-		{
+		// set cursor position regardless of menu mode so the cursor dos not jump upon opening a menu
+        mEngine.getGuiManager().setCursorPosition(osg::Vec2(x, y));
 
-		    mEngine.getGuiManager().setCursorPosition(osg::Vec2(x, y));
-
-		}else
+		if(!mEngine.getGuiManager().isMenuMode())
 		{
 		    // not menu mode. apply mouse movement to player view
 
@@ -149,8 +154,8 @@ namespace od
 
                 float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
 
-                aa.requestWarpPointer(denormX, ea.getY());
                 mMouseWarped = true;
+                aa.requestWarpPointer(denormX, ea.getY());
             }
 		}
 
@@ -174,10 +179,27 @@ namespace od
 		}
 	}
 
+	void InputManager::_toggleMainMenu(osgGA::GUIActionAdapter &aa)
+	{
+        bool menuMode = mEngine.getGuiManager().isMenuMode();
+
+        if(menuMode)
+        {
+            // if leaving menu mode, warp cursor back to pre-menu position
+            mMouseWarped = true;
+            aa.requestWarpPointer(mPreMenuCursorX, mPreMenuCursorY);
+
+        }else
+        {
+            // if entering menu mode, remember last cursor position
+            mPreMenuCursorX = mLastCursorX;
+            mPreMenuCursorY = mLastCursorY;
+        }
+
+        mEngine.getGuiManager().setShowMainMenu(!menuMode);
+	}
+
 }
-
-
-
 
 
 
