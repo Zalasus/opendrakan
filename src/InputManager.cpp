@@ -18,10 +18,6 @@ namespace od
 	: mEngine(engine)
 	, mViewer(viewer)
 	, mMouseWarped(false)
-	, mLastCursorX(0)
-    , mLastCursorY(0)
-    , mPreMenuCursorX(0)
-    , mPreMenuCursorY(0)
 	{
 		mViewer->addEventHandler(this);
 
@@ -116,8 +112,8 @@ namespace od
 
 	bool InputManager::_mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
 	{
-	    mLastCursorX = ea.getX();
-	    mLastCursorY = ea.getY();
+	    mLastCursorPos.set(ea.getX(), ea.getY());
+	    mLastCursorPosNorm.set(ea.getXnormalized(), ea.getYnormalized());
 
 		if(mMouseWarped)
 		{
@@ -185,16 +181,26 @@ namespace od
 
         if(menuMode)
         {
-            // if leaving menu mode, warp cursor back to pre-menu position
-            mMouseWarped = true;
-            aa.requestWarpPointer(mPreMenuCursorX, mPreMenuCursorY);
+            // leaving menu mode
+            mLastMenuCursorPos = mLastCursorPos;
+            mLastMenuCursorPosNorm = mLastCursorPosNorm;
+
+            mLastCursorPos = mLastGameCursorPos;
+            mLastCursorPosNorm = mLastGameCursorPosNorm;
 
         }else
         {
-            // if entering menu mode, remember last cursor position
-            mPreMenuCursorX = mLastCursorX;
-            mPreMenuCursorY = mLastCursorY;
+            // entering menu mode
+            mLastGameCursorPos = mLastCursorPos;
+            mLastGameCursorPosNorm = mLastCursorPosNorm;
+
+            mLastCursorPos = mLastMenuCursorPos;
+            mLastCursorPosNorm = mLastMenuCursorPosNorm;
         }
+
+        mMouseWarped = true;
+        aa.requestWarpPointer(mLastCursorPos.x(), mLastCursorPos.y());
+        mEngine.getGuiManager().setCursorPosition(mLastCursorPosNorm);
 
         mEngine.getGuiManager().setShowMainMenu(!menuMode);
 	}

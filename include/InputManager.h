@@ -37,10 +37,12 @@ namespace od
 		Engine &mEngine;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		bool mMouseWarped; // flag to prevent handling mouseMove events caused by warping cursor
-		float mLastCursorX;
-		float mLastCursorY;
-		float mPreMenuCursorX;
-		float mPreMenuCursorY;
+		osg::Vec2 mLastCursorPos;
+		osg::Vec2 mLastCursorPosNorm;
+		osg::Vec2 mLastGameCursorPos;
+        osg::Vec2 mLastGameCursorPosNorm;
+		osg::Vec2 mLastMenuCursorPos;
+        osg::Vec2 mLastMenuCursorPosNorm;
 
 	};
 
