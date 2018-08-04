@@ -33,6 +33,7 @@ namespace od
 		void _playerMoveForward(float speed);
 		void _playerMoveRight(float speed);
 		void _toggleMainMenu(osgGA::GUIActionAdapter &aa);
+		void _initCursor();
 
 		Engine &mEngine;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;

@@ -29,9 +29,11 @@ namespace od
     , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
-    , mMenuMode(true)
+    , mMenuMode(false)
     {
         _setupGui();
+
+        setShowMainMenu(false);
     }
 
     osg::Vec2 GuiManager::getScreenResolution()
@@ -319,6 +321,5 @@ namespace od
         mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
         mMainMenuWidget->setZIndex(1);
         this->addWidget(mMainMenuWidget);
-
     }
 }

@@ -19,15 +19,9 @@ namespace od
 	, mViewer(viewer)
 	, mMouseWarped(false)
 	{
-		mViewer->addEventHandler(this);
+	    _initCursor();
 
-		// hide cursor
-		osgViewer::Viewer::Windows windows;
-		viewer->getWindows(windows);
-		for(auto it = windows.begin(); it != windows.end(); ++it)
-		{
-			(*it)->setCursor(osgViewer::GraphicsWindow::NoCursor);
-		}
+		mViewer->addEventHandler(this);
 	}
 
 	bool InputManager::handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa, osg::Object *obj, osg::NodeVisitor *nv)
@@ -205,6 +199,40 @@ namespace od
         mEngine.getGuiManager().setShowMainMenu(!menuMode);
 	}
 
+	void InputManager::_initCursor()
+	{
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(windows.empty())
+        {
+            throw Exception("Could not init cursor. No windows found");
+        }
+
+        // hide cursor
+        for(auto it = windows.begin(); it != windows.end(); ++it)
+        {
+            (*it)->setCursor(osgViewer::GraphicsWindow::NoCursor);
+        }
+
+        // init cursor positions to center of screen
+        int windowPosX;
+        int windowPosY;
+        int windowWidth;
+        int windowHeight;
+        windows.back()->getWindowRectangle(windowPosX, windowPosY, windowWidth, windowHeight);
+
+        float cursorX = windowPosX + windowWidth/2;
+        float cursorY = windowPosY + windowHeight/2;
+
+        mViewer->requestWarpPointer(cursorX, cursorY);
+
+        mLastCursorPos.set(cursorX, cursorY);
+        mLastCursorPosNorm.set(0, 0);
+        mLastMenuCursorPos.set(cursorX, cursorY);
+        mLastMenuCursorPosNorm.set(0, 0);
+        mLastGameCursorPos.set(cursorX, cursorY);
+        mLastGameCursorPosNorm.set(0, 0);
+	}
 }
 
 
