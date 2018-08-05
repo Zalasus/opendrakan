@@ -38,6 +38,7 @@ namespace od
 
         GuiManager(Engine &engine, osgViewer::Viewer *viewer);
 
+        inline Engine &getEngine() { return mEngine; }
         inline bool isMenuMode() const { return mMenuMode; }
 
         osg::Vec2 getScreenResolution();

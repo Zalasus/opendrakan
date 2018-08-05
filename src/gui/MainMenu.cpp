@@ -90,8 +90,9 @@ namespace od
         this->addWidget(cont);
 
         osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, uiProps->mCrystalMiddle.getAsset(), nullptr, nullptr));
-        crystal->setDimensions(67.0, 67.0, WidgetDimensionType::Pixels);
+        crystal->setDimensions(60.0, 60.0, WidgetDimensionType::Pixels);
         crystal->setPosition(255.0/512, 191.0/512);
+        crystal->setOrigin(WidgetOrigin::Center);
         cont->addWidget(crystal);
 
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);

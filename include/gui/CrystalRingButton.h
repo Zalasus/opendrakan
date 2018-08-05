@@ -22,7 +22,7 @@ namespace od
 
         CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel);
 
-        inline void setCrystalColor(const osg::Vec4 &color) { mCrystalColor = color; }
+        inline void setCrystalColor(const osg::Vec4 &color) { mCrystalColor = color; mColorModifierUniform->set(mCrystalColor); }
 
 
     private:
@@ -32,6 +32,7 @@ namespace od
         osg::ref_ptr<Model> mOuterRingModel;
         osg::Vec4 mCrystalColor;
         osg::ref_ptr<osg::MatrixTransform> mTransform;
+        osg::ref_ptr<osg::Uniform> mColorModifierUniform;
 
     };
 

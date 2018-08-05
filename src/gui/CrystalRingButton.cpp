@@ -8,6 +8,8 @@
 #include "gui/CrystalRingButton.h"
 
 #include "Exception.h"
+#include "gui/GuiManager.h"
+#include "Engine.h"
 
 namespace od
 {
@@ -17,6 +19,7 @@ namespace od
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
+    , mCrystalColor(0.62745, 0.48627, 0.95686, 1.0)
     , mTransform(new osg::MatrixTransform)
     {
         // select whatever model in not null for bounds calculation, starting with outer ring
@@ -51,6 +54,13 @@ namespace od
         {
             mTransform->addChild(mOuterRingModel);
         }
+
+        osg::ref_ptr<osg::Shader> crystalFragShader = gm.getEngine().getShaderManager().loadShader("crystal_fragment.glsl", osg::Shader::FRAGMENT);
+        osg::ref_ptr<osg::Program> crystalProg = gm.getEngine().getShaderManager().makeProgram(nullptr, crystalFragShader);
+        mTransform->getOrCreateStateSet()->setAttribute(crystalProg, osg::StateAttribute::ON);
+
+        mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColor);
+        mTransform->getOrCreateStateSet()->addUniform(mColorModifierUniform);
 
         this->addChild(mTransform);
     }

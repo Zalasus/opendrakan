@@ -117,7 +117,8 @@ target_include_directories(opendrakan PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${Z
 set(SHADER_SOURCES
         "shader_src/default_vertex.glsl"
         "shader_src/default_fragment.glsl"
-        "shader_src/rigged_vertex.glsl")
+        "shader_src/rigged_vertex.glsl"
+        "shader_src/crystal_fragment.glsl")
 
 foreach(f ${SHADER_SOURCES})
     # configure file creates dependencies between source and target
