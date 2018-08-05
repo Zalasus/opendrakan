@@ -29,16 +29,7 @@ namespace od
         this->addDrawable(cursorQuad);
 
         this->setOrigin(WidgetOrigin::TopLeft);
-    }
-
-    WidgetDimensionType Cursor::getDimensionType() const
-    {
-        return WidgetDimensionType::Pixels;
-    }
-
-    osg::Vec2 Cursor::getDimensions() const
-    {
-        return osg::Vec2(32, 32);
+        this->setDimensions(32.0, 32.0, WidgetDimensionType::Pixels);
     }
 
 }

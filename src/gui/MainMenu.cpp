@@ -45,17 +45,10 @@ namespace od
             bottomRight->setTextureCoordsFromPixels(osg::Vec2(0, 0), osg::Vec2(255, 255));
             bottomRight->setVertexCoords(osg::Vec2(0.5, 0.5), osg::Vec2(1.0, 1.0));
             this->addDrawable(bottomRight);
+
+            this->setDimensions(512.0, 512.0, WidgetDimensionType::Pixels);
         }
 
-        virtual WidgetDimensionType getDimensionType() const override
-        {
-            return WidgetDimensionType::Pixels;
-        }
-
-        virtual osg::Vec2 getDimensions() const override
-        {
-            return osg::Vec2(512.0, 512.0);
-        }
     };
 
     class MainMenuBackground : public DrawableWidget
@@ -69,16 +62,8 @@ namespace od
             bg->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1.0, 1.0));
             bg->setColor(osg::Vec4(0.0, 0.0, 0.0, 0.5));
             this->addDrawable(bg);
-        }
 
-        virtual WidgetDimensionType getDimensionType() const override
-        {
-            return WidgetDimensionType::ParentRelative;
-        }
-
-        virtual osg::Vec2 getDimensions() const override
-        {
-            return osg::Vec2(1.0, 1.0);
+            this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
         }
     };
 
@@ -97,18 +82,11 @@ namespace od
         bgWidget->setZIndex(1);
         this->addWidget(bgWidget);
 
-        osg::ref_ptr<Model> c = uiProps->mCrystalMiddle.getAsset();
-        imageWidget->addChild(c);
+        //osg::ref_ptr<Model> c = uiProps->mCrystalMiddle.getAsset();
+        //imageWidget->addChild(c);
+
+        this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
     }
 
-    WidgetDimensionType MainMenu::getDimensionType() const
-    {
-        return WidgetDimensionType::ParentRelative;
-    }
-
-    osg::Vec2 MainMenu::getDimensions() const
-    {
-        return osg::Vec2(1.0, 1.0);
-    }
 
 }

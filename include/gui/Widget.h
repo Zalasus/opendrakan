@@ -69,13 +69,23 @@ namespace od
     public:
 
         Widget(GuiManager &gm);
-        virtual ~Widget() = default;
+        virtual ~Widget();
 
         inline GuiManager &getGuiManager() { return mGuiManager; }
         inline int32_t getZIndex() const { return mZIndexInParentSpace; }
+        inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
+        inline osg::Vec2 getDimensions() const { return mDimensions; }
+        inline bool isMatrixDirty() const { return mMatrixDirty; }
+        inline void setDimensions(const osg::Vec2 &dim) { mDimensions = dim; mMatrixDirty = true; }
+        inline void setDimensions(const osg::Vec2 &dim, WidgetDimensionType type) { mDimensions = dim; mDimensionType = type; mMatrixDirty = true; }
+        inline void setDimensions(float x, float y) { setDimensions(osg::Vec2(x, y)); }
+        inline void setDimensions(float x, float y, WidgetDimensionType type) { setDimensions(osg::Vec2(x, y), type); }
+        inline void setDimensionType(WidgetDimensionType type) { mDimensionType = type; mMatrixDirty = true; }
+        inline void setOrigin(WidgetOrigin origin) { mOrigin = origin; mMatrixDirty = true; }
+        inline void setPosition(const osg::Vec2 &pos) { mPositionInParentSpace = pos; mMatrixDirty = true; }
+        inline void setZIndex(int32_t i) { mZIndexInParentSpace = i; mMatrixDirty = true; }
+        inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
 
-        virtual WidgetDimensionType getDimensionType() const = 0;
-        virtual osg::Vec2 getDimensions() const = 0;
         virtual std::pair<int32_t, int32_t> getZRange() const = 0;
 
         osg::Vec2 getDimensionsInPixels();
@@ -84,15 +94,6 @@ namespace od
 
         void setVisible(bool b);
 
-        void setOrigin(WidgetOrigin origin);
-
-        /// @brief Sets position of widget origin in parent widget space
-        void setPosition(const osg::Vec2 &pos);
-
-        void setZIndex(int32_t z);
-
-        void setParent(Widget *parent);
-
         void updateMatrix();
 
 
@@ -100,9 +101,13 @@ namespace od
 
         GuiManager &mGuiManager;
         WidgetOrigin mOrigin;
+        WidgetDimensionType mDimensionType;
+        osg::Vec2 mDimensions;
         osg::Vec2 mPositionInParentSpace;
         int32_t mZIndexInParentSpace;
         Widget *mParentWidget;
+        bool mMatrixDirty;
+        osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
     };
 
 }

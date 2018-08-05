@@ -40,11 +40,6 @@ namespace od
         mChildWidgets.push_back(osg::ref_ptr<Widget>(w));
 
         w->setParent(this);
-
-        for(auto it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
-        {
-            (*it)->updateMatrix();
-        }
     }
 
 }

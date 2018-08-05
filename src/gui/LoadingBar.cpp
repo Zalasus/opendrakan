@@ -35,16 +35,8 @@ namespace od
         mBarQuad->setVertexCoords(osg::Vec2(0.0, 9.0/50), osg::Vec2(mProgress, 40.0/50));
         mBarQuad->setZCoord(0.2);
         this->addDrawable(mBarQuad);
-    }
 
-    WidgetDimensionType LoadingBar::getDimensionType() const
-    {
-        return WidgetDimensionType::Pixels;
-    }
-
-    osg::Vec2 LoadingBar::getDimensions() const
-    {
-        return osg::Vec2(128.0, 51.0);
+        this->setDimensions(128.0, 51.0, WidgetDimensionType::Pixels);
     }
 
     void LoadingBar::setProgress(float f)

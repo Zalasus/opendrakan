@@ -15,15 +15,51 @@
 namespace od
 {
 
+    class WidgetUpdateCallback : public osg::NodeCallback
+    {
+    public:
+
+        WidgetUpdateCallback(Widget *widget)
+        : mWidget(widget)
+        {
+        }
+
+        virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
+        {
+            if(mWidget->isMatrixDirty())
+            {
+                mWidget->updateMatrix();
+            }
+
+            traverse(node, nv);
+        }
+
+    private:
+
+        Widget *mWidget;
+
+    };
+
     Widget::Widget(GuiManager &gm)
     : mGuiManager(gm)
     , mOrigin(WidgetOrigin::TopLeft)
+    , mDimensionType(WidgetDimensionType::ParentRelative)
+    , mDimensions(1.0, 1.0)
     , mPositionInParentSpace(0.0, 0.0)
     , mZIndexInParentSpace(0)
     , mParentWidget(nullptr)
+    , mMatrixDirty(false)
+    , mUpdateCallback(new WidgetUpdateCallback(this))
     {
         this->setNodeMask(NodeMasks::Gui);
         this->setMatrix(osg::Matrix::identity());
+
+        this->addUpdateCallback(mUpdateCallback);
+    }
+
+    Widget::~Widget()
+    {
+        this->removeUpdateCallback(mUpdateCallback);
     }
 
     osg::Vec2 Widget::getDimensionsInPixels()
@@ -48,41 +84,18 @@ namespace od
         return (mParentWidget != nullptr) ? mParentWidget->getZRange() : mGuiManager.getWidgetZRange();
     }
 
-    void Widget::setOrigin(WidgetOrigin origin)
-    {
-        mOrigin = origin;
-
-        updateMatrix();
-    }
-
-    void Widget::setPosition(const osg::Vec2 &pos)
-    {
-        mPositionInParentSpace = pos;
-
-        updateMatrix();
-    }
-
-    void Widget::setZIndex(int32_t z)
-    {
-        mZIndexInParentSpace = z;
-
-        updateMatrix();
-    }
-
     void Widget::setVisible(bool b)
     {
         this->setNodeMask(b ? NodeMasks::Gui : NodeMasks::Hidden);
     }
 
-    void Widget::setParent(Widget *parent)
-    {
-        mParentWidget = parent;
-
-        updateMatrix();
-    }
-
     void Widget::updateMatrix()
     {
+        if(!mMatrixDirty)
+        {
+            return;
+        }
+
         osg::Matrix matrix = osg::Matrix::identity();
 
         osg::Vec2 origin;
@@ -118,6 +131,8 @@ namespace od
         matrix.postMultTranslate(osg::Vec3(mPositionInParentSpace, 0.0));
 
         this->setMatrix(matrix);
+
+        mMatrixDirty = false;
     }
 
 }

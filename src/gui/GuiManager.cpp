@@ -71,11 +71,6 @@ namespace od
         mWidgets.push_back(osg::ref_ptr<Widget>(widget));
 
         widget->setParent(nullptr);
-
-        for(auto it = mWidgets.begin(); it != mWidgets.end(); ++it)
-        {
-            (*it)->updateMatrix();
-        }
     }
 
     size_t GuiManager::getWidgetCount()

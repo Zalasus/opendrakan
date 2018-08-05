@@ -22,8 +22,6 @@ namespace od
 
         Cursor(GuiManager &gm);
 
-        virtual WidgetDimensionType getDimensionType() const override;
-        virtual osg::Vec2 getDimensions() const override;
     };
 
 }
