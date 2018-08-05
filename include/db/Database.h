@@ -45,9 +45,14 @@ namespace od
 		inline FilePath getDbFilePath() const { return mDbFilePath; }
 		inline std::string getShortName() const { return mDbFilePath.fileStrNoExt(); }
 		inline DbManager &getDbManager() { return mDbManager; }
+		inline TextureFactory *getTextureFactory() { return mTextureFactory.get(); }
+		inline ClassFactory *getClassFactory() { return mClassFactory.get(); }
+		inline ModelFactory *getModelFactory() { return mModelFactory.get(); }
+		inline SequenceFactory *getSequenceFactory() { return mSequenceFactory.get(); }
+		inline AnimationFactory *getAnimationFactory() { return mAnimFactory.get(); }
+		inline SoundFactory *getSoundFactory() { return mSoundFactory.get(); }
 
 		void loadDbFileAndDependencies(size_t dependencyDepth);
-
 
 		// implement AssetProvider
 		virtual Texture   *getTextureByRef(const AssetRef &ref) override;

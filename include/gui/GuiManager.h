@@ -19,6 +19,7 @@
 #include "db/Database.h"
 #include "gui/Cursor.h"
 #include "gui/MainMenu.h"
+#include "rfl/dragon/UserInterfaceProperties.h"
 
 namespace od
 {
@@ -102,6 +103,7 @@ namespace od
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;
         std::deque<osg::ref_ptr<Widget>> mWidgets;
+        std::unique_ptr<odRfl::UserInterfaceProperties> mUserInterfacePropertiesInstance;
         osg::ref_ptr<Cursor> mCursorWidget;
         osg::ref_ptr<MainMenu> mMainMenuWidget;
 

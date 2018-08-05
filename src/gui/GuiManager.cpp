@@ -321,5 +321,25 @@ namespace od
         mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
         mMainMenuWidget->setZIndex(1);
         this->addWidget(mMainMenuWidget);
+
+        // retrieve UserInterfaceProperties object
+        if(mInterfaceDb.getClassFactory() == nullptr)
+        {
+            throw Exception("Can not initialize user interface. Interface.db has no class container");
+        }
+
+        RecordId id = mInterfaceDb.getClassFactory()->findFirstClassOfType(0x0062); // FIXME: don't hardcode this here. retrieve it from the registrar or something
+        if(id == AssetRef::NULL_REF.assetId)
+        {
+            throw Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
+        }
+
+        osg::ref_ptr<Class> uiPropsClass = mInterfaceDb.getClass(id);
+        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
+        mUserInterfacePropertiesInstance.reset(dynamic_cast<odRfl::UserInterfaceProperties*>(uiPropsInstance.release()));
+        if(mUserInterfacePropertiesInstance == nullptr)
+        {
+            throw Exception("Could not cast or instantiate User Interface Properties instance");
+        }
     }
 }
