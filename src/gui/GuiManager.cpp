@@ -16,6 +16,7 @@
 #include "Engine.h"
 #include "gui/TexturedQuad.h"
 #include "gui/WidgetGroup.h"
+#include "rfl/PrefetchProbe.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -316,11 +317,6 @@ namespace od
         mCursorWidget->setZIndex(-1000);
         this->addWidget(mCursorWidget);
 
-        mMainMenuWidget = new MainMenu(*this);
-        mMainMenuWidget->setOrigin(WidgetOrigin::Center);
-        mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
-        mMainMenuWidget->setZIndex(1);
-        this->addWidget(mMainMenuWidget);
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb.getClassFactory() == nullptr)
@@ -341,5 +337,15 @@ namespace od
         {
             throw Exception("Could not cast or instantiate User Interface Properties instance");
         }
+        mUserInterfacePropertiesInstance->loaded(mEngine, nullptr);
+
+        odRfl::PrefetchProbe probe(mInterfaceDb);
+        mUserInterfacePropertiesInstance->probeFields(probe);
+
+        mMainMenuWidget = new MainMenu(*this, mUserInterfacePropertiesInstance.get());
+        mMainMenuWidget->setOrigin(WidgetOrigin::Center);
+        mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
+        mMainMenuWidget->setZIndex(1);
+        this->addWidget(mMainMenuWidget);
     }
 }

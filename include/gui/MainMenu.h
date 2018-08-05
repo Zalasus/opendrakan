@@ -9,6 +9,7 @@
 #define INCLUDE_GUI_MAINMENU_H_
 
 #include "gui/ContainerWidget.h"
+#include "rfl/dragon/UserInterfaceProperties.h"
 
 namespace od
 {
@@ -19,7 +20,7 @@ namespace od
     {
     public:
 
-        MainMenu(GuiManager &gm);
+        MainMenu(GuiManager &gm, odRfl::UserInterfaceProperties *uiProps);
 
         virtual WidgetDimensionType getDimensionType() const override;
         virtual osg::Vec2 getDimensions() const override;

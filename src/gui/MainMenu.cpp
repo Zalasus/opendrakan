@@ -84,7 +84,7 @@ namespace od
 
 
 
-    MainMenu::MainMenu(GuiManager &gm)
+    MainMenu::MainMenu(GuiManager &gm, odRfl::UserInterfaceProperties *uiProps)
     : ContainerWidget(gm)
     {
         osg::ref_ptr<MainMenuImage> imageWidget(new MainMenuImage(gm));
@@ -96,6 +96,9 @@ namespace od
         osg::ref_ptr<MainMenuBackground> bgWidget(new MainMenuBackground(gm));
         bgWidget->setZIndex(1);
         this->addWidget(bgWidget);
+
+        osg::ref_ptr<Model> c = uiProps->mCrystalMiddle.getAsset();
+        imageWidget->addChild(c);
     }
 
     WidgetDimensionType MainMenu::getDimensionType() const
