@@ -83,6 +83,7 @@ namespace od
         inline void setDimensionType(WidgetDimensionType type) { mDimensionType = type; mMatrixDirty = true; }
         inline void setOrigin(WidgetOrigin origin) { mOrigin = origin; mMatrixDirty = true; }
         inline void setPosition(const osg::Vec2 &pos) { mPositionInParentSpace = pos; mMatrixDirty = true; }
+        inline void setPosition(float x, float y) { setPosition(osg::Vec2(x, y)); }
         inline void setZIndex(int32_t i) { mZIndexInParentSpace = i; mMatrixDirty = true; }
         inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
 

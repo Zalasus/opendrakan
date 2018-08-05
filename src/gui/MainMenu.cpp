@@ -83,6 +83,17 @@ namespace od
         bgWidget->setZIndex(1);
         this->addWidget(bgWidget);
 
+        osg::ref_ptr<ContainerWidget> cont(new ContainerWidget(gm));
+        cont->setDimensions(512.0, 512.0, WidgetDimensionType::Pixels);
+        cont->setPosition(0.5, 0.5);
+        cont->setOrigin(WidgetOrigin::Center);
+        this->addWidget(cont);
+
+        osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, uiProps->mCrystalMiddle.getAsset(), nullptr, nullptr));
+        crystal->setDimensions(67.0, 67.0, WidgetDimensionType::Pixels);
+        crystal->setPosition(255.0/512, 191.0/512);
+        cont->addWidget(crystal);
+
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
     }
 
