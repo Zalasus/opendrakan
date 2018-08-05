@@ -61,6 +61,13 @@ namespace od
 		void loadLodsAndBones(ModelFactory &factory, DataReader &&dr);
 		void buildGeometry();
 
+		/**
+		 * @brief Returns an axis-aligned bounding box that encapsulates all of this model's meshes and LODs.
+		 *
+		 * This ignores any bounding info stored in the model. The box's expands are directly calculated from the vertex data.
+		 */
+		inline osg::BoundingBox getCalculatedBoundingBox() { return mCalculatedBoundingBox; }
+
 
 	private:
 
@@ -75,6 +82,7 @@ namespace od
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
+		osg::BoundingBox mCalculatedBoundingBox;
 	};
 
 	template <>

@@ -79,11 +79,6 @@ namespace od
         return (mParentWidget != nullptr) ? mParentWidget->getDimensionsInPixels() : mGuiManager.getScreenResolution();
     }
 
-    std::pair<int32_t, int32_t> Widget::getParentZRange()
-    {
-        return (mParentWidget != nullptr) ? mParentWidget->getZRange() : mGuiManager.getWidgetZRange();
-    }
-
     void Widget::setVisible(bool b)
     {
         this->setNodeMask(b ? NodeMasks::Gui : NodeMasks::Hidden);
@@ -133,6 +128,17 @@ namespace od
         this->setMatrix(matrix);
 
         mMatrixDirty = false;
+    }
+
+    void Widget::addDrawable(osg::Drawable *drawable)
+    {
+        if(mGeode == nullptr)
+        {
+            mGeode = new osg::Geode;
+            this->addChild(mGeode);
+        }
+
+        mGeode->addDrawable(drawable);
     }
 
 }

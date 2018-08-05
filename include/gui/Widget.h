@@ -86,8 +86,6 @@ namespace od
         inline void setZIndex(int32_t i) { mZIndexInParentSpace = i; mMatrixDirty = true; }
         inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
 
-        virtual std::pair<int32_t, int32_t> getZRange() const = 0;
-
         osg::Vec2 getDimensionsInPixels();
         osg::Vec2 getParentDimensionsInPixels();
         std::pair<int32_t, int32_t> getParentZRange();
@@ -95,6 +93,11 @@ namespace od
         void setVisible(bool b);
 
         void updateMatrix();
+
+
+    protected:
+
+        void addDrawable(osg::Drawable *drawable);
 
 
     private:
@@ -108,6 +111,7 @@ namespace od
         Widget *mParentWidget;
         bool mMatrixDirty;
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
+        osg::ref_ptr<osg::Geode> mGeode;
     };
 
 }

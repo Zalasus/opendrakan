@@ -21,8 +21,6 @@ namespace od
 
         ContainerWidget(GuiManager &gm);
 
-        virtual std::pair<int32_t, int32_t> getZRange() const override;
-
         void addWidget(Widget *w);
 
 

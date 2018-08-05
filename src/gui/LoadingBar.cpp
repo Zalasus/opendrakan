@@ -15,7 +15,7 @@ namespace od
 {
 
     LoadingBar::LoadingBar(GuiManager &gm)
-    : DrawableWidget(gm)
+    : Widget(gm)
     , mProgress(0.0)
     , mForegroundQuad(new TexturedQuad)
     , mBarQuad(new TexturedQuad)

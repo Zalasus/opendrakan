@@ -9,14 +9,14 @@
 #define INCLUDE_GUI_LOADINGBAR_H_
 
 #include "gui/TexturedQuad.h"
-#include "gui/DrawableWidget.h"
+#include "gui/Widget.h"
 
 namespace od
 {
 
     class GuiManager;
 
-    class LoadingBar : public DrawableWidget
+    class LoadingBar : public Widget
     {
     public:
 

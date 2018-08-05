@@ -79,7 +79,6 @@ set(SOURCES
         "src/gui/LoadingBar.cpp"
         "src/gui/MainMenu.cpp"
         "src/gui/Cursor.cpp"
-        "src/gui/DrawableWidget.cpp"
         "src/gui/WidgetGroup.cpp"
         "src/gui/ContainerWidget.cpp"
         "src/Layer.cpp"

@@ -10,17 +10,18 @@
 #include "gui/GuiManager.h"
 #include "gui/TexturedQuad.h"
 #include "gui/GuiTextures.h"
+#include "gui/CrystalRingButton.h"
 
 namespace od
 {
 
 
-    class MainMenuImage : public DrawableWidget
+    class MainMenuImage : public Widget
     {
     public:
 
         MainMenuImage(GuiManager &gm)
-        : DrawableWidget(gm)
+        : Widget(gm)
         {
             osg::ref_ptr<TexturedQuad> topLeft = new TexturedQuad;
             topLeft->setTextureImage(gm.getTexture(GuiTextures::MainMenu_TopLeft));
@@ -51,12 +52,12 @@ namespace od
 
     };
 
-    class MainMenuBackground : public DrawableWidget
+    class MainMenuBackground : public Widget
     {
     public:
 
         MainMenuBackground(GuiManager &gm)
-        : DrawableWidget(gm)
+        : Widget(gm)
         {
             osg::ref_ptr<TexturedQuad> bg = new TexturedQuad;
             bg->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1.0, 1.0));
@@ -81,9 +82,6 @@ namespace od
         osg::ref_ptr<MainMenuBackground> bgWidget(new MainMenuBackground(gm));
         bgWidget->setZIndex(1);
         this->addWidget(bgWidget);
-
-        //osg::ref_ptr<Model> c = uiProps->mCrystalMiddle.getAsset();
-        //imageWidget->addChild(c);
 
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
     }
