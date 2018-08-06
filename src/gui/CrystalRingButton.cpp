@@ -19,7 +19,7 @@ namespace od
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
-    , mCrystalColor(0.62745, 0.48627, 0.95686, 1.0)
+    , mCrystalColor(0.38431, 0.36471, 0.54902, 1.0)
     , mTransform(new osg::MatrixTransform)
     {
         // select whatever model in not null for bounds calculation, starting with outer ring
@@ -52,7 +52,8 @@ namespace od
             mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColor);
             mCrystalTransform->getOrCreateStateSet()->addUniform(mColorModifierUniform);
 
-            mCrystalTransform->setScale(osg::Vec3(0.6, 0.6, 0.6));
+            mCrystalTransform->setScale(osg::Vec3(0.58, 0.58, 0.58));
+            mCrystalTransform->setAttitude(osg::Quat(M_PI, osg::Vec3(0, 1, 0)));
 
             mTransform->addChild(mCrystalTransform);
         }
