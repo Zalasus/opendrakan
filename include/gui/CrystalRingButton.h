@@ -12,6 +12,7 @@
 #include "db/Model.h"
 
 #include <osg/MatrixTransform>
+#include <osg/PositionAttitudeTransform>
 
 namespace od
 {
@@ -32,6 +33,9 @@ namespace od
         osg::ref_ptr<Model> mOuterRingModel;
         osg::Vec4 mCrystalColor;
         osg::ref_ptr<osg::MatrixTransform> mTransform;
+        osg::ref_ptr<osg::PositionAttitudeTransform> mCrystalTransform;
+        osg::ref_ptr<osg::PositionAttitudeTransform> mOuterRingTransform;
+        osg::ref_ptr<osg::PositionAttitudeTransform> mInnerRingTransform;
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
 
     };

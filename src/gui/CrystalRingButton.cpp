@@ -42,25 +42,34 @@ namespace od
 
         if(mCrystalModel != nullptr)
         {
-            mTransform->addChild(mCrystalModel);
+            mCrystalTransform = new osg::PositionAttitudeTransform;
+            mCrystalTransform->addChild(mCrystalModel);
+
+            osg::ref_ptr<osg::Shader> crystalFragShader = gm.getEngine().getShaderManager().loadShader("crystal_fragment.glsl", osg::Shader::FRAGMENT);
+            osg::ref_ptr<osg::Program> crystalProg = gm.getEngine().getShaderManager().makeProgram(nullptr, crystalFragShader);
+            mCrystalTransform->getOrCreateStateSet()->setAttribute(crystalProg, osg::StateAttribute::ON);
+
+            mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColor);
+            mCrystalTransform->getOrCreateStateSet()->addUniform(mColorModifierUniform);
+
+            mCrystalTransform->setScale(osg::Vec3(0.6, 0.6, 0.6));
+
+            mTransform->addChild(mCrystalTransform);
         }
 
         if(mInnerRingModel != nullptr)
         {
-            mTransform->addChild(mInnerRingModel);
+            mInnerRingTransform = new osg::PositionAttitudeTransform;
+            mInnerRingTransform->addChild(mInnerRingModel);
+            mTransform->addChild(mInnerRingTransform);
         }
 
         if(mOuterRingModel != nullptr)
         {
-            mTransform->addChild(mOuterRingModel);
+            mOuterRingTransform = new osg::PositionAttitudeTransform;
+            mOuterRingTransform->addChild(mOuterRingModel);
+            mTransform->addChild(mOuterRingTransform);
         }
-
-        osg::ref_ptr<osg::Shader> crystalFragShader = gm.getEngine().getShaderManager().loadShader("crystal_fragment.glsl", osg::Shader::FRAGMENT);
-        osg::ref_ptr<osg::Program> crystalProg = gm.getEngine().getShaderManager().makeProgram(nullptr, crystalFragShader);
-        mTransform->getOrCreateStateSet()->setAttribute(crystalProg, osg::StateAttribute::ON);
-
-        mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColor);
-        mTransform->getOrCreateStateSet()->addUniform(mColorModifierUniform);
 
         this->addChild(mTransform);
     }

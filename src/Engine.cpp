@@ -15,8 +15,6 @@
 #include "Player.h"
 #include "rfl/Rfl.h"
 #include "gui/GuiManager.h"
-#include "gui/LoadingBar.h"
-#include "gui/MainMenu.h"
 #include "Camera.h"
 
 namespace od

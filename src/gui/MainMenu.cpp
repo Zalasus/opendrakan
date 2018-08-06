@@ -89,13 +89,26 @@ namespace od
         cont->setOrigin(WidgetOrigin::Center);
         this->addWidget(cont);
 
-        osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, uiProps->mCrystalMiddle.getAsset(), nullptr, nullptr));
-        crystal->setDimensions(60.0, 60.0, WidgetDimensionType::Pixels);
-        crystal->setPosition(255.0/512, 191.0/512);
-        crystal->setOrigin(WidgetOrigin::Center);
-        cont->addWidget(crystal);
+        _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), 67, 255, 191, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalRight.getAsset(), 57, 400, 193, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalLowerLeft.getAsset(), 35, 152, 292, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalLowerRight.getAsset(), 35, 358, 292, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalBottom.getAsset(), 61, 255, 440, uiProps, cont);
 
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
+    }
+
+    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y, odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont)
+    {
+        osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, crystalModel,
+                uiProps->mInnerRing.getAsset(),
+                uiProps->mOuterRing.getAsset()));
+        crystal->setDimensions(dia, dia, WidgetDimensionType::Pixels);
+        crystal->setPosition(x/512, y/512);
+        crystal->setOrigin(WidgetOrigin::Center);
+        cont->addWidget(crystal);
     }
 
 

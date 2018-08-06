@@ -22,6 +22,10 @@ namespace od
 
         MainMenu(GuiManager &gm, odRfl::UserInterfaceProperties *uiProps);
 
+    private:
+
+        void _addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y, odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont);
+
     };
 
 }
