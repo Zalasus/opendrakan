@@ -52,17 +52,14 @@ namespace od
      * position is specified in a simulated widget space, where 0/0 is the screen's top left and 1/1 it's bottom right corner.
      * The position of a widget is relative to it's origin. The default origin is the widget's top left corner.
      *
-     * Widgets also have a Z position, which is used to control stacking of widgets. A widget with a lower Z coordinate is
-     * always on top of other widgets with lower Z coordinates.
+     * Widgets also have a Z index, which is used to control stacking of widgets. A widget with a lower Z index is
+     * always on top of other widgets with higher Z indices.
      *
-     * Widgets must be able to report their dimensions by implementing getDimensions(). These can be either
-     * given in absolute pixels or relative to the widget's parent's size. The type of the dimensions reported by
-     * getDimensions() must be returned by getDimensionType().
+     * Widgets have dimensions, which can be expressed either in pixels or relative to their parent.
+     * When pixel dimensions are used, the widget's pixels will be mapped to the screen pixels 1:1. In parent-relative dimensions,
+     * a dimension of (1/1) is exactly the parent's size, (0.5/0.5) is half the parent's size, etc.
      *
-     * In case pixel dimensions are returned, the widget's pixels will be mapped to the screen pixels 1:1.
-     * In parent-relative dimensions, a dimension of (1/1) is exactly the parent's size, (0.5/0.5) is half the parent's size, etc.
-     *
-     * It is up to the widget implementation to apply an optional scale factor to these dimensions if UI scaling is desired.
+     * UI scaling is not yet implemented, but can be easily achieved by applying a scale factor to a widget's dimensions.
      */
     class Widget : public osg::MatrixTransform
     {
