@@ -40,6 +40,9 @@ namespace od
         matrix.postMultTranslate(osg::Vec3(0.5, 0.5, 0.0));
         mTransform->setMatrix(matrix);
 
+        mTransform->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+        mTransform->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
+
         if(mCrystalModel != nullptr)
         {
             mCrystalTransform = new osg::PositionAttitudeTransform;
@@ -73,6 +76,11 @@ namespace od
         }
 
         this->addChild(mTransform);
+    }
+
+    void CrystalRingButton::onMouseDown(osg::Vec2 pos, int button)
+    {
+        Logger::info() << "Button clicked!!!";
     }
 
 }

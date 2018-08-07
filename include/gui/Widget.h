@@ -70,9 +70,11 @@ namespace od
 
         inline GuiManager &getGuiManager() { return mGuiManager; }
         inline int32_t getZIndex() const { return mZIndexInParentSpace; }
+        inline osg::Vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline osg::Vec2 getDimensions() const { return mDimensions; }
         inline bool isMatrixDirty() const { return mMatrixDirty; }
+        inline bool isMouseOver() const { return mMouseOver; }
         inline void setDimensions(const osg::Vec2 &dim) { mDimensions = dim; mMatrixDirty = true; }
         inline void setDimensions(const osg::Vec2 &dim, WidgetDimensionType type) { mDimensions = dim; mDimensionType = type; mMatrixDirty = true; }
         inline void setDimensions(float x, float y) { setDimensions(osg::Vec2(x, y)); }
@@ -83,7 +85,11 @@ namespace od
         inline void setPosition(float x, float y) { setPosition(osg::Vec2(x, y)); }
         inline void setZIndex(int32_t i) { mZIndexInParentSpace = i; mMatrixDirty = true; }
         inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
+        inline void setMouseOver(bool b) { mMouseOver = b; }
 
+        virtual void onMouseDown(osg::Vec2 pos, int button);
+
+        osg::Vec2 getTopLeftPositionInPixels();
         osg::Vec2 getDimensionsInPixels();
         osg::Vec2 getParentDimensionsInPixels();
         std::pair<int32_t, int32_t> getParentZRange();
@@ -100,6 +106,8 @@ namespace od
 
     private:
 
+        osg::Vec2 _getOriginVector();
+
         GuiManager &mGuiManager;
         WidgetOrigin mOrigin;
         WidgetDimensionType mDimensionType;
@@ -110,6 +118,7 @@ namespace od
         bool mMatrixDirty;
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
         osg::ref_ptr<osg::Geode> mGeode;
+        bool mMouseOver;
     };
 
 }
