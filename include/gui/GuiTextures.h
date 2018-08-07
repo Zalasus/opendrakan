@@ -20,11 +20,16 @@ namespace od
         static const RecordId Cursor                = 0x0016;
         static const RecordId Map_Icon              = 0x0017;
 
+        static const RecordId HudOrbs_1             = 0x1015; // ice, lightning, health
+        static const RecordId HudOrbs_2             = 0x1019; // fire, poison, magma
+
         static const RecordId Inventory_Left        = 0x1016;
         static const RecordId Inventory_Right       = 0x1017;
         static const RecordId Inventory_Borders     = 0x1018;
 
         static const RecordId Numbers               = 0x1020;
+
+        static const RecordId HudElements           = 0x1021;
 
         /// this + bitmap number = actual bitmap ID (bitmap numbers start at 1)
         static const RecordId InventoryIcons_Base   = 0x1021;

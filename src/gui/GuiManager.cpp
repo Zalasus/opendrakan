@@ -17,6 +17,7 @@
 #include "gui/TexturedQuad.h"
 #include "gui/WidgetGroup.h"
 #include "rfl/PrefetchProbe.h"
+#include "gui/HealthIndicator.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
@@ -342,5 +343,11 @@ namespace od
         mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
         mMainMenuWidget->setZIndex(1);
         this->addWidget(mMainMenuWidget);
+
+        HealthIndicator *hi = new HealthIndicator(*this);
+        hi->setOrigin(WidgetOrigin::BottomLeft);
+        hi->setPosition(0, 1);
+        hi->setZIndex(2);
+        this->addWidget(hi);
     }
 }

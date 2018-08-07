@@ -82,6 +82,7 @@ set(SOURCES
         "src/gui/WidgetGroup.cpp"
         "src/gui/ContainerWidget.cpp"
         "src/gui/CrystalRingButton.cpp"
+        "src/gui/HealthIndicator.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"
