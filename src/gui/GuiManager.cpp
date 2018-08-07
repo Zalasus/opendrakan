@@ -38,6 +38,11 @@ namespace od
         setShowMainMenu(false);
     }
 
+    void GuiManager::quit()
+    {
+        mViewer->setDone(true);
+    }
+
     osg::Vec2 GuiManager::getScreenResolution()
     {
         if(mViewer == nullptr)

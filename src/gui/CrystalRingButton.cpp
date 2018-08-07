@@ -80,7 +80,9 @@ namespace od
 
     void CrystalRingButton::onMouseDown(osg::Vec2 pos, int button)
     {
-        Logger::info() << "Button clicked!!!";
+        Logger::info() << "Button clicked. Interpreting this as desire to quit the game for now.";
+
+        getGuiManager().quit();
     }
 
 }

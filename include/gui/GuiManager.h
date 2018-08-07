@@ -41,6 +41,8 @@ namespace od
         inline Engine &getEngine() { return mEngine; }
         inline bool isMenuMode() const { return mMenuMode; }
 
+        void quit();
+
         osg::Vec2 getScreenResolution();
 
         void addWidget(Widget *widget);
