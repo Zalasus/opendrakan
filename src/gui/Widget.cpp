@@ -59,7 +59,7 @@ namespace od
 
             for(auto it = events.begin(); it != events.end(); ++it)
             {
-                osg::ref_ptr<osgGA::GUIEventAdapter> ea = (*it)->asGUIEventAdapter();
+                osg::ref_ptr<osgGA::GUIEventAdapter> ea = dynamic_cast<osgGA::GUIEventAdapter*>(it->get());//(*it)->asGUIEventAdapter(); <- handy, but not available in old OSG on travis
                 if(ea == nullptr)
                 {
                     continue;
