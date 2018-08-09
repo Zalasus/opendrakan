@@ -20,6 +20,7 @@
 #include "gui/Cursor.h"
 #include "gui/MainMenu.h"
 #include "rfl/dragon/UserInterfaceProperties.h"
+#include "gui/WidgetIntersectVisitor.h"
 
 namespace od
 {
@@ -51,6 +52,8 @@ namespace od
 
         void setMenuMode(bool b);
         void setShowMainMenu(bool b);
+
+        void mouseDown();
 
         /**
          * @brief Positions cursor in screen space.
@@ -107,11 +110,13 @@ namespace od
         osg::ref_ptr<osg::Group>  mGuiRoot;
         std::deque<osg::ref_ptr<Widget>> mWidgets;
         std::unique_ptr<odRfl::UserInterfaceProperties> mUserInterfacePropertiesInstance;
+        osg::Vec2 mCursorPosInNdc;
         osg::ref_ptr<Cursor> mCursorWidget;
         osg::ref_ptr<MainMenu> mMainMenuWidget;
 
-        osg::Matrix mWidgetToScreenSpaceXform;
+        osg::Matrix mWidgetToScreenSpaceXform; // FIXME: these are badly named. this goes from widget space to NDC, not screen space
         osg::Matrix mScreenToWidgetSpaceXform;
+        osg::ref_ptr<WidgetIntersectVisitor> mWidgetIntersectVisitor;
     };
 
 }

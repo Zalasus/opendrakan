@@ -41,6 +41,10 @@ namespace od
 			return this->_mouseMove(ea, aa);
 			break;
 
+		case osgGA::GUIEventAdapter::PUSH:
+		    mEngine.getGuiManager().mouseDown();
+		    return true;
+
         default:
             break;
         }

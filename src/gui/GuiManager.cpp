@@ -24,7 +24,6 @@
 namespace od
 {
 
-
     GuiManager::GuiManager(Engine &engine, osgViewer::Viewer *viewer)
     : mEngine(engine)
     , mViewer(viewer)
@@ -35,12 +34,29 @@ namespace od
     {
         _setupGui();
 
+        mWidgetIntersectVisitor = new WidgetIntersectVisitor(mWidgetToScreenSpaceXform, mScreenToWidgetSpaceXform);
+
         setShowMainMenu(false);
     }
 
     void GuiManager::quit()
     {
         mViewer->setDone(true);
+    }
+
+    void GuiManager::mouseDown()
+    {
+        mWidgetIntersectVisitor->reset();
+        mWidgetIntersectVisitor->setPointInNdc(mCursorPosInNdc);
+        mGuiRoot->accept(*mWidgetIntersectVisitor);
+
+        const std::vector<WidgetHitInfo> &hitWidgets = mWidgetIntersectVisitor->getHitWidgets();
+        Logger::debug() << "Hit " << hitWidgets.size() << " widgets!";
+
+        for(auto it = hitWidgets.begin(); it != hitWidgets.end(); ++it)
+        {
+            it->widget->onMouseDown(it->hitPointInWidget, 0);
+        }
     }
 
     osg::Vec2 GuiManager::getScreenResolution()
@@ -123,6 +139,8 @@ namespace od
         {
             return;
         }
+
+        mCursorPosInNdc = pos;
 
         // pos is in screen space, we need it in widget space
         osg::Vec3 posWs = osg::Vec3(pos, 0.0) * mScreenToWidgetSpaceXform;

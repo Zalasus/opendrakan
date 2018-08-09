@@ -25,7 +25,8 @@ namespace od
 
         inline void setCrystalColor(const osg::Vec4 &color) { mCrystalColor = color; mColorModifierUniform->set(mCrystalColor); }
 
-        virtual void onMouseDown(osg::Vec2 pos, int button) override;
+        virtual bool liesWithinLogicalArea(const osg::Vec2 &pos) override;
+        virtual void onMouseDown(const osg::Vec2 &pos, int button) override;
 
 
     private:

@@ -87,9 +87,18 @@ namespace od
         inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
         inline void setMouseOver(bool b) { mMouseOver = b; }
 
-        virtual void onMouseDown(osg::Vec2 pos, int button);
+        /**
+         * @brief Returns true if \c pos lies within the logical widget bounds.
+         *
+         * This gets called when a UI event (mouse click etc.) happens within the rectangular screen space occupied by the widget.
+         * It can be used to limit the space inside which a widget responds to events. This is useful for round buttons, widgets with
+         * borders etc. The default behaviour is to return true for all points within [0.0 0.0] and [1.0 1.0].
+         *
+         * @param  pos[in]   Point in this widget's coordinate space to be checked.
+         */
+        virtual bool liesWithinLogicalArea(const osg::Vec2 &pos);
+        virtual void onMouseDown(const osg::Vec2 &pos, int button);
 
-        osg::Vec2 getTopLeftPositionInPixels();
         osg::Vec2 getDimensionsInPixels();
         osg::Vec2 getParentDimensionsInPixels();
         std::pair<int32_t, int32_t> getParentZRange();

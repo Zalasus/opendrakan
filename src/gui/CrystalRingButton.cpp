@@ -78,7 +78,14 @@ namespace od
         this->addChild(mTransform);
     }
 
-    void CrystalRingButton::onMouseDown(osg::Vec2 pos, int button)
+    bool CrystalRingButton::liesWithinLogicalArea(const osg::Vec2 &pos)
+    {
+        // logical area is circle around (0.5 0.5) TODO: implement non-circular buttons here
+        osg::Vec2 p = pos - osg::Vec2(0.5, 0.5);
+        return p.length2() <= 0.25;
+    }
+
+    void CrystalRingButton::onMouseDown(const osg::Vec2 &pos, int button)
     {
         Logger::info() << "Button clicked. Interpreting this as desire to quit the game for now.";
 
