@@ -10,16 +10,24 @@
 
 #include <string>
 
+#include <osgViewer/Viewer>
+
 #include "FilePath.h"
 #include "SrscFile.h"
 #include "db/TextureFactory.h"
 #include "db/AssetProvider.h"
 #include "db/Database.h"
+#include "gui/Cursor.h"
+#include "gui/MainMenu.h"
+#include "rfl/dragon/UserInterfaceProperties.h"
+#include "gui/WidgetIntersectVisitor.h"
 
 namespace od
 {
 
     class Engine;
+
+    class Widget;
 
     /**
      * Class for managing the game's GUI, as well as an interface for accessing the
@@ -29,7 +37,28 @@ namespace od
     {
     public:
 
-        GuiManager(Engine &engine, osg::Group *rootNode);
+        GuiManager(Engine &engine, osgViewer::Viewer *viewer);
+
+        inline Engine &getEngine() { return mEngine; }
+        inline bool isMenuMode() const { return mMenuMode; }
+
+        void quit();
+
+        osg::Vec2 getScreenResolution();
+
+        void addWidget(Widget *widget);
+        size_t getWidgetCount();
+        std::pair<int32_t, int32_t> getWidgetZRange();
+
+        void setMenuMode(bool b);
+        void setShowMainMenu(bool b);
+
+        void mouseDown();
+
+        /**
+         * @brief Positions cursor in screen space.
+         */
+        void setCursorPosition(const osg::Vec2 &pos);
 
         /**
          * @brief Localizes string with localization tag.
@@ -68,12 +97,26 @@ namespace od
         using AssetProvider::getSound;
 
         inline void _decryptString(char * const str, const size_t len);
+        void _setupGui();
 
         Engine &mEngine;
+        osg::ref_ptr<osgViewer::Viewer> mViewer;
         SrscFile mRrcFile;
         TextureFactory mTextureFactory;
         Database &mInterfaceDb;
+        bool mMenuMode;
 
+        osg::ref_ptr<osg::Camera> mGuiCamera;
+        osg::ref_ptr<osg::Group>  mGuiRoot;
+        std::deque<osg::ref_ptr<Widget>> mWidgets;
+        std::unique_ptr<odRfl::UserInterfaceProperties> mUserInterfacePropertiesInstance;
+        osg::Vec2 mCursorPosInNdc;
+        osg::ref_ptr<Cursor> mCursorWidget;
+        osg::ref_ptr<MainMenu> mMainMenuWidget;
+
+        osg::Matrix mWidgetToScreenSpaceXform; // FIXME: these are badly named. this goes from widget space to NDC, not screen space
+        osg::Matrix mScreenToWidgetSpaceXform;
+        osg::ref_ptr<WidgetIntersectVisitor> mWidgetIntersectVisitor;
     };
 
 }

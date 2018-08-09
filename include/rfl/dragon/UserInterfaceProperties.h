@@ -23,7 +23,7 @@ namespace odRfl
         virtual void probeFields(RflFieldProbe &probe) override;
 
 
-    protected:
+    //protected:
 
         RflModelRef     mInnerRing;
         RflModelRef     mOuterRing;

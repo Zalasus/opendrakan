@@ -16,22 +16,27 @@ namespace od
     : mVertexArray(new osg::Vec3Array(4))
     , mTextureCoordArray(new osg::Vec2Array(4))
     , mColorArray(new osg::Vec4Array(4))
-    , mTexture(new osg::Texture2D)
-    , mZCoord(1)
+    , mTexture(nullptr)
+    , mZCoord(0.0)
     {
         this->setVertexArray(mVertexArray);
-        this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
+
+        for(size_t i = 0; i < 4; ++i)
+        {
+            mColorArray->at(i) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        }
         this->setColorArray(mColorArray, osg::Array::BIND_PER_VERTEX);
 
         GLubyte elements[] = { 0, 2, 1, 1, 2, 3 };
         mDrawElements = new osg::DrawElementsUByte(GL_TRIANGLES, 6, elements);
         this->addPrimitiveSet(mDrawElements);
 
-        this->getOrCreateStateSet()->setTextureAttribute(0, mTexture);
-
         this->setDataVariance(osg::Object::DYNAMIC);
         this->setUseDisplayList(false);
         this->setUseVertexBufferObjects(true);
+
+        // set default texture coords spanning whole texture
+        setTextureCoords(osg::Vec2(0.0, 1.0), osg::Vec2(1.0, 0.0));
     }
 
     TexturedQuad::TexturedQuad(const TexturedQuad& quad, const osg::CopyOp &copyop)
@@ -44,6 +49,28 @@ namespace od
         mTexture = static_cast<osg::Texture2D*>(this->getOrCreateStateSet()->getTextureAttribute(0, osg::StateAttribute::TEXTURE));
     }
 
+    void TexturedQuad::setTextureImage(Texture *t)
+    {
+        if(t == nullptr && mTexture != nullptr)
+        {
+            this->getOrCreateStateSet()->removeTextureAttribute(0, mTexture);
+            mTexture = nullptr;
+
+            this->setTexCoordArray(0, nullptr);
+
+            return;
+
+        }else if(t != nullptr && mTexture == nullptr)
+        {
+            mTexture = new osg::Texture2D;
+            this->getOrCreateStateSet()->setTextureAttributeAndModes(0, mTexture);
+
+            this->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
+        }
+
+        mTexture->setImage(t);
+    }
+
     void TexturedQuad::setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
     {
         mTextureCoordArray->at(0) = topLeft;
@@ -52,10 +79,24 @@ namespace od
         mTextureCoordArray->at(3) = bottomRight;
     }
 
-    void TexturedQuad::setTexture(Texture *texture)
+    void TexturedQuad::setTextureCoordsFromPixels(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
     {
-        mTextureAsset = texture;
-        mTexture->setImage(texture);
+        if(mTexture->getImage() == nullptr)
+        {
+            return;
+        }
+
+        osg::Vec2 textureDimensions(mTexture->getImage()->s(), mTexture->getImage()->t());
+
+        osg::Vec2 tl(topLeft.x() + 0.5, topLeft.y() + 0.5);
+        tl = osg::componentDivide(tl, textureDimensions);
+        tl.y() = 1.0 - tl.y();
+
+        osg::Vec2 br(bottomRight.x() + 0.5, bottomRight.y() + 0.5);
+        br = osg::componentDivide(br, textureDimensions);
+        br.y() = 1.0 - br.y();
+
+        setTextureCoords(tl, br);
     }
 
     void TexturedQuad::setVertexCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
@@ -72,12 +113,20 @@ namespace od
     {
         mZCoord = z;
 
-        mVertexArray->at(0).z() = z;
-        mVertexArray->at(1).z() = z;
-        mVertexArray->at(2).z() = z;
-        mVertexArray->at(3).z() = z;
+        for(size_t i = 0; i < 4; ++i)
+        {
+            mVertexArray->at(i).z() = z;
+        }
 
         this->dirtyBound();
+    }
+
+    void TexturedQuad::setColor(const osg::Vec4 &color)
+    {
+        for(size_t i = 0; i < 4; ++i)
+        {
+            mColorArray->at(i) = color;
+        }
     }
 
 

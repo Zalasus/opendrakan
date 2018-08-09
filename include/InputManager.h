@@ -27,16 +27,24 @@ namespace od
 
 	private:
 
-		bool _keyDown(int key);
+		bool _keyDown(int key, osgGA::GUIActionAdapter &aa);
 		bool _keyUp(int key);
 		bool _mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
 		void _playerMoveForward(float speed);
 		void _playerMoveRight(float speed);
-
+		void _toggleMainMenu(osgGA::GUIActionAdapter &aa);
+		void _initCursor();
 
 		Engine &mEngine;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		bool mMouseWarped; // flag to prevent handling mouseMove events caused by warping cursor
+		osg::Vec2 mLastCursorPos;
+		osg::Vec2 mLastCursorPosNorm;
+		osg::Vec2 mLastGameCursorPos;
+        osg::Vec2 mLastGameCursorPosNorm;
+		osg::Vec2 mLastMenuCursorPos;
+        osg::Vec2 mLastMenuCursorPosNorm;
+
 	};
 
 }

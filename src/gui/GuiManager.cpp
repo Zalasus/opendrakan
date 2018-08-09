@@ -14,19 +14,138 @@
 
 #include "SrscRecordTypes.h"
 #include "Engine.h"
+#include "gui/TexturedQuad.h"
+#include "gui/WidgetGroup.h"
+#include "rfl/PrefetchProbe.h"
+#include "gui/HealthIndicator.h"
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
 namespace od
 {
 
-
-    GuiManager::GuiManager(Engine &engine, osg::Group *rootNode)
+    GuiManager::GuiManager(Engine &engine, osgViewer::Viewer *viewer)
     : mEngine(engine)
+    , mViewer(viewer)
     , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
     , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
+    , mMenuMode(false)
     {
+        _setupGui();
+
+        mWidgetIntersectVisitor = new WidgetIntersectVisitor(mWidgetToScreenSpaceXform, mScreenToWidgetSpaceXform);
+
+        setShowMainMenu(false);
+    }
+
+    void GuiManager::quit()
+    {
+        mViewer->setDone(true);
+    }
+
+    void GuiManager::mouseDown()
+    {
+        mWidgetIntersectVisitor->reset();
+        mWidgetIntersectVisitor->setPointInNdc(mCursorPosInNdc);
+        mGuiRoot->accept(*mWidgetIntersectVisitor);
+
+        const std::vector<WidgetHitInfo> &hitWidgets = mWidgetIntersectVisitor->getHitWidgets();
+        Logger::debug() << "Hit " << hitWidgets.size() << " widgets!";
+
+        for(auto it = hitWidgets.begin(); it != hitWidgets.end(); ++it)
+        {
+            it->widget->onMouseDown(it->hitPointInWidget, 0);
+        }
+    }
+
+    osg::Vec2 GuiManager::getScreenResolution()
+    {
+        if(mViewer == nullptr)
+        {
+            throw Exception("Could not access screen resolution. No viewer passed to GuiManager");
+        }
+
+        int width = 0;
+        int height = 0;
+        int dummy = 0;
+
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(windows.empty())
+        {
+            throw Exception("Could not access screen resolution. No windows found");
+        }
+
+        windows.back()->getWindowRectangle(dummy, dummy, width, height);
+
+        return osg::Vec2(width, height);
+    }
+
+    void GuiManager::addWidget(Widget *widget)
+    {
+        if(widget == nullptr || mGuiRoot == nullptr)
+        {
+            return;
+        }
+
+        mGuiRoot->addChild(widget);
+        mWidgets.push_back(osg::ref_ptr<Widget>(widget));
+
+        widget->setParent(nullptr);
+    }
+
+    size_t GuiManager::getWidgetCount()
+    {
+        return mWidgets.size();
+    }
+
+    std::pair<int32_t, int32_t> GuiManager::getWidgetZRange()
+    {
+        /*if(mWidgets.size() == 0)
+        {
+            return std::pair<int32_t, int32_t>(0, 0);
+        }
+
+        int32_t minZ = std::numeric_limits<int32_t>::max();
+        int32_t maxZ = std::numeric_limits<int32_t>::min();
+        for(auto it = mWidgets.begin(); it != mWidgets.end(); ++it)
+        {
+            int32_t z = (*it)->getZIndex();
+            minZ = std::min(minZ, z);
+            maxZ = std::max(maxZ, z);
+        }
+
+        return std::pair<int32_t, int32_t>(minZ, maxZ);*/
+
+        return std::pair<int32_t, int32_t>(-1000, 1000);
+    }
+
+    void GuiManager::setMenuMode(bool b)
+    {
+        mMenuMode = b;
+        mCursorWidget->setVisible(b);
+    }
+
+    void GuiManager::setShowMainMenu(bool b)
+    {
+        setMenuMode(b);
+        mMainMenuWidget->setVisible(b);
+    }
+
+    void GuiManager::setCursorPosition(const osg::Vec2 &pos)
+    {
+        if(mCursorWidget == nullptr)
+        {
+            return;
+        }
+
+        mCursorPosInNdc = pos;
+
+        // pos is in screen space, we need it in widget space
+        osg::Vec3 posWs = osg::Vec3(pos, 0.0) * mScreenToWidgetSpaceXform;
+
+        mCursorWidget->setPosition(osg::Vec2(posWs.x(), posWs.y()));
     }
 
     std::string GuiManager::localizeString(const std::string &s)
@@ -170,4 +289,88 @@ namespace od
         }
     }
 
+    void GuiManager::_setupGui()
+    {
+        if(mViewer == nullptr)
+        {
+            return;
+        }
+
+        mWidgetToScreenSpaceXform.makeIdentity();
+        mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, 1.0));
+        mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, -0.5));
+
+        mScreenToWidgetSpaceXform.invert(mWidgetToScreenSpaceXform);
+
+        mGuiCamera = new osg::Camera;
+        mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+        mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
+        mGuiCamera->setViewMatrix(mWidgetToScreenSpaceXform);
+        mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+        mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
+        mGuiCamera->setAllowEventFocus(false);
+
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(windows.empty())
+        {
+            throw Exception("Could not create secondary camera. No windows found");
+        }
+        mGuiCamera->setGraphicsContext(windows[0]);
+        mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
+
+        mGuiRoot = new WidgetGroup;
+
+        mGuiRoot->setCullingActive(false);
+        osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
+        ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
+        ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
+        ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+        ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+
+        mGuiCamera->addChild(mGuiRoot);
+        mViewer->addSlave(mGuiCamera, false);
+
+        mCursorWidget = new Cursor(*this);
+        mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
+        mCursorWidget->setZIndex(-1000);
+        this->addWidget(mCursorWidget);
+
+
+        // retrieve UserInterfaceProperties object
+        if(mInterfaceDb.getClassFactory() == nullptr)
+        {
+            throw Exception("Can not initialize user interface. Interface.db has no class container");
+        }
+
+        RecordId id = mInterfaceDb.getClassFactory()->findFirstClassOfType(0x0062); // FIXME: don't hardcode this here. retrieve it from the registrar or something
+        if(id == AssetRef::NULL_REF.assetId)
+        {
+            throw Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
+        }
+
+        osg::ref_ptr<Class> uiPropsClass = mInterfaceDb.getClass(id);
+        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
+        mUserInterfacePropertiesInstance.reset(dynamic_cast<odRfl::UserInterfaceProperties*>(uiPropsInstance.release()));
+        if(mUserInterfacePropertiesInstance == nullptr)
+        {
+            throw Exception("Could not cast or instantiate User Interface Properties instance");
+        }
+        mUserInterfacePropertiesInstance->loaded(mEngine, nullptr);
+
+        odRfl::PrefetchProbe probe(mInterfaceDb);
+        mUserInterfacePropertiesInstance->probeFields(probe);
+
+        mMainMenuWidget = new MainMenu(*this, mUserInterfacePropertiesInstance.get());
+        mMainMenuWidget->setOrigin(WidgetOrigin::Center);
+        mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
+        mMainMenuWidget->setZIndex(1);
+        this->addWidget(mMainMenuWidget);
+
+        HealthIndicator *hi = new HealthIndicator(*this);
+        hi->setOrigin(WidgetOrigin::BottomLeft);
+        hi->setPosition(0, 1);
+        hi->setZIndex(2);
+        this->addWidget(hi);
+    }
 }

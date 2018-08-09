@@ -9,6 +9,7 @@
 
 #include "Engine.h"
 #include "Player.h"
+#include "gui/GuiManager.h"
 
 namespace od
 {
@@ -18,15 +19,9 @@ namespace od
 	, mViewer(viewer)
 	, mMouseWarped(false)
 	{
-		mViewer->addEventHandler(this);
+	    _initCursor();
 
-		// hide cursor
-		osgViewer::Viewer::Windows windows;
-		viewer->getWindows(windows);
-		for(auto it = windows.begin(); it != windows.end(); ++it)
-		{
-			(*it)->setCursor(osgViewer::GraphicsWindow::NoCursor);
-		}
+		mViewer->addEventHandler(this);
 	}
 
 	bool InputManager::handle(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa, osg::Object *obj, osg::NodeVisitor *nv)
@@ -34,7 +29,7 @@ namespace od
         switch(ea.getEventType())
         {
         case osgGA::GUIEventAdapter::KEYDOWN:
-            return this->_keyDown(ea.getKey());
+            return this->_keyDown(ea.getKey(), aa);
         	break;
 
 		case osgGA::GUIEventAdapter::KEYUP:
@@ -46,6 +41,10 @@ namespace od
 			return this->_mouseMove(ea, aa);
 			break;
 
+		case osgGA::GUIEventAdapter::PUSH:
+		    mEngine.getGuiManager().mouseDown();
+		    return true;
+
         default:
             break;
         }
@@ -53,7 +52,7 @@ namespace od
         return false;
     }
 
-	bool InputManager::_keyDown(int key)
+	bool InputManager::_keyDown(int key, osgGA::GUIActionAdapter &aa)
 	{
 		switch(key)
 		{
@@ -74,8 +73,8 @@ namespace od
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_Escape:
-			mViewer->setDone(true);
-			break;
+		    _toggleMainMenu(aa);
+			return true;
 
 		default:
 			break;
@@ -111,6 +110,9 @@ namespace od
 
 	bool InputManager::_mouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
 	{
+	    mLastCursorPos.set(ea.getX(), ea.getY());
+	    mLastCursorPosNorm.set(ea.getXnormalized(), ea.getYnormalized());
+
 		if(mMouseWarped)
 		{
 			mMouseWarped = false;
@@ -125,22 +127,30 @@ namespace od
 		float x = ea.getXnormalized();
 		float y = ea.getYnormalized();
 
-		float pitch = ( M_PI/2) * y;
-		float yaw   = (-M_PI) * x;
+		// set cursor position regardless of menu mode so the cursor dos not jump upon opening a menu
+        mEngine.getGuiManager().setCursorPosition(osg::Vec2(x, y));
 
-		mEngine.getPlayer()->setPitch(pitch);
-		mEngine.getPlayer()->setYaw(yaw);
-
-		// wrap cursor when hitting left or right border
-		float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel
-		if(x <= -1 + epsilon || x >= 1 - epsilon)
+		if(!mEngine.getGuiManager().isMenuMode())
 		{
-			float newX = (x <= -1 + epsilon) ? (1 - 2*epsilon) : (-1 + 2*epsilon);
+		    // not menu mode. apply mouse movement to player view
 
-			float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
+		    float pitch = ( M_PI/2) * y;
+            float yaw   = (-M_PI) * x;
 
-			aa.requestWarpPointer(denormX, ea.getY());
-			mMouseWarped = true;
+            mEngine.getPlayer()->setPitch(pitch);
+            mEngine.getPlayer()->setYaw(yaw);
+
+            // wrap cursor when hitting left or right border
+            float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel
+            if(x <= -1 + epsilon || x >= 1 - epsilon)
+            {
+                float newX = (x <= -1 + epsilon) ? (1 - 2*epsilon) : (-1 + 2*epsilon);
+
+                float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
+
+                mMouseWarped = true;
+                aa.requestWarpPointer(denormX, ea.getY());
+            }
 		}
 
 		return true;
@@ -163,10 +173,71 @@ namespace od
 		}
 	}
 
+	void InputManager::_toggleMainMenu(osgGA::GUIActionAdapter &aa)
+	{
+        bool menuMode = mEngine.getGuiManager().isMenuMode();
+
+        if(menuMode)
+        {
+            // leaving menu mode
+            mLastMenuCursorPos = mLastCursorPos;
+            mLastMenuCursorPosNorm = mLastCursorPosNorm;
+
+            mLastCursorPos = mLastGameCursorPos;
+            mLastCursorPosNorm = mLastGameCursorPosNorm;
+
+        }else
+        {
+            // entering menu mode
+            mLastGameCursorPos = mLastCursorPos;
+            mLastGameCursorPosNorm = mLastCursorPosNorm;
+
+            mLastCursorPos = mLastMenuCursorPos;
+            mLastCursorPosNorm = mLastMenuCursorPosNorm;
+        }
+
+        mMouseWarped = true;
+        aa.requestWarpPointer(mLastCursorPos.x(), mLastCursorPos.y());
+        mEngine.getGuiManager().setCursorPosition(mLastCursorPosNorm);
+
+        mEngine.getGuiManager().setShowMainMenu(!menuMode);
+	}
+
+	void InputManager::_initCursor()
+	{
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(windows.empty())
+        {
+            throw Exception("Could not init cursor. No windows found");
+        }
+
+        // hide cursor
+        for(auto it = windows.begin(); it != windows.end(); ++it)
+        {
+            (*it)->setCursor(osgViewer::GraphicsWindow::NoCursor);
+        }
+
+        // init cursor positions to center of screen
+        int windowPosX;
+        int windowPosY;
+        int windowWidth;
+        int windowHeight;
+        windows.back()->getWindowRectangle(windowPosX, windowPosY, windowWidth, windowHeight);
+
+        float cursorX = windowPosX + windowWidth/2;
+        float cursorY = windowPosY + windowHeight/2;
+
+        mViewer->requestWarpPointer(cursorX, cursorY);
+
+        mLastCursorPos.set(cursorX, cursorY);
+        mLastCursorPosNorm.set(0, 0);
+        mLastMenuCursorPos.set(cursorX, cursorY);
+        mLastMenuCursorPosNorm.set(0, 0);
+        mLastGameCursorPos.set(cursorX, cursorY);
+        mLastGameCursorPosNorm.set(0, 0);
+	}
 }
-
-
-
 
 
 

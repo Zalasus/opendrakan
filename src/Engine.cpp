@@ -41,9 +41,24 @@ namespace od
 
 	    _findEngineRoot("Dragon.rrc");
 
-	    mRootNode = new osg::Group();
+	    mViewer = new osgViewer::Viewer;
+        mViewer->realize();
+        mViewer->setName("OpenDrakan");
+        mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
+        mViewer->setKeyEventSetsDone(0); // we handle the escape key ourselves
 
-	    mGuiManager.reset(new GuiManager(*this, mRootNode));
+        mRootNode = new osg::Group();
+        mViewer->setSceneData(mRootNode);
+
+        // set window title
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows);
+        if(!windows.empty())
+        {
+            windows.back()->setWindowName(mViewer->getName());
+        }
+
+	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
 	    mSetUp = true;
 	}
@@ -58,18 +73,6 @@ namespace od
 		if(!mSetUp)
 		{
 		    setUp();
-		}
-
-		mViewer = new osgViewer::Viewer;
-		mViewer->realize();
-		mViewer->setName("OpenDrakan");
-		mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-		mViewer->setSceneData(mRootNode);
-		osgViewer::Viewer::Windows windows;
-		mViewer->getWindows(windows);
-		if(!windows.empty())
-		{
-			windows.back()->setWindowName(mViewer->getName());
 		}
 
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =

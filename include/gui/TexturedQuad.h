@@ -32,10 +32,28 @@ namespace od
         //  it still isn't. So don't use META_Node here unless you want to break our CI.
         META_Object(od, TexturedQuad);
 
+        /**
+         * @brief Return osg::Texture object used. Might return nullptr if no texture has been set yet.
+         */
+        inline osg::Texture2D *getTexture() { return mTexture; }
+
+        /**
+         * @brief Set texture image to be used. Pass nullptr to disable texturing for this quad.
+         */
+        void setTextureImage(Texture *t);
+
         void setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
-        void setTexture(Texture *texture);
+        /**
+         * @brief Sets texture coordinates from image pixel coordinates.
+         *
+         * This will set the texture coordinates to be placed exactly at the specified pixels (including half pixel offset).
+         * The coordinate origin is at the top left corner, as is common in image processing.
+         * For this to work, an image asset must have been assigned to this TexturedQuad. Otherwise, the call will be ignored.
+         */
+        void setTextureCoordsFromPixels(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setVertexCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         void setZCoord(float z);
+        void setColor(const osg::Vec4 &color);
 
 
     private:
@@ -45,7 +63,6 @@ namespace od
         osg::ref_ptr<osg::Vec4Array> mColorArray;
         osg::ref_ptr<osg::DrawElementsUByte> mDrawElements;
         osg::ref_ptr<osg::Texture2D> mTexture;
-        osg::ref_ptr<Texture> mTextureAsset;
         float mZCoord;
     };
 

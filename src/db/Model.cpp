@@ -433,6 +433,8 @@ namespace od
 				osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
 				gb.build(newGeode);
 
+				mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
+
 				float minDistance = it->distanceThreshold;
 				float maxDistance = ((it+1) == mLodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
 				lodNode->addChild(newGeode, minDistance, maxDistance);
@@ -449,6 +451,8 @@ namespace od
 
 			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
 			gb.build(newGeode);
+
+			mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
 
 			this->addChild(newGeode);
 		}
