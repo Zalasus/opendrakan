@@ -36,6 +36,12 @@ namespace od
 		std::vector<BoneAffection> boneAffections;
 	};
 
+	enum class ModelShadingType
+	{
+	    None,
+	    Flat,
+	    Smooth
+	};
 
 	class ModelFactory;
 
@@ -52,6 +58,7 @@ namespace od
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 		inline bool isCharacter() const { return mSkeletonBuilder != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
+		inline ModelShadingType getShadingType() const { return mShadingType; }
 
 		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
 		void loadVertices(ModelFactory &factory, DataReader &&dr);
@@ -72,6 +79,11 @@ namespace od
 	private:
 
 		std::string mModelName;
+		ModelShadingType mShadingType;
+		bool mBlendWithLandscape;
+		bool mShiny;
+		bool mUseAdditiveBlending;
+		bool mEnvironmentMapped;
 		std::vector<osg::Vec3f> mVertices;
 		std::vector<AssetRef> mTextureRefs;
 		std::vector<Polygon> mPolygons;

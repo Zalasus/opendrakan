@@ -28,6 +28,11 @@ namespace od
 	Model::Model(AssetProvider &ap, RecordId modelId)
 	: Asset(ap, modelId)
 	, mModelName("")
+	, mShadingType(ModelShadingType::None)
+	, mBlendWithLandscape(false)
+	, mShiny(false)
+	, mUseAdditiveBlending(false)
+	, mEnvironmentMapped(false)
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
@@ -37,11 +42,28 @@ namespace od
 	void Model::loadNameAndShading(ModelFactory &factory, DataReader &&dr)
 	{
 		dr >> mModelName;
+		this->setName(mModelName);
 
 		uint32_t shadingType;
 		dr >> shadingType;
+		if((shadingType & 0x02) && !(shadingType & 0x01))
+		{
+		    mShadingType = ModelShadingType::Smooth;
 
-		this->setName(mModelName);
+		}else if((shadingType & 0x01) && !(shadingType & 0x02))
+		{
+		    mShadingType = ModelShadingType::Flat;
+
+		}else
+		{
+		    // if none or both flags are set, disable shading (the latter case as a failsafe)
+		    mShadingType = ModelShadingType::None;
+		}
+
+		mEnvironmentMapped = shadingType & 0x20;
+        mUseAdditiveBlending = shadingType & 0x10;
+        mShiny = shadingType & 0x08;
+        mBlendWithLandscape = shadingType & 0x04;
 	}
 
 	void Model::loadVertices(ModelFactory &factory, DataReader &&dr)
