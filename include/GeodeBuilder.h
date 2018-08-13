@@ -51,6 +51,9 @@ namespace od
 
 		GeodeBuilder(const std::string &modelName, AssetProvider &assetProvider);
 
+		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
+		inline void setModelColor(const osg::Vec4 &color) { mColors->at(0) = color; }
+
 		void setVertexVector(std::vector<osg::Vec3f>::iterator begin, std::vector<osg::Vec3f>::iterator end);
 		void setPolygonVector(std::vector<Polygon>::iterator begin, std::vector<Polygon>::iterator end);
 		void setBoneAffectionVector(std::vector<BoneAffection>::iterator begin, std::vector<BoneAffection>::iterator end);
@@ -77,12 +80,14 @@ namespace od
 		// arrays for the shared VBO. IBOs are uniquely generated per geometry.
 		osg::ref_ptr<osg::Vec3Array> mVertices;
 		osg::ref_ptr<osg::Vec3Array> mNormals;
+		osg::ref_ptr<osg::Vec4Array> mColors;
 		osg::ref_ptr<osg::Vec2Array> mUvCoords;
 		osg::ref_ptr<osg::Vec4Array> mBoneWeights;
 		osg::ref_ptr<osg::Vec4Array> mBoneIndices; // NOTE: this was an unsigned int vector before. turns out OSG somehow fails
 												   //  to upload that to the shader. or maybe the shader can't handle it. anyhow
 												   //  it took me like 10 hours to debug that shit. don't change it!
 		bool mClampTextures;
+		bool mSmoothNormals;
 		std::vector<Triangle> mTriangles;
 	};
 

@@ -20,8 +20,11 @@ namespace od
 	GeodeBuilder::GeodeBuilder(const std::string &modelName, AssetProvider &assetProvider)
 	: mModelName(modelName)
 	, mAssetProvider(assetProvider)
+	, mColors(new osg::Vec4Array(1))
 	, mClampTextures(false)
+	, mSmoothNormals(true)
 	{
+	    mColors->at(0).set(1.0, 1.0, 1.0, 1.0);
 	}
 
 	void GeodeBuilder::setVertexVector(std::vector<osg::Vec3f>::iterator begin, std::vector<osg::Vec3f>::iterator end)
@@ -173,7 +176,8 @@ namespace od
 
 				// shared VBOs
 				geom->setVertexArray(mVertices);
-				geom->setNormalArray(mNormals);
+				geom->setNormalArray(mNormals, osg::Array::BIND_PER_VERTEX);
+				geom->setColorArray(mColors, osg::Array::BIND_OVERALL);
 				geom->setTexCoordArray(0, mUvCoords);
 				if(mBoneIndices != nullptr && mBoneWeights != nullptr)
 				{
@@ -228,6 +232,8 @@ namespace od
 		// calculate normals per triangle, sum them up for each vertex and normalize them in the end
 		//  TODO: perhaps consider maximum crease here?
 
+	    std::vector<bool> visited(mVertices->size(), false);
+
 		mNormals = new osg::Vec3Array;
 		mNormals->resize(mVertices->size(), osg::Vec3(0,0,0));
 
@@ -237,9 +243,31 @@ namespace od
 			osg::Vec3 normal =   (mVertices->at(it->vertexIndices[2]) - mVertices->at(it->vertexIndices[0]))
 							   ^ (mVertices->at(it->vertexIndices[1]) - mVertices->at(it->vertexIndices[0]));
 
-			mNormals->at(it->vertexIndices[0]) += normal;
-			mNormals->at(it->vertexIndices[1]) += normal;
-			mNormals->at(it->vertexIndices[2]) += normal;
+			for(size_t i = 0; i < 3; ++i)
+			{
+			    size_t &vertIndex = it->vertexIndices[i];
+
+			    if(mSmoothNormals || !visited[vertIndex])
+			    {
+			        mNormals->at(vertIndex) += normal;
+                    visited[vertIndex] = true;
+
+			    }else
+			    {
+			        // shared vertex. for flat shading, normals can't be shared among primitives -> duplicate
+                    mVertices->push_back(mVertices->at(vertIndex));
+                    mNormals->push_back(normal);
+
+                    // if there is bone affection info, duplicate that too
+                    if(mBoneIndices != nullptr && mBoneIndices->size() > vertIndex)
+                    {
+                        mBoneIndices->push_back(mBoneIndices->at(vertIndex));
+                        mBoneWeights->push_back(mBoneWeights->at(vertIndex));
+                    }
+
+                    vertIndex = mVertices->size() - 1;
+			    }
+			}
 		}
 
 		for(auto it = mNormals->begin(); it != mNormals->end(); ++it)

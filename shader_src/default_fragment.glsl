@@ -14,5 +14,5 @@ void main(void)
 {
     vec4 texelColor = texture2D(texture0, texCoord.xy);
 
-    gl_FragColor = texelColor;
+    gl_FragColor = texelColor * vertexColor;
 }

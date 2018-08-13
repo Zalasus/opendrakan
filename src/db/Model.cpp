@@ -433,6 +433,7 @@ namespace od
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
 				GeodeBuilder gb(it->lodName, this->getAssetProvider());
+				gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 				gb.setClampTextures(false);
 
 				// the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
@@ -467,6 +468,7 @@ namespace od
 		}else
 		{
 			GeodeBuilder gb(mModelName, this->getAssetProvider());
+			gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 			gb.setClampTextures(false);
 			gb.setVertexVector(mVertices.begin(), mVertices.end());
 			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
