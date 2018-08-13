@@ -73,7 +73,7 @@ namespace od
 		};
 
 		void _buildNormals();
-		void _buildFlatNormals();
+		void _makeIndicesUniqueAndGenerateUvs();
 		void _disambiguateAndGenerateUvs();
 
 		std::string mModelName;

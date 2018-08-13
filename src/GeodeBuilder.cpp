@@ -155,8 +155,16 @@ namespace od
 			throw Exception("Need to add vertex vector to GeodeBuilder before building");
 		}
 
-		_buildNormals();
-		_disambiguateAndGenerateUvs();
+		if(mSmoothNormals)
+		{
+		    _buildNormals();
+		    _disambiguateAndGenerateUvs();
+
+		}else
+		{
+		    _makeIndicesUniqueAndGenerateUvs();
+		    _buildNormals();
+		}
 
 		// sort by texture. most models are already sorted, so this is O(n) most of the time
 		auto pred = [](Triangle &left, Triangle &right){ return left.texture < right.texture; };
@@ -233,8 +241,6 @@ namespace od
 		// calculate normals per triangle, sum them up for each vertex and normalize them in the end
 		//  TODO: perhaps consider maximum crease here?
 
-	    std::vector<bool> visited(mVertices->size(), false);
-
 		mNormals = new osg::Vec3Array;
 		mNormals->resize(mVertices->size(), osg::Vec3(0,0,0));
 
@@ -249,27 +255,7 @@ namespace od
 			for(size_t i = 0; i < 3; ++i)
 			{
 			    size_t &vertIndex = it->vertexIndices[i];
-
-			    if(mSmoothNormals || !visited[vertIndex])
-			    {
-			        mNormals->at(vertIndex) += normal;
-                    visited[vertIndex] = true;
-
-			    }else
-			    {
-			        // shared vertex. for flat shading, normals can't be shared among primitives -> duplicate
-                    mVertices->push_back(mVertices->at(vertIndex));
-                    mNormals->push_back(normal);
-
-                    // if there is bone affection info, duplicate that too
-                    if(mBoneIndices != nullptr && mBoneIndices->size() > vertIndex)
-                    {
-                        mBoneIndices->push_back(mBoneIndices->at(vertIndex));
-                        mBoneWeights->push_back(mBoneWeights->at(vertIndex));
-                    }
-
-                    vertIndex = mVertices->size() - 1;
-			    }
+                mNormals->at(vertIndex) += normal;
 			}
 		}
 
@@ -279,14 +265,52 @@ namespace od
 		}
 	}
 
-	void GeodeBuilder::_buildFlatNormals()
+	void GeodeBuilder::_makeIndicesUniqueAndGenerateUvs()
 	{
-	    for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
-        {
-            // note: Drakan uses CW orientation!
-            osg::Vec3 normal =   (mVertices->at(it->vertexIndices[2]) - mVertices->at(it->vertexIndices[0]))
-                               ^ (mVertices->at(it->vertexIndices[1]) - mVertices->at(it->vertexIndices[0]));
+	    // for flat shading, we can't use shared vertices. this method will duplicate all shared vertices
+	    //  since that makes disambiguating UVs unnecessary, we create the UV array here, too.
 
+	    std::vector<bool> visited(mVertices->size(), false);
+
+        for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
+        {
+            for(size_t vn = 0; vn < 3; ++vn)
+            {
+                size_t &vertIndex = it->vertexIndices[vn];
+
+                if(!visited[vertIndex])
+                {
+                    visited[vertIndex] = true;
+
+                }else
+                {
+                    // vertex is shared. duplicate it
+                    mVertices->push_back(mVertices->at(vertIndex));
+
+                    // if there is bone affection info, duplicate that too
+                    if(mBoneIndices != nullptr && mBoneIndices->size() > vertIndex)
+                    {
+                        mBoneIndices->push_back(mBoneIndices->at(vertIndex));
+                        mBoneWeights->push_back(mBoneWeights->at(vertIndex));
+                    }
+
+                    // lastly, make sure the triangle uses that new vertex
+                    vertIndex = mVertices->size() - 1;
+                }
+            }
+        }
+
+        // generating the UV array is straightforward now that no vertices are shared anymore
+        mUvCoords = new osg::Vec2Array;
+        mUvCoords->resize(mVertices->size(), osg::Vec2f(0, 0));
+        for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
+        {
+            for(size_t vn = 0; vn < 3; ++vn)
+            {
+                size_t vertIndex = it->vertexIndices[vn];
+
+                mUvCoords->at(vertIndex) = it->uvCoords[vn];
+            }
         }
 	}
 
