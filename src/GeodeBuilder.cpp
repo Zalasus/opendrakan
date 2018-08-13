@@ -23,6 +23,7 @@ namespace od
 	, mColors(new osg::Vec4Array(1))
 	, mClampTextures(false)
 	, mSmoothNormals(true)
+	, mNormalsFromCcw(false)
 	{
 	    mColors->at(0).set(1.0, 1.0, 1.0, 1.0);
 	}
@@ -239,9 +240,11 @@ namespace od
 
 		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
 		{
-			// note: Drakan uses CW orientation!
+			// note: Drakan uses CW orientation by default
 			osg::Vec3 normal =   (mVertices->at(it->vertexIndices[2]) - mVertices->at(it->vertexIndices[0]))
 							   ^ (mVertices->at(it->vertexIndices[1]) - mVertices->at(it->vertexIndices[0]));
+
+			if(mNormalsFromCcw) normal *= -1;
 
 			for(size_t i = 0; i < 3; ++i)
 			{
@@ -274,6 +277,17 @@ namespace od
 		{
 			it->normalize();
 		}
+	}
+
+	void GeodeBuilder::_buildFlatNormals()
+	{
+	    for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
+        {
+            // note: Drakan uses CW orientation!
+            osg::Vec3 normal =   (mVertices->at(it->vertexIndices[2]) - mVertices->at(it->vertexIndices[0]))
+                               ^ (mVertices->at(it->vertexIndices[1]) - mVertices->at(it->vertexIndices[0]));
+
+        }
 	}
 
 	void GeodeBuilder::_disambiguateAndGenerateUvs()

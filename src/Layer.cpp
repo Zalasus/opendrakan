@@ -132,6 +132,7 @@ namespace od
 
         GeodeBuilder gb("layer " + mLayerName, mLevel);
         gb.setClampTextures(true);
+        gb.setNormalsFromCcw(true);
 
         std::vector<osg::Vec3> vertices; // TODO: use internal vectors of GeodeBuilder. here we create two redundant vectors
         vertices.reserve(mVertices.size());
@@ -156,8 +157,7 @@ namespace od
             Polygon poly;
         	poly.vertexCount = 3;
         	poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
-        	poly.doubleSided = false; // since for "between"-layers, all polys are double sided it is probably
-        	                          //  more efficient to just deactivate face culling for them
+        	poly.doubleSided = (mType == TYPE_BETWEEN);
 
         	if(poly.texture.isNullLayerTexture())
         	{
@@ -225,6 +225,13 @@ namespace od
                 }
             }
 
+            if(mType == TYPE_CEILING)
+            {
+                // swap two vertices, thus reversing the winding order
+                std::swap(poly.vertexIndices[0], poly.vertexIndices[1]);
+                std::swap(poly.uvCoords[0], poly.uvCoords[1]);
+            }
+
             polygons.push_back(poly);
         }
         gb.setPolygonVector(polygons.begin(), polygons.end());
@@ -234,20 +241,6 @@ namespace od
         mLayerGeode->setNodeMask(NodeMasks::Layer);
         gb.build(mLayerGeode);
         layerGroup->addChild(mLayerGeode);
-
-        if(mType == TYPE_FLOOR)
-        {
-        	mLayerGeode->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::COUNTER_CLOCKWISE), osg::StateAttribute::ON);
-
-        }else if(mType == TYPE_CEILING)
-		{
-			mLayerGeode->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
-
-		}else if(mType == TYPE_BETWEEN)
-		{
-			// so both faces get rendered. that's what this "between" is, right?
-			mLayerGeode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
-		}
     }
 
     btCollisionShape *Layer::getCollisionShape()

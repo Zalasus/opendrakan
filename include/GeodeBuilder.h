@@ -53,6 +53,7 @@ namespace od
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setModelColor(const osg::Vec4 &color) { mColors->at(0) = color; }
+		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
 
 		void setVertexVector(std::vector<osg::Vec3f>::iterator begin, std::vector<osg::Vec3f>::iterator end);
 		void setPolygonVector(std::vector<Polygon>::iterator begin, std::vector<Polygon>::iterator end);
@@ -72,6 +73,7 @@ namespace od
 		};
 
 		void _buildNormals();
+		void _buildFlatNormals();
 		void _disambiguateAndGenerateUvs();
 
 		std::string mModelName;
@@ -88,6 +90,7 @@ namespace od
 												   //  it took me like 10 hours to debug that shit. don't change it!
 		bool mClampTextures;
 		bool mSmoothNormals;
+		bool mNormalsFromCcw;
 		std::vector<Triangle> mTriangles;
 	};
 
