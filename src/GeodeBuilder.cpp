@@ -170,13 +170,54 @@ namespace od
 		auto pred = [](Triangle &left, Triangle &right){ return left.texture < right.texture; };
 		std::sort(mTriangles.begin(), mTriangles.end(), pred);
 
-		osg::ref_ptr<osg::Geometry> geom;
-		osg::ref_ptr<osg::DrawElementsUInt> drawElements;
+		// count number of unique textures
 		AssetRef lastTexture = AssetRef::NULL_REF;
+		size_t textureCount = 0;
+		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
+        {
+		    if(lastTexture == AssetRef::NULL_REF || lastTexture != it->texture)
+		    {
+		        lastTexture = it->texture;
+		        ++textureCount;
+		    }
+        }
+
+		// count number of triangles per texture.
+        //  this will allow us to preallocate the IBO array as well as pick between int/short/byte arrays
+		lastTexture = AssetRef::NULL_REF;
+		size_t textureIndex = 0;
+        std::vector<size_t> triangleCountsPerTexture(textureCount, 0);
+        for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
+        {
+            if(lastTexture == AssetRef::NULL_REF)
+            {
+                lastTexture = it->texture;
+            }
+
+            if(lastTexture != it->texture)
+            {
+                lastTexture = it->texture;
+                textureIndex++;
+            }
+
+            triangleCountsPerTexture[textureIndex]++;
+        }
+
+		osg::ref_ptr<osg::Geometry> geom;
+		osg::ref_ptr<osg::DrawElements> drawElements;
+		lastTexture = AssetRef::NULL_REF;
+		textureIndex = 0;
 		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
 		{
 			if(lastTexture != it->texture || geom == nullptr)
 			{
+			    if(geom != nullptr)
+			    {
+			        assert(drawElements->getNumIndices() == triangleCountsPerTexture[textureIndex]*3);
+
+			        ++textureIndex;
+			    }
+
 				geom = new osg::Geometry;
 				geode->addDrawable(geom);
 
@@ -195,8 +236,29 @@ namespace od
 					geom->setVertexAttribArray(OD_ATTRIB_WEIGHT_LOCATION, mBoneWeights, osg::Array::BIND_PER_VERTEX);
 				}
 
-				// IBO unique per geometry/texture
-				drawElements = new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES); // TODO: reserve indices to reduce reallocation
+				// create unique IBO array. select index size best suited for count of verts to save memory.
+				//  Important! make element size decision based on total vertex count! we share the VBO and need indices
+				//  that can address all vertices, even if we use only part of the vertex array for each geometry
+				size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
+				if(mVertices->size() <= 0xff)
+				{
+				    osg::ref_ptr<osg::DrawElementsUByte> drawElementsUbyte = new osg::DrawElementsUByte(osg::PrimitiveSet::TRIANGLES);
+                    drawElementsUbyte->reserve(vertsForThisTexture);
+                    drawElements = drawElementsUbyte;
+
+				}else if(mVertices->size() <= 0xffff)
+				{
+
+				    osg::ref_ptr<osg::DrawElementsUShort> drawElementsUshort = new osg::DrawElementsUShort(osg::PrimitiveSet::TRIANGLES);
+                    drawElementsUshort->reserve(vertsForThisTexture);
+                    drawElements = drawElementsUshort;
+
+				}else
+				{
+				    osg::ref_ptr<osg::DrawElementsUInt> drawElementsUint = new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES);
+				    drawElementsUint->reserve(vertsForThisTexture);
+				    drawElements = drawElementsUint;
+				}
 				geom->addPrimitiveSet(drawElements);
 
 				// texture also unique per geometry
@@ -231,7 +293,7 @@ namespace od
 
 			for(size_t vn = 0; vn < 3; ++vn)
 			{
-				drawElements->push_back(it->vertexIndices[vn]);
+				drawElements->addElement(it->vertexIndices[vn]);
 			}
 		}
 	}
