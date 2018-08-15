@@ -116,6 +116,20 @@ namespace odRfl
     typedef RflPOD<   float,   RflField::FLOAT>      RflFloat;
     typedef RflPOD<uint32_t, RflField::CHAR_CHANNEL> RflCharChannel;
 
+    class RflColor : public RflPOD<uint32_t, RflField::COLOR>
+    {
+    public:
+
+        RflColor(uint32_t i) : RflPOD<uint32_t, RflField::COLOR>(i) { }
+
+        inline uint8_t red() const { return (mValue >> 24) & 0xff; }
+        inline uint8_t green() const { return (mValue >> 16) & 0xff; }
+        inline uint8_t blue() const { return (mValue >> 8) & 0xff; }
+        inline uint8_t alpha() const { return mValue & 0xff; }
+        inline osg::Vec4 asColorVector() const { return osg::Vec4(red()/255.0, green()/255.0, blue()/255.0, alpha()/255.0); }
+
+    };
+
 
 	template <typename _EnumType, uint32_t _MinValue = std::numeric_limits<uint32_t>::min(), uint32_t _MaxValue = std::numeric_limits<uint32_t>::max()>
     class RflEnumImpl : public RflField

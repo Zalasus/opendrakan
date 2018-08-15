@@ -70,6 +70,7 @@ set(SOURCES
         "src/rfl/dragon/UserInterfaceProperties.cpp"
         "src/rfl/dragon/AnimationDemo.cpp"
         "src/rfl/dragon/VisibilityToggler.cpp"
+        "src/rfl/dragon/StaticLight.cpp"
         "src/anim/Animator.cpp"
         "src/anim/MotionAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"
