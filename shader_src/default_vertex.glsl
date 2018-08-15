@@ -7,15 +7,34 @@ varying vec3 vertexNormal;
 varying vec4 vertexColor;
 varying vec2 texCoord;
 
+uniform mat4 osg_ViewMatrix;
+
+/*struct gl_LightSourceParameters { 
+    vec4  ambient; 
+    vec4  diffuse; 
+    vec4  specular; 
+    vec4  position; 
+    vec4  halfVector; 
+    vec3  spotDirection; 
+    float  spotExponent; 
+    float  spotCutoff; 
+    float  spotCosCutoff; 
+    float  constantAttenuation; 
+    float  linearAttenuation; 
+    float  quadraticAttenuation; 
+};
+
+uniform gl_LightSourceParameters gl_LightSource[gl_MaxLights]; */
+
 void main(void)
 {
-    vec4 lightColor = vec4(1.0, 0.95, 0.9, 1.0);
-    float lightPower = 1.0;
-    float ambientFactor = 0.2;
-    vec3 lightPosition = vec3(109.0, 100.0, 79.0);
+     vec4 lightColor = vec4(1.0, 0.95, 0.9, 1.0);
+     float lightPower = 1.0;
+     float ambientFactor = 0.2;
+     vec3 lightPosition = vec3(109.0, 100.0, 79.0);
 
     vec3 vertex_cs = (gl_ModelViewMatrix * gl_Vertex).xyz;
-    vec3 lightPos_cs = (gl_ModelViewMatrix * vec4(lightPosition, 1.0)).xyz;
+    vec3 lightPos_cs = (osg_ViewMatrix * vec4(lightPosition, 1.0)).xyz;
     vec3 lightDir_cs = lightPos_cs - vertex_cs;
     float distance = length(lightDir_cs);
     lightDir_cs = normalize(lightDir_cs);
