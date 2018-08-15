@@ -233,6 +233,8 @@ namespace odRfl
             return mReferencedAsset;
         }
 
+        od::AssetRef getAssetRef() const { return mReference; }
+
 	protected:
 
         od::AssetRef mReference;
