@@ -8,6 +8,8 @@
 #include "rfl/dragon/StaticLight.h"
 
 #include "rfl/Rfl.h"
+#include "LevelObject.h"
+#include "Engine.h"
 
 namespace odRfl
 {
@@ -33,6 +35,16 @@ namespace odRfl
 
     void StaticLight::spawned(od::LevelObject &obj)
     {
+        mLightHandle = obj.getLevel().getEngine().getLightManager().addLight(&obj);
+        if(mLightHandle == nullptr)
+        {
+            Logger::error() << "Static Light failed to add light object to the scene";
+            return;
+        }
+
+        mLightHandle->setDiffuseColor(mColor.asColorVector());
+        mLightHandle->setIntensity(mIntensityScaling);
+        mLightHandle->setRadius(mRadius);
     }
 
 

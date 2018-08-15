@@ -85,6 +85,8 @@ set(SOURCES
         "src/gui/CrystalRingButton.cpp"
         "src/gui/HealthIndicator.cpp"
         "src/gui/WidgetIntersectVisitor.cpp"
+        "src/light/LightManager.cpp"
+        "src/light/Light.cpp"
         "src/Layer.cpp"
         "src/OsgSerializers.cpp"
         "src/DbManager.cpp"

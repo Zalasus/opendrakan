@@ -60,6 +60,8 @@ namespace od
 
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
+	    mLightManager.reset(new LightManager(*this, mRootNode));
+
 	    mSetUp = true;
 	}
 

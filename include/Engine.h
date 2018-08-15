@@ -15,6 +15,7 @@
 #include "DbManager.h"
 #include "ShaderManager.h"
 #include "InputManager.h"
+#include "light/LightManager.h"
 #include "Level.h"
 
 namespace od
@@ -39,6 +40,7 @@ namespace od
 		inline DbManager &getDbManager() { return mDbManager; }
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
 		inline GuiManager &getGuiManager() { return *mGuiManager; }
+		inline LightManager &getLightManager() { return *mLightManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return mPlayer; }
         inline void setPlayer(Player *p) { mPlayer = p; }
@@ -59,6 +61,7 @@ namespace od
 		ShaderManager mShaderManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<GuiManager> mGuiManager;
+		std::unique_ptr<LightManager> mLightManager;
 		FilePath mInitialLevelFile;
 		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;

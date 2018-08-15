@@ -11,6 +11,8 @@
 #include "rfl/RflClass.h"
 #include "rfl/RflField.h"
 
+#include "light/Light.h"
+
 namespace odRfl
 {
 
@@ -32,6 +34,7 @@ namespace odRfl
         RflTextureRef   mLightMap;
         RflEnum         mQualityLevelRequired;
 
+        osg::ref_ptr<od::Light> mLightHandle;
     };
 
 }
