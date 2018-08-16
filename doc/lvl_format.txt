@@ -24,8 +24,8 @@ SRSC file (see riot_database_format.txt) with the following record types:
         float       world_height;
         string      layer_name;
         uint32      flags; // 2 = member of alternate blending group
-        float       light_direction;
-        float       light_ascension;
+        float       light_direction; // in radians. east to west is 0, north to south is 0.5*pi etc.
+        float       light_ascension; // in radians. horizontal is 0, straight down is 0.5*pi, straight up is -0.5*pi
         color4b     light_color;
         color4b     ambient_color;
         uint32      light_dropoff_type; // 0 = none; 1 = from north to south; 2 = E->W; 3 = S->N; 4 = W->E
