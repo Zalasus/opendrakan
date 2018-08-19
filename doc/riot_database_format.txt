@@ -608,13 +608,11 @@ Texture format
 
     32 bpp
     ------
-        GGGGGGGG BBBBBBBB XXXXXXXX RRRRRRRRR
+        RRRRRRRR GGGGGGGG BBBBBBBB XXXXXXXX
+         Byte 0   Byte 1   Byte 2   Byte 3
         
-        X is unused. Note that this is not adjusted for any byte order!
-        Even when adjusted, this order makes little sense. Probably this feature hadn't much work put into it.
-        When trying to make a 8:8:8+8 alpha channel texture, the editor reports "not yet implemented". While 32bpp textures with
-        no alpha channel can be created, it is doubtful that any of these will ever occur. I couldn't find 32bpp textures in any
-        of the Drakan databases.
+        Note that this is not adjusted for any byte order! X is unused, but may be alpha.
+        32 bit textures with alpha can't be created using the editor (reports them as being "unimplemented").
 
 
 Class format

@@ -81,6 +81,11 @@ namespace od
         	throw UnsupportedException("Alpha maps unsupported right now");
         }
 
+        if(mBitsPerPixel == 32 && mAlphaBitsPerPixel != 0 && mAlphaBitsPerPixel != 8)
+        {
+            Logger::warn() << "Found 32 bit texture with alpha channel bit depth that is not 8 bits. This is unimplemented. Gonna ignore alpha channel";
+        }
+
         // take apart color key so we can compare it more efficiently
         bool hasColorKey = (mColorKey != 0xffffffff);
         uint8_t keyRed   = (mColorKey & 0xff0000) >> 16;
@@ -184,15 +189,17 @@ namespace od
 
         }else if(mBitsPerPixel == 32)
         {
-            pixelReaderFunc = [&zdr](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
+            pixelReaderFunc = [&zdr, this](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
-                // i know, this format makes little sense
-                zdr >> green
+                zdr >> red
+                    >> green
                     >> blue
-                    >> DataReader::Ignore(1)
-                    >> red;
+                    >> alpha;
 
-                alpha = OD_TEX_OPAQUE_ALPHA;
+                if(mAlphaBitsPerPixel != 8)
+                {
+                    alpha = OD_TEX_OPAQUE_ALPHA;
+                }
             };
 
         }else
