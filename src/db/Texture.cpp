@@ -81,9 +81,14 @@ namespace od
         	throw UnsupportedException("Alpha maps unsupported right now");
         }
 
-        if(mBitsPerPixel == 32 && mAlphaBitsPerPixel != 0 && mAlphaBitsPerPixel != 8)
+        if(mBitsPerPixel == 32)
         {
-            Logger::warn() << "Found 32 bit texture with alpha channel bit depth that is not 8 bits. This is unimplemented. Gonna ignore alpha channel";
+            Logger::warn() << "Found 32 bit texture. The used byte order of these varies between editor and engine. Colors may be garbled";
+
+            if(mAlphaBitsPerPixel != 0 && mAlphaBitsPerPixel != 8)
+            {
+                Logger::warn() << "  That texture has an alpha channel bit depth that is not 8 bits. This is unimplemented. Gonna ignore alpha channel";
+            }
         }
 
         // take apart color key so we can compare it more efficiently
@@ -191,9 +196,12 @@ namespace od
         {
             pixelReaderFunc = [&zdr, this](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
-                zdr >> red
+                // FIXME: the byte order created by the editor's convert function is RBGA, the one expected by the engine seemsto be BGRA.
+                //   As these textures are unused and can generally be considered unsupported by the engine, I won't bother with
+                //   this issue right now.
+                zdr >> blue
+                    >> red
                     >> green
-                    >> blue
                     >> alpha;
 
                 if(mAlphaBitsPerPixel != 8)

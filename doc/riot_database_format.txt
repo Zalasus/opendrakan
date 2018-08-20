@@ -608,6 +608,9 @@ Texture format
 
     32 bpp
     ------
+    
+        As written by the editor's 'convert'-function:
+        
         RRRRRRRR GGGGGGGG BBBBBBBB XXXXXXXX
          Byte 0   Byte 1   Byte 2   Byte 3
         
