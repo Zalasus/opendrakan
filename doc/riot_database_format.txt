@@ -251,7 +251,8 @@ Record types
     [0x0200] Model name ( this one is always the first record in the directory with the model's ID)
         string      model_name;
         uint32      shading_type; // 0x01=flat, 0x02=smooth, 0x04=blend with landscape , 0x08=shiny, 0x10=additive blend, 0x20=environment mapped, 0x8000 seems always set
-            
+                                  //   additive blending is selectable even when no shading is used, but only applied when shading is at least flat
+                                  
     [0x0201] Model group definition
         string      group_name;
 
