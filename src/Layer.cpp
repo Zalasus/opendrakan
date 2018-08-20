@@ -253,10 +253,10 @@ namespace od
         mLayerLight->setConstantAttenuation(1.0); // this gives us a constant light intensity
         mLayerLight->setLinearAttenuation(0.0);
         mLayerLight->setQuadraticAttenuation(0.0);
-        osg::Quat lightAscQuat(mLightAscension, osg::Vec3(0, 0, 1));
-        osg::Quat lightDirQuat(mLightDirection, osg::Vec3(0, 1, 0));
-        osg::Vec3 lightDirection = lightDirQuat * (lightAscQuat * osg::Vec3(-1, 0, 0));
-        mLayerLight->setPosition(osg::Vec4(lightDirection, 0.0)); // w=0 makes this a directional light
+
+        osg::Vec3 lightPositionHomogeneous(std::cos(mLightDirection), std::sin(mLightAscension), -std::sin(mLightDirection));
+        lightPositionHomogeneous.normalize();
+        mLayerLight->setPosition(osg::Vec4(lightPositionHomogeneous, 0.0)); // w=0 makes this a directional light in homogeneous coords
     }
 
     btCollisionShape *Layer::getCollisionShape()
