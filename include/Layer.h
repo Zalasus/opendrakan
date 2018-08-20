@@ -11,6 +11,7 @@
 #include <memory>
 #include <osg/Group>
 #include <osg/Geode>
+#include <osg/Light>
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
@@ -86,8 +87,8 @@ namespace od
         uint32_t                mFlags; // 2 = member of alternate blending group
         float                   mLightDirection;
         float                   mLightAscension;
-        uint32_t                mLightColor;
-        uint32_t                mAmbientColor;
+        osg::Vec4               mLightColor;
+        osg::Vec4               mAmbientColor;
         LightDropoffType        mLightDropoffType;
         std::vector<uint32_t>   mVisibleLayers;
 
@@ -95,6 +96,7 @@ namespace od
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
         osg::ref_ptr<osg::Geode> mLayerGeode;
+        osg::ref_ptr<osg::Light> mLayerLight;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;

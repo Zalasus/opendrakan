@@ -34,8 +34,6 @@ namespace od
     , mFlags(0)
     , mLightDirection(0)
     , mLightAscension(0)
-    , mLightColor(0)
-    , mAmbientColor(0)
     , mLightDropoffType(DROPOFF_NONE)
     , mVisibleTriangles(0)
     {
@@ -57,9 +55,14 @@ namespace od
             >> mLayerName
             >> mFlags
             >> mLightDirection
-            >> mLightAscension
-            >> mLightColor
-            >> mAmbientColor;
+            >> mLightAscension;
+
+        uint32_t lightColor;
+        uint32_t ambientColor;
+        dr  >> lightColor
+            >> ambientColor;
+        mLightColor.set(((lightColor >> 16) & 0xff)/255.0, ((lightColor >> 8) & 0xff)/255.0, (lightColor & 0xff)/255.0, 1.0);
+        mAmbientColor.set(((ambientColor >> 16) & 0xff)/255.0, ((ambientColor >> 8) & 0xff)/255.0, (ambientColor & 0xff)/255.0, 1.0);
 
         uint32_t lightDropoffType;
         dr >> lightDropoffType;
@@ -241,6 +244,18 @@ namespace od
         mLayerGeode->setNodeMask(NodeMasks::Layer);
         gb.build(mLayerGeode);
         layerGroup->addChild(mLayerGeode);
+
+        mLayerLight = new osg::Light(0);
+        mLayerGeode->getOrCreateStateSet()->setAttribute(mLayerLight, osg::StateAttribute::ON);
+        mLayerLight->setDiffuse(mLightColor);
+        mLayerLight->setAmbient(mAmbientColor);
+        mLayerLight->setConstantAttenuation(1.0); // this gives us a constant light intensity
+        mLayerLight->setLinearAttenuation(0.0);
+        mLayerLight->setQuadraticAttenuation(0.0);
+        osg::Quat lightAscQuat(mLightAscension, osg::Vec3(0, 0, 1));
+        osg::Quat lightDirQuat(mLightDirection, osg::Vec3(0, 1, 0));
+        osg::Vec3 lightDirection = lightDirQuat * (lightAscQuat * osg::Vec3(-1, 0, 0));
+        mLayerLight->setPosition(osg::Vec4(lightDirection, 0.0)); // w=0 makes this a directional light
     }
 
     btCollisionShape *Layer::getCollisionShape()
@@ -321,5 +336,6 @@ namespace od
 
         return mCollisionShape.get();
     }
+
 }
 
