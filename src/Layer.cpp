@@ -29,7 +29,7 @@ namespace od
     , mType(TYPE_FLOOR)
     , mOriginX(0)
     , mOriginZ(0)
-    , mWorldHeight(0)
+    , mWorldHeightWu(0)
     , mLayerName("")
     , mFlags(0)
     , mLightDirection(0)
@@ -51,7 +51,7 @@ namespace od
 
         dr  >> mOriginX
             >> mOriginZ
-            >> mWorldHeight
+            >> mWorldHeightWu
             >> mLayerName
             >> mFlags
             >> mLightDirection
@@ -93,8 +93,7 @@ namespace od
 
             Vertex v;
             v.type = vertexType;
-            v.heightOffset = (heightOffsetBiased - 0x8000) * 2;
-            v.absoluteHeight = OD_WORLD_SCALE*(mWorldHeight + v.heightOffset);
+            v.heightOffsetLu = OD_WORLD_SCALE*(heightOffsetBiased - 0x8000)*2;
 
             mVertices.push_back(v);
         }
@@ -143,10 +142,8 @@ namespace od
         {
         	size_t aXRel = i%(mWidth+1);
             size_t aZRel = i/(mWidth+1); // has to be an integer operation to floor it
-            float aX = mOriginX + aXRel;
-            float aZ = mOriginZ + aZRel;
 
-            vertices.push_back(osg::Vec3(aX, mVertices[i].absoluteHeight, aZ));
+            vertices.push_back(osg::Vec3(aXRel, mVertices[i].heightOffsetLu, aZRel));
         }
         gb.setVertexVector(vertices.begin(), vertices.end());
 
@@ -239,11 +236,15 @@ namespace od
         }
         gb.setPolygonVector(polygons.begin(), polygons.end());
 
+        mLayerTransform = new osg::PositionAttitudeTransform;
+        mLayerTransform->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
+        layerGroup->addChild(mLayerTransform);
+
         mLayerGeode = new osg::Geode;
         mLayerGeode->setName("layer " + mLayerName);
         mLayerGeode->setNodeMask(NodeMasks::Layer);
         gb.build(mLayerGeode);
-        layerGroup->addChild(mLayerGeode);
+        mLayerTransform->addChild(mLayerGeode);
 
         mLayerLight = new osg::Light(0);
         mLayerGeode->getOrCreateStateSet()->setAttribute(mLayerLight, osg::StateAttribute::ON);
@@ -283,7 +284,7 @@ namespace od
             float aX = aXRel; // ignore origin so shape is relative to layer origin. we place it in world coords via the collision object
             float aZ = aZRel;
 
-            mesh->findOrAddVertex(btVector3(aX, mVertices[i].heightOffset * OD_WORLD_SCALE, aZ), false);
+            mesh->findOrAddVertex(btVector3(aX, mVertices[i].heightOffsetLu, aZ), false);
         }
 
         // second, push indices for each triangle, ignoring those without texture as these define holes the player can walk/fall through

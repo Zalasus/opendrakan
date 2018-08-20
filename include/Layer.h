@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <osg/Group>
+#include <osg/PositionAttitudeTransform>
 #include <osg/Geode>
 #include <osg/Light>
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
@@ -55,7 +56,8 @@ namespace od
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
         inline uint32_t getOriginX() const { return mOriginX; }
         inline uint32_t getOriginZ() const { return mOriginZ; }
-        inline float getWorldHeightLu() const { return mWorldHeight * OD_WORLD_SCALE; }
+        inline float getWorldHeightWu() const { return mWorldHeightWu; }
+        inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
 
 
     private:
@@ -71,8 +73,7 @@ namespace od
         struct Vertex
         {
             uint8_t type;
-            int32_t heightOffset;
-            float absoluteHeight;
+            float heightOffsetLu;
         };
 
         Level              	   &mLevel;
@@ -82,7 +83,7 @@ namespace od
         LayerType               mType;
         uint32_t                mOriginX;
         uint32_t                mOriginZ;
-        float                   mWorldHeight;
+        float                   mWorldHeightWu;
         std::string             mLayerName;
         uint32_t                mFlags; // 2 = member of alternate blending group
         float                   mLightDirection;
@@ -95,6 +96,7 @@ namespace od
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
+        osg::ref_ptr<osg::PositionAttitudeTransform> mLayerTransform;
         osg::ref_ptr<osg::Geode> mLayerGeode;
         osg::ref_ptr<osg::Light> mLayerLight;
 
