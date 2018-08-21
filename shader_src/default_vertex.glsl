@@ -56,7 +56,12 @@ void main(void)
     vec3 vertex_cs = (gl_ModelViewMatrix * gl_Vertex).xyz;
     vec3 normal_cs = normalize(gl_NormalMatrix * gl_Normal); 
 
-    vertexColor = calcLight(gl_LightSource[0], vertex_cs, normal_cs, gl_Color);
+    vec4 lightColor = vec4(0.0);
+    for(int i = 0; i < gl_MaxLights; ++i)
+    {
+        lightColor += calcLight(gl_LightSource[i], vertex_cs, normal_cs, gl_Color);
+    }
+    vertexColor = clamp(lightColor, 0.0, 1.0);
     
     gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
     vertexNormal = gl_NormalMatrix * gl_Normal;
