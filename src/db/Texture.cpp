@@ -196,12 +196,14 @@ namespace od
         {
             pixelReaderFunc = [&zdr, this](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
-                // FIXME: the byte order created by the editor's convert function is RBGA, the one expected by the engine seemsto be BGRA.
-                //   As these textures are unused and can generally be considered unsupported by the engine, I won't bother with
-                //   this issue right now.
+                // FIXME: the byte order created by the editor's convert function is RGBA, the one expected by the engine seems to be BGRA.
+                //  since it is not entirely clear whether a level created for later versions of the Riot Engine would use RGBA or BGRA,
+                //  we might need to change this order or make it depend on the SRSC version of the texture container.
+                //  for now, stick with what seems to be expected by the engine.
+
                 zdr >> blue
-                    >> red
                     >> green
+                    >> red
                     >> alpha;
 
                 if(mAlphaBitsPerPixel != 8)
