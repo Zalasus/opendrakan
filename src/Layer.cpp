@@ -37,6 +37,7 @@ namespace od
     , mLightDropoffType(DROPOFF_NONE)
     , mVisibleTriangles(0)
     {
+        this->setNodeMask(NodeMasks::Layer);
     }
 
     void Layer::loadDefinition(DataReader &dr)
@@ -126,7 +127,7 @@ namespace od
         }
     }
 
-    void Layer::buildGeometry(osg::Group *layerGroup)
+    void Layer::buildGeometry()
     {
         Logger::debug() << "Building geometry for layer " << mId;
 
@@ -236,15 +237,12 @@ namespace od
         }
         gb.setPolygonVector(polygons.begin(), polygons.end());
 
-        mLayerTransform = new osg::PositionAttitudeTransform;
-        mLayerTransform->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
-        layerGroup->addChild(mLayerTransform);
+        this->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
+        this->setName("layer " + mLayerName);
 
         mLayerGeode = new osg::Geode;
-        mLayerGeode->setName("layer " + mLayerName);
-        mLayerGeode->setNodeMask(NodeMasks::Layer);
         gb.build(mLayerGeode);
-        mLayerTransform->addChild(mLayerGeode);
+        this->addChild(mLayerGeode);
 
         mLayerLight = new osg::Light(0);
         mLayerGeode->getOrCreateStateSet()->setAttribute(mLayerLight, osg::StateAttribute::ON);

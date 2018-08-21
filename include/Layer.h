@@ -24,7 +24,7 @@ namespace od
 {
     class Level;
 
-    class Layer
+    class Layer : public osg::PositionAttitudeTransform
     {
     public:
 
@@ -48,7 +48,7 @@ namespace od
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
-        void buildGeometry(osg::Group *layerGroup);
+        void buildGeometry();
         btCollisionShape *getCollisionShape();
 
         inline uint32_t getId() const { return mId; };
@@ -96,7 +96,6 @@ namespace od
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
-        osg::ref_ptr<osg::PositionAttitudeTransform> mLayerTransform;
         osg::ref_ptr<osg::Geode> mLayerGeode;
         osg::ref_ptr<osg::Light> mLayerLight;
 

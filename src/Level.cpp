@@ -84,6 +84,29 @@ namespace od
         mDestructionQueue.push_back(osg::ref_ptr<LevelObject>(obj));
     }
 
+    Layer *Level::getLayerById(uint32_t id)
+    {
+        auto pred = [id](osg::ref_ptr<Layer> &l){ return l->getId() == id; };
+
+        auto it = std::find_if(mLayers.begin(), mLayers.end(), pred);
+        if(it == mLayers.end())
+        {
+            return nullptr;
+        }
+
+        return it->get();
+    }
+
+    Layer *Level::getLayerByIndex(uint16_t index)
+    {
+        if(index >= mLayers.size())
+        {
+            return nullptr;
+        }
+
+        return mLayers[index].get();
+    }
+
     void Level::update()
     {
         if(!mDestructionQueue.empty())
@@ -239,7 +262,7 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		std::shared_ptr<Layer> layer(new Layer(*this));
+    		osg::ref_ptr<Layer> layer(new Layer(*this));
     		layer->loadDefinition(dr);
 
     		mLayers.push_back(layer);
@@ -264,7 +287,8 @@ namespace od
 				throw IoException("ZStream read either too many or too few bytes");
 			}
 
-			mLayers[i]->buildGeometry(mLayerGroup);
+			mLayers[i]->buildGeometry();
+			mLayerGroup->addChild(mLayers[i]);
 
 			if(mLayers[i]->getCollisionShape() != nullptr)
 			{

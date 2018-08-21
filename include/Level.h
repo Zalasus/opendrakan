@@ -48,6 +48,8 @@ namespace od
         void loadLevel();
         void spawnAllObjects();
         void requestLevelObjectDestruction(LevelObject *obj);
+        Layer *getLayerById(uint32_t id);
+        Layer *getLayerByIndex(uint16_t index);
 
         void update();
 
@@ -78,7 +80,7 @@ namespace od
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
         std::map<uint16_t, DbRefWrapper> mDependencyMap;
-        std::vector<std::shared_ptr<Layer>> mLayers;
+        std::vector<osg::ref_ptr<Layer>> mLayers;
         std::vector<osg::ref_ptr<LevelObject>> mLevelObjects;
         osg::ref_ptr<osg::Group> mLevelRootNode;
         osg::ref_ptr<osg::Group> mLayerGroup;
