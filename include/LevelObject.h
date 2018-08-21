@@ -23,6 +23,7 @@ namespace od
 {
 
     class Level;
+    class Layer;
 
     typedef uint32_t LevelObjectId;
 
@@ -141,6 +142,8 @@ namespace od
         AssetRef mClassRef;
         osg::ref_ptr<Class> mClass;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
+        uint32_t mLightingLayerId;
+        osg::ref_ptr<Layer> mLightingLayer;
         osg::Vec3f mInitialPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;

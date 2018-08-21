@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include "Level.h"
+#include "Layer.h"
 #include "Exception.h"
 #include "OdDefines.h"
 #include "NodeMasks.h"
@@ -67,6 +68,7 @@ namespace od
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
+    , mLightingLayerId(0)
     , mFlags(0)
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
@@ -98,11 +100,20 @@ namespace od
 
         dr >> mId
            >> mClassRef
-           >> DataReader::Ignore(4)
+           >> mLightingLayerId
            >> mInitialPosition
            >> mFlags
            >> mInitialEventCount
            >> linkCount;
+
+        if(mLightingLayerId != 0)
+        {
+            mLightingLayer = mLevel.getLayerById(mLightingLayerId);
+            if(mLightingLayer == nullptr)
+            {
+                Logger::error() << "Object " << mId << " has invalid lighting layer ID " << mLightingLayerId;
+            }
+        }
 
         // TODO: finally write a deserializer for vectors of things!
         mLinks.resize(linkCount);
