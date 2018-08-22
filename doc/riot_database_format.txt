@@ -262,7 +262,7 @@ Record types
     The following records must all appear once per model (also 0x0200) and thus have the same record ID.
 
     [0x0203] Vertices
-        vect3f[uint16]   vertices;
+        vect3f[uint16]   vertices; // mesh and bounding vertex positions
         
     [0x0204] Polygons
         struct poly_vertex
@@ -313,7 +313,7 @@ Record types
         };
         struct joint_info
         {
-            mat3x4f   inverted_model_rel_xform; // Inverted!!
+            mat3x4f   inverted_model_rel_xform; // Inverted! more precise: original .rec matrix is transposed(3x3) and last line: transposed(3x3) * last row * -1
             int32     mesh_index; // which mesh is affected by this bone. is -1 for bones that are attachment points like for weapons
             int32     first_child_index; // zero if no children
             int32     next_sibling_index; // zero if last sibling
@@ -334,9 +334,9 @@ Record types
             uint32    first_poly_index;
             uint32    num_polys;
         };
-        struct channel // Weapon attachment and dismemberment?
+        struct channel // represent the animation channels
         {
-            // Dismemberment.
+            // Dismemberment?
             struct lod_cap
             {
                 uint32 first_cap_poly_index;
@@ -348,8 +348,8 @@ Record types
             };
             
             int32           node_index;
-            mat3x4f         xform_a; // Unknown.
-            mat3x4f         xform_b; // Unknown.
+            mat3x4f         xform_a; // original matrix as stored in the .rec. The 3x3 gives transform/scale and the last line gives the position of the joint.
+            mat3x4f         xform_b; // precomputed transformation matrix for xform_a above. This is the exact same matrix as stored for non channel joints in joint_info inverted_model_rel_xform. Can be calculated back to xform_a by: take transposed(3x3) and append transposed(3x3)*last row * -1
             lod_cap[uint16] lod_caps;
         };
         struct char_bounds
@@ -358,7 +358,7 @@ Record types
             {
                 uint16    first_child;  // 0 if none
                 uint16    next_sibling; // 0 if none
-                uint32    unknown1;
+                uint32    position_vertex_id; // the vertex id which represents this char_sphere position (mesh vertices and bounding vertices are both stored in the 0x020 vertices
                 float     sphere_radius;
                 uint16    channel_index;
                 uint16    unknown2;
