@@ -17,7 +17,7 @@ namespace od
     {
     public:
 
-        ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, btCollisionObject *me);
+        ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, int mask, btCollisionObject *me);
 
         virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace);
 

@@ -47,11 +47,9 @@ namespace od
         osg::Vec3f hitPoint;
         osg::Vec3f hitNormal;
 
-        union
-        {
-            Layer *hitLayer;
-            LevelObject *hitLevelObject;
-        };
+        // convenience pointers. if a layer or an object is hit, this will be non-null
+        Layer *hitLayer;
+        LevelObject *hitLevelObject;
     };
 
 	typedef std::vector<RaycastResult> RaycastResultArray;
@@ -76,7 +74,15 @@ namespace od
 		 */
 		size_t raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results);
 
-		bool raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr);
+		bool raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr, int mask = CollisionGroups::ALL);
+		bool raycastClosestLayer(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr)
+		{
+		    return raycastClosest(start, end, result, exclude, CollisionGroups::LAYER);
+		}
+		bool raycastClosestObject(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr)
+		{
+            return raycastClosest(start, end, result, exclude, CollisionGroups::OBJECT);
+        }
 
 		btRigidBody *addLayer(Layer &l);
 		void removeLayer(Layer &l);

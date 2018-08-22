@@ -84,7 +84,7 @@ namespace od
 	{
 		btVector3 rayStart = mCurrentPosition + (up ? mRelativeHighPoint : mRelativeLowPoint);
 		btVector3 rayEnd = rayStart + mUp*(up ? mStepHeight : -mStepHeight);
-		ClosestNotMeRayResultCallback callback(rayStart, rayEnd, mGhostObject.get());
+		ClosestNotMeRayResultCallback callback(rayStart, rayEnd, CollisionGroups::ALL, mGhostObject.get());
 		mPhysicsManager.mDynamicsWorld->rayTest(rayStart, rayEnd, callback);
 		if(callback.hasHit() && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
 		{

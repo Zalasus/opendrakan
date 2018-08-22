@@ -7,18 +7,16 @@
 
 #include "physics/BulletCallbacks.h"
 
+#include "physics/PhysicsManager.h"
+
 namespace od
 {
 
-    ClosestNotMeRayResultCallback::ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, btCollisionObject *me)
+    ClosestNotMeRayResultCallback::ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, int mask, btCollisionObject *me)
     : btCollisionWorld::ClosestRayResultCallback(from, to)
     , mMe(me)
     {
-        if(mMe != nullptr)
-        {
-            m_collisionFilterGroup = mMe->getBroadphaseHandle()->m_collisionFilterGroup;
-            m_collisionFilterMask = mMe->getBroadphaseHandle()->m_collisionFilterMask;
-        }
+        m_collisionFilterMask = mask;
     }
 
     btScalar ClosestNotMeRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)

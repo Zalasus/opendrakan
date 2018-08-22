@@ -181,7 +181,7 @@ namespace od
 	    return hitObjectCount;
 	}
 
-	bool PhysicsManager::raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude)
+	bool PhysicsManager::raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude, int mask)
 	{
 	    btCollisionObject *me = nullptr;
 	    if(exclude != nullptr)
@@ -195,7 +195,7 @@ namespace od
 
 	    btVector3 bStart = BulletAdapter::toBullet(start);
 	    btVector3 bEnd = BulletAdapter::toBullet(end);
-	    ClosestNotMeRayResultCallback callback(bStart, bEnd, me);
+	    ClosestNotMeRayResultCallback callback(bStart, bEnd, mask, me);
 	    mDynamicsWorld->rayTest(bStart, bEnd, callback);
 
 	    result.hitLayer = nullptr;
@@ -210,7 +210,7 @@ namespace od
         result.hitPoint = BulletAdapter::toOsg(callback.m_hitPointWorld);
         result.hitNormal = BulletAdapter::toOsg(callback.m_hitNormalWorld);
 
-        // determine hit object
+        // if hit object is a layer or an object, set pointers to allow caller quick access
         if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::LAYER)
         {
             auto it = mLayerMap.find(hitObject->getUserIndex());
@@ -218,7 +218,6 @@ namespace od
             {
                 result.hitLayer = it->second.first;
             }
-
         }
 
         if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::OBJECT)
