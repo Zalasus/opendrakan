@@ -336,5 +336,43 @@ namespace od
         return mCollisionShape.get();
     }
 
+    bool Layer::hasHoleAt(const osg::Vec2 &absolutePos)
+    {
+        osg::Vec2 relativePos = absolutePos - osg::Vec2(mOriginX, mOriginZ);
+        if(relativePos.x() < 0 || relativePos.x() > mWidth || relativePos.y() < 0 || relativePos.y() > mHeight)
+        {
+            return false;
+        }
+
+        float cellX = std::floor(relativePos.x());
+        float cellZ = std::floor(relativePos.y());
+        float fractX = relativePos.x() - cellX;
+        float fractZ = relativePos.y() - cellZ;
+
+        size_t cellIndex = cellX + cellZ*mWidth;
+        if(cellIndex >= mCells.size())
+        {
+            // should we just return false here?
+            throw Exception("Calculated cell index lies outside of cell array. Seems like the layer bounds check is incorrect");
+        }
+
+        Cell &cell = mCells[cellIndex];
+
+        // we have the cell. now find the triangle to which the fractional part belongs
+        bool isLeftTriangle;
+        if(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH)
+        {
+            isLeftTriangle = (fractX < fractZ);
+
+        }else
+        {
+            isLeftTriangle = (1 - fractX > fractZ);
+        }
+
+        AssetRef texture = isLeftTriangle ? cell.leftTextureRef : cell.rightTextureRef;
+
+        return texture.isNullLayerTexture();
+    }
+
 }
 

@@ -51,6 +51,14 @@ namespace od
         void buildGeometry();
         btCollisionShape *getCollisionShape();
 
+        /**
+         * Checks whether this layer has a hole at the absolute xz coordiante \c absolutePos.
+         * Coordinates are in lu, relative to the level's origin.
+         *
+         * If the passed coordinate is outside the layer's bounds, true will be returned.
+         */
+        bool hasHoleAt(const osg::Vec2 &absolutePos);
+
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
