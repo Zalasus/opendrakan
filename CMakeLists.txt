@@ -71,6 +71,7 @@ set(SOURCES
         "src/rfl/dragon/AnimationDemo.cpp"
         "src/rfl/dragon/VisibilityToggler.cpp"
         "src/rfl/dragon/StaticLight.cpp"
+        "src/rfl/dragon/Detector.cpp"
         "src/anim/Animator.cpp"
         "src/anim/MotionAnimator.cpp"
         "src/anim/SkeletonAnimationPlayer.cpp"
