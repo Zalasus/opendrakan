@@ -7,6 +7,7 @@
 
 #include "GeodeBuilder.h"
 
+#include <cassert>
 #include <algorithm>
 #include <osg/Geometry>
 
