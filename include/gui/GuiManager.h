@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include <map>
 #include <osgViewer/Viewer>
 
 #include "FilePath.h"
@@ -105,6 +106,8 @@ namespace od
         TextureFactory mTextureFactory;
         Database &mInterfaceDb;
         bool mMenuMode;
+
+        std::map<RecordId, std::string> mLocalizedStringCache;
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;

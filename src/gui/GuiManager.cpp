@@ -179,6 +179,14 @@ namespace od
 
     std::string GuiManager::getStringById(RecordId stringId)
     {
+        // was string cached? if yes, no need to load and decrypt it again
+        auto cacheIt = mLocalizedStringCache.find(stringId);
+        if(cacheIt != mLocalizedStringCache.end())
+        {
+            return cacheIt->second;
+        }
+
+        // string was not cached. load and decrypt it
         auto dirIt = mRrcFile.getDirIteratorByTypeId(SrscRecordType::LOCALIZED_STRING, stringId);
         if(dirIt == mRrcFile.getDirectoryEnd())
         {
@@ -203,7 +211,10 @@ namespace od
 
         // TODO: Transcode from Latin-1 or what you got to UTF-8
 
-        return std::string(str);
+        std::string decryptedString(str);
+        mLocalizedStringCache.insert(std::make_pair(stringId, decryptedString));
+
+        return decryptedString;
     }
 
     void GuiManager::dumpStrings()
