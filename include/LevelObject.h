@@ -132,6 +132,7 @@ namespace od
 
     private:
 
+        void _onMoved();
         void _attachmentTargetPositionUpdated();
         void _detachAllAttachedObjects();
         void _setVisible(bool b); // just so we can switch visibility internally without producing logs everytime

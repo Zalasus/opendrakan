@@ -260,20 +260,14 @@ namespace od
     {
         mTransform->setPosition(v);
 
-        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
-        {
-            (*it)->_attachmentTargetPositionUpdated();
-        }
+        _onMoved();
     }
 
     void LevelObject::setRotation(const osg::Quat &q)
     {
         mTransform->setAttitude(q);
 
-        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
-        {
-            (*it)->_attachmentTargetPositionUpdated();
-        }
+        _onMoved();
     }
 
     void LevelObject::setVisible(bool v)
@@ -381,6 +375,19 @@ namespace od
     {
         setPosition(BulletAdapter::toOsg(worldTrans.getOrigin()));
         setRotation(BulletAdapter::toOsg(worldTrans.getRotation()));
+    }
+
+    void LevelObject::_onMoved()
+    {
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onMoved(*this);
+        }
+
+        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
+        {
+            (*it)->_attachmentTargetPositionUpdated();
+        }
     }
 
     void LevelObject::_attachmentTargetPositionUpdated()

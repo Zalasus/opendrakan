@@ -33,6 +33,10 @@ namespace odRfl
 	{
 	}
 
+	void RflClass::onMoved(od::LevelObject &obj)
+	{
+	}
+
 	void RflClass::destroyed(od::LevelObject &obj)
 	{
 	}
