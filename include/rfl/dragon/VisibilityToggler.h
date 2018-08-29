@@ -28,7 +28,7 @@ namespace odRfl
 
         virtual void probeFields(RflFieldProbe &probe) override;
 
-        virtual void onLoaded(od::Engine &e, od::LevelObject *obj) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
         virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
 
 

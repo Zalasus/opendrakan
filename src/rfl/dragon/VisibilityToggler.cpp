@@ -28,15 +28,9 @@ namespace odRfl
                 (mHideMessage, "Hide Message");
     }
 
-    void VisibilityToggler::onLoaded(od::Engine &e, od::LevelObject *obj)
+    void VisibilityToggler::onLoaded(od::LevelObject &obj)
     {
-        if(obj == nullptr)
-        {
-            Logger::warn() << "Visibility toggler used without level object";
-            return;
-        }
-
-        obj->setSpawnStrategy(od::SpawnStrategy::Always);
+        obj.setSpawnStrategy(od::SpawnStrategy::Always);
     }
 
     void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)

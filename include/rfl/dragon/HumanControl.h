@@ -232,7 +232,7 @@ namespace odRfl
 		HumanControl();
 		virtual ~HumanControl();
 
-		virtual void onLoaded(od::Engine &engine, od::LevelObject *obj) override;
+		virtual void onLoaded(od::LevelObject &obj) override;
 		virtual void onSpawned(od::LevelObject &obj) override;
 		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
 
@@ -258,7 +258,7 @@ namespace odRfl
 		float mForwardSpeed;
 		float mRightSpeed;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-		osg::ref_ptr<od::LevelObject> mPlayerObject;
+		od::LevelObject *mPlayerObject;
 		osg::ref_ptr<od::SkeletonAnimationPlayer> mAnimationPlayer;
 		std::unique_ptr<od::CharacterController> mCharacterController;
 

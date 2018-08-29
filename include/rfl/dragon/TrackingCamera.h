@@ -25,7 +25,7 @@ namespace odRfl
 
 		virtual void probeFields(RflFieldProbe &probe) override;
 
-		virtual void onLoaded(od::Engine &engine, od::LevelObject *obj) override;
+		virtual void onLoaded(od::LevelObject &obj) override;
 		virtual void onSpawned(od::LevelObject &obj) override;
 		virtual void onDespawned(od::LevelObject &obj) override;
 
@@ -46,7 +46,6 @@ namespace odRfl
 		RflFloat    mSpinSpeed;
 		RflFloat	mCrosshairDistance;
 
-		od::Engine *mEngine;
 		osg::ref_ptr<osg::Camera> mOsgCamera;
 		osg::ref_ptr<osg::NodeCallback> mCamUpdateCallback;
 		osg::ref_ptr<od::LevelObject> mCameraLevelObject;

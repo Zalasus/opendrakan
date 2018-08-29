@@ -426,6 +426,7 @@ namespace odRfl
     , mPrevYaw(0)
 	, mForwardSpeed(0)
 	, mRightSpeed(0)
+    , mPlayerObject(nullptr)
     {
 
     }
@@ -438,24 +439,20 @@ namespace odRfl
 		}
     }
 
-    void HumanControl::onLoaded(od::Engine &engine, od::LevelObject *obj)
+    void HumanControl::onLoaded(od::LevelObject &obj)
     {
-        if(obj == nullptr)
-        {
-            Logger::warn() << "Human Control class created without a level object";
-            return;
-        }
+        od::Engine &engine = obj.getLevel().getEngine();
 
         if(engine.getPlayer() != nullptr)
         {
             Logger::warn() << "Duplicate HumanControl objects found in level. Destroying duplicate";
-            obj->requestDestruction();
+            obj.requestDestruction();
             return;
         }
 
-        obj->setSpawnStrategy(od::SpawnStrategy::Always);
+        obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
-        mPlayerObject = obj;
+        mPlayerObject = &obj;
         engine.setPlayer(this);
 
         // prefetch referenced assets

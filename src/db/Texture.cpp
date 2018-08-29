@@ -258,7 +258,7 @@ namespace od
         	mClass = this->getAssetProvider().getClassByRef(mClassRef);
         	std::unique_ptr<odRfl::RflClass> rflClass = mClass->makeInstance();
         	mMaterial = std::unique_ptr<odRfl::Material>(dynamic_cast<odRfl::Material*>(rflClass.release()));
-        	mMaterial->onLoaded(factory.getEngine(), nullptr);
+        	mMaterial->onLoaded(factory.getEngine());
         }
 
         Logger::debug() << "Texture successfully loaded";

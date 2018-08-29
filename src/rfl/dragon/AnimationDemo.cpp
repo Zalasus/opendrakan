@@ -10,6 +10,7 @@
 #include "rfl/Rfl.h"
 #include "rfl/PrefetchProbe.h"
 #include "LevelObject.h"
+#include "Level.h"
 
 namespace odRfl
 {
@@ -30,13 +31,13 @@ namespace odRfl
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onLoaded(od::Engine &engine, od::LevelObject *obj)
+    void AnimationDemo::onLoaded(od::LevelObject &obj)
     {
-        mAnimations.fetchAssets(obj->getClass()->getModel()->getAssetProvider());
+        mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        mAnimationPlayer = new od::SkeletonAnimationPlayer(engine, obj, obj->getSkeletonRoot(), nullptr);
+        mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), nullptr);
 
-        obj->setEnableRflUpdateHook(true);
+        obj.setEnableRflUpdateHook(true);
     }
 
     void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)

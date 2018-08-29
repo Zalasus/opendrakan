@@ -46,7 +46,6 @@ namespace odRfl
 	, mRubberBandStrength(2)
 	, mSpinSpeed(20)
 	, mCrosshairDistance(8)
-	, mEngine(nullptr)
 	{
 	}
 
@@ -59,32 +58,36 @@ namespace odRfl
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
 	}
 
-	void TrackingCamera::onLoaded(od::Engine &engine, od::LevelObject *obj)
+	void TrackingCamera::onLoaded(od::LevelObject &obj)
 	{
-	    if(obj == nullptr)
+	    od::Engine &engine = obj.getLevel().getEngine();
+
+	    if(engine.getCamera() != nullptr)
 	    {
-	        Logger::warn() << "Tracking Camera created without a level object";
+	        Logger::warn() << "Multiple camera objects found in level. Destroying duplicate";
+	        obj.requestDestruction();
 	        return;
 	    }
 
-	    mEngine = &engine;
-	    mCameraLevelObject = obj;
+	    mCameraLevelObject = &obj;
 	    engine.setCamera(this);
-
-	    obj->setSpawnStrategy(od::SpawnStrategy::Always);
+	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
 	}
 
 	void TrackingCamera::onSpawned(od::LevelObject &obj)
 	{
+	    od::Engine &engine = obj.getLevel().getEngine();
+
 	    if(mOsgCamera == nullptr)
 	    {
 	        Logger::error() << "Camera object spawned with no OSG camera assigned. Prepare for chaos";
+	        return;
 	    }
 
 	    // set initial view matrix
 	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
 
-	    if(mEngine->getPlayer() == nullptr)
+	    if(engine.getPlayer() == nullptr)
 	    {
 	        // no player to track~ however, the camera object is tracked by the sky, so it still should be present
 	        return;
@@ -92,14 +95,16 @@ namespace odRfl
 
 	    // attach update callback to player so we always get updated after player
 	    mCamUpdateCallback = new CamUpdateCallback(this);
-	    mEngine->getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
+	    engine.getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
 	}
 
 	void TrackingCamera::onDespawned(od::LevelObject &obj)
 	{
-	    if(mCamUpdateCallback != nullptr && mEngine->getPlayer() != nullptr)
+	    od::Engine &engine = obj.getLevel().getEngine();
+
+	    if(mCamUpdateCallback != nullptr && engine.getPlayer() != nullptr)
 	    {
-	        mEngine->getPlayer()->getLevelObject().removeUpdateCallback(mCamUpdateCallback);
+	        engine.getPlayer()->getLevelObject().removeUpdateCallback(mCamUpdateCallback);
 	    }
 	}
 
@@ -131,7 +136,9 @@ namespace odRfl
 
     void TrackingCamera::updateCamera()
     {
-        od::Player *player = mEngine->getPlayer();
+        od::Engine &engine = mCameraLevelObject->getLevel().getEngine();
+
+        od::Player *player = engine.getPlayer();
         if(player == nullptr)
         {
             return;
@@ -144,7 +151,7 @@ namespace odRfl
         osg::Vec3f from = player->getPosition();
         osg::Vec3f to = from + lookDirection * osg::Vec3f(-3, 0, 0);
         od::RaycastResult result;
-        bool hit = mEngine->getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
+        bool hit = engine.getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
         if(!hit)
         {
             eye = to;
