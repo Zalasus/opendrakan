@@ -38,13 +38,13 @@ namespace odRfl
 		 * \c spawned() hook. This should prevent issues arising from scenarios in which an object is loaded after one
 		 * that depends on it.
 		 */
-		virtual void loaded(od::Engine &e, od::LevelObject *obj);
-		virtual void spawned(od::LevelObject &obj);
-		virtual void despawned(od::LevelObject &obj);
-		virtual void update(od::LevelObject &obj, double simTime, double relTime);
-		virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
+		virtual void onLoaded(od::Engine &e, od::LevelObject *obj);
+		virtual void onSpawned(od::LevelObject &obj);
+		virtual void onDespawned(od::LevelObject &obj);
+		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime);
+		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 		virtual void onMoved(od::LevelObject &obj);
-		virtual void destroyed(od::LevelObject &obj);
+		virtual void onDestroyed(od::LevelObject &obj);
 	};
 
 }

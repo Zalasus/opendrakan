@@ -232,9 +232,9 @@ namespace odRfl
 		HumanControl();
 		virtual ~HumanControl();
 
-		virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
-		virtual void spawned(od::LevelObject &obj) override;
-		virtual void update(od::LevelObject &obj, double simTime, double relTime) override;
+		virtual void onLoaded(od::Engine &engine, od::LevelObject *obj) override;
+		virtual void onSpawned(od::LevelObject &obj) override;
+		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
 
 
 		// implement od::Player

@@ -37,7 +37,7 @@ namespace odRfl
                (mResetMessage, "Reset Message");
     }
 
-    void CountDownToZero::loaded(od::Engine &engine, od::LevelObject *obj)
+    void CountDownToZero::onLoaded(od::Engine &engine, od::LevelObject *obj)
     {
         if(obj == nullptr)
         {
@@ -48,12 +48,12 @@ namespace odRfl
         obj->setSpawnStrategy(od::SpawnStrategy::Always);
     }
 
-    void CountDownToZero::spawned(od::LevelObject &obj)
+    void CountDownToZero::onSpawned(od::LevelObject &obj)
     {
         mCounterValue = mInitialCounterValue;
     }
 
-    void CountDownToZero::messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+    void CountDownToZero::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
     {
         uint32_t newCounter = mCounterValue;
 

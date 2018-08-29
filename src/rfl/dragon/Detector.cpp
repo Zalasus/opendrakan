@@ -45,7 +45,7 @@ namespace odRfl
                 (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
-    void Detector::spawned(od::LevelObject &obj)
+    void Detector::onSpawned(od::LevelObject &obj)
     {
 
     }

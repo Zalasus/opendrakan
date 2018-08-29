@@ -56,7 +56,7 @@ namespace odRfl
 			     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
-    void DomedSky::spawned(od::LevelObject &obj)
+    void DomedSky::onSpawned(od::LevelObject &obj)
 	{
     	osg::StateSet *ss = obj.getOrCreateStateSet();
     	ss->setRenderBinDetails(-1, "RenderBin");

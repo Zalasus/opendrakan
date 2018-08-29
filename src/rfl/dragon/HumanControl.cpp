@@ -438,7 +438,7 @@ namespace odRfl
 		}
     }
 
-    void HumanControl::loaded(od::Engine &engine, od::LevelObject *obj)
+    void HumanControl::onLoaded(od::Engine &engine, od::LevelObject *obj)
     {
         if(obj == nullptr)
         {
@@ -463,7 +463,7 @@ namespace odRfl
         this->probeFields(probe);
     }
 
-    void HumanControl::spawned(od::LevelObject &obj)
+    void HumanControl::onSpawned(od::LevelObject &obj)
     {
     	Logger::verbose() << "Spawned Human Control at "
     			<< obj.getPosition().x() << "/"
@@ -484,7 +484,7 @@ namespace odRfl
     	}
     }
 
-    void HumanControl::update(od::LevelObject &obj, double simTime, double relTime)
+    void HumanControl::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
         mCharacterController->update(relTime);
 

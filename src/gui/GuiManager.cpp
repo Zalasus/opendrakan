@@ -367,7 +367,7 @@ namespace od
         {
             throw Exception("Could not cast or instantiate User Interface Properties instance");
         }
-        mUserInterfacePropertiesInstance->loaded(mEngine, nullptr);
+        mUserInterfacePropertiesInstance->onLoaded(mEngine, nullptr);
 
         odRfl::PrefetchProbe probe(mInterfaceDb);
         mUserInterfacePropertiesInstance->probeFields(probe);

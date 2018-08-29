@@ -40,7 +40,7 @@ namespace odRfl
 				(mDisableReenableMessage, "Disable/Re-Enable Message");
 	}
 
-	void Timer::loaded(od::Engine &engine, od::LevelObject *obj)
+	void Timer::onLoaded(od::Engine &engine, od::LevelObject *obj)
 	{
 	    if(obj == nullptr)
 	    {
@@ -51,14 +51,14 @@ namespace odRfl
 	    obj->setSpawnStrategy(od::SpawnStrategy::Always);
 	}
 
-	void Timer::spawned(od::LevelObject &obj)
+	void Timer::onSpawned(od::LevelObject &obj)
 	{
 	    obj.setEnableRflUpdateHook(true);
 
 	    mTimerRunning = (mStartMode == TimerStartMode::RunInstantly);
 	}
 
-	void Timer::update(od::LevelObject &obj, double simTime, double relTime)
+	void Timer::onUpdate(od::LevelObject &obj, double simTime, double relTime)
 	{
 	    if(!mTimerRunning)
 	    {
@@ -87,7 +87,7 @@ namespace odRfl
 	    }
 	}
 
-	void Timer::messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+	void Timer::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
 	{
 	    if(mStartMode == TimerStartMode::RunWhenTriggered && !mGotStartTrigger)
 	    {

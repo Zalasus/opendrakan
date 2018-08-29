@@ -28,7 +28,7 @@ namespace odRfl
                 (mHideMessage, "Hide Message");
     }
 
-    void VisibilityToggler::loaded(od::Engine &e, od::LevelObject *obj)
+    void VisibilityToggler::onLoaded(od::Engine &e, od::LevelObject *obj)
     {
         if(obj == nullptr)
         {
@@ -39,7 +39,7 @@ namespace odRfl
         obj->setSpawnStrategy(od::SpawnStrategy::Always);
     }
 
-    void VisibilityToggler::messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+    void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
     {
         const std::vector<osg::ref_ptr<od::LevelObject>> &linkedObjects = obj.getLinkedObjects();
 

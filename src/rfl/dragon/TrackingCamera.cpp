@@ -59,7 +59,7 @@ namespace odRfl
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
 	}
 
-	void TrackingCamera::loaded(od::Engine &engine, od::LevelObject *obj)
+	void TrackingCamera::onLoaded(od::Engine &engine, od::LevelObject *obj)
 	{
 	    if(obj == nullptr)
 	    {
@@ -74,7 +74,7 @@ namespace odRfl
 	    obj->setSpawnStrategy(od::SpawnStrategy::Always);
 	}
 
-	void TrackingCamera::spawned(od::LevelObject &obj)
+	void TrackingCamera::onSpawned(od::LevelObject &obj)
 	{
 	    if(mOsgCamera == nullptr)
 	    {
@@ -95,7 +95,7 @@ namespace odRfl
 	    mEngine->getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
 	}
 
-	void TrackingCamera::despawned(od::LevelObject &obj)
+	void TrackingCamera::onDespawned(od::LevelObject &obj)
 	{
 	    if(mCamUpdateCallback != nullptr && mEngine->getPlayer() != nullptr)
 	    {

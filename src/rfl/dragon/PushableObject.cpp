@@ -64,7 +64,7 @@ namespace odRfl
                 (mDamagePlayer, "Damage Player");
     }
 
-    void PushableObject::spawned(od::LevelObject &obj)
+    void PushableObject::onSpawned(od::LevelObject &obj)
     {
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
     	{
@@ -72,7 +72,7 @@ namespace odRfl
     	}
     }
 
-    void PushableObject::despawned(od::LevelObject &obj)
+    void PushableObject::onDespawned(od::LevelObject &obj)
     {
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }

@@ -28,9 +28,9 @@ namespace odRfl
         CountDownToZero();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
-        virtual void spawned(od::LevelObject &obj) override;
-        virtual void messageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
+        virtual void onLoaded(od::Engine &engine, od::LevelObject *obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
 
 
     protected:

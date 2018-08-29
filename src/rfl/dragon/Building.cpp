@@ -67,7 +67,7 @@ namespace odRfl
 				(mMessageToSendAfterPushed, "Message to Send After Pushed");
     }
 
-    void Building::spawned(od::LevelObject &obj)
+    void Building::onSpawned(od::LevelObject &obj)
 	{
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
 		{
@@ -75,7 +75,7 @@ namespace odRfl
     	}
 	}
 
-    void Building::despawned(od::LevelObject &obj)
+    void Building::onDespawned(od::LevelObject &obj)
     {
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }

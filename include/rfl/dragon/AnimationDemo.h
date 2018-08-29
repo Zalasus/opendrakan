@@ -23,8 +23,8 @@ namespace odRfl
 
         virtual void probeFields(RflFieldProbe &probe) override;
 
-        virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
-        virtual void update(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onLoaded(od::Engine &engine, od::LevelObject *obj) override;
+        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
 
 
     protected:

@@ -25,9 +25,9 @@ namespace odRfl
 
 		virtual void probeFields(RflFieldProbe &probe) override;
 
-		virtual void loaded(od::Engine &engine, od::LevelObject *obj) override;
-		virtual void spawned(od::LevelObject &obj) override;
-		virtual void despawned(od::LevelObject &obj) override;
+		virtual void onLoaded(od::Engine &engine, od::LevelObject *obj) override;
+		virtual void onSpawned(od::LevelObject &obj) override;
+		virtual void onDespawned(od::LevelObject &obj) override;
 
 		// implement od::Camera
 		virtual osg::Vec3f getEyePoint() const override;

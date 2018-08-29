@@ -21,8 +21,8 @@ namespace odRfl
 		Building();
 
 		virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawned(od::LevelObject &obj) override;
-        virtual void despawned(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onDespawned(od::LevelObject &obj) override;
 
 
 	protected:

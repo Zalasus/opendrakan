@@ -23,7 +23,7 @@ namespace odRfl
         DomedSky();
 
         virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void spawned(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
 
 
     protected:

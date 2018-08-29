@@ -30,7 +30,7 @@ namespace odRfl
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::loaded(od::Engine &engine, od::LevelObject *obj)
+    void AnimationDemo::onLoaded(od::Engine &engine, od::LevelObject *obj)
     {
         mAnimations.fetchAssets(obj->getClass()->getModel()->getAssetProvider());
 
@@ -39,7 +39,7 @@ namespace odRfl
         obj->setEnableRflUpdateHook(true);
     }
 
-    void AnimationDemo::update(od::LevelObject &obj, double simTime, double relTime)
+    void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {

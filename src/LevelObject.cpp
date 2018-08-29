@@ -171,7 +171,7 @@ namespace od
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->probeFields(builder); // let builder override fields
-            mRflClassInstance->loaded(mLevel.getEngine(), this);
+            mRflClassInstance->onLoaded(mLevel.getEngine(), this);
 
         }else
         {
@@ -183,7 +183,7 @@ namespace od
     {
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->spawned(*this);
+            mRflClassInstance->onSpawned(*this);
         }
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
@@ -207,7 +207,7 @@ namespace od
     {
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->despawned(*this);
+            mRflClassInstance->onDespawned(*this);
         }
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
@@ -237,7 +237,7 @@ namespace od
 
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->update(*this, simTime, relTime);
+            mRflClassInstance->onUpdate(*this, simTime, relTime);
         }
     }
 
@@ -252,7 +252,7 @@ namespace od
 
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->messageReceived(*this, sender, message);
+            mRflClassInstance->onMessageReceived(*this, sender, message);
         }
     }
 
