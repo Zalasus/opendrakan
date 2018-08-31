@@ -97,7 +97,9 @@ namespace od
          * @param  pos[in]   Point in this widget's coordinate space to be checked.
          */
         virtual bool liesWithinLogicalArea(const osg::Vec2 &pos);
+
         virtual void onMouseDown(const osg::Vec2 &pos, int button);
+        virtual void onUpdate(double simTime, double relTime);
 
         osg::Vec2 getDimensionsInPixels();
         osg::Vec2 getParentDimensionsInPixels();

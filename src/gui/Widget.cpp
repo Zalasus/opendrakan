@@ -11,12 +11,13 @@
 #include <osgGA/EventVisitor>
 
 #include "NodeMasks.h"
+#include "UpdateCallback.h"
 #include "gui/GuiManager.h"
 
 namespace od
 {
 
-    class WidgetUpdateCallback : public osg::NodeCallback
+    class WidgetUpdateCallback : public UpdateCallback
     {
     public:
 
@@ -27,6 +28,10 @@ namespace od
 
         virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
         {
+            tick(nv->getFrameStamp());
+
+            mWidget->onUpdate(mSimTime, mRelTime);
+
             if(mWidget->isMatrixDirty())
             {
                 mWidget->updateMatrix();
@@ -70,6 +75,10 @@ namespace od
     }
 
     void Widget::onMouseDown(const osg::Vec2 &pos, int button)
+    {
+    }
+
+    void Widget::onUpdate(double simTime, double relTime)
     {
     }
 
