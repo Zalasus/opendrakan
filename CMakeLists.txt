@@ -104,6 +104,7 @@ set(SOURCES
         "src/FilePath.cpp"
         "src/ShaderManager.cpp"
         "src/GeodeBuilder.cpp"
+        "src/UpdateCallback.cpp"
         "src/Main.cpp")
 
 

@@ -14,6 +14,7 @@
 #include "Exception.h"
 #include "OdDefines.h"
 #include "NodeMasks.h"
+#include "UpdateCallback.h"
 #include "rfl/RflClass.h"
 #include "physics/BulletAdapter.h"
 
@@ -23,35 +24,20 @@
 namespace od
 {
 
-    class LevelObjectUpdateCallback : public osg::NodeCallback
+    class LevelObjectUpdateCallback : public UpdateCallback
     {
-        public:
+    public:
 
         LevelObjectUpdateCallback(LevelObject &obj)
         : mLevelObject(obj)
-        , mLastSimTime(0)
-        , mFirstUpdate(true)
         {
         }
 
         virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
         {
-            const osg::FrameStamp *fs = nv->getFrameStamp();
-            double simTime = 0;
-            if(fs != nullptr)
-            {
-                if(mFirstUpdate)
-                {
-                    mLastSimTime = fs->getSimulationTime();
-                    mFirstUpdate = false;
-                }
+            tick(nv->getFrameStamp());
 
-                simTime = fs->getSimulationTime();
-            }
-
-            mLevelObject.update(simTime, simTime - mLastSimTime);
-
-            mLastSimTime = simTime;
+            mLevelObject.update(mSimTime, mRelTime);
 
             traverse(node, nv);
         }
@@ -59,8 +45,7 @@ namespace od
     private:
 
         LevelObject &mLevelObject;
-        double mLastSimTime;
-        bool mFirstUpdate;
+
     };
 
 
