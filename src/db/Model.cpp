@@ -12,6 +12,7 @@
 #include <osg/Geometry>
 #include <osg/LOD>
 #include <osg/FrontFace>
+#include <osg/Material>
 
 #include "OdDefines.h"
 #include "Exception.h"
@@ -481,8 +482,21 @@ namespace od
 			this->addChild(newGeode);
 		}
 
+		osg::StateSet *ss = this->getOrCreateStateSet();
+
         // model faces are oriented CW for some reason
-        this->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
+        ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
+
+        // since we don't have access to shader composition right now, control shinyness via material
+        if(mShiny)
+        {
+            osg::ref_ptr<osg::Material> shinyMaterial(new osg::Material);
+            shinyMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
+            shinyMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
+            shinyMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
+            shinyMaterial->setShininess(osg::Material::FRONT_AND_BACK, 20.0);
+            ss->setAttribute(shinyMaterial);
+        }
 	}
 }
 

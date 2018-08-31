@@ -8,6 +8,7 @@
 #include "light/LightManager.h"
 
 #include <osg/Light>
+#include <osg/Material>
 
 namespace od
 {
@@ -27,9 +28,16 @@ namespace od
             osg::ref_ptr<osg::Light> light = new osg::Light(i);
             light->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
             light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
+            light->setSpecular(osg::Vec4(0.0, 0.0, 0.0, 0.0));
             light->setPosition(osg::Vec4(1.0, 0.0, 0.0, 0.0));
             ss->setAttribute(light, osg::StateAttribute::ON);
         }
+
+        osg::ref_ptr<osg::Material> defaultMaterial(new osg::Material);
+        defaultMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
+        defaultMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
+        defaultMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0, 0.0, 0.0, 0.0));
+        ss->setAttribute(defaultMaterial, osg::StateAttribute::ON);
     }
 
     Light *LightManager::addLight(LevelObject *obj)

@@ -37,40 +37,41 @@ uniform gl_MaterialParameters  gl_FrontMaterial;
 uniform gl_MaterialParameters  gl_BackMaterial;
 */
 
-vec4 calcSingleLight(gl_LightSourceParameters light, vec3 vertex_cs, vec3 normal_cs, vec4 vertexColor)
+vec4 calcSingleLight(gl_LightSourceParameters light, gl_MaterialParameters material, vec3 vertex_cs, vec3 normal_cs)
 {  
-    // calculate light direction and distance
+    // calculate light direction and attenuation
     vec3 lightDir_cs;
+    float attenuation;
     if(light.position.w == 0.0) // w = 0 means directional light
     {
-        lightDir_cs = light.position.xyz;
+        lightDir_cs = normalize(light.position.xyz);
+        attenuation = 1.0; // no attenuation for directional lights
         
     }else
     {
         lightDir_cs = light.position.xyz - vertex_cs;
-    }
-    float distance = length(lightDir_cs);
-    lightDir_cs = normalize(lightDir_cs);
-    
-    float attenuation = 1.0/(light.constantAttenuation + 
+        float distance = length(lightDir_cs);
+        lightDir_cs = normalize(lightDir_cs);
+        
+        attenuation = 1.0/(light.constantAttenuation + 
                 light.linearAttenuation*distance + 
                 light.quadraticAttenuation*distance*distance);
-    attenuation = clamp(attenuation, 0.0, 1.0);
+        attenuation = clamp(attenuation, 0.0, 1.0);
+    }
     
     // ambient term
-    vec4 ambientColor = light.ambient*vertexColor;
+    vec4 ambientColor = light.ambient * material.ambient;
     
     // diffuse term
-    float cosTheta = clamp(dot(normal_cs, lightDir_cs), 0.0, 1.0);
-    vec4 diffuseColor = vertexColor*cosTheta*attenuation*light.diffuse;
+    float cosTheta = max(dot(normal_cs, lightDir_cs), 0.0);
+    vec4 diffuseColor = cosTheta * attenuation * light.diffuse * material.diffuse;
     
     // specular term
-    float cosAlpha = dot(normal_cs, light.halfVector.xyz);
-    vec4 specularColor = vertexColor*pow(cosAlpha, 20)*attenuation*light.specular;
+    vec3 halfVector = normalize(vertex_cs + lightDir_cs);
+    float cosAlpha = max(dot(normal_cs, halfVector), 0.0);
+    vec4 specularColor = pow(cosAlpha, 5) * attenuation * light.specular * material.specular;
       
-    vec4 resultColor = ambientColor + diffuseColor + specularColor;
-      
-    return clamp(resultColor, 0.0, 1.0);
+    return ambientColor + diffuseColor;// + specularColor; FIXME: wrong! specular will get multiplied by texture color, but it should be added
 }
 
 vec4 calcLighting()
@@ -81,18 +82,16 @@ vec4 calcLighting()
     vec4 lightColor = vec4(0.0);
     for(int i = 0; i < gl_MaxLights; ++i)
     {
-        lightColor += calcSingleLight(gl_LightSource[i], vertex_cs, normal_cs, gl_Color);
+        lightColor += calcSingleLight(gl_LightSource[i], gl_FrontMaterial, vertex_cs, normal_cs);
     }
-    
-    // don't let lighting mess with alpha for now
-    lightColor.w = gl_Color.w;
     
     return clamp(lightColor, 0.0, 1.0);
 }
 
 void main(void)
 {
-    vertexColor = calcLighting();
+    vertexColor = gl_Color * calcLighting();
+    vertexColor.w = 1.0;
     
     gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
     vertexNormal = gl_NormalMatrix * gl_Normal;

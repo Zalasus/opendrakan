@@ -7,6 +7,7 @@
 
 #include "gui/MainMenu.h"
 
+#include "Engine.h"
 #include "gui/GuiManager.h"
 #include "gui/TexturedQuad.h"
 #include "gui/GuiTextures.h"
@@ -83,18 +84,23 @@ namespace od
         bgWidget->setZIndex(1);
         this->addWidget(bgWidget);
 
+        // container for 3D elements
         osg::ref_ptr<ContainerWidget> cont(new ContainerWidget(gm));
         cont->setDimensions(512.0, 512.0, WidgetDimensionType::Pixels);
         cont->setPosition(0.5, 0.5);
         cont->setOrigin(WidgetOrigin::Center);
         this->addWidget(cont);
 
+        // attach default shader to 3D container so we get lighting on the crystals and rings
+        osg::ref_ptr<osg::Program> defaultProgram = gm.getEngine().getShaderManager().makeProgram(nullptr, nullptr);
+        cont->getOrCreateStateSet()->setAttribute(defaultProgram);
+
         osg::ref_ptr<osg::Light> light(new osg::Light(0));
         light->setAmbient(osg::Vec4(0.5, 0.5, 0.5, 1.0));
-        light->setDiffuse(osg::Vec4(0.8, 0.8, 0.8, 1.0));
+        light->setDiffuse(osg::Vec4(1.0, 1.0, 1.0, 1.0));
         light->setPosition(osg::Vec4(0.0, -0.707, -0.707, 0.0));
         light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        this->getOrCreateStateSet()->setAttribute(light, osg::StateAttribute::ON);
+        cont->getOrCreateStateSet()->setAttribute(light, osg::StateAttribute::ON);
 
         _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont);
         _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont);
