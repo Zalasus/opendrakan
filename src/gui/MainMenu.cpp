@@ -89,6 +89,13 @@ namespace od
         cont->setOrigin(WidgetOrigin::Center);
         this->addWidget(cont);
 
+        osg::ref_ptr<osg::Light> light(new osg::Light(0));
+        light->setAmbient(osg::Vec4(0.5, 0.5, 0.5, 1.0));
+        light->setDiffuse(osg::Vec4(0.8, 0.8, 0.8, 1.0));
+        light->setPosition(osg::Vec4(0.0, -0.707, -0.707, 0.0));
+        light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
+        this->getOrCreateStateSet()->setAttribute(light, osg::StateAttribute::ON);
+
         _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont);
         _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont);
         _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), 67, 255, 191, uiProps, cont);
