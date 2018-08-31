@@ -37,6 +37,7 @@ namespace od
         defaultMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
         defaultMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
         defaultMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0, 0.0, 0.0, 0.0));
+        defaultMaterial->setShininess(osg::Material::FRONT_AND_BACK, 1.0); // do NOT set this to 0! somehow it breaks the GLSL pow function
         ss->setAttribute(defaultMaterial, osg::StateAttribute::ON);
     }
 

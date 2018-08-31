@@ -67,11 +67,10 @@ vec4 calcSingleLight(gl_LightSourceParameters light, gl_MaterialParameters mater
     vec4 diffuseColor = cosTheta * attenuation * light.diffuse * material.diffuse;
     
     // specular term
-    vec3 halfVector = normalize(vertex_cs + lightDir_cs);
-    float cosAlpha = max(dot(normal_cs, halfVector), 0.0);
-    vec4 specularColor = pow(cosAlpha, 5) * attenuation * light.specular * material.specular;
+    float cosAlpha = max(dot(normal_cs, light.halfVector.xyz), 0.0);
+    vec4 specularColor = pow(cosAlpha, material.shininess) * attenuation * light.specular * material.specular;
       
-    return ambientColor + diffuseColor;// + specularColor; FIXME: wrong! specular will get multiplied by texture color, but it should be added
+    return clamp(ambientColor + diffuseColor, 0.0, 1.0) + specularColor; // FIXME: this will break ambient and diffuse lighting once we use many lights
 }
 
 vec4 calcLighting()
@@ -85,7 +84,7 @@ vec4 calcLighting()
         lightColor += calcSingleLight(gl_LightSource[i], gl_FrontMaterial, vertex_cs, normal_cs);
     }
     
-    return clamp(lightColor, 0.0, 1.0);
+    return lightColor;
 }
 
 void main(void)

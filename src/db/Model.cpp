@@ -494,7 +494,7 @@ namespace od
             shinyMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
             shinyMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
             shinyMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-            shinyMaterial->setShininess(osg::Material::FRONT_AND_BACK, 20.0);
+            shinyMaterial->setShininess(osg::Material::FRONT_AND_BACK, 100.0);
             ss->setAttribute(shinyMaterial);
         }
 	}
