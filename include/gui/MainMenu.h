@@ -24,7 +24,21 @@ namespace od
 
     private:
 
-        void _addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y, odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont);
+        enum ButtonCode
+        {
+            BC_MULTIPLAYER,
+            BC_LOAD,
+            BC_NEW,
+            BC_SAVE,
+            BC_OPTIONS,
+            BC_CREDITS,
+            BC_QUIT
+        };
+
+        void _addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y,
+                odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode);
+
+        void _buttonClicked(int buttonCode);
 
     };
 

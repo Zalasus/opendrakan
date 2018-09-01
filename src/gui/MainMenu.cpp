@@ -98,22 +98,23 @@ namespace od
         osg::ref_ptr<osg::Light> light(new osg::Light(0));
         light->setAmbient(osg::Vec4(0.5, 0.5, 0.5, 1.0));
         light->setDiffuse(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        light->setPosition(osg::Vec4(0.0, -0.707, -0.707, 0.0));
+        light->setPosition(osg::Vec4(0.0, -0.707, 0.707, 0.0));
         light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
         cont->getOrCreateStateSet()->setAttribute(light, osg::StateAttribute::ON);
 
-        _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont);
-        _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont);
-        _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), 67, 255, 191, uiProps, cont);
-        _addCrystal(gm, uiProps->mCrystalRight.getAsset(), 57, 400, 193, uiProps, cont);
-        _addCrystal(gm, uiProps->mCrystalLowerLeft.getAsset(), 35, 152, 292, uiProps, cont);
-        _addCrystal(gm, uiProps->mCrystalLowerRight.getAsset(), 35, 358, 292, uiProps, cont);
-        _addCrystal(gm, uiProps->mCrystalBottom.getAsset(), 61, 255, 440, uiProps, cont);
+        _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
+        _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont, BC_LOAD);
+        _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), 67, 255, 191, uiProps, cont, BC_NEW);
+        _addCrystal(gm, uiProps->mCrystalRight.getAsset(), 57, 400, 193, uiProps, cont, BC_SAVE);
+        _addCrystal(gm, uiProps->mCrystalLowerLeft.getAsset(), 35, 152, 292, uiProps, cont, BC_OPTIONS);
+        _addCrystal(gm, uiProps->mCrystalLowerRight.getAsset(), 35, 358, 292, uiProps, cont, BC_CREDITS);
+        _addCrystal(gm, uiProps->mCrystalBottom.getAsset(), 61, 255, 440, uiProps, cont, BC_QUIT);
 
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
     }
 
-    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y, odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont)
+    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y,
+            odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
     {
         osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, crystalModel,
                 uiProps->mInnerRing.getAsset(),
@@ -121,8 +122,28 @@ namespace od
         crystal->setDimensions(dia, dia, WidgetDimensionType::Pixels);
         crystal->setPosition(x/512, y/512);
         crystal->setOrigin(WidgetOrigin::Center);
+        crystal->setClickedCallback(std::bind(&MainMenu::_buttonClicked, this, std::placeholders::_1), buttonCode);
         cont->addWidget(crystal);
     }
 
+    void MainMenu::_buttonClicked(int buttonCode)
+    {
+        switch(buttonCode)
+        {
+        default:
+        case BC_MULTIPLAYER:
+        case BC_LOAD:
+        case BC_NEW:
+        case BC_SAVE:
+        case BC_OPTIONS:
+        case BC_CREDITS:
+            break;
+
+        case BC_QUIT:
+            Logger::info() << "Exit button clicked. Quitting game";
+            getGuiManager().quit();
+            break;
+        }
+    }
 
 }
