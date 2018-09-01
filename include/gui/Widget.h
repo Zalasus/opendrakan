@@ -98,9 +98,31 @@ namespace od
          */
         virtual bool liesWithinLogicalArea(const osg::Vec2 &pos);
 
+        /**
+         * @brief Hook for when a mouse click event happens inside of logical widget area.
+         * @param pos  Position in widget space where mouse was clicked
+         */
         virtual void onMouseDown(const osg::Vec2 &pos, int button);
+
+        /**
+         * @brief Update hook for widget. Gets called every frame if widget is active.
+         * @param simTime   Absolute time, in seconds
+         * @param relTime   Relative time since last update, in seconds
+         */
         virtual void onUpdate(double simTime, double relTime);
+
+        /**
+         * @brief Hook for when a the mouse cursor enters the logical widget area.
+         * @note Whether the mouse is over a widget or not can be checked via Widget::isMouseOver(), too.
+         * @param pos  Position in widget space where mouse entered
+         */
         virtual void onMouseEnter(const osg::Vec2 &pos);
+
+        /**
+         * @brief Hook for when a the mouse cursor leaves the logical widget area.
+         * @note Whether the mouse is over a widget or not can be checked via Widget::isMouseOver(), too.
+         * @param pos  The last position in widget space where mouse was still over widget
+         */
         virtual void onMouseLeave(const osg::Vec2 &pos);
 
         osg::Vec2 getDimensionsInPixels();
