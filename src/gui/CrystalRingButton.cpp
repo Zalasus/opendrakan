@@ -11,6 +11,15 @@
 #include "gui/GuiManager.h"
 #include "Engine.h"
 
+// max crystal speed in rad/s
+#define OD_CRYSTAL_SPEED_MAX       (3.0*M_PI)
+
+// time a crystal needs to speed up from stop to max speed
+#define OD_CRYSTAL_SPEED_RISETIME   3.0
+
+// time a crystal at max speed needs to decelerate to stop
+#define OD_CRYSTAL_SPEED_FALLTIME   3.0
+
 namespace od
 {
 
@@ -19,8 +28,10 @@ namespace od
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
-    , mCrystalColor(0.38431, 0.36471, 0.54902, 1.0)
+    , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
+    , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
     , mTransform(new osg::MatrixTransform)
+    , mCrystalSpeedPercent(0.0)
     {
         // select whatever model in not null for bounds calculation, starting with outer ring
         osg::ref_ptr<Model> modelForBounds =
@@ -52,7 +63,7 @@ namespace od
             osg::ref_ptr<osg::Program> crystalProg = gm.getEngine().getShaderManager().makeProgram(nullptr, crystalFragShader);
             mCrystalTransform->getOrCreateStateSet()->setAttribute(crystalProg, osg::StateAttribute::ON);
 
-            mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColor);
+            mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColorInactive);
             mCrystalTransform->getOrCreateStateSet()->addUniform(mColorModifierUniform);
 
             mCrystalTransform->setScale(osg::Vec3(0.58, 0.58, 0.58));
@@ -90,6 +101,51 @@ namespace od
         Logger::info() << "Button clicked. Interpreting this as desire to quit the game for now.";
 
         getGuiManager().quit();
+    }
+
+    void CrystalRingButton::onUpdate(double simTime, double relTime)
+    {
+        if(mCrystalTransform == nullptr)
+        {
+            return;
+        }
+
+        if(isMouseOver())
+        {
+            if(mCrystalSpeedPercent < 1.0)
+            {
+                mCrystalSpeedPercent = std::min(mCrystalSpeedPercent + relTime/OD_CRYSTAL_SPEED_RISETIME, 1.0);
+            }
+
+        }else
+        {
+            if(mCrystalSpeedPercent > 0.0)
+            {
+                mCrystalSpeedPercent = std::max(mCrystalSpeedPercent - relTime/OD_CRYSTAL_SPEED_FALLTIME, 0.0);
+            }
+        }
+
+        // apply scaling function to speed percentage. for now, just use a linear function
+        float crystalSpeed = mCrystalSpeedPercent * OD_CRYSTAL_SPEED_MAX;
+
+        // apply rotation to crystal
+        osg::Quat q = mCrystalTransform->getAttitude();
+        q *= osg::Quat(crystalSpeed * relTime, osg::Vec3(0, -1, 0));
+        mCrystalTransform->setAttitude(q);
+
+        _updateCrystalColor();
+    }
+
+    void CrystalRingButton::_updateCrystalColor()
+    {
+        if(mColorModifierUniform == nullptr)
+        {
+            return;
+        }
+
+        // determine color change via lerp
+        osg::Vec4 crystalColor = mCrystalColorInactive*(1-mCrystalSpeedPercent) + mCrystalColorActive*mCrystalSpeedPercent;
+        mColorModifierUniform->set(crystalColor);
     }
 
 }
