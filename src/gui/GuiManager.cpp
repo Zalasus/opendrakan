@@ -141,12 +141,67 @@ namespace od
             return;
         }
 
+        if(mCursorPosInNdc == pos)
+        {
+            // no change -> no need to perform costly update
+            return;
+        }
+
         mCursorPosInNdc = pos;
 
-        // pos is in screen space, we need it in widget space
+        // pos is in NDC, we need it in widget space
         osg::Vec3 posWs = osg::Vec3(pos, 0.0) * mScreenToWidgetSpaceXform;
 
         mCursorWidget->setPosition(osg::Vec2(posWs.x(), posWs.y()));
+
+        // okay, here is the algorithm for determining mouse enter/leave:
+        //  whenever the mouse moves, we find all widgets under it. we also store all widgets found under the
+        //  cursor the last time the mouse moved. now, as the mouse moved, we join the two lists. all widgets
+        //  that are unique in that list were either entered or left by the cursor. which one of those events
+        //  happened can be determined from the mouse-over state that is stored in those widgets.
+        //  FIXME: this only works if every widget in the scenegraph is unique
+        mWidgetIntersectVisitor->reset();
+        mWidgetIntersectVisitor->setPointInNdc(mCursorPosInNdc);
+        mGuiRoot->accept(*mWidgetIntersectVisitor);
+        const std::vector<WidgetHitInfo> &hitWidgets = mWidgetIntersectVisitor->getHitWidgets();
+
+        mJoinedHitWidgets.clear();
+        mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), hitWidgets.begin(), hitWidgets.end());
+        mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), mLastHitWidgets.begin(), mLastHitWidgets.end());
+
+        // find unique widgets in joined list. NOTE: since the apparently is no nice way to do this via STL,
+        //  we do it manually using a sort and by iterating over each widget.
+        auto pred = [](WidgetHitInfo &a, WidgetHitInfo &b){ return a.widget.get() < b.widget.get(); };
+        std::sort(mJoinedHitWidgets.begin(), mJoinedHitWidgets.end(), pred);
+        for(auto it = mJoinedHitWidgets.begin(); it != mJoinedHitWidgets.end(); ++it)
+        {
+            WidgetHitInfo &current = *it;
+
+            // if we ever reach the last element, we know it is unique and need no further checks
+            if(it+1 != mJoinedHitWidgets.end())
+            {
+                WidgetHitInfo &next = *(it+1);
+                if(current.widget == next.widget)
+                {
+                    ++it;
+                    continue;
+                }
+            }
+
+            // widget seems unique -> mouse either left it or entered it
+            if(current.widget->isMouseOver())
+            {
+                current.widget->setMouseOver(false);
+                current.widget->onMouseLeave(current.hitPointInWidget);
+
+            }else
+            {
+                current.widget->setMouseOver(true);
+                current.widget->onMouseEnter(current.hitPointInWidget);
+            }
+        }
+
+        mLastHitWidgets.assign(hitWidgets.begin(), hitWidgets.end()); // TODO: we could do this more efficiently using a buffer swap
     }
 
     std::string GuiManager::localizeString(const std::string &s)

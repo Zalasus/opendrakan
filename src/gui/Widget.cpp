@@ -78,6 +78,14 @@ namespace od
     {
     }
 
+    void Widget::onMouseEnter(const osg::Vec2 &pos)
+    {
+    }
+
+    void Widget::onMouseLeave(const osg::Vec2 &pos)
+    {
+    }
+
     void Widget::onUpdate(double simTime, double relTime)
     {
     }

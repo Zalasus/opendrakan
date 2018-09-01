@@ -120,6 +120,8 @@ namespace od
         osg::Matrix mWidgetToScreenSpaceXform; // FIXME: these are badly named. this goes from widget space to NDC, not screen space
         osg::Matrix mScreenToWidgetSpaceXform;
         osg::ref_ptr<WidgetIntersectVisitor> mWidgetIntersectVisitor;
+        std::vector<WidgetHitInfo> mLastHitWidgets;
+        std::vector<WidgetHitInfo> mJoinedHitWidgets; // vector for combining last and current hits
     };
 
 }

@@ -100,6 +100,8 @@ namespace od
 
         virtual void onMouseDown(const osg::Vec2 &pos, int button);
         virtual void onUpdate(double simTime, double relTime);
+        virtual void onMouseEnter(const osg::Vec2 &pos);
+        virtual void onMouseLeave(const osg::Vec2 &pos);
 
         osg::Vec2 getDimensionsInPixels();
         osg::Vec2 getParentDimensionsInPixels();
