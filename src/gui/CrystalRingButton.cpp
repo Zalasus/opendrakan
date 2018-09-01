@@ -20,6 +20,9 @@
 // time a crystal at max speed needs to decelerate to stop
 #define OD_CRYSTAL_SPEED_FALLTIME   3.0
 
+// time a ring need to perform a full rotation
+#define OD_RING_SPEED 1.0
+
 namespace od
 {
 
@@ -31,9 +34,12 @@ namespace od
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
     , mTransform(new osg::MatrixTransform)
+    , mCallbackUserData(-1)
     , mCrystalSpeedPercent(0.0)
+    , mClicked(false)
+    , mRingAnimPercent(0.0)
     {
-        // select whatever model in not null for bounds calculation, starting with outer ring
+        // select whatever model is not null for bounds calculation, starting with outer ring
         osg::ref_ptr<Model> modelForBounds =
                 (mOuterRingModel != nullptr) ? mOuterRingModel : ((mInnerRingModel != nullptr) ? mInnerRingModel : mCrystalModel);
 
@@ -98,18 +104,11 @@ namespace od
 
     void CrystalRingButton::onMouseDown(const osg::Vec2 &pos, int button)
     {
-        Logger::info() << "Button clicked. Interpreting this as desire to quit the game for now.";
-
-        getGuiManager().quit();
+        mClicked = true;
     }
 
     void CrystalRingButton::onUpdate(double simTime, double relTime)
     {
-        if(mCrystalTransform == nullptr)
-        {
-            return;
-        }
-
         if(isMouseOver())
         {
             if(mCrystalSpeedPercent < 1.0)
@@ -125,15 +124,49 @@ namespace od
             }
         }
 
-        // apply scaling function to speed percentage. for now, just use a linear function
-        float crystalSpeed = mCrystalSpeedPercent * OD_CRYSTAL_SPEED_MAX;
+        if(mClicked)
+        {
+            if(mRingAnimPercent < 1.0)
+            {
+                mRingAnimPercent = std::min(mRingAnimPercent + relTime/OD_RING_SPEED, 1.0);
 
-        // apply rotation to crystal
-        osg::Quat q = mCrystalTransform->getAttitude();
-        q *= osg::Quat(crystalSpeed * relTime, osg::Vec3(0, -1, 0));
-        mCrystalTransform->setAttitude(q);
+            }else
+            {
+                // ring animation finished
+                mClicked = false;
+                mRingAnimPercent = 0.0;
 
-        _updateCrystalColor();
+                if(mClickedCallback)
+                {
+                    mClickedCallback(mCallbackUserData);
+                }
+            }
+        }
+
+        if(mCrystalTransform != nullptr)
+        {
+            // apply scaling function to speed percentage. for now, just use a linear function
+            float crystalSpeed = mCrystalSpeedPercent * mCrystalSpeedPercent * OD_CRYSTAL_SPEED_MAX;
+
+            // apply rotation to crystal
+            osg::Quat q = mCrystalTransform->getAttitude();
+            q *= osg::Quat(crystalSpeed * relTime, osg::Vec3(0, -1, 0));
+            mCrystalTransform->setAttitude(q);
+
+            _updateCrystalColor();
+        }
+
+        if(mOuterRingTransform != nullptr)
+        {
+            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(-1, 0, 0));
+            mOuterRingTransform->setAttitude(q);
+        }
+
+        if(mInnerRingTransform != nullptr)
+        {
+            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(0, -1, 0));
+            mInnerRingTransform->setAttitude(q);
+        }
     }
 
     void CrystalRingButton::_updateCrystalColor()
