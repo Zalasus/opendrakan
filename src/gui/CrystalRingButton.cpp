@@ -145,8 +145,10 @@ namespace od
 
         if(mCrystalTransform != nullptr)
         {
-            // apply scaling function to speed percentage. for now, just use a linear function
-            float crystalSpeed = mCrystalSpeedPercent * mCrystalSpeedPercent * OD_CRYSTAL_SPEED_MAX;
+            // apply scaling function to speed percentage
+            float crystalSpeed = isMouseOver() ?
+                                    std::sin(mCrystalSpeedPercent * M_PI/2) * OD_CRYSTAL_SPEED_MAX
+                                  : (std::sin((mCrystalSpeedPercent - 1)*M_PI/2)+1) * OD_CRYSTAL_SPEED_MAX;
 
             // apply rotation to crystal
             osg::Quat q = mCrystalTransform->getAttitude();
