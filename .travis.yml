@@ -9,14 +9,14 @@ addons:
     sources:
       - ubuntu-toolchain-r-test
       - llvm-toolchain-precise-3.8
-      - sourceline: 'deb http://ppa.launchpad.net/openmw/openmw/ubuntu trusty main'
+      - sourceline: 'ppa:openmw/openmw'
     packages:
       - clang-3.8
       - g++-6
       - cmake
       - zlib1g-dev
       - libbullet-dev
-      - libopenscenegraph-dev
+      - libopenscenegraph-3.4-dev
 
 before_install:
   - eval "${EVAL}"
