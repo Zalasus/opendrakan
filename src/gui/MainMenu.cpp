@@ -96,11 +96,11 @@ namespace od
         cont->getOrCreateStateSet()->setAttribute(defaultProgram);
 
         osg::ref_ptr<osg::Light> light(new osg::Light(0));
-        light->setAmbient(osg::Vec4(0.5, 0.5, 0.5, 1.0));
+        light->setAmbient(osg::Vec4(0.3, 0.3, 0.3, 1.0));
         light->setDiffuse(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        light->setPosition(osg::Vec4(0.0, -0.707, 0.707, 0.0));
+        light->setPosition(osg::Vec4(0.0, -1.0, -1.0, 0.0));
         light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        cont->getOrCreateStateSet()->setAttribute(light, osg::StateAttribute::ON);
+        this->getOrCreateStateSet()->setAttribute(light, osg::StateAttribute::ON);
 
         _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
         _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont, BC_LOAD);
