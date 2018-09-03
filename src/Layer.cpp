@@ -177,11 +177,10 @@ namespace od
             size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
             size_t d = c + 1;
 
-            // this order seems to work in most cases, but sometimes texture orientations are still messed up
-            osg::Vec2 uvA(cell.texCoords[0]/0xffff, cell.texCoords[1]/0xffff);
-            osg::Vec2 uvB(cell.texCoords[6]/0xffff, cell.texCoords[7]/0xffff);
-            osg::Vec2 uvC(cell.texCoords[4]/0xffff, cell.texCoords[5]/0xffff);
-            osg::Vec2 uvD(cell.texCoords[2]/0xffff, cell.texCoords[3]/0xffff);
+            osg::Vec2 uvA(cell.texCoords[3]/0xffff, cell.texCoords[7]/0xffff);
+            osg::Vec2 uvB(cell.texCoords[2]/0xffff, cell.texCoords[6]/0xffff);
+            osg::Vec2 uvC(cell.texCoords[0]/0xffff, cell.texCoords[4]/0xffff);
+            osg::Vec2 uvD(cell.texCoords[1]/0xffff, cell.texCoords[5]/0xffff);
 
             if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
             {
