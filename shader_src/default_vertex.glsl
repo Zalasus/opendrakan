@@ -40,60 +40,49 @@ uniform gl_MaterialParameters  gl_BackMaterial;
 vec4 calcSingleLight(gl_LightSourceParameters light, gl_MaterialParameters material, vec3 vertex_cs, vec3 normal_cs)
 {  
     // calculate light direction and attenuation
-    vec3 lightDir_cs;
-    float attenuation;
-    if(light.position.w == 0.0) // w = 0 means directional light
-    {
-        lightDir_cs = normalize(light.position.xyz);
-        attenuation = 1.0; // no attenuation for directional lights
-        
-    }else
-    {
-        lightDir_cs = light.position.xyz - vertex_cs;
-        float distance = length(lightDir_cs);
-        lightDir_cs = normalize(lightDir_cs);
-        
-        attenuation = 1.0/(light.constantAttenuation + 
-                light.linearAttenuation*distance + 
-                light.quadraticAttenuation*distance*distance);
-        attenuation = clamp(attenuation, 0.0, 1.0);
-    }
+    vec3 lightDir_cs = light.position.xyz - vertex_cs*light.position.w;
+    float distance = length(lightDir_cs);
+    lightDir_cs = normalize(lightDir_cs);
+    float attenuation = 1.0/(light.constantAttenuation + 
+                             light.linearAttenuation*distance + 
+                             light.quadraticAttenuation*distance*distance);
+    attenuation = clamp(attenuation, 0.0, 1.0);
     
     // ambient term
     vec4 ambientColor = light.ambient * material.ambient;
     
     // diffuse term
     float cosTheta = max(dot(normal_cs, lightDir_cs), 0.0);
-    vec4 diffuseColor = cosTheta * attenuation * light.diffuse * material.diffuse;
+    vec4 diffuseColor = cosTheta * light.diffuse * material.diffuse;
     
     // specular term
     float cosAlpha = max(dot(normal_cs, light.halfVector.xyz), 0.0);
-    vec4 specularColor = pow(cosAlpha, material.shininess) * attenuation * light.specular * material.specular;
+    vec4 specularColor = pow(cosAlpha, material.shininess) * light.specular * material.specular;
       
-    return clamp(ambientColor + diffuseColor, 0.0, 1.0) + specularColor; // FIXME: this will break ambient and diffuse lighting once we use many lights
+    return attenuation*(ambientColor + diffuseColor + specularColor);
 }
 
-vec4 calcLighting()
+vec4 calcLighting(vec3 vertex_cs, vec3 normal_cs, vec4 vertexColor)
 {
-    vec3 vertex_cs = (gl_ModelViewMatrix * gl_Vertex).xyz;
-    vec3 normal_cs = normalize(gl_NormalMatrix * gl_Normal); 
-
     vec4 lightColor = vec4(0.0);
     for(int i = 0; i < gl_MaxLights; ++i)
     {
         lightColor += calcSingleLight(gl_LightSource[i], gl_FrontMaterial, vertex_cs, normal_cs);
     }
     
-    return lightColor;
+    return vertexColor*lightColor;
 }
 
 void main(void)
 {
-    vertexColor = gl_Color * calcLighting();
+    vec4 vertex_cs = gl_ModelViewMatrix * gl_Vertex;
+    vec3 normal_cs = normalize(gl_NormalMatrix * gl_Normal);    
+
+    vertexColor = calcLighting(vertex_cs.xyz, normal_cs, gl_Color);
     vertexColor.w = 1.0;
     
-    gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Vertex;
-    vertexNormal = gl_NormalMatrix * gl_Normal;
+    gl_Position = gl_ProjectionMatrix * vertex_cs;
+    vertexNormal = normal_cs;
     texCoord = gl_MultiTexCoord0.xy;
 }
 
