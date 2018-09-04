@@ -27,9 +27,7 @@ namespace od
         }
         this->setColorArray(mColorArray, osg::Array::BIND_PER_VERTEX);
 
-        GLubyte elements[] = { 0, 2, 1, 1, 2, 3 };
-        mDrawElements = new osg::DrawElementsUByte(GL_TRIANGLES, 6, elements);
-        this->addPrimitiveSet(mDrawElements);
+        this->addPrimitiveSet(new osg::DrawArrays(GL_TRIANGLE_FAN, 0, 4, 0));
 
         this->setDataVariance(osg::Object::DYNAMIC);
         this->setUseDisplayList(false);
@@ -73,8 +71,8 @@ namespace od
 
     void TexturedQuad::setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
     {
-        mTextureCoordArray->at(0) = topLeft;
-        mTextureCoordArray->at(1) = osg::Vec2(bottomRight.x(), topLeft.y());
+        mTextureCoordArray->at(0) = osg::Vec2(bottomRight.x(), topLeft.y());
+        mTextureCoordArray->at(1) = topLeft;
         mTextureCoordArray->at(2) = osg::Vec2(topLeft.x(), bottomRight.y());
         mTextureCoordArray->at(3) = bottomRight;
     }
@@ -101,8 +99,10 @@ namespace od
 
     void TexturedQuad::setVertexCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight)
     {
-        mVertexArray->at(0) = osg::Vec3(topLeft, mZCoord);
-        mVertexArray->at(1) = osg::Vec3(bottomRight.x(), topLeft.y(), mZCoord);
+        // triangle fan: b a c d
+
+        mVertexArray->at(0) = osg::Vec3(bottomRight.x(), topLeft.y(), mZCoord);
+        mVertexArray->at(1) = osg::Vec3(topLeft, mZCoord);
         mVertexArray->at(2) = osg::Vec3(topLeft.x(), bottomRight.y(), mZCoord);
         mVertexArray->at(3) = osg::Vec3(bottomRight, mZCoord);
 
