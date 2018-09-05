@@ -8,8 +8,9 @@
 #ifndef INCLUDE_LIGHT_LIGHTMANAGER_H_
 #define INCLUDE_LIGHT_LIGHTMANAGER_H_
 
-#include <osg/Group>
 #include <vector>
+#include <osg/Group>
+#include <osg/Observer>
 
 #include "light/Light.h"
 
@@ -18,20 +19,23 @@ namespace od
     class Engine;
     class LevelObject;
 
-    class LightManager
+    class LightManager : public osg::Observer
     {
     public:
 
         LightManager(Engine &engine, osg::Group *sceneRoot);
 
-        Light *addLight(LevelObject *obj);
+        void addLight(LightHandle *lightHandle);
+        void removeLight(LightHandle *lightHandle);
+
+        virtual void objectDeleted(void *object) override;
 
 
     private:
 
         Engine &mEngine;
         osg::ref_ptr<osg::Group> mSceneRoot;
-        std::vector<osg::ref_ptr<Light>> mLights;
+        std::vector<LightHandle*> mLightHandles;
 
     };
 

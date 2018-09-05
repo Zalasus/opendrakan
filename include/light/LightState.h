@@ -16,6 +16,9 @@
 namespace od
 {
 
+    class LightManager;
+
+
     class LightStateAttribute : public osg::StateAttribute
     {
     public:
@@ -33,12 +36,12 @@ namespace od
          *
          * Only the closest of those lights will get applied until the maximum number of lights is reached.
          */
-        void addLight(Light *l);
+        void addLight(LightHandle *lightHandle);
 
 
     private:
 
-        std::vector<Light*> mPotentialLights;
+        std::vector<LightHandle*> mPotentialLights;
 
     };
 
@@ -47,7 +50,7 @@ namespace od
     {
     public:
 
-        LightStateCallback(LevelObject &obj);
+        LightStateCallback(LightManager &lm, LevelObject &obj);
 
         inline void lightingDirty() { mLightingDirty = true; }
 
@@ -58,6 +61,7 @@ namespace od
 
         void _updateLightState();
 
+        LightManager &mLightManager;
         LevelObject &mLevelObject;
         bool mLightingDirty;
         LightStateAttribute *mLightStateAttribute;

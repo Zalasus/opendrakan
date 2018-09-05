@@ -10,12 +10,34 @@
 #include <osg/NodeVisitor>
 #include <osgUtil/CullVisitor>
 
+#include "LevelObject.h"
+#include "Exception.h"
+
 namespace od
 {
 
 
-    LightStateCallback::LightStateCallback(LevelObject &obj)
-    : mLevelObject(obj)
+    int LightStateAttribute::compare(const StateAttribute& sa) const
+    {
+        throw UnsupportedException("LightStateAttribute::compare is not yet implemented");
+    }
+
+    void LightStateAttribute::addLight(LightHandle *lightHandle)
+    {
+
+    }
+
+    void LightStateAttribute::apply(osg::State &state) const
+    {
+
+    }
+
+
+
+
+    LightStateCallback::LightStateCallback(LightManager &lm, LevelObject &obj)
+    : mLightManager(lm)
+    , mLevelObject(obj)
     , mLightingDirty(true)
     {
         osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute);
@@ -48,6 +70,7 @@ namespace od
 
     void LightStateCallback::_updateLightState()
     {
+
 
         mLightingDirty = false;
     }

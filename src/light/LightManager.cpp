@@ -7,6 +7,7 @@
 
 #include "light/LightManager.h"
 
+#include <algorithm>
 #include <osg/Light>
 #include <osg/Material>
 
@@ -41,15 +42,25 @@ namespace od
         ss->setAttribute(defaultMaterial, osg::StateAttribute::ON);
     }
 
-    Light *LightManager::addLight(LevelObject *obj)
+    void LightManager::addLight(LightHandle *lightHandle)
     {
-        osg::ref_ptr<Light> newLight = new Light(obj);
+        lightHandle->addObserver(this);
 
-        mLights.push_back(newLight);
-
-        return newLight;
+        mLightHandles.push_back(lightHandle);
     }
 
+    void LightManager::removeLight(LightHandle *lightHandle)
+    {
+        auto it = std::find(mLightHandles.begin(), mLightHandles.end(), lightHandle);
+        if(it != mLightHandles.end())
+        {
+            mLightHandles.erase(it);
+        }
+    }
 
+    void LightManager::objectDeleted(void *object)
+    {
+        removeLight(static_cast<LightHandle*>(object));
+    }
 
 }

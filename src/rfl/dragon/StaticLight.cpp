@@ -7,6 +7,8 @@
 
 #include "rfl/dragon/StaticLight.h"
 
+#include <osg/Light>
+
 #include "rfl/Rfl.h"
 #include "LevelObject.h"
 #include "Engine.h"
@@ -35,18 +37,25 @@ namespace odRfl
 
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
-        mLightHandle = obj.getLevel().getEngine().getLightManager().addLight(&obj);
         if(mLightHandle == nullptr)
         {
-            Logger::error() << "Static Light failed to add light object to the scene";
-            return;
+            mLightHandle = new od::LightHandle(&obj, mRadius, mQualityLevelRequired);
         }
+        obj.getLevel().getEngine().getLightManager().addLight(mLightHandle);
 
-        mLightHandle->setDiffuseColor(mColor.asColorVector());
-        mLightHandle->setIntensity(mIntensityScaling);
-        mLightHandle->setRadius(mRadius);
+        osg::Light *light = mLightHandle->getLight();
+        light->setDiffuse(mColor.asColorVector());
+        light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
+        light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
     }
 
+    void StaticLight::onDespawned(od::LevelObject &obj)
+    {
+        if(mLightHandle != nullptr)
+        {
+            obj.getLevel().getEngine().getLightManager().removeLight(mLightHandle);
+        }
+    }
 
     OD_REGISTER_RFL_CLASS(0x84, "Static Light", StaticLight);
 

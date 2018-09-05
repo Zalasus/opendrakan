@@ -12,10 +12,11 @@
 namespace od
 {
 
-    Light::Light(LevelObject *obj)
+    LightHandle::LightHandle(LevelObject *obj, float radius, uint32_t requiredQualityLevel)
     : mLevelObject(obj)
-    , mIntensity(1.0)
-    , mRadius(1.0)
+    , mRadius(radius)
+    , mRequiredQualityLevel(requiredQualityLevel)
+    , mLight(new osg::Light)
     {
     }
 

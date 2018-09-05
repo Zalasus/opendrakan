@@ -24,6 +24,7 @@ namespace odRfl
 
         virtual void probeFields(RflFieldProbe &probe) override;
         virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onDespawned(od::LevelObject &obj) override;
 
 
     protected:
@@ -34,7 +35,7 @@ namespace odRfl
         RflTextureRef   mLightMap;
         RflEnum         mQualityLevelRequired;
 
-        osg::ref_ptr<od::Light> mLightHandle;
+        osg::ref_ptr<od::LightHandle> mLightHandle;
     };
 
 }

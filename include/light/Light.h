@@ -15,23 +15,24 @@ namespace od
 
     class LevelObject;
 
-    class Light : public osg::Referenced
+    class LightHandle : public osg::Referenced
     {
     public:
 
-        Light(LevelObject *obj);
+        LightHandle(LevelObject *obj, float radius, uint32_t requiredQualityLevel);
 
-        inline void setDiffuseColor(const osg::Vec4 &color) { mDiffuseColor = color; }
-        inline void setIntensity(float intensity) { mIntensity = intensity; }
-        inline void setRadius(float radius) { mRadius = radius; }
+        inline LevelObject *getLevelObject() { return mLevelObject; }
+        inline float getRadius() const { return mRadius; }
+        inline uint32_t getRequiredQualityLevel() const { return mRequiredQualityLevel; }
+        inline osg::Light *getLight() { return mLight; }
 
 
     private:
 
         osg::ref_ptr<LevelObject> mLevelObject;
-        osg::Vec4 mDiffuseColor;
-        float mIntensity;
         float mRadius;
+        uint32_t mRequiredQualityLevel;
+        osg::ref_ptr<osg::Light> mLight;
 
     };
 
