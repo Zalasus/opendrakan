@@ -47,6 +47,8 @@ namespace odRfl
         light->setDiffuse(mColor.asColorVector());
         light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
         light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
+        light->setConstantAttenuation(0.1);
+        light->setLinearAttenuation(10/mRadius);
     }
 
     void StaticLight::onDespawned(od::LevelObject &obj)

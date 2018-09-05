@@ -349,14 +349,6 @@ namespace od
 
     		mLevelObjects[i] = object;
     	}
-
-    	// create directional light so objects aren't completely black until we implement proper lighting for them
-    	osg::ref_ptr<osg::Light> objectLight = new osg::Light(0);
-    	objectLight->setDiffuse(osg::Vec4(224.0/255.0, 223.0/255.0, 201.0/255.0, 1.0));
-    	objectLight->setAmbient(osg::Vec4(50.0/255.0, 50.0/255.0, 50.0/255.0, 1.0));
-    	objectLight->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-    	objectLight->setPosition(osg::Vec4(0.0, 1.0, 0.0, 0.0));
-    	mObjectGroup->getOrCreateStateSet()->setAttribute(objectLight, osg::StateAttribute::ON);
     }
 }
 
