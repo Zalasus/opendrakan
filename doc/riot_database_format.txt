@@ -640,3 +640,6 @@ Class format
     Where offset is the offset in dwords starting from the beginning of the data area where the string's/array's data can be found,
     and length is the number of dwords contained in that trailing field. For arrays this is equal to the number of elements contained,
     while strings are packed into as many dwords as required, and then padded with zero bytes if the string's size is not divisible by 4.
+    
+    Colors are stored as ARGB.
+    
