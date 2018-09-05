@@ -395,7 +395,7 @@ namespace od
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
-        for(size_t i = 0; i < 8; ++i) // FIXME: get max number of lights
+        for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
         {
             osg::ref_ptr<osg::Light> light = new osg::Light(i);
             light->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));

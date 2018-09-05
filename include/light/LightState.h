@@ -32,16 +32,16 @@ namespace od
         virtual int compare(const StateAttribute& sa) const override;
 
         /**
-         * @brief Adds a light to this state's list of potentially affecting lights.
+         * @brief Adds a light to this state's list of affecting lights.
          *
-         * Only the closest of those lights will get applied until the maximum number of lights is reached.
+         * If more lights than the maximum possible number of lights are added, the additional calls are ignored.
          */
         void addLight(LightHandle *lightHandle);
 
 
     private:
 
-        std::vector<LightHandle*> mPotentialLights;
+        std::vector<LightHandle*> mLights;
 
     };
 

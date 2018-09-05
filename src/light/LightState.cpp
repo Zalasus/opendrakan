@@ -12,10 +12,15 @@
 
 #include "LevelObject.h"
 #include "Exception.h"
+#include "OdDefines.h"
 
 namespace od
 {
 
+    LightStateAttribute::LightStateAttribute()
+    {
+        mLights.reserve(OD_MAX_LIGHTS);
+    }
 
     int LightStateAttribute::compare(const StateAttribute& sa) const
     {
@@ -40,9 +45,12 @@ namespace od
     , mLevelObject(obj)
     , mLightingDirty(true)
     {
+        osg::StateSet *ss = mLevelObject.getOrCreateStateSet();
+        // TODO: perhaps remove all light-type attributes from state set here?
+
         osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute);
         mLightStateAttribute = lightState.get();
-        mLevelObject.getOrCreateStateSet()->setAttribute(lightState, osg::StateAttribute::ON);
+        ss->setAttribute(lightState, osg::StateAttribute::ON);
     }
 
     void LightStateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv)
@@ -70,7 +78,6 @@ namespace od
 
     void LightStateCallback::_updateLightState()
     {
-
 
         mLightingDirty = false;
     }

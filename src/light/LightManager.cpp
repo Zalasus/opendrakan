@@ -11,6 +11,8 @@
 #include <osg/Light>
 #include <osg/Material>
 
+#include "OdDefines.h"
+
 namespace od
 {
 
@@ -24,7 +26,7 @@ namespace od
         //  individual lights. we might do this via a custom StateAttribute encapsulating the glLight calls, but for
         //  now we just sat all lights to black.
         osg::StateSet *ss = mSceneRoot->getOrCreateStateSet();
-        for(size_t i = 0; i < 8; ++i) // FIXME: get max number of lights
+        for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
         {
             osg::ref_ptr<osg::Light> light = new osg::Light(i);
             light->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
