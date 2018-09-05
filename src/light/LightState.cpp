@@ -36,6 +36,16 @@ namespace od
         mLights.reserve(OD_MAX_LIGHTS);
     }
 
+    bool LightStateAttribute::getModeUsage(ModeUsage &usage) const
+    {
+        for (size_t i = 0; i < mLights.size(); ++i)
+        {
+            usage.usesMode(GL_LIGHT0 + i);
+        }
+
+        return true;
+    }
+
     int LightStateAttribute::compare(const StateAttribute& sa) const
     {
         throw UnsupportedException("LightStateAttribute::compare is not yet implemented");

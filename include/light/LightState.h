@@ -30,6 +30,7 @@ namespace od
 
         META_StateAttribute(od, LightStateAttribute, osg::StateAttribute::LIGHT);
 
+        virtual bool getModeUsage(ModeUsage &usage) const override;
         virtual void apply(osg::State &state) const override;
         virtual int compare(const StateAttribute& sa) const override;
 
