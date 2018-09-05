@@ -7,6 +7,8 @@
 
 #include "light/Light.h"
 
+#include <osg/BoundingSphere>
+
 #include "LevelObject.h"
 
 namespace od
@@ -18,6 +20,16 @@ namespace od
     , mRequiredQualityLevel(requiredQualityLevel)
     , mLight(new osg::Light)
     {
+    }
+
+    bool LightHandle::affects(const osg::Vec3 &point)
+    {
+        return distanceToPoint(point) <= mRadius;
+    }
+
+    float LightHandle::distanceToPoint(const osg::Vec3 &point)
+    {
+        return (mLevelObject->getPosition() - point).length();
     }
 
 }

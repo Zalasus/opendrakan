@@ -23,6 +23,8 @@ namespace od
     {
     public:
 
+        friend class LightStateCallback;
+
         LightStateAttribute();
         LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp = osg::CopyOp::SHALLOW_COPY);
 
@@ -30,6 +32,8 @@ namespace od
 
         virtual void apply(osg::State &state) const override;
         virtual int compare(const StateAttribute& sa) const override;
+
+        void clearLightList();
 
         /**
          * @brief Adds a light to this state's list of affecting lights.
@@ -42,6 +46,7 @@ namespace od
     private:
 
         std::vector<LightHandle*> mLights;
+        osg::ref_ptr<osg::Light> mNullLight;
 
     };
 
@@ -65,7 +70,7 @@ namespace od
         LevelObject &mLevelObject;
         bool mLightingDirty;
         LightStateAttribute *mLightStateAttribute;
-
+        std::vector<LightHandle*> mAffectingLightsCache;
     };
 
 }

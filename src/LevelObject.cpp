@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "Engine.h"
 #include "Level.h"
 #include "Layer.h"
 #include "Exception.h"
@@ -61,12 +62,17 @@ namespace od
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
+    , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), *this))
     {
         this->setNodeMask(NodeMasks::Object);
+
+        this->addCullCallback(mLightingCallback);
     }
 
     LevelObject::~LevelObject()
     {
+        this->removeCullCallback(mLightingCallback);
+
         // make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
         if(mState == LevelObjectState::Spawned)
         {
@@ -170,6 +176,8 @@ namespace od
         {
             mRflClassInstance->onSpawned(*this);
         }
+
+        mLightingCallback->lightingDirty();
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
@@ -364,6 +372,8 @@ namespace od
 
     void LevelObject::_onMoved()
     {
+        mLightingCallback->lightingDirty();
+
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->onMoved(*this);

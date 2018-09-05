@@ -28,6 +28,11 @@ namespace od
         void addLight(LightHandle *lightHandle);
         void removeLight(LightHandle *lightHandle);
 
+        /**
+         * @brief Fills the passed vector with all registered lights whose radius includes the given point in world space.
+         */
+        void getLightsAffectingPoint(const osg::Vec3 &point, std::vector<LightHandle*> &lights);
+
         virtual void objectDeleted(void *object) override;
 
 

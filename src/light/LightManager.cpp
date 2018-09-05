@@ -12,6 +12,7 @@
 #include <osg/Material>
 
 #include "OdDefines.h"
+#include "Logger.h"
 
 namespace od
 {
@@ -57,6 +58,22 @@ namespace od
         if(it != mLightHandles.end())
         {
             mLightHandles.erase(it);
+        }
+    }
+
+    void LightManager::getLightsAffectingPoint(const osg::Vec3 &point, std::vector<LightHandle*> &lights)
+    {
+        // TODO: organize lights in a structure with efficient spatial search
+        //  for now, just use a brute force technique by iterating over all registered lights.
+
+        for(auto it = mLightHandles.begin(); it != mLightHandles.end(); ++it)
+        {
+            LightHandle *l = *it;
+
+            if(l->affects(point))
+            {
+                lights.push_back(l);
+            }
         }
     }
 

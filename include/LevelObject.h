@@ -18,6 +18,7 @@
 #include "db/Class.h"
 #include "anim/SkeletonAnimationPlayer.h"
 #include "rfl/RflMessage.h"
+#include "light/LightState.h"
 
 namespace od
 {
@@ -166,6 +167,7 @@ namespace od
         std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
+        osg::ref_ptr<LightStateCallback> mLightingCallback;
     };
 
 }

@@ -26,6 +26,9 @@ namespace od
         inline uint32_t getRequiredQualityLevel() const { return mRequiredQualityLevel; }
         inline osg::Light *getLight() { return mLight; }
 
+        bool affects(const osg::Vec3 &point);
+        float distanceToPoint(const osg::Vec3 &point);
+
 
     private:
 
