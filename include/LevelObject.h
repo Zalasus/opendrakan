@@ -75,6 +75,9 @@ namespace od
         void setRotation(const osg::Quat &q);
         void setVisible(bool v);
 
+        Layer *getLightingLayer();
+        Layer *getLayerBelowObject();
+
         /**
          * @brief Attaches this object to target object.
          *
@@ -165,6 +168,9 @@ namespace od
         osg::Vec3f mAttachmentTranslationOffset;
         bool mIgnoreAttachmentRotation;
         std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
+
+        osg::ref_ptr<Layer> mLayerBelowObject;
+        bool mLayerBelowObjectDirty;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
         osg::ref_ptr<LightStateCallback> mLightingCallback;

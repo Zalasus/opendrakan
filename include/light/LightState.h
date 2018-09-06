@@ -41,12 +41,12 @@ namespace od
          *
          * If more lights than the maximum possible number of lights are added, the additional calls are ignored.
          */
-        void addLight(LightHandle *lightHandle);
+        void addLight(osg::Light *light);
 
 
     private:
 
-        std::vector<LightHandle*> mLights;
+        std::vector<osg::ref_ptr<osg::Light>> mLights;
         osg::ref_ptr<osg::Light> mNullLight;
 
     };

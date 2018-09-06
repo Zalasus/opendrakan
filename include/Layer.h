@@ -66,6 +66,7 @@ namespace od
         inline uint32_t getOriginZ() const { return mOriginZ; }
         inline float getWorldHeightWu() const { return mWorldHeightWu; }
         inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
+        inline osg::Light *getLayerLight() const { return mLayerLight; }
 
 
     private:

@@ -11,6 +11,7 @@
 #include <osgUtil/CullVisitor>
 
 #include "LevelObject.h"
+#include "Layer.h"
 #include "Exception.h"
 #include "OdDefines.h"
 #include "light/LightManager.h"
@@ -56,11 +57,11 @@ namespace od
         mLights.clear();
     }
 
-    void LightStateAttribute::addLight(LightHandle *lightHandle)
+    void LightStateAttribute::addLight(osg::Light *light)
     {
         if(mLights.size() < OD_MAX_LIGHTS)
         {
-            mLights.push_back(lightHandle);
+            mLights.push_back(osg::ref_ptr<osg::Light>(light));
         }
     }
 
@@ -71,15 +72,16 @@ namespace od
         {
             if(it != mLights.end())
             {
-                LightHandle *l = *it;
+                osg::Light *l = *it;
                 ++it;
-                if(l == nullptr || l->getLight() == nullptr)
+                if(l == nullptr)
                 {
+                    // TODO: light no longer exists. erase it
                     continue;
                 }
 
-                l->getLight()->setLightNum(i);
-                l->getLight()->apply(state);
+                l->setLightNum(i);
+                l->apply(state);
 
             }else
             {
@@ -131,6 +133,13 @@ namespace od
 
     void LightStateCallback::_updateLightState()
     {
+        // always add layer light if available
+        Layer *lightingLayer = mLevelObject.getLightingLayer();
+        if(lightingLayer != nullptr)
+        {
+            mLightStateAttribute->addLight(lightingLayer->getLayerLight());
+        }
+
         osg::Vec3 point = mLevelObject.getPosition();
 
         mAffectingLightsCache.clear();
@@ -142,7 +151,7 @@ namespace od
         mLightStateAttribute->clearLightList();
         for(auto it = mAffectingLightsCache.begin(); it != mAffectingLightsCache.end(); ++it)
         {
-            mLightStateAttribute->addLight(*it); // will ignore all calls past maximum number of lights
+            mLightStateAttribute->addLight((*it)->getLight()); // will ignore all calls past maximum number of lights
         }
 
         mLightingDirty = false;

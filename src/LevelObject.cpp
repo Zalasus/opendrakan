@@ -62,6 +62,7 @@ namespace od
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
+    , mLayerBelowObjectDirty(true)
     , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), *this))
     {
         this->setNodeMask(NodeMasks::Object);
@@ -268,6 +269,26 @@ namespace od
         _setVisible(v);
 
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
+    }
+
+    Layer *LevelObject::getLightingLayer()
+    {
+        if(mLightingLayer != nullptr)
+        {
+            return mLightingLayer;
+        }
+
+        return getLayerBelowObject();
+    }
+
+    Layer *LevelObject::getLayerBelowObject()
+    {
+        if(!mLayerBelowObjectDirty)
+        {
+            return mLayerBelowObject;
+        }
+
+        return nullptr; // TODO: implement
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreRotation, bool clearOffset)
