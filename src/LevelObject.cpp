@@ -287,9 +287,6 @@ namespace od
         if(mLayerBelowObjectDirty)
         {
             mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
-
-            Logger::info() << "Object " << getObjectId() << " is now on layer " << (mLayerBelowObject ? mLayerBelowObject->getName() : " null");
-
             mLayerBelowObjectDirty = false;
         }
 

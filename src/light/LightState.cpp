@@ -133,6 +133,8 @@ namespace od
 
     void LightStateCallback::_updateLightState()
     {
+        mLightStateAttribute->clearLightList();
+
         // always add layer light if available
         Layer *lightingLayer = mLevelObject.getLightingLayer();
         if(lightingLayer != nullptr)
@@ -148,7 +150,6 @@ namespace od
         auto pred = [&point](LightHandle *l, LightHandle *r){ return l->distanceToPoint(point) < r->distanceToPoint(point); };
         std::sort(mAffectingLightsCache.begin(), mAffectingLightsCache.end(), pred);
 
-        mLightStateAttribute->clearLightList();
         for(auto it = mAffectingLightsCache.begin(); it != mAffectingLightsCache.end(); ++it)
         {
             mLightStateAttribute->addLight((*it)->getLight()); // will ignore all calls past maximum number of lights
