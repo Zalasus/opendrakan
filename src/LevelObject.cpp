@@ -179,6 +179,7 @@ namespace od
         }
 
         mLightingCallback->lightingDirty();
+        mLayerBelowObjectDirty = true;
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
@@ -283,12 +284,16 @@ namespace od
 
     Layer *LevelObject::getLayerBelowObject()
     {
-        if(!mLayerBelowObjectDirty)
+        if(mLayerBelowObjectDirty)
         {
-            return mLayerBelowObject;
+            mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
+
+            Logger::info() << "Object " << getObjectId() << " is now on layer " << (mLayerBelowObject ? mLayerBelowObject->getName() : " null");
+
+            mLayerBelowObjectDirty = false;
         }
 
-        return nullptr; // TODO: implement
+        return mLayerBelowObject;
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreRotation, bool clearOffset)
@@ -394,6 +399,7 @@ namespace od
     void LevelObject::_onMoved()
     {
         mLightingCallback->lightingDirty();
+        mLayerBelowObjectDirty = true;
 
         if(mRflClassInstance != nullptr)
         {

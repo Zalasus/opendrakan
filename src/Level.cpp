@@ -107,6 +107,49 @@ namespace od
         return mLayers[index].get();
     }
 
+    Layer *Level::getFirstLayerBelowPoint(const osg::Vec3 &v)
+    {
+        // TODO: use an efficient spatial search here
+        //  using brute force for now
+
+        osg::Vec2 xz(v.x(), v.z());
+
+        // first, find all candidate layers that overlap the given point in the xz plane
+        mLayerLookupCache.clear();
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            if((*it)->contains(xz))
+            {
+                mLayerLookupCache.push_back(*it);
+            }
+        }
+
+        // then, find the layer with smallest, negative height difference among those candiates
+        Layer *closestLayer = nullptr;
+        float minDistance = std::numeric_limits<float>::max();
+        for(auto it = mLayerLookupCache.begin(); it != mLayerLookupCache.end(); ++it)
+        {
+            if((*it)->hasHoleAt(xz))
+            {
+                continue;
+            }
+
+            float heightDifferenceDown = v.y() - (*it)->getAbsoluteHeightAt(xz);
+            if(heightDifferenceDown < 0)
+            {
+                continue; // don't care about layers above us
+            }
+
+            if(heightDifferenceDown < minDistance)
+            {
+                minDistance = heightDifferenceDown;
+                closestLayer = *it;
+            }
+        }
+
+        return closestLayer;
+    }
+
     void Level::update()
     {
         if(!mDestructionQueue.empty())

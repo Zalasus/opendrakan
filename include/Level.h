@@ -50,6 +50,7 @@ namespace od
         void requestLevelObjectDestruction(LevelObject *obj);
         Layer *getLayerById(uint32_t id);
         Layer *getLayerByIndex(uint16_t index);
+        Layer *getFirstLayerBelowPoint(const osg::Vec3 &v);
 
         void update();
 
@@ -89,6 +90,8 @@ namespace od
 		PhysicsManager mPhysicsManager;
 
 		std::deque<osg::ref_ptr<LevelObject>> mDestructionQueue;
+
+		std::vector<Layer*> mLayerLookupCache;
     };
 
 
