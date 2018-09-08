@@ -56,8 +56,11 @@ vec4 calcSingleLight(gl_LightSourceParameters light, gl_MaterialParameters mater
     vec4 diffuseColor = cosTheta * light.diffuse * material.diffuse;
     
     // specular term
-    float cosAlpha = max(dot(normal_cs, light.halfVector.xyz), 0.0);
-    vec4 specularColor = pow(cosAlpha, material.shininess) * light.specular * material.specular;
+    // FIXME: since we must clamp the vertex color at the end of the vertex shader, specularity won't work per-vertex.
+    //  move this to the fragment shader
+    //float cosAlpha = max(dot(normal_cs, light.halfVector.xyz), 0.0);
+    //vec4 specularColor = pow(cosAlpha, material.shininess) * light.specular * material.specular;
+    vec4 specularColor = vec4(0.0);
       
     return attenuation*(ambientColor + diffuseColor + specularColor);
 }
@@ -80,6 +83,8 @@ void main(void)
 
     vertexColor = calcLighting(vertex_cs.xyz, normal_cs, gl_Color);
     vertexColor.w = 1.0;
+    
+    vertexColor = clamp(vertexColor, 0.0, 1.0);
     
     gl_Position = gl_ProjectionMatrix * vertex_cs;
     vertexNormal = normal_cs;
