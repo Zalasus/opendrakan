@@ -7,6 +7,7 @@
 
 #include "Layer.h"
 
+#include <limits>
 #include <osg/Texture2D>
 #include <osg/FrontFace>
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
@@ -337,12 +338,12 @@ namespace od
 
     bool Layer::hasHoleAt(const osg::Vec2 &absolutePos)
     {
-        osg::Vec2 relativePos = absolutePos - osg::Vec2(mOriginX, mOriginZ);
-        if(relativePos.x() < 0 || relativePos.x() > mWidth || relativePos.y() < 0 || relativePos.y() > mHeight)
+        if(!contains(absolutePos))
         {
             return false;
         }
 
+        osg::Vec2 relativePos = absolutePos - osg::Vec2(mOriginX, mOriginZ);
         float cellX = std::floor(relativePos.x());
         float cellZ = std::floor(relativePos.y());
         float fractX = relativePos.x() - cellX;
@@ -371,6 +372,78 @@ namespace od
         AssetRef texture = isLeftTriangle ? cell.leftTextureRef : cell.rightTextureRef;
 
         return texture.isNullLayerTexture();
+    }
+
+    bool Layer::contains(const osg::Vec2 &xzCoord)
+    {
+        return xzCoord.x() >= mOriginX && xzCoord.x() <= (mOriginX+mWidth)
+                && xzCoord.y() >= mOriginZ && xzCoord.y() <= (mOriginZ+mHeight);
+    }
+
+    float Layer::getAbsoluteHeightAt(const osg::Vec2 &xzCoord)
+    {
+        if(!contains(xzCoord))
+        {
+            return NAN;
+        }
+
+        osg::Vec2 relativePos = xzCoord - osg::Vec2(mOriginX, mOriginZ);
+        float cellX = std::floor(relativePos.x());
+        float cellZ = std::floor(relativePos.y());
+        float fractX = relativePos.x() - cellX;
+        float fractZ = relativePos.y() - cellZ;
+
+        size_t cellIndex = cellX + cellZ*mWidth;
+        if(cellIndex >= mCells.size())
+        {
+            throw Exception("Calculated cell index lies outside of cell array. Seems like the layer bounds check is incorrect");
+        }
+
+        Cell &cell = mCells[cellIndex];
+
+        // calculate indices of corner vertices. same as in buildGeometry()
+        size_t a = cellIndex + cellZ; // add row index since we want to skip top right vertex in every row passed so far
+        size_t b = a + 1;
+        size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
+        size_t d = c + 1;
+        float ya = mVertices[a].heightOffsetLu;
+        float yb = mVertices[b].heightOffsetLu;
+        float yc = mVertices[c].heightOffsetLu;
+        float yd = mVertices[d].heightOffsetLu;
+
+        // calculate height using generic formula for a 3D plane for which we just need to determine the
+        //  coefficients depending on where in the cell we are
+        float heightAnchor;
+        float dx;
+        float dz;
+        float heightDeltaX;
+        float heightDeltaZ;
+        if(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH)
+        {
+            bool isLeftTriangle = (fractX < fractZ);
+
+            dx = isLeftTriangle ?    fractX  : (1-fractX);
+            dz = isLeftTriangle ? (1-fractZ) :    fractZ;
+
+            heightDeltaX = isLeftTriangle ? (yd-yc) : (ya-yb);
+            heightDeltaZ = isLeftTriangle ? (ya-yc) : (yd-yb);
+
+            heightAnchor = isLeftTriangle ? yc : yb;
+
+        }else
+        {
+            bool isLeftTriangle = (1 - fractX > fractZ);
+
+            dx = isLeftTriangle ? fractX : (1-fractX);
+            dz = isLeftTriangle ? fractZ : (1-fractZ);
+
+            heightDeltaX = isLeftTriangle ? (yb-ya) : (yc-yd);
+            heightDeltaZ = isLeftTriangle ? (yc-ya) : (yb-yd);
+
+            heightAnchor = isLeftTriangle ? ya : yd;
+        }
+
+        return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
 }

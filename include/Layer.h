@@ -59,6 +59,10 @@ namespace od
          */
         bool hasHoleAt(const osg::Vec2 &absolutePos);
 
+        bool contains(const osg::Vec2 &xzCoord);
+
+        float getAbsoluteHeightAt(const osg::Vec2 &xzCoord);
+
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
