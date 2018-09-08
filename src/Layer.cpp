@@ -252,7 +252,10 @@ namespace od
         mLayerLight->setLinearAttenuation(0.0);
         mLayerLight->setQuadraticAttenuation(0.0);
 
-        osg::Vec3 lightPositionHomogeneous(std::cos(mLightDirection), std::sin(mLightAscension), -std::sin(mLightDirection));
+        osg::Vec3 lightPositionHomogeneous(
+                std::cos(mLightDirection)*std::cos(mLightAscension),
+                std::sin(mLightAscension),
+               -std::sin(mLightDirection)*std::cos(mLightAscension));
         lightPositionHomogeneous.normalize();
         mLayerLight->setPosition(osg::Vec4(lightPositionHomogeneous, 0.0)); // w=0 makes this a directional light in homogeneous coords
     }
