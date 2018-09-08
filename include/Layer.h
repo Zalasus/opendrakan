@@ -60,6 +60,7 @@ namespace od
         bool hasHoleAt(const osg::Vec2 &absolutePos);
 
         bool contains(const osg::Vec2 &xzCoord);
+        bool contains(const osg::Vec2 &xzCoord, float epsilon);
 
         float getAbsoluteHeightAt(const osg::Vec2 &xzCoord);
 

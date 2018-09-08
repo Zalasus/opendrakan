@@ -344,6 +344,27 @@ namespace od
         }
 
         osg::Vec2 relativePos = absolutePos - osg::Vec2(mOriginX, mOriginZ);
+
+        // for points directly on the layer's border, allow a certain epsilon so we don't run into undefined cells
+        float epsilon = 0.00001;
+        if(relativePos.x() == mWidth)
+        {
+            relativePos.x() -= epsilon;
+
+        }else if(relativePos.x() <= 0)
+        {
+            relativePos.x() += epsilon;
+        }
+
+        if(relativePos.y() == mHeight)
+        {
+            relativePos.y() -= epsilon;
+
+        }else if(relativePos.y() <= 0)
+        {
+            relativePos.y() += epsilon;
+        }
+
         float cellX = std::floor(relativePos.x());
         float cellZ = std::floor(relativePos.y());
         float fractX = relativePos.x() - cellX;
@@ -380,6 +401,12 @@ namespace od
                 && xzCoord.y() >= mOriginZ && xzCoord.y() <= (mOriginZ+mHeight);
     }
 
+    bool Layer::contains(const osg::Vec2 &xzCoord, float epsilon)
+    {
+        return xzCoord.x() >= (mOriginX-epsilon) && xzCoord.x() <= (mOriginX+mWidth+epsilon)
+                && xzCoord.y() >= (mOriginZ-epsilon) && xzCoord.y() <= (mOriginZ+mHeight+epsilon);
+    }
+
     float Layer::getAbsoluteHeightAt(const osg::Vec2 &xzCoord)
     {
         if(!contains(xzCoord))
@@ -388,8 +415,29 @@ namespace od
         }
 
         osg::Vec2 relativePos = xzCoord - osg::Vec2(mOriginX, mOriginZ);
-        float cellX = std::floor(relativePos.x());
-        float cellZ = std::floor(relativePos.y());
+
+        // for points directly on the layer's border, allow a certain epsilon so we don't run into undefined cells
+        float epsilon = 0.00001;
+        if(relativePos.x() == mWidth)
+        {
+            relativePos.x() -= epsilon;
+
+        }else if(relativePos.x() <= 0)
+        {
+            relativePos.x() += epsilon;
+        }
+
+        if(relativePos.y() == mHeight)
+        {
+            relativePos.y() -= epsilon;
+
+        }else if(relativePos.y() <= 0)
+        {
+            relativePos.y() += epsilon;
+        }
+
+        size_t cellX = relativePos.x();
+        size_t cellZ = relativePos.y();
         float fractX = relativePos.x() - cellX;
         float fractZ = relativePos.y() - cellZ;
 
