@@ -472,26 +472,50 @@ namespace od
         if(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH)
         {
             bool isLeftTriangle = (fractX < fractZ);
+            if(isLeftTriangle)
+            {
+                dx =    fractX;
+                dz = (1-fractZ);
 
-            dx = isLeftTriangle ?    fractX  : (1-fractX);
-            dz = isLeftTriangle ? (1-fractZ) :    fractZ;
+                heightDeltaX = (yd-yc);
+                heightDeltaZ = (ya-yc);
 
-            heightDeltaX = isLeftTriangle ? (yd-yc) : (ya-yb);
-            heightDeltaZ = isLeftTriangle ? (ya-yc) : (yd-yb);
+                heightAnchor = yc;
 
-            heightAnchor = isLeftTriangle ? yc : yb;
+            }else
+            {
+                dx = (1-fractX);
+                dz = fractZ;
+
+                heightDeltaX = (ya-yb);
+                heightDeltaZ = (yd-yb);
+
+                heightAnchor = yb;
+            }
 
         }else
         {
             bool isLeftTriangle = (1 - fractX > fractZ);
+            if(isLeftTriangle)
+            {
+                dx = fractX;
+                dz = fractZ;
 
-            dx = isLeftTriangle ? fractX : (1-fractX);
-            dz = isLeftTriangle ? fractZ : (1-fractZ);
+                heightDeltaX = (yb-ya);
+                heightDeltaZ = (yc-ya);
 
-            heightDeltaX = isLeftTriangle ? (yb-ya) : (yc-yd);
-            heightDeltaZ = isLeftTriangle ? (yc-ya) : (yb-yd);
+                heightAnchor = ya;
 
-            heightAnchor = isLeftTriangle ? ya : yd;
+            }else
+            {
+                dx = (1-fractX);
+                dz = (1-fractZ);
+
+                heightDeltaX = (yc-yd);
+                heightDeltaZ = (yb-yd);
+
+                heightAnchor = yd;
+            }
         }
 
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
