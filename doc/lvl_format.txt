@@ -114,7 +114,19 @@ Layer data block format
         followed by two 4-byte-words which are database references for the face textures. 
         first is for left triangle, second is right triangle.
         
-        followed by that, 16 bytes that indicate texture orientation, but in what way i can not tell yet
+        followed by that, 16 bytes for texture coordinates. each coordinate is represented by a uint16_t where
+        0x0000 means 0.0 in texture space, 0xffff means 1.0. The coordinates are stored as:
+        
+            Uc Ud Ub Ua Vc Vd Vb Va
+            
+        with corners defined as such:
+            
+            a-b
+            | |
+            c-d
+            
+        The two vertices connected to the divider share a texture coordinate.
+            
     
     
     
