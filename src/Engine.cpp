@@ -8,6 +8,7 @@
 
 #include "Engine.h"
 
+#include "OdDefines.h"
 #include "Exception.h"
 #include "Logger.h"
 #include "Level.h"
@@ -49,6 +50,11 @@ namespace od
 
         mRootNode = new osg::Group();
         mViewer->setSceneData(mRootNode);
+
+        mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);
+        osg::StateSet *rootStateSet = mRootNode->getOrCreateStateSet();
+        rootStateSet->addUniform(mGammaUniform, osg::StateAttribute::ON);
+        rootStateSet->setMode(GL_FRAMEBUFFER_SRGB, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
         // set window title
         osgViewer::Viewer::Windows windows;
@@ -139,6 +145,16 @@ namespace od
 		}
 
 		Logger::info() << "Shutting down gracefully";
+	}
+
+	void Engine::setFullScreenGamma(float gamma)
+	{
+	    if(mGammaUniform == nullptr)
+	    {
+	        return;
+	    }
+
+	    mGammaUniform->set(gamma);
 	}
 
 	void Engine::_findEngineRoot(const std::string &rrcFileName)

@@ -23,4 +23,6 @@
 
 #define OD_MAX_LIGHTS 8
 
+#define OD_DEFAULT_GAMMA 1.5f
+
 #endif /* INCLUDE_ODDEFINES_H_ */

@@ -52,6 +52,8 @@ namespace od
 		void setUp();
 		void run();
 
+		void setFullScreenGamma(float gamma);
+
 
 	private:
 
@@ -68,6 +70,7 @@ namespace od
 		osg::ref_ptr<osg::Group> mRootNode;
 		osg::ref_ptr<osgViewer::Viewer> mViewer;
 		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
+		osg::ref_ptr<osg::Uniform> mGammaUniform;
 		Camera *mCamera;
 		Player *mPlayer;
 		double mMaxFrameRate;

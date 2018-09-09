@@ -377,14 +377,16 @@ namespace od
         mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
         mGuiCamera->setAllowEventFocus(false);
 
+        static_cast<osg::Group*>(mViewer->getSceneData())->addChild(mGuiCamera);
+
         osgViewer::Viewer::Windows windows;
         mViewer->getWindows(windows);
         if(windows.empty())
         {
             throw Exception("Could not create secondary camera. No windows found");
         }
-        mGuiCamera->setGraphicsContext(windows[0]);
-        mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
+        //mGuiCamera->setGraphicsContext(windows[0]);
+        //mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
 
         mGuiRoot = new WidgetGroup;
 
@@ -395,31 +397,21 @@ namespace od
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
-        for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
-        {
-            osg::ref_ptr<osg::Light> light = new osg::Light(i);
-            light->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-            light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-            light->setSpecular(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-            light->setPosition(osg::Vec4(1.0, 0.0, 0.0, 0.0));
-            ss->setAttribute(light, osg::StateAttribute::ON);
-        }
-
-        osg::ref_ptr<osg::Material> defaultMaterial(new osg::Material);
-        defaultMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        defaultMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        defaultMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        defaultMaterial->setShininess(osg::Material::FRONT_AND_BACK, 1.0); // do NOT set this to 0! it seems to break the GLSL pow function
-        ss->setAttribute(defaultMaterial, osg::StateAttribute::ON);
+        osg::ref_ptr<osg::Light> defaultGuiLight(new osg::Light(0));
+        defaultGuiLight->setAmbient(osg::Vec4(1.0, 1.0, 1.0, 1.0));
+        defaultGuiLight->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
+        defaultGuiLight->setSpecular(osg::Vec4(0.0, 0.0, 0.0, 0.0));
+        defaultGuiLight->setConstantAttenuation(1.0);
+        defaultGuiLight->setLinearAttenuation(0.0);
+        defaultGuiLight->setQuadraticAttenuation(0.0);
+        ss->setAttribute(defaultGuiLight, osg::StateAttribute::ON);
 
         mGuiCamera->addChild(mGuiRoot);
-        mViewer->addSlave(mGuiCamera, false);
 
         mCursorWidget = new Cursor(*this);
         mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
         mCursorWidget->setZIndex(-1000);
         this->addWidget(mCursorWidget);
-
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb.getClassFactory() == nullptr)
