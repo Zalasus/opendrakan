@@ -77,6 +77,22 @@ namespace od
         }
     }
 
+    void LightManager::getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<LightHandle*> &lights)
+    {
+        // TODO: organize lights in a structure with efficient spatial search
+        //  for now, just use a brute force technique by iterating over all registered lights.
+
+        for(auto it = mLightHandles.begin(); it != mLightHandles.end(); ++it)
+        {
+            LightHandle *l = *it;
+
+            if(l->affects(sphere))
+            {
+                lights.push_back(l);
+            }
+        }
+    }
+
     void LightManager::objectDeleted(void *object)
     {
         removeLight(static_cast<LightHandle*>(object));

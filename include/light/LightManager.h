@@ -33,6 +33,8 @@ namespace od
          */
         void getLightsAffectingPoint(const osg::Vec3 &point, std::vector<LightHandle*> &lights);
 
+        void getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<LightHandle*> &lights);
+
         virtual void objectDeleted(void *object) override;
 
 

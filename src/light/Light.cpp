@@ -27,6 +27,11 @@ namespace od
         return distanceToPoint(point) <= mRadius;
     }
 
+    bool LightHandle::affects(const osg::BoundingSphere &sphere)
+    {
+        return distanceToPoint(sphere.center()) <= (mRadius + sphere.radius());
+    }
+
     float LightHandle::distanceToPoint(const osg::Vec3 &point)
     {
         return (mLevelObject->getPosition() - point).length();

@@ -9,6 +9,7 @@
 #define INCLUDE_LIGHT_LIGHT_H_
 
 #include <osg/Light>
+#include <osg/BoundingSphere>
 
 namespace od
 {
@@ -27,6 +28,7 @@ namespace od
         inline osg::Light *getLight() { return mLight; }
 
         bool affects(const osg::Vec3 &point);
+        bool affects(const osg::BoundingSphere &sphere);
         float distanceToPoint(const osg::Vec3 &point);
 
 

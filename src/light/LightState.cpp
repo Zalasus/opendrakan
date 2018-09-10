@@ -93,12 +93,16 @@ namespace od
 
 
 
-    LightStateCallback::LightStateCallback(LightManager &lm, LevelObject &obj)
+    LightStateCallback::LightStateCallback(LightManager &lm, osg::Node *node)
     : mLightManager(lm)
-    , mLevelObject(obj)
     , mLightingDirty(true)
     {
-        osg::StateSet *ss = mLevelObject.getOrCreateStateSet();
+        if(node == nullptr)
+        {
+            throw InvalidArgumentException("Passed null node to LightStateCallback()");
+        }
+
+        osg::StateSet *ss = node->getOrCreateStateSet();
         // TODO: perhaps remove all light-type attributes from state set here?
 
         osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute);
@@ -128,26 +132,24 @@ namespace od
             return; // no need to update light state on a node that is not visible
         }
 
-        _updateLightState();
+        _updateLightState(node);
     }
 
-    void LightStateCallback::_updateLightState()
+    void LightStateCallback::_updateLightState(osg::Node *node)
     {
         mLightStateAttribute->clearLightList();
 
-        // always add layer light if available
-        Layer *lightingLayer = mLevelObject.getLightingLayer();
-        if(lightingLayer != nullptr)
+        // if a fixed light is defined, always add it first
+        if(mFixedLight != nullptr)
         {
-            mLightStateAttribute->addLight(lightingLayer->getLayerLight());
+            mLightStateAttribute->addLight(mFixedLight);
         }
 
-        osg::Vec3 point = mLevelObject.getPosition();
-
         mAffectingLightsCache.clear();
-        mLightManager.getLightsAffectingPoint(point, mAffectingLightsCache);
+        mLightManager.getLightsIntersectingSphere(node->getBound(), mAffectingLightsCache);
 
-        auto pred = [&point](LightHandle *l, LightHandle *r){ return l->distanceToPoint(point) < r->distanceToPoint(point); };
+        osg::Vec3 nodeCenter = node->getBound().center();
+        auto pred = [&nodeCenter](LightHandle *l, LightHandle *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };
         std::sort(mAffectingLightsCache.begin(), mAffectingLightsCache.end(), pred);
 
         for(auto it = mAffectingLightsCache.begin(); it != mAffectingLightsCache.end(); ++it)

@@ -56,22 +56,23 @@ namespace od
     {
     public:
 
-        LightStateCallback(LightManager &lm, LevelObject &obj);
+        LightStateCallback(LightManager &lm, osg::Node *node);
 
         inline void lightingDirty() { mLightingDirty = true; }
+        inline void setFixedLight(osg::Light *light) { mFixedLight = light; }
 
         virtual void operator()(osg::Node* node, osg::NodeVisitor* nv) override;
 
 
     private:
 
-        void _updateLightState();
+        void _updateLightState(osg::Node *node);
 
         LightManager &mLightManager;
-        LevelObject &mLevelObject;
         bool mLightingDirty;
         LightStateAttribute *mLightStateAttribute;
         std::vector<LightHandle*> mAffectingLightsCache;
+        osg::ref_ptr<osg::Light> mFixedLight;
     };
 
 }

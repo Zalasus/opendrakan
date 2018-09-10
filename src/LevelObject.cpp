@@ -62,18 +62,13 @@ namespace od
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
-    , mLayerBelowObjectDirty(true)
-    , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), *this))
+    , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), this))
     {
         this->setNodeMask(NodeMasks::Object);
-
-        this->addCullCallback(mLightingCallback);
     }
 
     LevelObject::~LevelObject()
     {
-        this->removeCullCallback(mLightingCallback);
-
         // make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
         if(mState == LevelObjectState::Spawned)
         {
@@ -178,8 +173,10 @@ namespace od
             mRflClassInstance->onSpawned(*this);
         }
 
+        this->addCullCallback(mLightingCallback);
         mLightingCallback->lightingDirty();
-        mLayerBelowObjectDirty = true;
+
+        _updateLayerBelowObject();
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
@@ -206,6 +203,8 @@ namespace od
         }
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
+
+        this->removeCullCallback(mLightingCallback);
 
         // detach this from any object it may be attached to, and detach all objects attached to this
         detach();
@@ -284,12 +283,6 @@ namespace od
 
     Layer *LevelObject::getLayerBelowObject()
     {
-        if(mLayerBelowObjectDirty)
-        {
-            mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
-            mLayerBelowObjectDirty = false;
-        }
-
         return mLayerBelowObject;
     }
 
@@ -396,7 +389,10 @@ namespace od
     void LevelObject::_onMoved()
     {
         mLightingCallback->lightingDirty();
-        mLayerBelowObjectDirty = true;
+
+        // FIXME: this is a pontentially long running operation and should be handled via
+        //   a dirty state in an appropriate update callback
+        _updateLayerBelowObject();
 
         if(mRflClassInstance != nullptr)
         {
@@ -406,6 +402,18 @@ namespace od
         for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
         {
             (*it)->_attachmentTargetPositionUpdated();
+        }
+    }
+
+    void LevelObject::_updateLayerBelowObject()
+    {
+        mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
+
+        // additionally, give the pontially changed layer light to the lighting callback
+        Layer *lightingLayer = getLightingLayer();
+        if(lightingLayer != nullptr)
+        {
+            mLightingCallback->setFixedLight(lightingLayer->getLayerLight());
         }
     }
 

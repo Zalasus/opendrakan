@@ -137,6 +137,7 @@ namespace od
     private:
 
         void _onMoved();
+        void _updateLayerBelowObject();
         void _attachmentTargetPositionUpdated();
         void _detachAllAttachedObjects();
         void _setVisible(bool b); // just so we can switch visibility internally without producing logs everytime
@@ -170,7 +171,6 @@ namespace od
         std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
 
         osg::ref_ptr<Layer> mLayerBelowObject;
-        bool mLayerBelowObjectDirty;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
         osg::ref_ptr<LightStateCallback> mLightingCallback;
