@@ -48,8 +48,12 @@ namespace odRfl
         light->setDiffuse(mColor.asColorVector());
         light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
         light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        light->setConstantAttenuation(0.1);
-        light->setLinearAttenuation(10/mRadius);
+
+        // light (at least static lights) are not attenuated at all in the riot engine.
+        //  their effect solely depends on their radius. TODO: the intensity scaling probably has to be applied to the color then
+        light->setConstantAttenuation(1.0);
+        light->setLinearAttenuation(0.0);
+        light->setQuadraticAttenuation(0.0);
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
