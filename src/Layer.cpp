@@ -72,8 +72,13 @@ namespace od
         uint32_t ambientColor;
         dr  >> lightColor
             >> ambientColor;
-        mLightColor.set(((lightColor >> 16) & 0xff)/255.0, ((lightColor >> 8) & 0xff)/255.0, (lightColor & 0xff)/255.0, 1.0);
-        mAmbientColor.set(((ambientColor >> 16) & 0xff)/255.0, ((ambientColor >> 8) & 0xff)/255.0, (ambientColor & 0xff)/255.0, 1.0);
+
+        mLightColor.set(((lightColor >> 16) & 0xff)/255.0, ((lightColor >> 8) & 0xff)/255.0, (lightColor & 0xff)/255.0);
+        mAmbientColor.set(((ambientColor >> 16) & 0xff)/255.0, ((ambientColor >> 8) & 0xff)/255.0, (ambientColor & 0xff)/255.0);
+        mLightDirectionVector.set(
+                std::cos(mLightDirection)*std::cos(mLightAscension),
+                std::sin(mLightAscension),
+               -std::sin(mLightDirection)*std::cos(mLightAscension));
 
         uint32_t lightDropoffType;
         dr >> lightDropoffType;
@@ -254,24 +259,9 @@ namespace od
         this->addChild(mLayerGeode);
 
         mLightCallback = new LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
-        this->addCullCallback(mLightCallback);
-
-        mLayerLight = new osg::Light(0);
-        mLayerLight->setDiffuse(mLightColor);
-        mLayerLight->setAmbient(mAmbientColor);
-        mLayerLight->setConstantAttenuation(1.0); // this gives us a constant light intensity
-        mLayerLight->setLinearAttenuation(0.0);
-        mLayerLight->setQuadraticAttenuation(0.0);
-
-        osg::Vec3 lightPositionHomogeneous(
-                std::cos(mLightDirection)*std::cos(mLightAscension),
-                std::sin(mLightAscension),
-               -std::sin(mLightDirection)*std::cos(mLightAscension));
-        lightPositionHomogeneous.normalize();
-        mLayerLight->setPosition(osg::Vec4(lightPositionHomogeneous, 0.0)); // w=0 makes this a directional light in homogeneous coords
-
-        mLightCallback->setFixedLight(mLayerLight);
+        mLightCallback->setLayerLight(mLightColor, mAmbientColor, mLightDirectionVector);
         mLightCallback->lightingDirty();
+        this->addCullCallback(mLightCallback);
     }
 
     btCollisionShape *Layer::getCollisionShape()

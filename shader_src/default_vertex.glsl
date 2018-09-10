@@ -1,5 +1,7 @@
 #version 120
 
+#define MAX_LIGHTS 8
+
 // output for fragment shader
 varying vec3 vertexNormal;
 varying vec4 vertexColor;
@@ -7,23 +9,6 @@ varying vec2 texCoord;
 
 /*
 Built-in uniforms that might be useful here:
-
-struct gl_LightSourceParameters 
-{ 
-    vec4  ambient; 
-    vec4  diffuse; 
-    vec4  specular; 
-    vec4  position; 
-    vec4  halfVector; 
-    vec3  spotDirection; 
-    float  spotExponent; 
-    float  spotCutoff; 
-    float  spotCosCutoff; 
-    float  constantAttenuation; 
-    float  linearAttenuation; 
-    float  quadraticAttenuation; 
-};
-uniform gl_LightSourceParameters gl_LightSource[gl_MaxLights]; 
 
 struct gl_MaterialParameters
 {
@@ -36,6 +21,17 @@ struct gl_MaterialParameters
 uniform gl_MaterialParameters  gl_FrontMaterial;
 uniform gl_MaterialParameters  gl_BackMaterial;
 */
+
+uniform vec3  layerLightDiffuse;
+uniform vec3  layerLightAmbient;
+uniform vec3  layerLightDirection;
+
+uniform vec3  objectLightDiffuse[MAX_LIGHTS];
+uniform float objectLightIntensity[MAX_LIGHTS];
+uniform float objectLightRadius[MAX_LIGHTS];
+uniform vec3  objectLightPosition[MAX_LIGHTS];
+
+
 
 vec4 calcSingleLight(gl_LightSourceParameters light, gl_MaterialParameters material, vec3 vertex_cs, vec3 normal_cs)
 {  

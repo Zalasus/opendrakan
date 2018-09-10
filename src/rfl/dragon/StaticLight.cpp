@@ -37,23 +37,17 @@ namespace odRfl
 
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
-        if(mLightHandle == nullptr)
+        if(mLight == nullptr)
         {
-            mLightHandle = new od::LightHandle(&obj, mRadius, mQualityLevelRequired);
+            mLight = new od::Light(obj.getLevel().getEngine().getLightManager(), &obj);
         }
-        obj.getLevel().getEngine().getLightManager().addLight(mLightHandle);
+        obj.getLevel().getEngine().getLightManager().addLight(mLight);
 
-        osg::Light *light = mLightHandle->getLight();
-        light->setPosition(osg::Vec4(obj.getPosition(), 1.0));
-        light->setDiffuse(mColor.asColorVector());
-        light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-
-        // light (at least static lights) are not attenuated at all in the riot engine.
-        //  their effect solely depends on their radius. TODO: the intensity scaling probably has to be applied to the color then
-        light->setConstantAttenuation(1.0);
-        light->setLinearAttenuation(0.0);
-        light->setQuadraticAttenuation(0.0);
+        osg::Vec4 color = mColor.asColorVector();
+        mLight->setColor(osg::Vec3(color.x(), color.y(), color.z()));
+        mLight->setRadius(mRadius);
+        mLight->setIntensityScaling(mIntensityScaling);
+        mLight->setRequiredQualityLevel(mQualityLevelRequired);
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
@@ -65,15 +59,13 @@ namespace odRfl
             Logger::warn() << "  If light moved into new objects, those will not receive new light until they move themselves";
             warned = true;
         }
-
-        mLightHandle->getLight()->setPosition(osg::Vec4(obj.getPosition(), 1.0));
     }
 
     void StaticLight::onDespawned(od::LevelObject &obj)
     {
-        if(mLightHandle != nullptr)
+        if(mLight != nullptr)
         {
-            obj.getLevel().getEngine().getLightManager().removeLight(mLightHandle);
+            obj.getLevel().getEngine().getLightManager().removeLight(mLight);
         }
     }
 

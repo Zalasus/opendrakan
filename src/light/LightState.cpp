@@ -20,31 +20,27 @@ namespace od
 {
 
     LightStateAttribute::LightStateAttribute()
-    : mNullLight(new osg::Light)
+    : mLightManager(nullptr)
     {
-        mNullLight->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        mNullLight->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        mNullLight->setSpecular(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        mNullLight->setPosition(osg::Vec4(1.0, 0.0, 0.0, 0.0));
+        mLights.reserve(OD_MAX_LIGHTS);
+    }
 
+    LightStateAttribute::LightStateAttribute(LightManager &lm)
+    : mLightManager(&lm)
+    {
         mLights.reserve(OD_MAX_LIGHTS);
     }
 
     LightStateAttribute::LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp)
     : StateAttribute(l, copyOp)
-    , mNullLight(new osg::Light(*l.mNullLight, copyOp))
+    , mLightManager(l.mLightManager)
     {
         mLights.reserve(OD_MAX_LIGHTS);
     }
 
     bool LightStateAttribute::getModeUsage(ModeUsage &usage) const
     {
-        for (size_t i = 0; i < mLights.size(); ++i)
-        {
-            usage.usesMode(GL_LIGHT0 + i);
-        }
-
-        return true;
+        return true; // completely shader based. doesn't use any modes
     }
 
     int LightStateAttribute::compare(const StateAttribute& sa) const
@@ -57,11 +53,11 @@ namespace od
         mLights.clear();
     }
 
-    void LightStateAttribute::addLight(osg::Light *light)
+    void LightStateAttribute::addLight(Light *light)
     {
         if(mLights.size() < OD_MAX_LIGHTS)
         {
-            mLights.push_back(osg::ref_ptr<osg::Light>(light));
+            mLights.push_back(osg::ref_ptr<Light>(light));
         }
     }
 
@@ -77,21 +73,16 @@ namespace od
         {
             if(it != mLights.end())
             {
-                osg::Light *l = *it;
+                (*it)->apply(i);
                 ++it;
-                if(l == nullptr)
-                {
-                    // TODO: light no longer exists. erase it
-                    continue;
-                }
-
-                l->setLightNum(i);
-                l->apply(state);
 
             }else
             {
-                mNullLight->setLightNum(i);
-                mNullLight->apply(state);
+                // FIXME: i don't want to do it this way...
+                if(mLightManager != nullptr)
+                {
+                    mLightManager->applyNullLight(i);
+                }
             }
         }
 
@@ -113,11 +104,11 @@ namespace od
         osg::StateSet *ss = node->getOrCreateStateSet();
         // TODO: perhaps remove all light-type attributes from state set here?
 
-        osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute);
+        osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute(mLightManager));
         mLightStateAttribute = lightState.get();
         ss->setAttribute(lightState, osg::StateAttribute::ON);
 
-        mAffectingLightsCache.reserve(OD_MAX_LIGHTS);
+        mTmpAffectingLightsList.reserve(OD_MAX_LIGHTS);
     }
 
     void LightStateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv)
@@ -152,22 +143,16 @@ namespace od
     {
         mLightStateAttribute->clearLightList();
 
-        // if a fixed light is defined, always add it first
-        if(mFixedLight != nullptr)
-        {
-            mLightStateAttribute->addLight(mFixedLight);
-        }
-
-        mAffectingLightsCache.clear();
-        mLightManager.getLightsIntersectingSphere(node->getBound(), mAffectingLightsCache);
+        mTmpAffectingLightsList.clear();
+        mLightManager.getLightsIntersectingSphere(node->getBound(), mTmpAffectingLightsList);
 
         osg::Vec3 nodeCenter = node->getBound().center();
-        auto pred = [&nodeCenter](LightHandle *l, LightHandle *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };
-        std::sort(mAffectingLightsCache.begin(), mAffectingLightsCache.end(), pred);
+        auto pred = [&nodeCenter](Light *l, Light *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };
+        std::sort(mTmpAffectingLightsList.begin(), mTmpAffectingLightsList.end(), pred);
 
-        for(auto it = mAffectingLightsCache.begin(); it != mAffectingLightsCache.end(); ++it)
+        for(auto it = mTmpAffectingLightsList.begin(); it != mTmpAffectingLightsList.end(); ++it)
         {
-            mLightStateAttribute->addLight((*it)->getLight()); // will ignore all calls past maximum number of lights
+            mLightStateAttribute->addLight(*it); // will ignore all calls past maximum number of lights
         }
 
         mLightingDirty = false;

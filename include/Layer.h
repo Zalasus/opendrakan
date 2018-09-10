@@ -73,7 +73,9 @@ namespace od
         inline uint32_t getOriginZ() const { return mOriginZ; }
         inline float getWorldHeightWu() const { return mWorldHeightWu; }
         inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
-        inline osg::Light *getLayerLight() const { return mLayerLight; }
+        inline osg::Vec3 getLightColor() const { return mLightColor; }
+        inline osg::Vec3 getAmbientColor() const { return mAmbientColor; }
+        inline osg::Vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
 
 
     private:
@@ -104,8 +106,9 @@ namespace od
         uint32_t                mFlags; // 2 = member of alternate blending group
         float                   mLightDirection;
         float                   mLightAscension;
-        osg::Vec4               mLightColor;
-        osg::Vec4               mAmbientColor;
+        osg::Vec3               mLightColor;
+        osg::Vec3               mAmbientColor;
+        osg::Vec3               mLightDirectionVector; // direction _towards_ light!
         LightDropoffType        mLightDropoffType;
         std::vector<uint32_t>   mVisibleLayers;
 
@@ -113,7 +116,6 @@ namespace od
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
         osg::ref_ptr<osg::Geode> mLayerGeode;
-        osg::ref_ptr<osg::Light> mLayerLight;
         osg::ref_ptr<LightStateCallback> mLightCallback;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;

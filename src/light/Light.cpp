@@ -10,31 +10,39 @@
 #include <osg/BoundingSphere>
 
 #include "LevelObject.h"
+#include "light/LightManager.h"
 
 namespace od
 {
 
-    LightHandle::LightHandle(LevelObject *obj, float radius, uint32_t requiredQualityLevel)
-    : mLevelObject(obj)
-    , mRadius(radius)
-    , mRequiredQualityLevel(requiredQualityLevel)
-    , mLight(new osg::Light)
+    Light::Light(LightManager &lm, LevelObject *obj)
+    : mLightManager(lm)
+    , mLevelObject(obj)
+    , mColor(osg::Vec3(1.0, 1.0, 1.0))
+    , mIntensityScaling(1.0)
+    , mRadius(1.0)
+    , mRequiredQualityLevel(0)
     {
     }
 
-    bool LightHandle::affects(const osg::Vec3 &point)
+    bool Light::affects(const osg::Vec3 &point)
     {
         return distanceToPoint(point) <= mRadius;
     }
 
-    bool LightHandle::affects(const osg::BoundingSphere &sphere)
+    bool Light::affects(const osg::BoundingSphere &sphere)
     {
         return distanceToPoint(sphere.center()) <= (mRadius + sphere.radius());
     }
 
-    float LightHandle::distanceToPoint(const osg::Vec3 &point)
+    float Light::distanceToPoint(const osg::Vec3 &point)
     {
         return (mLevelObject->getPosition() - point).length();
+    }
+
+    void Light::apply(size_t index)
+    {
+        mLightManager.applyToLightUniform(this, index);
     }
 
 }

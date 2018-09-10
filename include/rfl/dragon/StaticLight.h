@@ -36,7 +36,7 @@ namespace odRfl
         RflTextureRef   mLightMap;
         RflEnum         mQualityLevelRequired;
 
-        osg::ref_ptr<od::LightHandle> mLightHandle;
+        osg::ref_ptr<od::Light> mLight;
     };
 
 }
