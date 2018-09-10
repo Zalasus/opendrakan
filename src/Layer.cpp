@@ -15,6 +15,7 @@
 #include "Level.h"
 #include "GeodeBuilder.h"
 #include "NodeMasks.h"
+#include "Engine.h"
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
@@ -39,6 +40,14 @@ namespace od
     , mVisibleTriangles(0)
     {
         this->setNodeMask(NodeMasks::Layer);
+    }
+
+    Layer::~Layer()
+    {
+        if(mLightCallback != nullptr)
+        {
+            this->removeCullCallback(mLightCallback);
+        }
     }
 
     void Layer::loadDefinition(DataReader &dr)
@@ -244,8 +253,10 @@ namespace od
         gb.build(mLayerGeode);
         this->addChild(mLayerGeode);
 
+        mLightCallback = new LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
+        this->addCullCallback(mLightCallback);
+
         mLayerLight = new osg::Light(0);
-        mLayerGeode->getOrCreateStateSet()->setAttribute(mLayerLight, osg::StateAttribute::ON);
         mLayerLight->setDiffuse(mLightColor);
         mLayerLight->setAmbient(mAmbientColor);
         mLayerLight->setConstantAttenuation(1.0); // this gives us a constant light intensity
@@ -258,6 +269,9 @@ namespace od
                -std::sin(mLightDirection)*std::cos(mLightAscension));
         lightPositionHomogeneous.normalize();
         mLayerLight->setPosition(osg::Vec4(lightPositionHomogeneous, 0.0)); // w=0 makes this a directional light in homogeneous coords
+
+        mLightCallback->setFixedLight(mLayerLight);
+        mLightCallback->lightingDirty();
     }
 
     btCollisionShape *Layer::getCollisionShape()

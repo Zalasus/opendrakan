@@ -19,6 +19,7 @@
 #include "db/Asset.h"
 #include "DataStream.h"
 #include "OdDefines.h"
+#include "light/LightState.h"
 
 namespace od
 {
@@ -45,6 +46,7 @@ namespace od
         };
 
         Layer(Level &level);
+        ~Layer();
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
@@ -112,6 +114,7 @@ namespace od
         size_t mVisibleTriangles;
         osg::ref_ptr<osg::Geode> mLayerGeode;
         osg::ref_ptr<osg::Light> mLayerLight;
+        osg::ref_ptr<LightStateCallback> mLightCallback;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;

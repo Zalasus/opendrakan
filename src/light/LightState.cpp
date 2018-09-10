@@ -100,8 +100,9 @@ namespace od
 
 
 
-    LightStateCallback::LightStateCallback(LightManager &lm, osg::Node *node)
+    LightStateCallback::LightStateCallback(LightManager &lm, osg::Node *node, bool ignoreCulledState)
     : mLightManager(lm)
+    , mIgnoreCulledState(ignoreCulledState)
     , mLightingDirty(true)
     {
         if(node == nullptr)
@@ -134,7 +135,12 @@ namespace od
         }
 
         osgUtil::CullVisitor *cv = dynamic_cast<osgUtil::CullVisitor*>(nv);
-        if(cv == nullptr || cv->isCulled(*node))
+        if(cv == nullptr)
+        {
+            return; // was no cull visitor after all. ignore
+        }
+
+        if(!mIgnoreCulledState && cv->isCulled(*node))
         {
             return; // no need to update light state on a node that is not visible
         }

@@ -77,10 +77,14 @@ namespace od
          * If the passed node is shared among multiple LightStateCallback, the resulting light
          * behaviour is undefined.
          *
-         * @param  lm    A LightManager to fetch lights from when updating light state
-         * @param  node  The node on which the light state should be applied
+         * FIXME: The ignoreCulledState is a dirty hack to get layers to update. For some reason, they
+         * are always reported as being culled right now.
+         *
+         * @param lm                 A LightManager to fetch lights from when updating light state
+         * @param node               The node on which the light state should be applied
+         * @param ignoreCulledState  Whether the callback should update lighting even if the node is culled
          */
-        LightStateCallback(LightManager &lm, osg::Node *node);
+        LightStateCallback(LightManager &lm, osg::Node *node, bool ignoreCulledState = false);
 
         inline void lightingDirty() { mLightingDirty = true; }
         inline void setFixedLight(osg::Light *light) { mFixedLight = light; }
@@ -93,6 +97,7 @@ namespace od
         void _updateLightState(osg::Node *node);
 
         LightManager &mLightManager;
+        bool mIgnoreCulledState;
         bool mLightingDirty;
         LightStateAttribute *mLightStateAttribute;
         std::vector<LightHandle*> mAffectingLightsCache;
