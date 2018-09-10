@@ -67,6 +67,11 @@ namespace od
 
     void LightStateAttribute::apply(osg::State &state) const
     {
+        // since our lights use positions in world space, we need to set the model matrix to identity
+        //  when applying lights and restore it afterwards
+        osg::Matrix originalModelViewMatrix = state.getModelViewMatrix();
+        state.applyModelViewMatrix(state.getInitialViewMatrix());
+
         auto it = mLights.begin();
         for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
         {
@@ -89,6 +94,8 @@ namespace od
                 mNullLight->apply(state);
             }
         }
+
+        state.applyModelViewMatrix(originalModelViewMatrix);
     }
 
 

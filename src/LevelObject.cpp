@@ -62,7 +62,7 @@ namespace od
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
-    , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), this))
+    , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), mTransform))
     {
         this->setNodeMask(NodeMasks::Object);
     }
