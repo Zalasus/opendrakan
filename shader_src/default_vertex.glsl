@@ -31,14 +31,11 @@ vec4 calcLighting(vec3 vertex_cs, vec3 normal_cs, vec4 vertexColor)
         float distance = length(lightDir_cs);
         lightDir_cs = normalize(lightDir_cs);
         
-        if(distance > objectLightRadius[i])
-        {
-            continue;
-        }
-        
+        float attenuation = clamp(1.0 - distance/objectLightRadius[i], 0.0, 1.0);
+
         float cosTheta = max(dot(normal_cs, lightDir_cs), 0.0);
         
-        resultLightColor += objectLightIntensity[i] * objectLightDiffuse[i] * cosTheta;
+        resultLightColor += objectLightIntensity[i] * objectLightDiffuse[i] * cosTheta * attenuation;
     }
     
     return vertexColor * vec4(resultLightColor, 1.0);
