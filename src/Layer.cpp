@@ -23,6 +23,10 @@
 namespace od
 {
 
+    const AssetRef Layer::HoleTextureRef(0xffff, 0xffff);
+    const AssetRef Layer::InvisibleTextureRef(0xfffe, 0xffff);
+
+
     Layer::Layer(Level &level)
     : mLevel(level)
     , mId(0)
@@ -125,12 +129,12 @@ namespace od
 
             mCells.push_back(c);
 
-            if(!c.leftTextureRef.isNullLayerTexture())
+            if(c.leftTextureRef != HoleTextureRef && c.leftTextureRef != InvisibleTextureRef)
             {
             	++mVisibleTriangles;
             }
 
-            if(!c.rightTextureRef.isNullLayerTexture())
+            if(c.rightTextureRef != HoleTextureRef && c.rightTextureRef != InvisibleTextureRef)
             {
             	++mVisibleTriangles;
             }
@@ -170,7 +174,7 @@ namespace od
         	poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
         	poly.doubleSided = (mType == TYPE_BETWEEN);
 
-        	if(poly.texture.isNullLayerTexture())
+        	if(poly.texture == HoleTextureRef || poly.texture == InvisibleTextureRef)
         	{
         		continue;
         	}
@@ -311,7 +315,7 @@ namespace od
             Cell cell = mCells[cellIndex];
             AssetRef texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
 
-            if(texture.isNullLayerTexture())
+            if(texture == HoleTextureRef) // unlike when building geometry, we want to include invisible triangles here!
             {
                 continue;
             }
@@ -409,7 +413,7 @@ namespace od
 
         AssetRef texture = isLeftTriangle ? cell.leftTextureRef : cell.rightTextureRef;
 
-        return texture.isNullLayerTexture();
+        return texture == HoleTextureRef;
     }
 
     bool Layer::contains(const osg::Vec2 &xzCoord)

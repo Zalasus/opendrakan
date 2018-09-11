@@ -45,6 +45,12 @@ namespace od
             DROPOFF_W2E = 4
         };
 
+        /// @brief The magic texture reference that indicates a hole in the layer.
+        static const AssetRef HoleTextureRef;
+
+        /// @brief The magic texture reference that indicates an invisible triangle (still with collision)
+        static const AssetRef InvisibleTextureRef;
+
         Layer(Level &level);
         ~Layer();
 

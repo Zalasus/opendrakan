@@ -35,7 +35,6 @@ namespace od
 	}
 
     const AssetRef AssetRef::NULL_REF(0, 0);
-    const AssetRef AssetRef::NULL_LAYER_TEXTURE_REF(0xffff, 0xffff);
 
     DataReader &operator>>(DataReader &left, AssetRef &right)
     {
