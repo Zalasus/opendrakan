@@ -49,10 +49,13 @@ namespace odRfl
         light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
         light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
 
-        // light (at least static lights) are not attenuated at all in the riot engine.
-        //  their effect solely depends on their radius. TODO: the intensity scaling probably has to be applied to the color then
-        light->setConstantAttenuation(1.0);
-        light->setLinearAttenuation(0.0);
+        // light (at least static lights) seem like they are not attenuated at all in the riot engine.
+        //  their effect solely depends on their radius. however, since the default FFP light model does not allow
+        //  for a cutoff radius, having no attenuation would mean a light would illuminate layers and object globally.
+        //  for now, attenuate them. later, we could encode the radius in one of the attenuation parameters and do the
+        //  cutoff in our shader (would look weird on FFP, but who cares about FFP anyway).
+        light->setConstantAttenuation(0.0);
+        light->setLinearAttenuation(2.0/mRadius);
         light->setQuadraticAttenuation(0.0);
     }
 
