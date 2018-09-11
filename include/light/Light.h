@@ -26,7 +26,7 @@ namespace od
     {
     public:
 
-        Light(LightManager &lm, LevelObject *obj);
+        Light(LevelObject *obj);
 
         inline LevelObject *getLevelObject() { return mLevelObject; }
         inline osg::Vec3 getColor() const { return mColor; }
@@ -42,12 +42,9 @@ namespace od
         bool affects(const osg::BoundingSphere &sphere);
         float distanceToPoint(const osg::Vec3 &point);
 
-        void apply(size_t index);
-
 
     private:
 
-        LightManager &mLightManager;
         osg::ref_ptr<LevelObject> mLevelObject;
         osg::Vec3 mColor;
         float mIntensityScaling;

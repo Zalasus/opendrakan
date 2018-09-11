@@ -39,7 +39,7 @@ namespace odRfl
     {
         if(mLight == nullptr)
         {
-            mLight = new od::Light(obj.getLevel().getEngine().getLightManager(), &obj);
+            mLight = new od::Light(&obj);
         }
         obj.getLevel().getEngine().getLightManager().addLight(mLight);
 

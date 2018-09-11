@@ -15,9 +15,8 @@
 namespace od
 {
 
-    Light::Light(LightManager &lm, LevelObject *obj)
-    : mLightManager(lm)
-    , mLevelObject(obj)
+    Light::Light(LevelObject *obj)
+    : mLevelObject(obj)
     , mColor(osg::Vec3(1.0, 1.0, 1.0))
     , mIntensityScaling(1.0)
     , mRadius(1.0)
@@ -38,11 +37,6 @@ namespace od
     float Light::distanceToPoint(const osg::Vec3 &point)
     {
         return (mLevelObject->getPosition() - point).length();
-    }
-
-    void Light::apply(size_t index)
-    {
-        mLightManager.applyToLightUniform(this, index);
     }
 
 }

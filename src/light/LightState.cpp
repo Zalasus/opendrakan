@@ -19,14 +19,8 @@
 namespace od
 {
 
-    LightStateAttribute::LightStateAttribute()
-    : mLightManager(nullptr)
-    {
-        mLights.reserve(OD_MAX_LIGHTS);
-    }
-
     LightStateAttribute::LightStateAttribute(LightManager &lm)
-    : mLightManager(&lm)
+    : mLightManager(lm)
     {
         mLights.reserve(OD_MAX_LIGHTS);
     }
@@ -36,6 +30,21 @@ namespace od
     , mLightManager(l.mLightManager)
     {
         mLights.reserve(OD_MAX_LIGHTS);
+    }
+
+    osg::Object *LightStateAttribute::cloneType() const
+    {
+        throw Exception("Can't cloneType LightStateAttribute");
+    }
+
+    osg::Object *LightStateAttribute::clone(const osg::CopyOp& copyop) const
+    {
+        return new LightStateAttribute(*this, copyop);
+    }
+
+    bool LightStateAttribute::isSameKindAs(const osg::Object* obj) const
+    {
+        return dynamic_cast<const LightStateAttribute*>(obj) != nullptr;
     }
 
     bool LightStateAttribute::getModeUsage(ModeUsage &usage) const
@@ -63,30 +72,24 @@ namespace od
 
     void LightStateAttribute::apply(osg::State &state) const
     {
-        // since our lights use positions in world space, we need to set the model matrix to identity
-        //  when applying lights and restore it afterwards
-        osg::Matrix originalModelViewMatrix = state.getModelViewMatrix();
-        state.applyModelViewMatrix(state.getInitialViewMatrix());
+        const osg::Matrix &viewMatrix = state.getInitialViewMatrix();
+
+        mLightManager.applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
 
         auto it = mLights.begin();
         for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
         {
             if(it != mLights.end())
             {
-                (*it)->apply(i);
+                mLightManager.applyToLightUniform(viewMatrix, *it, i);
                 ++it;
 
             }else
             {
-                // FIXME: i don't want to do it this way...
-                if(mLightManager != nullptr)
-                {
-                    mLightManager->applyNullLight(i);
-                }
+
+                mLightManager.applyNullLight(i);
             }
         }
-
-        state.applyModelViewMatrix(originalModelViewMatrix);
     }
 
 

@@ -35,8 +35,8 @@ namespace od
 
         void getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<Light*> &lights);
 
-        void applyLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction);
-        void applyToLightUniform(Light *light, size_t index);
+        void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction);
+        void applyToLightUniform(const osg::Matrix &viewMatrix, Light *light, size_t index);
         void applyNullLight(size_t index);
 
         virtual void objectDeleted(void *object) override;

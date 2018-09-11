@@ -27,11 +27,16 @@ namespace od
     {
     public:
 
-        LightStateAttribute(); // FIXME: ugh. why does OSG force me to provide this?
         LightStateAttribute(LightManager &lm);
         LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp = osg::CopyOp::SHALLOW_COPY);
 
-        META_StateAttribute(od, LightStateAttribute, osg::StateAttribute::LIGHT);
+        // implement pure virtual stuff from osg::StateAttribute
+        virtual const char* libraryName() const { return "od"; }
+        virtual const char* className() const { return "LightStateAttribute"; }
+        virtual Type getType() const { return osg::StateAttribute::LIGHT; }
+        virtual osg::Object *cloneType() const;
+        virtual osg::Object *clone(const osg::CopyOp& copyop) const;
+        virtual bool isSameKindAs(const osg::Object* obj) const;
 
         inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
         {
@@ -56,7 +61,7 @@ namespace od
 
     private:
 
-        LightManager *mLightManager;
+        LightManager &mLightManager;
         std::vector<osg::ref_ptr<Light>> mLights;
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;

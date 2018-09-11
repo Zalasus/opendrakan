@@ -7,21 +7,7 @@ varying vec3 vertexNormal;
 varying vec4 vertexColor;
 varying vec2 texCoord;
 
-/*
-Built-in uniforms that might be useful here:
-
-struct gl_MaterialParameters
-{
-    vec4  emission; 
-    vec4  ambient;
-    vec4  diffuse;
-    vec4  specular;
-    float shininess;
-};
-uniform gl_MaterialParameters  gl_FrontMaterial;
-uniform gl_MaterialParameters  gl_BackMaterial;
-*/
-
+// lighting uniforms
 uniform vec3  layerLightDiffuse;
 uniform vec3  layerLightAmbient;
 uniform vec3  layerLightDirection;
@@ -31,45 +17,31 @@ uniform float objectLightIntensity[MAX_LIGHTS];
 uniform float objectLightRadius[MAX_LIGHTS];
 uniform vec3  objectLightPosition[MAX_LIGHTS];
 
-
-
-vec4 calcSingleLight(gl_LightSourceParameters light, gl_MaterialParameters material, vec3 vertex_cs, vec3 normal_cs)
-{  
-    // calculate light direction and attenuation
-    vec3 lightDir_cs = light.position.xyz - vertex_cs*light.position.w;
-    float distance = length(lightDir_cs);
-    lightDir_cs = normalize(lightDir_cs);
-    float attenuation = 1.0/(light.constantAttenuation + 
-                             light.linearAttenuation*distance + 
-                             light.quadraticAttenuation*distance*distance);
-    attenuation = clamp(attenuation, 0.0, 1.0);
-    
-    // ambient term
-    vec4 ambientColor = light.ambient * material.ambient;
-    
-    // diffuse term
-    float cosTheta = max(dot(normal_cs, lightDir_cs), 0.0);
-    vec4 diffuseColor = cosTheta * light.diffuse * material.diffuse;
-    
-    // specular term
-    // FIXME: since we must clamp the vertex color at the end of the vertex shader, specularity won't work per-vertex.
-    //  move this to the fragment shader
-    //float cosAlpha = max(dot(normal_cs, light.halfVector.xyz), 0.0);
-    //vec4 specularColor = pow(cosAlpha, material.shininess) * light.specular * material.specular;
-    vec4 specularColor = vec4(0.0);
-      
-    return attenuation*(ambientColor + diffuseColor + specularColor);
-}
-
 vec4 calcLighting(vec3 vertex_cs, vec3 normal_cs, vec4 vertexColor)
 {
-    vec4 lightColor = vec4(0.0);
-    for(int i = 0; i < gl_MaxLights; ++i)
+    vec3 resultLightColor;
+    
+    // layer light first
+    float layerCosTheta = max(dot(normal_cs, layerLightDirection), 0.0);
+    resultLightColor = layerLightAmbient + layerLightDiffuse*layerCosTheta;
+    
+    for(int i = 0; i < MAX_LIGHTS; ++i)
     {
-        lightColor += calcSingleLight(gl_LightSource[i], gl_FrontMaterial, vertex_cs, normal_cs);
+        vec3 lightDir_cs = objectLightPosition[i] - vertex_cs;
+        float distance = length(lightDir_cs);
+        lightDir_cs = normalize(lightDir_cs);
+        
+        if(distance > objectLightRadius[i])
+        {
+            continue;
+        }
+        
+        float cosTheta = max(dot(normal_cs, lightDir_cs), 0.0);
+        
+        resultLightColor += objectLightIntensity[i] * objectLightDiffuse[i] * cosTheta;
     }
     
-    return vertexColor*lightColor;
+    return vertexColor * vec4(resultLightColor, 1.0);
 }
 
 void main(void)
@@ -78,8 +50,6 @@ void main(void)
     vec3 normal_cs = normalize(gl_NormalMatrix * gl_Normal);    
 
     vertexColor = calcLighting(vertex_cs.xyz, normal_cs, gl_Color);
-    vertexColor.w = 1.0;
-    
     vertexColor = clamp(vertexColor, 0.0, 1.0);
     
     gl_Position = gl_ProjectionMatrix * vertex_cs;

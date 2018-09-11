@@ -90,14 +90,16 @@ namespace od
         }
     }
 
-    void LightManager::applyLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
+    void LightManager::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
     {
         mLayerLightDiffuse->set(color);
         mLayerLightAmbient->set(ambient);
-        mLayerLightDirection->set(direction);
+
+        osg::Vec4 dirCs = osg::Vec4(direction, 0.0) * viewMatrix;
+        mLayerLightDirection->set(osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
-    void LightManager::applyToLightUniform(Light *light, size_t index)
+    void LightManager::applyToLightUniform(const osg::Matrix &viewMatrix, Light *light, size_t index)
     {
         if(index >= OD_MAX_LIGHTS)
         {
@@ -105,9 +107,11 @@ namespace od
         }
 
         mLightDiffuseColors->setElement(index, light->getColor());
-        mLightPositions->setElement(index, light->getLevelObject()->getPosition());
         mLightIntensities->setElement(index, light->getIntensityScaling());
         mLightRadii->setElement(index, light->getRadius());
+
+        osg::Vec4 dirCs = osg::Vec4(light->getLevelObject()->getPosition(), 1.0) * viewMatrix;
+        mLightPositions->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
     void LightManager::applyNullLight(size_t index)
