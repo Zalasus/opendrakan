@@ -36,6 +36,13 @@ namespace od
         Destroyed
     };
 
+    enum class LevelObjectType
+    {
+        Normal,
+        Light,
+        Detector
+    };
+
     enum class SpawnStrategy
     {
         Never,
@@ -60,6 +67,7 @@ namespace od
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
         inline LevelObjectState getState() const { return mState; }
+        inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline const std::vector<osg::ref_ptr<LevelObject>> &getLinkedObjects() const { return mLinkedObjects; }
         inline bool isVisible() const { return mIsVisible; }
@@ -74,6 +82,8 @@ namespace od
         void setPosition(const osg::Vec3f &v);
         void setRotation(const osg::Quat &q);
         void setVisible(bool v);
+
+        void setObjectType(LevelObjectType type);
 
         Layer *getLightingLayer();
         Layer *getLayerBelowObject();
@@ -160,6 +170,7 @@ namespace od
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
+        LevelObjectType mObjectType;
         SpawnStrategy mSpawnStrategy;
         bool mIsVisible;
 

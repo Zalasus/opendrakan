@@ -40,6 +40,7 @@ namespace odRfl
     void CountDownToZero::onLoaded(od::LevelObject &obj)
     {
         obj.setSpawnStrategy(od::SpawnStrategy::Always);
+        obj.setObjectType(od::LevelObjectType::Detector);
     }
 
     void CountDownToZero::onSpawned(od::LevelObject &obj)

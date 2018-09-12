@@ -23,6 +23,7 @@ namespace odRfl
         StaticLight();
 
         virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
         virtual void onSpawned(od::LevelObject &obj) override;
         virtual void onMoved(od::LevelObject &obj) override;
         virtual void onDespawned(od::LevelObject &obj) override;

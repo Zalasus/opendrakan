@@ -8,6 +8,7 @@
 #include "rfl/dragon/Detector.h"
 
 #include "rfl/Rfl.h"
+#include "LevelObject.h"
 
 namespace odRfl
 {
@@ -45,9 +46,14 @@ namespace odRfl
                 (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
+    void Detector::onLoaded(od::LevelObject &obj)
+    {
+        obj.setSpawnStrategy(od::SpawnStrategy::Always);
+        obj.setObjectType(od::LevelObjectType::Detector);
+    }
+
     void Detector::onSpawned(od::LevelObject &obj)
     {
-
     }
 
 

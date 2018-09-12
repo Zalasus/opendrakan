@@ -59,6 +59,7 @@ namespace od
     , mInitialEventCount(0)
     , mTransform(new osg::PositionAttitudeTransform)
     , mState(LevelObjectState::NotLoaded)
+    , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
@@ -269,6 +270,23 @@ namespace od
         _setVisible(v);
 
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
+    }
+
+    void LevelObject::setObjectType(LevelObjectType type)
+    {
+        mObjectType = type;
+
+        switch(type)
+        {
+        case LevelObjectType::Normal:
+            break;
+
+        case LevelObjectType::Light:
+        case LevelObjectType::Detector:
+        default:
+            _setVisible(false);
+            break;
+        }
     }
 
     Layer *LevelObject::getLightingLayer()

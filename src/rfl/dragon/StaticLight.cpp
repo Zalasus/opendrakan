@@ -35,6 +35,11 @@ namespace odRfl
                 (mQualityLevelRequired, "Quality Level Required");
     }
 
+    void StaticLight::onLoaded(od::LevelObject &obj)
+    {
+        obj.setObjectType(od::LevelObjectType::Light);
+    }
+
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
         if(mLight == nullptr)

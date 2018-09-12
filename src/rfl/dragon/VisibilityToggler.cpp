@@ -31,6 +31,7 @@ namespace odRfl
     void VisibilityToggler::onLoaded(od::LevelObject &obj)
     {
         obj.setSpawnStrategy(od::SpawnStrategy::Always);
+        obj.setObjectType(od::LevelObjectType::Detector);
     }
 
     void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
