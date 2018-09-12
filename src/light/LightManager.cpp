@@ -22,6 +22,7 @@ namespace od
 
     LightManager::LightManager(Engine &engine, osg::Group *sceneRoot)
     : mEngine(engine)
+    , mLightingEnabled(true)
     {
         osg::StateSet *ss = sceneRoot->getOrCreateStateSet();
 
@@ -92,6 +93,11 @@ namespace od
 
     void LightManager::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
     {
+        if(!mLightingEnabled)
+        {
+            return;
+        }
+
         mLayerLightDiffuse->set(color);
         mLayerLightAmbient->set(ambient);
 
@@ -104,6 +110,11 @@ namespace od
         if(index >= OD_MAX_LIGHTS)
         {
             throw InvalidArgumentException("Tried to apply light at out-of-bounds index");
+        }
+
+        if(!mLightingEnabled)
+        {
+            return;
         }
 
         mLightDiffuseColors->setElement(index, light->getColor());
@@ -121,8 +132,29 @@ namespace od
             throw InvalidArgumentException("Tried to apply null light at out-of-bounds index");
         }
 
+        if(!mLightingEnabled)
+        {
+            return;
+        }
+
         mLightDiffuseColors->setElement(index, osg::Vec3(0.0, 0.0, 0.0));
         mLightIntensities->setElement(index, 0.0f);
+    }
+
+    void LightManager::setEnableLighting(bool enable)
+    {
+        mLightingEnabled = enable;
+
+        if(!enable)
+        {
+            mLayerLightAmbient->set(osg::Vec3(1.0, 1.0, 1.0));
+            mLayerLightDiffuse->set(osg::Vec3(0.0, 0.0, 0.0));
+
+            for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
+            {
+                mLightDiffuseColors->set(osg::Vec3(0.0, 0.0, 0.0));
+            }
+        }
     }
 
     void LightManager::objectDeleted(void *object)

@@ -9,6 +9,7 @@
 
 #include "Engine.h"
 #include "Player.h"
+#include "light/LightManager.h"
 #include "gui/GuiManager.h"
 
 namespace od
@@ -100,6 +101,10 @@ namespace od
 		case osgGA::GUIEventAdapter::KEY_F3:
 			mEngine.getLevel().getPhysicsManager().toggleDebugDraw();
 			return true;
+
+		case osgGA::GUIEventAdapter::KEY_F4:
+		    mEngine.getLightManager().toggleLighting();
+		    break;
 
 		default:
 			break;

@@ -25,6 +25,8 @@ namespace od
 
         LightManager(Engine &engine, osg::Group *sceneRoot);
 
+        inline bool isLightingEnabled() const { return mLightingEnabled; }
+
         void addLight(Light *light);
         void removeLight(Light *light);
 
@@ -39,6 +41,10 @@ namespace od
         void applyToLightUniform(const osg::Matrix &viewMatrix, Light *light, size_t index);
         void applyNullLight(size_t index);
 
+        void setEnableLighting(bool b);
+        void toggleLighting() { setEnableLighting(!mLightingEnabled); }
+
+        // implement observer for lights
         virtual void objectDeleted(void *object) override;
 
 
@@ -46,6 +52,7 @@ namespace od
 
         Engine &mEngine;
         std::vector<Light*> mLights;
+        bool mLightingEnabled;
 
         osg::ref_ptr<osg::Uniform> mLayerLightDiffuse;
         osg::ref_ptr<osg::Uniform> mLayerLightAmbient;
