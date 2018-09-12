@@ -8,24 +8,35 @@
 #ifndef INCLUDE_LIGHT_LIGHT_H_
 #define INCLUDE_LIGHT_LIGHT_H_
 
-#include <osg/Light>
+#include <stdint.h>
+#include <stdlib.h>
+#include <osg/Referenced>
+#include <osg/ref_ptr>
+#include <osg/Vec3>
+#include <osg/Vec4>
 #include <osg/BoundingSphere>
 
 namespace od
 {
 
     class LevelObject;
+    class LightManager;
 
-    class LightHandle : public osg::Referenced
+    class Light : public osg::Referenced
     {
     public:
 
-        LightHandle(LevelObject *obj, float radius, uint32_t requiredQualityLevel);
+        Light(LevelObject *obj);
 
         inline LevelObject *getLevelObject() { return mLevelObject; }
+        inline osg::Vec3 getColor() const { return mColor; }
+        inline float getIntensityScaling() const { return mIntensityScaling; }
         inline float getRadius() const { return mRadius; }
         inline uint32_t getRequiredQualityLevel() const { return mRequiredQualityLevel; }
-        inline osg::Light *getLight() { return mLight; }
+        inline void setColor(const osg::Vec3 &color) { mColor = color; }
+        inline void setIntensityScaling(float f) { mIntensityScaling = f; }
+        inline void setRadius(float f) { mRadius = f; }
+        inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
 
         bool affects(const osg::Vec3 &point);
         bool affects(const osg::BoundingSphere &sphere);
@@ -35,10 +46,10 @@ namespace od
     private:
 
         osg::ref_ptr<LevelObject> mLevelObject;
+        osg::Vec3 mColor;
+        float mIntensityScaling;
         float mRadius;
         uint32_t mRequiredQualityLevel;
-        osg::ref_ptr<osg::Light> mLight;
-
     };
 
 }

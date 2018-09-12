@@ -12,7 +12,9 @@
 #include <osg/Material>
 
 #include "OdDefines.h"
+#include "Exception.h"
 #include "Logger.h"
+#include "LevelObject.h"
 
 namespace od
 {
@@ -20,55 +22,50 @@ namespace od
 
     LightManager::LightManager(Engine &engine, osg::Group *sceneRoot)
     : mEngine(engine)
-    , mSceneRoot(sceneRoot)
     {
-        // attach a default light state to the root node.
-        //  since we are using shaders, we'd have to pass a separate uniform to directly enable/disable
-        //  individual lights. we might do this via a custom StateAttribute encapsulating the glLight calls, but for
-        //  now we just sat all lights to black.
-        osg::StateSet *ss = mSceneRoot->getOrCreateStateSet();
-        for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
-        {
-            osg::ref_ptr<osg::Light> light = new osg::Light(i);
-            light->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-            light->setAmbient(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-            light->setSpecular(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-            light->setPosition(osg::Vec4(1.0, 0.0, 0.0, 0.0));
-            ss->setAttribute(light, osg::StateAttribute::ON);
-        }
+        osg::StateSet *ss = sceneRoot->getOrCreateStateSet();
 
-        osg::ref_ptr<osg::Material> defaultMaterial(new osg::Material);
-        defaultMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        defaultMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        defaultMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        defaultMaterial->setShininess(osg::Material::FRONT_AND_BACK, 1.0); // do NOT set this to 0! somehow it breaks the GLSL pow function
-        ss->setAttribute(defaultMaterial, osg::StateAttribute::ON);
+        mLayerLightDiffuse = new osg::Uniform("layerLightDiffuse", osg::Vec3(1.0, 1.0, 1.0));
+        mLayerLightAmbient = new osg::Uniform("layerLightAmbient", osg::Vec3(1.0, 1.0, 1.0));
+        mLayerLightDirection = new osg::Uniform("layerLightDirection", osg::Vec3(0.0, -1.0, 0.0));
+        ss->addUniform(mLayerLightDiffuse);
+        ss->addUniform(mLayerLightAmbient);
+        ss->addUniform(mLayerLightDirection);
+
+        mLightDiffuseColors = new osg::Uniform(osg::Uniform::FLOAT_VEC3, "objectLightDiffuse", OD_MAX_LIGHTS);
+        mLightIntensities = new osg::Uniform(osg::Uniform::FLOAT, "objectLightIntensity", OD_MAX_LIGHTS);
+        mLightRadii = new osg::Uniform(osg::Uniform::FLOAT, "objectLightRadius", OD_MAX_LIGHTS);
+        mLightPositions = new osg::Uniform(osg::Uniform::FLOAT_VEC3, "objectLightPosition", OD_MAX_LIGHTS);
+        ss->addUniform(mLightDiffuseColors);
+        ss->addUniform(mLightIntensities);
+        ss->addUniform(mLightRadii);
+        ss->addUniform(mLightPositions);
     }
 
-    void LightManager::addLight(LightHandle *lightHandle)
+    void LightManager::addLight(Light *light)
     {
-        lightHandle->addObserver(this);
+        light->addObserver(this);
 
-        mLightHandles.push_back(lightHandle);
+        mLights.push_back(light);
     }
 
-    void LightManager::removeLight(LightHandle *lightHandle)
+    void LightManager::removeLight(Light *lightHandle)
     {
-        auto it = std::find(mLightHandles.begin(), mLightHandles.end(), lightHandle);
-        if(it != mLightHandles.end())
+        auto it = std::find(mLights.begin(), mLights.end(), lightHandle);
+        if(it != mLights.end())
         {
-            mLightHandles.erase(it);
+            mLights.erase(it);
         }
     }
 
-    void LightManager::getLightsAffectingPoint(const osg::Vec3 &point, std::vector<LightHandle*> &lights)
+    void LightManager::getLightsAffectingPoint(const osg::Vec3 &point, std::vector<Light*> &lights)
     {
         // TODO: organize lights in a structure with efficient spatial search
         //  for now, just use a brute force technique by iterating over all registered lights.
 
-        for(auto it = mLightHandles.begin(); it != mLightHandles.end(); ++it)
+        for(auto it = mLights.begin(); it != mLights.end(); ++it)
         {
-            LightHandle *l = *it;
+            Light *l = *it;
 
             if(l->affects(point))
             {
@@ -77,14 +74,14 @@ namespace od
         }
     }
 
-    void LightManager::getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<LightHandle*> &lights)
+    void LightManager::getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<Light*> &lights)
     {
         // TODO: organize lights in a structure with efficient spatial search
         //  for now, just use a brute force technique by iterating over all registered lights.
 
-        for(auto it = mLightHandles.begin(); it != mLightHandles.end(); ++it)
+        for(auto it = mLights.begin(); it != mLights.end(); ++it)
         {
-            LightHandle *l = *it;
+            Light *l = *it;
 
             if(l->affects(sphere))
             {
@@ -93,9 +90,44 @@ namespace od
         }
     }
 
+    void LightManager::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
+    {
+        mLayerLightDiffuse->set(color);
+        mLayerLightAmbient->set(ambient);
+
+        osg::Vec4 dirCs = osg::Vec4(direction, 0.0) * viewMatrix;
+        mLayerLightDirection->set(osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
+    }
+
+    void LightManager::applyToLightUniform(const osg::Matrix &viewMatrix, Light *light, size_t index)
+    {
+        if(index >= OD_MAX_LIGHTS)
+        {
+            throw InvalidArgumentException("Tried to apply light at out-of-bounds index");
+        }
+
+        mLightDiffuseColors->setElement(index, light->getColor());
+        mLightIntensities->setElement(index, light->getIntensityScaling());
+        mLightRadii->setElement(index, light->getRadius());
+
+        osg::Vec4 dirCs = osg::Vec4(light->getLevelObject()->getPosition(), 1.0) * viewMatrix;
+        mLightPositions->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
+    }
+
+    void LightManager::applyNullLight(size_t index)
+    {
+        if(index >= OD_MAX_LIGHTS)
+        {
+            throw InvalidArgumentException("Tried to apply null light at out-of-bounds index");
+        }
+
+        mLightDiffuseColors->setElement(index, osg::Vec3(0.0, 0.0, 0.0));
+        mLightIntensities->setElement(index, 0.0f);
+    }
+
     void LightManager::objectDeleted(void *object)
     {
-        removeLight(static_cast<LightHandle*>(object));
+        removeLight(static_cast<Light*>(object));
     }
 
 }

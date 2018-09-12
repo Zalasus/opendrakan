@@ -413,7 +413,7 @@ namespace od
         Layer *lightingLayer = getLightingLayer();
         if(lightingLayer != nullptr)
         {
-            mLightingCallback->setFixedLight(lightingLayer->getLayerLight());
+            mLightingCallback->setLayerLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
         }
     }
 

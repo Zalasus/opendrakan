@@ -27,10 +27,23 @@ namespace od
     {
     public:
 
-        LightStateAttribute();
+        LightStateAttribute(LightManager &lm);
         LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp = osg::CopyOp::SHALLOW_COPY);
 
-        META_StateAttribute(od, LightStateAttribute, osg::StateAttribute::LIGHT);
+        // implement pure virtual stuff from osg::StateAttribute
+        virtual const char* libraryName() const { return "od"; }
+        virtual const char* className() const { return "LightStateAttribute"; }
+        virtual Type getType() const { return osg::StateAttribute::LIGHT; }
+        virtual osg::Object *cloneType() const;
+        virtual osg::Object *clone(const osg::CopyOp& copyop) const;
+        virtual bool isSameKindAs(const osg::Object* obj) const;
+
+        inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
+        {
+            mLayerLightDiffuse = color;
+            mLayerLightAmbient = ambient;
+            mLayerLightDirection = direction;
+        }
 
         virtual bool getModeUsage(ModeUsage &usage) const override;
         virtual void apply(osg::State &state) const override;
@@ -43,13 +56,16 @@ namespace od
          *
          * If more lights than the maximum possible number of lights are added, the additional calls are ignored.
          */
-        void addLight(osg::Light *light);
+        void addLight(Light *light);
 
 
     private:
 
-        std::vector<osg::ref_ptr<osg::Light>> mLights;
-        osg::ref_ptr<osg::Light> mNullLight;
+        LightManager &mLightManager;
+        std::vector<osg::ref_ptr<Light>> mLights;
+        osg::Vec3 mLayerLightDiffuse;
+        osg::Vec3 mLayerLightAmbient;
+        osg::Vec3 mLayerLightDirection;
 
     };
 
@@ -87,7 +103,10 @@ namespace od
         LightStateCallback(LightManager &lm, osg::Node *node, bool ignoreCulledState = false);
 
         inline void lightingDirty() { mLightingDirty = true; }
-        inline void setFixedLight(osg::Light *light) { mFixedLight = light; }
+        inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
+        {
+            mLightStateAttribute->setLayerLight(color, ambient, direction);
+        }
 
         virtual void operator()(osg::Node* node, osg::NodeVisitor* nv) override;
 
@@ -100,8 +119,7 @@ namespace od
         bool mIgnoreCulledState;
         bool mLightingDirty;
         LightStateAttribute *mLightStateAttribute;
-        std::vector<LightHandle*> mAffectingLightsCache;
-        osg::ref_ptr<osg::Light> mFixedLight;
+        std::vector<Light*> mTmpAffectingLightsList;
     };
 
 }
