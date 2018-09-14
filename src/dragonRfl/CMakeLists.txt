@@ -21,6 +21,7 @@ set(SOURCES
     "UserInterfaceProperties.cpp"
     "VisibilityToggler.cpp")
 
+# FIXME: since making a static library here would cause the self-registering classes to break, we have to make it shared for now
 
 add_library(dragonRfl SHARED ${SOURCES})
 
