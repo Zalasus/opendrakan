@@ -17,8 +17,10 @@ namespace od
 	class Engine;
 }
 
-namespace odRfl
+namespace od
 {
+
+    typedef uint16_t RflClassId;
 
 	class RflClass
 	{
@@ -51,6 +53,56 @@ namespace odRfl
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);
 	};
+
+
+	class RflClassRegistrar
+    {
+    public:
+
+        RflClassRegistrar(RflClassId classId, const std::string &className);
+        virtual ~RflClassRegistrar();
+
+        virtual RflClass *createInstance() = 0;
+
+        inline RflClassId getClassId() const { return mClassId; }
+        inline std::string getClassName() const { return mClassName; }
+
+
+    protected:
+
+        RflClassId mClassId;
+        std::string mClassName;
+
+    };
+
+
+    template <typename _Rfl, typename _Class>
+    class RflClassRegistrarImpl : public RflClassRegistrar
+    {
+    public:
+
+        RflClassRegistrarImpl(RflClassId typeId, const std::string &typeName)
+        : RflClassRegistrar(typeId, typeName)
+        {
+            std::map<RflClassId, RflClassRegistrar*> &map = _Rfl::getClassRegistrarMapSingleton();
+
+            if(map.find(typeId) != map.end())
+            {
+                Logger::warn() << "Ignoring double registration of RFL class '" << typeName << "' (ID " << std::hex << typeId << std::dec << ")";
+
+            }else
+            {
+                map.insert(std::make_pair(typeId, this));
+            }
+        }
+
+        virtual RflClass *createInstance() override
+        {
+            Logger::debug() << "Creating instance of RFL class '" << mClassName << "' (" << std::hex << mClassId << std::dec << ")";
+
+            return new _Class();
+        }
+    };
 
 }
 

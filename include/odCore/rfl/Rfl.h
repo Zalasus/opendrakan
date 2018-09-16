@@ -9,92 +9,78 @@
 #define INCLUDE_RFL_RFL_H_
 
 #include <string>
-#include <functional>
 #include <map>
-#include <memory>
 
 #include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/RflManager.h>
 #include <odCore/Logger.h>
 
-#define OD_REGISTER_RFL_CLASS(classId, className, classCppClass) \
-	static odRfl::RflClassRegistrarImpl<classCppClass> sOdRflRegistrar_ ## _ ## classCppClass (classId, className);
-
 #define OD_REGISTER_RFL(rflName) \
-	odRfl::Rfl::RflNameSetter sRflNameSetter(rflName);
+	static od::RflRegistrarImpl<rflName> sOdRflRegistrar_ ## rflName(#rflName);
 
-namespace odRfl
+#define OD_REGISTER_RFL_CLASS(rflName, classId, category, className, cppClass) \
+    static odRfl::RflClassRegistrarImpl<rflName, classCppClass> sOdRflClassRegistrar_ ## classCppClass(classId, className);
+
+namespace od
 {
 
-	typedef uint16_t RflClassId;
-
-	class Rfl;
-
-	class RflClassRegistrar
-	{
-	public:
-
-		RflClassRegistrar(RflClassId classId, const std::string &className);
-		virtual ~RflClassRegistrar();
-
-		virtual std::unique_ptr<RflClass> createClassInstance() = 0;
-
-		inline RflClassId getClassId() const { return mClassId; }
-		inline std::string getClassName() const { return mClassName; }
-
-
-	protected:
-
-		RflClassId mClassId;
-		std::string mClassName;
-
-	};
-
-
-	template <typename T>
-	class RflClassRegistrarImpl : public RflClassRegistrar
-	{
-	public:
-
-		RflClassRegistrarImpl(RflClassId typeId, const std::string &typeName)
-		: RflClassRegistrar(typeId, typeName)
-		{
-		}
-
-		virtual std::unique_ptr<RflClass> createClassInstance() override
-		{
-			Logger::debug() << "Creating instance of RFL class '" << mClassName << "' (" << std::hex << mClassId << std::dec << ")";
-
-		    return std::unique_ptr<RflClass>(new T);
-		}
-	};
-
+    class Engine;
 
 	class Rfl
 	{
 	public:
 
-		class RflNameSetter // xD
-		{
-		public:
-			RflNameSetter(const std::string &name);
-		};
+        friend class RflClassRegistrar;
 
-		friend class RflClassRegistrar;
+		Rfl(Engine &e);
+		virtual ~Rfl() = default;
 
-
-		inline std::string getName() const { return mName; }
-		inline void setName(const std::string &name) { mName = name; }
-		inline size_t getClassTypeCount() const { return mRegistrarMap.size(); }
-		RflClassRegistrar &getClassRegistrarById(RflClassId id);
-
-
-		static Rfl &getSingleton();
+		virtual const char *getName() = 0;
 
 
 	private:
 
-		std::string mName;
-		std::map<RflClassId, std::reference_wrapper<RflClassRegistrar>> mRegistrarMap;
+        static std::map<RflClassId, RflClassRegistrar*> &getClassRegistrarMapSingleton();
+
+	};
+
+
+	class RflRegistrar
+	{
+	public:
+
+        RflRegistrar(const char *rflName) : mName(rflName) { }
+
+
+        virtual ~RflRegistrar() = default;
+
+        inline const char *getName() const { return mName; }
+
+	    virtual Rfl *createInstance(Engine &e) = 0;
+
+
+	private:
+
+	    const char *mName;
+	};
+
+
+	template <typename _Rfl>
+	class RflRegistrarImpl : public RflRegistrar
+	{
+	public:
+
+	    RflRegistrarImpl(const char *rflName)
+	    : RflRegistrar(rflName)
+	    {
+            RflManager::getRflRegistrarListSingleton().push_back(this);
+        }
+
+	    virtual Rfl *createInstance(Engine &e) override
+	    {
+	        return new _Rfl(e);
+	    }
+
 	};
 
 }
