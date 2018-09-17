@@ -8,7 +8,6 @@
 #ifndef INCLUDE_RFL_RFLCLASS_H_
 #define INCLUDE_RFL_RFLCLASS_H_
 
-#include <odCore/rfl/RflFieldProbe.h>
 #include <odCore/rfl/RflMessage.h>
 
 #define OD_REGISTER_RFL_CLASS(rflName, classId, category, className, cppClass) \
@@ -20,6 +19,7 @@ namespace od
 {
     class LevelObject;
 	class Engine;
+	class FieldProbe;
 
     typedef uint16_t RflClassId;
 
@@ -29,7 +29,7 @@ namespace od
 
 		virtual ~RflClass() = default;
 
-		virtual void probeFields(RflFieldProbe &probe) = 0;
+		virtual void probeFields(FieldProbe &probe) = 0;
 
 		// TODO: maybe create an "EventHandler" interface for this?
 

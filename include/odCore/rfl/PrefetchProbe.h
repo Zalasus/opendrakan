@@ -8,12 +8,12 @@
 #ifndef INCLUDE_RFL_PREFETCHPROBE_H_
 #define INCLUDE_RFL_PREFETCHPROBE_H_
 
-#include <odCore/rfl/RflFieldProbe.h>
+#include <odCore/rfl/FieldProbe.h>
 
-namespace odRfl
+namespace od
 {
 
-    class PrefetchProbe : public RflFieldProbe
+    class PrefetchProbe : public FieldProbe
     {
     public:
 
