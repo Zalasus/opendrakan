@@ -46,6 +46,7 @@ set(SOURCES
         "rfl/RflClass.cpp"
         "rfl/RflField.cpp"
         "rfl/RflFieldProbe.cpp"
+        "rfl/RflManager.cpp"
         "rfl/RflMessage.cpp"
         "DataStream.cpp"
         "Engine.cpp"

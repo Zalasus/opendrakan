@@ -11,14 +11,15 @@
 #include <odCore/rfl/RflFieldProbe.h>
 #include <odCore/rfl/RflMessage.h>
 
-namespace od
-{
-	class LevelObject;
-	class Engine;
-}
+#define OD_REGISTER_RFL_CLASS(rflName, classId, category, className, cppClass) \
+    template <> class RflClassTraits { static constexpr const char *name() { return className; }\
+    static constexpr RflClassId classId() { return classId; } }\
+    static od::RflClassRegistrarImpl<rflName, classCppClass> sOdRflClassRegistrar_ ## classCppClass;
 
 namespace od
 {
+    class LevelObject;
+	class Engine;
 
     typedef uint16_t RflClassId;
 
@@ -55,24 +56,26 @@ namespace od
 	};
 
 
+	template <typename _Class>
+	class RflClassTraits
+	{
+	public:
+
+	    static constexpr const char *name() { return "<invalid RFL class template>"; }
+	    static constexpr RflClassId classId() { return 0; }
+
+	};
+
+
 	class RflClassRegistrar
     {
     public:
 
-        RflClassRegistrar(RflClassId classId, const std::string &className);
-        virtual ~RflClassRegistrar();
+        virtual ~RflClassRegistrar() = default;
 
-        virtual RflClass *createInstance() = 0;
-
-        inline RflClassId getClassId() const { return mClassId; }
-        inline std::string getClassName() const { return mClassName; }
-
-
-    protected:
-
-        RflClassId mClassId;
-        std::string mClassName;
-
+        virtual RflClass *createInstance() const = 0;
+        virtual const char *getClassName() const = 0;
+        virtual RflClassId getClassId() const = 0;
     };
 
 
@@ -81,26 +84,37 @@ namespace od
     {
     public:
 
-        RflClassRegistrarImpl(RflClassId typeId, const std::string &typeName)
-        : RflClassRegistrar(typeId, typeName)
+        RflClassRegistrarImpl()
         {
-            std::map<RflClassId, RflClassRegistrar*> &map = _Rfl::getClassRegistrarMapSingleton();
+            std::map<RflClassId, RflClassRegistrar*> &map = RflClassMapHolder<_Rfl>::getClassRegistrarMapSingleton();
 
-            if(map.find(typeId) != map.end())
+            if(map.find(RflClassTraits<_Class>::classId()) != map.end())
             {
-                Logger::warn() << "Ignoring double registration of RFL class '" << typeName << "' (ID " << std::hex << typeId << std::dec << ")";
+                Logger::warn() << "Ignoring double registration of RFL class '" << RflClassTraits<_Class>::name()
+                        << "' (ID " << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
 
             }else
             {
-                map.insert(std::make_pair(typeId, this));
+                map.insert(std::make_pair(RflClassTraits<_Class>::classId(), this));
             }
         }
 
-        virtual RflClass *createInstance() override
+        virtual RflClass *createInstance() const override
         {
-            Logger::debug() << "Creating instance of RFL class '" << mClassName << "' (" << std::hex << mClassId << std::dec << ")";
+            Logger::debug() << "Creating instance of RFL class '" << RflClassTraits<_Class>::name() <<
+                    "' (" << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
 
             return new _Class();
+        }
+
+        virtual const char *getClassName() const override
+        {
+            return RflClassTraits<_Class>::name();
+        }
+
+        virtual RflClassId getClassId() const override
+        {
+            return RflClassTraits<_Class>::classId();
         }
     };
 

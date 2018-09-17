@@ -7,14 +7,13 @@
 
 #include <odCore/rfl/Rfl.h>
 
-#include <odCore/Logger.h>
-#include <odCore/Exception.h>
-
-#include <iostream>
-
 namespace od
 {
 
+    Rfl::Rfl(Engine &engine)
+    : mEngine(engine)
+    {
+    }
 
 }
 

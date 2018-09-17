@@ -5,12 +5,17 @@
  *      Author: zal
  */
 
+#include <dragonRfl/RflDragon.h>
 
-#include <odCore/rfl/Rfl.h>
-
-namespace odRfl
+namespace od
 {
 
-	OD_REGISTER_RFL("Dragon");
+    RflDragon::RflDragon(Engine &engine)
+    : Rfl(engine)
+    {
+    }
+
+
+    OD_REGISTER_RFL(RflDragon);
 
 }

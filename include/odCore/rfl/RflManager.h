@@ -9,11 +9,13 @@
 #define INCLUDE_ODCORE_RFL_RFLMANAGER_H_
 
 #include <vector>
+#include <memory>
 
 namespace od
 {
 
     class Engine;
+    class Rfl;
     class RflRegistrar;
 
     class RflManager
@@ -31,6 +33,7 @@ namespace od
         static std::vector<RflRegistrar*> &getRflRegistrarListSingleton();
 
         Engine &mEngine;
+        std::vector<std::unique_ptr<Rfl>> mLoadedRfls;
     };
 
 }
