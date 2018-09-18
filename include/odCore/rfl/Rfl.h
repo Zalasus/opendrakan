@@ -17,8 +17,8 @@
 #include <odCore/Exception.h>
 
 #define OD_REGISTER_RFL(rfl) \
-    template<> class RflTraits<rfl> { public: static constexpr const char *name() { return #rfl; } }; \
-	static od::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl(#rfl);
+    template<> struct RflTraits<rfl> { static constexpr const char *name() { return #rfl; } }; \
+	static od::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl;
 
 namespace od
 {
@@ -47,9 +47,8 @@ namespace od
 
 
 	template <typename T>
-    class RflTraits
+    struct RflTraits
     {
-    public:
 
         static constexpr const char *name() { return "<invalid RFL template>"; }
 
@@ -60,6 +59,8 @@ namespace od
 	class RflImpl : public Rfl
 	{
 	public:
+
+	    RflImpl(Engine &e) : Rfl(e) {}
 
 	    virtual const char *getName() const final override
 	    {
@@ -90,10 +91,17 @@ namespace od
 	{
 	public:
 
+	    friend class RflManager;
+
         virtual ~RflRegistrar() = default;
 
         virtual const char *getName() const = 0;
 	    virtual Rfl *createInstance(Engine &engine) const = 0;
+
+
+	protected:
+
+	    static std::vector<RflRegistrar*> &getRflRegistrarListSingleton();
 
 	};
 
@@ -105,7 +113,7 @@ namespace od
 
 	    RflRegistrarImpl()
 	    {
-            RflManager::getRflRegistrarListSingleton().push_back(this);
+            getRflRegistrarListSingleton().push_back(this);
         }
 
 	    virtual const char *getName() const override

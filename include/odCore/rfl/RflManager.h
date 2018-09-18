@@ -33,8 +33,6 @@ namespace od
 
     private:
 
-        static std::vector<RflRegistrar*> &getRflRegistrarListSingleton();
-
         Engine &mEngine;
         std::vector<std::unique_ptr<Rfl>> mLoadedRfls;
     };

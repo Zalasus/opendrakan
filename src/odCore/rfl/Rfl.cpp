@@ -15,6 +15,14 @@ namespace od
     {
     }
 
+
+    std::vector<RflRegistrar*> &RflRegistrar::getRflRegistrarListSingleton()
+    {
+        static std::vector<RflRegistrar*> list;
+
+        return list;
+    }
+
 }
 
 

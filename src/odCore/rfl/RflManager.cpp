@@ -11,6 +11,7 @@
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Exception.h>
+#include <odCore/StringUtils.h>
 
 namespace od
 {
@@ -19,11 +20,17 @@ namespace od
     : mEngine(engine)
     {
         // first, instantiate all statically linked RFLs
-        std::vector<RflRegistrar*> &rfls = getRflRegistrarListSingleton();
+        std::vector<RflRegistrar*> &rfls = RflRegistrar::getRflRegistrarListSingleton();
         mLoadedRfls.reserve(rfls.size());
         for(auto it = rfls.begin(); it != rfls.end(); ++it)
         {
-            std::unique_ptr<Rfl> rfl = (*it)->createInstance(mEngine);
+            RflRegistrar *registrar = *it;
+            if(registrar == nullptr)
+            {
+                Logger::info() << "The fuck is dis";
+            }
+
+            std::unique_ptr<Rfl> rfl((*it)->createInstance(mEngine));
             mLoadedRfls.push_back(std::move(rfl));
 
             Logger::info() << "Loaded RFL " << mLoadedRfls.back()->getName();
@@ -34,8 +41,8 @@ namespace od
 
     Rfl *RflManager::getRfl(const std::string &name)
     {
-        auto pred = [](std::unique_ptr<Rfl> &rfl){ return rfl->getName() == name; };
-        auto it = std::find(mLoadedRfls.begin(), mLoadedRfls.end(), pred);
+        auto pred = [&name](std::unique_ptr<Rfl> &rfl){ return StringUtils::compareIgnoringCase(name, rfl->getName()); };
+        auto it = std::find_if(mLoadedRfls.begin(), mLoadedRfls.end(), pred);
 
         if(it == mLoadedRfls.end())
         {
@@ -44,13 +51,6 @@ namespace od
         }
 
         return it->get();
-    }
-
-    static std::vector<RflRegistrar*> &RflManager::getRflRegistrarListSingleton()
-    {
-        static std::vector<RflRegistrar*> list(8);
-
-        return list;
     }
 
 }

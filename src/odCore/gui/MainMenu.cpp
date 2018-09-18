@@ -71,7 +71,7 @@ namespace od
 
 
 
-    MainMenu::MainMenu(GuiManager &gm, odRfl::UserInterfaceProperties *uiProps)
+    MainMenu::MainMenu(GuiManager &gm, od::UserInterfaceProperties *uiProps)
     : ContainerWidget(gm)
     {
         osg::ref_ptr<MainMenuImage> imageWidget(new MainMenuImage(gm));
@@ -114,7 +114,7 @@ namespace od
     }
 
     void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y,
-            odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
+            od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
     {
         osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, crystalModel,
                 uiProps->mInnerRing.getAsset(),

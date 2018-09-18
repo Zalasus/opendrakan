@@ -21,7 +21,7 @@ namespace od
     {
     public:
 
-        MainMenu(GuiManager &gm, odRfl::UserInterfaceProperties *uiProps);
+        MainMenu(GuiManager &gm, od::UserInterfaceProperties *uiProps);
 
     private:
 
@@ -37,7 +37,7 @@ namespace od
         };
 
         void _addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y,
-                odRfl::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode);
+                od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode);
 
         void _buttonClicked(int buttonCode);
 

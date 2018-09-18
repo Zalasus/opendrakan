@@ -72,6 +72,6 @@ namespace od
 	}
 
 
-    OD_REGISTER_RFL_CLASS(DraognRfl, 0x001a, "System", "Domed Sky", DomedSky);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x001a, "System", "Domed Sky", DomedSky);
 
 }

@@ -114,51 +114,51 @@ static void statClasses(od::SrscFile &file)
 
         	switch(type & 0xff)
         	{
-        	case odRfl::RflField::INTEGER:
+        	case od::RflField::INTEGER:
         		std::cout << "RflInteger";
         		break;
 
-            case odRfl::RflField::FLOAT:
+            case od::RflField::FLOAT:
             	std::cout << "RflFloat";
         		break;
 
-            case odRfl::RflField::CLASS:
+            case od::RflField::CLASS:
             	std::cout << "RflClassRef";
         		break;
 
-            case odRfl::RflField::MODEL:
+            case od::RflField::MODEL:
             	std::cout << "RflModelRef";
         		break;
 
-            case odRfl::RflField::SOUND:
+            case od::RflField::SOUND:
             	std::cout << "RflSoundRef";
         		break;
 
-            case odRfl::RflField::ENUM:
+            case od::RflField::ENUM:
             	std::cout << "RflEnum";
         		break;
 
-            case odRfl::RflField::CHAR_CHANNEL:
+            case od::RflField::CHAR_CHANNEL:
             	std::cout << "RflCharChannel";
         		break;
 
-            case odRfl::RflField::ANIMATION:
+            case od::RflField::ANIMATION:
             	std::cout << "RflAnimRef";
         		break;
 
-            case odRfl::RflField::STRING:
+            case od::RflField::STRING:
             	std::cout << "RflString";
         		break;
 
-            case odRfl::RflField::SEUQUENCE:
+            case od::RflField::SEUQUENCE:
             	std::cout << "RflSequenceRef";
         		break;
 
-            case odRfl::RflField::TEXTURE:
+            case od::RflField::TEXTURE:
             	std::cout << "RflTextureRef";
         		break;
 
-            case odRfl::RflField::COLOR:
+            case od::RflField::COLOR:
             	std::cout << "RflColor";
         		break;
 

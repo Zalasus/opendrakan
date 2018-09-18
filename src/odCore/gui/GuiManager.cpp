@@ -426,15 +426,15 @@ namespace od
         }
 
         osg::ref_ptr<Class> uiPropsClass = mInterfaceDb.getClass(id);
-        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
-        mUserInterfacePropertiesInstance.reset(dynamic_cast<odRfl::UserInterfaceProperties*>(uiPropsInstance.release()));
+        std::unique_ptr<RflClass> uiPropsInstance = uiPropsClass->makeInstance();
+        mUserInterfacePropertiesInstance.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfacePropertiesInstance == nullptr)
         {
             throw Exception("Could not cast or instantiate User Interface Properties instance");
         }
         mUserInterfacePropertiesInstance->onLoaded(mEngine);
 
-        odRfl::PrefetchProbe probe(mInterfaceDb);
+        PrefetchProbe probe(mInterfaceDb);
         mUserInterfacePropertiesInstance->probeFields(probe);
 
         mMainMenuWidget = new MainMenu(*this, mUserInterfacePropertiesInstance.get());

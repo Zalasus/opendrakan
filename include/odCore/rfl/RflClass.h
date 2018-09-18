@@ -12,11 +12,12 @@
 
 #include <odCore/rfl/RflMessage.h>
 #include <odCore/rfl/FieldProbe.h>
+#include <odCore/Logger.h>
 
-#define OD_REGISTER_RFL_CLASS(rflName, classId, category, className, cppClass) \
-    template <> class RflClassTraits { static constexpr const char *name() { return className; }\
-    static constexpr RflClassId classId() { return classId; } };\
-    static od::RflClassRegistrarImpl<rflName, classCppClass> sOdRflClassRegistrar_ ## classCppClass;
+#define OD_REGISTER_RFL_CLASS(rflName, id, category, className, cppClass) \
+    template <> struct RflClassTraits<cppClass> { static constexpr const char *name() { return className; }\
+    static constexpr RflClassId classId() { return id; } };\
+    static od::RflClassRegistrarImpl<rflName, cppClass> sOdRflClassRegistrar_ ## cppClass;
 
 namespace od
 {
@@ -59,9 +60,8 @@ namespace od
 
 
 	template <typename _Class>
-	class RflClassTraits
+	struct RflClassTraits
 	{
-	public:
 
 	    static constexpr const char *name() { return "<invalid RFL class template>"; }
 	    static constexpr RflClassId classId() { return 0; }
@@ -86,14 +86,9 @@ namespace od
     {
     public:
 
-        friend class RflClassRegistrar;
-        friend class RflImpl;
-
-    private:
-
         static std::map<RflClassId, RflClassRegistrar*> &getClassRegistrarMapSingleton()
         {
-            std::map<RflClassId, RflClassRegistrar*> map;
+            static std::map<RflClassId, RflClassRegistrar*> map;
 
             return map;
         }

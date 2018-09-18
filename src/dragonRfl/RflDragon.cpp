@@ -11,7 +11,7 @@ namespace od
 {
 
     DragonRfl::DragonRfl(Engine &engine)
-    : Rfl(engine)
+    : RflImpl<DragonRfl>(engine)
     {
     }
 
