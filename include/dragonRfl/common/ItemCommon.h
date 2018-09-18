@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/rfl/RflClass.h>
 
-namespace odRfl
+namespace od
 {
 
     enum class PlayerSlot
@@ -35,7 +35,7 @@ namespace odRfl
 	{
 	public:
 
-		virtual void probeFields(RflFieldProbe &probe) override;
+		virtual void probeFields(FieldProbe &probe) override;
 
 
 	protected:

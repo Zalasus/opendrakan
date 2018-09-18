@@ -7,9 +7,10 @@
 
 #include <dragonRfl/Material.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace odRfl
+namespace od
 {
 
 	Material::Material()
@@ -32,7 +33,7 @@ namespace odRfl
 	{
 	}
 
-	void Material::probeFields(RflFieldProbe &probe)
+	void Material::probeFields(FieldProbe &probe)
 	{
 	    probe.beginCategory("Solid Ground Sounds");
 	    probe.registerField(mRynnFootSounds, "Rynn Foot Sounds");
@@ -57,7 +58,7 @@ namespace odRfl
 	    probe.registerField(mDetailScaling, "Detail Scaling");
 	}
 
-    OD_REGISTER_RFL_CLASS(0x004b, "Standard Material", Material);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x004b, "Material", "Standard Material", Material);
 
 
 
@@ -70,7 +71,7 @@ namespace odRfl
 	{
 	}
 
-	void BlendedMaterial::probeFields(RflFieldProbe &probe)
+	void BlendedMaterial::probeFields(FieldProbe &probe)
     {
 	    Material::probeFields(probe);
 
@@ -82,6 +83,6 @@ namespace odRfl
         probe.registerField(mSecondSpeed, "Second Speed (lu/s)");
     }
 
-    OD_REGISTER_RFL_CLASS(0x0072, "Blended Material", BlendedMaterial);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0072, "Material", "Blended Material", BlendedMaterial);
 
 }

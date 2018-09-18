@@ -12,7 +12,7 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/rfl/RflMessage.h>
 
-namespace odRfl
+namespace od
 {
 
     enum class TimerTriggerMode
@@ -27,10 +27,10 @@ namespace odRfl
 
         CountDownToZero();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
+        virtual void probeFields(FieldProbe &probe) override;
+        virtual void onLoaded(LevelObject &obj) override;
+        virtual void onSpawned(LevelObject &obj) override;
+        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
 
 
     protected:

@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace odRfl
+namespace od
 {
 
 	class Building : public RflClass
@@ -20,9 +20,9 @@ namespace odRfl
 
 		Building();
 
-		virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
+		virtual void probeFields(FieldProbe &probe) override;
+        virtual void onSpawned(LevelObject &obj) override;
+        virtual void onDespawned(LevelObject &obj) override;
 
 
 	protected:

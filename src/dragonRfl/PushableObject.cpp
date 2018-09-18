@@ -7,13 +7,14 @@
 
 #include <dragonRfl/PushableObject.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 #include <odCore/physics/PhysicsManager.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
     PushableObject::PushableObject()
@@ -38,7 +39,7 @@ namespace odRfl
     {
     }
 
-    void PushableObject::probeFields(RflFieldProbe &probe)
+    void PushableObject::probeFields(FieldProbe &probe)
     {
         probe
             ("Pushable Object")
@@ -64,7 +65,7 @@ namespace odRfl
                 (mDamagePlayer, "Damage Player");
     }
 
-    void PushableObject::onSpawned(od::LevelObject &obj)
+    void PushableObject::onSpawned(LevelObject &obj)
     {
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
     	{
@@ -72,12 +73,12 @@ namespace odRfl
     	}
     }
 
-    void PushableObject::onDespawned(od::LevelObject &obj)
+    void PushableObject::onDespawned(LevelObject &obj)
     {
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }
 
-    OD_REGISTER_RFL_CLASS(0x0010, "Pushable Object", PushableObject);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0010, "Ground Object", "Pushable Object", PushableObject);
 
 }
 

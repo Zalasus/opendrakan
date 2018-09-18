@@ -7,12 +7,13 @@
 
 #include <dragonRfl/DragonControl.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Player.h>
 
-namespace odRfl
+namespace od
 {
 
 	DragonControl::DragonControl()
@@ -81,7 +82,7 @@ namespace odRfl
     {
     }
 
-    void DragonControl::probeFields(RflFieldProbe &probe)
+    void DragonControl::probeFields(FieldProbe &probe)
 	{
     	PlayerCommon::probeFields(probe);
 
@@ -170,6 +171,6 @@ namespace odRfl
 		probe.registerField(mDoneDismountSndChance, "Done Dismount Snd Chance (1-100)");
 	}
 
-    OD_REGISTER_RFL_CLASS(0x001c, "Dragon Control", DragonControl);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x001c, "Player", "Dragon Control", DragonControl);
 
 }

@@ -7,10 +7,11 @@
 
 #include <dragonRfl/Detector.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
     Detector::Detector()
@@ -29,7 +30,7 @@ namespace odRfl
     {
     }
 
-    void Detector::probeFields(RflFieldProbe &probe)
+    void Detector::probeFields(FieldProbe &probe)
     {
         probe("Detector")
                 (mTask, "Task")
@@ -46,18 +47,18 @@ namespace odRfl
                 (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
-    void Detector::onLoaded(od::LevelObject &obj)
+    void Detector::onLoaded(LevelObject &obj)
     {
-        obj.setSpawnStrategy(od::SpawnStrategy::Always);
-        obj.setObjectType(od::LevelObjectType::Detector);
+        obj.setSpawnStrategy(SpawnStrategy::Always);
+        obj.setObjectType(LevelObjectType::Detector);
     }
 
-    void Detector::onSpawned(od::LevelObject &obj)
+    void Detector::onSpawned(LevelObject &obj)
     {
     }
 
 
-    OD_REGISTER_RFL_CLASS(0x003d, "Detector", Detector);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x003d, "System", "Detector", Detector);
 
 }
 

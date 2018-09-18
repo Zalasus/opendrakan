@@ -8,10 +8,11 @@
 
 #include <dragonRfl/Timer.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
 	Timer::Timer()
@@ -28,7 +29,7 @@ namespace odRfl
 	{
 	}
 
-	void Timer::probeFields(RflFieldProbe &probe)
+	void Timer::probeFields(FieldProbe &probe)
 	{
 		probe("Timer")
 				(mTimeUntilTrigger, "Time Until Trigger")
@@ -101,6 +102,6 @@ namespace odRfl
 	    }
 	}
 
-	OD_REGISTER_RFL_CLASS(0x003e, "Timer", Timer);
+	OD_REGISTER_RFL_CLASS(DragonRfl, 0x003e, "System", "Timer", Timer);
 
 }

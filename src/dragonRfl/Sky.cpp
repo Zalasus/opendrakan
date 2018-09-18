@@ -9,6 +9,7 @@
 #include <dragonRfl/Sky.h>
 
 #include <osg/Depth>
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
 #include <odCore/OdDefines.h>
@@ -16,7 +17,7 @@
 #include <odCore/Camera.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
 	DomedSky::DomedSky()
@@ -36,7 +37,7 @@ namespace odRfl
 	{
 	}
 
-    void DomedSky::probeFields(RflFieldProbe &probe)
+    void DomedSky::probeFields(FieldProbe &probe)
     {
 		probe("Position")
     		     (mPrimarySky, "Primary Sky")
@@ -71,6 +72,6 @@ namespace odRfl
 	}
 
 
-    OD_REGISTER_RFL_CLASS(0x001a, "Domed Sky", DomedSky);
+    OD_REGISTER_RFL_CLASS(DraognRfl, 0x001a, "System", "Domed Sky", DomedSky);
 
 }

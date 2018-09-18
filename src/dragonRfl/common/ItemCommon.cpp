@@ -8,7 +8,7 @@
 
 #include <dragonRfl/common/ItemCommon.h>
 
-namespace odRfl
+namespace od
 {
 
 	ItemCommon::ItemCommon()
@@ -28,7 +28,7 @@ namespace odRfl
 	{
 	}
 
-	void ItemCommon::probeFields(RflFieldProbe &probe)
+	void ItemCommon::probeFields(FieldProbe &probe)
     {
 	    probe.beginCategory("Item");
 	    probe.registerField(mDisplayName, "DisplayName");

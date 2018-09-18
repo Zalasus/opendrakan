@@ -8,11 +8,12 @@
 #include <dragonRfl/StaticLight.h>
 
 #include <osg/Light>
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Engine.h>
 
-namespace odRfl
+namespace od
 {
 
     StaticLight::StaticLight()
@@ -24,7 +25,7 @@ namespace odRfl
     {
     }
 
-    void StaticLight::probeFields(RflFieldProbe &probe)
+    void StaticLight::probeFields(FieldProbe &probe)
     {
         probe("Point Light")
                 (mColor, "Color")
@@ -73,7 +74,7 @@ namespace odRfl
         }
     }
 
-    OD_REGISTER_RFL_CLASS(0x84, "Static Light", StaticLight);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0084, "Light Source", "Static Light", StaticLight);
 
 }
 

@@ -12,7 +12,7 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/light/Light.h>
 
-namespace odRfl
+namespace od
 {
 
     class StaticLight : public RflClass
@@ -21,11 +21,11 @@ namespace odRfl
 
         StaticLight();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMoved(od::LevelObject &obj) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
+        virtual void probeFields(FieldProbe &probe) override;
+        virtual void onLoaded(LevelObject &obj) override;
+        virtual void onSpawned(LevelObject &obj) override;
+        virtual void onMoved(LevelObject &obj) override;
+        virtual void onDespawned(LevelObject &obj) override;
 
 
     protected:

@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace odRfl
+namespace od
 {
 
     class PlayerCommon : public RflClass
@@ -20,7 +20,7 @@ namespace odRfl
 
         PlayerCommon();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void probeFields(FieldProbe &probe) override;
 
 
     protected:

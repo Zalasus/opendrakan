@@ -7,12 +7,13 @@
 
 #include <dragonRfl/AnimationDemo.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 
-namespace odRfl
+namespace od
 {
 
     AnimationDemo::AnimationDemo()
@@ -24,14 +25,14 @@ namespace odRfl
     {
     }
 
-    void AnimationDemo::probeFields(RflFieldProbe &probe)
+    void AnimationDemo::probeFields(FieldProbe &probe)
     {
         probe("Animation Demo")
                 (mAnimations, "Animations")
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onLoaded(od::LevelObject &obj)
+    void AnimationDemo::onLoaded(LevelObject &obj)
     {
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
@@ -40,7 +41,7 @@ namespace odRfl
         obj.setEnableRflUpdateHook(true);
     }
 
-    void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void AnimationDemo::onUpdate(LevelObject &obj, double simTime, double relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {
@@ -67,6 +68,6 @@ namespace odRfl
     }
 
 
-    OD_REGISTER_RFL_CLASS(0x000c, "Animation Demo", AnimationDemo);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x000c, "Debug", "Animation Demo", AnimationDemo);
 
 }

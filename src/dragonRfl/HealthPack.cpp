@@ -7,9 +7,10 @@
 
 #include <dragonRfl/HealthPack.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace odRfl
+namespace od
 {
 
 	HealthPack::HealthPack()
@@ -17,7 +18,7 @@ namespace odRfl
 	{
 	}
 
-	void HealthPack::probeFields(RflFieldProbe &probe)
+	void HealthPack::probeFields(FieldProbe &probe)
 	{
 	    ItemCommon::probeFields(probe);
 
@@ -25,6 +26,6 @@ namespace odRfl
 	    probe.registerField(mHealthBoost, "Health Boost");
 	}
 
-    OD_REGISTER_RFL_CLASS(0x000A, "Health Pack", HealthPack);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x000A, "Item", "Health Pack", HealthPack);
 
 }

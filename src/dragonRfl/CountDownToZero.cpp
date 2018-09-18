@@ -8,10 +8,11 @@
 #include <dragonRfl/CountDownToZero.h>
 
 #include <limits>
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
     CountDownToZero::CountDownToZero()
@@ -25,7 +26,7 @@ namespace odRfl
     {
     }
 
-    void CountDownToZero::probeFields(RflFieldProbe &probe)
+    void CountDownToZero::probeFields(FieldProbe &probe)
     {
         probe("Count Down To Zero")
                (mInitialCounterValue, "Initial Counter Value")
@@ -36,18 +37,18 @@ namespace odRfl
                (mResetMessage, "Reset Message");
     }
 
-    void CountDownToZero::onLoaded(od::LevelObject &obj)
+    void CountDownToZero::onLoaded(LevelObject &obj)
     {
         obj.setSpawnStrategy(od::SpawnStrategy::Always);
         obj.setObjectType(od::LevelObjectType::Detector);
     }
 
-    void CountDownToZero::onSpawned(od::LevelObject &obj)
+    void CountDownToZero::onSpawned(LevelObject &obj)
     {
         mCounterValue = mInitialCounterValue;
     }
 
-    void CountDownToZero::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+    void CountDownToZero::onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message)
     {
         uint32_t newCounter = mCounterValue;
 
@@ -98,7 +99,7 @@ namespace odRfl
     }
 
 
-    OD_REGISTER_RFL_CLASS(0x0007, "Count Down To Zero", CountDownToZero);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0007, "System", "Count Down To Zero", CountDownToZero);
 
 }
 

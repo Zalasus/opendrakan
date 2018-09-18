@@ -20,11 +20,6 @@ namespace od
 
 	class SkeletonAnimationPlayer;
 
-}
-
-namespace odRfl
-{
-
 	/**
 	 * Seperate container class for the RFL fields in HumanControl. This exists just so the actual
 	 * RFL class HumanControl is not cluttered with the 179 members this class defines. Keeps logic and RFL stuff seperate.
@@ -36,7 +31,7 @@ namespace odRfl
 		HumanControlFields();
         virtual ~HumanControlFields();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void probeFields(FieldProbe &probe) override;
 
 
     protected:
@@ -224,16 +219,16 @@ namespace odRfl
 
 
 
-	class HumanControl : public HumanControlFields, public od::Player
+	class HumanControl : public HumanControlFields, public Player
 	{
 	public:
 
 		HumanControl();
 		virtual ~HumanControl();
 
-		virtual void onLoaded(od::LevelObject &obj) override;
-		virtual void onSpawned(od::LevelObject &obj) override;
-		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+		virtual void onLoaded(LevelObject &obj) override;
+		virtual void onSpawned(LevelObject &obj) override;
+		virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
 
 
 		// implement od::Player
@@ -244,7 +239,7 @@ namespace odRfl
 		virtual void moveForward(float speed) override;
 		virtual void moveRight(float speed) override;
 		virtual osg::Vec3f getPosition() override;
-		virtual od::LevelObject &getLevelObject() override;
+		virtual LevelObject &getLevelObject() override;
 
 
 	 private:
@@ -257,7 +252,7 @@ namespace odRfl
 		float mForwardSpeed;
 		float mRightSpeed;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-		od::LevelObject *mPlayerObject;
+		LevelObject *mPlayerObject;
 		osg::ref_ptr<od::SkeletonAnimationPlayer> mAnimationPlayer;
 		std::unique_ptr<od::CharacterController> mCharacterController;
 

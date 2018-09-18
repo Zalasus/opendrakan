@@ -9,17 +9,17 @@
 #define INCLUDE_RFL_RFLCLASS_H_
 
 #include <odCore/rfl/RflMessage.h>
+#include <odCore/rfl/FieldProbe.h>
 
 #define OD_REGISTER_RFL_CLASS(rflName, classId, category, className, cppClass) \
     template <> class RflClassTraits { static constexpr const char *name() { return className; }\
-    static constexpr RflClassId classId() { return classId; } }\
+    static constexpr RflClassId classId() { return classId; } };\
     static od::RflClassRegistrarImpl<rflName, classCppClass> sOdRflClassRegistrar_ ## classCppClass;
 
 namespace od
 {
     class LevelObject;
 	class Engine;
-	class FieldProbe;
 
     typedef uint16_t RflClassId;
 

@@ -13,25 +13,25 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/Camera.h>
 
-namespace odRfl
+namespace od
 {
 
-	class TrackingCamera : public RflClass, public od::Camera
+	class TrackingCamera : public RflClass, public Camera
 	{
 	public:
 
 		TrackingCamera();
 
-		virtual void probeFields(RflFieldProbe &probe) override;
+		virtual void probeFields(FieldProbe &probe) override;
 
-		virtual void onLoaded(od::LevelObject &obj) override;
-		virtual void onSpawned(od::LevelObject &obj) override;
-		virtual void onDespawned(od::LevelObject &obj) override;
+		virtual void onLoaded(LevelObject &obj) override;
+		virtual void onSpawned(LevelObject &obj) override;
+		virtual void onDespawned(LevelObject &obj) override;
 
 		// implement od::Camera
 		virtual osg::Vec3f getEyePoint() const override;
         virtual void setOsgCamera(osg::Camera *osgCam) override;
-        virtual od::LevelObject  &getLevelObject() override;
+        virtual LevelObject  &getLevelObject() override;
 
         void updateCamera();
 
@@ -47,7 +47,7 @@ namespace odRfl
 
 		osg::ref_ptr<osg::Camera> mOsgCamera;
 		osg::ref_ptr<osg::NodeCallback> mCamUpdateCallback;
-		osg::ref_ptr<od::LevelObject> mCameraLevelObject;
+		osg::ref_ptr<LevelObject> mCameraLevelObject;
 	};
 
 }

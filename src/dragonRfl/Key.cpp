@@ -8,9 +8,10 @@
 
 #include <dragonRfl/Key.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace odRfl
+namespace od
 {
 
 	Key::Key()
@@ -18,7 +19,7 @@ namespace odRfl
 	{
 	}
 
-	void Key::probeFields(RflFieldProbe &probe)
+	void Key::probeFields(FieldProbe &probe)
     {
         ItemCommon::probeFields(probe);
 
@@ -26,5 +27,5 @@ namespace odRfl
         probe.registerField(mLockCode, "Lock Code");
     }
 
-	OD_REGISTER_RFL_CLASS(0x0021, "Key", Key);
+	OD_REGISTER_RFL_CLASS(DragonRfl, 0x0021, "Item", "Key", Key);
 }

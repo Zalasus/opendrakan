@@ -7,13 +7,14 @@
 
 #include <dragonRfl/Building.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 #include <odCore/physics/PhysicsManager.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
 	Building::Building()
@@ -40,7 +41,7 @@ namespace odRfl
 	{
 	}
 
-	void Building::probeFields(RflFieldProbe &probe)
+	void Building::probeFields(FieldProbe &probe)
     {
 		probe("Basics")
 				(mInitialHealth, "Initial Health")
@@ -67,7 +68,7 @@ namespace odRfl
 				(mMessageToSendAfterPushed, "Message to Send After Pushed");
     }
 
-    void Building::onSpawned(od::LevelObject &obj)
+    void Building::onSpawned(LevelObject &obj)
 	{
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
 		{
@@ -75,11 +76,11 @@ namespace odRfl
     	}
 	}
 
-    void Building::onDespawned(od::LevelObject &obj)
+    void Building::onDespawned(LevelObject &obj)
     {
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }
 
-    OD_REGISTER_RFL_CLASS(0x0011, "Building", Building);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0011, "Ground Object", "Building", Building);
 
 }

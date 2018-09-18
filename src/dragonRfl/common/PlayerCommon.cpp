@@ -9,7 +9,7 @@
 
 #include <odCore/rfl/Rfl.h>
 
-namespace odRfl
+namespace od
 {
 
 	PlayerCommon::PlayerCommon()
@@ -58,7 +58,7 @@ namespace odRfl
 	{
 	}
 
-    void PlayerCommon::probeFields(RflFieldProbe &probe)
+    void PlayerCommon::probeFields(FieldProbe &probe)
     {
     	probe.beginCategory("Ambient Comments");
     	probe.registerField(mSeparatedSounds, "Separated Sounds");

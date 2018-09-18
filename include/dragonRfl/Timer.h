@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace odRfl
+namespace od
 {
 
     enum class TimerStartMode
@@ -29,11 +29,11 @@ namespace odRfl
 
 		Timer();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message) override;
+        virtual void probeFields(FieldProbe &probe) override;
+        virtual void onLoaded(LevelObject &obj) override;
+        virtual void onSpawned(LevelObject &obj) override;
+        virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
+        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
 
 
 	protected:

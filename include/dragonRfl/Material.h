@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace odRfl
+namespace od
 {
 
 	class Material : public RflClass
@@ -20,7 +20,7 @@ namespace odRfl
 
 		Material();
 
-		virtual void probeFields(RflFieldProbe &probe) override;
+		virtual void probeFields(FieldProbe &probe) override;
 
 
 	private:
@@ -51,7 +51,7 @@ namespace odRfl
 
 		BlendedMaterial();
 
-		virtual void probeFields(RflFieldProbe &probe) override;
+		virtual void probeFields(FieldProbe &probe) override;
 
 
 	private:

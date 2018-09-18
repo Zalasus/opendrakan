@@ -12,7 +12,7 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
-namespace odRfl
+namespace od
 {
 
     class AnimationDemo : public RflClass
@@ -21,10 +21,10 @@ namespace odRfl
 
         AnimationDemo();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void probeFields(FieldProbe &probe) override;
 
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onLoaded(LevelObject &obj) override;
+        virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
 
 
     protected:

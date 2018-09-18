@@ -7,9 +7,10 @@
 
 #include <dragonRfl/UserInterfaceProperties.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace odRfl
+namespace od
 {
 
     UserInterfaceProperties::UserInterfaceProperties()
@@ -53,7 +54,7 @@ namespace odRfl
     {
     }
 
-    void UserInterfaceProperties::probeFields(RflFieldProbe &probe)
+    void UserInterfaceProperties::probeFields(FieldProbe &probe)
     {
         probe("Main Menu")
                   (mInnerRing, "Inner Ring")
@@ -101,6 +102,6 @@ namespace odRfl
     }
 
 
-    OD_REGISTER_RFL_CLASS(0x0062, "User Interface Properties", UserInterfaceProperties);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0062, "System", "User Interface Properties", UserInterfaceProperties);
 }
 

@@ -10,7 +10,7 @@
 
 #include <dragonRfl/common/PlayerCommon.h>
 
-namespace odRfl
+namespace od
 {
 
 	class DragonControl : public PlayerCommon
@@ -19,7 +19,7 @@ namespace odRfl
 
         DragonControl();
 
-        virtual void probeFields(RflFieldProbe &probe) override;
+        virtual void probeFields(FieldProbe &probe) override;
 
 
     protected:

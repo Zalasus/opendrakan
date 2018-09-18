@@ -7,10 +7,11 @@
 
 #include <dragonRfl/VisibilityToggler.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 
-namespace odRfl
+namespace od
 {
 
     VisibilityToggler::VisibilityToggler()
@@ -20,7 +21,7 @@ namespace odRfl
     {
     }
 
-    void VisibilityToggler::probeFields(RflFieldProbe &probe)
+    void VisibilityToggler::probeFields(FieldProbe &probe)
     {
         probe("")
                 (mTriggerMode, "Trigger Mode")
@@ -70,6 +71,6 @@ namespace odRfl
     }
 
 
-    OD_REGISTER_RFL_CLASS(0x0079, "Visibility Toggler", VisibilityToggler);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0079, "System", "Visibility Toggler", VisibilityToggler);
 
 }

@@ -8,13 +8,14 @@
 #include <dragonRfl/TrackingCamera.h>
 
 #include <osg/NodeCallback>
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Engine.h>
 #include <odCore/Player.h>
 
-namespace odRfl
+namespace od
 {
 
 
@@ -48,7 +49,7 @@ namespace odRfl
 	{
 	}
 
-	void TrackingCamera::probeFields(RflFieldProbe &probe)
+	void TrackingCamera::probeFields(FieldProbe &probe)
 	{
 	    probe.beginCategory("Camera Options");
 	    probe.registerField(mTrackingMode, "Tracking Mode");
@@ -174,5 +175,5 @@ namespace odRfl
         mOsgCamera->setViewMatrixAsLookAt(eyepoint, eyepoint + front, up);
     }
 
-	OD_REGISTER_RFL_CLASS(0x001b, "Tracking Camera", TrackingCamera);
+	OD_REGISTER_RFL_CLASS(DragonRfl, 0x001b, "System", "Tracking Camera", TrackingCamera);
 }

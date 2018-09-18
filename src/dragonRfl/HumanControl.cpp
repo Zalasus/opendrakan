@@ -7,6 +7,7 @@
 
 #include <dragonRfl/HumanControl.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/LevelObject.h>
@@ -16,7 +17,7 @@
 #include <odCore/Camera.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
-namespace odRfl
+namespace od
 {
 
 	HumanControlFields::HumanControlFields()
@@ -206,7 +207,7 @@ namespace odRfl
 	{
 	}
 
-    void HumanControlFields::probeFields(RflFieldProbe &probe)
+    void HumanControlFields::probeFields(FieldProbe &probe)
     {
     	PlayerCommon::probeFields(probe);
 
@@ -548,6 +549,6 @@ namespace odRfl
         }
     }
 
-    OD_REGISTER_RFL_CLASS(0x0009, "Human Control", HumanControl);
+    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0009, "Player", "Human Control", HumanControl);
 
 }

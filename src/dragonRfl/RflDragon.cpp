@@ -10,12 +10,12 @@
 namespace od
 {
 
-    RflDragon::RflDragon(Engine &engine)
+    DragonRfl::DragonRfl(Engine &engine)
     : Rfl(engine)
     {
     }
 
 
-    OD_REGISTER_RFL(RflDragon);
+    OD_REGISTER_RFL(DragonRfl);
 
 }

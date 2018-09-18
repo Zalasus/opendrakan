@@ -10,7 +10,7 @@
 
 #include <dragonRfl/common/ItemCommon.h>
 
-namespace odRfl
+namespace od
 {
 
 	class HealthPack : public ItemCommon
@@ -19,7 +19,7 @@ namespace odRfl
 
 		HealthPack();
 
-		virtual void probeFields(RflFieldProbe &probe) override;
+		virtual void probeFields(FieldProbe &probe) override;
 
 
 	private:

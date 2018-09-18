@@ -13,11 +13,11 @@
 namespace od
 {
 
-    class RflDragon : public RflImpl<RflDragon>
+    class DragonRfl : public RflImpl<DragonRfl>
     {
     public:
 
-        RflDragon(Engine &engine);
+        DragonRfl(Engine &engine);
 
     };
 
