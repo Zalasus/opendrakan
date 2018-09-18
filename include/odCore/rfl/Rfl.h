@@ -14,6 +14,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflManager.h>
 #include <odCore/Logger.h>
+#include <odCore/Exception.h>
 
 #define OD_REGISTER_RFL(rfl) \
     template<> class RflTraits<rfl> { public: static constexpr const char *name() { return #rfl; } }; \
@@ -45,22 +46,13 @@ namespace od
 	};
 
 
-	template <typename _Rfl>
-    class RflClassMapHolder
+	template <typename T>
+    class RflTraits
     {
     public:
 
-        friend class RflClassRegistrar;
-        friend class RflImpl;
+        static constexpr const char *name() { return "<invalid RFL template>"; }
 
-    private:
-
-        static std::map<RflClassId, RflClassRegistrar*> &getClassRegistrarMapSingleton()
-        {
-            std::map<RflClassId, RflClassRegistrar*> map;
-
-            return map;
-        }
     };
 
 
@@ -92,16 +84,6 @@ namespace od
 	    }
 
 	};
-
-
-    template <typename T>
-    class RflTraits
-    {
-    public:
-
-        static constexpr const char *name() { return "<invalid RFL template>"; }
-
-    };
 
 
 	class RflRegistrar

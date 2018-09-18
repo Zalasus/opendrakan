@@ -8,6 +8,8 @@
 #ifndef INCLUDE_RFL_RFLCLASS_H_
 #define INCLUDE_RFL_RFLCLASS_H_
 
+#include <map>
+
 #include <odCore/rfl/RflMessage.h>
 #include <odCore/rfl/FieldProbe.h>
 
@@ -76,6 +78,25 @@ namespace od
         virtual RflClass *createInstance() const = 0;
         virtual const char *getClassName() const = 0;
         virtual RflClassId getClassId() const = 0;
+    };
+
+
+	template <typename _Rfl>
+    class RflClassMapHolder
+    {
+    public:
+
+        friend class RflClassRegistrar;
+        friend class RflImpl;
+
+    private:
+
+        static std::map<RflClassId, RflClassRegistrar*> &getClassRegistrarMapSingleton()
+        {
+            std::map<RflClassId, RflClassRegistrar*> map;
+
+            return map;
+        }
     };
 
 

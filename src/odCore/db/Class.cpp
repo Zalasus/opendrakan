@@ -71,7 +71,7 @@ namespace od
 
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
-    	std::unique_ptr<RflClass> newInstance = mRflClassRegistrar->createInstance();
+    	std::unique_ptr<RflClass> newInstance(mRflClassRegistrar->createInstance());
         mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
         newInstance->probeFields(mClassBuilder);
 
