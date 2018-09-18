@@ -5,22 +5,21 @@
  *      Author: zal
  */
 
-#include <odCore/rfl/RflFieldProbe.h>
-
 #include <odCore/rfl/RflField.h>
+
 #include <odCore/Exception.h>
 
-namespace odRfl
+namespace od
 {
 
-    void RflField::fill(od::DataReader &dr)
+    void RflField::fill(DataReader &dr)
     {
-    	throw od::Exception("Invalid field fill");
+    	throw Exception("Invalid field fill");
     }
 
-    void RflField::fillArray(uint16_t size, od::DataReader &dr)
+    void RflField::fillArray(uint16_t size, DataReader &dr)
     {
-    	throw od::Exception("Invalid field fillArray");
+    	throw Exception("Invalid field fillArray");
     }
 
 
@@ -30,7 +29,7 @@ namespace odRfl
 	{
 	}
 
-    void RflString::fillArray(uint16_t size, od::DataReader &dr)
+    void RflString::fillArray(uint16_t size, DataReader &dr)
 	{
 		std::vector<char> dataBuffer(size*4+1);
 		dr.read(dataBuffer.data(), size*4);

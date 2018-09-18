@@ -24,9 +24,8 @@
 #include <odCore/db/Sound.h>
 #include <odCore/rfl/RflMessage.h>
 
-namespace odRfl
+namespace od
 {
-    class RflFieldProbe;
 
 	/**
 	 * Common parent to all RflFields so RflClassBuilder/RflFieldProbe can store them in a single vector.

@@ -12,36 +12,35 @@
 namespace od
 {
 
-
-    void RflClass::onLoaded(od::LevelObject &obj)
+    void RflClass::onLoaded(LevelObject &obj)
     {
     }
 
-    void RflClass::onLoaded(od::Engine &e)
+    void RflClass::onLoaded(Engine &e)
     {
     }
 
-	void RflClass::onSpawned(od::LevelObject &obj)
+	void RflClass::onSpawned(LevelObject &obj)
 	{
 	}
 
-	void RflClass::onDespawned(od::LevelObject &obj)
+	void RflClass::onDespawned(LevelObject &obj)
 	{
 	}
 
-	void RflClass::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+	void RflClass::onUpdate(LevelObject &obj, double simTime, double relTime)
 	{
 	}
 
-	void RflClass::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+	void RflClass::onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message)
 	{
 	}
 
-	void RflClass::onMoved(od::LevelObject &obj)
+	void RflClass::onMoved(LevelObject &obj)
 	{
 	}
 
-	void RflClass::onDestroyed(od::LevelObject &obj)
+	void RflClass::onDestroyed(LevelObject &obj)
 	{
 	}
 

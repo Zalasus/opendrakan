@@ -38,21 +38,21 @@ namespace od
 		 *
          * This is an overload of onLoaded(od::LevelObject &obj) for RFL classes that aren't used on level objects.
          */
-        virtual void onLoaded(od::Engine &e);
+        virtual void onLoaded(Engine &e);
 
 		/**
 		 * @brief Called when this RFL class is first instantiated from a database class, but after fields have been filled.
 		 *
 		 * This overload is only used for RFL classes that are used on level objects.
 		 */
-		virtual void onLoaded(od::LevelObject &obj);
+		virtual void onLoaded(LevelObject &obj);
 
-		virtual void onSpawned(od::LevelObject &obj);
-		virtual void onDespawned(od::LevelObject &obj);
-		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime);
-		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
-		virtual void onMoved(od::LevelObject &obj);
-		virtual void onDestroyed(od::LevelObject &obj);
+		virtual void onSpawned(LevelObject &obj);
+		virtual void onDespawned(LevelObject &obj);
+		virtual void onUpdate(LevelObject &obj, double simTime, double relTime);
+		virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message);
+		virtual void onMoved(LevelObject &obj);
+		virtual void onDestroyed(LevelObject &obj);
 	};
 
 

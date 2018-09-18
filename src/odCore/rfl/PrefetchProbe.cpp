@@ -9,7 +9,7 @@
 
 #include <odCore/rfl/RflField.h>
 
-namespace odRfl
+namespace od
 {
 
 
