@@ -14,11 +14,6 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
 
-namespace odRfl
-{
-    class Material;
-}
-
 namespace od
 {
 
@@ -53,14 +48,14 @@ namespace od
         RecordId mAlternateId;
         uint16_t mFlags;
         uint16_t mMipMapNumber;
-        AssetRef mClassRef;
+        AssetRef mMaterialClassRef;
         uint32_t mUsageCount;
         uint32_t mCompressionLevel;
         uint32_t mCompressedSize;
 
         bool mHasAlphaChannel;
-        osg::ref_ptr<Class> mClass;
-        std::unique_ptr<odRfl::Material> mMaterial;
+        osg::ref_ptr<Class> mMaterialClass;
+        std::unique_ptr<RflClass> mMaterialInstance;
     };
 
     template <>

@@ -10,7 +10,6 @@
 #include <functional>
 #include <osgDB/WriteFile>
 #include <osgDB/ReadFile>
-#include <dragonRfl/Material.h>
 
 #include <odCore/ZStream.h>
 #include <odCore/Logger.h>
@@ -70,7 +69,7 @@ namespace od
            >> DataReader::Ignore(6)
            >> mFlags
            >> mMipMapNumber
-           >> mClassRef
+           >> mMaterialClassRef
            >> mUsageCount
            >> mCompressionLevel
            >> mCompressedSize;
@@ -253,12 +252,14 @@ namespace od
 
         this->setImage(mWidth, mHeight, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
 
-        if(!mClassRef.isNull())
+        if(!mMaterialClassRef.isNull())
         {
-        	mClass = this->getAssetProvider().getClassByRef(mClassRef);
-        	std::unique_ptr<odRfl::RflClass> rflClass = mClass->makeInstance();
-        	mMaterial = std::unique_ptr<odRfl::Material>(dynamic_cast<odRfl::Material*>(rflClass.release()));
-        	mMaterial->onLoaded(factory.getEngine());
+        	mMaterialClass = this->getAssetProvider().getClassByRef(mMaterialClassRef);
+        	mMaterialInstance = mMaterialClass->makeInstance();
+        	if(mMaterialInstance != nullptr)
+        	{
+        	    mMaterialInstance->onLoaded(factory.getEngine());
+        	}
         }
 
         Logger::debug() << "Texture successfully loaded";
