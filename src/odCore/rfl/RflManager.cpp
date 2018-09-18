@@ -7,7 +7,10 @@
 
 #include <odCore/rfl/RflManager.h>
 
+#include <algorithm>
+
 #include <odCore/rfl/Rfl.h>
+#include <odCore/Exception.h>
 
 namespace od
 {
@@ -27,6 +30,20 @@ namespace od
         }
 
         Logger::info() << "Loaded " << mLoadedRfls.size() << " RFL(s)";
+    }
+
+    Rfl *RflManager::getRfl(const std::string &name)
+    {
+        auto pred = [](std::unique_ptr<Rfl> &rfl){ return rfl->getName() == name; };
+        auto it = std::find(mLoadedRfls.begin(), mLoadedRfls.end(), pred);
+
+        if(it == mLoadedRfls.end())
+        {
+            Logger::error() << "RFL '" << name << "' is not loaded";
+            throw NotFoundException("RFL with given name is not loaded");
+        }
+
+        return it->get();
     }
 
     static std::vector<RflRegistrar*> &RflManager::getRflRegistrarListSingleton()

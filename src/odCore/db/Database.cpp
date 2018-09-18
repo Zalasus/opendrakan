@@ -132,7 +132,6 @@ namespace od
 
         // now that the database is loaded, create the various asset factories
 
-        _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
         _tryOpeningAssetContainer(mModelFactory,    mModelContainer,    ".mod");
         _tryOpeningAssetContainer(mAnimFactory,     mAnimContainer,     ".adb");
         _tryOpeningAssetContainer(mSoundFactory,    mSoundContainer,    ".sdb");
@@ -150,6 +149,20 @@ namespace od
         }else
         {
             Logger::verbose() << "Database has no texture container";
+        }
+
+        // same with class container
+        FilePath odbPath = mDbFilePath.ext(".odb");
+        if(odbPath.exists())
+        {
+            mClassContainer.reset(new SrscFile(odbPath));
+            mClassFactory.reset(new ClassFactory(*this, *mClassContainer, mDbManager.getEngine()));
+
+            Logger::verbose() << "Opened database class container " << odbPath.str();
+
+        }else
+        {
+            Logger::verbose() << "Database has no class container";
         }
 	}
 

@@ -24,6 +24,7 @@ namespace od
     class GuiManager;
     class Player;
     class Camera;
+    class RflManager;
 
 	class Engine
 	{
@@ -39,6 +40,7 @@ namespace od
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline DbManager &getDbManager() { return mDbManager; }
 		inline ShaderManager &getShaderManager() { return mShaderManager; }
+		inline RflManager &getRflManager() { return mRflManager; }
 		inline GuiManager &getGuiManager() { return *mGuiManager; }
 		inline LightManager &getLightManager() { return *mLightManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
@@ -61,6 +63,7 @@ namespace od
 
 		DbManager mDbManager;
 		ShaderManager mShaderManager;
+		RflManager mRflManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<GuiManager> mGuiManager;
 		std::unique_ptr<LightManager> mLightManager;

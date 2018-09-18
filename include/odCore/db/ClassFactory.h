@@ -14,13 +14,17 @@
 namespace od
 {
 
+    class Rfl;
     class Engine;
+    class RflManager;
 
     class ClassFactory : public AssetFactory<Class>
     {
     public:
 
-        ClassFactory(AssetProvider &ap, SrscFile &classContainer);
+        ClassFactory(AssetProvider &ap, SrscFile &classContainer, Engine &engine);
+
+        inline Rfl *getRfl() { return mRfl; }
 
         /**
          * @brief Finds the first class record in this factory's container with the given RFL record type.
@@ -42,6 +46,9 @@ namespace od
     private:
 
         void _loadRflRecord();
+
+        RflManager &mRflManager;
+        Rfl *mRfl;
 
     };
 

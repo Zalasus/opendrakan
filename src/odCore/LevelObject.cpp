@@ -123,7 +123,7 @@ namespace od
             mInitialScale.set(1,1,1);
         }
 
-        odRfl::RflClassBuilder builder;
+        ClassBuilderProbe builder; // TODO: replace with ObjectBuilderProbe once implemented
         builder.readFieldRecord(dr, true);
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
@@ -236,7 +236,7 @@ namespace od
         }
     }
 
-    void LevelObject::messageReceived(LevelObject &sender, odRfl::RflMessage message)
+    void LevelObject::messageReceived(LevelObject &sender, RflMessage message)
     {
         if(mState == LevelObjectState::Destroyed)
         {
@@ -380,7 +380,7 @@ namespace od
         }
     }
 
-    void LevelObject::messageAllLinkedObjects(odRfl::RflMessage message)
+    void LevelObject::messageAllLinkedObjects(RflMessage message)
     {
         for(auto it = mLinkedObjects.begin(); it != mLinkedObjects.end(); ++it)
         {

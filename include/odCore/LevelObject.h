@@ -59,7 +59,7 @@ namespace od
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline Class *getClass() { return mClass; }
-        inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
+        inline RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3f getScale() const { return mTransform->getScale(); }
@@ -77,7 +77,7 @@ namespace od
         void despawned();
         void destroyed();
         void update(double simTime, double relTime);
-        void messageReceived(LevelObject &sender, odRfl::RflMessage message);
+        void messageReceived(LevelObject &sender, RflMessage message);
 
         void setPosition(const osg::Vec3f &v);
         void setRotation(const osg::Quat &q);
@@ -132,7 +132,7 @@ namespace od
          * OSG's update traversal and will likely cause it to segfault.
          */
         void setEnableRflUpdateHook(bool enableHook);
-        void messageAllLinkedObjects(odRfl::RflMessage message);
+        void messageAllLinkedObjects(RflMessage message);
         void requestDestruction();
 
         // override osg::Group
@@ -157,7 +157,7 @@ namespace od
         LevelObjectId mId;
         AssetRef mClassRef;
         osg::ref_ptr<Class> mClass;
-        std::unique_ptr<odRfl::RflClass> mRflClassInstance;
+        std::unique_ptr<RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;
         osg::ref_ptr<Layer> mLightingLayer;
         osg::Vec3f mInitialPosition;

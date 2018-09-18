@@ -14,16 +14,13 @@
 
 #include <odCore/db/Asset.h>
 #include <odCore/db/Model.h>
-#include <odCore/rfl/RflFieldProbe.h>
-
-namespace odRfl
-{
-    class RflClass;
-}
+#include <odCore/rfl/Rfl.h>
+#include <odCore/rfl/ClassBuilderProbe.h>
 
 namespace od
 {
 	class ClassFactory;
+	class RflClass;
 
 	class Class : public Asset, public osg::Referenced
 	{
@@ -36,7 +33,7 @@ namespace od
         inline std::string getName() const { return mClassName; }
 
         void loadFromRecord(ClassFactory &factory, DataReader dr);
-        std::unique_ptr<odRfl::RflClass> makeInstance();
+        std::unique_ptr<RflClass> makeInstance();
 
 
 	private:
@@ -45,8 +42,10 @@ namespace od
         AssetRef mModelRef;
         osg::ref_ptr<Model> mModel;
         uint16_t mRflClassId;
-        odRfl::RflClassBuilder mClassBuilder;
+        ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
+
+        RflClassRegistrar *mRflClassRegistrar;
 
 	};
 

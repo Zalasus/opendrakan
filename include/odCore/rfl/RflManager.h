@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 namespace od
 {
@@ -25,6 +26,8 @@ namespace od
         friend class RflRegistrar;
 
         RflManager(Engine &e);
+
+        Rfl *getRfl(const std::string &name);
 
 
 

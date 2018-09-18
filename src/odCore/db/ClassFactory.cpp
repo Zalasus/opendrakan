@@ -7,17 +7,20 @@
 
 #include <odCore/db/ClassFactory.h>
 
+#include <odCore/Engine.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/StringUtils.h>
 #include <odCore/db/Database.h>
 #include <odCore/rfl/Rfl.h>
+#include <odCore/rfl/RflManager.h>
 
 namespace od
 {
 
-	ClassFactory::ClassFactory(AssetProvider &ap, SrscFile &classContainer)
+	ClassFactory::ClassFactory(AssetProvider &ap, SrscFile &classContainer, Engine &engine)
     : AssetFactory<Class>(ap, classContainer)
+    , mRflManager(engine.getRflManager())
     {
         _loadRflRecord();
     }
@@ -76,10 +79,7 @@ namespace od
 
         FilePath rflPath(rflPathStr, getSrscFile().getFilePath().dir());
 
-        if(!StringUtils::compareIgnoringCase(rflPath.fileStrNoExt(), odRfl::Rfl::getSingleton().getName()))
-        {
-            throw UnsupportedException("Class database uses different RFL than linked into engine");
-        }
+        mRfl = mRflManager.getRfl(rflPath.str());
     }
 
 }

@@ -34,8 +34,8 @@ namespace od
 		inline Engine &getEngine() { return mEngine; }
 
 		virtual const char *getName() const = 0;
-		virtual RflClass *createClassInstance(RflClassId id) = 0;
-		virtual size_t getRegisteredClassCount() = 0;
+		virtual RflClassRegistrar *getRflClassRegistrar(RflClassId id) = 0;
+		virtual size_t getRegisteredClassCount() const = 0;
 
 
 	private:
@@ -69,24 +69,24 @@ namespace od
 	{
 	public:
 
-	    virtual const char *getName() const override
+	    virtual const char *getName() const final override
 	    {
 	        return RflTraits<_SubRfl>::name();
 	    }
 
-	    virtual RflClass *createClassInstance(RflClassId id) override
-	    {
+	    virtual RflClassRegistrar *getRflClassRegistrar(RflClassId id) final override
+        {
 	        std::map<RflClassId, RflClassRegistrar*> &map = RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton();
-	        auto it = map.find(id);
-	        if(it == map.end())
-	        {
-	            throw NotFoundException("Class with given ID is not registered in RFL");
-	        }
+            auto it = map.find(id);
+            if(it == map.end())
+            {
+                throw NotFoundException("Class with given ID is not registered in RFL");
+            }
 
-	        return it->second->createInstance();
-	    }
+            return it->second;
+        }
 
-	    virtual size_t getRegisteredClassCount() override
+	    virtual size_t getRegisteredClassCount() const final override
 	    {
 	        return RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton().size();
 	    }

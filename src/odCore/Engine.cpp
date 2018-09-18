@@ -15,8 +15,8 @@
 #include <odCore/LevelObject.h>
 #include <odCore/Player.h>
 #include <odCore/Camera.h>
-#include <odCore/rfl/Rfl.h>
 #include <odCore/gui/GuiManager.h>
+#include <odCore/rfl/RflManager.h>
 
 namespace od
 {
@@ -24,6 +24,7 @@ namespace od
 	Engine::Engine()
 	: mDbManager(*this)
 	, mShaderManager(*this, FilePath(OD_SHADER_SRC_PATH))
+	, mRflManager(*this)
 	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere? EDIT: yes, it is. in the interface class db
 	, mEngineRootDir("")
 	, mCamera(nullptr)
@@ -74,9 +75,6 @@ namespace od
 	void Engine::run()
 	{
 		Logger::info() << "Starting OpenDrakan...";
-
-		odRfl::Rfl &rfl = odRfl::Rfl::getSingleton();
-		Logger::info() << "OpenDrakan linked against RFL " << rfl.getName() << " with " << rfl.getClassTypeCount() << " registered classes";
 
 		if(!mSetUp)
 		{

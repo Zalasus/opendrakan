@@ -12,7 +12,6 @@
 #include <odCore/db/ClassFactory.h>
 #include <odCore/db/AssetProvider.h>
 #include <odCore/rfl/Rfl.h>
-#include <odCore/rfl/RflFieldProbe.h>
 
 namespace od
 {
@@ -21,6 +20,7 @@ namespace od
     : Asset(ap, classId)
     , mRflClassId(0)
     , mIconNumber(0)
+    , mRflClassRegistrar(nullptr)
     {
     }
 
@@ -46,32 +46,36 @@ namespace od
                 mModel = nullptr;
             }
         }
+
+        if(factory.getRfl() != nullptr)
+        {
+            try
+            {
+                mRflClassRegistrar = factory.getRfl()->getRflClassRegistrar(mRflClassId);
+
+            }catch(NotFoundException &e)
+            {
+                Logger::debug() << "RflClass type " << std::hex << mRflClassId << std::dec <<
+                    " of class '" << mClassName << "' not found. Probably unimplemented";
+            }
+        }
     }
 
-    std::unique_ptr<odRfl::RflClass> Class::makeInstance()
+    std::unique_ptr<RflClass> Class::makeInstance()
 	{
-    	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
-
-    	try
+        if(mRflClassRegistrar == nullptr)
         {
-        	odRfl::RflClassRegistrar &cr = odRfl::Rfl::getSingleton().getClassRegistrarById(mRflClassId);
-
-        	std::unique_ptr<odRfl::RflClass> newInstance = cr.createClassInstance();// FIXME: make sure this does not throw NotFoundException or cause unwanted catches
-        	mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
-        	newInstance->probeFields(mClassBuilder);
-
-        	return newInstance;
-
-
-        }catch(NotFoundException &e)
-        {
-        	// ignore these for now as there are way more RflClasses than we have implemented
-        	//Logger::warn() << "Tried to instantiate class with unknown RFLClass " << std::hex << mRflClassId << std::dec;
-        	Logger::debug() << "RflClass type " << std::hex << mRflClassId << std::dec <<
-        			" of class '" << mClassName << "' not found. Probably unimplemented";
+            Logger::debug() << "Tried to instantiate class without valid RFL class. Ignoring call as class is probably uinimplemented";
+            return nullptr;
         }
 
-        return nullptr;
+    	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
+
+    	std::unique_ptr<RflClass> newInstance = mRflClassRegistrar->createInstance();
+        mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
+        newInstance->probeFields(mClassBuilder);
+
+        return newInstance;
 	}
 
 }
