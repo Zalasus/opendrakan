@@ -79,7 +79,9 @@ namespace od
 
         FilePath rflPath(rflPathStr, getSrscFile().getFilePath().dir());
 
-        mRfl = mRflManager.getRfl(rflPath.str());
+        // ignore path part. should we ever encouter multiple RFLs with the same name in different
+        //  directories, we need to handle this differently
+        mRfl = mRflManager.getRfl(rflPath.fileStrNoExt());
     }
 
 }

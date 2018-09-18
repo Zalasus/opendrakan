@@ -24,12 +24,6 @@ namespace od
         mLoadedRfls.reserve(rfls.size());
         for(auto it = rfls.begin(); it != rfls.end(); ++it)
         {
-            RflRegistrar *registrar = *it;
-            if(registrar == nullptr)
-            {
-                Logger::info() << "The fuck is dis";
-            }
-
             std::unique_ptr<Rfl> rfl((*it)->createInstance(mEngine));
             mLoadedRfls.push_back(std::move(rfl));
 

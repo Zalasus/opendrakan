@@ -16,6 +16,6 @@ namespace od
     }
 
 
-    OD_REGISTER_RFL(DragonRfl);
+    OD_REGISTER_RFL("Dragon", DragonRfl);
 
 }

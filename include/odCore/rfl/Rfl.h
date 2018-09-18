@@ -16,8 +16,8 @@
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
-#define OD_REGISTER_RFL(rfl) \
-    template<> struct RflTraits<rfl> { static constexpr const char *name() { return #rfl; } }; \
+#define OD_REGISTER_RFL(rflName, rfl) \
+    template<> struct RflTraits<rfl> { static constexpr const char *name() { return rflName; } }; \
 	static od::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl;
 
 namespace od
