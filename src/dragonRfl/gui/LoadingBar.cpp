@@ -5,10 +5,10 @@
  *      Author: zal
  */
 
-#include <odCore/gui/LoadingBar.h>
+#include <dragonRfl/gui/LoadingBar.h>
 
+#include <dragonRfl/gui/GuiTextures.h>
 #include <odCore/gui/GuiManager.h>
-#include <odCore/gui/GuiTextures.h>
 #include <odCore/db/Texture.h>
 
 namespace od

@@ -3,6 +3,11 @@
 set(SOURCES
     "common/ItemCommon.cpp"
     "common/PlayerCommon.cpp"
+    "gui/CrystalRingButton.cpp"
+    "gui/Cursor.cpp"
+    "gui/HealthIndicator.cpp"
+    "gui/LoadingBar.cpp"
+    "gui/MainMenu.cpp"
     "AnimationDemo.cpp"
     "Building.cpp"
     "CountDownToZero.cpp"

@@ -5,9 +5,9 @@
  *      Author: zal
  */
 
-#include <odCore/gui/HealthIndicator.h>
+#include <dragonRfl/gui/HealthIndicator.h>
 
-#include <odCore/gui/GuiTextures.h>
+#include <dragonRfl/gui/GuiTextures.h>
 #include <odCore/gui/GuiManager.h>
 
 namespace od

@@ -205,7 +205,8 @@ namespace od
         aa.requestWarpPointer(mLastCursorPos.x(), mLastCursorPos.y());
         mEngine.getGuiManager().setCursorPosition(mLastCursorPosNorm);
 
-        mEngine.getGuiManager().setShowMainMenu(!menuMode);
+        mEngine.getGuiManager().setMenuMode(!menuMode);
+        mEngine.getRflManager().onMenuToggle(!menuMode);
 	}
 
 	void InputManager::_initCursor()

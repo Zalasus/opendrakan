@@ -25,7 +25,7 @@ namespace od
 
     class Engine;
 
-	class Rfl
+	class Rfl : public RflEventInterface
 	{
 	public:
 
@@ -37,6 +37,9 @@ namespace od
 		virtual const char *getName() const = 0;
 		virtual RflClassRegistrar *getRflClassRegistrar(RflClassId id) = 0;
 		virtual size_t getRegisteredClassCount() const = 0;
+
+		virtual void onStartup() override;
+		virtual void onMenuToggle(bool newMode) override;
 
 
 	private:
@@ -60,8 +63,6 @@ namespace od
 	{
 	public:
 
-	    RflImpl(Engine &e) : Rfl(e) {}
-
 	    virtual const char *getName() const final override
 	    {
 	        return RflTraits<_SubRfl>::name();
@@ -83,6 +84,11 @@ namespace od
 	    {
 	        return RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton().size();
 	    }
+
+
+	protected:
+
+	    RflImpl(Engine &e) : Rfl(e) {}
 
 	};
 

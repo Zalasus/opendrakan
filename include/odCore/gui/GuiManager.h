@@ -12,15 +12,12 @@
 
 #include <map>
 #include <osgViewer/Viewer>
-#include <dragonRfl/UserInterfaceProperties.h>
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/Database.h>
-#include <odCore/gui/Cursor.h>
-#include <odCore/gui/MainMenu.h>
 #include <odCore/gui/WidgetIntersectVisitor.h>
 
 namespace od
@@ -48,13 +45,20 @@ namespace od
         osg::Vec2 getScreenResolution();
 
         void addWidget(Widget *widget);
+        void removeWidget(Widget *widget);
         size_t getWidgetCount();
         std::pair<int32_t, int32_t> getWidgetZRange();
 
         void setMenuMode(bool b);
-        void setShowMainMenu(bool b);
 
         void mouseDown();
+
+        /**
+         * @brief Sets the widget to be used as a cursor.
+         *
+         * This is purely visual. The mouse picking functionality works without an assigned cursor widget.
+         */
+        void setCursorWidget(Widget *cursor);
 
         /**
          * @brief Positions cursor in screen space.
@@ -104,7 +108,6 @@ namespace od
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         SrscFile mRrcFile;
         TextureFactory mTextureFactory;
-        Database &mInterfaceDb;
         bool mMenuMode;
 
         std::map<RecordId, std::string> mLocalizedStringCache;
@@ -112,10 +115,8 @@ namespace od
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;
         std::deque<osg::ref_ptr<Widget>> mWidgets;
-        std::unique_ptr<UserInterfaceProperties> mUserInterfacePropertiesInstance;
         osg::Vec2 mCursorPosInNdc;
-        osg::ref_ptr<Cursor> mCursorWidget;
-        osg::ref_ptr<MainMenu> mMainMenuWidget;
+        osg::ref_ptr<Widget> mCursorWidget;
 
         osg::Matrix mWidgetToScreenSpaceXform; // FIXME: these are badly named. this goes from widget space to NDC, not screen space
         osg::Matrix mScreenToWidgetSpaceXform;

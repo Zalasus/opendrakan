@@ -69,6 +69,8 @@ namespace od
 
 	    mLightManager.reset(new LightManager(*this, mRootNode));
 
+	    mRflManager.onStartup();
+
 	    mSetUp = true;
 	}
 

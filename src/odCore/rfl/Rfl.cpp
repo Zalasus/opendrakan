@@ -15,6 +15,13 @@ namespace od
     {
     }
 
+    void Rfl::onStartup()
+    {
+    }
+
+    void Rfl::onMenuToggle(bool newMode)
+    {
+    }
 
     std::vector<RflRegistrar*> &RflRegistrar::getRflRegistrarListSingleton()
     {

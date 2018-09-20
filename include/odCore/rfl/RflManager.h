@@ -12,6 +12,8 @@
 #include <memory>
 #include <string>
 
+#include <odCore/rfl/RflEventInterface.h>
+
 namespace od
 {
 
@@ -19,16 +21,16 @@ namespace od
     class Rfl;
     class RflRegistrar;
 
-    class RflManager
+    class RflManager : public RflEventInterface
     {
     public:
-
-        friend class RflRegistrar;
 
         RflManager(Engine &e);
 
         Rfl *getRfl(const std::string &name);
 
+        virtual void onStartup() override;
+        virtual void onMenuToggle(bool newMode) override;
 
 
     private:

@@ -5,10 +5,10 @@
  *      Author: zal
  */
 
-#include <odCore/gui/Cursor.h>
+#include <dragonRfl/gui/Cursor.h>
 
 #include <odCore/gui/GuiManager.h>
-#include <odCore/gui/GuiTextures.h>
+#include <dragonRfl/gui/GuiTextures.h>
 
 namespace od
 {

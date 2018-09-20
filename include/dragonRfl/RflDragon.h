@@ -9,6 +9,9 @@
 #define INCLUDE_DRAGONRFL_RFLDRAGON_H_
 
 #include <odCore/rfl/Rfl.h>
+#include <odCore/db/Database.h>
+#include <dragonRfl/UserInterfaceProperties.h>
+#include <dragonRfl/gui/MainMenu.h>
 
 namespace od
 {
@@ -18,6 +21,16 @@ namespace od
     public:
 
         DragonRfl(Engine &engine);
+
+        virtual void onStartup() override;
+        virtual void onMenuToggle(bool newMode) override;
+
+
+    private:
+
+        Database *mInterfaceDb;
+        std::unique_ptr<UserInterfaceProperties> mUserInterfacePropertiesInstance;
+        osg::ref_ptr<MainMenu> mMainMenu;
 
     };
 

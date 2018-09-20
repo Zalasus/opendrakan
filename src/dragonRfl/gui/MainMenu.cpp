@@ -5,13 +5,13 @@
  *      Author: zal
  */
 
-#include <odCore/gui/MainMenu.h>
+#include <dragonRfl/gui/MainMenu.h>
 
+#include <dragonRfl/gui/GuiTextures.h>
+#include <dragonRfl/gui/CrystalRingButton.h>
 #include <odCore/Engine.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/gui/TexturedQuad.h>
-#include <odCore/gui/GuiTextures.h>
-#include <odCore/gui/CrystalRingButton.h>
 
 namespace od
 {

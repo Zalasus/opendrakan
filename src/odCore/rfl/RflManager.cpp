@@ -47,6 +47,22 @@ namespace od
         return it->get();
     }
 
+    void RflManager::onStartup()
+    {
+        for(auto it = mLoadedRfls.begin(); it != mLoadedRfls.end(); ++it)
+        {
+            (*it)->onStartup();
+        }
+    }
+
+    void RflManager::onMenuToggle(bool newMode)
+    {
+        for(auto it = mLoadedRfls.begin(); it != mLoadedRfls.end(); ++it)
+        {
+            (*it)->onMenuToggle(newMode);
+        }
+    }
+
 }
 
 

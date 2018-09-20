@@ -17,10 +17,7 @@
 #include <odCore/Engine.h>
 #include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/WidgetGroup.h>
-#include <odCore/gui/HealthIndicator.h>
 #include <odCore/rfl/PrefetchProbe.h>
-
-#define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
 namespace od
 {
@@ -30,14 +27,11 @@ namespace od
     , mViewer(viewer)
     , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
-    , mInterfaceDb(engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase()))
     , mMenuMode(false)
     {
         _setupGui();
 
         mWidgetIntersectVisitor = new WidgetIntersectVisitor(mWidgetToScreenSpaceXform, mScreenToWidgetSpaceXform);
-
-        setShowMainMenu(false);
     }
 
     void GuiManager::quit()
@@ -96,6 +90,21 @@ namespace od
         widget->setParent(nullptr);
     }
 
+    void GuiManager::removeWidget(Widget *widget)
+    {
+        if(widget == nullptr || mGuiRoot == nullptr)
+        {
+            return;
+        }
+
+        mGuiRoot->removeChild(widget);
+        auto it = std::find(mWidgets.begin(), mWidgets.end(), widget);
+        if(it != mWidgets.end())
+        {
+            mWidgets.erase(it);
+        }
+    }
+
     size_t GuiManager::getWidgetCount()
     {
         return mWidgets.size();
@@ -125,22 +134,28 @@ namespace od
     void GuiManager::setMenuMode(bool b)
     {
         mMenuMode = b;
-        mCursorWidget->setVisible(b);
+
+        if(mCursorWidget != nullptr)
+        {
+            mCursorWidget->setVisible(b);
+        }
     }
 
-    void GuiManager::setShowMainMenu(bool b)
+    void GuiManager::setCursorWidget(Widget *cursor)
     {
-        setMenuMode(b);
-        mMainMenuWidget->setVisible(b);
+        if(mCursorWidget != nullptr)
+        {
+            this->removeWidget(mCursorWidget);
+        }
+
+        mCursorWidget = cursor;
+        mCursorWidget->setZIndex(-1000);
+        mCursorWidget->setVisible(mMenuMode);
+        this->addWidget(mCursorWidget);
     }
 
     void GuiManager::setCursorPosition(const osg::Vec2 &pos)
     {
-        if(mCursorWidget == nullptr)
-        {
-            return;
-        }
-
         if(mCursorPosInNdc == pos)
         {
             // no change -> no need to perform costly update
@@ -152,7 +167,10 @@ namespace od
         // pos is in NDC, we need it in widget space
         osg::Vec3 posWs = osg::Vec3(pos, 0.0) * mScreenToWidgetSpaceXform;
 
-        mCursorWidget->setPosition(osg::Vec2(posWs.x(), posWs.y()));
+        if(mCursorWidget != nullptr)
+        {
+            mCursorWidget->setPosition(osg::Vec2(posWs.x(), posWs.y()));
+        }
 
         // okay, here is the algorithm for determining mouse enter/leave:
         //  whenever the mouse moves, we find all widgets under it. we also store all widgets found under the
@@ -407,46 +425,6 @@ namespace od
         ss->setAttribute(defaultGuiLight, osg::StateAttribute::ON);
 
         mGuiCamera->addChild(mGuiRoot);
-
-        mCursorWidget = new Cursor(*this);
-        mCursorWidget->setPosition(osg::Vec2(0.5, 0.5));
-        mCursorWidget->setZIndex(-1000);
-        this->addWidget(mCursorWidget);
-
-        // retrieve UserInterfaceProperties object
-        if(mInterfaceDb.getClassFactory() == nullptr)
-        {
-            throw Exception("Can not initialize user interface. Interface.db has no class container");
-        }
-
-        RecordId id = mInterfaceDb.getClassFactory()->findFirstClassOfType(0x0062); // FIXME: don't hardcode this here. retrieve it from the registrar or something
-        if(id == AssetRef::NULL_REF.assetId)
-        {
-            throw Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
-        }
-
-        osg::ref_ptr<Class> uiPropsClass = mInterfaceDb.getClass(id);
-        std::unique_ptr<RflClass> uiPropsInstance = uiPropsClass->makeInstance();
-        mUserInterfacePropertiesInstance.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
-        if(mUserInterfacePropertiesInstance == nullptr)
-        {
-            throw Exception("Could not cast or instantiate User Interface Properties instance");
-        }
-        mUserInterfacePropertiesInstance->onLoaded(mEngine);
-
-        PrefetchProbe probe(mInterfaceDb);
-        mUserInterfacePropertiesInstance->probeFields(probe);
-
-        mMainMenuWidget = new MainMenu(*this, mUserInterfacePropertiesInstance.get());
-        mMainMenuWidget->setOrigin(WidgetOrigin::Center);
-        mMainMenuWidget->setPosition(osg::Vec2(0.5, 0.5));
-        mMainMenuWidget->setZIndex(1);
-        this->addWidget(mMainMenuWidget);
-
-        HealthIndicator *hi = new HealthIndicator(*this);
-        hi->setOrigin(WidgetOrigin::BottomLeft);
-        hi->setPosition(0, 1);
-        hi->setZIndex(2);
-        this->addWidget(hi);
     }
+
 }
