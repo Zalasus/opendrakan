@@ -9,6 +9,7 @@
 
 #include <odCore/Engine.h>
 #include <odCore/Player.h>
+#include <odCore/Level.h>
 #include <odCore/light/LightManager.h>
 #include <odCore/gui/GuiManager.h>
 

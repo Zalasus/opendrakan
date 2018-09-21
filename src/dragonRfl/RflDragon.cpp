@@ -10,6 +10,7 @@
 #include <odCore/Engine.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/PrefetchProbe.h>
+#include <odCore/db/DbManager.h>
 #include <dragonRfl/gui/Cursor.h>
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"

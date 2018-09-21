@@ -10,6 +10,7 @@
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
 #include <odCore/gui/GuiManager.h>
+#include <odCore/ShaderManager.h>
 
 // max crystal speed in rad/s
 #define OD_CRYSTAL_SPEED_MAX       (3.0*M_PI)

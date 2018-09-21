@@ -7,11 +7,12 @@
 
 #include <dragonRfl/StaticLight.h>
 
-#include <osg/Light>
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
+#include <odCore/Level.h>
 #include <odCore/Engine.h>
+#include <odCore/light/LightManager.h>
 
 namespace od
 {

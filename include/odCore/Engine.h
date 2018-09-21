@@ -12,19 +12,20 @@
 #include <osgViewer/Viewer>
 #include <osgViewer/ViewerEventHandlers>
 
-#include <odCore/ShaderManager.h>
-#include <odCore/InputManager.h>
-#include <odCore/Level.h>
-#include <odCore/light/LightManager.h>
-#include <odCore/db/DbManager.h>
+#include <odCore/FilePath.h>
 
 namespace od
 {
 
-    class GuiManager;
     class Player;
     class Camera;
+    class Level;
+    class GuiManager;
     class RflManager;
+    class InputManager;
+    class ShaderManager;
+    class LightManager;
+    class DbManager;
 
 	class Engine
 	{
@@ -33,14 +34,14 @@ namespace od
 	    Engine();
 		Engine(Engine &e) = delete;
 		Engine(const Engine &e) = delete;
-		~Engine() = default;
+		~Engine();
 
 		inline const FilePath &getInitialLevelFile() const { return mInitialLevelFile; }
 		inline void setInitialLevelFile(const FilePath &level) { mInitialLevelFile = level; }
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
-		inline DbManager &getDbManager() { return mDbManager; }
-		inline ShaderManager &getShaderManager() { return mShaderManager; }
-		inline RflManager &getRflManager() { return mRflManager; }
+		inline DbManager &getDbManager() { return *mDbManager; }
+		inline ShaderManager &getShaderManager() { return *mShaderManager; }
+		inline RflManager &getRflManager() { return *mRflManager; }
 		inline GuiManager &getGuiManager() { return *mGuiManager; }
 		inline LightManager &getLightManager() { return *mLightManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
@@ -61,9 +62,9 @@ namespace od
 
 		void _findEngineRoot(const std::string &rrcFileName);
 
-		DbManager mDbManager;
-		ShaderManager mShaderManager;
-		RflManager mRflManager;
+		std::unique_ptr<DbManager> mDbManager;
+		std::unique_ptr<ShaderManager> mShaderManager;
+		std::unique_ptr<RflManager> mRflManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<GuiManager> mGuiManager;
 		std::unique_ptr<LightManager> mLightManager;

@@ -12,9 +12,11 @@
 #include <odCore/Exception.h>
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
-#include <odCore/LevelObject.h>
 #include <odCore/Player.h>
 #include <odCore/Camera.h>
+#include <odCore/ShaderManager.h>
+#include <odCore/InputManager.h>
+#include <odCore/light/LightManager.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/RflManager.h>
 
@@ -22,15 +24,16 @@ namespace od
 {
 
 	Engine::Engine()
-	: mDbManager(*this)
-	, mShaderManager(*this, FilePath(OD_SHADER_SRC_PATH))
-	, mRflManager(*this)
-	, mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere? EDIT: yes, it is. in the interface class db
+	: mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere? EDIT: yes, it is. in the interface class db
 	, mEngineRootDir("")
 	, mCamera(nullptr)
 	, mPlayer(nullptr)
 	, mMaxFrameRate(60)
 	, mSetUp(false)
+	{
+	}
+
+	Engine::~Engine()
 	{
 	}
 
@@ -42,6 +45,10 @@ namespace od
 	    }
 
 	    _findEngineRoot("Dragon.rrc");
+
+	    mDbManager.reset(new DbManager(*this));
+	    mShaderManager.reset(new ShaderManager(*this, FilePath(OD_SHADER_SRC_PATH)));
+	    mRflManager.reset(new RflManager(*this));
 
 	    mViewer = new osgViewer::Viewer;
         mViewer->realize();
@@ -69,7 +76,7 @@ namespace od
 
 	    mLightManager.reset(new LightManager(*this, mRootNode));
 
-	    mRflManager.onStartup();
+	    mRflManager->onStartup();
 
 	    mSetUp = true;
 	}
@@ -90,7 +97,7 @@ namespace od
 		mViewer->addEventHandler(mScreenshotHandler);
 
 		// attach our default shaders to root node so we don't use the fixed function pipeline anymore
-		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager.makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
+		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager->makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
 		mRootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
 
 		osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
