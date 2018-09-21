@@ -29,7 +29,7 @@ namespace od
 	};
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0021, "Item", "Key", Key);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0021, "Item", "Key", Key);
 
 }
 

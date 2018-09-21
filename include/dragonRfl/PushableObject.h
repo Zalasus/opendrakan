@@ -49,7 +49,7 @@ namespace od
     };
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0010, "Ground Object", "Pushable Object", PushableObject);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0010, "Ground Object", "Pushable Object", PushableObject);
 
 }
 

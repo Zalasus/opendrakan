@@ -42,7 +42,7 @@ namespace od
 
     };
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x000c, "Debug", "Animation Demo", AnimationDemo);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x000c, "Debug", "Animation Demo", AnimationDemo);
 
 }
 

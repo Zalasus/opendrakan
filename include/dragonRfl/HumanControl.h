@@ -259,7 +259,7 @@ namespace od
 	};
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0009, "Player", "Human Control", HumanControl);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0009, "Player", "Human Control", HumanControl);
 
 
 }

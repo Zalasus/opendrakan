@@ -51,7 +51,7 @@ namespace od
 	};
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x001b, "System", "Tracking Camera", TrackingCamera);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x001b, "System", "Tracking Camera", TrackingCamera);
 
 }
 

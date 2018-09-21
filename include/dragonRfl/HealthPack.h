@@ -29,7 +29,7 @@ namespace od
 	};
 
 
-	OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x000A, "Item", "Health Pack", HealthPack);
+	OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x000A, "Item", "Health Pack", HealthPack);
 
 }
 

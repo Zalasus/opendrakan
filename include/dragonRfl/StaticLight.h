@@ -40,7 +40,7 @@ namespace od
     };
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0084, "Light Source", "Static Light", StaticLight);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0084, "Light Source", "Static Light", StaticLight);
 
 }
 

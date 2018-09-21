@@ -44,7 +44,7 @@ namespace od
     };
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x001a, "System", "Domed Sky", DomedSky);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x001a, "System", "Domed Sky", DomedSky);
 
 }
 

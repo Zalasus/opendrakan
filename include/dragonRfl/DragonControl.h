@@ -89,7 +89,7 @@ namespace od
     };
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x001c, "Player", "Dragon Control", DragonControl);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x001c, "Player", "Dragon Control", DragonControl);
 
 }
 

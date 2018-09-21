@@ -42,7 +42,7 @@ namespace od
     };
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x003d, "System", "Detector", Detector);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x003d, "System", "Detector", Detector);
 
 }
 

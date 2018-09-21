@@ -14,13 +14,28 @@
 #include <odCore/rfl/FieldProbe.h>
 #include <odCore/Logger.h>
 
-#define OD_DECLARE_RFLCLASS_TRAITS(rfl, id, category, className, cppClass) \
+/**
+ * @brief Convenience macro for defining the traits type for an RFL class.
+ *
+ * @param rfl       The class implementing the RFL this class belongs to
+ * @param id        The ID of the RFL class
+ * @param category  A string containing the RFL class's category
+ * @param className A string containing the RFL class's name
+ * @param cppClass  The class implementing the RFL class
+ */
+#define OD_DEFINE_RFLCLASS_TRAITS(rfl, id, category, className, cppClass) \
     template <> struct RflClassTraits<cppClass> { \
         static constexpr const char *rflName() { return #rfl; }\
         static constexpr const char *name() { return className; }\
         static constexpr const char *categoryName() { return category; }\
         static constexpr RflClassId classId() { return id; } };
 
+/**
+ * @brief Convenience macro for defining a static registrar object for an RFL class.
+ *
+ * @param rfl       The class implementing the RFL this class belongs to
+ * @param cppClass  The class implementing the RFL class
+ */
 #define OD_REGISTER_RFLCLASS(rfl, cppClass) \
     static od::RflClassRegistrarImpl<rfl, cppClass> sOdRflClassRegistrar_ ## rfl ## _ ## cppClass;
 

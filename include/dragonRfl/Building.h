@@ -50,7 +50,7 @@ namespace od
 	};
 
 
-    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0011, "Ground Object", "Building", Building);
+    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0011, "Ground Object", "Building", Building);
 
 }
 
