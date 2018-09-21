@@ -41,6 +41,9 @@ namespace od
         RflEnumYesNo    mDragonTakesOffUponTeleport;
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x003d, "System", "Detector", Detector);
+
 }
 
 

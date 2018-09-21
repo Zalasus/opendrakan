@@ -258,6 +258,10 @@ namespace od
 
 	};
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0009, "Player", "Human Control", HumanControl);
+
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_HUMANCONTROL_H_ */

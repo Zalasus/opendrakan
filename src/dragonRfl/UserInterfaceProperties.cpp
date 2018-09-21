@@ -102,6 +102,6 @@ namespace od
     }
 
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0062, "System", "User Interface Properties", UserInterfaceProperties);
+    OD_REGISTER_RFLCLASS(DragonRfl, UserInterfaceProperties);
 }
 

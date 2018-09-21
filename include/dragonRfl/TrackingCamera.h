@@ -50,6 +50,9 @@ namespace od
 		osg::ref_ptr<LevelObject> mCameraLevelObject;
 	};
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x001b, "System", "Tracking Camera", TrackingCamera);
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_TRACKINGCAMERA_H_ */

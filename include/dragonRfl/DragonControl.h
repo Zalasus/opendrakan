@@ -88,6 +88,9 @@ namespace od
 		RflInteger			mDoneDismountSndChance;
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x001c, "Player", "Dragon Control", DragonControl);
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_DRAGONCONTROL_H_ */

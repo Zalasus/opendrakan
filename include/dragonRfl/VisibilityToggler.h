@@ -40,6 +40,10 @@ namespace od
 
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0079, "System", "Visibility Toggler", VisibilityToggler);
+
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_VISIBILITYTOGGLER_H_ */

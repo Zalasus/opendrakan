@@ -175,5 +175,7 @@ namespace od
         mOsgCamera->setViewMatrixAsLookAt(eyepoint, eyepoint + front, up);
     }
 
-	OD_REGISTER_RFL_CLASS(DragonRfl, 0x001b, "System", "Tracking Camera", TrackingCamera);
+
+	OD_REGISTER_RFLCLASS(DragonRfl, TrackingCamera);
+
 }

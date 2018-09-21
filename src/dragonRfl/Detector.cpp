@@ -58,7 +58,7 @@ namespace od
     }
 
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x003d, "System", "Detector", Detector);
+    OD_REGISTER_RFLCLASS(DragonRfl, Detector);
 
 }
 

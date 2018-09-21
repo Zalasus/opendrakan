@@ -27,5 +27,7 @@ namespace od
         probe.registerField(mLockCode, "Lock Code");
     }
 
-	OD_REGISTER_RFL_CLASS(DragonRfl, 0x0021, "Item", "Key", Key);
+
+	OD_REGISTER_RFLCLASS(DragonRfl, Key);
+
 }

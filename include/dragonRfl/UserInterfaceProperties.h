@@ -64,6 +64,9 @@ namespace od
         RflString       mFirstLevelFilename;
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0062, "System", "User Interface Properties", UserInterfaceProperties);
+
 }
 
 

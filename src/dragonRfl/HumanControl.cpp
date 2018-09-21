@@ -549,6 +549,7 @@ namespace od
         }
     }
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0009, "Player", "Human Control", HumanControl);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, HumanControl);
 
 }

@@ -49,6 +49,9 @@ namespace od
 
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0007, "System", "Count Down To Zero", CountDownToZero);
+
 }
 
 

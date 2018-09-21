@@ -14,10 +14,15 @@
 #include <odCore/rfl/FieldProbe.h>
 #include <odCore/Logger.h>
 
-#define OD_REGISTER_RFL_CLASS(rflName, id, category, className, cppClass) \
-    template <> struct RflClassTraits<cppClass> { static constexpr const char *name() { return className; }\
-    static constexpr RflClassId classId() { return id; } };\
-    static od::RflClassRegistrarImpl<rflName, cppClass> sOdRflClassRegistrar_ ## cppClass;
+#define OD_DECLARE_RFLCLASS_TRAITS(rfl, id, category, className, cppClass) \
+    template <> struct RflClassTraits<cppClass> { \
+        static constexpr const char *rflName() { return #rfl; }\
+        static constexpr const char *name() { return className; }\
+        static constexpr const char *categoryName() { return category; }\
+        static constexpr RflClassId classId() { return id; } };
+
+#define OD_REGISTER_RFLCLASS(rfl, cppClass) \
+    static od::RflClassRegistrarImpl<rfl, cppClass> sOdRflClassRegistrar_ ## rfl ## _ ## cppClass;
 
 namespace od
 {
@@ -62,10 +67,10 @@ namespace od
 	template <typename _Class>
 	struct RflClassTraits
 	{
-
-	    static constexpr const char *name() { return "<invalid RFL class template>"; }
+	    static constexpr const char *rflName() { return "<mising RFL class traits declaration>"; }
+	    static constexpr const char *name() { return "<mising RFL class traits declaration>"; }
+	    static constexpr const char *category() { return "<mising RFL class traits declaration>"; }
 	    static constexpr RflClassId classId() { return 0; }
-
 	};
 
 

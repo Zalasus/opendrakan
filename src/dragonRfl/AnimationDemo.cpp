@@ -68,6 +68,6 @@ namespace od
     }
 
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x000c, "Debug", "Animation Demo", AnimationDemo);
+    OD_REGISTER_RFLCLASS(DragonRfl, AnimationDemo);
 
 }

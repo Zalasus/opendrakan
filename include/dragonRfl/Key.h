@@ -28,6 +28,9 @@ namespace od
 
 	};
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0021, "Item", "Key", Key);
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_KEY_H_ */

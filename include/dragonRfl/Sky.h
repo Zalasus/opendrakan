@@ -43,6 +43,9 @@ namespace od
 
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x001a, "System", "Domed Sky", DomedSky);
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

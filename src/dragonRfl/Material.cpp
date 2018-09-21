@@ -58,7 +58,8 @@ namespace od
 	    probe.registerField(mDetailScaling, "Detail Scaling");
 	}
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x004b, "Material", "Standard Material", Material);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, Material);
 
 
 
@@ -83,6 +84,7 @@ namespace od
         probe.registerField(mSecondSpeed, "Second Speed (lu/s)");
     }
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0072, "Material", "Blended Material", BlendedMaterial);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, BlendedMaterial);
 
 }

@@ -81,6 +81,7 @@ namespace od
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0011, "Ground Object", "Building", Building);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, Building);
 
 }

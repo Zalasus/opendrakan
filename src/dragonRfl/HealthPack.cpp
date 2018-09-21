@@ -26,6 +26,7 @@ namespace od
 	    probe.registerField(mHealthBoost, "Health Boost");
 	}
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x000A, "Item", "Health Pack", HealthPack);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, HealthPack);
 
 }

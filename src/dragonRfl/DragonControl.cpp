@@ -171,6 +171,7 @@ namespace od
 		probe.registerField(mDoneDismountSndChance, "Done Dismount Snd Chance (1-100)");
 	}
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x001c, "Player", "Dragon Control", DragonControl);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, DragonControl);
 
 }

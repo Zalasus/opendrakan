@@ -49,6 +49,9 @@ namespace od
 		RflEnumMessage		mMessageToSendAfterPushed;
 	};
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0011, "Ground Object", "Building", Building);
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_BUILDING_H_ */

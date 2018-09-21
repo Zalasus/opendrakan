@@ -45,6 +45,9 @@ namespace od
 	};
 
 
+	OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x004b, "Material", "Standard Material", Material);
+
+
 	class BlendedMaterial : public Material
 	{
 	public:
@@ -62,6 +65,10 @@ namespace od
 		RflFloat		mFirstSpeed;
 		RflFloat		mSecondSpeed;
 	};
+
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0072, "Material", "Blended Material", BlendedMaterial);
+
 
 }
 

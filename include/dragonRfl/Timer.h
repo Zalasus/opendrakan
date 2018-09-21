@@ -54,6 +54,9 @@ namespace od
 
 	};
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x003e, "System", "Timer", Timer);
+
 }
 
 #endif /* INCLUDE_RFL_DRAGON_TIMER_H_ */

@@ -39,6 +39,9 @@ namespace od
         osg::ref_ptr<od::Light> mLight;
     };
 
+
+    OD_DECLARE_RFLCLASS_TRAITS(DragonRfl, 0x0084, "Light Source", "Static Light", StaticLight);
+
 }
 
 

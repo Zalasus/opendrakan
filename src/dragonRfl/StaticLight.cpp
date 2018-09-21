@@ -75,7 +75,8 @@ namespace od
         }
     }
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0084, "Light Source", "Static Light", StaticLight);
+
+    OD_REGISTER_RFLCLASS(DragonRfl, StaticLight);
 
 }
 

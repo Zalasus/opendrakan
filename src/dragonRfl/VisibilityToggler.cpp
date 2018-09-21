@@ -71,6 +71,6 @@ namespace od
     }
 
 
-    OD_REGISTER_RFL_CLASS(DragonRfl, 0x0079, "System", "Visibility Toggler", VisibilityToggler);
+    OD_REGISTER_RFLCLASS(DragonRfl, VisibilityToggler);
 
 }
