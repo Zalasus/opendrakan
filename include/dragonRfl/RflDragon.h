@@ -16,7 +16,7 @@
 namespace od
 {
 
-    class DragonRfl : public RflImpl<DragonRfl>
+    class DragonRfl : public AutoRegisteringRfl<DragonRfl>
     {
     public:
 

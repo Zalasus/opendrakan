@@ -59,7 +59,7 @@ namespace od
 
 
 	template <typename _SubRfl>
-	class RflImpl : public Rfl
+	class AutoRegisteringRfl : public Rfl
 	{
 	public:
 
@@ -88,7 +88,7 @@ namespace od
 
 	protected:
 
-	    RflImpl(Engine &e) : Rfl(e) {}
+	    AutoRegisteringRfl(Engine &e) : Rfl(e) {}
 
 	};
 

@@ -18,7 +18,7 @@ namespace od
 {
 
     DragonRfl::DragonRfl(Engine &engine)
-    : RflImpl<DragonRfl>(engine)
+    : AutoRegisteringRfl<DragonRfl>(engine)
     , mInterfaceDb(nullptr)
     {
     }
