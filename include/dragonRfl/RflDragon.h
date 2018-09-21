@@ -34,6 +34,9 @@ namespace od
 
     };
 
+
+    OD_DEFINE_RFL_TRAITS("Dragon", DragonRfl);
+
 }
 
 #endif /* INCLUDE_DRAGONRFL_RFLDRAGON_H_ */

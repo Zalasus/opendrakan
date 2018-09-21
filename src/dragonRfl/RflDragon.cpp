@@ -71,6 +71,7 @@ namespace od
         mMainMenu->setVisible(newMode);
     }
 
-    OD_REGISTER_RFL("Dragon", DragonRfl);
+
+    OD_REGISTER_RFL(DragonRfl);
 
 }
