@@ -36,7 +36,8 @@ namespace od
             throw Exception("Can not initialize user interface. Interface.db has no class container");
         }
 
-        RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(0x0062); // FIXME: don't hardcode this here. retrieve it from the registrar or something
+        RflClassId uiPropsClassId = RflClassTraits<UserInterfaceProperties>::classId();
+        RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
         if(id == AssetRef::NULL_REF.assetId)
         {
             throw Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
