@@ -47,6 +47,7 @@ namespace od
 {
     class LevelObject;
 	class Engine;
+	class Rfl;
 
     typedef uint16_t RflClassId;
 
@@ -80,6 +81,7 @@ namespace od
 		virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message);
 		virtual void onMoved(LevelObject &obj);
 		virtual void onDestroyed(LevelObject &obj);
+
 	};
 
 
@@ -99,7 +101,7 @@ namespace od
 
         virtual ~RflClassRegistrar() = default;
 
-        virtual RflClass *createInstance() const = 0;
+        virtual RflClass *createInstance(Rfl *rfl) const = 0;
         virtual const char *getClassName() const = 0;
         virtual const char *getClassCategory() const = 0;
         virtual RflClassId getClassId() const = 0;
@@ -140,12 +142,14 @@ namespace od
             }
         }
 
-        virtual RflClass *createInstance() const override
+        virtual RflClass *createInstance(Rfl *rfl) const override
         {
             Logger::debug() << "Creating instance of RFL class '" << RflClassTraits<_Class>::name() <<
                     "' (ID = 0x" << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
 
-            return new _Class();
+            _Rfl *subRfl = static_cast<_Rfl*>(rfl);
+
+            return new _Class(*subRfl);
         }
 
         virtual const char *getClassName() const override

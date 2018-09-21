@@ -20,6 +20,7 @@ namespace od
     : Asset(ap, classId)
     , mRflClassId(0)
     , mIconNumber(0)
+    , mRfl(nullptr)
     , mRflClassRegistrar(nullptr)
     {
     }
@@ -49,9 +50,11 @@ namespace od
 
         if(factory.getRfl() != nullptr)
         {
+            mRfl = factory.getRfl();
+
             try
             {
-                mRflClassRegistrar = factory.getRfl()->getRflClassRegistrar(mRflClassId);
+                mRflClassRegistrar = factory.getRfl()->getRegistrarForClass(mRflClassId);
 
             }catch(NotFoundException &e)
             {
@@ -71,7 +74,7 @@ namespace od
 
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
-    	std::unique_ptr<RflClass> newInstance(mRflClassRegistrar->createInstance());
+    	std::unique_ptr<RflClass> newInstance(mRflClassRegistrar->createInstance(mRfl));
         mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
         newInstance->probeFields(mClassBuilder);
 

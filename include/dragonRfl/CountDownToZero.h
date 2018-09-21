@@ -15,6 +15,8 @@
 namespace od
 {
 
+    class DragonRfl;
+
     enum class TimerTriggerMode
     {
         DecrementOnAnyMessage,
@@ -25,7 +27,7 @@ namespace od
     {
     public:
 
-        CountDownToZero();
+        CountDownToZero(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
         virtual void onLoaded(LevelObject &obj) override;

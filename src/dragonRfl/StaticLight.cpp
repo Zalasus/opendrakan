@@ -17,7 +17,7 @@
 namespace od
 {
 
-    StaticLight::StaticLight()
+    StaticLight::StaticLight(DragonRfl &rfl)
     : mColor(0xffffffff)
     , mIntensityScaling(1.0)
     , mRadius(1.0)

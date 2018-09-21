@@ -14,11 +14,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class Detector : public RflClass
     {
     public:
 
-        Detector();
+        Detector(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
         virtual void onLoaded(LevelObject &obj) override;

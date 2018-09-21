@@ -13,11 +13,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
 	class Key : public ItemCommon
 	{
 	public:
 
-		Key();
+		Key(DragonRfl &rfl);
 
 		virtual void probeFields(FieldProbe &probe) override;
 

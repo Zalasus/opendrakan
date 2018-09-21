@@ -16,11 +16,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
 	class TrackingCamera : public RflClass, public Camera
 	{
 	public:
 
-		TrackingCamera();
+		TrackingCamera(DragonRfl &rfl);
 
 		virtual void probeFields(FieldProbe &probe) override;
 

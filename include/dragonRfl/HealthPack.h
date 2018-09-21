@@ -13,11 +13,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
 	class HealthPack : public ItemCommon
 	{
 	public:
 
-		HealthPack();
+		HealthPack(DragonRfl &rfl);
 
 		virtual void probeFields(FieldProbe &probe) override;
 

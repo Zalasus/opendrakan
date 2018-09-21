@@ -14,11 +14,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
 	class Material : public RflClass
 	{
 	public:
 
-		Material();
+		Material(DragonRfl &rfl);
 
 		virtual void probeFields(FieldProbe &probe) override;
 
@@ -52,7 +54,7 @@ namespace od
 	{
 	public:
 
-		BlendedMaterial();
+		BlendedMaterial(DragonRfl &rfl);
 
 		virtual void probeFields(FieldProbe &probe) override;
 

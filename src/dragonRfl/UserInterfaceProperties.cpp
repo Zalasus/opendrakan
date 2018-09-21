@@ -13,7 +13,7 @@
 namespace od
 {
 
-    UserInterfaceProperties::UserInterfaceProperties()
+    UserInterfaceProperties::UserInterfaceProperties(DragonRfl &rfl)
     : mInnerRing(od::AssetRef::NULL_REF)
     , mOuterRing(od::AssetRef::NULL_REF)
     , mCrystalTop(od::AssetRef::NULL_REF)

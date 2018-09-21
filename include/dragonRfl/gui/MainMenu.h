@@ -8,14 +8,14 @@
 #ifndef INCLUDE_GUI_MAINMENU_H_
 #define INCLUDE_GUI_MAINMENU_H_
 
-#include <dragonRfl/UserInterfaceProperties.h>
-
 #include <odCore/gui/ContainerWidget.h>
 
 namespace od
 {
 
     class GuiManager;
+    class UserInterfaceProperties;
+    class Model;
 
     class MainMenu : public ContainerWidget
     {

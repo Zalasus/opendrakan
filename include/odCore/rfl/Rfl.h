@@ -25,7 +25,7 @@
  * @param rfl       The class implementing the RFL
  */
 #define OD_DEFINE_RFL_TRAITS(rflName, rfl) \
-    template<> struct RflTraits<rfl> { static constexpr const char *name() { return rflName; } }; \
+    template<> struct RflTraits<rfl> { static constexpr const char *name() { return rflName; } };
 
 /**
  * @brief Convenience macro for defining a static registrar object for an RFL.
@@ -52,8 +52,9 @@ namespace od
 		inline Engine &getEngine() { return mEngine; }
 
 		virtual const char *getName() const = 0;
-		virtual RflClassRegistrar *getRflClassRegistrar(RflClassId id) = 0;
 		virtual size_t getRegisteredClassCount() const = 0;
+		virtual RflClassRegistrar *getRegistrarForClass(RflClassId id) = 0;
+        virtual RflClass *createInstanceOfClass(RflClassId id) = 0;
 
 		virtual void onStartup() override;
 		virtual void onMenuToggle(bool newMode) override;
@@ -83,9 +84,14 @@ namespace od
 	        return RflTraits<_SubRfl>::name();
 	    }
 
-	    virtual RflClassRegistrar *getRflClassRegistrar(RflClassId id) final override
+	    virtual size_t getRegisteredClassCount() const final override
+	    {
+	        return RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton().size();
+	    }
+
+	    virtual RflClassRegistrar *getRegistrarForClass(RflClassId id) final override
         {
-	        std::map<RflClassId, RflClassRegistrar*> &map = RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton();
+            std::map<RflClassId, RflClassRegistrar*> &map = RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton();
             auto it = map.find(id);
             if(it == map.end())
             {
@@ -95,10 +101,16 @@ namespace od
             return it->second;
         }
 
-	    virtual size_t getRegisteredClassCount() const final override
-	    {
-	        return RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton().size();
-	    }
+	    virtual RflClass *createInstanceOfClass(RflClassId id) final override
+        {
+	        RflClassRegistrar *registrar = getRegistrarForClass(id);
+	        if(registrar == nullptr)
+	        {
+	            throw NotFoundException("Class with given ID is not registered in RFL");
+	        }
+
+	        return registrar->createInstance(this);
+        }
 
 
 	protected:

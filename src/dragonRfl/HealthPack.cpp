@@ -13,7 +13,7 @@
 namespace od
 {
 
-	HealthPack::HealthPack()
+	HealthPack::HealthPack(DragonRfl &rfl)
 	: mHealthBoost(0)
 	{
 	}

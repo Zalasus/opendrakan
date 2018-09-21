@@ -17,7 +17,7 @@
 namespace od
 {
 
-	Building::Building()
+	Building::Building(DragonRfl &rfl)
 	: mInitialHealth(0)
 	, mSnapMode(0)
 	, mSoundEffectObject(od::AssetRef::NULL_REF)

@@ -14,11 +14,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class UserInterfaceProperties : public RflClass
     {
     public:
 
-        UserInterfaceProperties();
+        UserInterfaceProperties(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
 

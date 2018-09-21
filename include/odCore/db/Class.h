@@ -20,7 +20,9 @@
 namespace od
 {
 	class ClassFactory;
+	class RflClassRegistrar;
 	class RflClass;
+	class Rfl;
 
 	class Class : public Asset, public osg::Referenced
 	{
@@ -45,6 +47,7 @@ namespace od
         ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
 
+        Rfl *mRfl;
         RflClassRegistrar *mRflClassRegistrar;
 
 	};

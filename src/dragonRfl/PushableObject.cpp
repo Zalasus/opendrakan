@@ -17,7 +17,7 @@
 namespace od
 {
 
-    PushableObject::PushableObject()
+    PushableObject::PushableObject(DragonRfl &rfl)
     : mWaitForTrigger(false)
     , mBurnable(false)
     , mBounceSounds({})

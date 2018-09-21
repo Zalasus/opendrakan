@@ -13,11 +13,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
 	class DragonControl : public PlayerCommon
     {
     public:
 
-        DragonControl();
+        DragonControl(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
 

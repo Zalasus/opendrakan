@@ -16,7 +16,7 @@
 namespace od
 {
 
-    AnimationDemo::AnimationDemo()
+    AnimationDemo::AnimationDemo(DragonRfl &rfl)
     : mAnimations({})
     , mSwitchPeriodSeconds(10.0)
     , mFirstUpdate(true)

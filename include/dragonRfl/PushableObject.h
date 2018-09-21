@@ -14,11 +14,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class PushableObject : public RflClass
     {
     public:
 
-        PushableObject();
+        PushableObject(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
         virtual void onSpawned(LevelObject &obj) override;

@@ -17,6 +17,7 @@
 
 namespace od
 {
+    class DragonRfl;
 
 	class SkeletonAnimationPlayer;
 
@@ -223,7 +224,7 @@ namespace od
 	{
 	public:
 
-		HumanControl();
+		HumanControl(DragonRfl &rfl);
 		virtual ~HumanControl();
 
 		virtual void onLoaded(LevelObject &obj) override;

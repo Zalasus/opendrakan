@@ -10,11 +10,12 @@
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/db/Database.h>
-#include <dragonRfl/UserInterfaceProperties.h>
 #include <dragonRfl/gui/MainMenu.h>
 
 namespace od
 {
+
+    class UserInterfaceProperties;
 
     class DragonRfl : public AutoRegisteringRfl<DragonRfl>
     {

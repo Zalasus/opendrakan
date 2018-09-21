@@ -16,7 +16,7 @@
 namespace od
 {
 
-	DragonControl::DragonControl()
+	DragonControl::DragonControl(DragonRfl &rfl)
     : mWalkBackwardAnim(od::AssetRef::NULL_REF)
 	, mAirCamHorzDistance(1024.0)
 	, mAirCamVertDistance(1024.0)

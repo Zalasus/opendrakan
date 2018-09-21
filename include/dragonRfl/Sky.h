@@ -15,11 +15,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class DomedSky : public RflClass
     {
     public:
 
-        DomedSky();
+        DomedSky(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
         virtual void onSpawned(LevelObject &obj) override;

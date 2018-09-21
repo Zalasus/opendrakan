@@ -14,6 +14,8 @@
 namespace od
 {
 
+    class DragonRfl;
+
     enum class TimerStartMode
     {
         RunInstantly,
@@ -27,7 +29,7 @@ namespace od
 	{
 	public:
 
-		Timer();
+		Timer(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
         virtual void onLoaded(LevelObject &obj) override;

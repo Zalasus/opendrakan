@@ -14,7 +14,7 @@
 namespace od
 {
 
-    Detector::Detector()
+    Detector::Detector(DragonRfl &rfl)
     : mTask(6) // trigger only
     , mDetectWhich(2) // both
     , mDetectMethod(0) // outside to inside

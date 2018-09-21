@@ -14,6 +14,8 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class VisibilityToggler : public RflClass
     {
     public:
@@ -24,7 +26,7 @@ namespace od
             DependsOnMessage
         };
 
-        VisibilityToggler();
+        VisibilityToggler(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
 

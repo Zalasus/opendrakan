@@ -15,7 +15,7 @@
 namespace od
 {
 
-    CountDownToZero::CountDownToZero()
+    CountDownToZero::CountDownToZero(DragonRfl &rfl)
     : mInitialCounterValue(1)
     , mWhenTriggered(TimerTriggerMode::DependsOnMessage)
     , mMessageToSend(RflMessage::On)

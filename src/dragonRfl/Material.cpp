@@ -13,7 +13,7 @@
 namespace od
 {
 
-	Material::Material()
+	Material::Material(DragonRfl &rfl)
 	: mRynnFootSounds({})
 	, mDragonFootSounds({})
 	, mWalkerFootSounds({})
@@ -63,8 +63,9 @@ namespace od
 
 
 
-	BlendedMaterial::BlendedMaterial()
-	: mFirstTexture(od::AssetRef::NULL_REF)
+	BlendedMaterial::BlendedMaterial(DragonRfl &rfl)
+	: Material(rfl)
+	, mFirstTexture(od::AssetRef::NULL_REF)
 	, mSecondTexture(od::AssetRef::NULL_REF)
 	, mDirectionOfFlow(0)
 	, mFirstSpeed(0.1)

@@ -15,11 +15,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class StaticLight : public RflClass
     {
     public:
 
-        StaticLight();
+        StaticLight(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
         virtual void onLoaded(LevelObject &obj) override;

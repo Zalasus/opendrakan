@@ -421,7 +421,7 @@ namespace od
 
 
 
-    HumanControl::HumanControl()
+    HumanControl::HumanControl(DragonRfl &rfl)
     : mYaw(0)
 	, mPitch(0)
     , mPrevYaw(0)

@@ -41,7 +41,7 @@ namespace od
     };
 
 
-	TrackingCamera::TrackingCamera()
+	TrackingCamera::TrackingCamera(DragonRfl &rfl)
 	: mTrackingMode(1)
 	, mRubberBandStrength(2)
 	, mSpinSpeed(20)

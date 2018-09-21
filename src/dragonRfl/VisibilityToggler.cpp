@@ -14,7 +14,7 @@
 namespace od
 {
 
-    VisibilityToggler::VisibilityToggler()
+    VisibilityToggler::VisibilityToggler(DragonRfl &rfl)
     : mTriggerMode(TriggerMode::DependsOnMessage)
     , mShowMessage(RflMessage::Off)
     , mHideMessage(RflMessage::Off)

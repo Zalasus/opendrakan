@@ -14,7 +14,7 @@
 namespace od
 {
 
-	Key::Key()
+	Key::Key(DragonRfl &rfl)
 	: mLockCode(0)
 	{
 	}

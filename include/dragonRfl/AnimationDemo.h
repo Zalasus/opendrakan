@@ -15,11 +15,13 @@
 namespace od
 {
 
+    class DragonRfl;
+
     class AnimationDemo : public RflClass
     {
     public:
 
-        AnimationDemo();
+        AnimationDemo(DragonRfl &rfl);
 
         virtual void probeFields(FieldProbe &probe) override;
 

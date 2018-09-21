@@ -20,7 +20,7 @@
 namespace od
 {
 
-	DomedSky::DomedSky()
+	DomedSky::DomedSky(DragonRfl &rfl)
 	: mPrimarySky(true)
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)

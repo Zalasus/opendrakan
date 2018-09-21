@@ -15,7 +15,7 @@
 namespace od
 {
 
-	Timer::Timer()
+	Timer::Timer(DragonRfl &rfl)
 	: mTimeUntilTrigger(5.0)
 	, mStartMode(TimerStartMode::RunWhenTriggered)
 	, mRepeat(true)
