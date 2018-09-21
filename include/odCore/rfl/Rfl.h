@@ -16,9 +16,24 @@
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
+/**
+ * @brief Convenience macro for defining the traits type for an RFL.
+ *
+ * @note Put this in the header declaring your RFL.
+ *
+ * @param rflName   A string containging the RFL's name
+ * @param rfl       The class implementing the RFL
+ */
 #define OD_DEFINE_RFL_TRAITS(rflName, rfl) \
     template<> struct RflTraits<rfl> { static constexpr const char *name() { return rflName; } }; \
 
+/**
+ * @brief Convenience macro for defining a static registrar object for an RFL.
+ *
+ * @note Put this in any source file (like the one defining your RFL's methods).
+ *
+ * @param rfl       The class implementing the RFL
+ */
 #define OD_REGISTER_RFL(rfl) \
 	static od::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl;
 
@@ -54,9 +69,7 @@ namespace od
 	template <typename T>
     struct RflTraits
     {
-
-        static constexpr const char *name() { return "<invalid RFL template>"; }
-
+        static constexpr const char *name() { return "<mising RFL traits definition>"; }
     };
 
 

@@ -17,6 +17,8 @@
 /**
  * @brief Convenience macro for defining the traits type for an RFL class.
  *
+ * @note Put this in the header declaring your RFL class.
+ *
  * @param rfl       The class implementing the RFL this class belongs to
  * @param id        The ID of the RFL class
  * @param category  A string containing the RFL class's category
@@ -32,6 +34,8 @@
 
 /**
  * @brief Convenience macro for defining a static registrar object for an RFL class.
+ *
+ * @note Put this in any source file (like the one defining your class's methods).
  *
  * @param rfl       The class implementing the RFL this class belongs to
  * @param cppClass  The class implementing the RFL class
@@ -82,9 +86,9 @@ namespace od
 	template <typename _Class>
 	struct RflClassTraits
 	{
-	    static constexpr const char *rflName() { return "<mising RFL class traits declaration>"; }
-	    static constexpr const char *name() { return "<mising RFL class traits declaration>"; }
-	    static constexpr const char *category() { return "<mising RFL class traits declaration>"; }
+	    static constexpr const char *rflName() { return "<mising RFL class traits definition>"; }
+	    static constexpr const char *name() { return "<mising RFL class traits definition>"; }
+	    static constexpr const char *categoryName() { return "<mising RFL class traits definition>"; }
 	    static constexpr RflClassId classId() { return 0; }
 	};
 
@@ -97,6 +101,7 @@ namespace od
 
         virtual RflClass *createInstance() const = 0;
         virtual const char *getClassName() const = 0;
+        virtual const char *getClassCategory() const = 0;
         virtual RflClassId getClassId() const = 0;
     };
 
@@ -127,7 +132,7 @@ namespace od
             if(map.find(RflClassTraits<_Class>::classId()) != map.end())
             {
                 Logger::warn() << "Ignoring double registration of RFL class '" << RflClassTraits<_Class>::name()
-                        << "' (ID " << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
+                        << "' (ID = 0x" << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
 
             }else
             {
@@ -138,7 +143,7 @@ namespace od
         virtual RflClass *createInstance() const override
         {
             Logger::debug() << "Creating instance of RFL class '" << RflClassTraits<_Class>::name() <<
-                    "' (" << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
+                    "' (ID = 0x" << std::hex << RflClassTraits<_Class>::classId() << std::dec << ")";
 
             return new _Class();
         }
@@ -146,6 +151,11 @@ namespace od
         virtual const char *getClassName() const override
         {
             return RflClassTraits<_Class>::name();
+        }
+
+        virtual const char *getClassCategory() const override
+        {
+            return RflClassTraits<_Class>::categoryName();
         }
 
         virtual RflClassId getClassId() const override
