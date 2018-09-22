@@ -24,7 +24,8 @@ namespace od
 {
 
 	Engine::Engine()
-	: mInitialLevelFile("Mountain World/Intro Level/Intro.lvl") // is this defined anywhere? EDIT: yes, it is. in the interface class db
+	: mHasInitialLevelOverride(false)
+	, mInitialLevelOverride("")
 	, mEngineRootDir("")
 	, mCamera(nullptr)
 	, mPlayer(nullptr)
@@ -56,14 +57,6 @@ namespace od
         mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
         mViewer->setKeyEventSetsDone(0); // we handle the escape key ourselves
 
-        mRootNode = new osg::Group();
-        mViewer->setSceneData(mRootNode);
-
-        mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);
-        osg::StateSet *rootStateSet = mRootNode->getOrCreateStateSet();
-        rootStateSet->addUniform(mGammaUniform, osg::StateAttribute::ON);
-        rootStateSet->setMode(GL_FRAMEBUFFER_SRGB, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
         // set window title
         osgViewer::Viewer::Windows windows;
         mViewer->getWindows(windows);
@@ -71,6 +64,31 @@ namespace od
         {
             windows.back()->setWindowName(mViewer->getName());
         }
+
+        osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =
+                new osgViewer::ScreenCaptureHandler::WriteToFile("screenshot", "png", osgViewer::ScreenCaptureHandler::WriteToFile::SEQUENTIAL_NUMBER);
+        mScreenshotHandler = new osgViewer::ScreenCaptureHandler(captureOp, 1);
+        mScreenshotHandler->setKeyEventTakeScreenShot(osgGA::GUIEventAdapter::KEY_F12);
+        mViewer->addEventHandler(mScreenshotHandler);
+
+        osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
+        statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
+        statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
+        mViewer->addEventHandler(statsHandler);
+
+        mRootNode = new osg::Group();
+        mViewer->setSceneData(mRootNode);
+
+        // attach our default shaders to root node so we don't use the fixed function pipeline anymore
+        osg::ref_ptr<osg::Program> defaultProgram = mShaderManager->makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
+        mRootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
+
+        mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);
+        osg::StateSet *rootStateSet = mRootNode->getOrCreateStateSet();
+        rootStateSet->addUniform(mGammaUniform, osg::StateAttribute::ON);
+        rootStateSet->setMode(GL_FRAMEBUFFER_SRGB, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
+
+        mInputManager = new InputManager(*this, mViewer);
 
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
@@ -90,37 +108,13 @@ namespace od
 		    setUp();
 		}
 
-		osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =
-				new osgViewer::ScreenCaptureHandler::WriteToFile("screenshot", "png", osgViewer::ScreenCaptureHandler::WriteToFile::SEQUENTIAL_NUMBER);
-		mScreenshotHandler = new osgViewer::ScreenCaptureHandler(captureOp, 1);
-		mScreenshotHandler->setKeyEventTakeScreenShot(osgGA::GUIEventAdapter::KEY_F12);
-		mViewer->addEventHandler(mScreenshotHandler);
-
-		// attach our default shaders to root node so we don't use the fixed function pipeline anymore
-		osg::ref_ptr<osg::Program> defaultProgram = mShaderManager->makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
-		mRootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
-
-		osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
-		statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
-		statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
-		mViewer->addEventHandler(statsHandler);
-
-        mInputManager = new InputManager(*this, mViewer);
-
-
-		mLevel.reset(new od::Level(mInitialLevelFile, *this, mRootNode));
-		mLevel->loadLevel();
-
-		if(mCamera != nullptr)
-		{
-		    mCamera->setOsgCamera(mViewer->getCamera());
-		}
-
-		mLevel->spawnAllObjects();
-
+		if(hasInitialLevelOverride())
+        {
+		    FilePath levelPath(getInitialLevelOverride());
+            loadLevel(levelPath.adjustCase());
+        }
 
 		Logger::verbose() << "Everything set up. Starting main loop";
-
 
 		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
 		double simTime = 0;
@@ -154,6 +148,24 @@ namespace od
 		Logger::info() << "Shutting down gracefully";
 	}
 
+	void Engine::loadLevel(const FilePath &levelFile)
+	{
+	    if(mLevel != nullptr)
+	    {
+	        mLevel = nullptr;
+	    }
+
+	    mLevel.reset(new od::Level(levelFile, *this, mRootNode));
+        mLevel->loadLevel();
+
+        if(mCamera != nullptr)
+        {
+            mCamera->setOsgCamera(mViewer->getCamera());
+        }
+
+        mLevel->spawnAllObjects();
+	}
+
 	void Engine::setFullScreenGamma(float gamma)
 	{
 	    if(mGammaUniform == nullptr)
@@ -166,8 +178,17 @@ namespace od
 
 	void Engine::_findEngineRoot(const std::string &rrcFileName)
 	{
+	    // if we have been passed a level override, we need to find the engine root in that path.
+	    //  if not, assume the engine root is the current working directory.
+	    if(!hasInitialLevelOverride())
+	    {
+	        mEngineRootDir = FilePath(".");
+	        Logger::verbose() << "No level override found on command line. Assuming we are running in engine root";
+	        return;
+	    }
+
 	    // ascend in the passed initial level file path until we find a Dragon.rrc
-        FilePath path = FilePath(rrcFileName, mInitialLevelFile.dir()).adjustCase();
+        FilePath path = FilePath(rrcFileName, getInitialLevelOverride().dir()).adjustCase();
         while(!path.exists() && path.depth() > 1)
         {
             path = FilePath(rrcFileName, path.dir().dir()).adjustCase();

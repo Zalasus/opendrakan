@@ -75,6 +75,9 @@ namespace od
 
 		virtual void fillArray(uint16_t size, od::DataReader &dr) override;
 
+		const std::string &get() { return mValue; }
+		operator std::string () const { return mValue; }
+
 
 	private:
 

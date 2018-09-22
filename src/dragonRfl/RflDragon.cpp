@@ -56,6 +56,14 @@ namespace od
         PrefetchProbe probe(*mInterfaceDb);
         mUserInterfacePropertiesInstance->probeFields(probe);
 
+
+        if(!engine.hasInitialLevelOverride())
+        {
+            FilePath initialLevel(mUserInterfacePropertiesInstance->mIntroLevelFilename);
+            engine.loadLevel(initialLevel.adjustCase());
+        }
+
+
         GuiManager &gm = engine.getGuiManager();
 
         mMainMenu = new MainMenu(gm, mUserInterfacePropertiesInstance.get());

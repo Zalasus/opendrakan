@@ -356,7 +356,7 @@ int main(int argc, char **argv)
 
             if(!filename.empty())
             {
-                engine.setInitialLevelFile(filename);
+                engine.setInitialLevelOverride(filename);
             }
 
             engine.setUp();
@@ -371,7 +371,7 @@ int main(int argc, char **argv)
 
 		    if(!filename.empty())
 		    {
-		    	engine.setInitialLevelFile(filename);
+		    	engine.setInitialLevelOverride(filename);
 		    }
 
 		    engine.run();

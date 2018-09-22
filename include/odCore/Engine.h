@@ -36,8 +36,9 @@ namespace od
 		Engine(const Engine &e) = delete;
 		~Engine();
 
-		inline const FilePath &getInitialLevelFile() const { return mInitialLevelFile; }
-		inline void setInitialLevelFile(const FilePath &level) { mInitialLevelFile = level; }
+		inline bool hasInitialLevelOverride() const { return mHasInitialLevelOverride; }
+		inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
+		inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline DbManager &getDbManager() { return *mDbManager; }
 		inline ShaderManager &getShaderManager() { return *mShaderManager; }
@@ -55,6 +56,8 @@ namespace od
 		void setUp();
 		void run();
 
+		void loadLevel(const FilePath &levelFile);
+
 		void setFullScreenGamma(float gamma);
 
 
@@ -68,7 +71,8 @@ namespace od
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<GuiManager> mGuiManager;
 		std::unique_ptr<LightManager> mLightManager;
-		FilePath mInitialLevelFile;
+		bool mHasInitialLevelOverride;
+		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;
 		osg::ref_ptr<osg::Group> mRootNode;

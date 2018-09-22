@@ -53,6 +53,9 @@ namespace od
     	{
     		mPhysicsManager.removeLayer(*it->get());
     	}
+
+    	mLevelRootNode->removeChild(mLayerGroup);
+        mLevelRootNode->removeChild(mObjectGroup);
     }
 
     void Level::loadLevel()
