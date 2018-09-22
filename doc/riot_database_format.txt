@@ -460,7 +460,15 @@ Record types
             
             struct message
             {
-                uint32 message_number; // Unknown meaning. Possibly hard-coded behaviour.
+                // message numbers correspond to RFL messages, but not in the same range or order as in object/class records:
+                //  4098 = Off (where in classes this is 0)
+                //  4097 = On
+                //  4353 = Lock
+                //  4354 = Unlock
+                //  4257 = Play Sequence
+                //  4259 = Blow Up
+                //  4103 = Triggered
+                uint32 message_number; 
                 uint32 unk0; // Always 0.
             };
             
