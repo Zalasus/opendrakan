@@ -50,7 +50,8 @@ namespace od
         obj.getLevel().getEngine().getLightManager().addLight(mLight);
 
         osg::Vec4 color = mColor.asColorVector();
-        mLight->setColor(osg::Vec3(color.x(), color.y(), color.z()));
+        mLightColorVector.set(color.x(), color.y(), color.z());
+        mLight->setColor(mLightColorVector);
         mLight->setRadius(mRadius);
         mLight->setIntensityScaling(mIntensityScaling);
         mLight->setRequiredQualityLevel(mQualityLevelRequired);

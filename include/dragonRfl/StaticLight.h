@@ -39,6 +39,7 @@ namespace od
         RflEnum         mQualityLevelRequired;
 
         osg::ref_ptr<od::Light> mLight;
+        osg::Vec3 mLightColorVector;
     };
 
 

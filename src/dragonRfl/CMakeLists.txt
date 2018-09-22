@@ -13,6 +13,7 @@ set(SOURCES
     "CountDownToZero.cpp"
     "Detector.cpp"
     "DragonControl.cpp"
+    "DynamicLight.cpp"
     "HealthPack.cpp"
     "HumanControl.cpp"
     "Key.cpp"
