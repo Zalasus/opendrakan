@@ -318,20 +318,13 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		uint32_t zlibStuffSize;
-			dr >> zlibStuffSize;
+    		uint32_t compressedDataSize;
+			dr >> compressedDataSize;
 
-			size_t zlibOffset = dr.getStream().tellg();
-
-			ZStream zstr(dr.getStream());
+			ZStream zstr(dr.getStream(), compressedDataSize, ZStreamBuffer::DefaultBufferSize);
 			DataReader zdr(zstr);
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
-
-			if((size_t)dr.getStream().tellg() != zlibOffset + zlibStuffSize)
-			{
-				throw IoException("ZStream read either too many or too few bytes");
-			}
 
 			mLayers[i]->buildGeometry();
 			mLayerGroup->addChild(mLayers[i]);

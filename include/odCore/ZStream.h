@@ -13,8 +13,6 @@
 #include <vector>
 #include <zlib.h> // has C-linkage built in
 
-#define OD_ZSTREAM_DEFAULT_BUFFER_SIZE (1 << 19)
-
 namespace od
 {
 
@@ -22,7 +20,9 @@ namespace od
     {
     public:
 
-        ZStreamBuffer(std::istream &in, size_t bufferSize = OD_ZSTREAM_DEFAULT_BUFFER_SIZE);
+        static const size_t DefaultBufferSize;
+
+        ZStreamBuffer(std::istream &in, size_t inputBufferSize = DefaultBufferSize, size_t outputBufferSize = DefaultBufferSize);
         ~ZStreamBuffer();
 
         inline std::streamoff getZlibDataStart() { return mZlibDataStart; };
@@ -69,6 +69,7 @@ namespace od
     public:
 
         ZStream(std::istream &in);
+        ZStream(std::istream &in, size_t inputBufferSize, size_t outputBufferSize);
         ~ZStream();
 
         inline std::streamoff getZlibDataStart() { return mBuffer->getZlibDataStart(); };

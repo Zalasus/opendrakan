@@ -80,6 +80,12 @@ namespace od
         	throw UnsupportedException("Alpha maps unsupported right now");
         }
 
+        uint32_t trailingBytes = rowSpacing - mWidth*(mBitsPerPixel/8);
+        if(trailingBytes)
+        {
+            throw UnsupportedException("Can only load packed textures right now");
+        }
+
         if(mBitsPerPixel == 32)
         {
             Logger::warn() << "Found 32 bit texture. The used byte order of these varies between editor and engine. Colors may be garbled";
@@ -101,7 +107,11 @@ namespace od
         std::unique_ptr<ZStream> zstr;
         if(mCompressionLevel != 0)
         {
-            zstr.reset(new ZStream(dr.getStream()));
+            // choose efficient output buffer sizes. ideally as much as we need exactly, but not more that what we'd use by default
+            size_t uncompressedSize = mWidth*mHeight*(mBitsPerPixel/8) + mHeight*trailingBytes;
+            size_t outputBufferSize = std::min(ZStreamBuffer::DefaultBufferSize, uncompressedSize);
+
+            zstr.reset(new ZStream(dr.getStream(), mCompressedSize, outputBufferSize));
         }
         DataReader zdr(mCompressionLevel != 0 ? *zstr : dr.getStream()); // that's a bit... unelegant?
 
@@ -215,12 +225,6 @@ namespace od
         {
         	throw Exception("Invalid BPP");
         }
-
-         uint32_t trailingBytes = rowSpacing - mWidth*(mBitsPerPixel/8);
-         if(trailingBytes)
-         {
-        	 throw UnsupportedException("Can only load packed textures right now");
-         }
 
         // translate whatever is stored in texture into 8-bit RGBA format
         unsigned char *pixBuffer = new unsigned char[mWidth*mHeight*4]; // no need for RAII, osg takes ownership

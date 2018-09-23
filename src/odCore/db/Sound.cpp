@@ -57,7 +57,9 @@ namespace od
         std::unique_ptr<ZStream> zstr;
         if(mCompressionLevel != 0)
         {
-            zstr.reset(new ZStream(dr.getStream()));
+            size_t outputBufferSize = std::min(ZStreamBuffer::DefaultBufferSize, (size_t)mDecompressedSize);
+
+            zstr.reset(new ZStream(dr.getStream(), compressedSize, outputBufferSize));
         }
         DataReader sampleReader(mCompressionLevel != 0 ? *zstr : dr.getStream());
 

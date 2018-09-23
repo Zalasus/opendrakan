@@ -12,12 +12,14 @@
 namespace od
 {
 
-    ZStreamBuffer::ZStreamBuffer(std::istream &in, size_t bufferSize)
+    const size_t ZStreamBuffer::DefaultBufferSize = (1 << 19);
+
+    ZStreamBuffer::ZStreamBuffer(std::istream &in, size_t inputBufferSize, size_t outputBufferSize)
     : mInputStream(in)
-    , mInputBuffer(bufferSize)
+    , mInputBuffer(inputBufferSize)
     , mInputStart(nullptr)
     , mInputEnd(nullptr)
-    , mOutputBuffer(bufferSize)
+    , mOutputBuffer(outputBufferSize)
     , mOutputEnd(nullptr)
     , mStreamActive(false)
     , mStreamEnded(false)
@@ -199,6 +201,14 @@ namespace od
     	exceptions(std::ios_base::badbit);
 
     	mBuffer = static_cast<ZStreamBuffer*>(rdbuf());
+    }
+
+    ZStream::ZStream(std::istream &in, size_t inputBufferSize, size_t outputBufferSize)
+    : std::istream(new ZStreamBuffer(in, inputBufferSize, outputBufferSize))
+    {
+        exceptions(std::ios_base::badbit);
+
+        mBuffer = static_cast<ZStreamBuffer*>(rdbuf());
     }
 
     ZStream::~ZStream()
