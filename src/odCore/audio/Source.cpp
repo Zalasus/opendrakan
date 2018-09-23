@@ -22,7 +22,7 @@ namespace od
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alGenSources(1, &mSourceId);
-        mSoundManager.doErrorCheck("Could not generate source");
+        SoundManager::doErrorCheck("Could not generate source");
     }
 
     Source::~Source()
@@ -32,7 +32,7 @@ namespace od
         mSoundManager.removeSource(this);
 
         alDeleteSources(1, &mSourceId);
-        mSoundManager.doErrorCheck("Could not delete source");
+        SoundManager::doErrorCheck("Could not delete source");
     }
 
     void Source::setPosition(float xPos, float yPos, float zPos)
@@ -40,7 +40,7 @@ namespace od
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alSource3f(mSourceId, AL_POSITION, xPos, yPos, zPos);
-        mSoundManager.doErrorCheck("Could not set source position");
+        SoundManager::doErrorCheck("Could not set source position");
     }
 
     void Source::setVelocity(float xVel, float yVel, float zVel)
@@ -48,7 +48,7 @@ namespace od
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alSource3f(mSourceId, AL_VELOCITY, xVel, yVel, zVel);
-        mSoundManager.doErrorCheck("Could not set source velocity");
+        SoundManager::doErrorCheck("Could not set source velocity");
     }
 
     void Source::setDirection(float xDir, float yDir, float zDir)
@@ -56,7 +56,7 @@ namespace od
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alSource3f(mSourceId, AL_DIRECTION, xDir, yDir, zDir);
-        mSoundManager.doErrorCheck("Could not set source direction");
+        SoundManager::doErrorCheck("Could not set source direction");
     }
 
     void Source::setRelative(bool relative)
@@ -66,7 +66,7 @@ namespace od
         ALint alBoolRelative = relative ? AL_TRUE : AL_FALSE;
 
         alSourcei(mSourceId, AL_SOURCE_RELATIVE, alBoolRelative);
-        mSoundManager.doErrorCheck("Could not set source relative state");
+        SoundManager::doErrorCheck("Could not set source relative state");
     }
 
     void Source::setSound(Sound *s)

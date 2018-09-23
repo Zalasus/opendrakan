@@ -8,9 +8,14 @@
 #include <odCore/audio/SoundManager.h>
 
 #include <algorithm>
+#include <cstring>
 
 #include <odCore/Exception.h>
 #include <odCore/audio/Source.h>
+#include <odCore/Logger.h>
+
+// the maximum number of devices we allow to be read from the unsafe device enumeration string
+#define OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE 32
 
 namespace od
 {
@@ -91,28 +96,38 @@ namespace od
         }
     }
 
-    void SoundManager::_doWorkerStuff()
+    bool SoundManager::listDeviceNames(std::vector<std::string> &deviceList)
     {
-        while(!mTerminateWorker)
+#if ALC_ENUMERATE_ALL_EXT != 1
+        return false;
+#else
+        deviceList.clear();
+
+        const char *strList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
+        if(strList == nullptr)
         {
-            // scoping this so mutex gets unlocked when we sleep
-            {
-                std::lock_guard<std::mutex> lock(mWorkerMutex);
-
-                for(Source *s : mSources)
-                {
-                    ALint queueSize;
-                    alGetSourcei(s->getSourceId(), AL_BUFFERS_QUEUED, &queueSize);
-                    doErrorCheck("Error while polling source queue size");
-
-                    ALint buffersProcessed;
-                    alGetSourcei(s->getSourceId(), AL_BUFFERS_PROCESSED, &buffersProcessed);
-                    doErrorCheck("Error while polling source's processed buffers");
-                }
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+            throw Exception("Could not access device list");
         }
+
+        // the returned string consists of concatenated c-strings, terminated with an empty string
+        //  FIXME: there is absolutely no indication of how long this string actually might be. if OpenAL messes up, the
+        //  following code might cause access violations or at least produce garbage until our failsafe kicks in
+        size_t stringLength = strlen(strList);
+        while(stringLength > 0 && deviceList.size() < OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE)
+        {
+            deviceList.push_back(std::string(strList));
+
+            strList += stringLength + 1;
+            stringLength = strlen(strList);
+        }
+
+        if(stringLength != 0 && deviceList.size() >= OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE)
+        {
+            Logger::warn() << "Had to terminate device enumaration because the number of devices exceeded a sane amount";
+        }
+
+        return true;
+#endif
     }
 
     void SoundManager::doErrorCheck(const std::string &failmsg)
@@ -150,6 +165,30 @@ namespace od
         }
 
         throw Exception(failmsg + alErrorMsg);
+    }
+
+    void SoundManager::_doWorkerStuff()
+    {
+        while(!mTerminateWorker)
+        {
+            // scoping this so mutex gets unlocked when we sleep
+            {
+                std::lock_guard<std::mutex> lock(mWorkerMutex);
+
+                for(Source *s : mSources)
+                {
+                    ALint queueSize;
+                    alGetSourcei(s->getSourceId(), AL_BUFFERS_QUEUED, &queueSize);
+                    doErrorCheck("Error while polling source queue size");
+
+                    ALint buffersProcessed;
+                    alGetSourcei(s->getSourceId(), AL_BUFFERS_PROCESSED, &buffersProcessed);
+                    doErrorCheck("Error while polling source's processed buffers");
+                }
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
     }
 
     void SoundManager::_doContextErrorCheck(const std::string &failmsg)

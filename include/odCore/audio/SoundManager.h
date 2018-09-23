@@ -44,7 +44,14 @@ namespace od
         void addSource(Source *source);
         void removeSource(Source *source);
 
-        void doErrorCheck(const std::string &failmsg);
+        /**
+         * @brief Fills the passed vector with all available device names.
+         *
+         * @returns \c true if the list could successfully be filled, \c false if listing devices is not supported.
+         */
+        static bool listDeviceNames(std::vector<std::string> &deviceList);
+
+        static void doErrorCheck(const std::string &failmsg);
 
 
     private:
