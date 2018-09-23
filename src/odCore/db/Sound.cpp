@@ -55,13 +55,13 @@ namespace od
         }
 
         std::unique_ptr<ZStream> zstr;
+        DataReader sampleReader(dr);
         if(mCompressionLevel != 0)
         {
             size_t outputBufferSize = std::min(ZStreamBuffer::DefaultBufferSize, (size_t)mDecompressedSize);
-
             zstr.reset(new ZStream(dr.getStream(), compressedSize, outputBufferSize));
+            sampleReader.setStream(*zstr);
         }
-        DataReader sampleReader(mCompressionLevel != 0 ? *zstr : dr.getStream());
 
         mPcmBuffer.resize(mDecompressedSize);
         sampleReader.read(reinterpret_cast<char*>(mPcmBuffer.data()), mDecompressedSize);

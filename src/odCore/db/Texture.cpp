@@ -105,6 +105,7 @@ namespace od
         mHasAlphaChannel = (mAlphaBitsPerPixel != 0) || hasColorKey;
 
         std::unique_ptr<ZStream> zstr;
+        DataReader zdr(dr);
         if(mCompressionLevel != 0)
         {
             // choose efficient output buffer sizes. ideally as much as we need exactly, but not more that what we'd use by default
@@ -112,8 +113,8 @@ namespace od
             size_t outputBufferSize = std::min(ZStreamBuffer::DefaultBufferSize, uncompressedSize);
 
             zstr.reset(new ZStream(dr.getStream(), mCompressedSize, outputBufferSize));
+            zdr.setStream(*zstr);
         }
-        DataReader zdr(mCompressionLevel != 0 ? *zstr : dr.getStream()); // that's a bit... unelegant?
 
         std::function<void(unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)> pixelReaderFunc;
         if(mBitsPerPixel == 8)
