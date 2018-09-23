@@ -7,7 +7,10 @@
 
 #include <odCore/db/Sound.h>
 
+#include <memory>
+
 #include <odCore/Exception.h>
+#include <odCore/ZStream.h>
 
 namespace od
 {
@@ -24,7 +27,6 @@ namespace od
 	, mPriority(0)
 	, mDecompressedSize(0)
 	, mCompressionLevel(0)
-	, mCompressedSize(0)
     {
     }
 
@@ -39,40 +41,28 @@ namespace od
 			>> mDropoff
 			>> mPriority
 			>> mDecompressedSize
-			>> mCompressionLevel
-			>> mCompressedSize;
+			>> mCompressionLevel;
+
+        uint32_t compressedSize = 0;
+        if(mCompressionLevel != 0)
+        {
+            dr >> compressedSize;
+        }
 
         if(mBits != 8 && mBits != 16)
         {
         	throw UnsupportedException("Unsupported bit count per sample");
         }
 
-        if(mChannels != 1)
-        {
-        	throw UnsupportedException("Only mono supported right now");
-        }
-
-        mPcmBuffer.resize(mDecompressedSize);
-
+        std::unique_ptr<ZStream> zstr;
         if(mCompressionLevel != 0)
         {
-        	throw Exception("Can't load compressed sounds right now");
+            zstr.reset(new ZStream(dr.getStream()));
         }
+        DataReader sampleReader(mCompressionLevel != 0 ? *zstr : dr.getStream());
 
-        for(size_t i = 0; i < mDecompressedSize; ++i)
-        {
-        	if(mBits == 8)
-        	{
-        		uint8_t ateBit;
-        		dr >> ateBit;
-
-        		mPcmBuffer[i] = (ateBit << 8) - (1 << 15); // convert from biased unsigned 8 bit to signed 16 bit
-
-        	}else if(mBits == 16)
-        	{
-        		dr >> mPcmBuffer[i];
-        	}
-        }
+        mPcmBuffer.resize(mDecompressedSize);
+        sampleReader.read(reinterpret_cast<char*>(mPcmBuffer.data()), mDecompressedSize);
     }
 }
 

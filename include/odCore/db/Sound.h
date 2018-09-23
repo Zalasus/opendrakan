@@ -35,14 +35,13 @@ namespace od
         uint16_t    mChannels;
         uint16_t    mBits;
         uint32_t    mFrequency;
-        uint32_t    mVolume; // no idea how this is encoded
+        uint32_t    mVolume; // 0 == full volume, -5000 == silent (millibel). Amplitude factor = 10^(volume / 100 / 20)
         float       mDropoff; // min 0, max 30
         uint32_t    mPriority; // range 0-10
         uint32_t    mDecompressedSize;
         uint32_t 	mCompressionLevel; // 0 = none, 1 = lowest, 9 = highest
-        uint32_t    mCompressedSize; // contains garbage if uncompressed
 
-        std::vector<int16_t> mPcmBuffer;
+        std::vector<uint8_t> mPcmBuffer;
 	};
 
 	template <>
