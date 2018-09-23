@@ -31,11 +31,10 @@ namespace od
 
     void RflString::fillArray(uint16_t size, DataReader &dr)
 	{
-		std::vector<char> dataBuffer(size*4+1);
+		std::vector<char> dataBuffer(size*4);
 		dr.read(dataBuffer.data(), size*4);
-		dataBuffer[size] = '\0';
 
-		mValue = std::string(dataBuffer.data());
+		mValue.assign(dataBuffer.data(), size*4);
 	}
 
 }
