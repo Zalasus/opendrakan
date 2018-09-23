@@ -1,5 +1,5 @@
 /*
- * MGFDataReader.cpp
+ * DataStream.cpp
  *
  *  Created on: 05.07.2014
  *      Author: Zalasus
@@ -19,13 +19,41 @@ namespace od
     {
     }
 
+
+    DataReader::DataReader()
+    : mStream(nullptr)
+    {
+    }
+
 	DataReader::DataReader(std::istream &stream)
-	: mStream(stream)
+	: mStream(&stream)
 	{
-		if(!mStream.good())
+		if(mStream == nullptr || !mStream->good())
 		{
 			throw IoException("Constructed DataReader with bad stream");
 		}
+	}
+
+	DataReader::DataReader(const DataReader &dr)
+	: mStream(dr.mStream)
+	{
+	}
+
+	DataReader &DataReader::operator=(const DataReader &dr)
+	{
+	    mStream = dr.mStream;
+
+	    return *this;
+	}
+
+	std::istream &DataReader::getStream()
+	{
+	    if(mStream == nullptr)
+	    {
+	        throw Exception("Called getStream() on DataReaer without assigned stream");
+	    }
+
+	    return *mStream;
 	}
 
 	void DataReader::ignore(size_t n)
@@ -38,30 +66,48 @@ namespace od
 
 	void DataReader::seek(size_t offset)
 	{
-		mStream.seekg(offset);
+	    if(mStream == nullptr)
+	    {
+	        throw Exception("Called seek() on DataReader without assigned stream");
+	    }
+
+		mStream->seekg(offset);
 	}
 
 	size_t DataReader::tell()
 	{
-		return mStream.tellg();
+		if(mStream == nullptr)
+        {
+            throw Exception("Called tell() on DataReader without assigned stream");
+        }
+
+		return mStream->tellg();
 	}
 
 	void DataReader::read(char *data, size_t size)
 	{
-		for(uint32_t i = 0; i < size; ++i)
-		{
-			data[i] = _getNext();
-		}
-	}
+	    if(mStream == nullptr)
+	    {
+	        throw Exception("Called read() on a DataReader without assigned stream");
+	    }
 
-	std::istream &DataReader::getStream()
-	{
-	    return mStream;
+		mStream->read(data, size);
+
+		size_t charsRead = mStream->gcount();
+		if(charsRead != size)
+		{
+		    throw IoException("DataReader encountered unexpected EOF while reading block of data");
+		}
 	}
 
 	uint8_t DataReader::_getNext()
 	{
-		int c = mStream.get();
+	    if(mStream == nullptr)
+	    {
+	        throw IoException("Tried to read from DataReader without assigned stream");
+	    }
+
+		int c = mStream->get();
 
 		if(c == std::istream::traits_type::eof())
 		{
@@ -150,7 +196,6 @@ namespace od
 		return *this;
 	}
 
-    //FIXME: Portability issue. This could produce invalid results if target platform uses different floating point format than the advised IEEE 754
     template <>
 	DataReader &DataReader::operator >> <float>(float &f)
 	{
@@ -170,7 +215,6 @@ namespace od
 		return *this;
 	}
 
-	//FIXME: Portability issue. This could produce invalid results if target platform uses different floating point format than the advised IEEE 754
     template <>
 	DataReader &DataReader::operator >> <double>(double &d)
 	{
@@ -190,7 +234,6 @@ namespace od
 		return *this;
 	}
 
-    // is this really a primitive?
     template <>
 	DataReader &DataReader::operator >> <std::string>(std::string &s)
 	{
@@ -202,13 +245,10 @@ namespace od
 			return *this;
 		}
 
-		char *buf = new char[len+1];
-		buf[len] = 0; // some strings seem to be terminated, some are not. add terminator just to be sure
-		read(buf, len);
+		std::vector<char> buf(len+1, 0);
+		read(buf.data(), len);
 
-		s = std::string(buf);
-
-		delete[] buf;
+		s.assign(buf.data());
 
 		return *this;
 	}

@@ -14,6 +14,10 @@
 
 namespace od
 {
+
+    /**
+     * @brief Lightweight wrapper for a std::stream for reading binary data.
+     */
 	class DataReader
 	{
 	public:
@@ -39,11 +43,14 @@ namespace od
 	    	T mValue;
 		};
 
+	    DataReader();
 		DataReader(std::istream &stream);
-		//DataReader(const DataReader &dr) = delete;
-		//DataReader(DataReader &dr) = delete;
-		//DataReader &operator=(const DataReader &dr) = delete;
-		//DataReader &operator=(DataReader &dr) = delete;
+		DataReader(const DataReader &dr);
+
+		DataReader &operator=(const DataReader &dr);
+
+		inline void setStream(std::istream &stream) { mStream = &stream; }
+		std::istream &getStream();
 
 		template <typename T>
 		DataReader &operator>>(T &s);
@@ -55,36 +62,27 @@ namespace od
 
 		void read(char *data, size_t size);
 
-		void beginUnit(size_t size);
-		void endUnit();
-
 		void ignore(size_t n);
 		void seek(size_t offset);
 		size_t tell();
 
-		std::istream &getStream();
 
-
-	protected:
+	private:
 
 		template <typename T>
         void _stupidlyReadIntegral(T &v)
         {
-            union{ T vt; uint8_t vb[sizeof(T)];} vu;
+		    v = 0;
 
-            for(uint8_t i = 0; i < sizeof(T); ++i)
+            for(size_t i = 0; i < sizeof(T); ++i)
             {
-                //TODO: find a better way to convert to little endian. this might be platform dependent
-
-                vu.vb[i] = _getNext();
+                v |= _getNext() << 8*i;
             }
-
-            v = vu.vt;
         }
 
 		uint8_t _getNext();
 
-		std::istream &mStream;
+		std::istream *mStream;
 	};
 
 	template <typename T>
