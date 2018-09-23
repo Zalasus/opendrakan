@@ -22,7 +22,6 @@ namespace od
     , mOutputFrequency(outputFreq)
     , mWorkerThread()
     , mTerminateWorker(false)
-    , mSources(4)
     {
         mDevice = alcOpenDevice(deviceName);
         _doContextErrorCheck("Could not open device");
