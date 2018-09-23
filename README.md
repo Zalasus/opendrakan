@@ -33,9 +33,9 @@ non-copyright-infringing means.
 Compiling
 ---------
 
-You'll need [zlib](https://www.zlib.net/), [Bullet](http://bulletphysics.org/wordpress/) and
-[OpenSceneGraph](http://www.openscenegraph.org/) along with their respective dependencies, 
-as well as [CMake](https://cmake.org/) to generate the Makefiles.
+You'll need [zlib](https://www.zlib.net/), an OpenAL implmentation like [OpenAL Soft](http://kcat.strangesoft.net/openal.html),
+[Bullet](http://bulletphysics.org/wordpress/) and [OpenSceneGraph](http://www.openscenegraph.org/) 
+along with their respective dependencies, as well as [CMake](https://cmake.org/) to generate the Makefiles.
 On Linux, these should be provided by your distro, so simply installing the appropriate packages
 should suffice to compile OpenDrakan. This was tested successfully on Debian and Arch Linux.
 

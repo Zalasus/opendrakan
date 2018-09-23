@@ -17,6 +17,7 @@ addons:
       - zlib1g-dev
       - libbullet-dev
       - libopenscenegraph-3.4-dev
+      - libopenal-dev
 
 before_install:
   - eval "${EVAL}"
