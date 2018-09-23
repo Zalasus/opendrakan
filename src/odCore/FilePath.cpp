@@ -115,11 +115,15 @@ namespace od
 
 		FilePath fp(*this);
 
-		std::string adjustedPath((mRootStyle == PathRootStyle::RELATIVE) ? "." : mRoot);
+		std::string adjustedPath((mRootStyle == PathRootStyle::RELATIVE) ? "./" : mRoot);
 
 		for(size_t i = 0; i < fp.mPathComponents.size(); ++i)
 		{
-			if(i > 0)
+		    if(i == 1)
+		    {
+		        adjustedPath += fp.mPathComponents[i-1];
+
+		    }else if(i > 1)
 			{
 				adjustedPath += OD_FILEPATH_SEPERATOR + fp.mPathComponents[i-1];
 			}
@@ -129,7 +133,6 @@ namespace od
 			{
 				// could not access path. keep this component as-is
 				continue;
-
 			}
 
 			std::string &name = fp.mPathComponents[i];
