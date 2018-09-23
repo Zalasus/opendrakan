@@ -5,6 +5,8 @@ set(SOURCES
         "anim/Animator.cpp"
         "anim/MotionAnimator.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
+        "audio/SoundManager.cpp"
+        "audio/Source.cpp"
         "db/Animation.cpp"
         "db/AnimationFactory.cpp"
         "db/Asset.cpp"
@@ -66,7 +68,7 @@ set(SOURCES
     
 add_library(odCore SHARED ${SOURCES})
 
-target_link_libraries(odCore ${OPENSCENEGRAPH_LIBRARIES} ${ZLIB_LIBRARIES} ${BULLET_LIBRARIES})
-target_include_directories(odCore PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
+target_link_libraries(odCore ${OPENSCENEGRAPH_LIBRARIES} ${ZLIB_LIBRARIES} ${BULLET_LIBRARIES} ${OPENAL_LIBRARY})
+target_include_directories(odCore PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS} ${OPENAL_INCLUDE_DIR})
     
     
