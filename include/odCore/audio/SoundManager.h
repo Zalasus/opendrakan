@@ -16,6 +16,8 @@
 #include <mutex>
 #include <atomic>
 
+#include <odCore/audio/EaxPresets.h>
+
 #ifndef ALTHING_DEFAULT_BUFFER_SIZE
 #   define ALTHING_DEFAULT_BUFFER_SIZE 2048
 #endif
@@ -43,6 +45,8 @@ namespace od
 
         void addSource(Source *source);
         void removeSource(Source *source);
+
+        void setEaxSoundSpace(EaxPreset preset);
 
         /**
          * @brief Fills the passed vector with all available device names.

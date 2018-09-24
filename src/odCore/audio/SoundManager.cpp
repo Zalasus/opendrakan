@@ -99,6 +99,13 @@ namespace od
         }
     }
 
+    void SoundManager::setEaxSoundSpace(EaxPreset preset)
+    {
+        // TODO: here we would translate the EAX preset to the corresponding EFX preset if the EFX extension is available
+
+        throw UnsupportedException("EAX unsupported as of now");
+    }
+
     bool SoundManager::listDeviceNames(std::vector<std::string> &deviceList)
     {
 #if ALC_ENUMERATE_ALL_EXT != 1
