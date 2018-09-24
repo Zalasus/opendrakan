@@ -326,9 +326,9 @@ namespace od
 
 	Sound *Database::getSound(RecordId recordId)
     {
-        if(mAnimFactory == nullptr)
+        if(mSoundFactory == nullptr)
         {
-            throw NotFoundException("Can't get animation. Database has no animation container");
+            throw NotFoundException("Can't get sound. Database has no sound container");
         }
 
         osg::ref_ptr<Sound> asset = mSoundFactory->getAsset(recordId);
