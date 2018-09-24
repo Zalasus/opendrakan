@@ -17,14 +17,7 @@
 #include <atomic>
 
 #include <odCore/audio/EaxPresets.h>
-
-#ifndef ALTHING_DEFAULT_BUFFER_SIZE
-#   define ALTHING_DEFAULT_BUFFER_SIZE 2048
-#endif
-
-#ifndef ALTHING_DEFAULT_FREQUENCY
-#   define ALTHING_DEFAULT_FREQUENCY 44100
-#endif
+#include <odCore/audio/SoundContext.h>
 
 namespace od
 {
@@ -35,16 +28,13 @@ namespace od
     {
     public:
 
-        SoundManager(const char *deviceName = NULL, size_t bufferSize = ALTHING_DEFAULT_BUFFER_SIZE, ALCint outputFreq = ALTHING_DEFAULT_FREQUENCY);
+        SoundManager(const char *deviceName = NULL);
         ~SoundManager();
 
         inline std::mutex &getWorkerMutex() { return mWorkerMutex; }
 
         void setListenerPosition(float xPos, float yPos, float zPos);
         void setListenerVelocity(float xVel, float yVel, float zVel);
-
-        void addSource(Source *source);
-        void removeSource(Source *source);
 
         void setEaxSoundSpace(EaxPreset preset);
 
@@ -60,18 +50,14 @@ namespace od
 
     private:
 
-        void _doWorkerStuff();
-        void _doContextErrorCheck(const std::string &failmsg);
+        void _doWorkerStuff(std::shared_ptr<std::atomic_bool> terminateFlag);
 
-        ALCdevice *mDevice;
-        ALCcontext *mContext;
-        size_t mBufferSize;
-        ALCint mOutputFrequency;
+        SoundContext mContext;
+        std::vector<std::unique_ptr<Source>> mSources;
+
         std::thread mWorkerThread;
         std::mutex  mWorkerMutex;
-        std::atomic_bool mTerminateWorker;
-
-        std::vector<Source*> mSources;
+        std::shared_ptr<std::atomic_bool> mTerminateFlag;
     };
 
 }

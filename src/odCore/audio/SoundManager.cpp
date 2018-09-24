@@ -23,45 +23,33 @@
 namespace od
 {
 
-    SoundManager::SoundManager(const char *deviceName, size_t bufferSize, ALCint outputFreq)
-    : mDevice(nullptr)
-    , mContext(nullptr)
-    , mBufferSize(bufferSize)
-    , mOutputFrequency(outputFreq)
-    , mWorkerThread()
-    , mTerminateWorker(false)
+    SoundManager::SoundManager(const char *deviceName)
+    : mContext(deviceName)
     {
-        mDevice = alcOpenDevice(deviceName);
-        _doContextErrorCheck("Could not open device");
+        mContext.makeCurrent();
 
-        const ALCint contextAttributes[] =
-            {
-                ALC_FREQUENCY, mOutputFrequency,
-                0
-                // TODO: add more context attributes
-            };
-        mContext = alcCreateContext(mDevice, &contextAttributes[0]);
-        _doContextErrorCheck("Could not create context");
+        // create sources
+        mSources.reserve(mContext.getMaxSourceCount());
+        for(size_t i = 0; i < mContext.getMaxSourceCount(); ++i)
+        {
+            std::unique_ptr<Source> src(new Source(*this));
+            mSources.push_back(std::move(src));
+        }
 
-        alcMakeContextCurrent(mContext);
-        _doContextErrorCheck("Could not make context current");
-
-        //std::function<void(void)> workerFunction = std::bind(&SoundManager::_doWorkerStuff, this);
-        //mWorkerThread = std::thread(workerFunction); // TODO: catch exception if thread can't be created
+        mTerminateFlag.reset(new std::atomic_bool(false));
+        mWorkerThread = std::thread(&SoundManager::_doWorkerStuff, this, mTerminateFlag);
     }
 
     SoundManager::~SoundManager()
     {
-        //mTerminateWorker = true;
-        //mWorkerThread.join();
-
-        for(Source *s : mSources)
-        {
-            delete s;
-        }
-
-        alcDestroyContext(mContext);
-        alcCloseDevice(mDevice);
+        // do not join worker thread. it might still be sleeping and cause this destructor to run waaay to long.
+        //  instead, wait until it goes to sleep by locking the mutex, then detach it so destroying the std::thread
+        //  object won't call abort(). Once the detached thread wakes, it will check the terminate flag
+        //  (of which it has a shared reference, so it is not destroyed with us), and then exit it's main loop.
+        mWorkerMutex.lock();
+        (*mTerminateFlag) = true;
+        mWorkerThread.detach();
+        mWorkerMutex.unlock();
     }
 
     void SoundManager::setListenerPosition(float xPos, float yPos, float zPos)
@@ -78,25 +66,6 @@ namespace od
 
         alListener3f(AL_VELOCITY, xVel, yVel, zVel);
         doErrorCheck("Could not set listener velocity");
-    }
-
-    void SoundManager::addSource(Source *source)
-    {
-        if(source == nullptr)
-        {
-            return;
-        }
-
-        mSources.push_back(source);
-    }
-
-    void SoundManager::removeSource(Source *source)
-    {
-        auto it = std::find(mSources.begin(), mSources.end(), source);
-        if(it != mSources.end())
-        {
-            mSources.erase(it);
-        }
     }
 
     void SoundManager::setEaxSoundSpace(EaxPreset preset)
@@ -181,65 +150,16 @@ namespace od
         throw Exception(failmsg + alErrorMsg);
     }
 
-    void SoundManager::_doWorkerStuff()
+    void SoundManager::_doWorkerStuff(std::shared_ptr<std::atomic_bool> terminateFlag)
     {
-        while(!mTerminateWorker)
+        Logger::verbose() << "Started sound worker thread";
+
+        while(!(*terminateFlag))
         {
-            // scoping this so mutex gets unlocked when we sleep
-            {
-                std::lock_guard<std::mutex> lock(mWorkerMutex);
-
-                for(Source *s : mSources)
-                {
-                    ALint queueSize;
-                    alGetSourcei(s->getSourceId(), AL_BUFFERS_QUEUED, &queueSize);
-                    doErrorCheck("Error while polling source queue size");
-
-                    ALint buffersProcessed;
-                    alGetSourcei(s->getSourceId(), AL_BUFFERS_PROCESSED, &buffersProcessed);
-                    doErrorCheck("Error while polling source's processed buffers");
-                }
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-    }
-
-    void SoundManager::_doContextErrorCheck(const std::string &failmsg)
-    {
-        std::string alErrorMsg;
-        ALenum error = alcGetError(mDevice);
-        switch(error)
-        {
-        case ALC_NO_ERROR:
-            return;
-
-        case ALC_INVALID_DEVICE:
-            alErrorMsg = " (invalid device)";
-            break;
-
-        case ALC_INVALID_CONTEXT:
-            alErrorMsg = " (invalid context)";
-            break;
-
-        case ALC_INVALID_ENUM:
-            alErrorMsg = " (invalid enum)";
-            break;
-
-        case ALC_INVALID_VALUE:
-            alErrorMsg = " (invalid value)";
-            break;
-
-        case ALC_OUT_OF_MEMORY:
-            alErrorMsg = " (out of memory)";
-            break;
-
-        default:
-            alErrorMsg = " (unknown error)";
-            break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 
-        throw Exception(failmsg + alErrorMsg);
+        Logger::verbose() << "Terminated sound worker thread";
     }
 
 }

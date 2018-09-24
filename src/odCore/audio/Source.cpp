@@ -29,8 +29,6 @@ namespace od
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
-        mSoundManager.removeSource(this);
-
         alDeleteSources(1, &mSourceId);
         SoundManager::doErrorCheck("Could not delete source");
     }
