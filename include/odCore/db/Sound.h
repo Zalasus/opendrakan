@@ -25,6 +25,8 @@ namespace od
 
 		Sound(AssetProvider &ap, RecordId id);
 
+		inline const std::vector<uint8_t> &getSampleBuffer() const { return mPcmBuffer; }
+
 		void loadFromRecord(DataReader &dr);
 
 

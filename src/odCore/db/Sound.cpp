@@ -49,6 +49,11 @@ namespace od
             dr >> compressedSize;
         }
 
+        if(mChannels != 1 && mChannels != 2)
+        {
+            throw UnsupportedException("Unsupported channel count");
+        }
+
         if(mBits != 8 && mBits != 16)
         {
         	throw UnsupportedException("Unsupported bit count per sample");
@@ -66,6 +71,7 @@ namespace od
         mPcmBuffer.resize(mDecompressedSize);
         sampleReader.read(reinterpret_cast<char*>(mPcmBuffer.data()), mDecompressedSize);
     }
+
 }
 
 
