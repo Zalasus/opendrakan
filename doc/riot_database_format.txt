@@ -511,11 +511,11 @@ Record types
     
     [0x0400] Encrypted string 
         uint8[*] string;  // no length field. string fills entire record
-        (found in Dragon.rrc, used for localization. XOR encrypted with key 0D 6A 57 BF FD EE 74... complete key unknown)
+        (found in Dragon.rrc, used for localization. XOR encrypted, see algorithm in chapter "String decryption" below)
 
     [0x0401] Plaintext string
         uint8[*] string;  // no length field. string fills entire record
-        found in Dragon.rrc, used for localization, credits, gui)
+        (found in Dragon.rrc, used for localization, credits, gui)
 
     [0x0402] End record?
         (one of these appears in many databases, often last. it's size seems to always be 4)
@@ -650,4 +650,19 @@ Class format
     while strings are packed into as many dwords as required, and then padded with zero bytes if the string's size is not divisible by 4.
     
     Colors are stored as ARGB.
+    
+    
+String decryption
+=================
+    Strings in 0x402 records can be decrypted using the following alogrithm:
+    
+        uint32_t key = 0x5FDD390D;
+    
+        for(size_t i = 0; i < len; ++i)
+        {
+            str[i] ^= key & 0xFF;
+            key = (key<<3) | (key>>(32-3));
+        }
+        
+    (Thanks to UCyborg for figuring this out!)
     
