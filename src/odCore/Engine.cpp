@@ -19,6 +19,7 @@
 #include <odCore/light/LightManager.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/RflManager.h>
+#include <odCore/audio/SoundManager.h>
 
 namespace od
 {
@@ -93,6 +94,14 @@ namespace od
 	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
 	    mLightManager.reset(new LightManager(*this, mRootNode));
+
+	    std::vector<std::string> devs;
+	    SoundManager::listDeviceNames(devs);
+	    for(std::string s : devs)
+	    {
+	        Logger::info() << "Sound device: '" << s << "'";
+	    }
+	    mSoundManager.reset(new SoundManager(nullptr));
 
 	    mRflManager->onStartup();
 

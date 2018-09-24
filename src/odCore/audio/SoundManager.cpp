@@ -75,6 +75,13 @@ namespace od
         throw UnsupportedException("EAX unsupported as of now");
     }
 
+    Source *SoundManager::playSound(Sound *sound)
+    {
+
+
+        return nullptr;
+    }
+
     bool SoundManager::listDeviceNames(std::vector<std::string> &deviceList)
     {
 #if ALC_ENUMERATE_ALL_EXT != 1

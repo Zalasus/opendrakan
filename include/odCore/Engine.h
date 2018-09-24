@@ -26,6 +26,7 @@ namespace od
     class ShaderManager;
     class LightManager;
     class DbManager;
+    class SoundManager;
 
 	class Engine
 	{
@@ -71,6 +72,7 @@ namespace od
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<GuiManager> mGuiManager;
 		std::unique_ptr<LightManager> mLightManager;
+		std::unique_ptr<SoundManager> mSoundManager;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;

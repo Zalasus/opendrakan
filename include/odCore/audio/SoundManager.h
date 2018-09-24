@@ -23,6 +23,7 @@ namespace od
 {
 
     class Source;
+    class Sound;
 
     class SoundManager
     {
@@ -37,6 +38,13 @@ namespace od
         void setListenerVelocity(float xVel, float yVel, float zVel);
 
         void setEaxSoundSpace(EaxPreset preset);
+
+        /**
+         * @brief Plays a sound and returns the source used to play it.
+         *
+         * The returned source reference can then be used to change it's position, control playback etc.
+         */
+        Source *playSound(Sound *sound);
 
         /**
          * @brief Fills the passed vector with all available device names.
