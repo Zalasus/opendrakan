@@ -17,6 +17,9 @@
 // the maximum number of devices we allow to be read from the unsafe device enumeration string
 #define OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE 32
 
+// the maximum length one device name may have in the unsafe device enumeration string
+#define OD_OPENAL_DEVICESTRING_LENGTH_FAILSAFE 128
+
 namespace od
 {
 
@@ -43,14 +46,14 @@ namespace od
         alcMakeContextCurrent(mContext);
         _doContextErrorCheck("Could not make context current");
 
-        std::function<void(void)> workerFunction = std::bind(&SoundManager::_doWorkerStuff, this);
-        mWorkerThread = std::thread(workerFunction); // TODO: catch exception if thread can't be created
+        //std::function<void(void)> workerFunction = std::bind(&SoundManager::_doWorkerStuff, this);
+        //mWorkerThread = std::thread(workerFunction); // TODO: catch exception if thread can't be created
     }
 
     SoundManager::~SoundManager()
     {
-        mTerminateWorker = true;
-        mWorkerThread.join();
+        //mTerminateWorker = true;
+        //mWorkerThread.join();
 
         for(Source *s : mSources)
         {
@@ -110,10 +113,12 @@ namespace od
         }
 
         // the returned string consists of concatenated c-strings, terminated with an empty string
-        //  FIXME: there is absolutely no indication of how long this string actually might be. if OpenAL messes up, the
+        //  WARNING: there is absolutely no indication of how long this string actually might be. if OpenAL messes up, the
         //  following code might cause access violations or at least produce garbage until our failsafe kicks in
         size_t stringLength = strlen(strList);
-        while(stringLength > 0 && deviceList.size() < OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE)
+        while(stringLength > 0
+                && deviceList.size() <= OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE
+                && stringLength <= OD_OPENAL_DEVICESTRING_LENGTH_FAILSAFE)
         {
             deviceList.push_back(std::string(strList));
 
@@ -121,9 +126,11 @@ namespace od
             stringLength = strlen(strList);
         }
 
-        if(stringLength != 0 && deviceList.size() >= OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE)
+        if(stringLength != 0 &&
+            (   deviceList.size() > OD_OPENAL_DEVICELIST_LENGTH_FAILSAFE
+             || stringLength > OD_OPENAL_DEVICESTRING_LENGTH_FAILSAFE))
         {
-            Logger::warn() << "Had to terminate device enumaration because the number of devices exceeded a sane amount";
+            Logger::warn() << "Had to terminate device enumaration because the number or length of device names exceeded a sane amount";
         }
 
         return true;
