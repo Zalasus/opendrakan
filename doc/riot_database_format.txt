@@ -13,11 +13,14 @@ This document uses a pseudo-C syntax for data structure definitions. You'll figu
     "ref" refers to another resource and is a struct { uint16 id, db_index; }.
     All structs are packed. No alignment padding unless explicitly specified.
 
-PLEASE NOTE: This documentation is not complete. I could not identify all fields used in all files
-and am still working on figuring out things like animations. Feel free to make a pull request should
-you find out things not documented here.
+PLEASE NOTE: This documentation is not complete. I could not identify all fields used in all files.
+Feel free to make a pull request should you find out things not documented here.
 
-This info was compiled by Zalasus and HeckFluff from the arokhslair.net forums.
+This info was compiled by Zalasus and also these people from the arokhslair.net forums:
+    BuXXe
+    HeckFluff
+    UCyborg
+(Thanks a lot, guys :D)
 
 
 How the engine manages it's assets
@@ -111,17 +114,17 @@ Basic SRSC format
         
     Record types
     ------------
-        All records have a 16-bit type. The high byte of that type defines the associated asset type, while the interpretation
-        of the low byte depends on the given asset type. This type also defines the structure of the record body.
+        All records have a 16-bit type ID. This type ID determines the structure of the record body.
         See top chapter "Record types" for a list of all known record structures.
+        
 
     Record ID and grouping
     ----------------------
         Most records are identified by an ID, found in the SRSC directory. This is a running number that is
         unique per SRSC file. If a record has no ID, the ID field has a value of 0.
 
-        Some asset types allow grouping of records. These are namely models, classes and sounds. These asset types
-        define a special record type for group definitions. This seems to always be the type with the low byte 0x01.
+        All asset types except textures allow to collect assets in named groups. These asset types define a special
+        record type for group definitions (not the same across different asset types: Classes use 0x0101 while sequences use 0x0313).
         That record's body consists of a single string, which is the groups name.
         The record ID of that group definition record is that group's ID. All records whose directory entry states a group ID
         different than 0 are part of the group with the ID stated. 
