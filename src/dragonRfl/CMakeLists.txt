@@ -21,6 +21,7 @@ set(SOURCES
     "PushableObject.cpp"
     "RflDragon.cpp"
     "Sky.cpp"
+    "SoundEffect.cpp"
     "StaticLight.cpp"
     "Timer.cpp"
     "TrackingCamera.cpp"
