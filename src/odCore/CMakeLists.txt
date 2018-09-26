@@ -66,10 +66,17 @@ set(SOURCES
         "UpdateCallback.cpp"
         "ZStream.cpp")
     
+find_package(Threads REQUIRED)
     
-add_library(odCore SHARED ${SOURCES})
+add_library(odCore STATIC ${SOURCES})
 
-target_link_libraries(odCore ${OPENSCENEGRAPH_LIBRARIES} ${ZLIB_LIBRARIES} ${BULLET_LIBRARIES} ${OPENAL_LIBRARY})
+target_link_libraries(odCore 
+                        ${CMAKE_THREAD_LIBS_INIT}
+                        ${OPENSCENEGRAPH_LIBRARIES} 
+                        ${ZLIB_LIBRARIES} 
+                        ${BULLET_LIBRARIES} 
+                        ${OPENAL_LIBRARY})
+                    
 target_include_directories(odCore PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS} ${OPENAL_INCLUDE_DIR})
     
     
