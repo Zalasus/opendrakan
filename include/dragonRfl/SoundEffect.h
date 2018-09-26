@@ -39,6 +39,9 @@ namespace od
 
         virtual void probeFields(FieldProbe &probe) override;
 
+        virtual void onLoaded(LevelObject &obj) override;
+        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
+
 
     private:
 

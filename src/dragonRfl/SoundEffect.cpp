@@ -8,6 +8,7 @@
 #include <dragonRfl/SoundEffect.h>
 
 #include <dragonRfl/RflDragon.h>
+#include <odCore/LevelObject.h>
 
 namespace od
 {
@@ -29,6 +30,20 @@ namespace od
                 (mAveragePeriod, "Average Period (sec)")
                 (mPeriodRandomDeviation, "Period random deviation")
                 (mLocation, "Location");
+    }
+
+    void SoundEffect::onLoaded(LevelObject &obj)
+    {
+        obj.setObjectType(LevelObjectType::Detector);
+    }
+
+    void SoundEffect::onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message)
+    {
+        // seems to trigger on any message
+        if(mPlayMode == PlayMode::Triggered || mPlayMode == PlayMode::LoopingAndTriggered)
+        {
+            // ...stub...
+        }
     }
 
 
