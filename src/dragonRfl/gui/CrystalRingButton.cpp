@@ -34,8 +34,6 @@ namespace od
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
-    , mHoverSound(hoverSound)
-    , mHoverSoundPitch(soundPitch)
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
     , mTransform(new osg::MatrixTransform)
@@ -101,6 +99,8 @@ namespace od
 
         mSoundSource.setPosition(0.0, 0.0, 0.0);
         mSoundSource.setRelative(true);
+        mSoundSource.setPitch(soundPitch);
+        mSoundSource.setSound(hoverSound);
     }
 
     bool CrystalRingButton::liesWithinLogicalArea(const osg::Vec2 &pos)
@@ -113,6 +113,16 @@ namespace od
     void CrystalRingButton::onMouseDown(const osg::Vec2 &pos, int button)
     {
         mClicked = true;
+    }
+
+    void CrystalRingButton::onMouseEnter(const osg::Vec2 &pos)
+    {
+        mSoundSource.play();
+    }
+
+    void CrystalRingButton::onMouseLeave(const osg::Vec2 &pos)
+    {
+        mSoundSource.stop();
     }
 
     void CrystalRingButton::onUpdate(double simTime, double relTime)

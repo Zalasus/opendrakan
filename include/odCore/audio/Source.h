@@ -29,6 +29,7 @@ namespace od
         void setVelocity(float xVel, float yVel, float zVel);
         void setDirection(float xDir, float yDir, float zDir);
         void setRelative(bool relative);
+        void setPitch(float pitch);
 
         void setSound(Sound *s);
         void play();

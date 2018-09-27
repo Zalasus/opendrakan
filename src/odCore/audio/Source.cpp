@@ -29,6 +29,8 @@ namespace od
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
+        alSourcei(mSourceId, AL_BUFFER, 0); // unqueue any buffers
+
         alDeleteSources(1, &mSourceId);
         SoundManager::doErrorCheck("Could not delete source");
     }
@@ -67,7 +69,25 @@ namespace od
         SoundManager::doErrorCheck("Could not set source relative state");
     }
 
+    void Source::setPitch(float pitch)
+    {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
+
+        alSourcef(mSourceId, AL_PITCH, pitch);
+        SoundManager::doErrorCheck("Could not set source pitch");
+    }
+
     void Source::setSound(Sound *s)
+    {
+
+    }
+
+    void Source::play()
+    {
+
+    }
+
+    void Source::stop()
     {
 
     }

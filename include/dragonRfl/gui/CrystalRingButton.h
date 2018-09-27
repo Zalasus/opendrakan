@@ -32,6 +32,8 @@ namespace od
 
         virtual bool liesWithinLogicalArea(const osg::Vec2 &pos) override;
         virtual void onMouseDown(const osg::Vec2 &pos, int button) override;
+        virtual void onMouseEnter(const osg::Vec2 &pos) override;
+        virtual void onMouseLeave(const osg::Vec2 &pos) override;
         virtual void onUpdate(double simTime, double relTime) override;
 
 
@@ -43,8 +45,6 @@ namespace od
         osg::ref_ptr<Model> mCrystalModel;
         osg::ref_ptr<Model> mInnerRingModel;
         osg::ref_ptr<Model> mOuterRingModel;
-        osg::ref_ptr<Sound> mHoverSound;
-        float mHoverSoundPitch;
         osg::Vec4 mCrystalColorInactive;
         osg::Vec4 mCrystalColorActive;
         osg::ref_ptr<osg::MatrixTransform> mTransform;
