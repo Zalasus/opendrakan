@@ -36,7 +36,7 @@ namespace od
             BC_QUIT
         };
 
-        void _addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y,
+        void _addCrystal(GuiManager &gm, Model *crystalModel, int32_t noteOffset, float dia, float x, float y,
                 od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode);
 
         void _buttonClicked(int buttonCode);

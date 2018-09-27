@@ -14,6 +14,8 @@
 
 #include <odCore/gui/Widget.h>
 #include <odCore/db/Model.h>
+#include <odCore/db/Sound.h>
+#include <odCore/audio/Source.h>
 
 namespace od
 {
@@ -22,7 +24,7 @@ namespace od
     {
     public:
 
-        CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel);
+        CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel, Sound *hoverSound, float soundPitch);
 
         inline void setInactiveCrystalColor(const osg::Vec4 &color) { mCrystalColorInactive = color; _updateCrystalColor(); }
         inline void setActiveCrystalColor(const osg::Vec4 &color) { mCrystalColorActive = color;  _updateCrystalColor(); }
@@ -37,9 +39,12 @@ namespace od
 
         void _updateCrystalColor();
 
+        Source mSoundSource;
         osg::ref_ptr<Model> mCrystalModel;
         osg::ref_ptr<Model> mInnerRingModel;
         osg::ref_ptr<Model> mOuterRingModel;
+        osg::ref_ptr<Sound> mHoverSound;
+        float mHoverSoundPitch;
         osg::Vec4 mCrystalColorInactive;
         osg::Vec4 mCrystalColorActive;
         osg::ref_ptr<osg::MatrixTransform> mTransform;

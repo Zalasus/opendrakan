@@ -46,6 +46,7 @@ namespace od
 		inline RflManager &getRflManager() { return *mRflManager; }
 		inline GuiManager &getGuiManager() { return *mGuiManager; }
 		inline LightManager &getLightManager() { return *mLightManager; }
+		inline SoundManager &getSoundManager() { return *mSoundManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return mPlayer; }
         inline void setPlayer(Player *p) { mPlayer = p; }

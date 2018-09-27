@@ -27,11 +27,15 @@
 namespace od
 {
 
-    CrystalRingButton::CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel)
+    CrystalRingButton::CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel,
+            Sound *hoverSound, float soundPitch)
     : Widget(gm)
+    , mSoundSource(gm.getEngine().getSoundManager())
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
+    , mHoverSound(hoverSound)
+    , mHoverSoundPitch(soundPitch)
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
     , mTransform(new osg::MatrixTransform)
@@ -94,6 +98,9 @@ namespace od
         }
 
         this->addChild(mTransform);
+
+        mSoundSource.setPosition(0.0, 0.0, 0.0);
+        mSoundSource.setRelative(true);
     }
 
     bool CrystalRingButton::liesWithinLogicalArea(const osg::Vec2 &pos)

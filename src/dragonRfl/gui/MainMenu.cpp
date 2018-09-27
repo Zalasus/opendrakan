@@ -7,6 +7,8 @@
 
 #include <dragonRfl/gui/MainMenu.h>
 
+#include <cmath>
+
 #include <dragonRfl/gui/GuiTextures.h>
 #include <dragonRfl/gui/CrystalRingButton.h>
 #include <dragonRfl/UserInterfaceProperties.h>
@@ -104,23 +106,28 @@ namespace od
 
         cont->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
 
-        _addCrystal(gm, uiProps->mCrystalTop.getAsset(), 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
-        _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), 57, 110, 193, uiProps, cont, BC_LOAD);
-        _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), 67, 255, 191, uiProps, cont, BC_NEW);
-        _addCrystal(gm, uiProps->mCrystalRight.getAsset(), 57, 400, 193, uiProps, cont, BC_SAVE);
-        _addCrystal(gm, uiProps->mCrystalLowerLeft.getAsset(), 35, 152, 292, uiProps, cont, BC_OPTIONS);
-        _addCrystal(gm, uiProps->mCrystalLowerRight.getAsset(), 35, 358, 292, uiProps, cont, BC_CREDITS);
-        _addCrystal(gm, uiProps->mCrystalBottom.getAsset(), 61, 255, 440, uiProps, cont, BC_QUIT);
+        _addCrystal(gm, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
+        _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), uiProps->mCrystalLeftNoteOffset, 57, 110, 193, uiProps, cont, BC_LOAD);
+        _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), uiProps->mCrystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
+        _addCrystal(gm, uiProps->mCrystalRight.getAsset(), uiProps->mCrystalRightNoteOffset, 57, 400, 193, uiProps, cont, BC_SAVE);
+        _addCrystal(gm, uiProps->mCrystalLowerLeft.getAsset(), uiProps->mCrystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
+        _addCrystal(gm, uiProps->mCrystalLowerRight.getAsset(), uiProps->mCrystalLowerRightNoteOffset,35, 358, 292, uiProps, cont, BC_CREDITS);
+        _addCrystal(gm, uiProps->mCrystalBottom.getAsset(), uiProps->mCrystalBottomNoteOffset,61, 255, 440, uiProps, cont, BC_QUIT);
 
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
     }
 
-    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, float dia, float x, float y,
+    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, int32_t noteOffset, float dia, float x, float y,
             od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
     {
+        static const float halfTonePitch = std::pow(2.0, 1.0/12.0);
+        float soundPitch = std::pow(halfTonePitch, noteOffset);
+
         osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, crystalModel,
                 uiProps->mInnerRing.getAsset(),
-                uiProps->mOuterRing.getAsset()));
+                uiProps->mOuterRing.getAsset(),
+                uiProps->mHoverSoundLooped.getAsset(),
+                soundPitch));
         crystal->setDimensions(dia, dia, WidgetDimensionType::Pixels);
         crystal->setPosition(x/512, y/512);
         crystal->setOrigin(WidgetOrigin::Center);
