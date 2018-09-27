@@ -33,6 +33,34 @@ namespace od
         SoundManager::doErrorCheck("Could not delete buffer");
     }
 
+    Buffer::Format Buffer::getFormatFor(size_t nBits, size_t nChannels) const
+    {
+        if(nChannels == 1)
+        {
+            if(nBits == 8)
+            {
+                return Format::Mono8Bit;
+
+            }else if(nBits == 16)
+            {
+                return Format::Mono16Bit;
+            }
+
+        }else if(nChannels == 2)
+        {
+            if(nBits == 8)
+            {
+                return Format::Stereo8Bit;
+
+            }else if(nBits == 16)
+            {
+                return Format::Stereo16Bit;
+            }
+        }
+
+        throw UnsupportedException("Unsupported channel count & bit depth combination");
+    }
+
     void Buffer::setData(uint8_t *data, size_t size, Format format, size_t frequency)
     {
         ALenum alFormat = _toAlFormat(format);

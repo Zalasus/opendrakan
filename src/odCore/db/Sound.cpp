@@ -11,6 +11,7 @@
 
 #include <odCore/Exception.h>
 #include <odCore/ZStream.h>
+#include <odCore/audio/Buffer.h>
 
 namespace od
 {
@@ -70,6 +71,22 @@ namespace od
 
         mPcmBuffer.resize(mDecompressedSize);
         sampleReader.read(reinterpret_cast<char*>(mPcmBuffer.data()), mDecompressedSize);
+    }
+
+    std::shared_ptr<Buffer> Sound::getOrCreateBuffer(SoundManager &soundManager)
+    {
+        if(mSoundBuffer != nullptr)
+        {
+            return mSoundBuffer;
+        }
+
+        mSoundBuffer.reset(new Buffer(soundManager));
+
+        Buffer::Format format = mSoundBuffer->getFormatFor(mBits, mChannels);
+
+        mSoundBuffer->setData(mPcmBuffer.data(), mPcmBuffer.size(), format, mFrequency);
+
+        return mSoundBuffer;
     }
 
 }

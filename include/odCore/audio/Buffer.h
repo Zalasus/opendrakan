@@ -33,6 +33,8 @@ namespace od
         Buffer(const Buffer &buffer) = delete;
         ~Buffer();
 
+        Format getFormatFor(size_t nBits, size_t nChannels) const;
+
         void setData(uint8_t *data, size_t size, Format format, size_t frequency);
 
 

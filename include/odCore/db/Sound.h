@@ -9,6 +9,7 @@
 #define INCLUDE_SOUND_H_
 
 #include <vector>
+#include <memory>
 #include <osg/Referenced>
 
 #include <odCore/db/Asset.h>
@@ -19,6 +20,9 @@
 namespace od
 {
 
+    class Buffer;
+    class SoundManager;
+
 	class Sound : public Asset, public osg::Referenced
 	{
 	public:
@@ -28,6 +32,8 @@ namespace od
 		inline const std::vector<uint8_t> &getSampleBuffer() const { return mPcmBuffer; }
 
 		void loadFromRecord(DataReader &dr);
+
+		std::shared_ptr<Buffer> getOrCreateBuffer(SoundManager &soundManager);
 
 
 	private:
@@ -44,6 +50,7 @@ namespace od
         uint32_t 	mCompressionLevel; // 0 = none, 1 = lowest, 9 = highest
 
         std::vector<uint8_t> mPcmBuffer;
+        std::shared_ptr<Buffer> mSoundBuffer;
 	};
 
 	template <>
