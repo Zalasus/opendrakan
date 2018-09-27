@@ -11,6 +11,7 @@
 
 #include <odCore/audio/SoundManager.h>
 #include <odCore/db/Sound.h>
+#include <odCore/audio/Buffer.h>
 
 namespace od
 {
@@ -77,19 +78,45 @@ namespace od
         SoundManager::doErrorCheck("Could not set source pitch");
     }
 
+    void Source::setLooping(bool looping)
+    {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
+
+        ALint alBoolLooping = looping ? AL_TRUE : AL_FALSE;
+
+        alSourcei(mSourceId, AL_LOOPING, alBoolLooping);
+        SoundManager::doErrorCheck("Could not set source looping state");
+    }
+
     void Source::setSound(Sound *s)
     {
+        mSound = s;
 
+        if(mSound != nullptr)
+        {
+            mBuffer = mSound->getOrCreateBuffer(mSoundManager);
+
+            std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
+
+            alSourcei(mSourceId, AL_BUFFER, mBuffer->getId());
+            SoundManager::doErrorCheck("Could not attach sound buffer to source");
+        }
     }
 
     void Source::play()
     {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
+        alSourcePlay(mSourceId);
+        SoundManager::doErrorCheck("Could not play source");
     }
 
     void Source::stop()
     {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
+        alSourceStop(mSourceId);
+        SoundManager::doErrorCheck("Could not stop source");
     }
 
 }

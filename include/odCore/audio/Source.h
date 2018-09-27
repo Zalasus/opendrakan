@@ -9,12 +9,15 @@
 #define INCLUDE_ODCORE_AUDIO_SOURCE_H_
 
 #include <AL/al.h>
+#include <osg/ref_ptr>
+#include <memory>
 
 namespace od
 {
 
     class SoundManager;
     class Sound;
+    class Buffer;
 
     class Source
     {
@@ -30,6 +33,7 @@ namespace od
         void setDirection(float xDir, float yDir, float zDir);
         void setRelative(bool relative);
         void setPitch(float pitch);
+        void setLooping(bool looping);
 
         void setSound(Sound *s);
         void play();
@@ -39,6 +43,9 @@ namespace od
 
         SoundManager &mSoundManager;
         ALuint mSourceId;
+
+        osg::ref_ptr<Sound> mSound;
+        std::shared_ptr<Buffer> mBuffer;
     };
 
 }

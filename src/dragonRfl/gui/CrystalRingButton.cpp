@@ -99,6 +99,7 @@ namespace od
 
         mSoundSource.setPosition(0.0, 0.0, 0.0);
         mSoundSource.setRelative(true);
+        mSoundSource.setLooping(true);
         mSoundSource.setPitch(soundPitch);
         mSoundSource.setSound(hoverSound);
     }
