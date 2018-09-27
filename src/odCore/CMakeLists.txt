@@ -5,6 +5,7 @@ set(SOURCES
         "anim/Animator.cpp"
         "anim/MotionAnimator.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
+        "audio/Buffer.cpp"
         "audio/SoundContext.cpp"
         "audio/SoundManager.cpp"
         "audio/Source.cpp"
