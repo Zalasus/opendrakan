@@ -28,14 +28,6 @@ namespace od
     {
         mContext.makeCurrent();
 
-        // create sources
-        mSources.reserve(mContext.getMaxSourceCount());
-        for(size_t i = 0; i < mContext.getMaxSourceCount(); ++i)
-        {
-            std::unique_ptr<Source> src(new Source(*this));
-            mSources.push_back(std::move(src));
-        }
-
         mTerminateFlag.reset(new std::atomic_bool(false));
         mWorkerThread = std::thread(&SoundManager::_doWorkerStuff, this, mTerminateFlag);
     }

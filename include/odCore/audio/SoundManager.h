@@ -61,7 +61,6 @@ namespace od
         void _doWorkerStuff(std::shared_ptr<std::atomic_bool> terminateFlag);
 
         SoundContext mContext;
-        std::vector<std::unique_ptr<Source>> mSources;
 
         std::thread mWorkerThread;
         std::mutex  mWorkerMutex;
