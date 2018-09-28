@@ -19,7 +19,8 @@ namespace od
     Source::Source(SoundManager &soundManager)
     : mSoundManager(soundManager)
     , mSourceId(0)
-    , mFadingTime(0.0f)
+    , mGain(1.0f)
+    , mFadingValue(0.0f)
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
@@ -29,8 +30,6 @@ namespace od
 
     Source::~Source()
     {
-        Logger::error() << "Del source " << mSourceId;
-
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alSourceStop(mSourceId);
@@ -113,7 +112,15 @@ namespace od
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
-        mFadingTime = fadeInTime;
+        if(fadeInTime > 0.0)
+        {
+            mFadingValue.move(1.0f, fadeInTime);
+
+        }else
+        {
+            mFadingValue.set(1.0);
+        }
+        _updateSourceGain_locked();
 
         alSourcePlay(mSourceId);
         SoundManager::doErrorCheck("Could not play source");
@@ -123,22 +130,32 @@ namespace od
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
-        mFadingTime = fadeOutTime;
-
-        if(mFadingTime == 0.0)
+        if(fadeOutTime == 0.0)
         {
             alSourceStop(mSourceId);
             SoundManager::doErrorCheck("Could not stop source");
 
         }else
         {
-
+            mFadingValue.move(0.0f, fadeOutTime);
+            _updateSourceGain_locked();
         }
     }
 
-    void Source::update(double relTime, double simTime)
+    void Source::update(float relTime)
     {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
+        if(mFadingValue.update(relTime))
+        {
+            _updateSourceGain_locked();
+        }
+    }
+
+    void Source::_updateSourceGain_locked()
+    {
+        alSourcef(mSourceId, AL_GAIN, mGain*mFadingValue);
+        SoundManager::doErrorCheck("Could not set source gain");
     }
 
 

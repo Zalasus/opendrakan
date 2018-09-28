@@ -12,6 +12,8 @@
 #include <osg/ref_ptr>
 #include <memory>
 
+#include <odCore/anim/Interpolator.h>
+
 namespace od
 {
 
@@ -35,12 +37,13 @@ namespace od
         void setRelative(bool relative);
         void setPitch(float pitch);
         void setLooping(bool looping);
+        void setGain(float gain);
 
         void setSound(Sound *s);
         void play(float fadeInTime = 0.0f);
         void stop(float fadeOutTime = 0.0f);
 
-        void update(double relTime, double simTime);
+        void update(float relTime);
 
 
     protected:
@@ -50,13 +53,18 @@ namespace od
 
     private:
 
+        /// @note Call this only with the worker mutex locked!
+        void _updateSourceGain_locked();
+
         SoundManager &mSoundManager;
         ALuint mSourceId;
 
         osg::ref_ptr<Sound> mSound;
         std::shared_ptr<Buffer> mBuffer;
 
-        float mFadingTime;
+        // these two are used to calculate the absolute gain
+        float mGain;
+        Interpolated<float> mFadingValue;
     };
 
 }

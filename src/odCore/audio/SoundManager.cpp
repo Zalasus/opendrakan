@@ -148,17 +148,16 @@ namespace od
     {
         Logger::verbose() << "Started sound worker thread";
 
-        auto startingTime = std::chrono::high_resolution_clock::now();
-        auto lastTime = startingTime;
+        auto lastTime = std::chrono::high_resolution_clock::now();
         while(!mTerminateFlag)
         {
             auto now = std::chrono::high_resolution_clock::now();
-            double relTime = std::chrono::duration_cast<std::chrono::seconds>(now - lastTime).count();
-            double simTime = std::chrono::duration_cast<std::chrono::seconds>(now - startingTime).count();
+            float relTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastTime).count();
+            lastTime = now;
 
             for(auto it = mSources.begin(); it != mSources.end(); ++it)
             {
-                (*it)->update(relTime, simTime);
+                (*it)->update(relTime);
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

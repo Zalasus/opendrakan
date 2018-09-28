@@ -27,8 +27,6 @@ namespace od
 
     Buffer::~Buffer()
     {
-        Logger::error() << "Del buffer " << mBufferId;
-
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alDeleteBuffers(1, &mBufferId);
