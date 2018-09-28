@@ -11,6 +11,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 #include <vector>
+#include <deque>
 #include <string>
 #include <thread>
 #include <mutex>
@@ -39,12 +40,7 @@ namespace od
 
         void setEaxSoundSpace(EaxPreset preset);
 
-        /**
-         * @brief Plays a sound and returns the source used to play it.
-         *
-         * The returned source reference can then be used to change it's position, control playback etc.
-         */
-        Source *playSound(Sound *sound);
+        Source *createSource();
 
         /**
          * @brief Fills the passed vector with all available device names.
@@ -58,13 +54,15 @@ namespace od
 
     private:
 
-        void _doWorkerStuff(std::shared_ptr<std::atomic_bool> terminateFlag);
+        void _doWorkerStuff();
 
         SoundContext mContext;
 
         std::thread mWorkerThread;
         std::mutex  mWorkerMutex;
-        std::shared_ptr<std::atomic_bool> mTerminateFlag;
+        std::atomic_bool mTerminateFlag;
+
+        std::deque<std::unique_ptr<Source>> mSources;
     };
 
 }

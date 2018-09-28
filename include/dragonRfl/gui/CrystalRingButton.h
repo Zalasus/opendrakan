@@ -41,7 +41,7 @@ namespace od
 
         void _updateCrystalColor();
 
-        Source mSoundSource;
+        Source *mSoundSource;
         osg::ref_ptr<Model> mCrystalModel;
         osg::ref_ptr<Model> mInnerRingModel;
         osg::ref_ptr<Model> mOuterRingModel;

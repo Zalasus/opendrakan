@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <chrono>
 
 #include <odCore/Exception.h>
 #include <odCore/audio/Source.h>
@@ -25,23 +26,17 @@ namespace od
 
     SoundManager::SoundManager(const char *deviceName)
     : mContext(deviceName)
+    , mTerminateFlag(false)
     {
         mContext.makeCurrent();
 
-        mTerminateFlag.reset(new std::atomic_bool(false));
-        mWorkerThread = std::thread(&SoundManager::_doWorkerStuff, this, mTerminateFlag);
+        mWorkerThread = std::thread(&SoundManager::_doWorkerStuff, this);
     }
 
     SoundManager::~SoundManager()
     {
-        // do not join worker thread. it might still be sleeping and cause this destructor to run waaay to long.
-        //  instead, wait until it goes to sleep by locking the mutex, then detach it so destroying the std::thread
-        //  object won't call abort(). Once the detached thread wakes, it will check the terminate flag
-        //  (of which it has a shared reference, so it is not destroyed with us), and then exit it's main loop.
-        mWorkerMutex.lock();
-        (*mTerminateFlag) = true;
-        mWorkerThread.detach();
-        mWorkerMutex.unlock();
+        mTerminateFlag = true;
+        mWorkerThread.join();
     }
 
     void SoundManager::setListenerPosition(float xPos, float yPos, float zPos)
@@ -67,11 +62,11 @@ namespace od
         throw UnsupportedException("EAX unsupported as of now");
     }
 
-    Source *SoundManager::playSound(Sound *sound)
+    Source *SoundManager::createSource()
     {
+        mSources.push_back(std::unique_ptr<Source>(new Source(*this)));
 
-
-        return nullptr;
+        return mSources.back().get();
     }
 
     bool SoundManager::listDeviceNames(std::vector<std::string> &deviceList)
@@ -149,12 +144,23 @@ namespace od
         throw Exception(failmsg + alErrorMsg);
     }
 
-    void SoundManager::_doWorkerStuff(std::shared_ptr<std::atomic_bool> terminateFlag)
+    void SoundManager::_doWorkerStuff()
     {
         Logger::verbose() << "Started sound worker thread";
 
-        while(!(*terminateFlag))
+        auto startingTime = std::chrono::high_resolution_clock::now();
+        auto lastTime = startingTime;
+        while(!mTerminateFlag)
         {
+            auto now = std::chrono::high_resolution_clock::now();
+            double relTime = std::chrono::duration_cast<std::chrono::seconds>(now - lastTime).count();
+            double simTime = std::chrono::duration_cast<std::chrono::seconds>(now - startingTime).count();
+
+            for(auto it = mSources.begin(); it != mSources.end(); ++it)
+            {
+                (*it)->update(relTime, simTime);
+            }
+
             std::this_thread::sleep_for(std::chrono::milliseconds(10));
         }
 

@@ -19,6 +19,7 @@ namespace od
     Source::Source(SoundManager &soundManager)
     : mSoundManager(soundManager)
     , mSourceId(0)
+    , mFadingTime(0.0f)
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
@@ -28,9 +29,14 @@ namespace od
 
     Source::~Source()
     {
+        Logger::error() << "Del source " << mSourceId;
+
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
-        alSourcei(mSourceId, AL_BUFFER, 0); // unqueue any buffers
+        alSourceStop(mSourceId);
+
+        alSourcei(mSourceId, AL_BUFFER, AL_NONE); // unqueue any buffers
+        SoundManager::doErrorCheck("Could not unqueue buffer when deleting source");
 
         alDeleteSources(1, &mSourceId);
         SoundManager::doErrorCheck("Could not delete source");
@@ -103,20 +109,37 @@ namespace od
         }
     }
 
-    void Source::play()
+    void Source::play(float fadeInTime)
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
+
+        mFadingTime = fadeInTime;
 
         alSourcePlay(mSourceId);
         SoundManager::doErrorCheck("Could not play source");
     }
 
-    void Source::stop()
+    void Source::stop(float fadeOutTime)
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
-        alSourceStop(mSourceId);
-        SoundManager::doErrorCheck("Could not stop source");
+        mFadingTime = fadeOutTime;
+
+        if(mFadingTime == 0.0)
+        {
+            alSourceStop(mSourceId);
+            SoundManager::doErrorCheck("Could not stop source");
+
+        }else
+        {
+
+        }
     }
+
+    void Source::update(double relTime, double simTime)
+    {
+
+    }
+
 
 }

@@ -23,7 +23,8 @@ namespace od
     {
     public:
 
-        Source(SoundManager &soundManager);
+        friend class SoundManager;
+
         ~Source();
 
         inline ALuint getSourceId() const { return mSourceId; }
@@ -36,8 +37,16 @@ namespace od
         void setLooping(bool looping);
 
         void setSound(Sound *s);
-        void play();
-        void stop();
+        void play(float fadeInTime = 0.0f);
+        void stop(float fadeOutTime = 0.0f);
+
+        void update(double relTime, double simTime);
+
+
+    protected:
+
+         Source(SoundManager &soundManager);
+
 
     private:
 
@@ -46,6 +55,8 @@ namespace od
 
         osg::ref_ptr<Sound> mSound;
         std::shared_ptr<Buffer> mBuffer;
+
+        float mFadingTime;
     };
 
 }

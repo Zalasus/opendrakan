@@ -11,6 +11,7 @@
 #include <odCore/Engine.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/ShaderManager.h>
+#include <odCore/audio/SoundManager.h>
 
 // max crystal speed in rad/s
 #define OD_CRYSTAL_SPEED_MAX       (3.0*M_PI)
@@ -30,7 +31,7 @@ namespace od
     CrystalRingButton::CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel,
             Sound *hoverSound, float soundPitch)
     : Widget(gm)
-    , mSoundSource(gm.getEngine().getSoundManager())
+    , mSoundSource(gm.getEngine().getSoundManager().createSource())
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
@@ -97,11 +98,11 @@ namespace od
 
         this->addChild(mTransform);
 
-        mSoundSource.setPosition(0.0, 0.0, 0.0);
-        mSoundSource.setRelative(true);
-        mSoundSource.setLooping(true);
-        mSoundSource.setPitch(soundPitch);
-        mSoundSource.setSound(hoverSound);
+        mSoundSource->setPosition(0.0, 0.0, 0.0);
+        mSoundSource->setRelative(true);
+        mSoundSource->setLooping(true);
+        mSoundSource->setPitch(soundPitch);
+        mSoundSource->setSound(hoverSound);
     }
 
     bool CrystalRingButton::liesWithinLogicalArea(const osg::Vec2 &pos)
@@ -118,12 +119,12 @@ namespace od
 
     void CrystalRingButton::onMouseEnter(const osg::Vec2 &pos)
     {
-        mSoundSource.play();
+        mSoundSource->play(2.5f);
     }
 
     void CrystalRingButton::onMouseLeave(const osg::Vec2 &pos)
     {
-        mSoundSource.stop();
+        mSoundSource->stop(2.5f);
     }
 
     void CrystalRingButton::onUpdate(double simTime, double relTime)

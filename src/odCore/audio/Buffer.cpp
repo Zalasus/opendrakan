@@ -27,10 +27,13 @@ namespace od
 
     Buffer::~Buffer()
     {
+        Logger::error() << "Del buffer " << mBufferId;
+
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alDeleteBuffers(1, &mBufferId);
-        SoundManager::doErrorCheck("Could not delete buffer");
+        // FIXME: for some reason this is broken. pls fix
+        //SoundManager::doErrorCheck("Could not delete buffer");
     }
 
     Buffer::Format Buffer::getFormatFor(size_t nBits, size_t nChannels) const
