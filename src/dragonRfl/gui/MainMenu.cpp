@@ -117,17 +117,14 @@ namespace od
         this->setDimensions(1.0, 1.0, WidgetDimensionType::ParentRelative);
     }
 
-    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, int32_t noteOffset, float dia, float x, float y,
+    void MainMenu::_addCrystal(GuiManager &gm, Model *crystalModel, float noteOffset, float dia, float x, float y,
             od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
     {
-        static const float halfTonePitch = std::pow(2.0, 1.0/12.0);
-        float soundPitch = std::pow(halfTonePitch, noteOffset);
-
         osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, crystalModel,
                 uiProps->mInnerRing.getAsset(),
                 uiProps->mOuterRing.getAsset(),
                 uiProps->mHoverSoundLooped.getAsset(),
-                soundPitch));
+                noteOffset));
         crystal->setDimensions(dia, dia, WidgetDimensionType::Pixels);
         crystal->setPosition(x/512, y/512);
         crystal->setOrigin(WidgetOrigin::Center);

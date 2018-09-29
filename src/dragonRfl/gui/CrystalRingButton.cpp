@@ -29,9 +29,9 @@ namespace od
 {
 
     CrystalRingButton::CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel,
-            Sound *hoverSound, float soundPitch)
+            Sound *hoverSound, float noteOffset)
     : Widget(gm)
-    , mSoundSource(gm.getEngine().getSoundManager().createSource())
+    , mSoundSource(nullptr)
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
     , mOuterRingModel(outerRingModel)
@@ -98,11 +98,22 @@ namespace od
 
         this->addChild(mTransform);
 
-        mSoundSource->setPosition(0.0, 0.0, 0.0);
-        mSoundSource->setRelative(true);
-        mSoundSource->setLooping(true);
-        mSoundSource->setPitch(soundPitch);
-        mSoundSource->setSound(hoverSound);
+        if(hoverSound != nullptr)
+        {
+            mSoundSource = gm.getEngine().getSoundManager().createSource();
+            mSoundSource->setPosition(0.0, 0.0, 0.0);
+            mSoundSource->setRelative(true);
+            mSoundSource->setLooping(true);
+            mSoundSource->setSound(hoverSound);
+
+            // calculate pitch from note offset
+            static const float halfTonePitch = std::pow(2.0, 1.0/12.0); // (assume an equal temperament scale)
+            // the original's pitch offset is sensitive to the sound's sample rate while our sound system's is not.
+            //  we replicate this behaviour by factoring in the ratio to the original, hardcoded rate
+            float resamplingFactor = hoverSound->getSamplingFrequency() / 22050;
+            float soundPitch = std::pow(halfTonePitch, noteOffset) / resamplingFactor;
+            mSoundSource->setPitch(soundPitch);
+        }
     }
 
     bool CrystalRingButton::liesWithinLogicalArea(const osg::Vec2 &pos)
@@ -119,12 +130,18 @@ namespace od
 
     void CrystalRingButton::onMouseEnter(const osg::Vec2 &pos)
     {
-        mSoundSource->play(2.5f);
+        if(mSoundSource != nullptr)
+        {
+            mSoundSource->play(1.0f);
+        }
     }
 
     void CrystalRingButton::onMouseLeave(const osg::Vec2 &pos)
     {
-        mSoundSource->stop(2.5f);
+        if(mSoundSource != nullptr)
+        {
+            mSoundSource->stop(1.8f);
+        }
     }
 
     void CrystalRingButton::onUpdate(double simTime, double relTime)

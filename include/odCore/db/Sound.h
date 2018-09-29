@@ -30,10 +30,12 @@ namespace od
 		Sound(AssetProvider &ap, RecordId id);
 
 		inline const std::vector<uint8_t> &getSampleBuffer() const { return mPcmBuffer; }
+		inline uint32_t getSamplingFrequency() const { return mFrequency; }
 
 		void loadFromRecord(DataReader &dr);
 
 		std::shared_ptr<Buffer> getOrCreateBuffer(SoundManager &soundManager);
+		float getLinearGain() const;
 
 
 	private:
@@ -43,7 +45,7 @@ namespace od
         uint16_t    mChannels;
         uint16_t    mBits;
         uint32_t    mFrequency;
-        uint32_t    mVolume; // 0 == full volume, -5000 == silent (millibel). Amplitude factor = 10^(volume / 100 / 20)
+        int32_t     mVolume; // 0 == full volume, -5000 == silent (millibel). Amplitude factor = 10^(volume / 100 / 20)
         float       mDropoff; // min 0, max 30
         uint32_t    mPriority; // range 0-10
         uint32_t    mDecompressedSize;

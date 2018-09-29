@@ -8,6 +8,7 @@
 #include <odCore/db/Sound.h>
 
 #include <memory>
+#include <cmath>
 
 #include <odCore/Exception.h>
 #include <odCore/ZStream.h>
@@ -87,6 +88,11 @@ namespace od
         mSoundBuffer->setData(mPcmBuffer.data(), mPcmBuffer.size(), format, mFrequency);
 
         return mSoundBuffer;
+    }
+
+    float Sound::getLinearGain() const
+    {
+        return std::exp(mVolume/2000.0f); //std::pow(10.0f, mVolume/2000.0f);
     }
 
 }

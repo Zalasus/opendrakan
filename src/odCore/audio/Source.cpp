@@ -94,6 +94,14 @@ namespace od
         SoundManager::doErrorCheck("Could not set source looping state");
     }
 
+    void Source::setGain(float gain)
+    {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
+
+        mGain = gain;
+        _updateSourceGain_locked();
+    }
+
     void Source::setSound(Sound *s)
     {
         mSound = s;
@@ -106,6 +114,8 @@ namespace od
 
             alSourcei(mSourceId, AL_BUFFER, mBuffer->getId());
             SoundManager::doErrorCheck("Could not attach sound buffer to source");
+
+            mGain = mSound->getLinearGain();
         }
     }
 
