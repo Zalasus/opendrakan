@@ -92,7 +92,7 @@ namespace od
 
     float Sound::getLinearGain() const
     {
-        return std::exp(mVolume/2000.0f); //std::pow(10.0f, mVolume/2000.0f);
+        return std::pow(10.0f, mVolume/2000.0f);
     }
 
 }

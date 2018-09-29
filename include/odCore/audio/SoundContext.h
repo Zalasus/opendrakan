@@ -30,6 +30,7 @@ namespace od
         ~SoundContext();
 
         inline size_t getMaxSourceCount() const { return mMaxSources; }
+        inline uint32_t getOutputFrequency() const { return mOutputFrequency; }
 
         void makeCurrent();
 
@@ -38,6 +39,7 @@ namespace od
 
         void _doContextErrorCheck(const std::string &failmsg);
 
+        uint32_t mOutputFrequency;
         ALCdevice_struct *mDeviceHandle;
         ALCcontext_struct *mContextHandle;
         ALCint mMaxSources;

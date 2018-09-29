@@ -397,7 +397,7 @@ Record types
         uint16     channels;
         uint16     bits;
         uint32     frequency;
-        int32      volume; // 0 == full volume, -5000 == silent. Decibels * 100 (millibels). Amplitude factor = 10^(volume / 100 / 20)
+        int32      volume; // volume in millibels. 0 == full volume, -5000 == (basically) silent. Amplitude factor = 10^(volume / 2000)
         float      dropoff; // min 0, max 30
         uint32     priority; // range 0-10
         uint32     decompressed_size; // the editor alters these three fields globally for a database!

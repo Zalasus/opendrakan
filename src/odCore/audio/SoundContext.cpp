@@ -15,7 +15,8 @@ namespace od
     const ALCint SoundContext::AbsoluteMaximumSources = 128;
 
     SoundContext::SoundContext(const char *deviceName, ALCint outputFrequency)
-    : mDeviceHandle(nullptr)
+    : mOutputFrequency(outputFrequency)
+    , mDeviceHandle(nullptr)
     , mContextHandle(nullptr)
     {
         mDeviceHandle = alcOpenDevice(deviceName);

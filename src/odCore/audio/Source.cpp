@@ -115,7 +115,12 @@ namespace od
             alSourcei(mSourceId, AL_BUFFER, mBuffer->getId());
             SoundManager::doErrorCheck("Could not attach sound buffer to source");
 
-            mGain = mSound->getLinearGain();
+            // sounds with a lower-than-output sampling rate seem to have a higher volume than indicated by their
+            //  volume field. amplitudes seems to be scaled by the resampling factor.
+            //  to mimick the way Drakan behaves, we apply this to the overall gain.
+            float resamplingGain = mSoundManager.getContext()->getOutputFrequency() / mSound->getSamplingFrequency();
+
+            mGain = resamplingGain * mSound->getLinearGain();
         }
     }
 

@@ -110,7 +110,7 @@ namespace od
             static const float halfTonePitch = std::pow(2.0, 1.0/12.0); // (assume an equal temperament scale)
             // the original's pitch offset is sensitive to the sound's sample rate while our sound system's is not.
             //  we replicate this behaviour by factoring in the ratio to the original, hardcoded rate
-            float resamplingFactor = hoverSound->getSamplingFrequency() / 22050;
+            float resamplingFactor = hoverSound->getSamplingFrequency() / 22050; // TODO: maybe move this to the Source class. it may be universal to all pitch shifting
             float soundPitch = std::pow(halfTonePitch, noteOffset) / resamplingFactor;
             mSoundSource->setPitch(soundPitch);
         }
