@@ -259,8 +259,11 @@ Record types
     [0x0201] Model group definition
         string      group_name;
 
-    [0x0202] ???
-        (Doesn't seem to be associated with a particular model. Has ID and GID = 0)
+    [0x0202] Group count, ID counter? // only one per database, not associated with a particular model
+        uint16      group_count;
+        uint16      last_group_id; // speculative. looks like new groups use this+1 as their ID
+        uint16      last_model_id; // speculative. looks like new models use this+1 as their ID
+    
 
     The following records must all appear once per model (also 0x0200) and thus have the same record ID.
 
