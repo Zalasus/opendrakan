@@ -16,6 +16,7 @@
 #include <thread>
 #include <mutex>
 #include <atomic>
+#include <memory>
 
 #include <odCore/audio/EaxPresets.h>
 #include <odCore/audio/SoundContext.h>
@@ -34,6 +35,7 @@ namespace od
         ~SoundManager();
 
         inline std::mutex &getWorkerMutex() { return mWorkerMutex; }
+        inline std::shared_ptr<SoundContext> &getContext() { return mContext; }
 
         void setListenerPosition(float xPos, float yPos, float zPos);
         void setListenerVelocity(float xVel, float yVel, float zVel);
@@ -56,7 +58,7 @@ namespace od
 
         void _doWorkerStuff();
 
-        SoundContext mContext;
+        std::shared_ptr<SoundContext> mContext;
 
         std::thread mWorkerThread;
         std::mutex  mWorkerMutex;

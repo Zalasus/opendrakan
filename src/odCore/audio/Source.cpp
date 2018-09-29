@@ -33,6 +33,7 @@ namespace od
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alSourceStop(mSourceId);
+        SoundManager::doErrorCheck("Could not stop source to delete it");
 
         alSourcei(mSourceId, AL_BUFFER, AL_NONE); // unqueue any buffers
         SoundManager::doErrorCheck("Could not unqueue buffer when deleting source");

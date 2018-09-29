@@ -25,10 +25,10 @@ namespace od
 {
 
     SoundManager::SoundManager(const char *deviceName)
-    : mContext(deviceName)
+    : mContext(new SoundContext(deviceName))
     , mTerminateFlag(false)
     {
-        mContext.makeCurrent();
+        mContext->makeCurrent();
 
         mWorkerThread = std::thread(&SoundManager::_doWorkerStuff, this);
     }
@@ -155,9 +155,18 @@ namespace od
             float relTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastTime).count();
             lastTime = now;
 
-            for(auto it = mSources.begin(); it != mSources.end(); ++it)
+            try
             {
-                (*it)->update(relTime);
+                for(auto it = mSources.begin(); it != mSources.end(); ++it)
+                {
+                    (*it)->update(relTime);
+                }
+
+            }catch(Exception &e)
+            {
+                Logger::error() << "Error in sound worker thread: " << e.what();
+                Logger::error() << "Terminating sound worker thread...";
+                break;
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(10));

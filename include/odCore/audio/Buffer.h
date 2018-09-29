@@ -11,11 +11,13 @@
 #include <AL/al.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <memory>
 
 namespace od
 {
 
     class SoundManager;
+    class SoundContext;
 
     class Buffer
     {
@@ -46,8 +48,12 @@ namespace od
 
         SoundManager &mSoundManager;
 
-        ALuint mBufferId;
+        // It seems like buffers need to be destroyed before the last context is destroyed.
+        //  To ensure this, every buffer shares ownership over the buffer under which it was created
+        //  TODO: we might instead give sole ownership of Buffers to SoundManager, who must then have sole ownership of the context
+        std::shared_ptr<SoundContext> mContext;
 
+        ALuint mBufferId;
     };
 
 }

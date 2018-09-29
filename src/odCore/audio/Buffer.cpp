@@ -10,6 +10,7 @@
 #include <mutex>
 
 #include <odCore/audio/SoundManager.h>
+#include <odCore/audio/SoundContext.h>
 #include <odCore/Exception.h>
 
 namespace od
@@ -17,6 +18,7 @@ namespace od
 
     Buffer::Buffer(SoundManager &soundManager)
     : mSoundManager(soundManager)
+    , mContext(soundManager.getContext())
     , mBufferId(0)
     {
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
@@ -30,8 +32,7 @@ namespace od
         std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
 
         alDeleteBuffers(1, &mBufferId);
-        // FIXME: for some reason this is broken. pls fix
-        //SoundManager::doErrorCheck("Could not delete buffer");
+        SoundManager::doErrorCheck("Could not delete buffer");
     }
 
     Buffer::Format Buffer::getFormatFor(size_t nBits, size_t nChannels) const
