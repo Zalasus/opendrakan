@@ -403,20 +403,19 @@ namespace od
         {
             throw Exception("Could not create secondary camera. No windows found");
         }
-        //mGuiCamera->setGraphicsContext(windows[0]);
-        //mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
+        mGuiCamera->setGraphicsContext(windows[0]);
+        mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);
 
         mGuiRoot = new WidgetGroup;
 
         mGuiRoot->setCullingActive(false);
         osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
-        ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
         osg::ref_ptr<LightStateAttribute> defaultGuiLight = new LightStateAttribute(getEngine().getLightManager());
         defaultGuiLight->setLayerLight(osg::Vec3(0.0, 0.0, 0.0), osg::Vec3(1.0, 1.0, 1.0), osg::Vec3(1.0, 0.0, 0.0));
-        mGuiRoot->getOrCreateStateSet()->setAttribute(defaultGuiLight);
+        ss->setAttribute(defaultGuiLight);
 
         mGuiCamera->addChild(mGuiRoot);
     }
