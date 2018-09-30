@@ -11,13 +11,13 @@
 #include <algorithm>
 #include <iomanip>
 #include <fstream>
-#include <osg/Material>
 
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Engine.h>
 #include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/WidgetGroup.h>
 #include <odCore/rfl/PrefetchProbe.h>
+#include <odCore/light/LightState.h>
 
 namespace od
 {
@@ -411,18 +411,12 @@ namespace od
         mGuiRoot->setCullingActive(false);
         osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
-        ss->setMode(GL_LIGHTING, osg::StateAttribute::OFF);
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
-        osg::ref_ptr<osg::Light> defaultGuiLight(new osg::Light(0));
-        defaultGuiLight->setAmbient(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        defaultGuiLight->setDiffuse(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        defaultGuiLight->setSpecular(osg::Vec4(0.0, 0.0, 0.0, 0.0));
-        defaultGuiLight->setConstantAttenuation(1.0);
-        defaultGuiLight->setLinearAttenuation(0.0);
-        defaultGuiLight->setQuadraticAttenuation(0.0);
-        ss->setAttribute(defaultGuiLight, osg::StateAttribute::ON);
+        osg::ref_ptr<LightStateAttribute> defaultGuiLight = new LightStateAttribute(getEngine().getLightManager());
+        defaultGuiLight->setLayerLight(osg::Vec3(0.0, 0.0, 0.0), osg::Vec3(1.0, 1.0, 1.0), osg::Vec3(1.0, 0.0, 0.0));
+        mGuiRoot->getOrCreateStateSet()->setAttribute(defaultGuiLight);
 
         mGuiCamera->addChild(mGuiRoot);
     }

@@ -91,9 +91,9 @@ namespace od
 
         mInputManager = new InputManager(*this, mViewer);
 
-	    mGuiManager.reset(new GuiManager(*this, mViewer));
-
 	    mLightManager.reset(new LightManager(*this, mRootNode));
+
+	    mGuiManager.reset(new GuiManager(*this, mViewer));
 
 	    std::vector<std::string> devs;
 	    SoundManager::listDeviceNames(devs);

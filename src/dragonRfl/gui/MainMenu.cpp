@@ -16,6 +16,7 @@
 #include <odCore/db/Model.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/gui/TexturedQuad.h>
+#include <odCore/light/LightState.h>
 
 namespace od
 {
@@ -95,16 +96,9 @@ namespace od
         cont->setOrigin(WidgetOrigin::Center);
         this->addWidget(cont);
 
-        osg::ref_ptr<osg::Light> light(new osg::Light(0));
-        light->setAmbient(osg::Vec4(0.3, 0.3, 0.3, 1.0));
-        light->setDiffuse(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        light->setPosition(osg::Vec4(0.0, -1.0, -1.0, 0.0));
-        light->setSpecular(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        osg::ref_ptr<osg::LightSource> lightSource(new osg::LightSource);
-        lightSource->setLight(light);
-        cont->addChild(lightSource);
-
-        cont->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+        osg::ref_ptr<LightStateAttribute> lightAttribute = new LightStateAttribute(gm.getEngine().getLightManager());
+        lightAttribute->setLayerLight(osg::Vec3(0.8, 0.8, 0.8), osg::Vec3(0.2, 0.2, 0.2), osg::Vec3(0.0, -1.0, -1.0));
+        cont->getOrCreateStateSet()->setAttribute(lightAttribute);
 
         _addCrystal(gm, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
         _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), uiProps->mCrystalLeftNoteOffset, 57, 110, 193, uiProps, cont, BC_LOAD);
