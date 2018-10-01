@@ -382,7 +382,7 @@ namespace od
         }
 
         mWidgetToScreenSpaceXform.makeIdentity();
-        mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, 1.0));
+        mWidgetToScreenSpaceXform.postMultScale(osg::Vec3(2.0, -2.0, -1.0));
         mWidgetToScreenSpaceXform.postMultTranslate(osg::Vec3(-1.0, 1.0, -0.5));
 
         mScreenToWidgetSpaceXform.invert(mWidgetToScreenSpaceXform);

@@ -101,9 +101,6 @@ namespace od
         lightAttribute->setLayerLight(osg::Vec3(0.8, 0.8, 0.8), osg::Vec3(0.4, 0.4, 0.4), osg::Vec3(0.0, -1.0, -1.0));
         cont->getOrCreateStateSet()->setAttribute(lightAttribute);
 
-        // FIXME: hotfix for flipped winding order in 3D menu stuff
-        cont->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::COUNTER_CLOCKWISE), osg::StateAttribute::ON | osg::StateAttribute::OVERRIDE);
-
         _addCrystal(gm, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
         _addCrystal(gm, uiProps->mCrystalLeft.getAsset(), uiProps->mCrystalLeftNoteOffset, 57, 110, 195, uiProps, cont, BC_LOAD);
         _addCrystal(gm, uiProps->mCrystalMiddle.getAsset(), uiProps->mCrystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);

@@ -202,13 +202,13 @@ namespace od
 
         if(mOuterRingTransform != nullptr)
         {
-            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(-1, 0, 0));
+            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(1, 0, 0));
             mOuterRingTransform->setAttitude(q);
         }
 
         if(mInnerRingTransform != nullptr)
         {
-            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(0, -1, 0));
+            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(0, 1, 0));
             mInnerRingTransform->setAttitude(q);
         }
     }
