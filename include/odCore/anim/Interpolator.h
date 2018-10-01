@@ -81,7 +81,7 @@ namespace od
             }else
             {
                 // need to interpolate (only linear interpolation for now)
-                newValue = (1 - timeDelta)*mStart + timeDelta*mTarget;
+                newValue = mStart*(1 - timeDelta) + mTarget*timeDelta;
             }
 
             bool changed = (newValue != mValue);

@@ -37,6 +37,7 @@ namespace od
     , mOuterRingModel(outerRingModel)
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
+    , mCrystalColor(mCrystalColorInactive)
     , mTransform(new osg::MatrixTransform)
     , mCallbackUserData(-1)
     , mCrystalSpeedPercent(0.0)
@@ -134,6 +135,8 @@ namespace od
         {
             mSoundSource->play(1.0f);
         }
+
+        mCrystalColor.move(mCrystalColorActive, 0.5);
     }
 
     void CrystalRingButton::onMouseLeave(const osg::Vec2 &pos)
@@ -142,6 +145,8 @@ namespace od
         {
             mSoundSource->stop(1.8f);
         }
+
+        mCrystalColor.move(mCrystalColorInactive, 1.0);
     }
 
     void CrystalRingButton::onUpdate(double simTime, double relTime)
@@ -192,7 +197,7 @@ namespace od
             q *= osg::Quat(crystalSpeed * relTime, osg::Vec3(0, -1, 0));
             mCrystalTransform->setAttitude(q);
 
-            _updateCrystalColor();
+            _updateCrystalColor(relTime);
         }
 
         if(mOuterRingTransform != nullptr)
@@ -208,16 +213,17 @@ namespace od
         }
     }
 
-    void CrystalRingButton::_updateCrystalColor()
+    void CrystalRingButton::_updateCrystalColor(double relTime)
     {
         if(mColorModifierUniform == nullptr)
         {
             return;
         }
 
-        // determine color change via lerp
-        osg::Vec4 crystalColor = mCrystalColorInactive*(1-mCrystalSpeedPercent) + mCrystalColorActive*mCrystalSpeedPercent;
-        mColorModifierUniform->set(crystalColor);
+        if(mCrystalColor.update(relTime))
+        {
+            mColorModifierUniform->set(mCrystalColor);
+        }
     }
 
 }

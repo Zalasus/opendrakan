@@ -16,6 +16,7 @@
 #include <odCore/db/Model.h>
 #include <odCore/db/Sound.h>
 #include <odCore/audio/Source.h>
+#include <odCore/anim/Interpolator.h>
 
 namespace od
 {
@@ -26,8 +27,8 @@ namespace od
 
         CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel, Sound *hoverSound, float noteOffset);
 
-        inline void setInactiveCrystalColor(const osg::Vec4 &color) { mCrystalColorInactive = color; _updateCrystalColor(); }
-        inline void setActiveCrystalColor(const osg::Vec4 &color) { mCrystalColorActive = color;  _updateCrystalColor(); }
+        inline void setInactiveCrystalColor(const osg::Vec4 &color) { mCrystalColorInactive = color; mCrystalColor.set(mCrystalColorInactive); }
+        inline void setActiveCrystalColor(const osg::Vec4 &color) { mCrystalColorActive = color; }
         inline void setClickedCallback(const std::function<void(int)> &callback, int userData) { mClickedCallback = callback; mCallbackUserData = userData; }
 
         virtual bool liesWithinLogicalArea(const osg::Vec2 &pos) override;
@@ -39,7 +40,7 @@ namespace od
 
     private:
 
-        void _updateCrystalColor();
+        void _updateCrystalColor(double relTime);
 
         Source *mSoundSource;
         osg::ref_ptr<Model> mCrystalModel;
@@ -47,6 +48,7 @@ namespace od
         osg::ref_ptr<Model> mOuterRingModel;
         osg::Vec4 mCrystalColorInactive;
         osg::Vec4 mCrystalColorActive;
+        Interpolated<osg::Vec4, double> mCrystalColor;
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::PositionAttitudeTransform> mCrystalTransform;
         osg::ref_ptr<osg::PositionAttitudeTransform> mOuterRingTransform;
