@@ -16,6 +16,7 @@
 #include <odCore/Engine.h>
 #include <odCore/Camera.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
+#include <odCore/audio/SoundManager.h>
 
 namespace od
 {
@@ -487,6 +488,13 @@ namespace od
         mCharacterController->update(relTime);
 
         _updateMotion(relTime);
+    }
+
+    void HumanControl::onMoved(LevelObject &obj)
+    {
+        osg::Vec3 pos = obj.getPosition();
+
+        obj.getLevel().getEngine().getSoundManager().setListenerPosition(pos.x(), pos.y(), pos.z());
     }
 
     void HumanControl::moveForward(float speed)

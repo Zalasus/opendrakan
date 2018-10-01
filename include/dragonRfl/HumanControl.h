@@ -230,6 +230,7 @@ namespace od
 		virtual void onLoaded(LevelObject &obj) override;
 		virtual void onSpawned(LevelObject &obj) override;
 		virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
+		virtual void onMoved(LevelObject &obj) override;
 
 
 		// implement od::Player
