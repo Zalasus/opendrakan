@@ -29,7 +29,6 @@ namespace od
 
 		Sound(AssetProvider &ap, RecordId id);
 
-		inline const std::vector<uint8_t> &getSampleBuffer() const { return mPcmBuffer; }
 		inline uint32_t getSamplingFrequency() const { return mFrequency; }
 
 		void loadFromRecord(DataReader &dr);
@@ -51,7 +50,9 @@ namespace od
         uint32_t    mDecompressedSize;
         uint32_t 	mCompressionLevel; // 0 = none, 1 = lowest, 9 = highest
 
-        std::vector<uint8_t> mPcmBuffer;
+        // temporary buffer for holding the sample data until \c mSoundBuffer is created for the sound system
+        std::vector<uint8_t> mTempSampleBuffer;
+
         std::shared_ptr<Buffer> mSoundBuffer;
 	};
 

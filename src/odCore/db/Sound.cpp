@@ -70,8 +70,8 @@ namespace od
             sampleReader.setStream(*zstr);
         }
 
-        mPcmBuffer.resize(mDecompressedSize);
-        sampleReader.read(reinterpret_cast<char*>(mPcmBuffer.data()), mDecompressedSize);
+        mTempSampleBuffer.resize(mDecompressedSize);
+        sampleReader.read(reinterpret_cast<char*>(mTempSampleBuffer.data()), mDecompressedSize);
     }
 
     std::shared_ptr<Buffer> Sound::getOrCreateBuffer(SoundManager &soundManager)
@@ -85,7 +85,12 @@ namespace od
 
         Buffer::Format format = mSoundBuffer->getFormatFor(mBits, mChannels);
 
-        mSoundBuffer->setData(mPcmBuffer.data(), mPcmBuffer.size(), format, mFrequency);
+        mSoundBuffer->setData(mTempSampleBuffer.data(), mTempSampleBuffer.size(), format, mFrequency);
+
+        // FIXME: this request is non-binding and may leave us with a huge block of unused but still allocated memory
+        //  (still better than just leaving it, though)
+        mTempSampleBuffer.clear();
+        mTempSampleBuffer.shrink_to_fit();
 
         return mSoundBuffer;
     }
