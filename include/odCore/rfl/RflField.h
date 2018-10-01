@@ -183,7 +183,8 @@ namespace od
 
         virtual ~RflAssetRef() = default;
 
-        virtual void fetchAssets(od::AssetProvider &ap) = 0;
+        virtual void fetchAssets(od::AssetProvider &ap, bool ignoreMissing = true) = 0;
+        virtual void releaseAssets() = 0;
 
     };
 
@@ -205,7 +206,7 @@ namespace od
             dr >> mReference;
         }
 
-	    virtual void fetchAssets(od::AssetProvider &ap) override
+	    virtual void fetchAssets(od::AssetProvider &ap, bool ignoreMissing = true) override
 	    {
 	        if(mReferencedAsset == nullptr && !mReference.isNull())
             {
@@ -215,9 +216,17 @@ namespace od
 
                 }catch(od::NotFoundException &e)
                 {
-                    throw od::NotFoundException("Asset referenced by class could not be found");
+                    if(!ignoreMissing)
+                    {
+                        throw od::NotFoundException("Asset referenced by class could not be found");
+                    }
                 }
             }
+	    }
+
+	    virtual void releaseAssets() override
+	    {
+	        mReferencedAsset = nullptr;
 	    }
 
         _AssetType *getOrFetchAsset(od::AssetProvider &ap)
@@ -283,7 +292,7 @@ namespace od
             mReferences.shrink_to_fit();
         }
 
-        virtual void fetchAssets(od::AssetProvider &ap) override
+        virtual void fetchAssets(od::AssetProvider &ap, bool ignoreMissing = true) override
         {
             mReferencedAssets.reserve(mReferences.size());
             try
@@ -296,8 +305,20 @@ namespace od
 
             }catch(od::NotFoundException &e)
             {
-                throw od::NotFoundException("Asset referenced by class could not be found");
+                if(!ignoreMissing)
+                {
+                    throw od::NotFoundException("Asset referenced by class could not be found");
+                }
             }
+        }
+
+        virtual void releaseAssets() override
+        {
+            for(auto it = mReferencedAssets.begin(); it != mReferencedAssets.end(); ++it)
+            {
+                *it = nullptr;
+            }
+
         }
 
         size_t getAssetCount()

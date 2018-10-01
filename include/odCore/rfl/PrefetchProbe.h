@@ -17,7 +17,7 @@ namespace od
     {
     public:
 
-        PrefetchProbe(od::AssetProvider &ap);
+        PrefetchProbe(od::AssetProvider &ap, bool ignoreMissing = true);
 
         virtual void registerField(RflAssetRef &field, const char *fieldName) override;
 
@@ -25,6 +25,7 @@ namespace od
     private:
 
         od::AssetProvider &mAssetProvider;
+        bool mIgnoreMissing;
 
     };
 

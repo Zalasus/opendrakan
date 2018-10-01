@@ -13,8 +13,9 @@ namespace od
 {
 
 
-    PrefetchProbe::PrefetchProbe(od::AssetProvider &ap)
+    PrefetchProbe::PrefetchProbe(od::AssetProvider &ap, bool ignoreMissing)
     : mAssetProvider(ap)
+    , mIgnoreMissing(ignoreMissing)
     {
     }
 
@@ -22,11 +23,16 @@ namespace od
     {
         try
         {
-            field.fetchAssets(mAssetProvider);
+            field.fetchAssets(mAssetProvider, false);
 
         }catch(od::NotFoundException &e)
         {
             Logger::warn() << "Field '" << fieldName << "' contains invalid asset reference";
+
+            if(!mIgnoreMissing)
+            {
+                throw;
+            }
         }
     }
 
