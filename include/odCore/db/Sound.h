@@ -30,6 +30,7 @@ namespace od
 		Sound(AssetProvider &ap, RecordId id);
 
 		inline uint32_t getSamplingFrequency() const { return mFrequency; }
+		inline const std::string &getName() const { return mSoundName; }
 
 		void loadFromRecord(DataReader &dr);
 

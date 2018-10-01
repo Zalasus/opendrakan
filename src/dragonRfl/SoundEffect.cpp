@@ -160,7 +160,7 @@ namespace od
             sound = mSounds.getAsset(soundIndex);
         }
 
-        if(sound == nullptr)
+        if(sound != nullptr)
         {
             mSoundSource->setSound(sound);
             mSoundSource->play(0.1);
