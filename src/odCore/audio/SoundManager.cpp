@@ -47,6 +47,17 @@ namespace od
         doErrorCheck("Could not set listener position");
     }
 
+    void SoundManager::setListenerOrientation(const osg::Vec3 &at, const osg::Vec3 &up)
+    {
+        std::lock_guard<std::mutex> lock(mWorkerMutex);
+
+        float atAndUp[6] = { at.x(), at.y(), at.z(),
+                             up.x(), up.y(), up.z()  };
+
+        alListenerfv(AL_ORIENTATION, atAndUp);
+        doErrorCheck("Could not set listener orientation");
+    }
+
     void SoundManager::setListenerVelocity(float xVel, float yVel, float zVel)
     {
         std::lock_guard<std::mutex> lock(mWorkerMutex);

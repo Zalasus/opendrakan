@@ -17,6 +17,7 @@
 #include <mutex>
 #include <atomic>
 #include <memory>
+#include <osg/Vec3>
 
 #include <odCore/audio/EaxPresets.h>
 #include <odCore/audio/SoundContext.h>
@@ -38,6 +39,7 @@ namespace od
         inline std::shared_ptr<SoundContext> &getContext() { return mContext; }
 
         void setListenerPosition(float xPos, float yPos, float zPos);
+        void setListenerOrientation(const osg::Vec3 &at, const osg::Vec3 &up);
         void setListenerVelocity(float xVel, float yVel, float zVel);
 
         void setEaxSoundSpace(EaxPreset preset);

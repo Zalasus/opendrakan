@@ -494,7 +494,13 @@ namespace od
     {
         osg::Vec3 pos = obj.getPosition();
 
-        obj.getLevel().getEngine().getSoundManager().setListenerPosition(pos.x(), pos.y(), pos.z());
+        osg::Quat lookDirection = obj.getRotation();
+        osg::Vec3 at = lookDirection * osg::Vec3f(0, 0, -1);
+        osg::Vec3 up = osg::Vec3f(0, 1, 0);
+
+        SoundManager &sm = obj.getLevel().getEngine().getSoundManager();
+        sm.setListenerPosition(pos.x(), pos.y(), pos.z());
+        sm.setListenerOrientation(at, up);
     }
 
     void HumanControl::moveForward(float speed)
