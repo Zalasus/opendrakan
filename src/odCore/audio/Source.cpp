@@ -12,6 +12,7 @@
 #include <odCore/audio/SoundManager.h>
 #include <odCore/db/Sound.h>
 #include <odCore/audio/Buffer.h>
+#include <odCore/Exception.h>
 
 namespace od
 {
@@ -102,6 +103,32 @@ namespace od
         _updateSourceGain_locked();
     }
 
+    Source::State Source::getState()
+    {
+        std::lock_guard<std::mutex> lock(mSoundManager.getWorkerMutex());
+
+        ALint sourceState;
+        alGetSourcei(mSourceId, AL_SOURCE_STATE, &sourceState);
+        SoundManager::doErrorCheck("Could not query source state");
+
+        switch(sourceState)
+        {
+        case AL_INITIAL:
+            return State::Initial;
+
+        case AL_PLAYING:
+            return State::Playing;
+
+        case AL_PAUSED:
+            return State::Paused;
+
+        case AL_STOPPED:
+            return State::Stopped;
+        }
+
+        throw Exception("Got unknown source state");
+    }
+
     void Source::setSound(Sound *s)
     {
         mSound = s;
@@ -121,6 +148,10 @@ namespace od
             float resamplingGain = mSoundManager.getContext()->getOutputFrequency() / mSound->getSamplingFrequency();
 
             mGain = resamplingGain * mSound->getLinearGain();
+
+        }else
+        {
+            mBuffer = nullptr;
         }
     }
 

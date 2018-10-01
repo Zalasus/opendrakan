@@ -8,6 +8,8 @@
 #ifndef INCLUDE_DRAGONRFL_SOUNDEFFECT_H_
 #define INCLUDE_DRAGONRFL_SOUNDEFFECT_H_
 
+#include <random>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
@@ -45,9 +47,12 @@ namespace od
         virtual void onDespawned(LevelObject &obj) override;
         virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
         virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
+        virtual void onMoved(LevelObject &obj) override;
 
 
     private:
+
+        void _playRandomSound();
 
         RflSoundRefArray            mSounds;
         RflEnumImpl<PlayMode, 0, 4> mPlayMode;
@@ -56,7 +61,9 @@ namespace od
         RflEnumImpl<Location, 0, 3> mLocation;
 
         Source *mSoundSource;
-        bool mFirstSpawn;
+        double mTimeUntilNextPlay;
+
+        std::minstd_rand mRandomNumberGenerator;
     };
 
 

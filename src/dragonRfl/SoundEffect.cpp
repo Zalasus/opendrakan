@@ -24,7 +24,7 @@ namespace od
     , mPeriodRandomDeviation(1.5f)
     , mLocation(Location::EffectSite)
     , mSoundSource(nullptr)
-    , mFirstSpawn(true)
+    , mTimeUntilNextPlay(0.0)
     {
     }
 
@@ -43,34 +43,127 @@ namespace od
         obj.setObjectType(LevelObjectType::Detector);
 
         mSoundSource = obj.getLevel().getEngine().getSoundManager().createSource(); // TODO: integrate into spawn/despawn cycle
+        if(mSoundSource == nullptr)
+        {
+            Logger::warn() << "Sound Effect object failed to create sound source";
+        }
     }
 
     void SoundEffect::onSpawned(LevelObject &obj)
-    {
-        obj.setEnableRflUpdateHook(true);
-
-        mSounds.fetchAssets(obj.getClass()->getAssetProvider());
-    }
-
-    void SoundEffect::onDespawned(LevelObject &obj)
-    {
-        mSounds.releaseAssets();
-    }
-
-    void SoundEffect::onUpdate(LevelObject &obj, double simTime, double relTime)
     {
         if(mSoundSource == nullptr)
         {
             return;
         }
+
+        mSounds.fetchAssets(obj.getClass()->getAssetProvider());
+
+        if(mPlayMode == PlayMode::Once || mPlayMode == PlayMode::Intermittent)
+        {
+            obj.setEnableRflUpdateHook(true);
+
+        }else if(mPlayMode == PlayMode::Looping || mPlayMode == PlayMode::LoopingAndTriggered)
+        {
+            mSoundSource->setLooping(true);
+        }
+
+        if(mPlayMode == PlayMode::Once || mPlayMode == PlayMode::Looping)
+        {
+            _playRandomSound();
+        }
+
+        if(mLocation == Location::EffectSite)
+        {
+            osg::Vec3 pos = obj.getPosition();
+            mSoundSource->setPosition(pos.x(), pos.y(), pos.z());
+        }
+    }
+
+    void SoundEffect::onDespawned(LevelObject &obj)
+    {
+        mSoundSource->stop(0.1);
+
+        mSounds.releaseAssets();
+    }
+
+    void SoundEffect::onUpdate(LevelObject &obj, double simTime, double relTime)
+    {
+        if(mSoundSource == nullptr || mSoundSource->isPlaying())
+        {
+            return;
+        }
+
+        if(mPlayMode == PlayMode::Once)
+        {
+            obj.requestDestruction();
+            return;
+
+        }else if(mPlayMode == PlayMode::Intermittent)
+        {
+            if(mTimeUntilNextPlay <= 0.0)
+            {
+                _playRandomSound();
+
+                std::uniform_real_distribution<float> uniformDistribution(-mPeriodRandomDeviation, mPeriodRandomDeviation);
+                mTimeUntilNextPlay = mAveragePeriod + uniformDistribution(mRandomNumberGenerator);
+
+            }else
+            {
+                mTimeUntilNextPlay -= relTime;
+            }
+        }
     }
 
     void SoundEffect::onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message)
     {
+        if(mSoundSource == nullptr || mSoundSource->isPlaying())
+        {
+            return;
+        }
+
         // seems to trigger on any message
         if(mPlayMode == PlayMode::Triggered || mPlayMode == PlayMode::LoopingAndTriggered)
         {
-            // ...stub...
+            _playRandomSound();
+        }
+    }
+
+    void SoundEffect::onMoved(LevelObject &obj)
+    {
+        if(mLocation != Location::EffectSite)
+        {
+            return;
+        }
+
+        osg::Vec3 pos = obj.getPosition();
+        mSoundSource->setPosition(pos.x(), pos.y(), pos.z());
+    }
+
+    void SoundEffect::_playRandomSound()
+    {
+        if(mSoundSource == nullptr || mSounds.getAssetCount() == 0)
+        {
+            return;
+        }
+
+        osg::ref_ptr<Sound> sound;
+        if(mSounds.getAssetCount() == 1)
+        {
+            // don't bother with randomness when only one sound in list
+            sound = mSounds.getAsset(0);
+
+        }else
+        {
+            std::uniform_int_distribution<size_t> uniformDistribution(0, mSounds.getAssetCount() - 1);
+            size_t soundIndex = uniformDistribution(mRandomNumberGenerator);
+
+            sound = mSounds.getAsset(soundIndex);
+        }
+
+        if(sound == nullptr)
+        {
+            mSoundSource->setSound(sound);
+            mSoundSource->play(0.1);
         }
     }
 

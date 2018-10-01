@@ -27,9 +27,18 @@ namespace od
 
         friend class SoundManager;
 
+        enum class State
+        {
+            Initial,
+            Playing,
+            Paused,
+            Stopped
+        };
+
         ~Source();
 
         inline ALuint getSourceId() const { return mSourceId; }
+        inline bool isPlaying() { return getState() == State::Playing; }
 
         void setPosition(float xPos, float yPos, float zPos);
         void setVelocity(float xVel, float yVel, float zVel);
@@ -38,6 +47,8 @@ namespace od
         void setPitch(float pitch);
         void setLooping(bool looping);
         void setGain(float gain);
+
+        State getState();
 
         void setSound(Sound *s);
         void play(float fadeInTime = 0.0f);
