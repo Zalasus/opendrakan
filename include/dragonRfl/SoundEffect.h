@@ -14,6 +14,7 @@
 namespace od
 {
     class DragonRfl;
+    class Source;
 
     class SoundEffect : public RflClass
     {
@@ -40,6 +41,9 @@ namespace od
         virtual void probeFields(FieldProbe &probe) override;
 
         virtual void onLoaded(LevelObject &obj) override;
+        virtual void onSpawned(LevelObject &obj) override;
+        virtual void onDespawned(LevelObject &obj) override;
+        virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
         virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
 
 
@@ -51,6 +55,8 @@ namespace od
         RflFloat                    mPeriodRandomDeviation;
         RflEnumImpl<Location, 0, 3> mLocation;
 
+        Source *mSoundSource;
+        bool mFirstSpawn;
     };
 
 
