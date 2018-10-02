@@ -28,7 +28,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # dependencies
 find_package(ZLIB REQUIRED)
-find_package(OpenSceneGraph 3.2.0 REQUIRED osgDB osgViewer osgGA osgUtil)
+find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
 find_package(OpenAL REQUIRED)
 
