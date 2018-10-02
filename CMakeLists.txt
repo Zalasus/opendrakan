@@ -44,9 +44,7 @@ set(SHADER_SOURCES
         "resources/shader_src/model_vertex.glsl"
         "resources/shader_src/model_fragment.glsl"
         "resources/shader_src/default_vertex.glsl"
-        "resources/shader_src/default_fragment.glsl"
-        "resources/shader_src/rigged_vertex.glsl"
-        "resources/shader_src/crystal_fragment.glsl")
+        "resources/shader_src/default_fragment.glsl")
 
 foreach(f ${SHADER_SOURCES})
     # configure file creates dependencies between source and target

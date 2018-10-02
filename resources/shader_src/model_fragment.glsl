@@ -3,11 +3,9 @@
 
 #pragma use_defines(LIGHTING, GAMMA_CORRECTION, COLOR_MODIFIER)
 
-
-varying vec3 vertexNormal;
 varying vec2 texCoord;
 
-uniform sampler2D texture0; 
+uniform sampler2D texture; 
 
 
 #ifdef LIGHTING
@@ -26,7 +24,7 @@ uniform sampler2D texture0;
 
 void main(void)
 {    
-    vec4 fragmentColor = texture2D(texture0, texCoord.xy);
+    vec4 fragmentColor = texture2D(texture, texCoord.xy);
     
 #ifdef LIGHTING
     vec3 lightFactor = vec3(1.0);

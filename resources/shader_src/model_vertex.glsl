@@ -4,7 +4,6 @@
 #pragma use_defines(LIGHTING, RIGGING)
 
 
-varying vec3 vertexNormal;
 varying vec2 texCoord;
 
 
@@ -97,7 +96,6 @@ void main(void)
 #endif
     
     gl_Position = gl_ProjectionMatrix * vertex_cs;
-    vertexNormal = normal_cs;
     texCoord = gl_MultiTexCoord0.xy;
 }
 
