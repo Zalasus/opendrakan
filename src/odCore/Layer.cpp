@@ -16,6 +16,7 @@
 #include <odCore/GeodeBuilder.h>
 #include <odCore/NodeMasks.h>
 #include <odCore/Engine.h>
+#include <odCore/ShaderManager.h>
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
@@ -261,6 +262,9 @@ namespace od
         mLayerGeode = new osg::Geode;
         gb.build(mLayerGeode);
         this->addChild(mLayerGeode);
+
+        osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getShaderManager().makeProgram("layer");
+        mLayerGeode->getOrCreateStateSet()->setAttribute(layerProg);
 
         mLightCallback = new LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
         mLightCallback->setLayerLight(mLightColor, mAmbientColor, mLightDirectionVector);

@@ -43,6 +43,8 @@ add_subdirectory("src/odApp")
 set(SHADER_SOURCES
         "resources/shader_src/model_vertex.glsl"
         "resources/shader_src/model_fragment.glsl"
+        "resources/shader_src/layer_vertex.glsl"
+        "resources/shader_src/layer_fragment.glsl"
         "resources/shader_src/default_vertex.glsl"
         "resources/shader_src/default_fragment.glsl")
 
