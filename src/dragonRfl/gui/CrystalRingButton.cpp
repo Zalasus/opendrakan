@@ -66,6 +66,7 @@ namespace od
 
         if(mCrystalModel != nullptr)
         {
+            mCrystalModel->buildGeometry(gm.getEngine().getShaderManager());
             mCrystalTransform = new osg::PositionAttitudeTransform;
             mCrystalTransform->addChild(mCrystalModel);
 
@@ -83,6 +84,7 @@ namespace od
 
         if(mInnerRingModel != nullptr)
         {
+            mInnerRingModel->buildGeometry(gm.getEngine().getShaderManager());
             mInnerRingTransform = new osg::PositionAttitudeTransform;
             mInnerRingTransform->addChild(mInnerRingModel);
             mTransform->addChild(mInnerRingTransform);
@@ -90,6 +92,7 @@ namespace od
 
         if(mOuterRingModel != nullptr)
         {
+            mOuterRingModel->buildGeometry(gm.getEngine().getShaderManager());
             mOuterRingTransform = new osg::PositionAttitudeTransform;
             mOuterRingTransform->addChild(mOuterRingModel);
             mTransform->addChild(mOuterRingTransform);
