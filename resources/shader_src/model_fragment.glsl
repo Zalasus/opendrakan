@@ -1,7 +1,7 @@
 #version 120
 
 
-#pragma use_defines(LIGHTING, GAMMA_CORRECTION, COLOR_MODIFIER)
+#pragma use_defines(LIGHTING, SPECULAR, GAMMA_CORRECTION, COLOR_MODIFIER)
 
 varying vec2 texCoord;
 varying vec4 vertexColor;
@@ -11,6 +11,10 @@ uniform sampler2D texture;
 
 #ifdef LIGHTING
     varying vec3 lightColor;
+    
+    #ifdef SPECULAR
+        varying vec3 specularColor;    
+    #endif
 #endif
 
 
@@ -40,6 +44,10 @@ void main(void)
 
 #ifdef COLOR_MODIFIER
     textureAndLightColor *= colorModifier;
+#endif
+
+#ifdef SPECULAR
+    textureAndLightColor += vec4(specularColor, 0.0);    
 #endif
     
     gl_FragColor = clamp(vertexColor * textureAndLightColor, 0.0, 1.0);

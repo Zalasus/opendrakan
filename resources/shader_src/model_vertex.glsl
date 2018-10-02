@@ -1,7 +1,7 @@
 #version 120
 
 
-#pragma use_defines(LIGHTING, RIGGING)
+#pragma use_defines(LIGHTING, RIGGING, SPECULAR)
 
 
 varying vec2 texCoord;
@@ -12,6 +12,10 @@ varying vec4 vertexColor;
     #define MAX_LIGHTS 8
 
     varying vec3 lightColor;
+    
+    #ifdef SPECULAR
+        varying vec3 specularColor;
+    #endif
     
     uniform vec3  layerLightDiffuse;
     uniform vec3  layerLightAmbient;
@@ -30,6 +34,12 @@ varying vec4 vertexColor;
         float layerCosTheta = max(dot(normal_cs, layerLightDirection), 0.0);
         resultLightColor = layerLightAmbient + layerLightDiffuse*layerCosTheta;
         
+        #ifdef SPECULAR
+            vec3 halfVector = normalize(layerLightDirection + normalize(-vertex_cs));
+            float cosAlpha = max(dot(halfVector, normal_cs), 0.0);
+            specularColor = layerLightDiffuse * pow(cosAlpha, 50);
+        #endif
+        
         for(int i = 0; i < MAX_LIGHTS; ++i)
         {
             vec3 lightDir_cs = objectLightPosition[i] - vertex_cs;
@@ -43,6 +53,12 @@ varying vec4 vertexColor;
             float cosTheta = max(dot(normal_cs, lightDir_cs), 0.0);
             
             resultLightColor += objectLightIntensity[i] * objectLightDiffuse[i] * cosTheta * attenuation;
+            
+            #ifdef SPECULAR
+                vec3 halfVector = normalize(lightDir_cs + normalize(-vertex_cs));
+                float cosAlpha = max(dot(halfVector, normal_cs), 0.0);
+                specularColor += objectLightDiffuse[i] * attenuation * pow(cosAlpha, 50);
+            #endif
         }
         
         return resultLightColor;
@@ -93,7 +109,6 @@ void main(void)
     
 #ifdef LIGHTING
     lightColor = calcLighting(vertex_cs.xyz, normal_cs);
-    lightColor = clamp(lightColor, 0.0, 1.0);
 #endif
     
     gl_Position = gl_ProjectionMatrix * vertex_cs;

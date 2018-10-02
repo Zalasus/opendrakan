@@ -98,7 +98,7 @@ namespace od
         this->addWidget(cont);
 
         osg::ref_ptr<LightStateAttribute> lightAttribute = new LightStateAttribute(gm.getEngine().getLightManager());
-        lightAttribute->setLayerLight(osg::Vec3(0.8, 0.8, 0.8), osg::Vec3(0.4, 0.4, 0.4), osg::Vec3(0.0, -1.0, -1.0));
+        lightAttribute->setLayerLight(osg::Vec3(0.8, 0.8, 0.8), osg::Vec3(0.4, 0.4, 0.4), osg::Vec3(0.0, -1.0, 1.0));
         cont->getOrCreateStateSet()->setAttribute(lightAttribute);
 
         _addCrystal(gm, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
