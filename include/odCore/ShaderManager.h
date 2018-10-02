@@ -18,18 +18,15 @@
 namespace od
 {
 
-    class Engine;
-
 	class ShaderManager
 	{
 	public:
 
-		ShaderManager(Engine &engine, const FilePath &shaderSourceRoot);
+		ShaderManager(const FilePath &shaderSourceRoot);
 
 		/**
 		 * Creates a shader object from a shader source. If the shader is found in local cache,
-		 * that version is used instead of recompiling from source. If the shader is not cached
-		 * but a precompiled binary is found, that one is used.
+		 * that version is used instead of creating a new shader object.
 		 *
 		 * @param[in]  shaderFileName    Filename of the shader source, relative to shader source root
 		 * @param[in]  shaderType        Type of the shader
@@ -38,7 +35,6 @@ namespace od
 
 		/**
 		 * Returns program from cache if available. If not, links shaders and caches the result.
-		 * Pass nullptr as shader argument to force linking of the default shader for that stage.
 		 */
 		osg::Program *makeProgram(osg::Shader *vertexShader, osg::Shader *fragmentShader);
 
@@ -51,7 +47,6 @@ namespace od
 
 	private:
 
-		Engine &mEngine;
 		FilePath mShaderSourceRoot;
 		std::map<std::string, osg::ref_ptr<osg::Shader>> mShaderCache;
 		std::map<std::pair<osg::Shader*,osg::Shader*>, osg::ref_ptr<osg::Program>> mProgramCache;

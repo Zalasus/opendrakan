@@ -49,7 +49,7 @@ namespace od
 	    _findEngineRoot("Dragon.rrc");
 
 	    mDbManager.reset(new DbManager(*this));
-	    mShaderManager.reset(new ShaderManager(*this, FilePath(OD_SHADER_SRC_PATH)));
+	    mShaderManager.reset(new ShaderManager(FilePath(OD_SHADER_SRC_PATH)));
 	    mRflManager.reset(new RflManager(*this));
 
 	    mViewer = new osgViewer::Viewer;
@@ -81,7 +81,7 @@ namespace od
         mViewer->setSceneData(mRootNode);
 
         // attach our default shaders to root node so we don't use the fixed function pipeline anymore
-        osg::ref_ptr<osg::Program> defaultProgram = mShaderManager->makeProgram(nullptr, nullptr); // nullptr will cause SM to load default shader
+        osg::ref_ptr<osg::Program> defaultProgram = mShaderManager->makeProgram("default");
         mRootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
 
         mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);

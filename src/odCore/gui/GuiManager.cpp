@@ -413,10 +413,6 @@ namespace od
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
 
-        osg::ref_ptr<LightStateAttribute> defaultGuiLight = new LightStateAttribute(getEngine().getLightManager());
-        defaultGuiLight->setLayerLight(osg::Vec3(0.0, 0.0, 0.0), osg::Vec3(1.0, 1.0, 1.0), osg::Vec3(1.0, 0.0, 0.0));
-        ss->setAttribute(defaultGuiLight);
-
         mGuiCamera->addChild(mGuiRoot);
     }
 

@@ -10,7 +10,6 @@
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
 #include <odCore/gui/GuiManager.h>
-#include <odCore/ShaderManager.h>
 #include <odCore/audio/SoundManager.h>
 
 // max crystal speed in rad/s

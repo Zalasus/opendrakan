@@ -7,15 +7,14 @@
 
 #include <odCore/ShaderManager.h>
 
-#include <odCore/Engine.h>
 #include <odCore/OdDefines.h>
+#include <odCore/Exception.h>
 
 namespace od
 {
 
-	ShaderManager::ShaderManager(Engine &engine, const FilePath &shaderSourceRoot)
-	: mEngine(engine)
-	, mShaderSourceRoot(shaderSourceRoot)
+	ShaderManager::ShaderManager(const FilePath &shaderSourceRoot)
+	: mShaderSourceRoot(shaderSourceRoot)
 	{
 	}
 
@@ -46,12 +45,12 @@ namespace od
 
 		if(vertexShader == nullptr)
 		{
-			vertexShader = loadShader(OD_SHADER_DEFAULT_VERTEX, osg::Shader::VERTEX);
+			throw Exception("Passed nullptr as vertex shader when making program");
 		}
 
 		if(fragmentShader == nullptr)
 		{
-			fragmentShader = loadShader(OD_SHADER_DEFAULT_FRAGMENT, osg::Shader::FRAGMENT);
+			throw Exception("Passed nullptr as fragment shader when making program");
 		}
 
 		osg::ref_ptr<osg::Program> newProgram(new osg::Program);

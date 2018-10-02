@@ -12,11 +12,7 @@
 
 #define OD_WORLD_SCALE (1.0/(1 << 11))
 
-// TODO: put this somewhere where it belongs
 #define OD_SHADER_SRC_PATH "resources/shader_src"
-#define OD_SHADER_DEFAULT_VERTEX   "default_vertex.glsl"
-#define OD_SHADER_DEFAULT_FRAGMENT "default_fragment.glsl"
-#define OD_SHADER_RIGGED_VERTEX    "rigged_vertex.glsl"
 
 #define OD_MAX_BONE_COUNT 64
 #define OD_ATTRIB_INFLUENCE_LOCATION 4
