@@ -4,6 +4,7 @@
 #pragma use_defines(LIGHTING, GAMMA_CORRECTION, COLOR_MODIFIER)
 
 varying vec2 texCoord;
+varying vec4 vertexColor;
 
 uniform sampler2D texture; 
 
@@ -24,7 +25,7 @@ uniform sampler2D texture;
 
 void main(void)
 {    
-    vec4 fragmentColor = texture2D(texture, texCoord.xy);
+    vec4 textureAndLightColor = texture2D(texture, texCoord.xy);
     
 #ifdef LIGHTING
     vec3 lightFactor = vec3(1.0);
@@ -34,14 +35,14 @@ void main(void)
         lightFactor = lightColor;
     #endif
     
-    fragmentColor *= vec4(lightFactor, 1.0);
+    textureAndLightColor *= vec4(lightFactor, 1.0);
 #endif
 
 #ifdef COLOR_MODIFIER
-    fragmentColor *= colorModifier;
+    textureAndLightColor *= colorModifier;
 #endif
     
-    gl_FragColor = clamp(fragmentColor, 0.0, 1.0);
+    gl_FragColor = clamp(vertexColor * textureAndLightColor, 0.0, 1.0);
 }
 
 

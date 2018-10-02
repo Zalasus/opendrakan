@@ -5,6 +5,7 @@
 
 
 varying vec2 texCoord;
+varying vec4 vertexColor;
 
 
 #ifdef LIGHTING
@@ -96,6 +97,7 @@ void main(void)
 #endif
     
     gl_Position = gl_ProjectionMatrix * vertex_cs;
+    vertexColor = gl_Color;
     texCoord = gl_MultiTexCoord0.xy;
 }
 
