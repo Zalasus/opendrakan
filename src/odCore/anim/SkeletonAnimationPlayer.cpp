@@ -10,8 +10,6 @@
 #include <osg/Matrix>
 
 #include <odCore/Logger.h>
-#include <odCore/ShaderManager.h>
-#include <odCore/Engine.h>
 #include <odCore/OdDefines.h>
 #include <odCore/db/Skeleton.h>
 
@@ -123,9 +121,8 @@ namespace od
 
 
 
-	SkeletonAnimationPlayer::SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, TransformAccumulator *accumulator)
-	: mEngine(engine)
-	, mObjectRoot(objectRoot)
+	SkeletonAnimationPlayer::SkeletonAnimationPlayer(osg::Node *objectRoot, osg::Group *skeletonRoot, TransformAccumulator *accumulator)
+	: mObjectRoot(objectRoot)
 	, mSkeletonRoot(skeletonRoot)
 	, mAccumulator(accumulator)
 	, mBoneMatrixArray(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", OD_MAX_BONE_COUNT))
@@ -137,13 +134,9 @@ namespace od
 
 		Logger::debug() << "Created SkeletonAnimation with " << mAnimators.size() << " animators";
 
-		// attach rigging shader to model node TODO: is this the right place to attach this? how to we ensure it is not overwritten?
-		osg::ref_ptr<osg::Shader> riggingShader = mEngine.getShaderManager().loadShader(OD_SHADER_RIGGED_VERTEX, osg::Shader::VERTEX);
-		mRiggingProgram = mEngine.getShaderManager().makeProgram(riggingShader, nullptr);
-		mRiggingProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
-		mRiggingProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
-		mObjectRoot->getOrCreateStateSet()->setAttribute(mRiggingProgram, osg::StateAttribute::ON);
-		mObjectRoot->getOrCreateStateSet()->addUniform(mBoneMatrixArray, osg::StateAttribute::ON);
+		osg::StateSet *ss = mObjectRoot->getOrCreateStateSet();
+		ss->addUniform(mBoneMatrixArray, osg::StateAttribute::ON);
+		ss->setDefine("RIGGING");
 
 		// set all bones to identity to force bind pose
 		for(size_t i = 0; i < OD_MAX_BONE_COUNT; ++i)
@@ -156,7 +149,7 @@ namespace od
 
 	SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
 	{
-		mObjectRoot->getOrCreateStateSet()->removeAttribute(mRiggingProgram);
+		mObjectRoot->getOrCreateStateSet()->removeDefine("RIGGING");
 		mObjectRoot->getOrCreateStateSet()->removeUniform(mBoneMatrixArray);
 		mSkeletonRoot->removeUpdateCallback(mUploadCallback);
 	}

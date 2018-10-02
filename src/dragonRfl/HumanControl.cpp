@@ -479,7 +479,7 @@ namespace od
     	{
     		mCharacterController.reset(new od::CharacterController(obj, 0.05, 0.3));
 
-			mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), mCharacterController.get());
+			mAnimationPlayer = new od::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), mCharacterController.get());
     	}
     }
 

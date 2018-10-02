@@ -141,7 +141,9 @@ namespace od
         // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
         if(mClass->hasModel())
         {
-            mTransform->addChild(mClass->getModel());
+            Model *model = mClass->getModel();
+            model->buildGeometry(getLevel().getEngine().getShaderManager());
+            mTransform->addChild(model);
             this->addChild(mTransform);
 
             // if model defines a skeleton, create an instance of that skeleton for this object

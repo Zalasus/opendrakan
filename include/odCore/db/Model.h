@@ -44,6 +44,7 @@ namespace od
 	};
 
 	class ModelFactory;
+	class ShaderManager;
 
 	class Model : public Asset, public osg::Group
 	{
@@ -66,7 +67,7 @@ namespace od
 		void loadPolygons(ModelFactory &factory, DataReader &&dr);
 		void loadBoundingData(ModelFactory &factory, DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, DataReader &&dr);
-		void buildGeometry();
+		void buildGeometry(ShaderManager &shaderManager);
 
 		/**
 		 * @brief Returns an axis-aligned bounding box that encapsulates all of this model's meshes and LODs.
@@ -94,6 +95,7 @@ namespace od
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
+		bool mGeometryBuilt;
 		osg::BoundingBox mCalculatedBoundingBox;
 	};
 

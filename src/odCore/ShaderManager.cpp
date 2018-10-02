@@ -19,15 +19,13 @@ namespace od
 	{
 	}
 
-	osg::ref_ptr<osg::Shader> ShaderManager::loadShader(const std::string &shaderFileName, osg::Shader::Type shaderType)
+	osg::Shader *ShaderManager::loadShader(const std::string &shaderFileName, osg::Shader::Type shaderType)
 	{
 		auto it = mShaderCache.find(shaderFileName);
 		if(it != mShaderCache.end())
 		{
 			return it->second;
 		}
-
-		// TODO: implement binary loading if compiling shaders at startup takes too long
 
 		FilePath shaderFilePath(shaderFileName, mShaderSourceRoot);
 
@@ -38,7 +36,7 @@ namespace od
 		return newShader;
 	}
 
-	osg::ref_ptr<osg::Program> ShaderManager::makeProgram(osg::ref_ptr<osg::Shader> vertexShader, osg::ref_ptr<osg::Shader> fragmentShader)
+	osg::Program *ShaderManager::makeProgram(osg::Shader *vertexShader, osg::Shader *fragmentShader)
 	{
 		auto it = mProgramCache.find(std::make_pair(vertexShader, fragmentShader));
 		if(it != mProgramCache.end())
@@ -62,6 +60,13 @@ namespace od
 		newProgram->setName(vertexShader->getName() + ":" + fragmentShader->getName());
 		mProgramCache.insert(std::make_pair(std::make_pair(vertexShader, fragmentShader), newProgram));
 		return newProgram;
+	}
+
+	osg::Program *ShaderManager::makeProgram(const std::string &namePrefix)
+	{
+	    osg::ref_ptr<osg::Shader> vert = loadShader(namePrefix + "_vertex.glsl", osg::Shader::VERTEX);
+	    osg::ref_ptr<osg::Shader> fragment = loadShader(namePrefix + "_fragment.glsl", osg::Shader::FRAGMENT);
+	    return makeProgram(vert, fragment);
 	}
 
 }

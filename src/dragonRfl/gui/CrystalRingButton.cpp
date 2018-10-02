@@ -70,12 +70,11 @@ namespace od
             mCrystalTransform = new osg::PositionAttitudeTransform;
             mCrystalTransform->addChild(mCrystalModel);
 
-            osg::ref_ptr<osg::Shader> crystalFragShader = gm.getEngine().getShaderManager().loadShader("crystal_fragment.glsl", osg::Shader::FRAGMENT);
-            osg::ref_ptr<osg::Program> crystalProg = gm.getEngine().getShaderManager().makeProgram(nullptr, crystalFragShader);
-            mCrystalTransform->getOrCreateStateSet()->setAttribute(crystalProg, osg::StateAttribute::ON);
+            osg::StateSet *ss = mCrystalTransform->getOrCreateStateSet();
+            ss->setDefine("COLOR_MODIFIER");
 
             mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColorInactive);
-            mCrystalTransform->getOrCreateStateSet()->addUniform(mColorModifierUniform);
+            ss->addUniform(mColorModifierUniform);
 
             mCrystalTransform->setScale(osg::Vec3(0.58, 0.58, 0.58));
             mCrystalTransform->setAttitude(osg::Quat(M_PI, osg::Vec3(0, 1, 0)));

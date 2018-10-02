@@ -12,7 +12,6 @@
 #include <osg/Geometry>
 #include <osg/LOD>
 #include <osg/FrontFace>
-#include <osg/Material>
 
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
@@ -20,6 +19,7 @@
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
+#include <odCore/ShaderManager.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -37,6 +37,7 @@ namespace od
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
+	, mGeometryBuilt(false)
 	{
 	}
 
@@ -418,8 +419,13 @@ namespace od
 		}
  	}
 
-	void Model::buildGeometry()
+	void Model::buildGeometry(ShaderManager &shaderManager)
 	{
+	    if(mGeometryBuilt)
+	    {
+	        return;
+	    }
+
 		if(!mTexturesLoaded || !mVerticesLoaded || !mPolygonsLoaded)
 		{
 			throw Exception("Must load at least vertices, textures and polygons before building geometry");
@@ -487,16 +493,29 @@ namespace od
         // model faces are oriented CW for some reason
         ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
 
-        // since we don't have access to shader composition right now, control shinyness via material
-        if(mShiny)
+        osg::ref_ptr<osg::Program> modelProgram = shaderManager.makeProgram("model");
+        ss->setAttribute(modelProgram, osg::StateAttribute::ON);
+
+        if(mShadingType != ModelShadingType::None)
         {
-            osg::ref_ptr<osg::Material> shinyMaterial(new osg::Material);
-            shinyMaterial->setAmbient(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-            shinyMaterial->setDiffuse(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-            shinyMaterial->setSpecular(osg::Material::FRONT_AND_BACK, osg::Vec4(1.0, 1.0, 1.0, 1.0));
-            shinyMaterial->setShininess(osg::Material::FRONT_AND_BACK, 100.0);
-            ss->setAttribute(shinyMaterial);
+            ss->setDefine("LIGHTING", osg::StateAttribute::ON);
+
+            if(mShiny)
+            {
+                ss->setDefine("SPECULAR", osg::StateAttribute::ON);
+            }
         }
+
+        // if model is a character, bind the vertex attribute locations, but don't yet activate the RIGGING define.
+        //  doing so would cause characters without an attached SkeletonAnimationPlayer to glitch because
+        //  the shader would expect bone data to be uploaded but only receive all-zero-matrices.
+        if(isCharacter())
+        {
+            modelProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
+            modelProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
+        }
+
+        mGeometryBuilt = true;
 	}
 }
 

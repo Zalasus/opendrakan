@@ -23,7 +23,6 @@
 namespace od
 {
 
-	class Engine;
 	class TransformAccumulator;
 
 	/**
@@ -41,7 +40,7 @@ namespace od
 		 * @param[in]   skeletonRoot       Parent group containing bone tree. The bone upload callback is attached to this.
 		 * @param[in]   accumulator        TransformAccumulator to receive relative movement of root node. May be nullptr if none needed.
 		 */
-		SkeletonAnimationPlayer(Engine &engine, osg::Node *objectRoot, osg::Group *skeletonRoot, TransformAccumulator *accumulator);
+		SkeletonAnimationPlayer(osg::Node *objectRoot, osg::Group *skeletonRoot, TransformAccumulator *accumulator);
 		~SkeletonAnimationPlayer();
 
 		inline osg::Uniform *getBoneMatrixArrayUniform() { return mBoneMatrixArray.get(); }
@@ -54,13 +53,11 @@ namespace od
 
 	private:
 
-		Engine &mEngine;
 		osg::ref_ptr<osg::Node> mObjectRoot;
 		osg::ref_ptr<osg::Group> mSkeletonRoot;
 		TransformAccumulator *mAccumulator;
 		osg::ref_ptr<osg::Uniform> mBoneMatrixArray;
 		std::vector<osg::ref_ptr<Animator>> mAnimators;
-		osg::ref_ptr<osg::Program> mRiggingProgram;
 		osg::ref_ptr<osg::NodeCallback> mUploadCallback;
 
 		osg::ref_ptr<Animation> mCurrentAnimation;

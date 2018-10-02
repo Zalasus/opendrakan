@@ -36,7 +36,7 @@ namespace od
     {
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        mAnimationPlayer = new od::SkeletonAnimationPlayer(obj.getLevel().getEngine(), &obj, obj.getSkeletonRoot(), nullptr);
+        mAnimationPlayer = new od::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), nullptr);
 
         obj.setEnableRflUpdateHook(true);
     }

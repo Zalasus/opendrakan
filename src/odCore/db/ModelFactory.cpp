@@ -52,8 +52,6 @@ namespace od
 			model->loadBoundingData(*this, DataReader(getSrscFile().getStreamForRecord(boundingRecord)));
 		}
 
-		model->buildGeometry();
-
 		return model;
 	}
 
