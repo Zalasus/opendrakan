@@ -1,7 +1,16 @@
 #version 120
 
 
-#pragma use_defines(LIGHTING, RIGGING, SPECULAR)
+#pragma use_defines(LIGHTING, RIGGING, SPECULAR, MAX_LIGHTS, MAX_BONES)
+
+
+#ifndef MAX_LIGHTS
+    #define MAX_LIGHTS 8
+#endif
+
+#ifndef MAX_BONES
+    #define MAX_BONES 64
+#endif
 
 
 varying vec2 texCoord;
@@ -67,8 +76,6 @@ varying vec4 vertexColor;
 
 
 #ifdef RIGGING
-    #define MAX_BONES 64
-    
     attribute vec4 influencingBones;
     attribute vec4 vertexWeights;
     uniform mat4 bones[MAX_BONES];

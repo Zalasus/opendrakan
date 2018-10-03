@@ -4,10 +4,17 @@
 // Layers are very rigid in their shading, so this is basically a non-parametric version of the model shader.
 //  Later, we might want to account for blending between layers, different water shaders etc.
 
+
+#pragma use_defines(MAX_LIGHTS)
+
+
+#ifndef MAX_LIGHTS
+    #define MAX_LIGHTS 8
+#endif
+
+
 varying vec2 texCoord;
 varying vec4 vertexColor;
-
-#define MAX_LIGHTS 8
 
 varying vec3 lightColor;
 
