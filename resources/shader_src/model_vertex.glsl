@@ -1,7 +1,7 @@
 #version 120
 
 
-#pragma use_defines(LIGHTING, RIGGING, SPECULAR, MAX_LIGHTS, MAX_BONES)
+#pragma import_defines(LIGHTING, RIGGING, SPECULAR, MAX_LIGHTS, MAX_BONES)
 
 
 #ifndef MAX_LIGHTS

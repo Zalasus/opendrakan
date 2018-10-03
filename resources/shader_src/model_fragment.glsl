@@ -1,7 +1,8 @@
 #version 120
 
 
-#pragma use_defines(LIGHTING, SPECULAR, GAMMA_CORRECTION, COLOR_MODIFIER)
+#pragma import_defines(LIGHTING, SPECULAR, GAMMA_CORRECTION, COLOR_MODIFIER)
+
 
 varying vec2 texCoord;
 varying vec4 vertexColor;

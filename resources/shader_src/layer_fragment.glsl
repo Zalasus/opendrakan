@@ -1,7 +1,7 @@
 
 #version 120
 
-#pragma use_defines(GAMMA_CORRECTION)
+#pragma import_defines(GAMMA_CORRECTION)
 
 // Layers are very rigid in their shading, so this is basically a non-parametric version of the model shader.
 //  Later, we might want to account for blending between layers, different water shaders etc.

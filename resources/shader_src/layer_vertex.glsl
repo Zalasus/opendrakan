@@ -5,7 +5,7 @@
 //  Later, we might want to account for blending between layers, different water shaders etc.
 
 
-#pragma use_defines(MAX_LIGHTS)
+#pragma import_defines(MAX_LIGHTS)
 
 
 #ifndef MAX_LIGHTS
