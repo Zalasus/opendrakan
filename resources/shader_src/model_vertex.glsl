@@ -18,8 +18,6 @@ varying vec4 vertexColor;
 
 
 #ifdef LIGHTING
-    #define MAX_LIGHTS 8
-
     varying vec3 lightColor;
     
     #ifdef SPECULAR
