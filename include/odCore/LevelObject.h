@@ -181,10 +181,13 @@ namespace od
         bool mIgnoreAttachmentRotation;
         std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
 
+        bool mLayerBelowObjectDirty;
         osg::ref_ptr<Layer> mLayerBelowObject;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
         osg::ref_ptr<LightStateCallback> mLightingCallback;
+
+        bool mRflUpdateHookEnabled;
     };
 
 }

@@ -63,7 +63,10 @@ namespace od
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
     , mIgnoreAttachmentRotation(true)
+    , mLayerBelowObjectDirty(true)
+    , mUpdateCallback(new LevelObjectUpdateCallback(*this))
     , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), mTransform))
+    , mRflUpdateHookEnabled(false)
     {
         this->setNodeMask(NodeMasks::Object);
     }
@@ -179,6 +182,8 @@ namespace od
         this->addCullCallback(mLightingCallback);
         mLightingCallback->lightingDirty();
 
+        this->addUpdateCallback(mUpdateCallback);
+
         _updateLayerBelowObject();
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
@@ -208,12 +213,11 @@ namespace od
         Logger::debug() << "Object " << getObjectId() << " despawned";
 
         this->removeCullCallback(mLightingCallback);
+        this->removeUpdateCallback(mUpdateCallback);
 
         // detach this from any object it may be attached to, and detach all objects attached to this
         detach();
         _detachAllAttachedObjects();
-
-        setEnableRflUpdateHook(false);
 
         mState = LevelObjectState::Loaded;
     }
@@ -232,7 +236,12 @@ namespace od
             return;
         }
 
-        if(mRflClassInstance != nullptr)
+        if(mLayerBelowObjectDirty)
+        {
+            _updateLayerBelowObject();
+        }
+
+        if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
         {
             mRflClassInstance->onUpdate(*this, simTime, relTime);
         }
@@ -360,26 +369,7 @@ namespace od
 
     void LevelObject::setEnableRflUpdateHook(bool enableHook)
     {
-        if(enableHook)
-        {
-            if(mUpdateCallback != nullptr)
-            {
-                return;
-            }
-
-            mUpdateCallback = new LevelObjectUpdateCallback(*this);
-            this->addUpdateCallback(mUpdateCallback);
-
-        }else
-        {
-            if(mUpdateCallback == nullptr)
-            {
-                return;
-            }
-
-            this->removeUpdateCallback(mUpdateCallback);
-            mUpdateCallback = nullptr;
-        }
+        mRflUpdateHookEnabled = enableHook;
     }
 
     void LevelObject::messageAllLinkedObjects(RflMessage message)
@@ -410,9 +400,7 @@ namespace od
     {
         mLightingCallback->lightingDirty();
 
-        // FIXME: this is a pontentially long running operation and should be handled via
-        //   a dirty state in an appropriate update callback
-        _updateLayerBelowObject();
+        mLayerBelowObjectDirty = true;
 
         if(mRflClassInstance != nullptr)
         {
@@ -435,6 +423,8 @@ namespace od
         {
             mLightingCallback->setLayerLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
         }
+
+        mLayerBelowObjectDirty = false;
     }
 
     void LevelObject::_attachmentTargetPositionUpdated()
