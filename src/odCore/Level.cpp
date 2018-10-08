@@ -179,89 +179,16 @@ namespace od
         return *mLevelObjects[index];
     }
 
-    // TODO: the following methods look pretty redundant. find clever template interface for them
-    Texture *Level::getTextureByRef(const AssetRef &ref)
-	{
-    	Logger::debug() << "Requested texture " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get texture. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getTexture(ref.assetId);
-    }
-
-    Model *Level::getModelByRef(const AssetRef &ref)
+    AssetProvider &Level::getDependency(uint16_t index)
     {
-    	Logger::debug() << "Requested model " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
+        auto it = mDependencyMap.find(index);
         if(it == mDependencyMap.end())
         {
-        	Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get model. Database index not found in level dependencies");
+            Logger::error() << "Database index " << index << " not found in level dependencies";
+            throw NotFoundException("Database index not found in level dependencies");
         }
 
-        return it->second.get().getModel(ref.assetId);
-    }
-
-    Class *Level::getClassByRef(const AssetRef &ref)
-    {
-        Logger::debug() << "Requested class " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get class. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getClass(ref.assetId);
-    }
-
-    Sequence *Level::getSequenceByRef(const AssetRef &ref)
-    {
-        Logger::debug() << "Requested sequence " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get sequence. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getSequence(ref.assetId);
-    }
-
-    Animation *Level::getAnimationByRef(const AssetRef &ref)
-    {
-    	Logger::debug() << "Requested animation " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get animation. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getAnimation(ref.assetId);
-    }
-
-    Sound *Level::getSoundByRef(const AssetRef &ref)
-    {
-        Logger::debug() << "Requested sound " << std::hex << ref.assetId << std::dec << " from level dependency " << ref.dbIndex;
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            Logger::error() << "Database index " << ref.dbIndex << " not found in level dependencies";
-            throw NotFoundException("Can't get sound. Database index not found in level dependencies");
-        }
-
-        return it->second.get().getSound(ref.assetId);
+        return it->second;
     }
 
     void Level::_loadNameAndDeps(SrscFile &file)

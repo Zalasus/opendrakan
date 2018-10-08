@@ -144,7 +144,7 @@ namespace od
 			ggIt->geometry->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::TRIANGLES, 0, vertices->size()));
 			ggIt->geometry->setTexCoordArray(0, uvCoords);
 
-			osg::ref_ptr<Texture> textureImage = db.getTextureByRef(ggIt->texture);
+			osg::ref_ptr<Texture> textureImage = db.getAssetByRef<Texture>(ggIt->texture);
 			if(textureImage->hasAlpha())
 			{
 				osg::StateSet *ss = ggIt->geometry->getOrCreateStateSet();

@@ -346,16 +346,6 @@ namespace od
         }
     }
 
-    Texture *GuiManager::getTextureByRef(const AssetRef &ref)
-    {
-        if(ref.dbIndex != 0)
-        {
-            throw Exception("Tried to use GUI Manager to load texture from outside RRC");
-        }
-
-        return getTexture(ref.assetId);
-    }
-
     Texture *GuiManager::getTexture(RecordId recordId)
     {
         osg::ref_ptr<Texture> tex = mTextureFactory.getAsset(recordId);

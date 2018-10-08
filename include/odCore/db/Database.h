@@ -54,15 +54,8 @@ namespace od
 
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
-		// implement AssetProvider
-		virtual Texture   *getTextureByRef(const AssetRef &ref) override;
-        virtual Class     *getClassByRef(const AssetRef &ref) override;
-        virtual Model     *getModelByRef(const AssetRef &ref) override;
-        virtual Sequence  *getSequenceByRef(const AssetRef &ref) override;
-        virtual Animation *getAnimationByRef(const AssetRef &ref) override;
-        virtual Sound     *getSoundByRef(const AssetRef &ref) override;
-
 	    // override AssetProvider
+		virtual AssetProvider &getDependency(uint16_t index) override;
         virtual Texture   *getTexture(RecordId recordId) override;
         virtual Class     *getClass(RecordId recordId) override;
         virtual Model     *getModel(RecordId recordId) override;

@@ -82,24 +82,14 @@ namespace od
         void dumpStrings();
         void dumpTextures();
 
-        // implement AssetProvider
-        virtual Texture *getTextureByRef(const AssetRef &ref) override;
+
+    protected:
+
+        // override AssetProvider
         virtual Texture *getTexture(RecordId recordId) override;
 
 
     private:
-
-        // make all methods for non-textures inaccessible. can't do the opposite because the AssetProvider base must stay accessible
-        using AssetProvider::getClassByRef;
-        using AssetProvider::getModelByRef;
-        using AssetProvider::getSequenceByRef;
-        using AssetProvider::getAnimationByRef;
-        using AssetProvider::getSoundByRef;
-        using AssetProvider::getClass;
-        using AssetProvider::getModel;
-        using AssetProvider::getSequence;
-        using AssetProvider::getAnimation;
-        using AssetProvider::getSound;
 
         inline void _decryptString(char * const str, const size_t len);
         void _setupGui();

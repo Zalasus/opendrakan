@@ -259,7 +259,7 @@ namespace od
 
         if(!mMaterialClassRef.isNull())
         {
-        	mMaterialClass = this->getAssetProvider().getClassByRef(mMaterialClassRef);
+        	mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
         	mMaterialInstance = mMaterialClass->makeInstance();
         	if(mMaterialInstance != nullptr)
         	{

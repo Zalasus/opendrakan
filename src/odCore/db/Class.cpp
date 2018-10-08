@@ -39,7 +39,7 @@ namespace od
         {
             try
             {
-                mModel = this->getAssetProvider().getModelByRef(mModelRef);
+                mModel = this->getAssetProvider().getAssetByRef<Model>(mModelRef);
 
             }catch(NotFoundException &e)
             {

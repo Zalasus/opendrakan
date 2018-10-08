@@ -22,44 +22,105 @@ namespace od
     class Sound;
 
 	/**
-	 * Common interface for classes with means to translate DB indices to
-	 * actual databases, like Database and Level.
+	 * Common interface for classes that are able to provide assets, either directly or via indirection to
+	 * dependency AssetProviders.
 	 */
 	class AssetProvider
 	{
 	public:
 
-		virtual ~AssetProvider() {};
+		virtual ~AssetProvider() = default;
 
-	    /*
-	     * These get assets from this provider or fetch them from a referenced dependency.
-	     * Note that these functions transfer ownership. It is vital that their return value is stored in a ref_ptr.
+		/**
+		 * Gets a dependency of this provider with the given index. Implementers should override this if they
+		 * can have dependencies. Default behaviour is to throw.
+		 */
+	    virtual AssetProvider &getDependency(uint16_t index);
+
+	    /**
+	     * Convenience method. This will redirect the call to getAsset() if the dbIndex in the passed reference is 0,
+	     * otherwise it will try and resolve the dependency with using getDependency(), then call getAsset() on the
+	     * returned dependency.
+	     *
+	     * @note This may throw an UnsupportedException depending on whether the implementation supports either having
+	     * dependencies or directly providing assets.
 	     */
-	    virtual Texture   *getTextureByRef(const AssetRef &ref) { throw Exception("Can't provide textures"); }
-	    virtual Class     *getClassByRef(const AssetRef &ref) { throw Exception("Can't provide classes"); }
-	    virtual Model     *getModelByRef(const AssetRef &ref) { throw Exception("Can't provide models"); }
-	    virtual Sequence  *getSequenceByRef(const AssetRef &ref) { throw Exception("Can't provide sequences"); }
-	    virtual Animation *getAnimationByRef(const AssetRef &ref) { throw Exception("Can't provide animations"); }
-	    virtual Sound     *getSoundByRef(const AssetRef &ref) { throw Exception("Can't provide sounds"); }
-
-	    /*
-	     * These get assets from this provider without indirection. Override if implementer can load
-	     * given asset from itself (basically only databases).
-	     * Note that these functions transfer ownership. It is vital that their return value is stored in a ref_ptr.
-	     */
-	    virtual Texture   *getTexture(RecordId recordId) { throw Exception("Can't provide textures"); }
-	    virtual Class     *getClass(RecordId recordId) { throw Exception("Can't provide classes"); }
-	    virtual Model     *getModel(RecordId recordId) { throw Exception("Can't provide models"); }
-	    virtual Sequence  *getSequence(RecordId recordId) { throw Exception("Can't provide sequences"); }
-	    virtual Animation *getAnimation(RecordId recordId) { throw Exception("Can't provide animations"); }
-	    virtual Sound     *getSound(RecordId recordId) { throw Exception("Can't provide sounds"); }
-
 	    template <typename _AssetType>
-	    _AssetType *getAssetByRef(const AssetRef &ref);
+	    _AssetType *getAssetByRef(const AssetRef &ref)
+	    {
+	        if(ref.dbIndex == 0)
+	        {
+	            return getAsset<_AssetType>(ref.assetId);
+	        }
+
+	        AssetProvider &provider = getDependency(ref.dbIndex);
+
+	        return provider.getAsset<_AssetType>(ref.assetId);
+	    }
+
+	    /**
+	     * Synchronously loads an asset. This convenience template redirects the call to one of the
+	     * virtual loading functions for supported assets.
+	     *
+	     * @note This might throw UnsupportedException if the \c _AssetType can't be loaded by this provider.
+	     */
+	    template <typename _AssetType>
+	    _AssetType *getAsset(RecordId id);
+
+
+	protected:
+
+	    /**
+         * Loads a texture synchronously without indirection. Implementing classes should override
+         * this if they can provide textures. Default behaviour is to throw UnsupportedException.
+         *
+         * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
+         */
+        virtual Texture   *getTexture(RecordId recordId);
+
+        /**
+         * Loads a class synchronously without indirection. Implementing classes should override
+         * this if they can provide classes. Default behaviour is to throw UnsupportedException.
+         *
+         * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
+         */
+        virtual Class     *getClass(RecordId recordId);
+
+        /**
+         * Loads a model synchronously without indirection. Implementing classes should override
+         * this if they can provide models. Default behaviour is to throw UnsupportedException.
+         *
+         * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
+         */
+        virtual Model     *getModel(RecordId recordId);
+
+        /**
+         * Loads a sequence synchronously without indirection. Implementing classes should override
+         * this if they can provide sequences. Default behaviour is to throw UnsupportedException.
+         *
+         * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
+         */
+        virtual Sequence  *getSequence(RecordId recordId);
+
+        /**
+         * Loads a animation synchronously without indirection. Implementing classes should override
+         * this if they can provide animations. Default behaviour is to throw UnsupportedException.
+         *
+         * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
+         */
+        virtual Animation *getAnimation(RecordId recordId);
+
+        /**
+         * Loads a sound synchronously without indirection. Implementing classes should override
+         * this if they can provide sounds. Default behaviour is to throw UnsupportedException.
+         *
+         * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
+         */
+        virtual Sound     *getSound(RecordId recordId);
 
 	};
 
-	template<>
+	/*template<>
     Texture *AssetProvider::getAssetByRef<Texture>(const AssetRef &ref);
 
 	template<>
@@ -75,7 +136,7 @@ namespace od
     Animation *AssetProvider::getAssetByRef<Animation>(const AssetRef &ref);
 
 	template<>
-    Sound *AssetProvider::getAssetByRef<Sound>(const AssetRef &ref);
+    Sound *AssetProvider::getAssetByRef<Sound>(const AssetRef &ref);*/
 
 
 }

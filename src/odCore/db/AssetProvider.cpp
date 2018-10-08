@@ -11,40 +11,75 @@
 namespace od
 {
 
-    template<>
-    Texture *AssetProvider::getAssetByRef<Texture>(const AssetRef &ref)
+    AssetProvider &AssetProvider::getDependency(uint16_t index)
     {
-        return this->getTextureByRef(ref);
+        throw UnsupportedException("This AssetProvider implementation can't have dependencies");
     }
 
     template<>
-    Class *AssetProvider::getAssetByRef<Class>(const AssetRef &ref)
+    Texture *AssetProvider::getAsset<Texture>(RecordId id)
     {
-        return this->getClassByRef(ref);
+        return this->getTexture(id);
     }
 
     template<>
-    Model *AssetProvider::getAssetByRef<Model>(const AssetRef &ref)
+    Class *AssetProvider::getAsset<Class>(RecordId id)
     {
-        return this->getModelByRef(ref);
+        return this->getClass(id);
     }
 
     template<>
-    Sequence *AssetProvider::getAssetByRef<Sequence>(const AssetRef &ref)
+    Model *AssetProvider::getAsset<Model>(RecordId id)
     {
-        return this->getSequenceByRef(ref);
+        return this->getModel(id);
     }
 
     template<>
-    Animation *AssetProvider::getAssetByRef<Animation>(const AssetRef &ref)
+    Sequence *AssetProvider::getAsset<Sequence>(RecordId id)
     {
-        return this->getAnimationByRef(ref);
+        return this->getSequence(id);
     }
 
     template<>
-    Sound *AssetProvider::getAssetByRef<Sound>(const AssetRef &ref)
+    Animation *AssetProvider::getAsset<Animation>(RecordId id)
     {
-        return this->getSoundByRef(ref);
+        return this->getAnimation(id);
+    }
+
+    template<>
+    Sound *AssetProvider::getAsset<Sound>(RecordId id)
+    {
+        return this->getSound(id);
+    }
+
+    Texture *AssetProvider::getTexture(RecordId recordId)
+    {
+        throw UnsupportedException("This AssetProvider implementation can't provide textures");
+    }
+
+    Class *AssetProvider::getClass(RecordId recordId)
+    {
+        throw UnsupportedException("This AssetProvider implementation can't provide classes");
+    }
+
+    Model *AssetProvider::getModel(RecordId recordId)
+    {
+        throw UnsupportedException("This AssetProvider implementation can't provide models");
+    }
+
+    Sequence *AssetProvider::getSequence(RecordId recordId)
+    {
+        throw UnsupportedException("This AssetProvider implementation can't provide sequences");
+    }
+
+    Animation *AssetProvider::getAnimation(RecordId recordId)
+    {
+        throw UnsupportedException("This AssetProvider implementation can't provide animations");
+    }
+
+    Sound *AssetProvider::getSound(RecordId recordId)
+    {
+        throw UnsupportedException("This AssetProvider implementation can't provide sounds");
     }
 
 }

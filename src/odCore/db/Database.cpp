@@ -166,103 +166,17 @@ namespace od
         }
 	}
 
-	// TODO: the following methods look pretty redundant. find clever template interface for them
-	Texture *Database::getTextureByRef(const AssetRef &ref)
+	AssetProvider &Database::getDependency(uint16_t index)
 	{
-		if(ref.dbIndex == 0)
-		{
-			return this->getTexture(ref.assetId);
-		}
+	    auto it = mDependencyMap.find(index);
+	    if(it == mDependencyMap.end())
+	    {
+	        Logger::error() << "Database '" + getShortName() + "' has no dependency with index " << index;
+	        throw NotFoundException("Database has no dependency with given index");
+	    }
 
-		auto it = mDependencyMap.find(ref.dbIndex);
-		if(it == mDependencyMap.end())
-		{
-			throw Exception("Database has no dependency with given index");
-		}
-
-		return it->second.get().getTexture(ref.assetId);
+	    return it->second;
 	}
-
-	Class *Database::getClassByRef(const AssetRef &ref)
-	{
-		if(ref.dbIndex == 0)
-		{
-			return this->getClass(ref.assetId);
-		}
-
-		auto it = mDependencyMap.find(ref.dbIndex);
-		if(it == mDependencyMap.end())
-		{
-			throw Exception("Database has no dependency with given index");
-		}
-
-		return it->second.get().getClass(ref.assetId);
-	}
-
-	Model *Database::getModelByRef(const AssetRef &ref)
-	{
-		if(ref.dbIndex == 0)
-		{
-			return this->getModel(ref.assetId);
-		}
-
-		auto it = mDependencyMap.find(ref.dbIndex);
-		if(it == mDependencyMap.end())
-		{
-			throw Exception("Database has no dependency with given index");
-		}
-
-		return it->second.get().getModel(ref.assetId);
-	}
-
-    Sequence *Database::getSequenceByRef(const AssetRef &ref)
-    {
-        if(ref.dbIndex == 0)
-        {
-            return this->getSequence(ref.assetId);
-        }
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            throw Exception("Database has no dependency with given index");
-        }
-
-        return it->second.get().getSequence(ref.assetId);
-    }
-
-    Animation *Database::getAnimationByRef(const AssetRef &ref)
-    {
-    	if(ref.dbIndex == 0)
-        {
-            return this->getAnimation(ref.assetId);
-        }
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            throw Exception("Database has no dependency with given index");
-        }
-
-        return it->second.get().getAnimation(ref.assetId);
-    }
-
-    Sound *Database::getSoundByRef(const AssetRef &ref)
-    {
-        if(ref.dbIndex == 0)
-        {
-            return this->getSound(ref.assetId);
-        }
-
-        auto it = mDependencyMap.find(ref.dbIndex);
-        if(it == mDependencyMap.end())
-        {
-            throw Exception("Database has no dependency with given index");
-        }
-
-        return it->second.get().getSound(ref.assetId);
-    }
-
 
 	Texture *Database::getTexture(RecordId recordId)
 	{

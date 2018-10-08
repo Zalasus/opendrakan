@@ -139,7 +139,7 @@ namespace od
         mTransform->setPosition(mInitialPosition);
         mTransform->setScale(mInitialScale);
 
-        mClass = mLevel.getClassByRef(mClassRef);
+        mClass = mLevel.getAssetByRef<Class>(mClassRef);
 
         // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
         if(mClass->hasModel())

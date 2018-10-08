@@ -17,7 +17,7 @@ namespace od
     : Widget(gm)
     {
         osg::ref_ptr<TexturedQuad> cursorQuad = new TexturedQuad;
-        cursorQuad->setTextureImage(gm.getTexture(GuiTextures::Cursor));
+        cursorQuad->setTextureImage(gm.getAsset<Texture>(GuiTextures::Cursor));
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping
         //  over to the right. maybe this is due to some strange way in which they implemented the
