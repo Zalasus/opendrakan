@@ -62,7 +62,9 @@ namespace od
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
-    , mIgnoreAttachmentRotation(true)
+    , mIgnoreAttachmentTranslation(false)
+    , mIgnoreAttachmentRotation(false)
+    , mIgnoreAttachmentScale(false)
     , mLayerBelowObjectDirty(true)
     , mUpdateCallback(new LevelObjectUpdateCallback(*this))
     , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), mTransform))
@@ -262,18 +264,25 @@ namespace od
         }
     }
 
-    void LevelObject::setPosition(const osg::Vec3f &v)
+    void LevelObject::setPosition(const osg::Vec3 &v)
     {
         mTransform->setPosition(v);
 
-        _onMoved();
+        _onTransformChanged(this);
     }
 
     void LevelObject::setRotation(const osg::Quat &q)
     {
         mTransform->setAttitude(q);
 
-        _onMoved();
+        _onTransformChanged(this);
+    }
+
+    void LevelObject::setScale(const osg::Vec3 &scale)
+    {
+        mTransform->setScale(scale);
+
+        _onTransformChanged(this);
     }
 
     void LevelObject::setVisible(bool v)
@@ -315,29 +324,33 @@ namespace od
         return mLayerBelowObject;
     }
 
-    void LevelObject::attachTo(LevelObject *target, bool ignoreRotation, bool clearOffset)
+    void LevelObject::attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale)
     {
         if(target == nullptr || mAttachmentTarget != nullptr)
         {
             detach();
-            return;
-        }
 
-        if(clearOffset)
-        {
-            setPosition(target->getPosition());
-            setRotation(target->getRotation());
+            if(target == nullptr)
+            {
+                return;
+            }
         }
 
         if(!ignoreRotation)
         {
-            throw UnsupportedException("Attachment with rotation not implemented yet");
+            throw UnsupportedException("Attachment with rotation is unimplemented");
         }
 
         mAttachmentTarget = target;
-        mIgnoreAttachmentRotation = ignoreRotation;
-        mAttachmentTranslationOffset = getPosition() - target->getPosition();
         target->mAttachedObjects.push_back(osg::ref_ptr<od::LevelObject>(this));
+
+        mIgnoreAttachmentTranslation = ignoreTranslation;
+        mIgnoreAttachmentRotation = ignoreRotation;
+        mIgnoreAttachmentScale = ignoreScale;
+
+        mAttachmentTranslationOffset = getPosition() - target->getPosition();
+        mAttachmentRotationOffset = getRotation().inverse() * target->getRotation();
+        mAttachmentScaleRatio = osg::componentDivide(getScale(), target->getScale());
     }
 
     void LevelObject::attachToChannel(LevelObject *target, size_t channelIndex, bool clearOffset)
@@ -396,7 +409,7 @@ namespace od
         setRotation(BulletAdapter::toOsg(worldTrans.getRotation()));
     }
 
-    void LevelObject::_onMoved()
+    void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
         mLightingCallback->lightingDirty();
 
@@ -409,7 +422,7 @@ namespace od
 
         for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
         {
-            (*it)->_attachmentTargetPositionUpdated();
+            (*it)->_attachmentTargetsTransformUpdated(this);
         }
     }
 
@@ -427,8 +440,15 @@ namespace od
         mLayerBelowObjectDirty = false;
     }
 
-    void LevelObject::_attachmentTargetPositionUpdated()
+    void LevelObject::_attachmentTargetsTransformUpdated(LevelObject *transformChangeSource)
     {
+        if(transformChangeSource == this)
+        {
+            Logger::warn() << "Circular attachment detected! Will try to fix this by detaching one object in the loop";
+            detach();
+            return;
+        }
+
         if(mAttachmentTarget == nullptr)
         {
             // uhmm.... wat?
@@ -436,23 +456,25 @@ namespace od
             return;
         }
 
-        osg::Vec3f newPosition;
-        osg::Quat newRotation;
+        // note: don't call this->setPosition etc. here. it would call _onTransformChanged using this as argument, but we want
+        //  to pass along transformChangeSource so we can detect circular attachments
 
-        if(mIgnoreAttachmentRotation)
+        if(!mIgnoreAttachmentTranslation)
         {
-            newPosition = mAttachmentTarget->getPosition() + mAttachmentTranslationOffset;
-            newRotation = getRotation();
-
-        }else
-        {
-            // TODO: implement
-            //newPosition = mAttachmentTarget->getPosition() + mInitialTargetRotation.inverse()*mTargetObject.getRotation()*mTranslationOffset;
-            //newRotation = mTargetObject.getRotation() * mAttachedObject.getRotation();
+            mTransform->setPosition(mAttachmentTarget->getPosition() + mAttachmentTranslationOffset);
         }
 
-        setPosition(newPosition);
-        setRotation(newRotation);
+        if(!mIgnoreAttachmentRotation)
+        {
+            // TODO: implement
+        }
+
+        if(!mIgnoreAttachmentScale)
+        {
+            mTransform->setScale(osg::componentMultiply(mAttachmentTarget->getScale(), mAttachmentScaleRatio));
+        }
+
+        _onTransformChanged(transformChangeSource);
     }
 
     void LevelObject::_detachAllAttachedObjects()

@@ -61,8 +61,8 @@ namespace od
         inline Class *getClass() { return mClass; }
         inline RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
-        inline osg::Vec3f getPosition() const { return mTransform->getPosition(); }
-        inline osg::Vec3f getScale() const { return mTransform->getScale(); }
+        inline osg::Vec3 getPosition() const { return mTransform->getPosition(); }
+        inline osg::Vec3 getScale() const { return mTransform->getScale(); }
         inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
         inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
@@ -79,8 +79,9 @@ namespace od
         void update(double simTime, double relTime);
         void messageReceived(LevelObject &sender, RflMessage message);
 
-        void setPosition(const osg::Vec3f &v);
+        void setPosition(const osg::Vec3 &v);
         void setRotation(const osg::Quat &q);
+        void setScale(const osg::Vec3 &scale);
         void setVisible(bool v);
 
         void setObjectType(LevelObjectType type);
@@ -92,10 +93,15 @@ namespace od
          * @brief Attaches this object to target object.
          *
          * Attaches this LevelObject to the LevelObject \c target. Any transformation applied to \c target will also be applied to
-         * \c this. If \c ignoreRotation is false, any rotations transferred from \c target to this will pivot relative to \c target's origin.
+         * \c this. This only happens in a relative context. For instance, any offset between this and \c target will be maintained
+         * unless \c ignoreTranslation is true and the scale ration between these two object will be maintained unless
+         * \c ignoreScale is true.
          *
-         * If \c clearOffset is true, \c this will be moved to \c target prior to attachment so their transformation will be kept equal
-         * for the duration of the attachment.
+         * If \c ignoreTranslation is true, translation changes applied to \c target will not be transferred to this object.
+         * If \c ignoreRotation is true, rotation  changesapplied to \c target will not be transferred to this object.
+         * If \c ignoreScale is true, scaling changes applied to \c target will not be transferred to this object.
+         *
+         * If \c ignoreTranslation, \c ignoreRotation and \c ignoreScale are all true, this method will throw.
          *
          * Calling this with \c target as \c nullptr is equivalent to calling \c detach().
          *
@@ -103,7 +109,7 @@ namespace od
          *
          * If the attachment target despawns, this object will automatically be detached.
          */
-        void attachTo(LevelObject *target, bool ignoreRotation = false, bool clearOffset = false);
+        void attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale);
 
         /**
          * @brief Attaches this object to bone/channel of target character object.
@@ -146,9 +152,9 @@ namespace od
 
     private:
 
-        void _onMoved();
+        void _onTransformChanged(LevelObject *transformChangeSource);
         void _updateLayerBelowObject();
-        void _attachmentTargetPositionUpdated();
+        void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
         void _setVisible(bool b); // just so we can switch visibility internally without producing logs everytime
 
@@ -177,9 +183,13 @@ namespace od
         std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
 
         osg::ref_ptr<od::LevelObject> mAttachmentTarget;
-        osg::Vec3f mAttachmentTranslationOffset;
-        bool mIgnoreAttachmentRotation;
         std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
+        osg::Vec3 mAttachmentTranslationOffset;
+        osg::Quat mAttachmentRotationOffset;
+        osg::Vec3 mAttachmentScaleRatio;
+        bool mIgnoreAttachmentTranslation;
+        bool mIgnoreAttachmentRotation;
+        bool mIgnoreAttachmentScale;
 
         bool mLayerBelowObjectDirty;
         osg::ref_ptr<Layer> mLayerBelowObject;

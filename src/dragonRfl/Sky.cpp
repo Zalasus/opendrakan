@@ -68,7 +68,7 @@ namespace od
 		osg::Vec3 newSkyPos = camObject.getPosition();
         newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
         obj.setPosition(newSkyPos);
-		obj.attachTo(&camObject, true, false);
+		obj.attachTo(&camObject, false, true, false);
 	}
 
 
