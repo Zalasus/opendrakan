@@ -21,11 +21,11 @@
  *
  * @note Put this in the header declaring your RFL.
  *
- * @param rflName   A string containging the RFL's name
+ * @param rflName   A string containing the RFL's name
  * @param rfl       The class implementing the RFL
  */
 #define OD_DEFINE_RFL_TRAITS(rflName, rfl) \
-    template<> struct RflTraits<rfl> { static constexpr const char *name() { return rflName; } };
+    template<> constexpr const char *RflTraits<rfl>::name() { return rflName; }
 
 /**
  * @brief Convenience macro for defining a static registrar object for an RFL.
@@ -70,7 +70,7 @@ namespace od
 	template <typename T>
     struct RflTraits
     {
-        static constexpr const char *name() { return "<mising RFL traits definition>"; }
+        static constexpr const char *name();
     };
 
 

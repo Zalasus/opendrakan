@@ -26,11 +26,10 @@
  * @param cppClass  The class implementing the RFL class
  */
 #define OD_DEFINE_RFLCLASS_TRAITS(rfl, id, category, className, cppClass) \
-    template <> struct RflClassTraits<cppClass> { \
-        static constexpr const char *rflName() { return #rfl; }\
-        static constexpr const char *name() { return className; }\
-        static constexpr const char *categoryName() { return category; }\
-        static constexpr RflClassId classId() { return id; } };
+        template <> constexpr const char *RflClassTraits<cppClass>::rflName() { return #rfl; }\
+        template <> constexpr const char *RflClassTraits<cppClass>::name() { return className; }\
+        template <> constexpr const char *RflClassTraits<cppClass>::categoryName() { return category; }\
+        template <> constexpr RflClassId  RflClassTraits<cppClass>::classId() { return id; }
 
 /**
  * @brief Convenience macro for defining a static registrar object for an RFL class.
@@ -88,10 +87,10 @@ namespace od
 	template <typename _Class>
 	struct RflClassTraits
 	{
-	    static constexpr const char *rflName() { return "<mising RFL class traits definition>"; }
-	    static constexpr const char *name() { return "<mising RFL class traits definition>"; }
-	    static constexpr const char *categoryName() { return "<mising RFL class traits definition>"; }
-	    static constexpr RflClassId classId() { return 0; }
+	    static constexpr const char *rflName();
+	    static constexpr const char *name();
+	    static constexpr const char *categoryName();
+	    static constexpr RflClassId classId();
 	};
 
 
