@@ -54,6 +54,9 @@ namespace od
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setModelColor(const osg::Vec4 &color) { mColors->at(0) = color; }
 		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
+		inline osg::Vec3Array *getBuiltVertexArray() { return mVertices; }
+		inline osg::Vec3Array *getBuiltNormalArray() { return mNormals; }
+		inline osg::Vec4Array *getBuiltColorArray() { return mColors; }
 
 		void setVertexVector(std::vector<osg::Vec3f>::iterator begin, std::vector<osg::Vec3f>::iterator end);
 		void setPolygonVector(std::vector<Polygon>::iterator begin, std::vector<Polygon>::iterator end);

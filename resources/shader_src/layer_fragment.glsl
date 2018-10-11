@@ -7,7 +7,6 @@
 //  Later, we might want to account for blending between layers, different water shaders etc.
 
 varying vec2 texCoord;
-varying vec4 vertexColor;
 
 uniform sampler2D texture; 
 
@@ -32,5 +31,5 @@ void main(void)
     
     textureAndLightColor *= vec4(lightFactor, 1.0);
     
-    gl_FragColor = clamp(vertexColor * textureAndLightColor, 0.0, 1.0);
+    gl_FragColor = clamp(textureAndLightColor, 0.0, 1.0);
 }

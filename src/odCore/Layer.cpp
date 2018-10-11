@@ -256,18 +256,20 @@ namespace od
         }
         gb.setPolygonVector(polygons.begin(), polygons.end());
 
-        this->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
-        this->setName("layer " + mLayerName);
-
         mLayerGeode = new osg::Geode;
         gb.build(mLayerGeode);
+
+        _bakeLayerLight(gb.getBuiltVertexArray(), gb.getBuiltNormalArray(), gb.getBuiltColorArray());
+
+        this->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
+        this->setName("layer " + mLayerName);
         this->addChild(mLayerGeode);
 
         osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getShaderManager().makeProgram("layer");
         mLayerGeode->getOrCreateStateSet()->setAttribute(layerProg);
 
         mLightCallback = new LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
-        mLightCallback->setLayerLight(mLightColor, mAmbientColor, mLightDirectionVector);
+        mLightCallback->setLayerLight(osg::Vec3(), osg::Vec3(), osg::Vec3()); // disable layer light. we bake it into the color array
         mLightCallback->lightingDirty();
         this->addCullCallback(mLightCallback);
     }
@@ -531,6 +533,27 @@ namespace od
         }
 
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
+    }
+
+    void Layer::_bakeLayerLight(osg::Vec3Array *vertices, osg::Vec3Array *normals, osg::Vec4Array *colors)
+    {
+        colors->resize(vertices->size(), osg::Vec4());
+        colors->setBinding(osg::Array::BIND_PER_VERTEX);
+
+        for(size_t i = 0; i < vertices->size(); ++i)
+        {
+            osg::Vec4::value_type cosPhi = std::max((*normals)[i]*mLightDirectionVector, (osg::Vec4::value_type)0.0);
+
+            (*colors)[i] = osg::Vec4(mLightColor, 1.0) * cosPhi + osg::Vec4(mAmbientColor, 0.0);
+        }
+
+        /*for(size_t z = 0; z < mHeight; ++z)
+        {
+            for(size_t x = 0; x < mWidth; ++x)
+            {
+
+            }
+        }*/
     }
 
 }

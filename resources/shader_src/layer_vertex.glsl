@@ -18,9 +18,8 @@ varying vec4 vertexColor;
 
 varying vec3 lightColor;
 
-uniform vec3  layerLightDiffuse;
+// although the layer light is baked into the vertex colors, we still apply the ambient color since the LightManager uses it to "disable" lighting
 uniform vec3  layerLightAmbient;
-uniform vec3  layerLightDirection;
 
 uniform vec3  objectLightDiffuse[MAX_LIGHTS];
 uniform float objectLightIntensity[MAX_LIGHTS];
@@ -29,11 +28,7 @@ uniform vec3  objectLightPosition[MAX_LIGHTS];
 
 vec3 calcLighting(vec3 vertex_cs, vec3 normal_cs)
 {
-    vec3 resultLightColor;
-    
-    // layer light first
-    float layerCosTheta = max(dot(normal_cs, layerLightDirection), 0.0);
-    resultLightColor = layerLightAmbient + layerLightDiffuse*layerCosTheta;
+    vec3 resultLightColor = layerLightAmbient;
     
     for(int i = 0; i < MAX_LIGHTS; ++i)
     {
@@ -61,7 +56,7 @@ void main(void)
     vec4 vertex_cs = gl_ModelViewMatrix * vertex_ms;
     vec3 normal_cs = normalize(gl_NormalMatrix * normal_ms);
     
-    lightColor = calcLighting(vertex_cs.xyz, normal_cs);
+    lightColor = calcLighting(vertex_cs.xyz, normal_cs) + gl_Color.xyz; // layer lights are baked into vertex colors
     lightColor = clamp(lightColor, 0.0, 1.0);
     
     gl_Position = gl_ProjectionMatrix * vertex_cs;

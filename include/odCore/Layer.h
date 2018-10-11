@@ -86,6 +86,8 @@ namespace od
 
     private:
 
+        void _bakeLayerLight(osg::Vec3Array *vertices, osg::Vec3Array *normals, osg::Vec4Array *colors);
+
         struct Cell
         {
             uint16_t flags;
