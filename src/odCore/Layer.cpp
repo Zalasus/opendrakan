@@ -103,6 +103,8 @@ namespace od
     void Layer::loadPolyData(DataReader &dr)
     {
         mVertices.reserve((mWidth+1)*(mHeight+1));
+        float lowestHeightOffset = std::numeric_limits<float>::max();
+        float maxHeightOffset = std::numeric_limits<float>::lowest();
         for(size_t i = 0; i < (mWidth+1)*(mHeight+1); ++i)
         {
             uint8_t vertexType;
@@ -116,8 +118,22 @@ namespace od
             v.type = vertexType;
             v.heightOffsetLu = OD_WORLD_SCALE*(heightOffsetBiased - 0x8000)*2;
 
+            if(v.heightOffsetLu < lowestHeightOffset)
+            {
+                lowestHeightOffset = v.heightOffsetLu;
+            }
+
+            if(v.heightOffsetLu > maxHeightOffset)
+            {
+                maxHeightOffset = v.heightOffsetLu;
+            }
+
             mVertices.push_back(v);
         }
+
+        osg::Vec3 min(mOriginX, getWorldHeightLu()+lowestHeightOffset, mOriginZ);
+        osg::Vec3 max(mOriginX+mWidth, getWorldHeightLu()+maxHeightOffset, mOriginZ+mHeight);
+        mBoundingBox = osg::BoundingBox(min, max);
 
         mCells.reserve(mWidth*mHeight);
         for(size_t i = 0; i < mWidth*mHeight; ++i)
@@ -259,7 +275,11 @@ namespace od
         mLayerGeode = new osg::Geode;
         gb.build(mLayerGeode);
 
-        _bakeLayerLight(gb.getBuiltVertexArray(), gb.getBuiltNormalArray(), gb.getBuiltColorArray());
+        // store references to the shared arrays of the generated geometries. we need them to bake the layer lighting
+        mGeometryVertexArray = gb.getBuiltVertexArray();
+        mGeometryNormalArray = gb.getBuiltNormalArray();
+        mGeometryColorArray  = gb.getBuiltColorArray();
+        _bakeLocalLayerLight();
 
         this->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
         this->setName("layer " + mLayerName);
@@ -535,25 +555,140 @@ namespace od
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
-    void Layer::_bakeLayerLight(osg::Vec3Array *vertices, osg::Vec3Array *normals, osg::Vec4Array *colors)
+    static int32_t clamp(int32_t val, int32_t min, int32_t max)
     {
-        colors->resize(vertices->size(), osg::Vec4());
-        colors->setBinding(osg::Array::BIND_PER_VERTEX);
+        return val < min ? min : (val > max ? max : val);
+    }
 
-        for(size_t i = 0; i < vertices->size(); ++i)
+    static float clamp(float val, float min, float max)
+    {
+        return val < min ? min : (val > max ? max : val);
+    }
+
+    static osg::Vec4 clamp(osg::Vec4 val, osg::Vec4::value_type min, osg::Vec4::value_type max)
+    {
+        for(size_t i = 0; i < 4; ++i)
         {
-            osg::Vec4::value_type cosPhi = std::max((*normals)[i]*mLightDirectionVector, (osg::Vec4::value_type)0.0);
-
-            (*colors)[i] = osg::Vec4(mLightColor, 1.0) * cosPhi + osg::Vec4(mAmbientColor, 0.0);
+            val[i] = clamp(val[i], min, max);
         }
 
-        /*for(size_t z = 0; z < mHeight; ++z)
-        {
-            for(size_t x = 0; x < mWidth; ++x)
-            {
+        return val;
+    }
 
+    void Layer::_bakeLocalLayerLight()
+    {
+        if(mGeometryNormalArray->size() != mGeometryVertexArray->size())
+        {
+            throw Exception("Bad generated geometry arrays. Normal and vertex array sizes must match for baking lighting");
+        }
+
+        mGeometryColorArray->resize(mGeometryVertexArray->size(), osg::Vec4());
+        mGeometryColorArray->setBinding(osg::Array::BIND_PER_VERTEX);
+
+        for(size_t i = 0; i < mGeometryVertexArray->size(); ++i)
+        {
+            // for some reason, the Riot Engine seems to add the ambient component twice in layer lighting
+            osg::Vec3::value_type cosTheta = std::max((*mGeometryNormalArray)[i]*mLightDirectionVector, (osg::Vec3::value_type)0.0);
+            osg::Vec3 lightColor = mLightColor*cosTheta + mAmbientColor*2;
+
+            (*mGeometryColorArray)[i] = osg::Vec4(lightColor, 1.0);
+
+            // also store the color in the vertex array. blending lighting of adjacent layers can't operate in-place on color array
+            uint32_t x = std::round((*mGeometryVertexArray)[i].x());
+            uint32_t z = std::round((*mGeometryVertexArray)[i].z());
+            size_t vertIndex = x + z*(mWidth+1);
+            mVertices.at(vertIndex).calculatedLightColor = lightColor;
+        }
+    }
+
+    void Layer::bakeOverlappingLayerLighting()
+    {
+        // FIXME: this function is a mess. clean it up!
+
+        if(mGeometryColorArray == nullptr)
+        {
+            throw Exception("Need to build geometry before calling bakeOverlappingLayerLighting()");
+        }
+
+        // build overlap map
+        std::vector<Layer*> overlappingLayers;
+        overlappingLayers.reserve(10);
+        mLevel.findAdjacentAndOverlappingLayers(this, overlappingLayers);
+
+        struct VertexOverlap
+        {
+            VertexOverlap() : layerCount(0) {}
+            void addLayer(Layer *layer)
+            {
+                if(layerCount < (sizeof(layers)/sizeof(layers[0])))
+                {
+                    layers[layerCount] = layer;
+                    ++layerCount;
+                }
             }
-        }*/
+            size_t layerCount;
+            Layer* layers[4];
+        };
+        std::vector<VertexOverlap> overlapMap(mVertices.size());
+
+        for(auto layerIt = overlappingLayers.begin(); layerIt != overlappingLayers.end(); ++layerIt)
+        {
+            Layer *layer = *layerIt;
+
+            // for every overlapping layer, find xz range of overlapping vertices
+            int32_t relOriginX = layer->getOriginX() - mOriginX;
+            int32_t relOriginZ = layer->getOriginZ() - mOriginZ;
+            uint32_t xStart = clamp(relOriginX, 0, mWidth);
+            uint32_t zStart = clamp(relOriginZ, 0, mHeight);
+            uint32_t xEnd =   clamp(relOriginX + layer->getWidth(), 0, mWidth);
+            uint32_t zEnd =   clamp(relOriginZ + layer->getHeight(), 0, mHeight);
+
+            // for each vertex in that range, check for vertices within height threshold
+            for(uint32_t z = zStart; z <= zEnd; ++z)
+            {
+                for(uint32_t x = xStart; x <= xEnd; ++x)
+                {
+                    size_t ourVertIndex = x + z*(mWidth+1);
+                    size_t theirVertIndex = (x - relOriginX) + (z - relOriginZ)*(layer->getWidth()+1);
+
+                    float ourVertexHeight = mVertices.at(ourVertIndex).heightOffsetLu + getWorldHeightLu();
+                    float theirVertexHeight = layer->mVertices.at(theirVertIndex).heightOffsetLu + layer->getWorldHeightLu();
+
+                    if(std::abs(ourVertexHeight - theirVertexHeight) <= 2*OD_WORLD_SCALE) // threshold is +/- 2wu
+                    {
+                        // vertices are within range! add to list
+                        overlapMap.at(ourVertIndex).addLayer(layer);
+                    }
+                }
+            }
+        }
+
+        for(size_t i = 0; i < mGeometryVertexArray->size(); ++i)
+        {
+            // find this vertex in overlap map. note that we can't use the index here, as the geometry's vertex array potentially
+            //  contains more vertices than the layer itself. we need to derive x and z from the vertex coordinates
+            uint32_t x = std::round((*mGeometryVertexArray)[i].x());
+            uint32_t z = std::round((*mGeometryVertexArray)[i].z());
+            size_t vertIndex = x + z*(mWidth+1);
+
+            VertexOverlap &overlap = overlapMap.at(vertIndex);
+            for(size_t layerIndex = 0; layerIndex < overlap.layerCount; ++layerIndex)
+            {
+                Layer *layer = overlap.layers[layerIndex];
+                if(layer == nullptr)
+                {
+                    continue;
+                }
+
+                int32_t relOriginX = layer->getOriginX() - mOriginX;
+                int32_t relOriginZ = layer->getOriginZ() - mOriginZ;
+                size_t theirVertIndex = (x - relOriginX) + (z - relOriginZ)*(layer->getWidth()+1);
+
+                (*mGeometryColorArray)[i] += osg::Vec4(layer->mVertices.at(theirVertIndex).calculatedLightColor, 0.0);
+            }
+
+            (*mGeometryColorArray)[i] = clamp((*mGeometryColorArray)[i], 0.0, 1.0) / (overlap.layerCount + 1);
+        }
     }
 
 }

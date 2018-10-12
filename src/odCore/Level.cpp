@@ -153,6 +153,33 @@ namespace od
         return closestLayer;
     }
 
+    void Level::findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results)
+    {
+        // TODO: use an efficient spatial search here
+        //  using brute force for now
+
+        results.clear();
+
+        osg::Vec3 epsilon(0.25, 0.25, 0.25);
+
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            if(*it == checkLayer)
+            {
+                continue;
+            }
+
+            osg::Vec3 min = (*it)->getBoundingBox()._min - epsilon;
+            osg::Vec3 max = (*it)->getBoundingBox()._max + epsilon;
+            osg::BoundingBox newBox(min, max);
+
+            if(newBox.intersects(checkLayer->getBoundingBox()))
+            {
+                results.push_back(*it);
+            }
+        }
+    }
+
     void Level::update()
     {
         if(!mDestructionQueue.empty())
@@ -260,6 +287,11 @@ namespace od
 			{
 				mPhysicsManager.addLayer(*mLayers[i]);
 			}
+    	}
+
+    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+    	{
+    	    (*it)->bakeOverlappingLayerLighting();
     	}
     }
 

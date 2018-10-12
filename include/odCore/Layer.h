@@ -60,6 +60,12 @@ namespace od
         btCollisionShape *getCollisionShape();
 
         /**
+         * Bakes lighting of overlapping layers into this layer's geometry. Call only after all potentially overlapping
+         * layer's geometries have been built.
+         */
+        void bakeOverlappingLayerLighting();
+
+        /**
          * Checks whether this layer has a hole at the absolute xz coordiante \c absolutePos.
          * Coordinates are in lu, relative to the level's origin.
          *
@@ -72,21 +78,25 @@ namespace od
 
         float getAbsoluteHeightAt(const osg::Vec2 &xzCoord);
 
+
+
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
         inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
         inline uint32_t getOriginX() const { return mOriginX; }
         inline uint32_t getOriginZ() const { return mOriginZ; }
+        inline uint32_t getWidth() const { return mWidth; }
+        inline uint32_t getHeight() const { return mHeight; }
         inline float getWorldHeightWu() const { return mWorldHeightWu; }
         inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
         inline osg::Vec3 getLightColor() const { return mLightColor; }
         inline osg::Vec3 getAmbientColor() const { return mAmbientColor; }
         inline osg::Vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
-
+        inline const osg::BoundingBox &getBoundingBox() { return mBoundingBox; }
 
     private:
 
-        void _bakeLayerLight(osg::Vec3Array *vertices, osg::Vec3Array *normals, osg::Vec4Array *colors);
+        void _bakeLocalLayerLight();
 
         struct Cell
         {
@@ -100,6 +110,7 @@ namespace od
         {
             uint8_t type;
             float heightOffsetLu;
+            osg::Vec3 calculatedLightColor;
         };
 
         Level              	   &mLevel;
@@ -124,10 +135,15 @@ namespace od
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
         osg::ref_ptr<osg::Geode> mLayerGeode;
+        osg::ref_ptr<osg::Vec3Array> mGeometryVertexArray;
+        osg::ref_ptr<osg::Vec3Array> mGeometryNormalArray;
+        osg::ref_ptr<osg::Vec4Array> mGeometryColorArray;
         osg::ref_ptr<LightStateCallback> mLightCallback;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;
+
+        osg::BoundingBox mBoundingBox;
     };
 
 }

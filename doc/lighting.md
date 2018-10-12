@@ -8,7 +8,8 @@ Layers have one fixed, directional light. It's direction is defined by an
 azimuth (simply called "direction" in the editor) and an ascension angle.
 
 Layer lights have a diffuse component and an ambient component that work as one
-would expect from a Blinn-Phong model.
+would expect from a Blinn-Phong model with the exception that the ambient component
+seems to be multiplied by a factor of approx. 2 before being added.
 
 When the vertices of two or more layers with the same XZ coordinate are within
 ±2wu of each other on the Y axis, the lighting properties of those layers are

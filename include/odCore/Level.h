@@ -48,6 +48,7 @@ namespace od
         Layer *getLayerById(uint32_t id);
         Layer *getLayerByIndex(uint16_t index);
         Layer *getFirstLayerBelowPoint(const osg::Vec3 &v);
+        void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
 
         void update();
 
