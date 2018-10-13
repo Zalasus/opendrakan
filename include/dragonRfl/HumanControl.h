@@ -15,11 +15,14 @@
 
 #include <dragonRfl/common/PlayerCommon.h>
 
-namespace od
+namespace odAnim
+{
+    class SkeletonAnimationPlayer;
+}
+
+namespace dragonRfl
 {
     class DragonRfl;
-
-	class SkeletonAnimationPlayer;
 
 	/**
 	 * Seperate container class for the RFL fields in HumanControl. This exists just so the actual
@@ -32,205 +35,205 @@ namespace od
 		HumanControlFields();
         virtual ~HumanControlFields();
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
     protected:
 
-        RflCharChannel		mRightWeaponChannel;
-		RflCharChannel		mLeftWeaponChannel;
-		RflCharChannel		mTorsoChannel;
-		RflCharChannel		mLowerBodyChan;
-		RflCharChannel		mRightArmChan;
-		RflCharChannelArray	mSolveToChans;
-		RflCharChannelArray	mLeftLegChans;
-		RflCharChannelArray	mRightLegChans;
-		RflCharChannel		mHair1Channel;
-		RflFloat		    mMultiplayerSpeedScaling;
-		RflFloat		    mFallStartDmgSpeed;
-		RflFloat		    mFallDeathSpeed;
-		RflAnimRef		    mDrown;
-		RflSoundRef		    mDrownSound;
-		RflAnimRef		    mCombatIdleOneHand;
-		RflAnimRef		    mCombatIdleTwoHand;
-		RflAnimRef		    mWalkOneHanded;
-		RflAnimRef		    mRunOneHanded;
-		RflAnimRef		    mStrafeLeftOneHanded;
-		RflAnimRef		    mStrafeRightOneHanded;
-		RflAnimRef		    mWalkCombat;
-		RflAnimRef		    mRunCombat;
-		RflAnimRef		    mRideAir;
-		RflAnimRef		    mRideGround;
-		RflAnimRef		    mMount;
-		RflAnimRef		    mDismount;
-		RflAnimRef		    mJump;
-		RflAnimRef		    mInAir;
-		RflAnimRef		    mLanding;
-		RflAnimRef		    mLandingSmall;
-		RflAnimRef		    mLandingRun;
-		RflAnimRef		    mNoncombatToCrouch;
-		RflAnimRef		    mCombatToCrouch;
-		RflAnimRef		    mNoncombatCrouched;
-		RflAnimRef		    mCombatCrouched;
-		RflAnimRef		    mWaddleForward;
-		RflAnimRef		    mRollLeft;
-		RflAnimRef		    mRollRight;
-		RflAnimRef		    mRollForward;
-		RflAnimRef		    mRollBack;
-		RflAnimRef		    mCartwheelL;
-		RflAnimRef		    mCartwheelR;
-		RflAnimRef		    mFlipForward;
-		RflAnimRef		    mFlipBack;
-		RflAnimRef		    mPushRollable;
-		RflAnimRef		    mPushSlidable;
-		RflAnimRef		    mLadderUp1;
-		RflAnimRef		    mLadderUp2;
-		RflAnimRef		    mLadderDown1;
-		RflAnimRef		    mLadderDown2;
-		RflAnimRef		    mLadderUpLIdle;
-		RflAnimRef		    mLadderUpRIdle;
-		RflAnimRef		    mLadderDownRIdle;
-		RflAnimRef		    mGetOnLadderB;
-		RflAnimRef		    mGetOffLadderB;
-		RflAnimRef		    mGetOnLadderT;
-		RflAnimRef		    mGetOffLadderT;
-		RflAnimRef		    mStairsUp;
-		RflAnimRef		    mStairsDown;
-		RflAnimRef		    mStairsUpIdleL;
-		RflAnimRef		    mStairsUpIdleR;
-		RflAnimRef		    mStairsDownIdleL;
-		RflAnimRef		    mStairsDownIdleR;
-		RflAnimRef		    mHuh;
-		RflAnimRef		    m180Turn;
-		RflAnimRef		    mUseMagicCrystal;
-		RflAnimRef		    mSlideForward;
-		RflAnimRef		    mSlideBackward;
-		RflAnimRef		    mBalancing;
-		RflAnimRef		    mThrow;
-		RflAnimRef		    mShootGun;
-		RflAnimRef		    mReloadGun;
-		RflAnimRef		    mArcherMedium;
-		RflAnimRef		    mArcherLow;
-		RflFloat		    mGunCamHorzDistance;
-		RflFloat		    mGunCamVertDistance;
-		RflAnimRef		    mOneHandRH;
-		RflAnimRef		    mOneHandRM1;
-		RflAnimRef		    mOneHandRM2;
-		RflAnimRef		    mOneHandRM3;
-		RflAnimRef		    mOneHandRL;
-		RflAnimRef		    mOneHandSH;
-		RflAnimRef		    mOneHandSM;
-		RflAnimRef		    mOneHandSL;
-		RflAnimRef		    mOneHandUB1;
-		RflAnimRef		    mOneHandUB2;
-		RflAnimRef		    mOneHandUB3;
-		RflAnimRef		    mTwoHandRH;
-		RflAnimRef		    mTwoHandRM1;
-		RflAnimRef		    mTwoHandRM2;
-		RflAnimRef		    mTwoHandRM3;
-		RflAnimRef		    mTwoHandRL;
-		RflAnimRef		    mTwoHandSH;
-		RflAnimRef		    mTwoHandSM;
-		RflAnimRef		    mTwoHandSL;
-		RflAnimRef		    mTwoHandUB1;
-		RflAnimRef		    mTwoHandUB2;
-		RflAnimRef		    mTwoHandUB3;
-		RflAnimRef		    mFireSA;
-		RflAnimRef		    mIceSA;
-		RflAnimRef		    mLightningSA;
-		RflAnimRef		    mDeathSA;
-		RflAnimRef		    mStrafeAttackLUB;
-		RflAnimRef		    mStrafeAttackRUB;
-		RflAnimRef		    mRollLAttack;
-		RflAnimRef		    mRollRAttack;
-		RflAnimRef		    mSpecialAttackThrust;
-		RflAnimRef		    mSpecialAttackLeft;
-		RflAnimRef		    mSpecialAttackRight;
-		RflAnimRef		    mSpecialAttackSpin;
-		RflAnimRef		    mSpecialAttackSwing180;
-		RflAnimRef		    mSpecialAttackJump;
-		RflFloat		    mSAThrustDamageMultiplier;
-		RflFloat		    mSALeftDamageMultiplier;
-		RflFloat		    mSARightDamageMultiplier;
-		RflFloat		    mSASpinDamageMultiplier;
-		RflFloat		    mSASwing180DamageMultiplier;
-		RflFloat		    mSAJumpDamageMultiplier;
-		RflAnimRef		    mBlock;
-		RflAnimRef		    mCrouchedBlock;
-		RflInteger		    mBlockDamageReductionPercent;
-		RflAnimRef		    mSheathe;
-		RflAnimRef		    mUnsheathe;
-		RflFloat		    mReAttackWindow;
-		RflAnimRef		    mHitRxnHSLAnim;
-		RflAnimRef		    mHitRxnHSHAnim;
-		RflAnimRef		    mHitRxnOSLAnim;
-		RflAnimRef		    mHitRxnOSHAnim;
-		RflAnimRef		    mHitRxnFSLAnim;
-		RflAnimRef		    mHitRxnFSHAnim;
-		RflSoundRefArray	mHitRxnHSLSound;
-		RflSoundRefArray	mHitRxnHSHSound;
-		RflSoundRefArray	mHitRxnOSLSound;
-		RflSoundRefArray	mHitRxnOSHSound;
-		RflSoundRefArray	mHitRxnFSLSound;
-		RflSoundRefArray	mHitRxnFSHSound;
-		RflAnimRef		    mWalkStrafeL;
-		RflAnimRef		    mWalkStrafeR;
-		RflAnimRef		    mSlowWalk;
-		RflAnimRef		    mRunBackwards;
-		RflAnimRef		    mRunBackwardsOneHanded;
-		RflAnimRef		    mNoncombat2Run;
-		RflAnimRef		    mRun2Ready;
-		RflAnimRef		    mRun2ReadyL;
-		RflAnimRef		    mWalk2Ready;
-		RflAnimRef		    mStrafeL2Ready;
-		RflAnimRef		    mStrafeR2Ready;
-		RflAnimRef		    mTurnLeft;
-		RflAnimRef		    mTurnRight;
-		RflAnimRef		    mBumpIntoWall;
-		RflFloat		    mSwimForwardSpeed;
-		RflFloat		    mSwimBackwardSpeed;
-		RflFloat		    mAirConsumptionRate;
-		RflFloat		    mAirReplenishmentRate;
-		RflAnimRef		    mInAirToSwanDive;
-		RflAnimRef		    mSwanDive;
-		RflAnimRef		    mSwim;
-		RflAnimRef		    mBackswim;
-		RflAnimRef		    mSwimToBackswim;
-		RflAnimRef		    mBackswimToSwim;
-		RflAnimRef		    mTreadWater;
-		RflAnimRef		    mIdleUnderwater;
-		RflAnimRef		    mIdleUWtoTread;
-		RflAnimRef		    mSwimToRun;
-		RflSoundRef		    mSlideSound;
-		RflSoundRef		    mHardLandingSound;
-		RflSoundRefArray	mDragonCallSounds;
-		RflSoundRefArray	mHuhSounds;
-		RflSoundRefArray	mCantReachSounds;
-		RflSoundRefArray	mCantUseSounds;
-		RflSoundRef			mFallIntoWaterSound;
-		RflSoundRef			mInventoryFullSound;
-		RflSoundRef			mNoDartsSound;
-		RflSoundRef			mNoArrowsSound;
-		RflSoundRef			mSheatheSound;
-		RflSoundRefArray	mPushObjectSounds;
-		RflSoundRefArray	mAttackGrunts;
-		RflSoundRefArray	mGetThePointSounds;
-		RflInteger			mGetThePointSndChance;
+        odRfl::RflCharChannel		mRightWeaponChannel;
+		odRfl::RflCharChannel		mLeftWeaponChannel;
+		odRfl::RflCharChannel		mTorsoChannel;
+		odRfl::RflCharChannel		mLowerBodyChan;
+		odRfl::RflCharChannel		mRightArmChan;
+		odRfl::RflCharChannelArray	mSolveToChans;
+		odRfl::RflCharChannelArray	mLeftLegChans;
+		odRfl::RflCharChannelArray	mRightLegChans;
+		odRfl::RflCharChannel		mHair1Channel;
+		odRfl::RflFloat		        mMultiplayerSpeedScaling;
+		odRfl::RflFloat		        mFallStartDmgSpeed;
+		odRfl::RflFloat		        mFallDeathSpeed;
+		odRfl::RflAnimRef		    mDrown;
+		odRfl::RflSoundRef		    mDrownSound;
+		odRfl::RflAnimRef		    mCombatIdleOneHand;
+		odRfl::RflAnimRef		    mCombatIdleTwoHand;
+		odRfl::RflAnimRef		    mWalkOneHanded;
+		odRfl::RflAnimRef		    mRunOneHanded;
+		odRfl::RflAnimRef		    mStrafeLeftOneHanded;
+		odRfl::RflAnimRef		    mStrafeRightOneHanded;
+		odRfl::RflAnimRef		    mWalkCombat;
+		odRfl::RflAnimRef		    mRunCombat;
+		odRfl::RflAnimRef		    mRideAir;
+		odRfl::RflAnimRef		    mRideGround;
+		odRfl::RflAnimRef		    mMount;
+		odRfl::RflAnimRef		    mDismount;
+		odRfl::RflAnimRef		    mJump;
+		odRfl::RflAnimRef		    mInAir;
+		odRfl::RflAnimRef		    mLanding;
+		odRfl::RflAnimRef		    mLandingSmall;
+		odRfl::RflAnimRef		    mLandingRun;
+		odRfl::RflAnimRef		    mNoncombatToCrouch;
+		odRfl::RflAnimRef		    mCombatToCrouch;
+		odRfl::RflAnimRef		    mNoncombatCrouched;
+		odRfl::RflAnimRef		    mCombatCrouched;
+		odRfl::RflAnimRef		    mWaddleForward;
+		odRfl::RflAnimRef		    mRollLeft;
+		odRfl::RflAnimRef		    mRollRight;
+		odRfl::RflAnimRef		    mRollForward;
+		odRfl::RflAnimRef		    mRollBack;
+		odRfl::RflAnimRef		    mCartwheelL;
+		odRfl::RflAnimRef		    mCartwheelR;
+		odRfl::RflAnimRef		    mFlipForward;
+		odRfl::RflAnimRef		    mFlipBack;
+		odRfl::RflAnimRef		    mPushRollable;
+		odRfl::RflAnimRef		    mPushSlidable;
+		odRfl::RflAnimRef		    mLadderUp1;
+		odRfl::RflAnimRef		    mLadderUp2;
+		odRfl::RflAnimRef		    mLadderDown1;
+		odRfl::RflAnimRef		    mLadderDown2;
+		odRfl::RflAnimRef		    mLadderUpLIdle;
+		odRfl::RflAnimRef		    mLadderUpRIdle;
+		odRfl::RflAnimRef		    mLadderDownRIdle;
+		odRfl::RflAnimRef		    mGetOnLadderB;
+		odRfl::RflAnimRef		    mGetOffLadderB;
+		odRfl::RflAnimRef		    mGetOnLadderT;
+		odRfl::RflAnimRef		    mGetOffLadderT;
+		odRfl::RflAnimRef		    mStairsUp;
+		odRfl::RflAnimRef		    mStairsDown;
+		odRfl::RflAnimRef		    mStairsUpIdleL;
+		odRfl::RflAnimRef		    mStairsUpIdleR;
+		odRfl::RflAnimRef		    mStairsDownIdleL;
+		odRfl::RflAnimRef		    mStairsDownIdleR;
+		odRfl::RflAnimRef		    mHuh;
+		odRfl::RflAnimRef		    m180Turn;
+		odRfl::RflAnimRef		    mUseMagicCrystal;
+		odRfl::RflAnimRef		    mSlideForward;
+		odRfl::RflAnimRef		    mSlideBackward;
+		odRfl::RflAnimRef		    mBalancing;
+		odRfl::RflAnimRef		    mThrow;
+		odRfl::RflAnimRef		    mShootGun;
+		odRfl::RflAnimRef		    mReloadGun;
+		odRfl::RflAnimRef		    mArcherMedium;
+		odRfl::RflAnimRef		    mArcherLow;
+		odRfl::RflFloat		        mGunCamHorzDistance;
+		odRfl::RflFloat		        mGunCamVertDistance;
+		odRfl::RflAnimRef		    mOneHandRH;
+		odRfl::RflAnimRef		    mOneHandRM1;
+		odRfl::RflAnimRef		    mOneHandRM2;
+		odRfl::RflAnimRef		    mOneHandRM3;
+		odRfl::RflAnimRef		    mOneHandRL;
+		odRfl::RflAnimRef		    mOneHandSH;
+		odRfl::RflAnimRef		    mOneHandSM;
+		odRfl::RflAnimRef		    mOneHandSL;
+		odRfl::RflAnimRef		    mOneHandUB1;
+		odRfl::RflAnimRef		    mOneHandUB2;
+		odRfl::RflAnimRef		    mOneHandUB3;
+		odRfl::RflAnimRef		    mTwoHandRH;
+		odRfl::RflAnimRef		    mTwoHandRM1;
+		odRfl::RflAnimRef		    mTwoHandRM2;
+		odRfl::RflAnimRef		    mTwoHandRM3;
+		odRfl::RflAnimRef		    mTwoHandRL;
+		odRfl::RflAnimRef		    mTwoHandSH;
+		odRfl::RflAnimRef		    mTwoHandSM;
+		odRfl::RflAnimRef		    mTwoHandSL;
+		odRfl::RflAnimRef		    mTwoHandUB1;
+		odRfl::RflAnimRef		    mTwoHandUB2;
+		odRfl::RflAnimRef		    mTwoHandUB3;
+		odRfl::RflAnimRef		    mFireSA;
+		odRfl::RflAnimRef		    mIceSA;
+		odRfl::RflAnimRef		    mLightningSA;
+		odRfl::RflAnimRef		    mDeathSA;
+		odRfl::RflAnimRef		    mStrafeAttackLUB;
+		odRfl::RflAnimRef		    mStrafeAttackRUB;
+		odRfl::RflAnimRef		    mRollLAttack;
+		odRfl::RflAnimRef		    mRollRAttack;
+		odRfl::RflAnimRef		    mSpecialAttackThrust;
+		odRfl::RflAnimRef		    mSpecialAttackLeft;
+		odRfl::RflAnimRef		    mSpecialAttackRight;
+		odRfl::RflAnimRef		    mSpecialAttackSpin;
+		odRfl::RflAnimRef		    mSpecialAttackSwing180;
+		odRfl::RflAnimRef		    mSpecialAttackJump;
+		odRfl::RflFloat		        mSAThrustDamageMultiplier;
+		odRfl::RflFloat		        mSALeftDamageMultiplier;
+		odRfl::RflFloat		        mSARightDamageMultiplier;
+		odRfl::RflFloat		        mSASpinDamageMultiplier;
+		odRfl::RflFloat		        mSASwing180DamageMultiplier;
+		odRfl::RflFloat		        mSAJumpDamageMultiplier;
+		odRfl::RflAnimRef		    mBlock;
+		odRfl::RflAnimRef		    mCrouchedBlock;
+		odRfl::RflInteger		    mBlockDamageReductionPercent;
+		odRfl::RflAnimRef		    mSheathe;
+		odRfl::RflAnimRef		    mUnsheathe;
+		odRfl::RflFloat		        mReAttackWindow;
+		odRfl::RflAnimRef		    mHitRxnHSLAnim;
+		odRfl::RflAnimRef		    mHitRxnHSHAnim;
+		odRfl::RflAnimRef		    mHitRxnOSLAnim;
+		odRfl::RflAnimRef		    mHitRxnOSHAnim;
+		odRfl::RflAnimRef		    mHitRxnFSLAnim;
+		odRfl::RflAnimRef		    mHitRxnFSHAnim;
+		odRfl::RflSoundRefArray	    mHitRxnHSLSound;
+		odRfl::RflSoundRefArray	    mHitRxnHSHSound;
+		odRfl::RflSoundRefArray	    mHitRxnOSLSound;
+		odRfl::RflSoundRefArray	    mHitRxnOSHSound;
+		odRfl::RflSoundRefArray	    mHitRxnFSLSound;
+		odRfl::RflSoundRefArray	    mHitRxnFSHSound;
+		odRfl::RflAnimRef		    mWalkStrafeL;
+		odRfl::RflAnimRef		    mWalkStrafeR;
+		odRfl::RflAnimRef		    mSlowWalk;
+		odRfl::RflAnimRef		    mRunBackwards;
+		odRfl::RflAnimRef		    mRunBackwardsOneHanded;
+		odRfl::RflAnimRef		    mNoncombat2Run;
+		odRfl::RflAnimRef		    mRun2Ready;
+		odRfl::RflAnimRef		    mRun2ReadyL;
+		odRfl::RflAnimRef		    mWalk2Ready;
+		odRfl::RflAnimRef		    mStrafeL2Ready;
+		odRfl::RflAnimRef		    mStrafeR2Ready;
+		odRfl::RflAnimRef		    mTurnLeft;
+		odRfl::RflAnimRef		    mTurnRight;
+		odRfl::RflAnimRef		    mBumpIntoWall;
+		odRfl::RflFloat		        mSwimForwardSpeed;
+		odRfl::RflFloat		        mSwimBackwardSpeed;
+		odRfl::RflFloat		        mAirConsumptionRate;
+		odRfl::RflFloat		        mAirReplenishmentRate;
+		odRfl::RflAnimRef		    mInAirToSwanDive;
+		odRfl::RflAnimRef		    mSwanDive;
+		odRfl::RflAnimRef		    mSwim;
+		odRfl::RflAnimRef		    mBackswim;
+		odRfl::RflAnimRef		    mSwimToBackswim;
+		odRfl::RflAnimRef		    mBackswimToSwim;
+		odRfl::RflAnimRef		    mTreadWater;
+		odRfl::RflAnimRef		    mIdleUnderwater;
+		odRfl::RflAnimRef		    mIdleUWtoTread;
+		odRfl::RflAnimRef		    mSwimToRun;
+		odRfl::RflSoundRef		    mSlideSound;
+		odRfl::RflSoundRef		    mHardLandingSound;
+		odRfl::RflSoundRefArray	    mDragonCallSounds;
+		odRfl::RflSoundRefArray	    mHuhSounds;
+		odRfl::RflSoundRefArray	    mCantReachSounds;
+		odRfl::RflSoundRefArray	    mCantUseSounds;
+		odRfl::RflSoundRef			mFallIntoWaterSound;
+		odRfl::RflSoundRef			mInventoryFullSound;
+		odRfl::RflSoundRef			mNoDartsSound;
+		odRfl::RflSoundRef			mNoArrowsSound;
+		odRfl::RflSoundRef			mSheatheSound;
+		odRfl::RflSoundRefArray 	mPushObjectSounds;
+		odRfl::RflSoundRefArray	    mAttackGrunts;
+		odRfl::RflSoundRefArray	    mGetThePointSounds;
+		odRfl::RflInteger			mGetThePointSndChance;
     };
 
 
 
-	class HumanControl : public HumanControlFields, public Player
+	class HumanControl : public HumanControlFields, public od::Player
 	{
 	public:
 
 		HumanControl(DragonRfl &rfl);
 		virtual ~HumanControl();
 
-		virtual void onLoaded(LevelObject &obj) override;
-		virtual void onSpawned(LevelObject &obj) override;
-		virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
-		virtual void onMoved(LevelObject &obj) override;
+		virtual void onLoaded(od::LevelObject &obj) override;
+		virtual void onSpawned(od::LevelObject &obj) override;
+		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+		virtual void onMoved(od::LevelObject &obj) override;
 
 
 		// implement od::Player
@@ -241,7 +244,7 @@ namespace od
 		virtual void moveForward(float speed) override;
 		virtual void moveRight(float speed) override;
 		virtual osg::Vec3f getPosition() override;
-		virtual LevelObject &getLevelObject() override;
+		virtual od::LevelObject &getLevelObject() override;
 
 
 	 private:
@@ -254,16 +257,14 @@ namespace od
 		float mForwardSpeed;
 		float mRightSpeed;
 		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-		LevelObject *mPlayerObject;
-		osg::ref_ptr<od::SkeletonAnimationPlayer> mAnimationPlayer;
-		std::unique_ptr<od::CharacterController> mCharacterController;
+		od::LevelObject *mPlayerObject;
+		osg::ref_ptr<odAnim::SkeletonAnimationPlayer> mAnimationPlayer;
+		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
 	};
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0009, "Player", "Human Control", HumanControl);
-
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0009, "Player", "Human Control", dragonRfl::HumanControl);
 
 #endif /* INCLUDE_RFL_DRAGON_HUMANCONTROL_H_ */

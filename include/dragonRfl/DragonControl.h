@@ -10,7 +10,7 @@
 
 #include <dragonRfl/common/PlayerCommon.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
@@ -21,78 +21,77 @@ namespace od
 
         DragonControl(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
     protected:
 
-        RflAnimRef			mWalkBackwardAnim;
-		RflFloat			mAirCamHorzDistance;
-		RflFloat			mAirCamVertDistance;
-		RflCharChannel		mSaddleChannel;
-		RflCharChannel		mJawChannel;
-		RflCharChannel		mNeck2Channel;
-		RflInteger			mBiteDamage;
-		RflSoundRefArray	mGotHitSounds;
-		RflSoundRefArray	mCrashSounds;
-		RflInteger			mCrashSoundChance;
-		RflSoundRefArray	mWingFlapSounds;
-		RflSoundRefArray	mBiteSounds;
-		RflSoundRefArray	mDoneMountingSounds;
-		RflInteger			mPercentChanceOfDoneMountingSound;
-		RflAnimRef			mAirDeathStartAnim;
-		RflAnimRef			mAirDeathLoopAnim;
-		RflAnimRef			mAirDeathImpactAnim;
-		RflAnimRef			mMountAnim;
-		RflAnimRef			mDismountAnim;
-		RflAnimRef			mFlyAnim;
-		RflAnimRef			mFlyToHoverAnim;
-		RflAnimRef			mHoverAnim;
-		RflAnimRef			mHoverBackwardsAnim;
-		RflAnimRef			mSoarAnim;
-		RflAnimRef			mStrafeLeftAirAnim;
-		RflAnimRef			mStrafeRightAirAnim;
-		RflAnimRef			mStrafeUpAnim;
-		RflAnimRef			mTurnLeftGndAnim;
-		RflAnimRef			mTurnRightGndAnim;
-		RflAnimRef			mLandingAnim;
-		RflAnimRef			mRunIntoWallAnim;
-		RflAnimRef			mFlyIntoWallAnim;
-		RflAnimRef			mBiteAnim;
-		RflFloat			mMinFlySpeed;
-		RflFloat			mMaxFlySpeed;
-		RflFloat			mAirStrafeLRSpeed;
-		RflFloat			mStartHoverAnimSpeed;
-		RflFloat			mStartFlyAnimSpeed;
-		RflFloat			mUpStrafeSpeed;
-		RflFloat			mUpAccel;
-		RflFloat			mTurnDamping;
-		RflFloat			mClimbFactor;
-		RflFloat			mDiveFactor;
-		RflFloat			mSoarAngle;
-		RflFloat			mNoFlyHeadroom;
-		RflEnum				mInitialMode; // Air, Ground Human, Ground Dragon
-		RflClassRef			mDefaultWeapon;
-		RflFloat			mFollowHumanDistance;
-		RflSoundRefArray	mCantLandSounds;
-		RflSoundRefArray	mCallResponseSounds;
-		RflSoundRefArray	mImCloseEnoughSounds;
-		RflSoundRefArray	mCantFlySounds;
-		RflSoundRefArray	mMeetAtCaveEntranceSounds;
-		RflSoundRefArray	mKilledEnemySounds;
-		RflSoundRefArray	mHealthLowSounds;
-		RflSoundRefArray	mGotHitByRynnSounds;
-		RflSoundRefArray	mGetOutOfMyWaySounds;
-		RflFloat			mRechargeRatePerSecond;
-		RflSoundRefArray	mTakeOffSounds;
-		RflInteger			mTakeOffSoundChance;
-		RflSoundRefArray	mDoneDismountingSounds;
-		RflInteger			mDoneDismountSndChance;
+        odRfl::RflAnimRef			mWalkBackwardAnim;
+		odRfl::RflFloat			    mAirCamHorzDistance;
+		odRfl::RflFloat			    mAirCamVertDistance;
+		odRfl::RflCharChannel		mSaddleChannel;
+		odRfl::RflCharChannel		mJawChannel;
+		odRfl::RflCharChannel		mNeck2Channel;
+		odRfl::RflInteger			mBiteDamage;
+		odRfl::RflSoundRefArray	    mGotHitSounds;
+		odRfl::RflSoundRefArray	    mCrashSounds;
+		odRfl::RflInteger			mCrashSoundChance;
+		odRfl::RflSoundRefArray	    mWingFlapSounds;
+		odRfl::RflSoundRefArray	    mBiteSounds;
+		odRfl::RflSoundRefArray	    mDoneMountingSounds;
+		odRfl::RflInteger			mPercentChanceOfDoneMountingSound;
+		odRfl::RflAnimRef			mAirDeathStartAnim;
+		odRfl::RflAnimRef			mAirDeathLoopAnim;
+		odRfl::RflAnimRef			mAirDeathImpactAnim;
+		odRfl::RflAnimRef			mMountAnim;
+		odRfl::RflAnimRef			mDismountAnim;
+		odRfl::RflAnimRef			mFlyAnim;
+		odRfl::RflAnimRef			mFlyToHoverAnim;
+		odRfl::RflAnimRef			mHoverAnim;
+		odRfl::RflAnimRef			mHoverBackwardsAnim;
+		odRfl::RflAnimRef			mSoarAnim;
+		odRfl::RflAnimRef			mStrafeLeftAirAnim;
+		odRfl::RflAnimRef			mStrafeRightAirAnim;
+		odRfl::RflAnimRef			mStrafeUpAnim;
+		odRfl::RflAnimRef			mTurnLeftGndAnim;
+		odRfl::RflAnimRef			mTurnRightGndAnim;
+		odRfl::RflAnimRef			mLandingAnim;
+		odRfl::RflAnimRef			mRunIntoWallAnim;
+		odRfl::RflAnimRef			mFlyIntoWallAnim;
+		odRfl::RflAnimRef			mBiteAnim;
+		odRfl::RflFloat			    mMinFlySpeed;
+		odRfl::RflFloat			    mMaxFlySpeed;
+		odRfl::RflFloat			    mAirStrafeLRSpeed;
+		odRfl::RflFloat			    mStartHoverAnimSpeed;
+		odRfl::RflFloat			    mStartFlyAnimSpeed;
+		odRfl::RflFloat			    mUpStrafeSpeed;
+		odRfl::RflFloat			    mUpAccel;
+		odRfl::RflFloat			    mTurnDamping;
+		odRfl::RflFloat			    mClimbFactor;
+		odRfl::RflFloat			    mDiveFactor;
+		odRfl::RflFloat			    mSoarAngle;
+		odRfl::RflFloat			    mNoFlyHeadroom;
+		odRfl::RflEnum				mInitialMode; // Air, Ground Human, Ground Dragon
+		odRfl::RflClassRef			mDefaultWeapon;
+		odRfl::RflFloat			    mFollowHumanDistance;
+		odRfl::RflSoundRefArray	    mCantLandSounds;
+		odRfl::RflSoundRefArray	    mCallResponseSounds;
+		odRfl::RflSoundRefArray	    mImCloseEnoughSounds;
+		odRfl::RflSoundRefArray	    mCantFlySounds;
+		odRfl::RflSoundRefArray	    mMeetAtCaveEntranceSounds;
+		odRfl::RflSoundRefArray	    mKilledEnemySounds;
+		odRfl::RflSoundRefArray	    mHealthLowSounds;
+		odRfl::RflSoundRefArray	    mGotHitByRynnSounds;
+		odRfl::RflSoundRefArray	    mGetOutOfMyWaySounds;
+		odRfl::RflFloat			    mRechargeRatePerSecond;
+		odRfl::RflSoundRefArray	    mTakeOffSounds;
+		odRfl::RflInteger			mTakeOffSoundChance;
+		odRfl::RflSoundRefArray	    mDoneDismountingSounds;
+		odRfl::RflInteger			mDoneDismountSndChance;
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x001c, "Player", "Dragon Control", DragonControl);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001c, "Player", "Dragon Control", dragonRfl::DragonControl);
 
 #endif /* INCLUDE_RFL_DRAGON_DRAGONCONTROL_H_ */

@@ -14,7 +14,7 @@
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 
-namespace od
+namespace dragonRfl
 {
 
     SoundEffect::SoundEffect(DragonRfl &rfl)
@@ -28,7 +28,7 @@ namespace od
     {
     }
 
-    void SoundEffect::probeFields(FieldProbe &probe)
+    void SoundEffect::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Sound Effect")
                 (mSounds, "Sounds")
@@ -38,9 +38,9 @@ namespace od
                 (mLocation, "Location");
     }
 
-    void SoundEffect::onLoaded(LevelObject &obj)
+    void SoundEffect::onLoaded(od::LevelObject &obj)
     {
-        obj.setObjectType(LevelObjectType::Detector);
+        obj.setObjectType(od::LevelObjectType::Detector);
 
         mSoundSource = obj.getLevel().getEngine().getSoundManager().createSource(); // TODO: integrate into spawn/despawn cycle
         if(mSoundSource == nullptr)
@@ -49,7 +49,7 @@ namespace od
         }
     }
 
-    void SoundEffect::onSpawned(LevelObject &obj)
+    void SoundEffect::onSpawned(od::LevelObject &obj)
     {
         if(mSoundSource == nullptr)
         {
@@ -79,14 +79,14 @@ namespace od
         }
     }
 
-    void SoundEffect::onDespawned(LevelObject &obj)
+    void SoundEffect::onDespawned(od::LevelObject &obj)
     {
         mSoundSource->stop(0.1);
 
         mSounds.releaseAssets();
     }
 
-    void SoundEffect::onUpdate(LevelObject &obj, double simTime, double relTime)
+    void SoundEffect::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
         if(mSoundSource == nullptr || mSoundSource->isPlaying())
         {
@@ -114,7 +114,7 @@ namespace od
         }
     }
 
-    void SoundEffect::onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message)
+    void SoundEffect::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
     {
         if(mSoundSource == nullptr || mSoundSource->isPlaying())
         {
@@ -128,7 +128,7 @@ namespace od
         }
     }
 
-    void SoundEffect::onMoved(LevelObject &obj)
+    void SoundEffect::onMoved(od::LevelObject &obj)
     {
         if(mLocation != Location::EffectSite)
         {
@@ -146,7 +146,7 @@ namespace od
             return;
         }
 
-        osg::ref_ptr<Sound> sound;
+        osg::ref_ptr<odDb::Sound> sound;
         if(mSounds.getAssetCount() == 1)
         {
             // don't bother with randomness when only one sound in list

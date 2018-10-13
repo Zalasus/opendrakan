@@ -13,27 +13,27 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/Camera.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-	class TrackingCamera : public RflClass, public Camera
+	class TrackingCamera : public odRfl::RflClass, public od::Camera
 	{
 	public:
 
 		TrackingCamera(DragonRfl &rfl);
 
-		virtual void probeFields(FieldProbe &probe) override;
+		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-		virtual void onLoaded(LevelObject &obj) override;
-		virtual void onSpawned(LevelObject &obj) override;
-		virtual void onDespawned(LevelObject &obj) override;
+		virtual void onLoaded(od::LevelObject &obj) override;
+		virtual void onSpawned(od::LevelObject &obj) override;
+		virtual void onDespawned(od::LevelObject &obj) override;
 
 		// implement od::Camera
 		virtual osg::Vec3f getEyePoint() const override;
         virtual void setOsgCamera(osg::Camera *osgCam) override;
-        virtual LevelObject  &getLevelObject() override;
+        virtual od::LevelObject  &getLevelObject() override;
 
         void updateCamera();
 
@@ -42,19 +42,18 @@ namespace od
 
         void _setObjectPositionAndViewMatrix(const osg::Vec3f &eyepoint, const osg::Quat &lookDirection);
 
-		RflEnum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
-		RflFloat    mRubberBandStrength;
-		RflFloat    mSpinSpeed;
-		RflFloat	mCrosshairDistance;
+		odRfl::RflEnum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
+		odRfl::RflFloat    mRubberBandStrength;
+		odRfl::RflFloat    mSpinSpeed;
+		odRfl::RflFloat	mCrosshairDistance;
 
 		osg::ref_ptr<osg::Camera> mOsgCamera;
 		osg::ref_ptr<osg::NodeCallback> mCamUpdateCallback;
-		osg::ref_ptr<LevelObject> mCameraLevelObject;
+		osg::ref_ptr<od::LevelObject> mCameraLevelObject;
 	};
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x001b, "System", "Tracking Camera", TrackingCamera);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001b, "System", "Tracking Camera", dragonRfl::TrackingCamera);
 
 #endif /* INCLUDE_RFL_DRAGON_TRACKINGCAMERA_H_ */

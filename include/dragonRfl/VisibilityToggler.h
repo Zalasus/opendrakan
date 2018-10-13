@@ -11,12 +11,12 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class VisibilityToggler : public RflClass
+    class VisibilityToggler : public odRfl::RflClass
     {
     public:
 
@@ -28,24 +28,22 @@ namespace od
 
         VisibilityToggler(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
 
 
     protected:
 
-        RflEnumImpl<TriggerMode, 0, 1>  mTriggerMode;
-        RflEnumMessage                  mShowMessage;
-        RflEnumMessage                  mHideMessage;
+        odRfl::RflEnumImpl<TriggerMode, 0, 1>  mTriggerMode;
+        odRfl::RflEnumMessage                  mShowMessage;
+        odRfl::RflEnumMessage                  mHideMessage;
 
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0079, "System", "Visibility Toggler", VisibilityToggler);
-
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0079, "System", "Visibility Toggler", dragonRfl::VisibilityToggler);
 
 #endif /* INCLUDE_RFL_DRAGON_VISIBILITYTOGGLER_H_ */

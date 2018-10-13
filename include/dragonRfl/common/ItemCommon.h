@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/rfl/RflClass.h>
 
-namespace od
+namespace dragonRfl
 {
 
     enum class PlayerSlot
@@ -27,15 +27,15 @@ namespace od
         Any
     };
 
-    typedef RflEnumImpl<PlayerSlot, 0, 8> RflEnumPlayerSlot;
+    typedef odRfl::RflEnumImpl<PlayerSlot, 0, 8> RflEnumPlayerSlot;
 
 
 
-	class ItemCommon : public RflClass
+	class ItemCommon : public odRfl::RflClass
 	{
 	public:
 
-		virtual void probeFields(FieldProbe &probe) override;
+		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
 	protected:
@@ -45,19 +45,19 @@ namespace od
 
 	private:
 
-		RflString         mDisplayName;
-		RflInteger        mQuantity;
-		RflEnumYesNo      mGrouped;
-		RflInteger        mBitmapNumber;
-		RflInteger        mIconIndex;
-		RflInteger        mIconSlotSize;
-		RflEnumPlayerSlot mPlayerSlot;
-		RflClassRef		  mPowerupObject;
-		RflSoundRef		  mActivateSound;
-		RflSoundRef		  mDroppedSound;
-		RflSoundRef		  mPickedUpSound;
-		RflEnumYesNo	  mDroppable;
-		RflFloat		  mFadeTime;
+		odRfl::RflString         mDisplayName;
+		odRfl::RflInteger        mQuantity;
+		odRfl::RflEnumYesNo      mGrouped;
+		odRfl::RflInteger        mBitmapNumber;
+		odRfl::RflInteger        mIconIndex;
+		odRfl::RflInteger        mIconSlotSize;
+		RflEnumPlayerSlot        mPlayerSlot;
+		odRfl::RflClassRef		 mPowerupObject;
+		odRfl::RflSoundRef		 mActivateSound;
+		odRfl::RflSoundRef		 mDroppedSound;
+		odRfl::RflSoundRef		 mPickedUpSound;
+		odRfl::RflEnumYesNo	     mDroppable;
+		odRfl::RflFloat		     mFadeTime;
 	};
 
 }

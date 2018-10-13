@@ -10,7 +10,7 @@
 
 #include <dragonRfl/common/ItemCommon.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
@@ -21,18 +21,17 @@ namespace od
 
 		HealthPack(DragonRfl &rfl);
 
-		virtual void probeFields(FieldProbe &probe) override;
+		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
 	private:
 
-		RflInteger mHealthBoost;
+		odRfl::RflInteger mHealthBoost;
 
 	};
 
-
-	OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x000A, "Item", "Health Pack", HealthPack);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x000A, "Item", "Health Pack", dragonRfl::HealthPack);
 
 #endif /* INCLUDE_RFL_DRAGON_HEALTHPACK_H_ */

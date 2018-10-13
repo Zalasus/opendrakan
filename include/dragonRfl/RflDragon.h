@@ -35,9 +35,8 @@ namespace dragonRfl
 
     };
 
-
-    OD_DEFINE_RFL_TRAITS("Dragon", DragonRfl);
-
 }
+
+OD_DEFINE_RFL_TRAITS("Dragon", dragonRfl::DragonRfl);
 
 #endif /* INCLUDE_DRAGONRFL_RFLDRAGON_H_ */

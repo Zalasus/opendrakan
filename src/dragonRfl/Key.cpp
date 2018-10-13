@@ -11,7 +11,7 @@
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	Key::Key(DragonRfl &rfl)
@@ -19,7 +19,7 @@ namespace od
 	{
 	}
 
-	void Key::probeFields(FieldProbe &probe)
+	void Key::probeFields(odRfl::FieldProbe &probe)
     {
         ItemCommon::probeFields(probe);
 

@@ -8,7 +8,7 @@
 
 #include <dragonRfl/common/ItemCommon.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	ItemCommon::ItemCommon()
@@ -19,16 +19,16 @@ namespace od
 	, mIconIndex(1)
 	, mIconSlotSize(1)
 	, mPlayerSlot(PlayerSlot::None)
-	, mPowerupObject(od::AssetRef::NULL_REF)
-	, mActivateSound(od::AssetRef::NULL_REF)
-	, mDroppedSound(od::AssetRef::NULL_REF)
-	, mPickedUpSound(od::AssetRef::NULL_REF)
+	, mPowerupObject(odDb::AssetRef::NULL_REF)
+	, mActivateSound(odDb::AssetRef::NULL_REF)
+	, mDroppedSound(odDb::AssetRef::NULL_REF)
+	, mPickedUpSound(odDb::AssetRef::NULL_REF)
 	, mDroppable(false)
 	, mFadeTime(60)
 	{
 	}
 
-	void ItemCommon::probeFields(FieldProbe &probe)
+	void ItemCommon::probeFields(odRfl::FieldProbe &probe)
     {
 	    probe.beginCategory("Item");
 	    probe.registerField(mDisplayName, "DisplayName");

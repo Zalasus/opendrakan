@@ -11,42 +11,40 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class Detector : public RflClass
+    class Detector : public odRfl::RflClass
     {
     public:
 
         Detector(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onSpawned(LevelObject &obj) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
 
 
     protected:
 
-        RflEnum         mTask;
-        RflEnum         mDetectWhich;
-        RflEnum         mDetectMethod;
-        RflEnumYesNo    mOneWay;
-        RflClassRef     mTriggerOnlyIfCarryingItem;
-        RflEnum         mInitialState;
-        RflEnumMessage  mTriggerMessage;
-        RflEnumYesNo    mDetectOnlyOnce;
-        RflSequenceRef  mSequenceToPlay;
-        RflString       mMessageString;
-        RflEnumYesNo    mDoesCaveEntranceTeleport;
-        RflEnumYesNo    mDragonTakesOffUponTeleport;
+        odRfl::RflEnum         mTask;
+        odRfl::RflEnum         mDetectWhich;
+        odRfl::RflEnum         mDetectMethod;
+        odRfl::RflEnumYesNo    mOneWay;
+        odRfl::RflClassRef     mTriggerOnlyIfCarryingItem;
+        odRfl::RflEnum         mInitialState;
+        odRfl::RflEnumMessage  mTriggerMessage;
+        odRfl::RflEnumYesNo    mDetectOnlyOnce;
+        odRfl::RflSequenceRef  mSequenceToPlay;
+        odRfl::RflString       mMessageString;
+        odRfl::RflEnumYesNo    mDoesCaveEntranceTeleport;
+        odRfl::RflEnumYesNo    mDragonTakesOffUponTeleport;
     };
-
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x003d, "System", "Detector", Detector);
 
 }
 
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x003d, "System", "Detector", dragonRfl::Detector);
 
 #endif /* INCLUDE_RFL_DRAGON_DETECTOR_H_ */

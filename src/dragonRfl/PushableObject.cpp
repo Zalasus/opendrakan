@@ -14,16 +14,16 @@
 #include <odCore/physics/PhysicsManager.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace dragonRfl
 {
 
     PushableObject::PushableObject(DragonRfl &rfl)
     : mWaitForTrigger(false)
     , mBurnable(false)
     , mBounceSounds({})
-    , mLoopedRollSound(od::AssetRef::NULL_REF)
+    , mLoopedRollSound(odDb::AssetRef::NULL_REF)
     , mDetectOtherPushables(true)
-    , mSpecialEffect(od::AssetRef::NULL_REF)
+    , mSpecialEffect(odDb::AssetRef::NULL_REF)
     , mWaterEffects(1)
     , mGory(false)
     , mPushMode(0)
@@ -33,13 +33,13 @@ namespace od
     , mRigidBody(false)
     , mLifeTime(0.0)
     , mHealth(-1)
-    , mExplosionGenerator(od::AssetRef::NULL_REF)
+    , mExplosionGenerator(odDb::AssetRef::NULL_REF)
     , mDamage(0)
     , mDamagePlayer(0)
     {
     }
 
-    void PushableObject::probeFields(FieldProbe &probe)
+    void PushableObject::probeFields(odRfl::FieldProbe &probe)
     {
         probe
             ("Pushable Object")
@@ -65,7 +65,7 @@ namespace od
                 (mDamagePlayer, "Damage Player");
     }
 
-    void PushableObject::onSpawned(LevelObject &obj)
+    void PushableObject::onSpawned(od::LevelObject &obj)
     {
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
     	{
@@ -73,7 +73,7 @@ namespace od
     	}
     }
 
-    void PushableObject::onDespawned(LevelObject &obj)
+    void PushableObject::onDespawned(od::LevelObject &obj)
     {
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }

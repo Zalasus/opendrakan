@@ -12,7 +12,7 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/rfl/RflMessage.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
@@ -23,26 +23,26 @@ namespace od
         DependsOnMessage
     };
 
-    class CountDownToZero : public RflClass
+    class CountDownToZero : public odRfl::RflClass
     {
     public:
 
         CountDownToZero(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onSpawned(LevelObject &obj) override;
-        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
 
 
     protected:
 
-        RflInteger     mInitialCounterValue;
-        RflEnumImpl<TimerTriggerMode, 0, 1> mWhenTriggered;
-        RflEnumMessage mMessageToSend;
-        RflEnumMessage mIncrementMessage;
-        RflEnumMessage mDecrementMessage;
-        RflEnumMessage mResetMessage;
+        odRfl::RflInteger     mInitialCounterValue;
+        odRfl::RflEnumImpl<TimerTriggerMode, 0, 1> mWhenTriggered;
+        odRfl::RflEnumMessage mMessageToSend;
+        odRfl::RflEnumMessage mIncrementMessage;
+        odRfl::RflEnumMessage mDecrementMessage;
+        odRfl::RflEnumMessage mResetMessage;
 
 
     private:
@@ -51,10 +51,8 @@ namespace od
 
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0007, "System", "Count Down To Zero", CountDownToZero);
-
 }
 
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0007, "System", "Count Down To Zero", dragonRfl::CountDownToZero);
 
 #endif /* INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_ */

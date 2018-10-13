@@ -11,49 +11,48 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class PushableObject : public RflClass
+    class PushableObject : public odRfl::RflClass
     {
     public:
 
         PushableObject(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
-        virtual void onSpawned(LevelObject &obj) override;
-        virtual void onDespawned(LevelObject &obj) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onDespawned(od::LevelObject &obj) override;
 
 
     protected:
 
-        RflEnumYesNo       mWaitForTrigger;
-        RflEnumYesNo       mBurnable;
-        RflSoundRefArray   mBounceSounds;
-        RflSoundRef        mLoopedRollSound;
-        RflEnumYesNo       mDetectOtherPushables;
-        RflClassRef        mSpecialEffect;
-        RflEnum            mWaterEffects;
-        RflEnumYesNo       mGory;
-        RflEnum            mPushMode;
-        RflEnum            mPivotPoint;
-        RflFloat           mFriction;
-        RflFloat           mElasticity;
-        RflEnumYesNo       mRigidBody;
-        RflFloat           mLifeTime;
-        RflInteger         mHealth;
-        RflClassRef        mExplosionGenerator;
-        RflInteger         mDamage;
-        RflEnum            mDamagePlayer;
+        odRfl::RflEnumYesNo       mWaitForTrigger;
+        odRfl::RflEnumYesNo       mBurnable;
+        odRfl::RflSoundRefArray   mBounceSounds;
+        odRfl::RflSoundRef        mLoopedRollSound;
+        odRfl::RflEnumYesNo       mDetectOtherPushables;
+        odRfl::RflClassRef        mSpecialEffect;
+        odRfl::RflEnum            mWaterEffects;
+        odRfl::RflEnumYesNo       mGory;
+        odRfl::RflEnum            mPushMode;
+        odRfl::RflEnum            mPivotPoint;
+        odRfl::RflFloat           mFriction;
+        odRfl::RflFloat           mElasticity;
+        odRfl::RflEnumYesNo       mRigidBody;
+        odRfl::RflFloat           mLifeTime;
+        odRfl::RflInteger         mHealth;
+        odRfl::RflClassRef        mExplosionGenerator;
+        odRfl::RflInteger         mDamage;
+        odRfl::RflEnum            mDamagePlayer;
 
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0010, "Ground Object", "Pushable Object", PushableObject);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0010, "Ground Object", "Pushable Object", dragonRfl::PushableObject);
 
 
 #endif /* PUSHABLEOBJECT_H_ */

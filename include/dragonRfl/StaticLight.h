@@ -12,40 +12,38 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/light/Light.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class StaticLight : public RflClass
+    class StaticLight : public odRfl::RflClass
     {
     public:
 
         StaticLight(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onSpawned(LevelObject &obj) override;
-        virtual void onMoved(LevelObject &obj) override;
-        virtual void onDespawned(LevelObject &obj) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onMoved(od::LevelObject &obj) override;
+        virtual void onDespawned(od::LevelObject &obj) override;
 
 
     protected:
 
-        RflColor        mColor;
-        RflFloat        mIntensityScaling;
-        RflFloat        mRadius;
-        RflTextureRef   mLightMap;
-        RflEnum         mQualityLevelRequired;
+        odRfl::RflColor        mColor;
+        odRfl::RflFloat        mIntensityScaling;
+        odRfl::RflFloat        mRadius;
+        odRfl::RflTextureRef   mLightMap;
+        odRfl::RflEnum         mQualityLevelRequired;
 
-        osg::ref_ptr<od::Light> mLight;
+        osg::ref_ptr<odLight::Light> mLight;
         osg::Vec3 mLightColorVector;
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0084, "Light Source", "Static Light", StaticLight);
-
 }
 
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0084, "Light Source", "Static Light", dragonRfl::StaticLight);
 
 #endif /* INCLUDE_RFL_DRAGON_STATICLIGHT_H_ */

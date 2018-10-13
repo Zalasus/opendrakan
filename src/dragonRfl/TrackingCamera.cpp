@@ -15,7 +15,7 @@
 #include <odCore/Engine.h>
 #include <odCore/Player.h>
 
-namespace od
+namespace dragonRfl
 {
 
 
@@ -49,7 +49,7 @@ namespace od
 	{
 	}
 
-	void TrackingCamera::probeFields(FieldProbe &probe)
+	void TrackingCamera::probeFields(odRfl::FieldProbe &probe)
 	{
 	    probe.beginCategory("Camera Options");
 	    probe.registerField(mTrackingMode, "Tracking Mode");
@@ -150,7 +150,7 @@ namespace od
         // perform raycast to find obstacle closest point with unobstructed view of player
         osg::Vec3f from = player->getPosition();
         osg::Vec3f to = from + lookDirection * osg::Vec3f(-3, 0, 0);
-        od::RaycastResult result;
+        odPhysics::RaycastResult result;
         bool hit = engine.getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
         if(!hit)
         {

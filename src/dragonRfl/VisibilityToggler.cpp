@@ -11,17 +11,17 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace dragonRfl
 {
 
     VisibilityToggler::VisibilityToggler(DragonRfl &rfl)
     : mTriggerMode(TriggerMode::DependsOnMessage)
-    , mShowMessage(RflMessage::Off)
-    , mHideMessage(RflMessage::Off)
+    , mShowMessage(odRfl::RflMessage::Off)
+    , mHideMessage(odRfl::RflMessage::Off)
     {
     }
 
-    void VisibilityToggler::probeFields(FieldProbe &probe)
+    void VisibilityToggler::probeFields(odRfl::FieldProbe &probe)
     {
         probe("")
                 (mTriggerMode, "Trigger Mode")
@@ -35,7 +35,7 @@ namespace od
         obj.setObjectType(od::LevelObjectType::Detector);
     }
 
-    void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+    void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
     {
         const std::vector<osg::ref_ptr<od::LevelObject>> &linkedObjects = obj.getLinkedObjects();
 

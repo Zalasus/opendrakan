@@ -79,7 +79,7 @@ static void statClasses(od::SrscFile &file)
 
 		std::string name;
 		uint16_t dummy;
-        od::AssetRef modelRef;
+        odDb::AssetRef modelRef;
         uint16_t classType;
         uint16_t iconNumber;
         uint32_t fieldCount;
@@ -114,51 +114,51 @@ static void statClasses(od::SrscFile &file)
 
         	switch(type & 0xff)
         	{
-        	case od::RflField::INTEGER:
+        	case odRfl::RflField::INTEGER:
         		std::cout << "RflInteger";
         		break;
 
-            case od::RflField::FLOAT:
+            case odRfl::RflField::FLOAT:
             	std::cout << "RflFloat";
         		break;
 
-            case od::RflField::CLASS:
+            case odRfl::RflField::CLASS:
             	std::cout << "RflClassRef";
         		break;
 
-            case od::RflField::MODEL:
+            case odRfl::RflField::MODEL:
             	std::cout << "RflModelRef";
         		break;
 
-            case od::RflField::SOUND:
+            case odRfl::RflField::SOUND:
             	std::cout << "RflSoundRef";
         		break;
 
-            case od::RflField::ENUM:
+            case odRfl::RflField::ENUM:
             	std::cout << "RflEnum";
         		break;
 
-            case od::RflField::CHAR_CHANNEL:
+            case odRfl::RflField::CHAR_CHANNEL:
             	std::cout << "RflCharChannel";
         		break;
 
-            case od::RflField::ANIMATION:
+            case odRfl::RflField::ANIMATION:
             	std::cout << "RflAnimRef";
         		break;
 
-            case od::RflField::STRING:
+            case odRfl::RflField::STRING:
             	std::cout << "RflString";
         		break;
 
-            case od::RflField::SEUQUENCE:
+            case odRfl::RflField::SEUQUENCE:
             	std::cout << "RflSequenceRef";
         		break;
 
-            case od::RflField::TEXTURE:
+            case odRfl::RflField::TEXTURE:
             	std::cout << "RflTextureRef";
         		break;
 
-            case od::RflField::COLOR:
+            case odRfl::RflField::COLOR:
             	std::cout << "RflColor";
         		break;
 
@@ -327,10 +327,10 @@ int main(int argc, char **argv)
         }else if(texture)
         {
             od::Engine engine;
-        	od::DbManager dbm(engine);
-        	od::Database &db = dbm.loadDb(filename);
+        	odDb::DbManager dbm(engine);
+        	odDb::Database &db = dbm.loadDb(filename);
 
-        	osg::ref_ptr<od::Texture> tex = db.getAsset<od::Texture>(extractRecordId);
+        	osg::ref_ptr<odDb::Texture> tex = db.getAsset<odDb::Texture>(extractRecordId);
 
 			std::ostringstream ss;
 			ss << outputPath << "texture" << extractRecordId << ".png";
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
             }
 
             engine.setUp();
-            od::GuiManager &gm = engine.getGuiManager();
+            odGui::GuiManager &gm = engine.getGuiManager();
 
             gm.dumpTextures();
             gm.dumpStrings();

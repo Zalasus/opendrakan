@@ -14,19 +14,19 @@
 #include <odCore/Engine.h>
 #include <odCore/light/LightManager.h>
 
-namespace od
+namespace dragonRfl
 {
 
     StaticLight::StaticLight(DragonRfl &rfl)
     : mColor(0xffffffff)
     , mIntensityScaling(1.0)
     , mRadius(1.0)
-    , mLightMap(od::AssetRef::NULL_REF)
+    , mLightMap(odDb::AssetRef::NULL_REF)
     , mQualityLevelRequired(0)
     {
     }
 
-    void StaticLight::probeFields(FieldProbe &probe)
+    void StaticLight::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Point Light")
                 (mColor, "Color")
@@ -45,7 +45,7 @@ namespace od
     {
         if(mLight == nullptr)
         {
-            mLight = new od::Light(&obj);
+            mLight = new odLight::Light(&obj);
         }
         obj.getLevel().getEngine().getLightManager().addLight(mLight);
 

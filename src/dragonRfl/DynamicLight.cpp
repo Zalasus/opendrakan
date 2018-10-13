@@ -10,7 +10,7 @@
 #include <dragonRfl/RflDragon.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace dragonRfl
 {
 
     DynamicLight::DynamicLight(DragonRfl &rfl)
@@ -26,7 +26,7 @@ namespace od
     {
     }
 
-    void DynamicLight::probeFields(FieldProbe &probe)
+    void DynamicLight::probeFields(odRfl::FieldProbe &probe)
     {
         StaticLight::probeFields(probe);
 
@@ -43,7 +43,7 @@ namespace od
         }
     }
 
-    void DynamicLight::onSpawned(LevelObject &obj)
+    void DynamicLight::onSpawned(od::LevelObject &obj)
     {
         StaticLight::onSpawned(obj);
 
@@ -52,7 +52,7 @@ namespace od
         mStarted = (mStartEffect == EffectStartType::WhenCreated);
     }
 
-    void DynamicLight::onUpdate(LevelObject &obj, double simTime, double relTime)
+    void DynamicLight::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
         if(!mStarted)
         {
@@ -101,22 +101,22 @@ namespace od
         }
     }
 
-    void DynamicLight::onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message)
+    void DynamicLight::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
     {
         switch(message)
         {
-        case RflMessage::Triggered:
+        case odRfl::RflMessage::Triggered:
             if(mStartEffect == EffectStartType::WhenEnabled)
             {
                 mStarted = true;
             }
             break;
 
-        case RflMessage::On:
+        case odRfl::RflMessage::On:
             mLightIsOn = true;
             break;
 
-        case RflMessage::Off:
+        case odRfl::RflMessage::Off:
             mLightIsOn = false;
             break;
 

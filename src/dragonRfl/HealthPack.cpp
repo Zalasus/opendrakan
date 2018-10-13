@@ -10,7 +10,7 @@
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	HealthPack::HealthPack(DragonRfl &rfl)
@@ -18,7 +18,7 @@ namespace od
 	{
 	}
 
-	void HealthPack::probeFields(FieldProbe &probe)
+	void HealthPack::probeFields(odRfl::FieldProbe &probe)
 	{
 	    ItemCommon::probeFields(probe);
 

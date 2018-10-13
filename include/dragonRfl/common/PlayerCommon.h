@@ -11,62 +11,62 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    class PlayerCommon : public RflClass
+    class PlayerCommon : public odRfl::RflClass
     {
     public:
 
         PlayerCommon();
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
     protected:
 
-        RflSoundRefArray    mSeparatedSounds;
-        RflInteger          mSeparatedSoundChance;
-        RflFloat            mCameraHorzDistance;
-        RflFloat            mCameraVertDistance;
-        RflFloat            mCameraTiltFactor;
-        RflFloat            mCameraCollisionTiltFactor;
-        RflFloat            mMaxProximity;
-        RflAnimRef          mReadyAnim;
-        RflAnimRef          mWalkAnim;
-        RflAnimRef          mRunAnim;
-        RflAnimRef          mGroundStrafeLAnim;
-        RflAnimRef          mGroundStrafeRAnim;
-        RflAnimRefArray     mIdleAnims;
-        RflFloat            mRunSpeed;
-        RflFloat            mWalkSpeed;
-        RflFloat            mWalkBackSpeed;
-        RflFloat            mThrottleAccel;
-        RflFloat            mThrottleDecel;
-        RflFloat            mSideStrafeSpeed;
-        RflFloat            mRollSpeed;
-        RflFloat            mPitchSpeed;
-        RflFloat            mSideAccel;
-        RflFloat            mRollDamping;
-        RflFloat            mPitchDamping;
-        RflCharChannel      mNeckChannel;
-        RflCharChannel      mHeadChannel;
-        RflInteger          mFootSphere;
-        RflInteger          mBeginHealth;
-        RflClassRef         mGotHitBloodGen;
-        RflAnimRefArray     mGroundDeathAnims;
-        RflClassRef         m3DExplosion;
-        RflSoundRef         mDeathSound;
-        RflClassRef         mAmputationBloodGen;
-        RflClassRef         mBodyPart;
-        RflClassRef         mBodyPartLarge;
-        RflFloat            mBodyPartPercentage;
-        RflCharChannelArray mChoppableChansAlive;
-        RflInteger          mGibCutoff;
-        RflClassRefArray    mGibGensLarge;
-        RflClassRefArray    mGibGensSmall;
-        RflCharChannelArray mLargeGibChans;
-        RflFloat            mBodyPartVelocity;
+        odRfl::RflSoundRefArray    mSeparatedSounds;
+        odRfl::RflInteger          mSeparatedSoundChance;
+        odRfl::RflFloat            mCameraHorzDistance;
+        odRfl::RflFloat            mCameraVertDistance;
+        odRfl::RflFloat            mCameraTiltFactor;
+        odRfl::RflFloat            mCameraCollisionTiltFactor;
+        odRfl::RflFloat            mMaxProximity;
+        odRfl::RflAnimRef          mReadyAnim;
+        odRfl::RflAnimRef          mWalkAnim;
+        odRfl::RflAnimRef          mRunAnim;
+        odRfl::RflAnimRef          mGroundStrafeLAnim;
+        odRfl::RflAnimRef          mGroundStrafeRAnim;
+        odRfl::RflAnimRefArray     mIdleAnims;
+        odRfl::RflFloat            mRunSpeed;
+        odRfl::RflFloat            mWalkSpeed;
+        odRfl::RflFloat            mWalkBackSpeed;
+        odRfl::RflFloat            mThrottleAccel;
+        odRfl::RflFloat            mThrottleDecel;
+        odRfl::RflFloat            mSideStrafeSpeed;
+        odRfl::RflFloat            mRollSpeed;
+        odRfl::RflFloat            mPitchSpeed;
+        odRfl::RflFloat            mSideAccel;
+        odRfl::RflFloat            mRollDamping;
+        odRfl::RflFloat            mPitchDamping;
+        odRfl::RflCharChannel      mNeckChannel;
+        odRfl::RflCharChannel      mHeadChannel;
+        odRfl::RflInteger          mFootSphere;
+        odRfl::RflInteger          mBeginHealth;
+        odRfl::RflClassRef         mGotHitBloodGen;
+        odRfl::RflAnimRefArray     mGroundDeathAnims;
+        odRfl::RflClassRef         m3DExplosion;
+        odRfl::RflSoundRef         mDeathSound;
+        odRfl::RflClassRef         mAmputationBloodGen;
+        odRfl::RflClassRef         mBodyPart;
+        odRfl::RflClassRef         mBodyPartLarge;
+        odRfl::RflFloat            mBodyPartPercentage;
+        odRfl::RflCharChannelArray mChoppableChansAlive;
+        odRfl::RflInteger          mGibCutoff;
+        odRfl::RflClassRefArray    mGibGensLarge;
+        odRfl::RflClassRefArray    mGibGensSmall;
+        odRfl::RflCharChannelArray mLargeGibChans;
+        odRfl::RflFloat            mBodyPartVelocity;
     };
 }
 

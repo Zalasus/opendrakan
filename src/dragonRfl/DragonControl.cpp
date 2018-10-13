@@ -13,11 +13,11 @@
 #include <odCore/Level.h>
 #include <odCore/Player.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	DragonControl::DragonControl(DragonRfl &rfl)
-    : mWalkBackwardAnim(od::AssetRef::NULL_REF)
+    : mWalkBackwardAnim(odDb::AssetRef::NULL_REF)
 	, mAirCamHorzDistance(1024.0)
 	, mAirCamVertDistance(1024.0)
 	, mSaddleChannel(0)
@@ -31,25 +31,25 @@ namespace od
 	, mBiteSounds({})
 	, mDoneMountingSounds({})
 	, mPercentChanceOfDoneMountingSound(25)
-	, mAirDeathStartAnim(od::AssetRef::NULL_REF)
-	, mAirDeathLoopAnim(od::AssetRef::NULL_REF)
-	, mAirDeathImpactAnim(od::AssetRef::NULL_REF)
-	, mMountAnim(od::AssetRef::NULL_REF)
-	, mDismountAnim(od::AssetRef::NULL_REF)
-	, mFlyAnim(od::AssetRef::NULL_REF)
-	, mFlyToHoverAnim(od::AssetRef::NULL_REF)
-	, mHoverAnim(od::AssetRef::NULL_REF)
-	, mHoverBackwardsAnim(od::AssetRef::NULL_REF)
-	, mSoarAnim(od::AssetRef::NULL_REF)
-	, mStrafeLeftAirAnim(od::AssetRef::NULL_REF)
-	, mStrafeRightAirAnim(od::AssetRef::NULL_REF)
-	, mStrafeUpAnim(od::AssetRef::NULL_REF)
-	, mTurnLeftGndAnim(od::AssetRef::NULL_REF)
-	, mTurnRightGndAnim(od::AssetRef::NULL_REF)
-	, mLandingAnim(od::AssetRef::NULL_REF)
-	, mRunIntoWallAnim(od::AssetRef::NULL_REF)
-	, mFlyIntoWallAnim(od::AssetRef::NULL_REF)
-	, mBiteAnim(od::AssetRef::NULL_REF)
+	, mAirDeathStartAnim(odDb::AssetRef::NULL_REF)
+	, mAirDeathLoopAnim(odDb::AssetRef::NULL_REF)
+	, mAirDeathImpactAnim(odDb::AssetRef::NULL_REF)
+	, mMountAnim(odDb::AssetRef::NULL_REF)
+	, mDismountAnim(odDb::AssetRef::NULL_REF)
+	, mFlyAnim(odDb::AssetRef::NULL_REF)
+	, mFlyToHoverAnim(odDb::AssetRef::NULL_REF)
+	, mHoverAnim(odDb::AssetRef::NULL_REF)
+	, mHoverBackwardsAnim(odDb::AssetRef::NULL_REF)
+	, mSoarAnim(odDb::AssetRef::NULL_REF)
+	, mStrafeLeftAirAnim(odDb::AssetRef::NULL_REF)
+	, mStrafeRightAirAnim(odDb::AssetRef::NULL_REF)
+	, mStrafeUpAnim(odDb::AssetRef::NULL_REF)
+	, mTurnLeftGndAnim(odDb::AssetRef::NULL_REF)
+	, mTurnRightGndAnim(odDb::AssetRef::NULL_REF)
+	, mLandingAnim(odDb::AssetRef::NULL_REF)
+	, mRunIntoWallAnim(odDb::AssetRef::NULL_REF)
+	, mFlyIntoWallAnim(odDb::AssetRef::NULL_REF)
+	, mBiteAnim(odDb::AssetRef::NULL_REF)
 	, mMinFlySpeed(-1.0)
 	, mMaxFlySpeed(2.0)
 	, mAirStrafeLRSpeed(3.0)
@@ -63,7 +63,7 @@ namespace od
 	, mSoarAngle(0.1)
 	, mNoFlyHeadroom(2048.0)
 	, mInitialMode(1) // Ground Human
-	, mDefaultWeapon(od::AssetRef::NULL_REF)
+	, mDefaultWeapon(odDb::AssetRef::NULL_REF)
 	, mFollowHumanDistance(10.0)
 	, mCantLandSounds({})
 	, mCallResponseSounds({})
@@ -82,7 +82,7 @@ namespace od
     {
     }
 
-    void DragonControl::probeFields(FieldProbe &probe)
+    void DragonControl::probeFields(odRfl::FieldProbe &probe)
 	{
     	PlayerCommon::probeFields(probe);
 

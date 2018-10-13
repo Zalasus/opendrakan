@@ -13,12 +13,16 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace odAudio
+{
+    class Source;
+}
+
+namespace dragonRfl
 {
     class DragonRfl;
-    class Source;
 
-    class SoundEffect : public RflClass
+    class SoundEffect : public odRfl::RflClass
     {
     public:
 
@@ -40,36 +44,34 @@ namespace od
 
         SoundEffect(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onSpawned(LevelObject &obj) override;
-        virtual void onDespawned(LevelObject &obj) override;
-        virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
-        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
-        virtual void onMoved(LevelObject &obj) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onDespawned(od::LevelObject &obj) override;
+        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
+        virtual void onMoved(od::LevelObject &obj) override;
 
 
     private:
 
         void _playRandomSound();
 
-        RflSoundRefArray            mSounds;
-        RflEnumImpl<PlayMode, 0, 4> mPlayMode;
-        RflFloat                    mAveragePeriod;
-        RflFloat                    mPeriodRandomDeviation;
-        RflEnumImpl<Location, 0, 3> mLocation;
+        odRfl::RflSoundRefArray            mSounds;
+        odRfl::RflEnumImpl<PlayMode, 0, 4> mPlayMode;
+        odRfl::RflFloat                    mAveragePeriod;
+        odRfl::RflFloat                    mPeriodRandomDeviation;
+        odRfl::RflEnumImpl<Location, 0, 3> mLocation;
 
-        Source *mSoundSource;
+        odAudio::Source *mSoundSource;
         double mTimeUntilNextPlay;
 
         std::minstd_rand mRandomNumberGenerator;
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0006, "Special Effect", "Sound Effect", SoundEffect);
-
 }
 
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0006, "Special Effect", "Sound Effect", dragonRfl::SoundEffect);
 
 #endif /* INCLUDE_DRAGONRFL_SOUNDEFFECT_H_ */

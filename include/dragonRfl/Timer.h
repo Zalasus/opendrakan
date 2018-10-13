@@ -11,7 +11,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
@@ -22,31 +22,31 @@ namespace od
         RunWhenTriggered
     };
 
-    typedef RflEnumImpl<TimerStartMode, 0, 1> RflEnumTimerStartMode;
+    typedef odRfl::RflEnumImpl<TimerStartMode, 0, 1> RflEnumTimerStartMode;
 
 
-	class Timer : public RflClass
+	class Timer : public odRfl::RflClass
 	{
 	public:
 
 		Timer(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onSpawned(LevelObject &obj) override;
-        virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
-        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
 
 
 	protected:
 
-		RflFloat 		        mTimeUntilTrigger;
+		odRfl::RflFloat 		mTimeUntilTrigger;
 		RflEnumTimerStartMode   mStartMode;
-		RflEnumYesNo	        mRepeat;
-		RflEnumYesNo            mDestroyAfterTimeout;
-		RflEnumMessage          mTriggerMessage; // message that will be sent upon timeout
-		RflEnumYesNo            mToggle;
-		RflEnumMessage          mDisableReenableMessage;
+		odRfl::RflEnumYesNo	    mRepeat;
+		odRfl::RflEnumYesNo     mDestroyAfterTimeout;
+		odRfl::RflEnumMessage   mTriggerMessage; // message that will be sent upon timeout
+		odRfl::RflEnumYesNo     mToggle;
+		odRfl::RflEnumMessage   mDisableReenableMessage;
 
 	private:
 
@@ -56,9 +56,8 @@ namespace od
 
 	};
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x003e, "System", "Timer", Timer);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x003e, "System", "Timer", dragonRfl::Timer);
 
 #endif /* INCLUDE_RFL_DRAGON_TIMER_H_ */

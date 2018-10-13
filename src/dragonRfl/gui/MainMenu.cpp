@@ -112,7 +112,7 @@ namespace dragonRfl
     }
 
     void MainMenu::_addCrystal(odGui::GuiManager &gm, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
-            od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
+            UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode)
     {
         osg::ref_ptr<CrystalRingButton> crystal(new CrystalRingButton(gm, crystalModel,
                 uiProps->mInnerRing.getAsset(),

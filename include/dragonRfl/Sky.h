@@ -12,42 +12,41 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class DomedSky : public RflClass
+    class DomedSky : public odRfl::RflClass
     {
     public:
 
         DomedSky(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
-        virtual void onSpawned(LevelObject &obj) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
 
 
     protected:
 
-        RflEnumYesNo	mPrimarySky;
-		RflEnum			mFollowMode;
-		RflFloat		mOffsetDown;
-		RflEnum			mEffects;
-		RflClassRef		mLightningObject;
-		RflFloat		mAveLightningPeriod;
-		RflInteger		mLightningHeight;
-		RflInteger		mMinLightningDist;
-		RflInteger		mMaxLightningDist;
-		RflFloat		mLightningWedgeAngle;
-		RflClassRef		mLensFlare;
-		RflInteger		mFlareElevation;
-		RflInteger		mFlareDirection;
+        odRfl::RflEnumYesNo	mPrimarySky;
+		odRfl::RflEnum			mFollowMode;
+		odRfl::RflFloat		mOffsetDown;
+		odRfl::RflEnum			mEffects;
+		odRfl::RflClassRef		mLightningObject;
+		odRfl::RflFloat		mAveLightningPeriod;
+		odRfl::RflInteger		mLightningHeight;
+		odRfl::RflInteger		mMinLightningDist;
+		odRfl::RflInteger		mMaxLightningDist;
+		odRfl::RflFloat		mLightningWedgeAngle;
+		odRfl::RflClassRef		mLensFlare;
+		odRfl::RflInteger		mFlareElevation;
+		odRfl::RflInteger		mFlareDirection;
 
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x001a, "System", "Domed Sky", DomedSky);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001a, "System", "Domed Sky", dragonRfl::DomedSky);
 
 #endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

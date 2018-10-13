@@ -12,27 +12,27 @@
 #include <odCore/rfl/RflField.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class AnimationDemo : public RflClass
+    class AnimationDemo : public odRfl::RflClass
     {
     public:
 
         AnimationDemo(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onLoaded(LevelObject &obj) override;
-        virtual void onUpdate(LevelObject &obj, double simTime, double relTime) override;
+        virtual void onLoaded(od::LevelObject &obj) override;
+        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
 
 
     protected:
 
-        RflAnimRefArray mAnimations;
-        RflFloat        mSwitchPeriodSeconds;
+        odRfl::RflAnimRefArray mAnimations;
+        odRfl::RflFloat        mSwitchPeriodSeconds;
 
 
     private:
@@ -40,12 +40,12 @@ namespace od
         bool mFirstUpdate;
         double mRunningTime;
         size_t mCurrentAnimIndex;
-        osg::ref_ptr<od::SkeletonAnimationPlayer> mAnimationPlayer;
+        osg::ref_ptr<odAnim::SkeletonAnimationPlayer> mAnimationPlayer;
 
     };
 
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x000c, "Debug", "Animation Demo", AnimationDemo);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x000c, "Debug", "Animation Demo", dragonRfl::AnimationDemo);
 
 #endif /* INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_ */

@@ -17,7 +17,7 @@
 #include <odCore/Camera.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	DomedSky::DomedSky(DragonRfl &rfl)
@@ -25,19 +25,19 @@ namespace od
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)
 	, mEffects(0) // none
-	, mLightningObject(od::AssetRef::NULL_REF)
+	, mLightningObject(odDb::AssetRef::NULL_REF)
 	, mAveLightningPeriod(5.0)
 	, mLightningHeight(30)
 	, mMinLightningDist(10)
 	, mMaxLightningDist(20)
 	, mLightningWedgeAngle(90.0)
-	, mLensFlare(od::AssetRef::NULL_REF)
+	, mLensFlare(odDb::AssetRef::NULL_REF)
 	, mFlareElevation(0)
 	, mFlareDirection(0)
 	{
 	}
 
-    void DomedSky::probeFields(FieldProbe &probe)
+    void DomedSky::probeFields(odRfl::FieldProbe &probe)
     {
 		probe("Position")
     		     (mPrimarySky, "Primary Sky")

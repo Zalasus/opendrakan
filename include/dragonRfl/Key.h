@@ -10,7 +10,7 @@
 
 #include <dragonRfl/common/ItemCommon.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
@@ -21,18 +21,17 @@ namespace od
 
 		Key(DragonRfl &rfl);
 
-		virtual void probeFields(FieldProbe &probe) override;
+		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
 	private:
 
-		RflInteger mLockCode;
+		odRfl::RflInteger mLockCode;
 
 	};
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0021, "Item", "Key", Key);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0021, "Item", "Key", dragonRfl::Key);
 
 #endif /* INCLUDE_RFL_DRAGON_KEY_H_ */

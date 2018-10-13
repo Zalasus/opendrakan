@@ -12,7 +12,7 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	Timer::Timer(DragonRfl &rfl)
@@ -20,16 +20,16 @@ namespace od
 	, mStartMode(TimerStartMode::RunWhenTriggered)
 	, mRepeat(true)
 	, mDestroyAfterTimeout(true)
-	, mTriggerMessage(RflMessage::On)
+	, mTriggerMessage(odRfl::RflMessage::On)
 	, mToggle(false)
-	, mDisableReenableMessage(RflMessage::Off)
+	, mDisableReenableMessage(odRfl::RflMessage::Off)
 	, mGotStartTrigger(false)
 	, mTimerRunning(false)
 	, mTimeElapsed(0.0)
 	{
 	}
 
-	void Timer::probeFields(FieldProbe &probe)
+	void Timer::probeFields(odRfl::FieldProbe &probe)
 	{
 		probe("Timer")
 				(mTimeUntilTrigger, "Time Until Trigger")
@@ -83,7 +83,7 @@ namespace od
 	    }
 	}
 
-	void Timer::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message)
+	void Timer::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
 	{
 	    if(mStartMode == TimerStartMode::RunWhenTriggered && !mGotStartTrigger)
 	    {

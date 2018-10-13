@@ -19,13 +19,16 @@
 /**
  * @brief Convenience macro for defining the traits type for an RFL.
  *
- * @note Put this in the header declaring your RFL.
+ * @note Put this in global scope of the header declaring your RFL. Putting it in a namespace won't work.
  *
  * @param rflName   A string containing the RFL's name
  * @param rfl       The class implementing the RFL
  */
 #define OD_DEFINE_RFL_TRAITS(rflName, rfl) \
-    template<> constexpr const char *odRfl::RflTraits<rfl>::name() { return rflName; }
+    namespace odRfl\
+    {\
+        template<> constexpr const char *odRfl::RflTraits<rfl>::name() { return rflName; }\
+    }
 
 /**
  * @brief Convenience macro for defining a static registrar object for an RFL.

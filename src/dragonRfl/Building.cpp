@@ -14,34 +14,34 @@
 #include <odCore/physics/PhysicsManager.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	Building::Building(DragonRfl &rfl)
 	: mInitialHealth(0)
 	, mSnapMode(0)
-	, mSoundEffectObject(od::AssetRef::NULL_REF)
+	, mSoundEffectObject(odDb::AssetRef::NULL_REF)
 	, mIsDoorWay(false)
 	, mCanArokhLandOn(false)
 	, mDoorWayAlong(0)
-	, mMessageToSend(RflMessage::Off)
-	, m2DExplosionObject(od::AssetRef::NULL_REF)
-	, mExplosionGenerator(od::AssetRef::NULL_REF)
-	, mSmokeGenerator(od::AssetRef::NULL_REF)
+	, mMessageToSend(odRfl::RflMessage::Off)
+	, m2DExplosionObject(odDb::AssetRef::NULL_REF)
+	, mExplosionGenerator(odDb::AssetRef::NULL_REF)
+	, mSmokeGenerator(odDb::AssetRef::NULL_REF)
 	, mRubbleAnimation({})
 	, mRubbleAnimRate(6.0)
 	, mFlammable(true)
 	, mPushOverMode(0)
 	, mFallWhenDead(true)
-	, mHitGroundSound(od::AssetRef::NULL_REF)
+	, mHitGroundSound(odDb::AssetRef::NULL_REF)
 	, mSendMessageWhenPushed(true)
-	, mMessageToSendWhenPushed(RflMessage::Off)
+	, mMessageToSendWhenPushed(odRfl::RflMessage::Off)
 	, mSendMessageAfterPushed(true)
-	, mMessageToSendAfterPushed(RflMessage::Off)
+	, mMessageToSendAfterPushed(odRfl::RflMessage::Off)
 	{
 	}
 
-	void Building::probeFields(FieldProbe &probe)
+	void Building::probeFields(odRfl::FieldProbe &probe)
     {
 		probe("Basics")
 				(mInitialHealth, "Initial Health")
@@ -68,7 +68,7 @@ namespace od
 				(mMessageToSendAfterPushed, "Message to Send After Pushed");
     }
 
-    void Building::onSpawned(LevelObject &obj)
+    void Building::onSpawned(od::LevelObject &obj)
 	{
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
 		{
@@ -76,7 +76,7 @@ namespace od
     	}
 	}
 
-    void Building::onDespawned(LevelObject &obj)
+    void Building::onDespawned(od::LevelObject &obj)
     {
     	obj.getLevel().getPhysicsManager().removeObject(obj);
     }

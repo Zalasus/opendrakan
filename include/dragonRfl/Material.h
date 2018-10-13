@@ -11,43 +11,40 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DragonRfl;
 
-	class Material : public RflClass
+	class Material : public odRfl::RflClass
 	{
 	public:
 
 		Material(DragonRfl &rfl);
 
-		virtual void probeFields(FieldProbe &probe) override;
+		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
 	private:
 
-		RflSoundRefArray 	mRynnFootSounds;
-		RflSoundRefArray	mDragonFootSounds;
-		RflSoundRefArray	mWalkerFootSounds;
-		RflSoundRefArray	mGiantFootSounds;
-		RflSoundRefArray	mKnightFootSounds;
-		RflSoundRefArray	mWeaponHitSounds;
-		RflFloat			mWeaponFreqShiftRange;
-		RflFloat			mMaterialDensity;
-		RflClassRef			mWaterEffectProperties;
-		RflFloat			mDamagePerSec;
-		RflFloat			mFlammability;
-		RflSoundRef			mLavaSizzleSound;
-		RflClassRef	 		mBurnEffect;
-		RflEnumYesNo 		mLandable;
-		RflTextureRef		mDetailTexture;
-		RflFloat			mDetailScaling;
+		odRfl::RflSoundRefArray 	mRynnFootSounds;
+		odRfl::RflSoundRefArray	mDragonFootSounds;
+		odRfl::RflSoundRefArray	mWalkerFootSounds;
+		odRfl::RflSoundRefArray	mGiantFootSounds;
+		odRfl::RflSoundRefArray	mKnightFootSounds;
+		odRfl::RflSoundRefArray	mWeaponHitSounds;
+		odRfl::RflFloat			mWeaponFreqShiftRange;
+		odRfl::RflFloat			mMaterialDensity;
+		odRfl::RflClassRef			mWaterEffectProperties;
+		odRfl::RflFloat			mDamagePerSec;
+		odRfl::RflFloat			mFlammability;
+		odRfl::RflSoundRef			mLavaSizzleSound;
+		odRfl::RflClassRef	 		mBurnEffect;
+		odRfl::RflEnumYesNo 		mLandable;
+		odRfl::RflTextureRef		mDetailTexture;
+		odRfl::RflFloat			mDetailScaling;
 
 	};
-
-
-	OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x004b, "Material", "Standard Material", Material);
 
 
 	class BlendedMaterial : public Material
@@ -56,22 +53,21 @@ namespace od
 
 		BlendedMaterial(DragonRfl &rfl);
 
-		virtual void probeFields(FieldProbe &probe) override;
+		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
 
 	private:
 
-		RflTextureRef 	mFirstTexture;
-		RflTextureRef 	mSecondTexture;
-		RflInteger	  	mDirectionOfFlow;
-		RflFloat		mFirstSpeed;
-		RflFloat		mSecondSpeed;
+		odRfl::RflTextureRef 	mFirstTexture;
+		odRfl::RflTextureRef 	mSecondTexture;
+		odRfl::RflInteger	  	mDirectionOfFlow;
+		odRfl::RflFloat		    mFirstSpeed;
+		odRfl::RflFloat		    mSecondSpeed;
 	};
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0072, "Material", "Blended Material", BlendedMaterial);
-
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x004b, "Material", "Standard Material", dragonRfl::Material);
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0072, "Material", "Blended Material", dragonRfl::BlendedMaterial);
 
 #endif /* INCLUDE_RFL_DRAGON_MATERIAL_H_ */

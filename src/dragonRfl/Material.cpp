@@ -10,7 +10,7 @@
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	Material::Material(DragonRfl &rfl)
@@ -22,18 +22,18 @@ namespace od
 	, mWeaponHitSounds({})
 	, mWeaponFreqShiftRange(0)
 	, mMaterialDensity(0.5)
-	, mWaterEffectProperties(od::AssetRef::NULL_REF)
+	, mWaterEffectProperties(odDb::AssetRef::NULL_REF)
 	, mDamagePerSec(0)
 	, mFlammability(1)
-	, mLavaSizzleSound(od::AssetRef::NULL_REF)
-	, mBurnEffect(od::AssetRef::NULL_REF)
+	, mLavaSizzleSound(odDb::AssetRef::NULL_REF)
+	, mBurnEffect(odDb::AssetRef::NULL_REF)
 	, mLandable(true)
-	, mDetailTexture(od::AssetRef::NULL_REF)
+	, mDetailTexture(odDb::AssetRef::NULL_REF)
 	, mDetailScaling(0.25)
 	{
 	}
 
-	void Material::probeFields(FieldProbe &probe)
+	void Material::probeFields(odRfl::FieldProbe &probe)
 	{
 	    probe.beginCategory("Solid Ground Sounds");
 	    probe.registerField(mRynnFootSounds, "Rynn Foot Sounds");
@@ -65,15 +65,15 @@ namespace od
 
 	BlendedMaterial::BlendedMaterial(DragonRfl &rfl)
 	: Material(rfl)
-	, mFirstTexture(od::AssetRef::NULL_REF)
-	, mSecondTexture(od::AssetRef::NULL_REF)
+	, mFirstTexture(odDb::AssetRef::NULL_REF)
+	, mSecondTexture(odDb::AssetRef::NULL_REF)
 	, mDirectionOfFlow(0)
 	, mFirstSpeed(0.1)
 	, mSecondSpeed(-0.1)
 	{
 	}
 
-	void BlendedMaterial::probeFields(FieldProbe &probe)
+	void BlendedMaterial::probeFields(odRfl::FieldProbe &probe)
     {
 	    Material::probeFields(probe);
 

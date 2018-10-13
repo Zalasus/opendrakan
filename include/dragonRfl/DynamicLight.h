@@ -10,7 +10,7 @@
 
 #include <dragonRfl/StaticLight.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class DynamicLight : public StaticLight
@@ -34,19 +34,19 @@ namespace od
 
         DynamicLight(DragonRfl &rfl);
 
-        virtual void probeFields(FieldProbe &probe) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onSpawned(LevelObject &obj) override;
-        virtual void onUpdate(LevelObject &obj, double simTime, double relTime);
-        virtual void onMessageReceived(LevelObject &obj, LevelObject &sender, RflMessage message) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime);
+        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
 
 
     protected:
 
-        RflEnumImpl<IntensityEffect, 0, 4>  mIntensityEffect;
-        RflFloat                            mEffectTime;
-        RflFloat                            mEffectAmplitude;
-        RflEnumImpl<EffectStartType, 0, 1>  mStartEffect;
+        odRfl::RflEnumImpl<IntensityEffect, 0, 4>  mIntensityEffect;
+        odRfl::RflFloat                            mEffectTime;
+        odRfl::RflFloat                            mEffectAmplitude;
+        odRfl::RflEnumImpl<EffectStartType, 0, 1>  mStartEffect;
 
         bool mLightIsOn;
         bool mStarted;
@@ -54,9 +54,8 @@ namespace od
         bool mPulseRising;
     };
 
-
-    OD_DEFINE_RFLCLASS_TRAITS(DragonRfl, 0x0085, "Light Source", "Dynamic Light", DynamicLight);
-
 }
+
+OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0085, "Light Source", "Dynamic Light", dragonRfl::DynamicLight);
 
 #endif /* INCLUDE_DRAGONRFL_DYNAMICLIGHT_H_ */

@@ -9,7 +9,7 @@
 
 #include <odCore/rfl/Rfl.h>
 
-namespace od
+namespace dragonRfl
 {
 
 	PlayerCommon::PlayerCommon()
@@ -20,11 +20,11 @@ namespace od
     , mCameraTiltFactor(0)
     , mCameraCollisionTiltFactor(0.8)
     , mMaxProximity(0.25)
-    , mReadyAnim(od::AssetRef::NULL_REF)
-    , mWalkAnim(od::AssetRef::NULL_REF)
-    , mRunAnim(od::AssetRef::NULL_REF)
-    , mGroundStrafeLAnim(od::AssetRef::NULL_REF)
-    , mGroundStrafeRAnim(od::AssetRef::NULL_REF)
+    , mReadyAnim(odDb::AssetRef::NULL_REF)
+    , mWalkAnim(odDb::AssetRef::NULL_REF)
+    , mRunAnim(odDb::AssetRef::NULL_REF)
+    , mGroundStrafeLAnim(odDb::AssetRef::NULL_REF)
+    , mGroundStrafeRAnim(odDb::AssetRef::NULL_REF)
     , mIdleAnims({})
     , mRunSpeed(0.7)
     , mWalkSpeed(0.4)
@@ -41,13 +41,13 @@ namespace od
     , mHeadChannel(0)
     , mFootSphere(-1)
     , mBeginHealth(100)
-    , mGotHitBloodGen(od::AssetRef::NULL_REF)
+    , mGotHitBloodGen(odDb::AssetRef::NULL_REF)
     , mGroundDeathAnims({})
-    , m3DExplosion(od::AssetRef::NULL_REF)
-    , mDeathSound(od::AssetRef::NULL_REF)
-    , mAmputationBloodGen(od::AssetRef::NULL_REF)
-    , mBodyPart(od::AssetRef::NULL_REF)
-    , mBodyPartLarge(od::AssetRef::NULL_REF)
+    , m3DExplosion(odDb::AssetRef::NULL_REF)
+    , mDeathSound(odDb::AssetRef::NULL_REF)
+    , mAmputationBloodGen(odDb::AssetRef::NULL_REF)
+    , mBodyPart(odDb::AssetRef::NULL_REF)
+    , mBodyPartLarge(odDb::AssetRef::NULL_REF)
     , mBodyPartPercentage(0.25)
     , mChoppableChansAlive({})
     , mGibCutoff(-5)
@@ -58,7 +58,7 @@ namespace od
 	{
 	}
 
-    void PlayerCommon::probeFields(FieldProbe &probe)
+    void PlayerCommon::probeFields(odRfl::FieldProbe &probe)
     {
     	probe.beginCategory("Ambient Comments");
     	probe.registerField(mSeparatedSounds, "Separated Sounds");

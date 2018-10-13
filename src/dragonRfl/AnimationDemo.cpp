@@ -13,7 +13,7 @@
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 
-namespace od
+namespace dragonRfl
 {
 
     AnimationDemo::AnimationDemo(DragonRfl &rfl)
@@ -25,23 +25,23 @@ namespace od
     {
     }
 
-    void AnimationDemo::probeFields(FieldProbe &probe)
+    void AnimationDemo::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Animation Demo")
                 (mAnimations, "Animations")
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onLoaded(LevelObject &obj)
+    void AnimationDemo::onLoaded(od::LevelObject &obj)
     {
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        mAnimationPlayer = new od::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), nullptr);
+        mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), nullptr);
 
         obj.setEnableRflUpdateHook(true);
     }
 
-    void AnimationDemo::onUpdate(LevelObject &obj, double simTime, double relTime)
+    void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {
