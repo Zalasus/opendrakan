@@ -14,7 +14,7 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
 
-namespace od
+namespace odDb
 {
 
 	class TextureFactory;
@@ -23,12 +23,12 @@ namespace od
     {
     public:
 
-        Texture(AssetProvider &ap, RecordId id);
+        Texture(AssetProvider &ap, od::RecordId id);
 
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
-        void loadFromRecord(TextureFactory &factory, DataReader dr);
-        void exportToPng(const FilePath &path);
+        void loadFromRecord(TextureFactory &factory, od::DataReader dr);
+        void exportToPng(const od::FilePath &path);
 
         // override osg::Image
         virtual const char *libraryName() const override { return "od";    }
@@ -44,8 +44,8 @@ namespace od
         uint16_t mBitsPerPixel;
         uint16_t mAlphaBitsPerPixel;
         uint32_t mColorKey;
-        RecordId mMipMapId;
-        RecordId mAlternateId;
+        od::RecordId mMipMapId;
+        od::RecordId mAlternateId;
         uint16_t mFlags;
         uint16_t mMipMapNumber;
         AssetRef mMaterialClassRef;
@@ -55,7 +55,7 @@ namespace od
 
         bool mHasAlphaChannel;
         osg::ref_ptr<Class> mMaterialClass;
-        std::unique_ptr<RflClass> mMaterialInstance;
+        std::unique_ptr<odRfl::RflClass> mMaterialInstance;
     };
 
     template <>

@@ -12,20 +12,20 @@
 #include <odCore/db/AssetFactory.h>
 #include <odCore/SrscFile.h>
 
-namespace od
+namespace odDb
 {
 
 	class ModelFactory : public AssetFactory<Model>
 	{
 	public:
 
-		ModelFactory(AssetProvider &ap, SrscFile &modelContainer);
+		ModelFactory(AssetProvider &ap, od::SrscFile &modelContainer);
 
 
 	protected:
 
 		// implement AssetFactory<Model>
-		virtual osg::ref_ptr<Model> loadAsset(RecordId id) override;
+		virtual osg::ref_ptr<Model> loadAsset(od::RecordId id) override;
 
 	};
 

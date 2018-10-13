@@ -10,7 +10,7 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
-namespace od
+namespace odRfl
 {
 
     class ClassBuilderProbe : public FieldProbe

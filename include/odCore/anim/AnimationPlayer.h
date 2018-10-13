@@ -10,7 +10,7 @@
 
 #include <osg/Referenced>
 
-namespace od
+namespace odAnim
 {
 
 	/**

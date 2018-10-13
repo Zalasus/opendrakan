@@ -58,8 +58,8 @@ namespace od
         ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
-        inline Class *getClass() { return mClass; }
-        inline RflClass *getClassInstance() { return mRflClassInstance.get(); }
+        inline odDb::Class *getClass() { return mClass; }
+        inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline osg::Vec3 getPosition() const { return mTransform->getPosition(); }
         inline osg::Vec3 getScale() const { return mTransform->getScale(); }
@@ -77,7 +77,7 @@ namespace od
         void despawned();
         void destroyed();
         void update(double simTime, double relTime);
-        void messageReceived(LevelObject &sender, RflMessage message);
+        void messageReceived(LevelObject &sender, odRfl::RflMessage message);
 
         void setPosition(const osg::Vec3 &v);
         void setRotation(const osg::Quat &q);
@@ -138,7 +138,7 @@ namespace od
          * OSG's update traversal and will likely cause it to segfault.
          */
         void setEnableRflUpdateHook(bool enableHook);
-        void messageAllLinkedObjects(RflMessage message);
+        void messageAllLinkedObjects(odRfl::RflMessage message);
         void requestDestruction();
 
         // override osg::Group
@@ -161,9 +161,9 @@ namespace od
 
         Level &mLevel;
         LevelObjectId mId;
-        AssetRef mClassRef;
-        osg::ref_ptr<Class> mClass;
-        std::unique_ptr<RflClass> mRflClassInstance;
+        odDb::AssetRef mClassRef;
+        osg::ref_ptr<odDb::Class> mClass;
+        std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;
         osg::ref_ptr<Layer> mLightingLayer;
         osg::Vec3f mInitialPosition;
@@ -195,7 +195,7 @@ namespace od
         osg::ref_ptr<Layer> mLayerBelowObject;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-        osg::ref_ptr<LightStateCallback> mLightingCallback;
+        osg::ref_ptr<odLight::LightStateCallback> mLightingCallback;
 
         bool mRflUpdateHookEnabled;
     };

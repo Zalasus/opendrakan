@@ -14,19 +14,39 @@
 
 #include <odCore/FilePath.h>
 
+namespace odAudio
+{
+    class SoundManager;
+}
+
+namespace odDb
+{
+    class DbManager;
+}
+
+namespace odGui
+{
+    class GuiManager;
+}
+
+namespace odLight
+{
+    class LightManager;
+}
+
+namespace odRfl
+{
+    class RflManager;
+}
+
 namespace od
 {
 
     class Player;
     class Camera;
     class Level;
-    class GuiManager;
-    class RflManager;
     class InputManager;
     class ShaderManager;
-    class LightManager;
-    class DbManager;
-    class SoundManager;
 
 	class Engine
 	{
@@ -41,12 +61,12 @@ namespace od
 		inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
 		inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
-		inline DbManager &getDbManager() { return *mDbManager; }
+		inline odDb::DbManager &getDbManager() { return *mDbManager; }
 		inline ShaderManager &getShaderManager() { return *mShaderManager; }
-		inline RflManager &getRflManager() { return *mRflManager; }
-		inline GuiManager &getGuiManager() { return *mGuiManager; }
-		inline LightManager &getLightManager() { return *mLightManager; }
-		inline SoundManager &getSoundManager() { return *mSoundManager; }
+		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
+		inline odGui::GuiManager &getGuiManager() { return *mGuiManager; }
+		inline odLight::LightManager &getLightManager() { return *mLightManager; }
+		inline odAudio::SoundManager &getSoundManager() { return *mSoundManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return mPlayer; }
         inline void setPlayer(Player *p) { mPlayer = p; }
@@ -67,13 +87,13 @@ namespace od
 
 		void _findEngineRoot(const std::string &rrcFileName);
 
-		std::unique_ptr<DbManager> mDbManager;
+		std::unique_ptr<odDb::DbManager> mDbManager;
 		std::unique_ptr<ShaderManager> mShaderManager;
-		std::unique_ptr<RflManager> mRflManager;
+		std::unique_ptr<odRfl::RflManager> mRflManager;
 		osg::ref_ptr<InputManager> mInputManager;
-		std::unique_ptr<GuiManager> mGuiManager;
-		std::unique_ptr<LightManager> mLightManager;
-		std::unique_ptr<SoundManager> mSoundManager;
+		std::unique_ptr<odGui::GuiManager> mGuiManager;
+		std::unique_ptr<odLight::LightManager> mLightManager;
+		std::unique_ptr<odAudio::SoundManager> mSoundManager;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;

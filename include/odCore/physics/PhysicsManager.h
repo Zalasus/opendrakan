@@ -23,6 +23,14 @@
 
 namespace od
 {
+    class Layer;
+	class Level;
+	class LevelObject;
+}
+
+namespace odPhysics
+{
+    class CharacterController;
 
 	struct CollisionGroups
 	{
@@ -35,11 +43,6 @@ namespace od
 		};
 	};
 
-	class Layer;
-	class Level;
-	class LevelObject;
-	class CharacterController;
-
 	struct RaycastResult
     {
         const btCollisionObject *hitBulletObject;
@@ -48,8 +51,8 @@ namespace od
         osg::Vec3f hitNormal;
 
         // convenience pointers. if a layer or an object is hit, this will be non-null
-        Layer *hitLayer;
-        LevelObject *hitLevelObject;
+        od::Layer *hitLayer;
+        od::LevelObject *hitLevelObject;
     };
 
 	typedef std::vector<RaycastResult> RaycastResultArray;
@@ -60,7 +63,7 @@ namespace od
 
 		friend class CharacterController;
 
-		PhysicsManager(Level &level, osg::Group *levelRoot);
+		PhysicsManager(od::Level &level, osg::Group *levelRoot);
 		~PhysicsManager();
 
 		void stepSimulation(double dt);
@@ -74,25 +77,25 @@ namespace od
 		 */
 		size_t raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results);
 
-		bool raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr, int mask = CollisionGroups::ALL);
-		bool raycastClosestLayer(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr)
+		bool raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude = nullptr, int mask = CollisionGroups::ALL);
+		bool raycastClosestLayer(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude = nullptr)
 		{
 		    return raycastClosest(start, end, result, exclude, CollisionGroups::LAYER);
 		}
-		bool raycastClosestObject(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude = nullptr)
+		bool raycastClosestObject(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude = nullptr)
 		{
             return raycastClosest(start, end, result, exclude, CollisionGroups::OBJECT);
         }
 
-		btRigidBody *addLayer(Layer &l);
-		void removeLayer(Layer &l);
-		btRigidBody *addObject(LevelObject &o, float mass);
-		void removeObject(LevelObject &o);
+		btRigidBody *addLayer(od::Layer &l);
+		void removeLayer(od::Layer &l);
+		btRigidBody *addObject(od::LevelObject &o, float mass);
+		void removeObject(od::LevelObject &o);
 
 
 	private:
 
-		Level &mLevel;
+		od::Level &mLevel;
 		osg::ref_ptr<osg::Group> mLevelRoot;
 		osg::ref_ptr<osg::NodeCallback> mTickCallback;
 
@@ -106,8 +109,8 @@ namespace od
 
         std::unique_ptr<DebugDrawer> mDebugDrawer;
 
-        typedef std::pair<Layer*, std::unique_ptr<btRigidBody>> LayerBodyPair;
-        typedef std::pair<LevelObject*, std::unique_ptr<btRigidBody>> ObjectBodyPair;
+        typedef std::pair<od::Layer*, std::unique_ptr<btRigidBody>> LayerBodyPair;
+        typedef std::pair<od::LevelObject*, std::unique_ptr<btRigidBody>> ObjectBodyPair;
         std::map<uint32_t, ObjectBodyPair> mLevelObjectMap;
         std::map<uint32_t, LayerBodyPair> mLayerMap;
 	};

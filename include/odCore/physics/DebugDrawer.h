@@ -15,7 +15,7 @@
 #include <osg/Array>
 #include <osg/BoundingSphere>
 
-namespace od
+namespace odPhysics
 {
 
     /*

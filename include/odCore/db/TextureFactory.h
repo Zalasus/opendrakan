@@ -16,8 +16,11 @@
 
 namespace od
 {
-
     class Engine;
+}
+
+namespace odDb
+{
 
     class TextureFactory : public AssetFactory<Texture>
 	{
@@ -34,9 +37,9 @@ namespace od
 		/**
          * This needs an engine instance because classes pass it to the RFL loaded hook.
          */
-		TextureFactory(AssetProvider &ap, SrscFile &textureContainer, Engine &engine);
+		TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine);
 
-		inline Engine &getEngine() { return mEngine; }
+		inline od::Engine &getEngine() { return mEngine; }
 
 		PaletteColor getPaletteColor(size_t index);
 
@@ -44,14 +47,14 @@ namespace od
 	protected:
 
 		// implement AssetFactory<Texture>
-		virtual osg::ref_ptr<Texture> loadAsset(RecordId textureId) override;
+		virtual osg::ref_ptr<Texture> loadAsset(od::RecordId textureId) override;
 
 
 	private:
 
 		void _loadPalette();
 
-		Engine &mEngine;
+		od::Engine &mEngine;
 		std::vector<PaletteColor> mPalette;
 	};
 

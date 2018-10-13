@@ -25,7 +25,7 @@
  * @param rfl       The class implementing the RFL
  */
 #define OD_DEFINE_RFL_TRAITS(rflName, rfl) \
-    template<> constexpr const char *RflTraits<rfl>::name() { return rflName; }
+    template<> constexpr const char *odRfl::RflTraits<rfl>::name() { return rflName; }
 
 /**
  * @brief Convenience macro for defining a static registrar object for an RFL.
@@ -35,21 +35,24 @@
  * @param rfl       The class implementing the RFL
  */
 #define OD_REGISTER_RFL(rfl) \
-	static od::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl;
+	static odRfl::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl;
 
 namespace od
 {
-
     class Engine;
+}
+
+namespace odRfl
+{
 
 	class Rfl : public RflEventInterface
 	{
 	public:
 
-		Rfl(Engine &engine);
+		Rfl(od::Engine &engine);
 		virtual ~Rfl() = default;
 
-		inline Engine &getEngine() { return mEngine; }
+		inline od::Engine &getEngine() { return mEngine; }
 
 		virtual const char *getName() const = 0;
 		virtual size_t getRegisteredClassCount() const = 0;
@@ -62,7 +65,7 @@ namespace od
 
 	private:
 
-		Engine &mEngine;
+		od::Engine &mEngine;
 
 	};
 
@@ -95,7 +98,7 @@ namespace od
             auto it = map.find(id);
             if(it == map.end())
             {
-                throw NotFoundException("Class with given ID is not registered in RFL");
+                throw od::NotFoundException("Class with given ID is not registered in RFL");
             }
 
             return it->second;
@@ -106,7 +109,7 @@ namespace od
 	        RflClassRegistrar *registrar = getRegistrarForClass(id);
 	        if(registrar == nullptr)
 	        {
-	            throw NotFoundException("Class with given ID is not registered in RFL");
+	            throw od::NotFoundException("Class with given ID is not registered in RFL");
 	        }
 
 	        return registrar->createInstance(this);
@@ -115,7 +118,7 @@ namespace od
 
 	protected:
 
-	    AutoRegisteringRfl(Engine &e) : Rfl(e) {}
+	    AutoRegisteringRfl(od::Engine &e) : Rfl(e) {}
 
 	};
 
@@ -129,7 +132,7 @@ namespace od
         virtual ~RflRegistrar() = default;
 
         virtual const char *getName() const = 0;
-	    virtual Rfl *createInstance(Engine &engine) const = 0;
+	    virtual Rfl *createInstance(od::Engine &engine) const = 0;
 
 
 	protected:
@@ -154,7 +157,7 @@ namespace od
 	        return RflTraits<_Rfl>::name();
 	    }
 
-	    virtual Rfl *createInstance(Engine &engine) const override
+	    virtual Rfl *createInstance(od::Engine &engine) const override
 	    {
 	        return new _Rfl(engine);
 	    }

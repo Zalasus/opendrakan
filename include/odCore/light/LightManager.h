@@ -18,12 +18,16 @@ namespace od
 {
     class Engine;
     class LevelObject;
+}
+
+namespace odLight
+{
 
     class LightManager : public osg::Observer
     {
     public:
 
-        LightManager(Engine &engine, osg::Group *sceneRoot);
+        LightManager(od::Engine &engine, osg::Group *sceneRoot);
 
         inline bool isLightingEnabled() const { return mLightingEnabled; }
 
@@ -50,7 +54,7 @@ namespace od
 
     private:
 
-        Engine &mEngine;
+        od::Engine &mEngine;
         std::vector<Light*> mLights;
         bool mLightingEnabled;
 

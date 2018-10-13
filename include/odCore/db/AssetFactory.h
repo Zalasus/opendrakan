@@ -18,7 +18,7 @@
 #include <odCore/Exception.h>
 #include <odCore/db/Asset.h>
 
-namespace od
+namespace odDb
 {
 	class AssetProvider;
 
@@ -37,14 +37,14 @@ namespace od
 		virtual ~AssetFactory();
 
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
-		inline SrscFile &getSrscFile() { return mSrscFile; }
+		inline od::SrscFile &getSrscFile() { return mSrscFile; }
 
-		osg::ref_ptr<_AssetType> getAsset(RecordId assetId);
+		osg::ref_ptr<_AssetType> getAsset(od::RecordId assetId);
 
 
 	protected:
 
-		AssetFactory(AssetProvider &ap, SrscFile &assetContainer);
+		AssetFactory(AssetProvider &ap, od::SrscFile &assetContainer);
 
 		/**
 		 * @brief Interface method for asking child factories to load uncached asset.
@@ -53,7 +53,7 @@ namespace od
 		 * The implementing class must load the asset with the given ID and return it, or return nullptr if
 		 * it could not be found. In the latter case, AssetFactory will produce an appropriate error message and exception.
 		 */
-		virtual osg::ref_ptr<_AssetType> loadAsset(RecordId id) = 0;
+		virtual osg::ref_ptr<_AssetType> loadAsset(od::RecordId id) = 0;
 
 		// override osg::Observer
 		virtual void objectDeleted(void *object) override;
@@ -61,17 +61,17 @@ namespace od
 
 	private:
 
-		_AssetType *_getAssetFromCache(RecordId id);
-		void _addAssetToCache(RecordId id, _AssetType *asset);
+		_AssetType *_getAssetFromCache(od::RecordId id);
+		void _addAssetToCache(od::RecordId id, _AssetType *asset);
 
 		AssetProvider &mAssetProvider;
-		SrscFile &mSrscFile;
+		od::SrscFile &mSrscFile;
 
-		std::map<RecordId, _AssetType*> mAssetCache;
+		std::map<od::RecordId, _AssetType*> mAssetCache;
 	};
 
 	template <typename _AssetType>
-	AssetFactory<_AssetType>::AssetFactory(AssetProvider &ap, SrscFile &assetContainer)
+	AssetFactory<_AssetType>::AssetFactory(AssetProvider &ap, od::SrscFile &assetContainer)
 	: mAssetProvider(ap)
 	, mSrscFile(assetContainer)
 	{
@@ -83,7 +83,7 @@ namespace od
 	}
 
 	template <typename _AssetType>
-	osg::ref_ptr<_AssetType> AssetFactory<_AssetType>::getAsset(RecordId assetId)
+	osg::ref_ptr<_AssetType> AssetFactory<_AssetType>::getAsset(od::RecordId assetId)
 	{
 		_AssetType *cached = this->_getAssetFromCache(assetId);
 	    if(cached != nullptr)
@@ -98,7 +98,7 @@ namespace od
 	    if(loaded == nullptr)
 	    {
 	        Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
-            throw NotFoundException("Asset not found in cache or asset container");
+            throw od::NotFoundException("Asset not found in cache or asset container");
 	    }
 	    this->_addAssetToCache(assetId, loaded.get());
 
@@ -115,7 +115,7 @@ namespace od
 	        return;
 	    }
 
-	    RecordId assetId = asset->getAssetId();
+	    od::RecordId assetId = asset->getAssetId();
 
 	    Logger::debug() << "Unregistering " << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " from cache";
 
@@ -123,7 +123,7 @@ namespace od
 	}
 
 	template <typename _AssetType>
-	_AssetType *AssetFactory<_AssetType>::_getAssetFromCache(RecordId assetId)
+	_AssetType *AssetFactory<_AssetType>::_getAssetFromCache(od::RecordId assetId)
 	{
 		auto it = mAssetCache.find(assetId);
 	    if(it != mAssetCache.end())
@@ -135,7 +135,7 @@ namespace od
 	}
 
 	template <typename _AssetType>
-	void AssetFactory<_AssetType>::_addAssetToCache(RecordId assetId, _AssetType *asset)
+	void AssetFactory<_AssetType>::_addAssetToCache(od::RecordId assetId, _AssetType *asset)
 	{
 		if(_getAssetFromCache(assetId) != nullptr)
 		{

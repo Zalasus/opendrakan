@@ -11,7 +11,7 @@
 #include <odCore/db/AssetFactory.h>
 #include <odCore/db/Sound.h>
 
-namespace od
+namespace odDb
 {
     class Database;
 
@@ -19,13 +19,13 @@ namespace od
     {
     public:
 
-        SoundFactory(AssetProvider &ap, SrscFile &soundContainer);
+        SoundFactory(AssetProvider &ap, od::SrscFile &soundContainer);
 
 
     protected:
 
         // implement AssetFactory<Texture>
-        virtual osg::ref_ptr<Sound> loadAsset(RecordId soundId) override;
+        virtual osg::ref_ptr<Sound> loadAsset(od::RecordId soundId) override;
 
 
     };

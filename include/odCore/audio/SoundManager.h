@@ -22,11 +22,9 @@
 #include <odCore/audio/EaxPresets.h>
 #include <odCore/audio/SoundContext.h>
 
-namespace od
+namespace odAudio
 {
-
     class Source;
-    class Sound;
 
     class SoundManager
     {

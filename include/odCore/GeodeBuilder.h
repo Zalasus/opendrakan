@@ -16,11 +16,13 @@
 
 #include <odCore/db/Asset.h>
 
+namespace odDb
+{
+	class AssetProvider;
+}
+
 namespace od
 {
-
-	class AssetProvider;
-
 
 	struct Polygon
 	{
@@ -28,7 +30,7 @@ namespace od
 		size_t vertexIndices[4];
 		osg::Vec2f uvCoords[4];
 		bool doubleSided;
-		AssetRef texture;
+		odDb::AssetRef texture;
 	};
 
 	struct BoneAffection
@@ -49,7 +51,7 @@ namespace od
 	{
 	public:
 
-		GeodeBuilder(const std::string &modelName, AssetProvider &assetProvider);
+		GeodeBuilder(const std::string &modelName, odDb::AssetProvider &assetProvider);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setModelColor(const osg::Vec4 &color) { mColors->at(0) = color; }
@@ -72,7 +74,7 @@ namespace od
 		{
 			size_t vertexIndices[3];
 			osg::Vec2f uvCoords[3];
-			AssetRef texture;
+			odDb::AssetRef texture;
 		};
 
 		void _buildNormals();
@@ -80,7 +82,7 @@ namespace od
 		void _disambiguateAndGenerateUvs();
 
 		std::string mModelName;
-		AssetProvider &mAssetProvider;
+		odDb::AssetProvider &mAssetProvider;
 
 		// arrays for the shared VBO. IBOs are uniquely generated per geometry.
 		osg::ref_ptr<osg::Vec3Array> mVertices;

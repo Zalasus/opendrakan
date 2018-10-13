@@ -12,7 +12,7 @@
 
 #include <odCore/gui/Widget.h>
 
-namespace od
+namespace odGui
 {
 
     struct WidgetHitInfo

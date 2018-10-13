@@ -13,18 +13,27 @@
 
 namespace od
 {
-
-    class Rfl;
     class Engine;
+}
+
+namespace odRfl
+{
+    class Rfl;
     class RflManager;
+}
+
+namespace odDb
+{
+
+
 
     class ClassFactory : public AssetFactory<Class>
     {
     public:
 
-        ClassFactory(AssetProvider &ap, SrscFile &classContainer, Engine &engine);
+        ClassFactory(AssetProvider &ap, od::SrscFile &classContainer, Engine &engine);
 
-        inline Rfl *getRfl() { return mRfl; }
+        inline odRfl::Rfl *getRfl() { return mRfl; }
 
         /**
          * @brief Finds the first class record in this factory's container with the given RFL record type.
@@ -34,21 +43,21 @@ namespace od
          *
          * @return The record ID of the found class, or AssetRef::NULL_REF.assetId if not found
          */
-        RecordId findFirstClassOfType(uint16_t rflClassType);
+        od::RecordId findFirstClassOfType(uint16_t rflClassType);
 
 
     protected:
 
         // implement AssetFactory<ClassFactory>
-        virtual osg::ref_ptr<Class> loadAsset(RecordId classId) override;
+        virtual osg::ref_ptr<Class> loadAsset(od::RecordId classId) override;
 
 
     private:
 
         void _loadRflRecord();
 
-        RflManager &mRflManager;
-        Rfl *mRfl;
+        odRfl::RflManager &mRflManager;
+        odRfl::Rfl *mRfl;
 
     };
 

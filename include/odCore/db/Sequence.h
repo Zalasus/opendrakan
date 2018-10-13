@@ -16,7 +16,7 @@
 
 #include <odCore/db/Asset.h>
 
-namespace od
+namespace odDb
 {
 
     enum class ActionType : uint16_t
@@ -48,7 +48,7 @@ namespace od
         inline ActionType getActionType() const { return mActionType; }
         inline float getTimeOffset() const { return mTimeOffset; }
 
-        virtual void load(DataReader &dr) = 0;
+        virtual void load(od::DataReader &dr) = 0;
 
     protected:
 
@@ -66,7 +66,7 @@ namespace od
 
         ActionTransform(float timeOffset);
 
-        virtual void load(DataReader &dr) override;
+        virtual void load(od::DataReader &dr) override;
 
 
     private:
@@ -83,7 +83,7 @@ namespace od
 
         ActionStartAnim(float timeOffset);
 
-        virtual void load(DataReader &dr) override;
+        virtual void load(od::DataReader &dr) override;
 
 
     private:
@@ -101,7 +101,7 @@ namespace od
 
         ActionPlaySound(float timeOffset);
 
-        virtual void load(DataReader &dr) override;
+        virtual void load(od::DataReader &dr) override;
     };
 
 
@@ -109,7 +109,7 @@ namespace od
     {
     public:
 
-        void load(DataReader &dr);
+        void load(od::DataReader &dr);
 
 
     private:
@@ -126,9 +126,9 @@ namespace od
 	{
 	public:
 
-	    Sequence(AssetProvider &ap, RecordId id);
+	    Sequence(AssetProvider &ap, od::RecordId id);
 
-		void loadFromRecord(DataReader &dr);
+		void loadFromRecord(od::DataReader &dr);
 
 
 	private:

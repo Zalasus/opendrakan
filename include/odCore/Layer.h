@@ -46,10 +46,10 @@ namespace od
         };
 
         /// @brief The magic texture reference that indicates a hole in the layer.
-        static const AssetRef HoleTextureRef;
+        static const odDb::AssetRef HoleTextureRef;
 
         /// @brief The magic texture reference that indicates an invisible triangle (still with collision)
-        static const AssetRef InvisibleTextureRef;
+        static const odDb::AssetRef InvisibleTextureRef;
 
         Layer(Level &level);
         ~Layer();
@@ -101,8 +101,8 @@ namespace od
         struct Cell
         {
             uint16_t flags;
-            AssetRef leftTextureRef;
-            AssetRef rightTextureRef;
+            odDb::AssetRef leftTextureRef;
+            odDb::AssetRef rightTextureRef;
             uint16_t texCoords[8];
         };
 
@@ -138,7 +138,7 @@ namespace od
         osg::ref_ptr<osg::Vec3Array> mGeometryVertexArray;
         osg::ref_ptr<osg::Vec3Array> mGeometryNormalArray;
         osg::ref_ptr<osg::Vec4Array> mGeometryColorArray;
-        osg::ref_ptr<LightStateCallback> mLightCallback;
+        osg::ref_ptr<odLight::LightStateCallback> mLightCallback;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;

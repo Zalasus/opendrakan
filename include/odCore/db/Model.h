@@ -21,6 +21,12 @@
 
 namespace od
 {
+    class ShaderManager;
+}
+
+namespace odDb
+{
+    class ModelFactory;
 
 	struct LodMeshInfo
 	{
@@ -33,7 +39,7 @@ namespace od
 		uint32_t firstPolygonIndex;
 		uint32_t polygonCount;
 
-		std::vector<BoneAffection> boneAffections;
+		std::vector<od::BoneAffection> boneAffections;
 	};
 
 	enum class ModelShadingType
@@ -43,31 +49,28 @@ namespace od
 	    Smooth
 	};
 
-	class ModelFactory;
-	class ShaderManager;
-
 	class Model : public Asset, public osg::Group
 	{
 	public:
 
-		Model(AssetProvider &ap, RecordId modelId);
+		Model(AssetProvider &ap, od::RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
 
 		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
-		inline ModelBounds *getModelBounds() { return mModelBounds.get(); }
+		inline odPhysics::ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 		inline bool isCharacter() const { return mSkeletonBuilder != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
 		inline ModelShadingType getShadingType() const { return mShadingType; }
 
-		void loadNameAndShading(ModelFactory &factory, DataReader &&dr);
-		void loadVertices(ModelFactory &factory, DataReader &&dr);
-		void loadTextures(ModelFactory &factory, DataReader &&dr);
-		void loadPolygons(ModelFactory &factory, DataReader &&dr);
-		void loadBoundingData(ModelFactory &factory, DataReader &&dr);
-		void loadLodsAndBones(ModelFactory &factory, DataReader &&dr);
-		void buildGeometry(ShaderManager &shaderManager);
+		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
+		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
+		void loadTextures(ModelFactory &factory, od::DataReader &&dr);
+		void loadPolygons(ModelFactory &factory, od::DataReader &&dr);
+		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
+		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
+		void buildGeometry(od::ShaderManager &shaderManager);
 
 		/**
 		 * @brief Returns an axis-aligned bounding box that encapsulates all of this model's meshes and LODs.
@@ -87,10 +90,10 @@ namespace od
 		bool mEnvironmentMapped;
 		std::vector<osg::Vec3f> mVertices;
 		std::vector<AssetRef> mTextureRefs;
-		std::vector<Polygon> mPolygons;
+		std::vector<od::Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
-		std::unique_ptr<ModelBounds> mModelBounds;
+		std::unique_ptr<odPhysics::ModelBounds> mModelBounds;
 		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;

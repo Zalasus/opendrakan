@@ -14,7 +14,7 @@
 
 #define OD_SOUND_DEFAULT_FREQUENCY 44100
 
-namespace od
+namespace odAudio
 {
 
     /**

@@ -24,7 +24,7 @@
 #include <odCore/db/Sound.h>
 #include <odCore/rfl/RflMessage.h>
 
-namespace od
+namespace odRfl
 {
 
 	/**
@@ -193,7 +193,7 @@ namespace od
 	{
 	public:
 
-	    RflAssetRefImpl(const od::AssetRef &ref)
+	    RflAssetRefImpl(const odDb::AssetRef &ref)
 	    : mReference(ref)
         {
         }
@@ -206,7 +206,7 @@ namespace od
             dr >> mReference;
         }
 
-	    virtual void fetchAssets(od::AssetProvider &ap, bool ignoreMissing = true) override
+	    virtual void fetchAssets(odDb::AssetProvider &ap, bool ignoreMissing = true) override
 	    {
 	        if(mReferencedAsset == nullptr && !mReference.isNull())
             {
@@ -229,7 +229,7 @@ namespace od
 	        mReferencedAsset = nullptr;
 	    }
 
-        _AssetType *getOrFetchAsset(od::AssetProvider &ap)
+        _AssetType *getOrFetchAsset(odDb::AssetProvider &ap)
         {
             if(mReferencedAsset == nullptr)
             {
@@ -244,21 +244,21 @@ namespace od
             return mReferencedAsset;
         }
 
-        od::AssetRef getAssetRef() const { return mReference; }
+        odDb::AssetRef getAssetRef() const { return mReference; }
 
 	protected:
 
-        od::AssetRef mReference;
+        odDb::AssetRef mReference;
 	    osg::ref_ptr<_AssetType> mReferencedAsset;
 
 	};
 
-    typedef RflAssetRefImpl<od::Class, RflField::CLASS>         RflClassRef;
-    typedef RflAssetRefImpl<od::Sound, RflField::SOUND>         RflSoundRef;
-    typedef RflAssetRefImpl<od::Texture, RflField::TEXTURE>     RflTextureRef;
-    typedef RflAssetRefImpl<od::Sequence, RflField::SEUQUENCE>  RflSequenceRef;
-    typedef RflAssetRefImpl<od::Animation, RflField::ANIMATION> RflAnimRef;
-    typedef RflAssetRefImpl<od::Model, RflField::MODEL>         RflModelRef;
+    typedef RflAssetRefImpl<odDb::Class, RflField::CLASS>         RflClassRef;
+    typedef RflAssetRefImpl<odDb::Sound, RflField::SOUND>         RflSoundRef;
+    typedef RflAssetRefImpl<odDb::Texture, RflField::TEXTURE>     RflTextureRef;
+    typedef RflAssetRefImpl<odDb::Sequence, RflField::SEUQUENCE>  RflSequenceRef;
+    typedef RflAssetRefImpl<odDb::Animation, RflField::ANIMATION> RflAnimRef;
+    typedef RflAssetRefImpl<odDb::Model, RflField::MODEL>         RflModelRef;
 
 
 
@@ -271,7 +271,7 @@ namespace od
         {
         }
 
-        RflAssetRefArrayImpl(const std::initializer_list<od::AssetRef> defaultRefs)
+        RflAssetRefArrayImpl(const std::initializer_list<odDb::AssetRef> defaultRefs)
         : mReferences(defaultRefs)
         {
         }
@@ -285,14 +285,14 @@ namespace od
             mReferences.reserve(size);
             for(size_t i = 0; i < size; ++i)
             {
-                od::AssetRef v;
+                odDb::AssetRef v;
                 dr >> v;
                 mReferences.push_back(v);
             }
             mReferences.shrink_to_fit();
         }
 
-        virtual void fetchAssets(od::AssetProvider &ap, bool ignoreMissing = true) override
+        virtual void fetchAssets(odDb::AssetProvider &ap, bool ignoreMissing = true) override
         {
             mReferencedAssets.reserve(mReferences.size());
             try
@@ -339,15 +339,15 @@ namespace od
 
     protected:
 
-        std::vector<od::AssetRef> mReferences;
+        std::vector<odDb::AssetRef> mReferences;
         std::vector<osg::ref_ptr<_AssetType>> mReferencedAssets;
 
     };
 
-    typedef RflAssetRefArrayImpl<od::Sound, RflField::SOUND>            RflSoundRefArray;
-    typedef RflAssetRefArrayImpl<od::Class, RflField::CLASS>            RflClassRefArray;
-    typedef RflAssetRefArrayImpl<od::Animation, RflField::ANIMATION>    RflAnimRefArray;
-    typedef RflAssetRefArrayImpl<od::Model, RflField::MODEL>            RflModelRefArray;
+    typedef RflAssetRefArrayImpl<odDb::Sound, RflField::SOUND>            RflSoundRefArray;
+    typedef RflAssetRefArrayImpl<odDb::Class, RflField::CLASS>            RflClassRefArray;
+    typedef RflAssetRefArrayImpl<odDb::Animation, RflField::ANIMATION>    RflAnimRefArray;
+    typedef RflAssetRefArrayImpl<odDb::Model, RflField::MODEL>            RflModelRefArray;
 
 
 

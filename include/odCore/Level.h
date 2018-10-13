@@ -30,7 +30,7 @@ namespace od
 
 	class Engine;
 
-    class Level : public AssetProvider
+    class Level : public odDb::AssetProvider
     {
     public:
 
@@ -39,7 +39,7 @@ namespace od
 
         inline FilePath getFilePath() const { return mLevelPath; }
         inline Engine &getEngine() { return mEngine; }
-        inline PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
+        inline odPhysics::PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
 
         void loadLevel();
         void spawnAllObjects();
@@ -67,19 +67,19 @@ namespace od
 
         FilePath mLevelPath;
         Engine &mEngine;
-        DbManager &mDbManager;
+        odDb::DbManager &mDbManager;
 
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::map<uint16_t, DbRefWrapper> mDependencyMap;
+        std::map<uint16_t, odDb::DbRefWrapper> mDependencyMap;
         std::vector<osg::ref_ptr<Layer>> mLayers;
         std::vector<osg::ref_ptr<LevelObject>> mLevelObjects;
         osg::ref_ptr<osg::Group> mLevelRootNode;
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
-		PhysicsManager mPhysicsManager;
+		odPhysics::PhysicsManager mPhysicsManager;
 
 		std::deque<osg::ref_ptr<LevelObject>> mDestructionQueue;
 

@@ -10,7 +10,7 @@
 
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 
-namespace od
+namespace odPhysics
 {
 
     class ClosestNotMeRayResultCallback : public btCollisionWorld::ClosestRayResultCallback

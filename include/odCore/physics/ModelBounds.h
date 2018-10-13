@@ -16,7 +16,7 @@
 
 #include <odCore/DataStream.h>
 
-namespace od
+namespace odPhysics
 {
 
 	class OrientedBoundingBox

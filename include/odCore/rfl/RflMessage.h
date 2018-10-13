@@ -10,7 +10,7 @@
 
 #include <ostream>
 
-namespace od
+namespace odRfl
 {
 
     enum class RflMessage

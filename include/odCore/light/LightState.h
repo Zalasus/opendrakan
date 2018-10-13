@@ -13,7 +13,7 @@
 
 #include <odCore/light/Light.h>
 
-namespace od
+namespace odLight
 {
 
     class LightManager;

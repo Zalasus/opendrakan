@@ -8,14 +8,11 @@
 #ifndef INCLUDE_ODCORE_RFL_FIELDPROBE_H_
 #define INCLUDE_ODCORE_RFL_FIELDPROBE_H_
 
-
 #include <string>
 #include <vector>
 
-namespace od
+namespace odRfl
 {
-    class DataReader;
-    class AssetProvider;
     class RflField;
     class RflAssetRef;
 

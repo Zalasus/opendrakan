@@ -13,7 +13,7 @@
 #include <osg/Geode>
 #include <osg/BoundingBox>
 
-namespace od
+namespace odGui
 {
 
     class GuiManager;
