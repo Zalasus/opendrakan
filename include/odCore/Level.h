@@ -20,7 +20,6 @@
 #include <osg/Light>
 
 #include <odCore/FilePath.h>
-#include <odCore/TextureAtlas.h>
 #include <odCore/Layer.h>
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>

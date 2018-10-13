@@ -59,11 +59,9 @@ set(SOURCES
         "LevelObject.cpp"
         "Logger.cpp"
         "OsgSerializers.cpp"
-        "SegmentedGeode.cpp"
         "ShaderManager.cpp"
         "SrscFile.cpp"
         "StringUtils.cpp"
-        "TextureAtlas.cpp"
         "UpdateCallback.cpp"
         "ZStream.cpp")
     
