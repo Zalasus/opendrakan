@@ -67,7 +67,7 @@ namespace od
     , mIgnoreAttachmentScale(false)
     , mLayerBelowObjectDirty(true)
     , mUpdateCallback(new LevelObjectUpdateCallback(*this))
-    , mLightingCallback(new LightStateCallback(level.getEngine().getLightManager(), mTransform))
+    , mLightingCallback(new odLight::LightStateCallback(level.getEngine().getLightManager(), mTransform))
     , mRflUpdateHookEnabled(false)
     {
         this->setNodeMask(NodeMasks::Object);
@@ -128,7 +128,7 @@ namespace od
             mInitialScale.set(1,1,1);
         }
 
-        ClassBuilderProbe builder; // TODO: replace with ObjectBuilderProbe once implemented
+        odRfl::ClassBuilderProbe builder; // TODO: replace with ObjectBuilderProbe once implemented
         builder.readFieldRecord(dr, true);
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
@@ -141,12 +141,12 @@ namespace od
         mTransform->setPosition(mInitialPosition);
         mTransform->setScale(mInitialScale);
 
-        mClass = mLevel.getAssetByRef<Class>(mClassRef);
+        mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
 
         // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
         if(mClass->hasModel())
         {
-            Model *model = mClass->getModel();
+            odDb::Model *model = mClass->getModel();
             model->buildGeometry(getLevel().getEngine().getShaderManager());
             mTransform->addChild(model);
             this->addChild(mTransform);
@@ -249,7 +249,7 @@ namespace od
         }
     }
 
-    void LevelObject::messageReceived(LevelObject &sender, RflMessage message)
+    void LevelObject::messageReceived(LevelObject &sender, odRfl::RflMessage message)
     {
         if(mState == LevelObjectState::Destroyed)
         {
@@ -385,7 +385,7 @@ namespace od
         mRflUpdateHookEnabled = enableHook;
     }
 
-    void LevelObject::messageAllLinkedObjects(RflMessage message)
+    void LevelObject::messageAllLinkedObjects(odRfl::RflMessage message)
     {
         for(auto it = mLinkedObjects.begin(); it != mLinkedObjects.end(); ++it)
         {
@@ -400,13 +400,13 @@ namespace od
 
     void LevelObject::getWorldTransform(btTransform& worldTrans) const
     {
-        worldTrans = BulletAdapter::makeBulletTransform(getPosition(), getRotation());
+        worldTrans = odPhysics::BulletAdapter::makeBulletTransform(getPosition(), getRotation());
     }
 
     void LevelObject::setWorldTransform(const btTransform& worldTrans)
     {
-        setPosition(BulletAdapter::toOsg(worldTrans.getOrigin()));
-        setRotation(BulletAdapter::toOsg(worldTrans.getRotation()));
+        setPosition(odPhysics::BulletAdapter::toOsg(worldTrans.getOrigin()));
+        setRotation(odPhysics::BulletAdapter::toOsg(worldTrans.getRotation()));
     }
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)

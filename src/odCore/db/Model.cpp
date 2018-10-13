@@ -23,10 +23,10 @@
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
-namespace od
+namespace odDb
 {
 
-	Model::Model(AssetProvider &ap, RecordId modelId)
+	Model::Model(AssetProvider &ap, od::RecordId modelId)
 	: Asset(ap, modelId)
 	, mModelName("")
 	, mShadingType(ModelShadingType::None)
@@ -41,7 +41,7 @@ namespace od
 	{
 	}
 
-	void Model::loadNameAndShading(ModelFactory &factory, DataReader &&dr)
+	void Model::loadNameAndShading(ModelFactory &factory, od::DataReader &&dr)
 	{
 		dr >> mModelName;
 		this->setName(mModelName);
@@ -68,7 +68,7 @@ namespace od
         mBlendWithLandscape = shadingType & 0x04;
 	}
 
-	void Model::loadVertices(ModelFactory &factory, DataReader &&dr)
+	void Model::loadVertices(ModelFactory &factory, od::DataReader &&dr)
 	{
 		uint16_t vertexCount;
 		dr >> vertexCount;
@@ -86,7 +86,7 @@ namespace od
 		mVerticesLoaded = true;
 	}
 
-	void Model::loadTextures(ModelFactory &factory, DataReader &&dr)
+	void Model::loadTextures(ModelFactory &factory, od::DataReader &&dr)
 	{
 		uint32_t textureCount;
 		dr >> textureCount;
@@ -106,11 +106,11 @@ namespace od
 		mTexturesLoaded = true;
 	}
 
-	void Model::loadPolygons(ModelFactory &factory, DataReader &&dr)
+	void Model::loadPolygons(ModelFactory &factory, od::DataReader &&dr)
 	{
 		if(!mTexturesLoaded || !mVerticesLoaded)
 		{
-			throw Exception("Must load vertices and textures before loading polygons!");
+			throw od::Exception("Must load vertices and textures before loading polygons!");
 		}
 
 		uint16_t polygonCount;
@@ -127,14 +127,14 @@ namespace od
 			   >> vertexCount
 			   >> textureIndex;
 
-			Polygon poly;
+			od::Polygon poly;
 			poly.doubleSided = flags & OD_POLYGON_FLAG_DOUBLESIDED;
 			poly.texture = mTextureRefs[textureIndex];
 			poly.vertexCount = vertexCount;
 
 			if(poly.vertexCount != 3 && poly.vertexCount != 4)
 			{
-				throw UnsupportedException("Can't load model with non-triangle/non-quad primitives");
+				throw od::UnsupportedException("Can't load model with non-triangle/non-quad primitives");
 			}
 
 			for(size_t i = 0; i < poly.vertexCount; ++i)
@@ -153,15 +153,15 @@ namespace od
 		mPolygonsLoaded = true;
 	}
 
-	void Model::loadBoundingData(ModelFactory &factory, DataReader &&dr)
+	void Model::loadBoundingData(ModelFactory &factory, od::DataReader &&dr)
 	{
 		if(isCharacter())
 		{
-			throw Exception("Character models can't have bounds info");
+			throw od::Exception("Character models can't have bounds info");
 		}
 
 		osg::BoundingSpheref mainBs;
-		OrientedBoundingBox mainObb;
+		odPhysics::OrientedBoundingBox mainObb;
 		uint16_t shapeCount;
 		uint16_t shapeType; // 0 = spheres, 1 = boxes
 
@@ -170,8 +170,8 @@ namespace od
 		   >> shapeCount
 		   >> shapeType;
 
-		ModelBounds::ShapeType type = (shapeType == 0) ? ModelBounds::SPHERES : ModelBounds::BOXES;
-		mModelBounds.reset(new ModelBounds(type, shapeCount));
+		odPhysics::ModelBounds::ShapeType type = (shapeType == 0) ? odPhysics::ModelBounds::SPHERES : odPhysics::ModelBounds::BOXES;
+		mModelBounds.reset(new odPhysics::ModelBounds(type, shapeCount));
 		mModelBounds->setMainBounds(mainBs, mainObb);
 
 		for(size_t i = 0; i < shapeCount; ++i)
@@ -194,7 +194,7 @@ namespace od
 
 			}else
 			{
-				OrientedBoundingBox obb;
+				odPhysics::OrientedBoundingBox obb;
 				dr >> obb;
 				mModelBounds->addBox(obb);
 
@@ -211,22 +211,22 @@ namespace od
 		mModelBounds->getCollisionShape(); // to trigger building the shape
 	}
 
-	void Model::loadLodsAndBones(ModelFactory &factory, DataReader &&dr)
+	void Model::loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr)
 	{
 		if(hasBounds())
 		{
-			throw Exception("Character models can't have bounds info");
+			throw od::Exception("Character models can't have bounds info");
 		}
 
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
-		dr >> DataReader::Ignore(16*4) // bounding info (16 floats)
+		dr >> od::DataReader::Ignore(16*4) // bounding info (16 floats)
 		   >> lodCount;
 
 		if(lodCount == 0)
 		{
-			throw Exception("Expected at least one LOD in model");
+			throw od::Exception("Expected at least one LOD in model");
 		}
 		mLodMeshInfos.resize(lodCount);
 
@@ -273,7 +273,7 @@ namespace od
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
-            	std::vector<BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
+            	std::vector<od::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
 
 				uint16_t affectedVertexCount;
 				dr >> affectedVertexCount;
@@ -285,7 +285,7 @@ namespace od
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					BoneAffection bAff;
+					od::BoneAffection bAff;
 					bAff.jointIndex = jointIndex;
 					bAff.vertexIndex = affectedVertexIndex;
 					bAff.vertexWeight = weight;
@@ -309,7 +309,7 @@ namespace od
 
 			if(meshCount != 1)
 			{
-				throw UnsupportedException("Multi-mesh-models currently unsupported");
+				throw od::UnsupportedException("Multi-mesh-models currently unsupported");
 			}
 
 			for(size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
@@ -386,7 +386,7 @@ namespace od
 		//Logger::info() << "Skel info for model " << mModelName;
 		//mSkeletonBuilder->printInfo(std::cout);
 
-		dr >> DataReader::Expect<uint16_t>(lodCount);
+		dr >> od::DataReader::Expect<uint16_t>(lodCount);
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
 		    uint16_t shapeCount;
@@ -401,10 +401,10 @@ namespace od
 
 		        dr >> firstChild
 		           >> nextSibling
-		           >> DataReader::Ignore(4)
+		           >> od::DataReader::Ignore(4)
 		           >> radius
 		           >> channelIndex
-		           >> DataReader::Ignore(2);
+		           >> od::DataReader::Ignore(2);
 
 		        // where do the spheres go? there is no field in the structure for that. are they placed exactly at their joint?
 
@@ -419,7 +419,7 @@ namespace od
 		}
  	}
 
-	void Model::buildGeometry(ShaderManager &shaderManager)
+	void Model::buildGeometry(od::ShaderManager &shaderManager)
 	{
 	    if(mGeometryBuilt)
 	    {
@@ -428,7 +428,7 @@ namespace od
 
 		if(!mTexturesLoaded || !mVerticesLoaded || !mPolygonsLoaded)
 		{
-			throw Exception("Must load at least vertices, textures and polygons before building geometry");
+			throw od::Exception("Must load at least vertices, textures and polygons before building geometry");
 		}
 
 		if(mLodMeshInfos.size() > 0)
@@ -439,7 +439,7 @@ namespace od
 
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
-				GeodeBuilder gb(it->lodName, this->getAssetProvider());
+				od::GeodeBuilder gb(it->lodName, this->getAssetProvider());
 				gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 				gb.setClampTextures(false);
 
@@ -474,7 +474,7 @@ namespace od
 
 		}else
 		{
-			GeodeBuilder gb(mModelName, this->getAssetProvider());
+			od::GeodeBuilder gb(mModelName, this->getAssetProvider());
 			gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 			gb.setClampTextures(false);
 			gb.setVertexVector(mVertices.begin(), mVertices.end());

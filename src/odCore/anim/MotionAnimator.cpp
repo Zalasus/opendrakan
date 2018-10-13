@@ -7,7 +7,7 @@
 
 #include <odCore/anim/MotionAnimator.h>
 
-namespace od
+namespace odAnim
 {
 
 	class MotionAnimatorUpdateCallback : public osg::NodeCallback

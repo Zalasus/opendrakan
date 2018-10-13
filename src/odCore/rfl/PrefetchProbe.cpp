@@ -9,11 +9,11 @@
 
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace odRfl
 {
 
 
-    PrefetchProbe::PrefetchProbe(od::AssetProvider &ap, bool ignoreMissing)
+    PrefetchProbe::PrefetchProbe(odDb::AssetProvider &ap, bool ignoreMissing)
     : mAssetProvider(ap)
     , mIgnoreMissing(ignoreMissing)
     {

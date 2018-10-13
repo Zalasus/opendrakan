@@ -48,7 +48,7 @@ namespace odDb
         AssetRef mModelRef;
         osg::ref_ptr<Model> mModel;
         uint16_t mRflClassId;
-        od::ClassBuilderProbe mClassBuilder;
+        odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
 
         odRfl::Rfl *mRfl;

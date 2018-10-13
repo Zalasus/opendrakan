@@ -10,6 +10,11 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
+namespace od
+{
+    class DataReader;
+}
+
 namespace odRfl
 {
 

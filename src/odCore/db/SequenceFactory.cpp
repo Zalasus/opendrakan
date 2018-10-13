@@ -9,24 +9,24 @@
 
 #include <odCore/db/Database.h>
 
-namespace od
+namespace odDb
 {
 
-    SequenceFactory::SequenceFactory(AssetProvider &ap, SrscFile &sequenceContainer)
+    SequenceFactory::SequenceFactory(AssetProvider &ap, od::SrscFile &sequenceContainer)
     : AssetFactory<Sequence>(ap, sequenceContainer)
     {
     }
 
-    osg::ref_ptr<Sequence> SequenceFactory::loadAsset(RecordId assetId)
+    osg::ref_ptr<Sequence> SequenceFactory::loadAsset(od::RecordId assetId)
     {
-        SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::SEQUENCE, assetId);
+        od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::SEQUENCE, assetId);
         if(dirIt == getSrscFile().getDirectoryEnd())
         {
             return nullptr;
         }
 
         osg::ref_ptr<Sequence> sequence(new Sequence(getAssetProvider(), assetId));
-        DataReader dr(getSrscFile().getStreamForRecord(dirIt));
+        od::DataReader dr(getSrscFile().getStreamForRecord(dirIt));
         sequence->loadFromRecord(dr);
 
         return sequence;

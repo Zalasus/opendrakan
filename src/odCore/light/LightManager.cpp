@@ -16,11 +16,11 @@
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 
-namespace od
+namespace odLight
 {
 
 
-    LightManager::LightManager(Engine &engine, osg::Group *sceneRoot)
+    LightManager::LightManager(od::Engine &engine, osg::Group *sceneRoot)
     : mEngine(engine)
     , mLightingEnabled(true)
     {
@@ -109,7 +109,7 @@ namespace od
     {
         if(index >= OD_MAX_LIGHTS)
         {
-            throw InvalidArgumentException("Tried to apply light at out-of-bounds index");
+            throw od::InvalidArgumentException("Tried to apply light at out-of-bounds index");
         }
 
         if(!mLightingEnabled)
@@ -129,7 +129,7 @@ namespace od
     {
         if(index >= OD_MAX_LIGHTS)
         {
-            throw InvalidArgumentException("Tried to apply null light at out-of-bounds index");
+            throw od::InvalidArgumentException("Tried to apply null light at out-of-bounds index");
         }
 
         if(!mLightingEnabled)

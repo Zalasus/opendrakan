@@ -11,7 +11,7 @@
 
 #include <odCore/gui/WidgetGroup.h>
 
-namespace od
+namespace odGui
 {
 
     ContainerWidget::ContainerWidget(GuiManager &gm)

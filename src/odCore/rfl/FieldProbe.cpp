@@ -8,7 +8,7 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
-namespace od
+namespace odRfl
 {
 
     void FieldProbe::beginCategory(const char *categoryName)

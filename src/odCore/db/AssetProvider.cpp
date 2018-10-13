@@ -8,78 +8,78 @@
 
 #include <odCore/db/AssetProvider.h>
 
-namespace od
+namespace odDb
 {
 
     AssetProvider &AssetProvider::getDependency(uint16_t index)
     {
-        throw UnsupportedException("This AssetProvider implementation can't have dependencies");
+        throw od::UnsupportedException("This AssetProvider implementation can't have dependencies");
     }
 
     template<>
-    Texture *AssetProvider::getAsset<Texture>(RecordId id)
+    Texture *AssetProvider::getAsset<Texture>(od::RecordId id)
     {
         return this->getTexture(id);
     }
 
     template<>
-    Class *AssetProvider::getAsset<Class>(RecordId id)
+    Class *AssetProvider::getAsset<Class>(od::RecordId id)
     {
         return this->getClass(id);
     }
 
     template<>
-    Model *AssetProvider::getAsset<Model>(RecordId id)
+    Model *AssetProvider::getAsset<Model>(od::RecordId id)
     {
         return this->getModel(id);
     }
 
     template<>
-    Sequence *AssetProvider::getAsset<Sequence>(RecordId id)
+    Sequence *AssetProvider::getAsset<Sequence>(od::RecordId id)
     {
         return this->getSequence(id);
     }
 
     template<>
-    Animation *AssetProvider::getAsset<Animation>(RecordId id)
+    Animation *AssetProvider::getAsset<Animation>(od::RecordId id)
     {
         return this->getAnimation(id);
     }
 
     template<>
-    Sound *AssetProvider::getAsset<Sound>(RecordId id)
+    Sound *AssetProvider::getAsset<Sound>(od::RecordId id)
     {
         return this->getSound(id);
     }
 
-    Texture *AssetProvider::getTexture(RecordId recordId)
+    Texture *AssetProvider::getTexture(od::RecordId recordId)
     {
-        throw UnsupportedException("This AssetProvider implementation can't provide textures");
+        throw od::UnsupportedException("This AssetProvider implementation can't provide textures");
     }
 
-    Class *AssetProvider::getClass(RecordId recordId)
+    Class *AssetProvider::getClass(od::RecordId recordId)
     {
-        throw UnsupportedException("This AssetProvider implementation can't provide classes");
+        throw od::UnsupportedException("This AssetProvider implementation can't provide classes");
     }
 
-    Model *AssetProvider::getModel(RecordId recordId)
+    Model *AssetProvider::getModel(od::RecordId recordId)
     {
-        throw UnsupportedException("This AssetProvider implementation can't provide models");
+        throw od::UnsupportedException("This AssetProvider implementation can't provide models");
     }
 
-    Sequence *AssetProvider::getSequence(RecordId recordId)
+    Sequence *AssetProvider::getSequence(od::RecordId recordId)
     {
-        throw UnsupportedException("This AssetProvider implementation can't provide sequences");
+        throw od::UnsupportedException("This AssetProvider implementation can't provide sequences");
     }
 
-    Animation *AssetProvider::getAnimation(RecordId recordId)
+    Animation *AssetProvider::getAnimation(od::RecordId recordId)
     {
-        throw UnsupportedException("This AssetProvider implementation can't provide animations");
+        throw od::UnsupportedException("This AssetProvider implementation can't provide animations");
     }
 
-    Sound *AssetProvider::getSound(RecordId recordId)
+    Sound *AssetProvider::getSound(od::RecordId recordId)
     {
-        throw UnsupportedException("This AssetProvider implementation can't provide sounds");
+        throw od::UnsupportedException("This AssetProvider implementation can't provide sounds");
     }
 
 }

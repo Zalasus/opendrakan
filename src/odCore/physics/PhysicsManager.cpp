@@ -23,7 +23,7 @@
 #include <odCore/physics/BulletAdapter.h>
 #include <odCore/physics/BulletCallbacks.h>
 
-namespace od
+namespace odPhysics
 {
 
 	class PhysicsTickCallback : public osg::NodeCallback
@@ -69,7 +69,7 @@ namespace od
 
 
 
-	PhysicsManager::PhysicsManager(Level &level, osg::Group *levelRoot)
+	PhysicsManager::PhysicsManager(od::Level &level, osg::Group *levelRoot)
 	: mLevel(level)
 	, mLevelRoot(levelRoot)
 	, mTickCallback(new PhysicsTickCallback(*this))
@@ -181,7 +181,7 @@ namespace od
 	    return hitObjectCount;
 	}
 
-	bool PhysicsManager::raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, LevelObject *exclude, int mask)
+	bool PhysicsManager::raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude, int mask)
 	{
 	    btCollisionObject *me = nullptr;
 	    if(exclude != nullptr)
@@ -232,12 +232,12 @@ namespace od
         return true;
 	}
 
-	btRigidBody *PhysicsManager::addLayer(Layer &l)
+	btRigidBody *PhysicsManager::addLayer(od::Layer &l)
 	{
 		btCollisionShape *cs = l.getCollisionShape();
 		if(cs == nullptr)
 		{
-			throw Exception("Tried to add layer without collision shape to PhysicsManager");
+			throw od::Exception("Tried to add layer without collision shape to PhysicsManager");
 		}
 
 		btRigidBody::btRigidBodyConstructionInfo info(0, nullptr, cs);
@@ -258,7 +258,7 @@ namespace od
 		return bodyPtr;
 	}
 
-	void PhysicsManager::removeLayer(Layer &l)
+	void PhysicsManager::removeLayer(od::Layer &l)
 	{
 		auto it = mLayerMap.find(l.getId());
 		if(it != mLayerMap.end())
@@ -269,11 +269,11 @@ namespace od
 		}
 	}
 
-	btRigidBody *PhysicsManager::addObject(LevelObject &o, float mass)
+	btRigidBody *PhysicsManager::addObject(od::LevelObject &o, float mass)
 	{
 		if(o.getClass() == nullptr || o.getClass()->getModel() == nullptr || o.getClass()->getModel()->getModelBounds() == nullptr)
 		{
-			throw Exception("Tried to add object without model or collision shape to PhysicsManager");
+			throw od::Exception("Tried to add object without model or collision shape to PhysicsManager");
 		}
 
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getClass()->getModel()->getModelBounds()->getCollisionShape());
@@ -292,7 +292,7 @@ namespace od
 		return bodyPtr;
 	}
 
-	void PhysicsManager::removeObject(LevelObject &o)
+	void PhysicsManager::removeObject(od::LevelObject &o)
 	{
 		auto it = mLevelObjectMap.find(o.getObjectId());
 		if(it != mLevelObjectMap.end())

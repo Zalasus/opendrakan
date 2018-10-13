@@ -28,10 +28,10 @@
 
 #define OD_TEX_OPAQUE_ALPHA 			0xff
 
-namespace od
+namespace odDb
 {
 
-    Texture::Texture(AssetProvider &ap, RecordId id)
+    Texture::Texture(AssetProvider &ap, od::RecordId id)
     : Asset(ap, id)
     , mWidth(0)
     , mHeight(0)
@@ -50,7 +50,7 @@ namespace od
 
     }
 
-    void Texture::loadFromRecord(TextureFactory &factory, DataReader dr)
+    void Texture::loadFromRecord(TextureFactory &factory, od::DataReader dr)
     {
     	Logger::debug() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
 
@@ -61,12 +61,12 @@ namespace od
            >> rowSpacing
            >> mBitsPerPixel
            >> mAlphaBitsPerPixel
-           >> DataReader::Ignore(2)
+           >> od::DataReader::Ignore(2)
            >> mColorKey
            >> mMipMapId
-           >> DataReader::Ignore(2)
+           >> od::DataReader::Ignore(2)
            >> mAlternateId
-           >> DataReader::Ignore(6)
+           >> od::DataReader::Ignore(6)
            >> mFlags
            >> mMipMapNumber
            >> mMaterialClassRef
@@ -77,13 +77,13 @@ namespace od
         if(mFlags & OD_TEX_FLAG_ALPHAMAP)
         {
         	Logger::error() << "Unsupported alpha map with " << mAlphaBitsPerPixel << "BPP";
-        	throw UnsupportedException("Alpha maps unsupported right now");
+        	throw od::UnsupportedException("Alpha maps unsupported right now");
         }
 
         uint32_t trailingBytes = rowSpacing - mWidth*(mBitsPerPixel/8);
         if(trailingBytes)
         {
-            throw UnsupportedException("Can only load packed textures right now");
+            throw od::UnsupportedException("Can only load packed textures right now");
         }
 
         if(mBitsPerPixel == 32)
@@ -104,15 +104,15 @@ namespace od
 
         mHasAlphaChannel = (mAlphaBitsPerPixel != 0) || hasColorKey;
 
-        std::unique_ptr<ZStream> zstr;
-        DataReader zdr(dr);
+        std::unique_ptr<od::ZStream> zstr;
+        od::DataReader zdr(dr);
         if(mCompressionLevel != 0)
         {
             // choose efficient output buffer sizes. ideally as much as we need exactly, but not more that what we'd use by default
             size_t uncompressedSize = mWidth*mHeight*(mBitsPerPixel/8) + mHeight*trailingBytes;
-            size_t outputBufferSize = std::min(ZStreamBuffer::DefaultBufferSize, uncompressedSize);
+            size_t outputBufferSize = std::min(od::ZStreamBuffer::DefaultBufferSize, uncompressedSize);
 
-            zstr.reset(new ZStream(dr.getStream(), mCompressedSize, outputBufferSize));
+            zstr.reset(new od::ZStream(dr.getStream(), mCompressedSize, outputBufferSize));
             zdr.setStream(*zstr);
         }
 
@@ -177,7 +177,7 @@ namespace od
 
             }else
             {
-            	throw Exception("Invalid alpha BPP count");
+            	throw od::Exception("Invalid alpha BPP count");
             }
 
             pixelReaderFunc = [this, &zdr, redMask, greenMask, blueMask, alphaMask](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
@@ -224,7 +224,7 @@ namespace od
 
         }else
         {
-        	throw Exception("Invalid BPP");
+        	throw od::Exception("Invalid BPP");
         }
 
         // translate whatever is stored in texture into 8-bit RGBA format
@@ -270,7 +270,7 @@ namespace od
         Logger::debug() << "Texture successfully loaded";
     }
 
-    void Texture::exportToPng(const FilePath &path)
+    void Texture::exportToPng(const od::FilePath &path)
     {
         Logger::verbose() << "Exporting texture " << std::hex << getAssetId() << std::dec
                 << " with dimensions " << mWidth << "x" << mHeight

@@ -14,10 +14,10 @@
 #include <odCore/ZStream.h>
 #include <odCore/audio/Buffer.h>
 
-namespace od
+namespace odDb
 {
 
-	Sound::Sound(AssetProvider &ap, RecordId id)
+	Sound::Sound(AssetProvider &ap, od::RecordId id)
 	: Asset(ap, id)
 	, mSoundName("")
 	, mFlags(0)
@@ -32,7 +32,7 @@ namespace od
     {
     }
 
-    void Sound::loadFromRecord(DataReader &dr)
+    void Sound::loadFromRecord(od::DataReader &dr)
     {
         dr  >> mSoundName
 			>> mFlags
@@ -53,20 +53,20 @@ namespace od
 
         if(mChannels != 1 && mChannels != 2)
         {
-            throw UnsupportedException("Unsupported channel count");
+            throw od::UnsupportedException("Unsupported channel count");
         }
 
         if(mBits != 8 && mBits != 16)
         {
-        	throw UnsupportedException("Unsupported bit count per sample");
+        	throw od::UnsupportedException("Unsupported bit count per sample");
         }
 
-        std::unique_ptr<ZStream> zstr;
-        DataReader sampleReader(dr);
+        std::unique_ptr<od::ZStream> zstr;
+        od::DataReader sampleReader(dr);
         if(mCompressionLevel != 0)
         {
-            size_t outputBufferSize = std::min(ZStreamBuffer::DefaultBufferSize, (size_t)mDecompressedSize);
-            zstr.reset(new ZStream(dr.getStream(), compressedSize, outputBufferSize));
+            size_t outputBufferSize = std::min(od::ZStreamBuffer::DefaultBufferSize, (size_t)mDecompressedSize);
+            zstr.reset(new od::ZStream(dr.getStream(), compressedSize, outputBufferSize));
             sampleReader.setStream(*zstr);
         }
 
@@ -74,16 +74,16 @@ namespace od
         sampleReader.read(reinterpret_cast<char*>(mTempSampleBuffer.data()), mDecompressedSize);
     }
 
-    std::shared_ptr<Buffer> Sound::getOrCreateBuffer(SoundManager &soundManager)
+    std::shared_ptr<odAudio::Buffer> Sound::getOrCreateBuffer(odAudio::SoundManager &soundManager)
     {
         if(mSoundBuffer != nullptr)
         {
             return mSoundBuffer;
         }
 
-        mSoundBuffer.reset(new Buffer(soundManager));
+        mSoundBuffer.reset(new odAudio::Buffer(soundManager));
 
-        Buffer::Format format = mSoundBuffer->getFormatFor(mBits, mChannels);
+        odAudio::Buffer::Format format = mSoundBuffer->getFormatFor(mBits, mChannels);
 
         mSoundBuffer->setData(mTempSampleBuffer.data(), mTempSampleBuffer.size(), format, mFrequency);
 

@@ -7,10 +7,10 @@
 
 #include <odCore/rfl/Rfl.h>
 
-namespace od
+namespace odRfl
 {
 
-    Rfl::Rfl(Engine &engine)
+    Rfl::Rfl(od::Engine &engine)
     : mEngine(engine)
     {
     }

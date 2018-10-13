@@ -183,7 +183,7 @@ namespace odRfl
 
         virtual ~RflAssetRef() = default;
 
-        virtual void fetchAssets(od::AssetProvider &ap, bool ignoreMissing = true) = 0;
+        virtual void fetchAssets(odDb::AssetProvider &ap, bool ignoreMissing = true) = 0;
         virtual void releaseAssets() = 0;
 
     };

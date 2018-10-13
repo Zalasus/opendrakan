@@ -25,13 +25,11 @@ namespace odRfl
 namespace odDb
 {
 
-
-
     class ClassFactory : public AssetFactory<Class>
     {
     public:
 
-        ClassFactory(AssetProvider &ap, od::SrscFile &classContainer, Engine &engine);
+        ClassFactory(AssetProvider &ap, od::SrscFile &classContainer, od::Engine &engine);
 
         inline odRfl::Rfl *getRfl() { return mRfl; }
 

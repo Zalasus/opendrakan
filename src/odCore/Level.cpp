@@ -206,7 +206,7 @@ namespace od
         return *mLevelObjects[index];
     }
 
-    AssetProvider &Level::getDependency(uint16_t index)
+    odDb::AssetProvider &Level::getDependency(uint16_t index)
     {
         auto it = mDependencyMap.find(index);
         if(it == mDependencyMap.end())
@@ -241,11 +241,11 @@ namespace od
             dr >> dbPathStr;
 
             FilePath dbPath(dbPathStr, mLevelPath.dir());
-            Database &db = mDbManager.loadDb(dbPath.adjustCase());
+            odDb::Database &db = mDbManager.loadDb(dbPath.adjustCase());
 
             Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
 
-            mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(dbIndex, db));
+            mDependencyMap.insert(std::pair<uint16_t, odDb::DbRefWrapper>(dbIndex, db));
         }
     }
 

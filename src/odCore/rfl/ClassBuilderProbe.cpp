@@ -12,7 +12,7 @@
 #include <odCore/Exception.h>
 #include <odCore/rfl/RflField.h>
 
-namespace od
+namespace odRfl
 {
 
     ClassBuilderProbe::ClassBuilderProbe()

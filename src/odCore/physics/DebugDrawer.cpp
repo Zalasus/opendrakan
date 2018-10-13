@@ -12,7 +12,7 @@
 #include <odCore/physics/BulletAdapter.h>
 #include <odCore/Logger.h>
 
-namespace od
+namespace odPhysics
 {
 
     DebugDrawer::DebugDrawer(osg::ref_ptr<osg::Group> parentNode, btDynamicsWorld *world)

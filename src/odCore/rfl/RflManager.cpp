@@ -13,10 +13,10 @@
 #include <odCore/Exception.h>
 #include <odCore/StringUtils.h>
 
-namespace od
+namespace odRfl
 {
 
-    RflManager::RflManager(Engine &engine)
+    RflManager::RflManager(od::Engine &engine)
     : mEngine(engine)
     {
         // first, instantiate all statically linked RFLs
@@ -35,13 +35,13 @@ namespace od
 
     Rfl *RflManager::getRfl(const std::string &name)
     {
-        auto pred = [&name](std::unique_ptr<Rfl> &rfl){ return StringUtils::compareIgnoringCase(name, rfl->getName()); };
+        auto pred = [&name](std::unique_ptr<Rfl> &rfl){ return od::StringUtils::compareIgnoringCase(name, rfl->getName()); };
         auto it = std::find_if(mLoadedRfls.begin(), mLoadedRfls.end(), pred);
 
         if(it == mLoadedRfls.end())
         {
             Logger::error() << "RFL '" << name << "' is not loaded";
-            throw NotFoundException("RFL with given name is not loaded");
+            throw od::NotFoundException("RFL with given name is not loaded");
         }
 
         return it->get();

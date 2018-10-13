@@ -9,17 +9,17 @@
 
 #include <odCore/Exception.h>
 
-namespace od
+namespace odRfl
 {
 
-    void RflField::fill(DataReader &dr)
+    void RflField::fill(od::DataReader &dr)
     {
-    	throw Exception("Invalid field fill");
+    	throw od::Exception("Invalid field fill");
     }
 
-    void RflField::fillArray(uint16_t size, DataReader &dr)
+    void RflField::fillArray(uint16_t size, od::DataReader &dr)
     {
-    	throw Exception("Invalid field fillArray");
+    	throw od::Exception("Invalid field fillArray");
     }
 
 
@@ -29,7 +29,7 @@ namespace od
 	{
 	}
 
-    void RflString::fillArray(uint16_t size, DataReader &dr)
+    void RflString::fillArray(uint16_t size, od::DataReader &dr)
 	{
 		std::vector<char> dataBuffer(size*4 + 1);
 		dr.read(dataBuffer.data(), size*4);

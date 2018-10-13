@@ -13,7 +13,7 @@
 #include <odCore/OdDefines.h>
 #include <odCore/db/Skeleton.h>
 
-namespace od
+namespace odAnim
 {
 	class CreateAnimatorsVisitor : public osg::NodeVisitor
 	{
@@ -28,7 +28,7 @@ namespace od
 
         virtual void apply(osg::MatrixTransform &node)
         {
-        	BoneNode *bn = dynamic_cast<BoneNode*>(&node);
+        	odDb::BoneNode *bn = dynamic_cast<odDb::BoneNode*>(&node);
         	if(bn != nullptr)
         	{
 				osg::ref_ptr<Animator> animator(new Animator(bn));
@@ -68,7 +68,7 @@ namespace od
         {
         	osg::Matrixd prevMatrix = mCurrentMatrix; // since i don't want to create a stack for that yet
 
-        	BoneNode *bn = dynamic_cast<BoneNode*>(&node);
+        	odDb::BoneNode *bn = dynamic_cast<odDb::BoneNode*>(&node);
         	if(bn != nullptr)
         	{
         		mCurrentMatrix.preMult(bn->getMatrix() * bn->getInverseBindPoseXform());
@@ -154,7 +154,7 @@ namespace od
 		mSkeletonRoot->removeUpdateCallback(mUploadCallback);
 	}
 
-	void SkeletonAnimationPlayer::setAnimation(osg::ref_ptr<Animation> anim, double startDelay)
+	void SkeletonAnimationPlayer::setAnimation(osg::ref_ptr<odDb::Animation> anim, double startDelay)
 	{
 		if(anim->getModelNodeCount() != mAnimators.size())
 		{
@@ -165,7 +165,7 @@ namespace od
 
 		for(auto it = mAnimators.begin(); it != mAnimators.end(); ++it)
 		{
-			BoneNode *bn = dynamic_cast<BoneNode*>((*it)->getNode());
+			odDb::BoneNode *bn = dynamic_cast<odDb::BoneNode*>((*it)->getNode());
         	if(bn == nullptr)
         	{
         		continue;
@@ -173,7 +173,7 @@ namespace od
 
 			int32_t jointIndex = bn->getJointInfoIndex();
 
-			Animation::AnimStartEndPair startEnd = mCurrentAnimation->getKeyframesForNode(jointIndex);
+			odDb::Animation::AnimStartEndPair startEnd = mCurrentAnimation->getKeyframesForNode(jointIndex);
 
 			(*it)->setKeyframes(startEnd.first, startEnd.second, startDelay);
 		}

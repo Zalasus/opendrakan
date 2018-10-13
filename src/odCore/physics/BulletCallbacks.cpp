@@ -9,7 +9,7 @@
 
 #include <odCore/physics/PhysicsManager.h>
 
-namespace od
+namespace odPhysics
 {
 
     ClosestNotMeRayResultCallback::ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, int mask, btCollisionObject *me)

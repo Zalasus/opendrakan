@@ -18,10 +18,10 @@
 
 #define OD_RIOTDB_MAXVERSION 1
 
-namespace od
+namespace odDb
 {
 
-	Database::Database(FilePath dbFilePath, DbManager &dbManager)
+	Database::Database(od::FilePath dbFilePath, DbManager &dbManager)
 	: mDbFilePath(dbFilePath)
 	, mDbManager(dbManager)
 	, mVersion(0)
@@ -42,7 +42,7 @@ namespace od
 		std::ifstream in(mDbFilePath.str(), std::ios::in | std::ios::binary);
 		if(in.fail())
 		{
-		    throw IoException("Could not open db definition file " + mDbFilePath.str());
+		    throw od::IoException("Could not open db definition file " + mDbFilePath.str());
 		}
 
 		std::string line;
@@ -70,7 +70,7 @@ namespace od
 
 				if(mVersion > OD_RIOTDB_MAXVERSION)
 				{
-					throw UnsupportedException("Unsupported database version");
+					throw od::UnsupportedException("Unsupported database version");
 				}
 
 			}else if(std::regex_match(line, results, dependenciesRegex))
@@ -84,12 +84,12 @@ namespace od
 			{
 				if(!readingDependencies)
 				{
-					throw Exception("Found dependency definition before dependencies statement");
+					throw od::Exception("Found dependency definition before dependencies statement");
 				}
 
 				if(dependenciesRead >= totalDependencyCount)
                 {
-                    throw Exception("More dependency lines found in db file than stated in 'dependencies' statement");
+                    throw od::Exception("More dependency lines found in db file than stated in 'dependencies' statement");
                 }
 
 				uint32_t depIndex;
@@ -98,11 +98,11 @@ namespace od
 
 				if(depIndex == 0)
 				{
-					throw Exception("Invalid dependency index");
+					throw od::Exception("Invalid dependency index");
 				}
 
 				// note: dependency paths are always stored relative to the path of the db file defining it
-				FilePath depPath(results[2], mDbFilePath.dir());
+				od::FilePath depPath(results[2], mDbFilePath.dir());
 				depPath = depPath.adjustCase();
 
 				if(depPath == mDbFilePath)
@@ -120,13 +120,13 @@ namespace od
 
 			}else
 			{
-				throw Exception("Malformed line in database file: " + line);
+				throw od::Exception("Malformed line in database file: " + line);
 			}
 		}
 
         if(dependenciesRead < totalDependencyCount)
         {
-            throw Exception("Found less dependency definitions than stated in dependencies statement");
+            throw od::Exception("Found less dependency definitions than stated in dependencies statement");
         }
 
 
@@ -138,10 +138,10 @@ namespace od
         _tryOpeningAssetContainer(mSequenceFactory, mSequenceContainer, ".ssd");
 
         // texture container is different. it needs an engine reference
-        FilePath txdPath = mDbFilePath.ext(".txd");
+        od::FilePath txdPath = mDbFilePath.ext(".txd");
         if(txdPath.exists())
         {
-            mTextureContainer.reset(new SrscFile(txdPath));
+            mTextureContainer.reset(new od::SrscFile(txdPath));
             mTextureFactory.reset(new TextureFactory(*this, *mTextureContainer, mDbManager.getEngine()));
 
             Logger::verbose() << "Opened database texture container " << txdPath.str();
@@ -152,10 +152,10 @@ namespace od
         }
 
         // same with class container
-        FilePath odbPath = mDbFilePath.ext(".odb");
+        od::FilePath odbPath = mDbFilePath.ext(".odb");
         if(odbPath.exists())
         {
-            mClassContainer.reset(new SrscFile(odbPath));
+            mClassContainer.reset(new od::SrscFile(odbPath));
             mClassFactory.reset(new ClassFactory(*this, *mClassContainer, mDbManager.getEngine()));
 
             Logger::verbose() << "Opened database class container " << odbPath.str();
@@ -172,17 +172,17 @@ namespace od
 	    if(it == mDependencyMap.end())
 	    {
 	        Logger::error() << "Database '" + getShortName() + "' has no dependency with index " << index;
-	        throw NotFoundException("Database has no dependency with given index");
+	        throw od::NotFoundException("Database has no dependency with given index");
 	    }
 
 	    return it->second;
 	}
 
-	Texture *Database::getTexture(RecordId recordId)
+	Texture *Database::getTexture(od::RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
 		{
-			throw NotFoundException("Can't get texture. Database has no texture container");
+			throw od::NotFoundException("Can't get texture. Database has no texture container");
 		}
 
 		osg::ref_ptr<Texture> asset = mTextureFactory->getAsset(recordId);
@@ -190,11 +190,11 @@ namespace od
 		return asset.release();
 	}
 
-	Class *Database::getClass(RecordId recordId)
+	Class *Database::getClass(od::RecordId recordId)
 	{
 		if(mClassFactory == nullptr)
 		{
-			throw NotFoundException("Can't get class. Database has no class container");
+			throw od::NotFoundException("Can't get class. Database has no class container");
 		}
 
 		osg::ref_ptr<Class> asset = mClassFactory->getAsset(recordId);
@@ -202,11 +202,11 @@ namespace od
 		return asset.release();
 	}
 
-	Model *Database::getModel(RecordId recordId)
+	Model *Database::getModel(od::RecordId recordId)
 	{
 		if(mModelFactory == nullptr)
 		{
-			throw NotFoundException("Can't get model. Database has no model container");
+			throw od::NotFoundException("Can't get model. Database has no model container");
 		}
 
 		osg::ref_ptr<Model> asset = mModelFactory->getAsset(recordId);
@@ -214,11 +214,11 @@ namespace od
         return asset.release();
 	}
 
-	Sequence *Database::getSequence(RecordId recordId)
+	Sequence *Database::getSequence(od::RecordId recordId)
 	{
         if(mSequenceFactory == nullptr)
         {
-            throw NotFoundException("Can't get sequence. Database has no sequence container");
+            throw od::NotFoundException("Can't get sequence. Database has no sequence container");
         }
 
         osg::ref_ptr<Sequence> asset = mSequenceFactory->getAsset(recordId);
@@ -226,11 +226,11 @@ namespace od
         return asset.release();
 	}
 
-	Animation *Database::getAnimation(RecordId recordId)
+	Animation *Database::getAnimation(od::RecordId recordId)
 	{
 		if(mAnimFactory == nullptr)
 		{
-			throw NotFoundException("Can't get animation. Database has no animation container");
+			throw od::NotFoundException("Can't get animation. Database has no animation container");
 		}
 
 		osg::ref_ptr<Animation> asset = mAnimFactory->getAsset(recordId);
@@ -238,11 +238,11 @@ namespace od
 		return asset.release();
 	}
 
-	Sound *Database::getSound(RecordId recordId)
+	Sound *Database::getSound(od::RecordId recordId)
     {
         if(mSoundFactory == nullptr)
         {
-            throw NotFoundException("Can't get sound. Database has no sound container");
+            throw od::NotFoundException("Can't get sound. Database has no sound container");
         }
 
         osg::ref_ptr<Sound> asset = mSoundFactory->getAsset(recordId);

@@ -35,7 +35,7 @@ namespace odPhysics
 		Falling
 	};
 
-	class CharacterController : public od::TransformAccumulator
+	class CharacterController : public odAnim::TransformAccumulator
 	{
 	public:
 
