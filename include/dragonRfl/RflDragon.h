@@ -12,16 +12,16 @@
 #include <odCore/db/Database.h>
 #include <dragonRfl/gui/MainMenu.h>
 
-namespace od
+namespace dragonRfl
 {
 
     class UserInterfaceProperties;
 
-    class DragonRfl : public AutoRegisteringRfl<DragonRfl>
+    class DragonRfl : public odRfl::AutoRegisteringRfl<DragonRfl>
     {
     public:
 
-        DragonRfl(Engine &engine);
+        DragonRfl(od::Engine &engine);
 
         virtual void onStartup() override;
         virtual void onMenuToggle(bool newMode) override;
@@ -29,7 +29,7 @@ namespace od
 
     private:
 
-        Database *mInterfaceDb;
+        odDb::Database *mInterfaceDb;
         std::unique_ptr<UserInterfaceProperties> mUserInterfacePropertiesInstance;
         osg::ref_ptr<MainMenu> mMainMenu;
 

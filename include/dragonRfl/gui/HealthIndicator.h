@@ -11,14 +11,14 @@
 #include <odCore/gui/Widget.h>
 #include <odCore/gui/TexturedQuad.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    class HealthIndicator : public Widget
+    class HealthIndicator : public odGui::Widget
     {
     public:
 
-        HealthIndicator(GuiManager &gm);
+        HealthIndicator(odGui::GuiManager &gm);
 
         void playFlashAnim();
         void setHealth(float health);
@@ -26,8 +26,8 @@ namespace od
 
     private:
 
-        osg::ref_ptr<TexturedQuad> mOrbContentQuad;
-        osg::ref_ptr<TexturedQuad> mOrbFlashQuad;
+        osg::ref_ptr<odGui::TexturedQuad> mOrbContentQuad;
+        osg::ref_ptr<odGui::TexturedQuad> mOrbFlashQuad;
         float mHealth;
     };
 

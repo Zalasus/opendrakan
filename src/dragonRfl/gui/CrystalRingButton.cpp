@@ -24,12 +24,12 @@
 // time a ring need to perform a full rotation
 #define OD_RING_SPEED 1.0
 
-namespace od
+namespace dragonRfl
 {
 
-    CrystalRingButton::CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel,
-            Sound *hoverSound, float noteOffset)
-    : Widget(gm)
+    CrystalRingButton::CrystalRingButton(odGui::GuiManager &gm, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel,
+            odDb::Sound *hoverSound, float noteOffset)
+    : odGui::Widget(gm)
     , mSoundSource(nullptr)
     , mCrystalModel(crystalModel)
     , mInnerRingModel(innerRingModel)
@@ -44,12 +44,12 @@ namespace od
     , mRingAnimPercent(0.0)
     {
         // select whatever model is not null for bounds calculation, starting with outer ring
-        osg::ref_ptr<Model> modelForBounds =
+        osg::ref_ptr<odDb::Model> modelForBounds =
                 (mOuterRingModel != nullptr) ? mOuterRingModel : ((mInnerRingModel != nullptr) ? mInnerRingModel : mCrystalModel);
 
         if(modelForBounds == nullptr)
         {
-            throw Exception("Passed no non-null models to CrystalRingButton");
+            throw od::Exception("Passed no non-null models to CrystalRingButton");
         }
 
         osg::BoundingBox box = modelForBounds->getCalculatedBoundingBox();

@@ -10,14 +10,14 @@
 #include <odCore/gui/GuiManager.h>
 #include <dragonRfl/gui/GuiTextures.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    Cursor::Cursor(GuiManager &gm)
-    : Widget(gm)
+    Cursor::Cursor(odGui::GuiManager &gm)
+    : odGui::Widget(gm)
     {
-        osg::ref_ptr<TexturedQuad> cursorQuad = new TexturedQuad;
-        cursorQuad->setTextureImage(gm.getAsset<Texture>(GuiTextures::Cursor));
+        osg::ref_ptr<odGui::TexturedQuad> cursorQuad = new odGui::TexturedQuad;
+        cursorQuad->setTextureImage(gm.getAsset<odDb::Texture>(GuiTextures::Cursor));
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping
         //  over to the right. maybe this is due to some strange way in which they implemented the
@@ -28,8 +28,8 @@ namespace od
         cursorQuad->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1, 1));
         this->addDrawable(cursorQuad);
 
-        this->setOrigin(WidgetOrigin::TopLeft);
-        this->setDimensions(32.0, 32.0, WidgetDimensionType::Pixels);
+        this->setOrigin(odGui::WidgetOrigin::TopLeft);
+        this->setDimensions(32.0, 32.0, odGui::WidgetDimensionType::Pixels);
     }
 
 }

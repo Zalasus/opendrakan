@@ -11,16 +11,16 @@
 #include <odCore/gui/GuiManager.h>
 #include <odCore/db/Texture.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    LoadingBar::LoadingBar(GuiManager &gm)
-    : Widget(gm)
+    LoadingBar::LoadingBar(odGui::GuiManager &gm)
+    : odGui::Widget(gm)
     , mProgress(0.0)
-    , mForegroundQuad(new TexturedQuad)
-    , mBarQuad(new TexturedQuad)
+    , mForegroundQuad(new odGui::TexturedQuad)
+    , mBarQuad(new odGui::TexturedQuad)
     {
-        osg::ref_ptr<Texture> barTexture = gm.getAsset<Texture>(GuiTextures::LoadingBar);
+        osg::ref_ptr<odDb::Texture> barTexture = gm.getAsset<odDb::Texture>(GuiTextures::LoadingBar);
 
         osg::Vec2 foreTl(0, 0);
         osg::Vec2 foreBr(127, 50);
@@ -36,7 +36,7 @@ namespace od
         mBarQuad->setZCoord(0.2);
         this->addDrawable(mBarQuad);
 
-        this->setDimensions(128.0, 51.0, WidgetDimensionType::Pixels);
+        this->setDimensions(128.0, 51.0, odGui::WidgetDimensionType::Pixels);
     }
 
     void LoadingBar::setProgress(float f)
