@@ -31,15 +31,17 @@ namespace od
 namespace odPhysics
 {
     class CharacterController;
+    class Detector;
 
 	struct CollisionGroups
 	{
 		enum Masks
 		{
-			RAYCAST = 0x0001, // bit 0 reserved by bullet for raytests
-			LAYER   = 0x0002,
-			OBJECT  = 0x0004,
-			ALL     = 0xffff
+			RAYCAST  = 0x0001, // bit 0 reserved by bullet for raytests
+			LAYER    = 0x0002,
+			OBJECT   = 0x0004,
+			DETECTOR = 0x0008,
+			ALL      = 0xffff
 		};
 	};
 
@@ -92,6 +94,8 @@ namespace odPhysics
 		btRigidBody *addObject(od::LevelObject &o, float mass);
 		void removeObject(od::LevelObject &o);
 
+		Detector *makeDetector(od::LevelObject &obj);
+
 
 	private:
 
@@ -113,6 +117,7 @@ namespace odPhysics
         typedef std::pair<od::LevelObject*, std::unique_ptr<btRigidBody>> ObjectBodyPair;
         std::map<uint32_t, ObjectBodyPair> mLevelObjectMap;
         std::map<uint32_t, LayerBodyPair> mLayerMap;
+        std::vector<std::unique_ptr<Detector>> mDetectors;
 	};
 
 }

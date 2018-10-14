@@ -38,6 +38,7 @@ set(SOURCES
         "physics/BulletCallbacks.cpp"
         "physics/CharacterController.cpp"
         "physics/DebugDrawer.cpp"
+        "physics/Detector.cpp"
         "physics/ModelBounds.cpp"
         "physics/PhysicsManager.cpp"
         "rfl/ClassBuilderProbe.cpp"

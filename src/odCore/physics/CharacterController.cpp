@@ -32,6 +32,8 @@ namespace odPhysics
 		mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(charObject.getPosition(), charObject.getRotation()));
 		mPhysicsManager.mDynamicsWorld->addCollisionObject(mGhostObject.get(), CollisionGroups::OBJECT, CollisionGroups::ALL);
 
+		mGhostObject->setUserPointer(&charObject);
+
 		mCurrentPosition = BulletAdapter::toBullet(mCharObject.getPosition());
         mDesiredPosition = mCurrentPosition;
 

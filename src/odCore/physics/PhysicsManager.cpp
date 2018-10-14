@@ -22,6 +22,7 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/physics/BulletAdapter.h>
 #include <odCore/physics/BulletCallbacks.h>
+#include <odCore/physics/Detector.h>
 
 namespace odPhysics
 {
@@ -284,6 +285,7 @@ namespace odPhysics
 
 		btRigidBody *bodyPtr = objectBodyPair.second.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
 		bodyPtr->setUserIndex(o.getObjectId());
+		bodyPtr->setUserPointer(&o);
 
 		mLevelObjectMap[o.getObjectId()] = std::move(objectBodyPair);
 
@@ -301,6 +303,20 @@ namespace odPhysics
 
 			mLevelObjectMap.erase(it);
 		}
+	}
+
+	Detector *PhysicsManager::makeDetector(od::LevelObject &obj)
+	{
+	    if(obj.getClass() == nullptr || obj.getClass()->getModel() == nullptr || obj.getClass()->getModel()->getModelBounds() == nullptr)
+        {
+            throw od::Exception("Tried to make detector from object without model or collision shape to PhysicsManager");
+        }
+
+	    btCollisionShape *shape = obj.getClass()->getModel()->getModelBounds()->getCollisionShape();
+
+	    mDetectors.push_back(std::unique_ptr<Detector>(new Detector(mDynamicsWorld.get(), shape, obj)));
+
+	    return mDetectors.back().get();
 	}
 
 

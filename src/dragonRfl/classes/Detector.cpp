@@ -10,23 +10,29 @@
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
+#include <odCore/Level.h>
+#include <odCore/Player.h>
+#include <odCore/Engine.h>
 
 namespace dragonRfl
 {
 
     Detector::Detector(DragonRfl &rfl)
-    : mTask(6) // trigger only
-    , mDetectWhich(2) // both
-    , mDetectMethod(0) // outside to inside
+    : mTask(Task::TriggerOnly)
+    , mDetectWhich(DetectWhich::Both)
+    , mDetectMethod(DetectMethod::OutsideToInside)
     , mOneWay(false)
     , mTriggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
-    , mInitialState(0) // enabled
+    , mInitialState(InitialState::Enabled)
     , mTriggerMessage(odRfl::RflMessage::Off)
     , mDetectOnlyOnce(false)
     , mSequenceToPlay(odDb::AssetRef::NULL_REF)
     , mMessageString("")
     , mDoesCaveEntranceTeleport(true)
     , mDragonTakesOffUponTeleport(true)
+    , mRfl(rfl)
+    , mDetector(nullptr)
+    , mPlayerWasIn(false)
     {
     }
 
@@ -49,12 +55,65 @@ namespace dragonRfl
 
     void Detector::onLoaded(od::LevelObject &obj)
     {
-        obj.setSpawnStrategy(od::SpawnStrategy::Always);
         obj.setObjectType(od::LevelObjectType::Detector);
     }
 
     void Detector::onSpawned(od::LevelObject &obj)
     {
+        obj.setEnableRflUpdateHook(true);
+        mDetector = obj.getLevel().getPhysicsManager().makeDetector(obj);
+    }
+
+    void Detector::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    {
+        if(mDetector == nullptr)
+        {
+            return;
+        }
+
+        if(mTask != Task::TriggerOnly)
+        {
+            return;
+        }
+
+        od::LevelObject *playerObject = &obj.getLevel().getEngine().getPlayer()->getLevelObject();
+
+        mDetector->update();
+
+        bool playerIsIn = false;
+        const std::vector<od::LevelObject*> &objects = mDetector->getIntersectingObjects();
+        for(auto it = objects.begin(); it != objects.end(); ++it)
+        {
+            if(*it == nullptr)
+            {
+                continue;
+            }
+
+            if(*it == playerObject)
+            {
+                playerIsIn = true;
+                break;
+            }
+        }
+
+        bool triggered = false;
+        switch(mDetectMethod)
+        {
+        case DetectMethod::InsideToOutside:
+            triggered = mPlayerWasIn && !playerIsIn;
+            break;
+
+        case DetectMethod::OutsideToInside:
+            triggered = !mPlayerWasIn && playerIsIn;
+            break;
+        }
+
+        if(triggered)
+        {
+            obj.messageAllLinkedObjects(mTriggerMessage);
+        }
+
+        mPlayerWasIn = playerIsIn;
     }
 
 
