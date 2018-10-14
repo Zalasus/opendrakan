@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/HumanControl.h>
+#include <dragonRfl/classes/HumanControl.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

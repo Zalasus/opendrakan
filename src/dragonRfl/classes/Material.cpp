@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/Material.h>
+#include <dragonRfl/classes/Material.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

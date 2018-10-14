@@ -12,7 +12,7 @@
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/db/DbManager.h>
 #include <dragonRfl/gui/Cursor.h>
-#include <dragonRfl/UserInterfaceProperties.h>
+#include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 

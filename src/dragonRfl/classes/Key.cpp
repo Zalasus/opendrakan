@@ -6,7 +6,7 @@
  */
 
 
-#include <dragonRfl/Key.h>
+#include <dragonRfl/classes/Key.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

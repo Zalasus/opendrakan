@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/common/PlayerCommon.h>
+#include <dragonRfl/classes/common/PlayerCommon.h>
 
 #include <odCore/rfl/Rfl.h>
 

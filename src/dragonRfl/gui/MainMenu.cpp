@@ -12,7 +12,7 @@
 
 #include <dragonRfl/gui/GuiTextures.h>
 #include <dragonRfl/gui/CrystalRingButton.h>
-#include <dragonRfl/UserInterfaceProperties.h>
+#include <dragonRfl/classes/UserInterfaceProperties.h>
 #include <odCore/Engine.h>
 #include <odCore/db/Model.h>
 #include <odCore/gui/GuiManager.h>

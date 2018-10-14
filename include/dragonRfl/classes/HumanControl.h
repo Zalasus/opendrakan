@@ -13,7 +13,7 @@
 #include <odCore/physics/CharacterController.h>
 #include <odCore/Player.h>
 
-#include <dragonRfl/common/PlayerCommon.h>
+#include <dragonRfl/classes/common/PlayerCommon.h>
 
 namespace odAnim
 {

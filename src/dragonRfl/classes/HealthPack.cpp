@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/HealthPack.h>
+#include <dragonRfl/classes/HealthPack.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

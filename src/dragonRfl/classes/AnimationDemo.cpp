@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/AnimationDemo.h>
+#include <dragonRfl/classes/AnimationDemo.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

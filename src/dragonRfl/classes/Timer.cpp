@@ -6,7 +6,7 @@
  */
 
 
-#include <dragonRfl/Timer.h>
+#include <dragonRfl/classes/Timer.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

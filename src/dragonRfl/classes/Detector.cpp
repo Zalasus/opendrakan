@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/Detector.h>
+#include <dragonRfl/classes/Detector.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

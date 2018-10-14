@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/DynamicLight.h>
+#include <dragonRfl/classes/DynamicLight.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/LevelObject.h>

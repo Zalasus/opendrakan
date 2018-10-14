@@ -8,7 +8,7 @@
 #ifndef INCLUDE_DRAGONRFL_DYNAMICLIGHT_H_
 #define INCLUDE_DRAGONRFL_DYNAMICLIGHT_H_
 
-#include <dragonRfl/StaticLight.h>
+#include <dragonRfl/classes/StaticLight.h>
 
 namespace dragonRfl
 {

@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/UserInterfaceProperties.h>
+#include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

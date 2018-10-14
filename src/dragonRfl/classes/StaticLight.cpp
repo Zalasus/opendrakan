@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/StaticLight.h>
+#include <dragonRfl/classes/StaticLight.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

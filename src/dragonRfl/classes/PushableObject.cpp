@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/PushableObject.h>
+#include <dragonRfl/classes/PushableObject.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

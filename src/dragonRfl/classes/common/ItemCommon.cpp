@@ -6,7 +6,7 @@
  */
 
 
-#include <dragonRfl/common/ItemCommon.h>
+#include <dragonRfl/classes/common/ItemCommon.h>
 
 namespace dragonRfl
 {

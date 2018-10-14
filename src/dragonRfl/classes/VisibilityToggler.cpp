@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/VisibilityToggler.h>
+#include <dragonRfl/classes/VisibilityToggler.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>

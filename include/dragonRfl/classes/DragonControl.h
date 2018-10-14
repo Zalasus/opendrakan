@@ -8,7 +8,7 @@
 #ifndef INCLUDE_RFL_DRAGON_DRAGONCONTROL_H_
 #define INCLUDE_RFL_DRAGON_DRAGONCONTROL_H_
 
-#include <dragonRfl/common/PlayerCommon.h>
+#include <dragonRfl/classes/common/PlayerCommon.h>
 
 namespace dragonRfl
 {

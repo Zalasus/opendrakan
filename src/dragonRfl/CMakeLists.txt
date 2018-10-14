@@ -14,7 +14,6 @@ set(SOURCES
     "classes/Key.cpp"
     "classes/Material.cpp"
     "classes/PushableObject.cpp"
-    "classes/RflDragon.cpp"
     "classes/Sky.cpp"
     "classes/SoundEffect.cpp"
     "classes/StaticLight.cpp"
@@ -26,7 +25,8 @@ set(SOURCES
     "gui/Cursor.cpp"
     "gui/HealthIndicator.cpp"
     "gui/LoadingBar.cpp"
-    "gui/MainMenu.cpp")
+    "gui/MainMenu.cpp"
+    "RflDragon.cpp")
 
 add_library(dragonRfl STATIC ${SOURCES})
 

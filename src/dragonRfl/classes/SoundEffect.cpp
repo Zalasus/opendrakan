@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/SoundEffect.h>
+#include <dragonRfl/classes/SoundEffect.h>
 
 #include <dragonRfl/RflDragon.h>
 #include <odCore/LevelObject.h>

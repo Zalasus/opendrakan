@@ -8,7 +8,7 @@
 #ifndef INCLUDE_RFL_DRAGON_KEY_H_
 #define INCLUDE_RFL_DRAGON_KEY_H_
 
-#include <dragonRfl/common/ItemCommon.h>
+#include <dragonRfl/classes/common/ItemCommon.h>
 
 namespace dragonRfl
 {

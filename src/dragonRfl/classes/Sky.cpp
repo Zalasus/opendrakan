@@ -6,7 +6,7 @@
  */
 
 
-#include <dragonRfl/Sky.h>
+#include <dragonRfl/classes/Sky.h>
 
 #include <osg/Depth>
 #include <dragonRfl/RflDragon.h>

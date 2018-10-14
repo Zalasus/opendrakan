@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <dragonRfl/TrackingCamera.h>
+#include <dragonRfl/classes/TrackingCamera.h>
 
 #include <osg/NodeCallback>
 #include <dragonRfl/RflDragon.h>
