@@ -11,19 +11,19 @@
 #include <odCore/db/Animation.h>
 #include <odCore/db/AssetFactory.h>
 
-namespace od
+namespace odDb
 {
 
     class AnimationFactory : public AssetFactory<Animation>
     {
     public:
 
-        AnimationFactory(AssetProvider &ap, SrscFile &animationContainer);
+        AnimationFactory(AssetProvider &ap, od::SrscFile &animationContainer);
 
 
     protected:
 
-        virtual osg::ref_ptr<Animation> loadAsset(RecordId animId) override;
+        virtual osg::ref_ptr<Animation> loadAsset(od::RecordId animId) override;
 
     };
 

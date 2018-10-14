@@ -9,10 +9,10 @@
 
 #include <odCore/Exception.h>
 
-namespace od
+namespace odDb
 {
 
-	Animation::Animation(AssetProvider &ap, RecordId id)
+	Animation::Animation(AssetProvider &ap, od::RecordId id)
 	: Asset(ap, id)
 	, mDuration(0)
 	, mOriginalFrameCount(0)
@@ -26,7 +26,7 @@ namespace od
 	{
 	}
 
-	void Animation::loadInfo(DataReader &&dr)
+	void Animation::loadInfo(od::DataReader &&dr)
 	{
 		uint32_t unk0;
 		uint32_t unk1;
@@ -45,7 +45,7 @@ namespace od
            >> mTranslationThreshold;
 	}
 
-	void Animation::loadFrames(DataReader &&dr)
+	void Animation::loadFrames(od::DataReader &&dr)
 	{
 		uint16_t frameCount;
 		dr >> frameCount;
@@ -61,7 +61,7 @@ namespace od
 		}
 	}
 
-	void Animation::loadFrameLookup(DataReader &&dr)
+	void Animation::loadFrameLookup(od::DataReader &&dr)
 	{
 		uint16_t entryCount;
 		dr >> entryCount;
@@ -81,7 +81,7 @@ namespace od
 	{
 		if(nodeId < 0 || (size_t)nodeId >= mFrameLookup.size())
 		{
-			throw Exception("Animation has no keyframes for requested node");
+			throw od::Exception("Animation has no keyframes for requested node");
 		}
 
 		uint32_t firstFrameIndex = mFrameLookup[nodeId].first;
@@ -90,7 +90,7 @@ namespace od
 		if(firstFrameIndex + frameCount  > mKeyframes.size())
 		{
 			Logger::error() << "Frame index " << (firstFrameIndex + frameCount) << " in lookup table of animation '" << mAnimationName << "' out of bounds";
-			throw Exception("Frame lookup entry in animation is out of bounds");
+			throw od::Exception("Frame lookup entry in animation is out of bounds");
 		}
 
 		return AnimStartEndPair(mKeyframes.cbegin() + firstFrameIndex, mKeyframes.cbegin() + firstFrameIndex + frameCount);

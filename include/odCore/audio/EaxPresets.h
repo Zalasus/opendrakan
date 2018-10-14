@@ -8,7 +8,7 @@
 #ifndef INCLUDE_ODCORE_AUDIO_EAXPRESETS_H_
 #define INCLUDE_ODCORE_AUDIO_EAXPRESETS_H_
 
-namespace od
+namespace odAudio
 {
 
     enum class EaxPreset

@@ -18,7 +18,7 @@
 namespace od
 {
 
-	GeodeBuilder::GeodeBuilder(const std::string &modelName, AssetProvider &assetProvider)
+	GeodeBuilder::GeodeBuilder(const std::string &modelName, odDb::AssetProvider &assetProvider)
 	: mModelName(modelName)
 	, mAssetProvider(assetProvider)
 	, mColors(new osg::Vec4Array(1))
@@ -172,11 +172,11 @@ namespace od
 		std::sort(mTriangles.begin(), mTriangles.end(), pred);
 
 		// count number of unique textures
-		AssetRef lastTexture = AssetRef::NULL_REF;
+		odDb::AssetRef lastTexture = odDb::AssetRef::NULL_REF;
 		size_t textureCount = 0;
 		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
         {
-		    if(lastTexture == AssetRef::NULL_REF || lastTexture != it->texture)
+		    if(lastTexture == odDb::AssetRef::NULL_REF || lastTexture != it->texture)
 		    {
 		        lastTexture = it->texture;
 		        ++textureCount;
@@ -185,12 +185,12 @@ namespace od
 
 		// count number of triangles per texture.
         //  this will allow us to preallocate the IBO array as well as pick between int/short/byte arrays
-		lastTexture = AssetRef::NULL_REF;
+		lastTexture = odDb::AssetRef::NULL_REF;
 		size_t textureIndex = 0;
         std::vector<size_t> triangleCountsPerTexture(textureCount, 0);
         for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
         {
-            if(lastTexture == AssetRef::NULL_REF)
+            if(lastTexture == odDb::AssetRef::NULL_REF)
             {
                 lastTexture = it->texture;
             }
@@ -206,7 +206,7 @@ namespace od
 
 		osg::ref_ptr<osg::Geometry> geom;
 		osg::ref_ptr<osg::DrawElements> drawElements;
-		lastTexture = AssetRef::NULL_REF;
+		lastTexture = odDb::AssetRef::NULL_REF;
 		textureIndex = 0;
 		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
 		{
@@ -265,7 +265,7 @@ namespace od
 				// texture also unique per geometry
 				if(!it->texture.isNull())
 				{
-					osg::ref_ptr<Texture> textureImage = mAssetProvider.getAssetByRef<Texture>(it->texture);
+					osg::ref_ptr<odDb::Texture> textureImage = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
 					osg::StateSet *ss = geom->getOrCreateStateSet();
 					if(textureImage->hasAlpha())
 					{

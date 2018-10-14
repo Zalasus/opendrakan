@@ -20,7 +20,7 @@
 #include <odCore/anim/Animator.h>
 #include <odCore/db/Animation.h>
 
-namespace od
+namespace odAnim
 {
 
 	class TransformAccumulator;
@@ -44,9 +44,9 @@ namespace od
 		~SkeletonAnimationPlayer();
 
 		inline osg::Uniform *getBoneMatrixArrayUniform() { return mBoneMatrixArray.get(); }
-		inline Animation *getCurrentAnimation() { return mCurrentAnimation; }
+		inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
 
-		void setAnimation(osg::ref_ptr<Animation> anim, double startDelay = 0.0);
+		void setAnimation(osg::ref_ptr<odDb::Animation> anim, double startDelay = 0.0);
 		void play(bool looping);
 		void stop();
 		bool isPlaying();
@@ -60,7 +60,7 @@ namespace od
 		std::vector<osg::ref_ptr<Animator>> mAnimators;
 		osg::ref_ptr<osg::NodeCallback> mUploadCallback;
 
-		osg::ref_ptr<Animation> mCurrentAnimation;
+		osg::ref_ptr<odDb::Animation> mCurrentAnimation;
 	};
 
 }

@@ -19,8 +19,13 @@
 
 namespace od
 {
+    class LevelObject;
+}
 
-	class LevelObject;
+namespace odPhysics
+{
+
+
 	class PhysicsManager;
 
 	enum class CharacterState
@@ -30,11 +35,11 @@ namespace od
 		Falling
 	};
 
-	class CharacterController : public od::TransformAccumulator
+	class CharacterController : public odAnim::TransformAccumulator
 	{
 	public:
 
-		CharacterController(LevelObject &charObject, float radius, float height);
+		CharacterController(od::LevelObject &charObject, float radius, float height);
 
 		inline CharacterState getCharacterState() const { return mCharacterState; }
 		inline void setVelocity(const osg::Vec3f &v) { mVelocity = BulletAdapter::toBullet(v); }
@@ -51,7 +56,7 @@ namespace od
 		bool _hasInvalidPenetrations();
 		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
-		LevelObject &mCharObject;
+		od::LevelObject &mCharObject;
 		btScalar mRadius;
 		btScalar mHeight;
 		PhysicsManager &mPhysicsManager;

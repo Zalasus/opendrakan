@@ -10,7 +10,7 @@
 
 #include <osg/Vec3f>
 
-namespace od
+namespace odAnim
 {
 
     /**

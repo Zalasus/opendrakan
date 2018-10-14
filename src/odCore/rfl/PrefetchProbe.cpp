@@ -7,19 +7,19 @@
 
 #include <odCore/rfl/PrefetchProbe.h>
 
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/AssetRefField.h>
 
-namespace od
+namespace odRfl
 {
 
 
-    PrefetchProbe::PrefetchProbe(od::AssetProvider &ap, bool ignoreMissing)
+    PrefetchProbe::PrefetchProbe(odDb::AssetProvider &ap, bool ignoreMissing)
     : mAssetProvider(ap)
     , mIgnoreMissing(ignoreMissing)
     {
     }
 
-    void PrefetchProbe::registerField(RflAssetRef &field, const char *fieldName)
+    void PrefetchProbe::registerField(AssetRefField &field, const char *fieldName)
     {
         try
         {

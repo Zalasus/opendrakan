@@ -18,17 +18,21 @@
 
 namespace od
 {
-
     class LevelObject;
+}
+
+namespace odLight
+{
+
     class LightManager;
 
     class Light : public osg::Referenced
     {
     public:
 
-        Light(LevelObject *obj);
+        Light(od::LevelObject *obj);
 
-        inline LevelObject *getLevelObject() { return mLevelObject; }
+        inline od::LevelObject *getLevelObject() { return mLevelObject; }
         inline osg::Vec3 getColor() const { return mColor; }
         inline float getIntensityScaling() const { return mIntensityScaling; }
         inline float getRadius() const { return mRadius; }
@@ -45,7 +49,7 @@ namespace od
 
     private:
 
-        osg::ref_ptr<LevelObject> mLevelObject;
+        osg::ref_ptr<od::LevelObject> mLevelObject;
         osg::Vec3 mColor;
         float mIntensityScaling;
         float mRadius;

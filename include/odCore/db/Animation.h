@@ -15,7 +15,7 @@
 
 #include <odCore/db/Asset.h>
 
-namespace od
+namespace odDb
 {
 
 	struct AnimationKeyframe
@@ -33,14 +33,14 @@ namespace od
 
 		typedef std::pair<std::vector<AnimationKeyframe>::const_iterator, std::vector<AnimationKeyframe>::const_iterator> AnimStartEndPair;
 
-		Animation(AssetProvider &ap, RecordId id);
+		Animation(AssetProvider &ap, od::RecordId id);
 
 		inline std::string getName() const { return mAnimationName; }
 		inline uint32_t getModelNodeCount() const { return mModelNodeCount; }
 
-		void loadInfo(DataReader &&dr);
-		void loadFrames(DataReader &&dr);
-		void loadFrameLookup(DataReader &&dr);
+		void loadInfo(od::DataReader &&dr);
+		void loadFrames(od::DataReader &&dr);
+		void loadFrameLookup(od::DataReader &&dr);
 
 		AnimStartEndPair getKeyframesForNode(int32_t nodeId);
 

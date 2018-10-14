@@ -16,7 +16,7 @@
 #include <odCore/OdDefines.h>
 #include <odCore/light/LightManager.h>
 
-namespace od
+namespace odLight
 {
 
     LightStateAttribute::LightStateAttribute(LightManager &lm)
@@ -34,7 +34,7 @@ namespace od
 
     osg::Object *LightStateAttribute::cloneType() const
     {
-        throw Exception("Can't cloneType LightStateAttribute");
+        throw od::Exception("Can't cloneType LightStateAttribute");
     }
 
     osg::Object *LightStateAttribute::clone(const osg::CopyOp& copyop) const
@@ -54,7 +54,7 @@ namespace od
 
     int LightStateAttribute::compare(const StateAttribute& sa) const
     {
-        throw UnsupportedException("LightStateAttribute::compare is not yet implemented");
+        throw od::UnsupportedException("LightStateAttribute::compare is not yet implemented");
     }
 
     void LightStateAttribute::clearLightList()
@@ -101,7 +101,7 @@ namespace od
     {
         if(node == nullptr)
         {
-            throw InvalidArgumentException("Passed null node to LightStateCallback()");
+            throw od::InvalidArgumentException("Passed null node to LightStateCallback()");
         }
 
         osg::StateSet *ss = node->getOrCreateStateSet();

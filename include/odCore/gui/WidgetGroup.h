@@ -10,7 +10,7 @@
 
 #include <osg/Group>
 
-namespace od
+namespace odGui
 {
 
     /**

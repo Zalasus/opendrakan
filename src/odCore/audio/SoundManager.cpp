@@ -21,7 +21,7 @@
 // the maximum length one device name may have in the unsafe device enumeration string
 #define OD_OPENAL_DEVICESTRING_LENGTH_FAILSAFE 128
 
-namespace od
+namespace odAudio
 {
 
     SoundManager::SoundManager(const char *deviceName)
@@ -70,7 +70,7 @@ namespace od
     {
         // TODO: here we would translate the EAX preset to the corresponding EFX preset if the EFX extension is available
 
-        throw UnsupportedException("EAX unsupported as of now");
+        throw od::UnsupportedException("EAX unsupported as of now");
     }
 
     Source *SoundManager::createSource()
@@ -90,7 +90,7 @@ namespace od
         const char *strList = alcGetString(nullptr, ALC_ALL_DEVICES_SPECIFIER);
         if(strList == nullptr)
         {
-            throw Exception("Could not access device list");
+            throw od::Exception("Could not access device list");
         }
 
         // the returned string consists of concatenated c-strings, terminated with an empty string
@@ -152,7 +152,7 @@ namespace od
             break;
         }
 
-        throw Exception(failmsg + alErrorMsg);
+        throw od::Exception(failmsg + alErrorMsg);
     }
 
     void SoundManager::_doWorkerStuff()
@@ -173,7 +173,7 @@ namespace od
                     (*it)->update(relTime);
                 }
 
-            }catch(Exception &e)
+            }catch(od::Exception &e)
             {
                 Logger::error() << "Error in sound worker thread: " << e.what();
                 Logger::error() << "Terminating sound worker thread...";

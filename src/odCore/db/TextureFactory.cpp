@@ -11,10 +11,10 @@
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Logger.h>
 
-namespace od
+namespace odDb
 {
 
-	TextureFactory::TextureFactory(AssetProvider &ap, SrscFile &textureContainer, Engine &engine)
+	TextureFactory::TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine)
 	: AssetFactory<Texture>(ap, textureContainer)
 	, mEngine(engine)
 	{
@@ -32,16 +32,16 @@ namespace od
 		return mPalette[index];
 	}
 
-	osg::ref_ptr<Texture> TextureFactory::loadAsset(RecordId textureId)
+	osg::ref_ptr<Texture> TextureFactory::loadAsset(od::RecordId textureId)
 	{
-		SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::TEXTURE, textureId);
+		od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::TEXTURE, textureId);
 		if(dirIt == getSrscFile().getDirectoryEnd())
 		{
 			return nullptr;
 		}
 
 		osg::ref_ptr<Texture> texture(new Texture(getAssetProvider(), textureId));
-		texture->loadFromRecord(*this, DataReader(getSrscFile().getStreamForRecord(dirIt)));
+		texture->loadFromRecord(*this, od::DataReader(getSrscFile().getStreamForRecord(dirIt)));
 
 		return texture;
 	}
@@ -50,14 +50,14 @@ namespace od
 	{
 		Logger::verbose() << "Loading texture database palette";
 
-		SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(SrscRecordType::PALETTE);
+		od::SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(od::SrscRecordType::PALETTE);
 		if(it == getSrscFile().getDirectoryEnd())
 		{
 			Logger::warn() << "Texture container has no palette record. 8 bit textures will be blank";
 			return;
 		}
 
-		DataReader dr(getSrscFile().getStreamForRecord(it));
+		od::DataReader dr(getSrscFile().getStreamForRecord(it));
 
 		uint16_t colorCount;
 		dr >> colorCount;

@@ -12,10 +12,10 @@
 #include <odCore/LevelObject.h>
 #include <odCore/light/LightManager.h>
 
-namespace od
+namespace odLight
 {
 
-    Light::Light(LevelObject *obj)
+    Light::Light(od::LevelObject *obj)
     : mLevelObject(obj)
     , mColor(osg::Vec3(1.0, 1.0, 1.0))
     , mIntensityScaling(1.0)

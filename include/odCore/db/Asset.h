@@ -10,7 +10,7 @@
 
 #include <odCore/SrscFile.h>
 
-namespace od
+namespace odDb
 {
 
 	class AssetProvider;
@@ -19,19 +19,19 @@ namespace od
 	{
 	public:
 
-		Asset(AssetProvider &ap, RecordId assetId);
+		Asset(AssetProvider &ap, od::RecordId assetId);
 		Asset(Asset &a) = delete;
 		Asset(const Asset &a) = delete;
 		virtual ~Asset();
 
-		inline RecordId getAssetId() const { return mId; }
+		inline od::RecordId getAssetId() const { return mId; }
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
 
 
 	private:
 
 		AssetProvider &mAssetProvider;
-		RecordId mId;
+		od::RecordId mId;
 
 	};
 
@@ -51,9 +51,9 @@ namespace od
 	struct AssetRef
 	{
 		AssetRef() : assetId(0), dbIndex(0) {}
-		AssetRef(RecordId id, uint16_t index) : assetId(id), dbIndex(index) {}
+		AssetRef(od::RecordId id, uint16_t index) : assetId(id), dbIndex(index) {}
 
-		RecordId assetId;
+		od::RecordId assetId;
 		uint16_t dbIndex;
 
 		// so we can use this in a map
@@ -70,7 +70,7 @@ namespace od
 		static const AssetRef NULL_REF;
 	};
 
-	DataReader &operator>>(DataReader &left, AssetRef &right);
+	od::DataReader &operator>>(od::DataReader &left, AssetRef &right);
 
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
 

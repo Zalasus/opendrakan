@@ -11,20 +11,20 @@
 #include <odCore/db/AssetFactory.h>
 #include <odCore/db/Sequence.h>
 
-namespace od
+namespace odDb
 {
 
     class SequenceFactory : public AssetFactory<Sequence>
     {
     public:
 
-        SequenceFactory(AssetProvider &ap, SrscFile &sequenceContainer);
+        SequenceFactory(AssetProvider &ap, od::SrscFile &sequenceContainer);
 
 
     protected:
 
         // implement AssetFactory<Sequence>
-        virtual osg::ref_ptr<Sequence> loadAsset(RecordId textureId) override;
+        virtual osg::ref_ptr<Sequence> loadAsset(od::RecordId textureId) override;
 
     };
 

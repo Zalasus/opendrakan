@@ -10,21 +10,26 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
-namespace od
+namespace odDb
+{
+    class AssetProvider;
+}
+
+namespace odRfl
 {
 
     class PrefetchProbe : public FieldProbe
     {
     public:
 
-        PrefetchProbe(od::AssetProvider &ap, bool ignoreMissing = true);
+        PrefetchProbe(odDb::AssetProvider &ap, bool ignoreMissing = true);
 
-        virtual void registerField(RflAssetRef &field, const char *fieldName) override;
+        virtual void registerField(AssetRefField &field, const char *fieldName) override;
 
 
     private:
 
-        od::AssetProvider &mAssetProvider;
+        odDb::AssetProvider &mAssetProvider;
         bool mIgnoreMissing;
 
     };

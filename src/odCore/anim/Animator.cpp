@@ -14,7 +14,7 @@
 #include <odCore/Exception.h>
 #include <odCore/anim/TransformAccumulator.h>
 
-namespace od
+namespace odAnim
 {
 
 	class AnimatorUpdateCallback : public osg::NodeCallback

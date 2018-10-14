@@ -15,6 +15,40 @@
 
 namespace od
 {
+    template <>
+    DataReader &DataReader::operator >> <odPhysics::OrientedBoundingBox>(odPhysics::OrientedBoundingBox &obb)
+    {
+        osg::Vec3f bottomLeftCorner;
+        (*this) >> bottomLeftCorner;
+
+        float t[9];
+        osg::Matrixf m; // don't read transform matrix directly, as the deserializer for osg::Matrix reads a 3x4 matrix!!!
+        for(size_t i = 0; i < sizeof(t)/sizeof(float); ++i)
+        {
+            (*this) >> t[i];
+        }
+
+        m.set(t[0], t[1], t[2], 0,
+              t[3], t[4], t[5], 0,
+              t[6], t[7], t[8], 0,
+                 0,    0,    0, 1);
+
+        osg::Vec3f dummyTranslate;
+        osg::Quat  orientation;
+        osg::Vec3f scale;
+        osg::Quat  dummySo;
+        m.decompose(dummyTranslate, orientation, scale, dummySo);
+
+        obb.setBottomLeft(bottomLeftCorner);
+        obb.setExtends(scale);
+        obb.setOrientation(orientation);
+
+        return *this;
+    }
+}
+
+namespace odPhysics
+{
 
 	OrientedBoundingBox::OrientedBoundingBox()
 	{
@@ -35,37 +69,6 @@ namespace od
 		mOrientation = obb.getOrientation();
 
 		return *this;
-	}
-
-	template <>
-	DataReader &DataReader::operator >> <OrientedBoundingBox>(OrientedBoundingBox &obb)
-	{
-	    osg::Vec3f bottomLeftCorner;
-	    (*this) >> bottomLeftCorner;
-
-	    float t[9];
-	    osg::Matrixf m; // don't read transform matrix directly, as the deserializer for osg::Matrix reads a 3x4 matrix!!!
-	    for(size_t i = 0; i < sizeof(t)/sizeof(float); ++i)
-	    {
-	    	(*this) >> t[i];
-	    }
-
-	    m.set(t[0], t[1], t[2], 0,
-	    	  t[3], t[4], t[5], 0,
-			  t[6], t[7], t[8], 0,
-			     0,    0,    0, 1);
-
-	    osg::Vec3f dummyTranslate;
-	    osg::Quat  orientation;
-	    osg::Vec3f scale;
-	    osg::Quat  dummySo;
-	    m.decompose(dummyTranslate, orientation, scale, dummySo);
-
-	    obb.setBottomLeft(bottomLeftCorner);
-	    obb.setExtends(scale);
-	    obb.setOrientation(orientation);
-
-	    return *this;
 	}
 
 
@@ -100,7 +103,7 @@ namespace od
 	{
 		if(mType != SPHERES)
 		{
-			throw Exception("Can't add spheres to box-based model bounds");
+			throw od::Exception("Can't add spheres to box-based model bounds");
 		}
 
 		mSpheres.push_back(sphere);
@@ -110,7 +113,7 @@ namespace od
 	{
 		if(mType != BOXES)
 		{
-			throw Exception("Can't add boxes to sphere-based model bounds");
+			throw od::Exception("Can't add boxes to sphere-based model bounds");
 		}
 
 		mBoxes.push_back(box);

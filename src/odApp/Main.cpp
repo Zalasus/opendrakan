@@ -18,7 +18,7 @@
 #include <odCore/StringUtils.h>
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 #include <odCore/gui/GuiManager.h>
 
 
@@ -79,7 +79,7 @@ static void statClasses(od::SrscFile &file)
 
 		std::string name;
 		uint16_t dummy;
-        od::AssetRef modelRef;
+        odDb::AssetRef modelRef;
         uint16_t classType;
         uint16_t iconNumber;
         uint32_t fieldCount;
@@ -112,53 +112,53 @@ static void statClasses(od::SrscFile &file)
         	dr >> type
 			   >> name;
 
-        	switch(type & 0xff)
+        	switch(static_cast<odRfl::Field::Type>(type & 0xff))
         	{
-        	case od::RflField::INTEGER:
+        	case odRfl::Field::Type::INTEGER:
         		std::cout << "RflInteger";
         		break;
 
-            case od::RflField::FLOAT:
+            case odRfl::Field::Type::FLOAT:
             	std::cout << "RflFloat";
         		break;
 
-            case od::RflField::CLASS:
+            case odRfl::Field::Type::CLASS:
             	std::cout << "RflClassRef";
         		break;
 
-            case od::RflField::MODEL:
+            case odRfl::Field::Type::MODEL:
             	std::cout << "RflModelRef";
         		break;
 
-            case od::RflField::SOUND:
+            case odRfl::Field::Type::SOUND:
             	std::cout << "RflSoundRef";
         		break;
 
-            case od::RflField::ENUM:
+            case odRfl::Field::Type::ENUM:
             	std::cout << "RflEnum";
         		break;
 
-            case od::RflField::CHAR_CHANNEL:
+            case odRfl::Field::Type::CHAR_CHANNEL:
             	std::cout << "RflCharChannel";
         		break;
 
-            case od::RflField::ANIMATION:
+            case odRfl::Field::Type::ANIMATION:
             	std::cout << "RflAnimRef";
         		break;
 
-            case od::RflField::STRING:
+            case odRfl::Field::Type::STRING:
             	std::cout << "RflString";
         		break;
 
-            case od::RflField::SEUQUENCE:
+            case odRfl::Field::Type::SEUQUENCE:
             	std::cout << "RflSequenceRef";
         		break;
 
-            case od::RflField::TEXTURE:
+            case odRfl::Field::Type::TEXTURE:
             	std::cout << "RflTextureRef";
         		break;
 
-            case od::RflField::COLOR:
+            case odRfl::Field::Type::COLOR:
             	std::cout << "RflColor";
         		break;
 
@@ -327,10 +327,10 @@ int main(int argc, char **argv)
         }else if(texture)
         {
             od::Engine engine;
-        	od::DbManager dbm(engine);
-        	od::Database &db = dbm.loadDb(filename);
+        	odDb::DbManager dbm(engine);
+        	odDb::Database &db = dbm.loadDb(filename);
 
-        	osg::ref_ptr<od::Texture> tex = db.getAsset<od::Texture>(extractRecordId);
+        	osg::ref_ptr<odDb::Texture> tex = db.getAsset<odDb::Texture>(extractRecordId);
 
 			std::ostringstream ss;
 			ss << outputPath << "texture" << extractRecordId << ".png";
@@ -356,7 +356,7 @@ int main(int argc, char **argv)
             }
 
             engine.setUp();
-            od::GuiManager &gm = engine.getGuiManager();
+            odGui::GuiManager &gm = engine.getGuiManager();
 
             gm.dumpTextures();
             gm.dumpStrings();

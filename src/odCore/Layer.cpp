@@ -24,8 +24,8 @@
 namespace od
 {
 
-    const AssetRef Layer::HoleTextureRef(0xffff, 0xffff);
-    const AssetRef Layer::InvisibleTextureRef(0xfffe, 0xffff);
+    const odDb::AssetRef Layer::HoleTextureRef(0xffff, 0xffff);
+    const odDb::AssetRef Layer::InvisibleTextureRef(0xfffe, 0xffff);
 
 
     Layer::Layer(Level &level)
@@ -288,7 +288,7 @@ namespace od
         osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getShaderManager().makeProgram("layer");
         mLayerGeode->getOrCreateStateSet()->setAttribute(layerProg);
 
-        mLightCallback = new LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
+        mLightCallback = new odLight::LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
         mLightCallback->setLayerLight(osg::Vec3(), osg::Vec3(), osg::Vec3()); // disable layer light. we bake it into the color array
         mLightCallback->lightingDirty();
         this->addCullCallback(mLightCallback);
@@ -329,7 +329,7 @@ namespace od
             size_t cellIndex = triIndex/2;
             bool isLeft = (triIndex%2 == 0);
             Cell cell = mCells[cellIndex];
-            AssetRef texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+            odDb::AssetRef texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
 
             if(texture == HoleTextureRef) // unlike when building geometry, we want to include invisible triangles here!
             {
@@ -427,7 +427,7 @@ namespace od
             isLeftTriangle = (1 - fractX > fractZ);
         }
 
-        AssetRef texture = isLeftTriangle ? cell.leftTextureRef : cell.rightTextureRef;
+        odDb::AssetRef texture = isLeftTriangle ? cell.leftTextureRef : cell.rightTextureRef;
 
         return texture == HoleTextureRef;
     }

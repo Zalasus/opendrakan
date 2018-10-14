@@ -18,7 +18,7 @@
 #include <osg/MatrixTransform>
 
 
-namespace od
+namespace odDb
 {
 
     /**

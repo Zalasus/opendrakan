@@ -10,9 +10,9 @@
 #include <algorithm>
 
 #include <odCore/Exception.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 
-namespace od
+namespace odRfl
 {
 
     ClassBuilderProbe::ClassBuilderProbe()
@@ -58,7 +58,7 @@ namespace od
             mFieldEntries[i].fieldName = name;
             mFieldEntries[i].index = isObjectRecord ? fieldIndices[i] : i;
             mFieldEntries[i].dataOffset = i*4;
-            mFieldEntries[i].isArray = (type & 0x1000) || (mFieldEntries[i].fieldType == RflField::STRING); // strings are stored exactly like arrays
+            mFieldEntries[i].isArray = (type & 0x1000) || (mFieldEntries[i].fieldType == static_cast<uint32_t>(Field::Type::STRING)); // strings are stored exactly like arrays
         }
     }
 
@@ -72,7 +72,7 @@ namespace od
         // Class builder doesn't give a damn about categories
     }
 
-    void ClassBuilderProbe::registerField(RflField &field, const char *fieldName)
+    void ClassBuilderProbe::registerField(Field &field, const char *fieldName)
     {
         auto pred = [this](FieldEntry &e){ return e.index == mRegistrationIndex; };
         auto it = std::find_if(mFieldEntries.begin(), mFieldEntries.end(), pred); // FIXME: O(n) lookup. might split into classbuilder and objectbuilder, one with map and one with array
@@ -82,7 +82,7 @@ namespace od
             return; // FIXME: this should be an error when building a class
         }
 
-        if(it->fieldType != field.getFieldType())
+        if(it->fieldType != static_cast<uint32_t>(field.getFieldType()))
         {
             throw od::Exception("Type mismatch in RflClass. Field type as defined in RflClass does not match the one found in record.");
         }

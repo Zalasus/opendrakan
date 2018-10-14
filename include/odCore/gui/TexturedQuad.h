@@ -12,7 +12,7 @@
 
 #include <odCore/db/Texture.h>
 
-namespace od
+namespace odGui
 {
 
     /**
@@ -40,7 +40,7 @@ namespace od
         /**
          * @brief Set texture image to be used. Pass nullptr to disable texturing for this quad.
          */
-        void setTextureImage(Texture *t);
+        void setTextureImage(odDb::Texture *t);
 
         void setTextureCoords(const osg::Vec2 &topLeft, const osg::Vec2 &bottomRight);
         /**

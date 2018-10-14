@@ -14,11 +14,15 @@
 
 #include <odCore/anim/Interpolator.h>
 
-namespace od
+namespace odDb
+{
+    class Sound;
+}
+
+namespace odAudio
 {
 
     class SoundManager;
-    class Sound;
     class Buffer;
 
     class Source
@@ -50,7 +54,7 @@ namespace od
 
         State getState();
 
-        void setSound(Sound *s);
+        void setSound(odDb::Sound *s);
         void play(float fadeInTime = 0.0f);
         void stop(float fadeOutTime = 0.0f);
 
@@ -70,12 +74,12 @@ namespace od
         SoundManager &mSoundManager;
         ALuint mSourceId;
 
-        osg::ref_ptr<Sound> mSound;
+        osg::ref_ptr<odDb::Sound> mSound;
         std::shared_ptr<Buffer> mBuffer;
 
         // these two are used to calculate the absolute gain
         float mGain;
-        Interpolated<float> mFadingValue;
+        odAnim::Interpolated<float> mFadingValue;
     };
 
 }

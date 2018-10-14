@@ -13,7 +13,7 @@
 #include <odCore/audio/SoundContext.h>
 #include <odCore/Exception.h>
 
-namespace od
+namespace odAudio
 {
 
     Buffer::Buffer(SoundManager &soundManager)
@@ -60,7 +60,7 @@ namespace od
             }
         }
 
-        throw UnsupportedException("Unsupported channel count & bit depth combination");
+        throw od::UnsupportedException("Unsupported channel count & bit depth combination");
     }
 
     void Buffer::setData(uint8_t *data, size_t size, Format format, size_t frequency)
@@ -90,7 +90,7 @@ namespace od
             return AL_FORMAT_STEREO16;
         }
 
-        throw InvalidArgumentException("Unrecognized format argument");
+        throw od::InvalidArgumentException("Unrecognized format argument");
     }
 
 }

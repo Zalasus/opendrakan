@@ -7,10 +7,10 @@
 
 #include <odCore/db/Asset.h>
 
-namespace od
+namespace odDb
 {
 
-	Asset::Asset(AssetProvider &ap, RecordId assetId)
+	Asset::Asset(AssetProvider &ap, od::RecordId assetId)
 	: mAssetProvider(ap)
 	, mId(assetId)
 	{
@@ -34,7 +34,7 @@ namespace od
 
     const AssetRef AssetRef::NULL_REF(0, 0);
 
-    DataReader &operator>>(DataReader &left, AssetRef &right)
+    od::DataReader &operator>>(od::DataReader &left, AssetRef &right)
     {
         left >> right.assetId
              >> right.dbIndex;

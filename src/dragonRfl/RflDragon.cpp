@@ -12,14 +12,14 @@
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/db/DbManager.h>
 #include <dragonRfl/gui/Cursor.h>
-#include <dragonRfl/UserInterfaceProperties.h>
+#include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
-namespace od
+namespace dragonRfl
 {
 
-    DragonRfl::DragonRfl(Engine &engine)
+    DragonRfl::DragonRfl(od::Engine &engine)
     : AutoRegisteringRfl<DragonRfl>(engine)
     , mInterfaceDb(nullptr)
     {
@@ -27,44 +27,44 @@ namespace od
 
     void DragonRfl::onStartup()
     {
-        Engine &engine = getEngine();
+        od::Engine &engine = getEngine();
 
-        mInterfaceDb = &engine.getDbManager().loadDb(FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase());
+        mInterfaceDb = &engine.getDbManager().loadDb(od::FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase());
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb->getClassFactory() == nullptr)
         {
-            throw Exception("Can not initialize user interface. Interface.db has no class container");
+            throw od::Exception("Can not initialize user interface. Interface.db has no class container");
         }
 
-        RflClassId uiPropsClassId = RflClassTraits<UserInterfaceProperties>::classId();
-        RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
-        if(id == AssetRef::NULL_REF.assetId)
+        odRfl::RflClassId uiPropsClassId = odRfl::RflClassTraits<UserInterfaceProperties>::classId();
+        od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
+        if(id == odDb::AssetRef::NULL_REF.assetId)
         {
-            throw Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
+            throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
         }
 
-        osg::ref_ptr<Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<RflClass> uiPropsInstance = uiPropsClass->makeInstance();
+        osg::ref_ptr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
+        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
         mUserInterfacePropertiesInstance.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfacePropertiesInstance == nullptr)
         {
-            throw Exception("Could not cast or instantiate User Interface Properties instance");
+            throw od::Exception("Could not cast or instantiate User Interface Properties instance");
         }
         mUserInterfacePropertiesInstance->onLoaded(engine);
 
-        PrefetchProbe probe(*mInterfaceDb);
+        odRfl::PrefetchProbe probe(*mInterfaceDb);
         mUserInterfacePropertiesInstance->probeFields(probe);
 
 
         if(!engine.hasInitialLevelOverride())
         {
-            FilePath initialLevel(mUserInterfacePropertiesInstance->mIntroLevelFilename);
+            od::FilePath initialLevel(mUserInterfacePropertiesInstance->mIntroLevelFilename);
             engine.loadLevel(initialLevel.adjustCase());
         }
 
 
-        GuiManager &gm = engine.getGuiManager();
+        odGui::GuiManager &gm = engine.getGuiManager();
 
         mMainMenu = new MainMenu(gm, mUserInterfacePropertiesInstance.get());
         mMainMenu->setVisible(gm.isMenuMode());

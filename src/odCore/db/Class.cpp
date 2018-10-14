@@ -13,10 +13,10 @@
 #include <odCore/db/AssetProvider.h>
 #include <odCore/rfl/Rfl.h>
 
-namespace od
+namespace odDb
 {
 
-    Class::Class(AssetProvider &ap, RecordId classId)
+    Class::Class(AssetProvider &ap, od::RecordId classId)
     : Asset(ap, classId)
     , mRflClassId(0)
     , mIconNumber(0)
@@ -25,10 +25,10 @@ namespace od
     {
     }
 
-    void Class::loadFromRecord(ClassFactory &factory, DataReader dr)
+    void Class::loadFromRecord(ClassFactory &factory, od::DataReader dr)
     {
         dr >> mClassName
-           >> DataReader::Ignore(2)
+           >> od::DataReader::Ignore(2)
            >> mModelRef
            >> mRflClassId
 		   >> mIconNumber;
@@ -41,7 +41,7 @@ namespace od
             {
                 mModel = this->getAssetProvider().getAssetByRef<Model>(mModelRef);
 
-            }catch(NotFoundException &e)
+            }catch(od::NotFoundException &e)
             {
                 Logger::warn() << "Model of class " << mClassName << " not found. Leaving invisible";
                 mModel = nullptr;
@@ -56,7 +56,7 @@ namespace od
             {
                 mRflClassRegistrar = factory.getRfl()->getRegistrarForClass(mRflClassId);
 
-            }catch(NotFoundException &e)
+            }catch(od::NotFoundException &e)
             {
                 Logger::debug() << "RflClass type " << std::hex << mRflClassId << std::dec <<
                     " of class '" << mClassName << "' not found. Probably unimplemented";
@@ -64,7 +64,7 @@ namespace od
         }
     }
 
-    std::unique_ptr<RflClass> Class::makeInstance()
+    std::unique_ptr<odRfl::RflClass> Class::makeInstance()
 	{
         if(mRflClassRegistrar == nullptr)
         {
@@ -74,7 +74,7 @@ namespace od
 
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
-    	std::unique_ptr<RflClass> newInstance(mRflClassRegistrar->createInstance(mRfl));
+    	std::unique_ptr<odRfl::RflClass> newInstance(mRflClassRegistrar->createInstance(mRfl));
         mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
         newInstance->probeFields(mClassBuilder);
 

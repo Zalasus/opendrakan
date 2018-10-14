@@ -9,7 +9,7 @@
 #define INCLUDE_ODCORE_RFL_RFLEVENTINTERFACE_H_
 
 
-namespace od
+namespace odRfl
 {
 
     class RflEventInterface

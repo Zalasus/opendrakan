@@ -14,7 +14,7 @@
 #include <odCore/audio/Buffer.h>
 #include <odCore/Exception.h>
 
-namespace od
+namespace odAudio
 {
 
     Source::Source(SoundManager &soundManager)
@@ -126,10 +126,10 @@ namespace od
             return State::Stopped;
         }
 
-        throw Exception("Got unknown source state");
+        throw od::Exception("Got unknown source state");
     }
 
-    void Source::setSound(Sound *s)
+    void Source::setSound(odDb::Sound *s)
     {
         mSound = s;
 

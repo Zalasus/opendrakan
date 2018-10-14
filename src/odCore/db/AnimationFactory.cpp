@@ -9,17 +9,17 @@
 
 #include <odCore/SrscRecordTypes.h>
 
-namespace od
+namespace odDb
 {
 
-	AnimationFactory::AnimationFactory(AssetProvider &ap, SrscFile &animationContainer)
+	AnimationFactory::AnimationFactory(AssetProvider &ap, od::SrscFile &animationContainer)
 	: AssetFactory<Animation>(ap, animationContainer)
 	{
 	}
 
-	osg::ref_ptr<Animation> AnimationFactory::loadAsset(RecordId animId)
+	osg::ref_ptr<Animation> AnimationFactory::loadAsset(od::RecordId animId)
 	{
-		SrscFile::DirIterator infoRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::ANIMATION_INFO, animId);
+		od::SrscFile::DirIterator infoRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_INFO, animId);
         if(infoRecord == getSrscFile().getDirectoryEnd())
         {
         	return nullptr;
@@ -27,13 +27,13 @@ namespace od
 
         osg::ref_ptr<Animation> newAnim(new Animation(getAssetProvider(), animId));
 
-        newAnim->loadInfo(DataReader(getSrscFile().getStreamForRecord(infoRecord)));
+        newAnim->loadInfo(od::DataReader(getSrscFile().getStreamForRecord(infoRecord)));
 
-        SrscFile::DirIterator animFramesRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::ANIMATION_FRAMES, animId, infoRecord);
-        newAnim->loadFrames(DataReader(getSrscFile().getStreamForRecord(animFramesRecord)));
+        od::SrscFile::DirIterator animFramesRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_FRAMES, animId, infoRecord);
+        newAnim->loadFrames(od::DataReader(getSrscFile().getStreamForRecord(animFramesRecord)));
 
-        SrscFile::DirIterator animLookupRecord = getSrscFile().getDirIteratorByTypeId(SrscRecordType::ANIMATION_LOOKUP, animId, infoRecord);
-        newAnim->loadFrameLookup(DataReader(getSrscFile().getStreamForRecord(animLookupRecord)));
+        od::SrscFile::DirIterator animLookupRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_LOOKUP, animId, infoRecord);
+        newAnim->loadFrameLookup(od::DataReader(getSrscFile().getStreamForRecord(animLookupRecord)));
 
         return newAnim;
 	}

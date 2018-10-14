@@ -10,7 +10,7 @@
 
 #include <osg/PositionAttitudeTransform>
 
-namespace od
+namespace odAnim
 {
 
 	/**

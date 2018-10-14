@@ -17,24 +17,28 @@
 #define OD_SOUND_FLAG_FLUSH_AFTER_PLAYING 	0x04
 #define OD_SOUND_FLAG_PLAY_LOOPING			0x08
 
-namespace od
+namespace odAudio
 {
-
     class Buffer;
     class SoundManager;
+}
+
+namespace odDb
+{
+
 
 	class Sound : public Asset, public osg::Referenced
 	{
 	public:
 
-		Sound(AssetProvider &ap, RecordId id);
+		Sound(AssetProvider &ap, od::RecordId id);
 
 		inline uint32_t getSamplingFrequency() const { return mFrequency; }
 		inline const std::string &getName() const { return mSoundName; }
 
-		void loadFromRecord(DataReader &dr);
+		void loadFromRecord(od::DataReader &dr);
 
-		std::shared_ptr<Buffer> getOrCreateBuffer(SoundManager &soundManager);
+		std::shared_ptr<odAudio::Buffer> getOrCreateBuffer(odAudio::SoundManager &soundManager);
 		float getLinearGain() const;
 
 
@@ -54,7 +58,7 @@ namespace od
         // temporary buffer for holding the sample data until \c mSoundBuffer is created for the sound system
         std::vector<uint8_t> mTempSampleBuffer;
 
-        std::shared_ptr<Buffer> mSoundBuffer;
+        std::shared_ptr<odAudio::Buffer> mSoundBuffer;
 	};
 
 	template <>

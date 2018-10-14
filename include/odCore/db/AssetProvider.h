@@ -11,7 +11,7 @@
 #include <odCore/db/Asset.h>
 #include <odCore/Exception.h>
 
-namespace od
+namespace odDb
 {
 
     class Texture;
@@ -65,7 +65,7 @@ namespace od
 	     * @note This might throw UnsupportedException if the \c _AssetType can't be loaded by this provider.
 	     */
 	    template <typename _AssetType>
-	    _AssetType *getAsset(RecordId id);
+	    _AssetType *getAsset(od::RecordId id);
 
 
 	protected:
@@ -76,7 +76,7 @@ namespace od
          *
          * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
          */
-        virtual Texture   *getTexture(RecordId recordId);
+        virtual Texture   *getTexture(od::RecordId recordId);
 
         /**
          * Loads a class synchronously without indirection. Implementing classes should override
@@ -84,7 +84,7 @@ namespace od
          *
          * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
          */
-        virtual Class     *getClass(RecordId recordId);
+        virtual Class     *getClass(od::RecordId recordId);
 
         /**
          * Loads a model synchronously without indirection. Implementing classes should override
@@ -92,7 +92,7 @@ namespace od
          *
          * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
          */
-        virtual Model     *getModel(RecordId recordId);
+        virtual Model     *getModel(od::RecordId recordId);
 
         /**
          * Loads a sequence synchronously without indirection. Implementing classes should override
@@ -100,7 +100,7 @@ namespace od
          *
          * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
          */
-        virtual Sequence  *getSequence(RecordId recordId);
+        virtual Sequence  *getSequence(od::RecordId recordId);
 
         /**
          * Loads a animation synchronously without indirection. Implementing classes should override
@@ -108,7 +108,7 @@ namespace od
          *
          * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
          */
-        virtual Animation *getAnimation(RecordId recordId);
+        virtual Animation *getAnimation(od::RecordId recordId);
 
         /**
          * Loads a sound synchronously without indirection. Implementing classes should override
@@ -116,7 +116,7 @@ namespace od
          *
          * @note This transfers ownership. It is vital that the return value is stored in a ref_ptr.
          */
-        virtual Sound     *getSound(RecordId recordId);
+        virtual Sound     *getSound(od::RecordId recordId);
 
 	};
 

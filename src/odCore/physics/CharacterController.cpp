@@ -12,10 +12,10 @@
 #include <odCore/physics/PhysicsManager.h>
 #include <odCore/physics/BulletCallbacks.h>
 
-namespace od
+namespace odPhysics
 {
 
-	CharacterController::CharacterController(LevelObject &charObject, float radius, float height)
+	CharacterController::CharacterController(od::LevelObject &charObject, float radius, float height)
 	: mCharObject(charObject)
 	, mRadius(radius)
 	, mHeight(height)

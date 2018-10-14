@@ -13,7 +13,7 @@
 #include <osg/Vec3>
 #include <osg/Quat>
 
-namespace od
+namespace odPhysics
 {
 
     class BulletAdapter

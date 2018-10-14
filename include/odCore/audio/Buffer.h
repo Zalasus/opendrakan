@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <memory>
 
-namespace od
+namespace odAudio
 {
 
     class SoundManager;

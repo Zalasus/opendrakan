@@ -12,6 +12,11 @@
 
 namespace od
 {
+    class DataReader;
+}
+
+namespace odRfl
+{
 
     class ClassBuilderProbe : public FieldProbe
     {
@@ -25,7 +30,7 @@ namespace od
         void resetIndexCounter();
 
         virtual void beginCategory(const char *categoryName) override;
-        virtual void registerField(RflField &field, const char *fieldName) override;
+        virtual void registerField(Field &field, const char *fieldName) override;
 
 
     private:

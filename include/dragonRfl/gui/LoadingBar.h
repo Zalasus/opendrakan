@@ -11,16 +11,14 @@
 #include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/Widget.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    class GuiManager;
-
-    class LoadingBar : public Widget
+    class LoadingBar : public odGui::Widget
     {
     public:
 
-        LoadingBar(GuiManager &gm);
+        LoadingBar(odGui::GuiManager &gm);
 
         void setProgress(float f);
 
@@ -28,8 +26,8 @@ namespace od
     private:
 
         float mProgress;
-        osg::ref_ptr<TexturedQuad> mForegroundQuad;
-        osg::ref_ptr<TexturedQuad> mBarQuad;
+        osg::ref_ptr<odGui::TexturedQuad> mForegroundQuad;
+        osg::ref_ptr<odGui::TexturedQuad> mBarQuad;
 
     };
 

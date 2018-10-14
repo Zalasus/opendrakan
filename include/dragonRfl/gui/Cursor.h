@@ -11,16 +11,14 @@
 #include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/Widget.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    class GuiManager;
-
-    class Cursor : public Widget
+    class Cursor : public odGui::Widget
     {
     public:
 
-        Cursor(GuiManager &gm);
+        Cursor(odGui::GuiManager &gm);
 
     };
 

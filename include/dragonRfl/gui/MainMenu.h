@@ -10,18 +10,22 @@
 
 #include <odCore/gui/ContainerWidget.h>
 
-namespace od
+namespace odDb
+{
+    class Model;
+}
+
+namespace dragonRfl
 {
 
-    class GuiManager;
     class UserInterfaceProperties;
-    class Model;
 
-    class MainMenu : public ContainerWidget
+    class MainMenu : public odGui::ContainerWidget
     {
     public:
 
-        MainMenu(GuiManager &gm, od::UserInterfaceProperties *uiProps);
+        MainMenu(odGui::GuiManager &gm, UserInterfaceProperties *uiProps);
+
 
     private:
 
@@ -36,8 +40,8 @@ namespace od
             BC_QUIT
         };
 
-        void _addCrystal(GuiManager &gm, Model *crystalModel, float noteOffset, float dia, float x, float y,
-                od::UserInterfaceProperties *uiProps, ContainerWidget *cont, int buttonCode);
+        void _addCrystal(odGui::GuiManager &gm, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
+                UserInterfaceProperties *uiProps, odGui::ContainerWidget *cont, int buttonCode);
 
         void _buttonClicked(int buttonCode);
 

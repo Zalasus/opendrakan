@@ -14,10 +14,10 @@
 #include <odCore/UpdateCallback.h>
 #include <odCore/gui/GuiManager.h>
 
-namespace od
+namespace odGui
 {
 
-    class WidgetUpdateCallback : public UpdateCallback
+    class WidgetUpdateCallback : public od::UpdateCallback
     {
     public:
 
@@ -58,7 +58,7 @@ namespace od
     , mUpdateCallback(new WidgetUpdateCallback(this))
     , mMouseOver(false)
     {
-        this->setNodeMask(NodeMasks::Gui);
+        this->setNodeMask(od::NodeMasks::Gui);
         this->setMatrix(osg::Matrix::identity());
 
         this->addUpdateCallback(mUpdateCallback);
@@ -109,7 +109,7 @@ namespace od
 
     void Widget::setVisible(bool b)
     {
-        this->setNodeMask(b ? NodeMasks::Gui : NodeMasks::Hidden);
+        this->setNodeMask(b ? od::NodeMasks::Gui : od::NodeMasks::Hidden);
     }
 
     void Widget::updateMatrix()

@@ -48,9 +48,9 @@ namespace od
 
 	    _findEngineRoot("Dragon.rrc");
 
-	    mDbManager.reset(new DbManager(*this));
+	    mDbManager.reset(new odDb::DbManager(*this));
 	    mShaderManager.reset(new ShaderManager(FilePath(OD_SHADER_SRC_PATH)));
-	    mRflManager.reset(new RflManager(*this));
+	    mRflManager.reset(new odRfl::RflManager(*this));
 
 	    mViewer = new osgViewer::Viewer;
         mViewer->realize();
@@ -91,17 +91,17 @@ namespace od
 
         mInputManager = new InputManager(*this, mViewer);
 
-	    mLightManager.reset(new LightManager(*this, mRootNode));
+	    mLightManager.reset(new odLight::LightManager(*this, mRootNode));
 
-	    mGuiManager.reset(new GuiManager(*this, mViewer));
+	    mGuiManager.reset(new odGui::GuiManager(*this, mViewer));
 
 	    std::vector<std::string> devs;
-	    SoundManager::listDeviceNames(devs);
+	    odAudio::SoundManager::listDeviceNames(devs);
 	    for(std::string s : devs)
 	    {
 	        Logger::info() << "Sound device: '" << s << "'";
 	    }
-	    mSoundManager.reset(new SoundManager(nullptr));
+	    mSoundManager.reset(new odAudio::SoundManager(nullptr));
 
 	    mRflManager->onStartup();
 

@@ -13,19 +13,20 @@
 #include <fstream>
 
 #include <odCore/SrscRecordTypes.h>
+#include <odCore/FilePath.h>
 #include <odCore/Engine.h>
 #include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/WidgetGroup.h>
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/light/LightState.h>
 
-namespace od
+namespace odGui
 {
 
-    GuiManager::GuiManager(Engine &engine, osgViewer::Viewer *viewer)
+    GuiManager::GuiManager(od::Engine &engine, osgViewer::Viewer *viewer)
     : mEngine(engine)
     , mViewer(viewer)
-    , mRrcFile(FilePath("Dragon.rrc", engine.getEngineRootDir()))
+    , mRrcFile(od::FilePath("Dragon.rrc", engine.getEngineRootDir()))
     , mTextureFactory(*this, mRrcFile, mEngine)
     , mMenuMode(false)
     {
@@ -58,7 +59,7 @@ namespace od
     {
         if(mViewer == nullptr)
         {
-            throw Exception("Could not access screen resolution. No viewer passed to GuiManager");
+            throw od::Exception("Could not access screen resolution. No viewer passed to GuiManager");
         }
 
         int width = 0;
@@ -69,7 +70,7 @@ namespace od
         mViewer->getWindows(windows);
         if(windows.empty())
         {
-            throw Exception("Could not access screen resolution. No windows found");
+            throw od::Exception("Could not access screen resolution. No windows found");
         }
 
         windows.back()->getWindowRectangle(dummy, dummy, width, height);
@@ -229,7 +230,7 @@ namespace od
             return s;
         }
 
-        RecordId stringId;
+        od::RecordId stringId;
         std::istringstream iss(s.substr(3, 4));
         iss >> std::hex >> stringId;
         if(iss.fail())
@@ -243,7 +244,7 @@ namespace od
         {
             return getStringById(stringId);
 
-        }catch(NotFoundException &e)
+        }catch(od::NotFoundException &e)
         {
         }
 
@@ -251,7 +252,7 @@ namespace od
         return s.substr(8, std::string::npos);
     }
 
-    std::string GuiManager::getStringById(RecordId stringId)
+    std::string GuiManager::getStringById(od::RecordId stringId)
     {
         // was string cached? if yes, no need to load and decrypt it again
         auto cacheIt = mLocalizedStringCache.find(stringId);
@@ -261,18 +262,18 @@ namespace od
         }
 
         // string was not cached. load and decrypt it
-        auto dirIt = mRrcFile.getDirIteratorByTypeId(SrscRecordType::LOCALIZED_STRING, stringId);
+        auto dirIt = mRrcFile.getDirIteratorByTypeId(od::SrscRecordType::LOCALIZED_STRING, stringId);
         if(dirIt == mRrcFile.getDirectoryEnd())
         {
             std::ostringstream oss;
             oss << "String with ID 0x" << std::hex << stringId << std::dec << " not found";
 
-            throw NotFoundException(oss.str());
+            throw od::NotFoundException(oss.str());
         }
 
         if(dirIt->dataSize > 255)
         {
-            throw Exception("String buffer too small");
+            throw od::Exception("String buffer too small");
         }
 
         std::istream &in = mRrcFile.getStreamForRecord(dirIt);
@@ -296,12 +297,12 @@ namespace od
         std::ofstream out("out/gui_strings.txt");
         if(out.fail())
         {
-            throw IoException("Could not open 'out/gui_strings.txt' for dumping strings");
+            throw od::IoException("Could not open 'out/gui_strings.txt' for dumping strings");
         }
 
         out << "Strings found in Dragon.rrc:" << std::endl << std::endl;
 
-        auto dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::LOCALIZED_STRING);
+        auto dirIt = mRrcFile.getDirIteratorByType(od::SrscRecordType::LOCALIZED_STRING);
         while(dirIt != mRrcFile.getDirectoryEnd())
         {
             std::istream &in = mRrcFile.getStreamForRecord(dirIt);
@@ -320,13 +321,13 @@ namespace od
                 out << "STR " << std::hex << std::setw(4) << dirIt->recordId << std::dec << ": " << str << std::endl;
             }
 
-            dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::LOCALIZED_STRING, dirIt+1);
+            dirIt = mRrcFile.getDirIteratorByType(od::SrscRecordType::LOCALIZED_STRING, dirIt+1);
         }
     }
 
     void GuiManager::dumpTextures()
     {
-        auto dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::TEXTURE);
+        auto dirIt = mRrcFile.getDirIteratorByType(od::SrscRecordType::TEXTURE);
         while(dirIt != mRrcFile.getDirectoryEnd())
         {
             std::ostringstream oss;
@@ -334,21 +335,21 @@ namespace od
 
             try
             {
-                osg::ref_ptr<Texture> tex = getTexture(dirIt->recordId);
-                tex->exportToPng(FilePath(oss.str()));
+                osg::ref_ptr<odDb::Texture> tex = getTexture(dirIt->recordId);
+                tex->exportToPng(od::FilePath(oss.str()));
 
-            }catch(UnsupportedException &e)
+            }catch(od::UnsupportedException &e)
             {
                 Logger::warn() << "Can't dump texture " << oss.str() << " (" << e.what() << ")";
             }
 
-            dirIt = mRrcFile.getDirIteratorByType(SrscRecordType::TEXTURE, dirIt+1);
+            dirIt = mRrcFile.getDirIteratorByType(od::SrscRecordType::TEXTURE, dirIt+1);
         }
     }
 
-    Texture *GuiManager::getTexture(RecordId recordId)
+    odDb::Texture *GuiManager::getTexture(od::RecordId recordId)
     {
-        osg::ref_ptr<Texture> tex = mTextureFactory.getAsset(recordId);
+        osg::ref_ptr<odDb::Texture> tex = mTextureFactory.getAsset(recordId);
 
         return tex.release();
     }
@@ -391,7 +392,7 @@ namespace od
         mViewer->getWindows(windows);
         if(windows.empty())
         {
-            throw Exception("Could not create secondary camera. No windows found");
+            throw od::Exception("Could not create secondary camera. No windows found");
         }
         mGuiCamera->setGraphicsContext(windows[0]);
         mGuiCamera->setViewport(0, 0, windows[0]->getTraits()->width, windows[0]->getTraits()->height);

@@ -7,7 +7,7 @@
 
 #include <odCore/rfl/RflMessage.h>
 
-namespace od
+namespace odRfl
 {
 
     std::ostream &operator<<(std::ostream &out, RflMessage message)

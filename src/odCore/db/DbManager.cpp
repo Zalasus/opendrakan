@@ -15,10 +15,10 @@
 
 #define OD_MAX_DEPENDENCY_DEPTH 100
 
-namespace od
+namespace odDb
 {
 
-    DbManager::DbManager(Engine &engine)
+    DbManager::DbManager(od::Engine &engine)
     : mEngine(engine)
     {
     }
@@ -27,7 +27,7 @@ namespace od
     {
     }
 
-    bool DbManager::isDbLoaded(const FilePath &dbFilePath) const
+    bool DbManager::isDbLoaded(const od::FilePath &dbFilePath) const
     {
         for(std::shared_ptr<Database> db : mRiotDbs)
         {
@@ -40,22 +40,22 @@ namespace od
         return false;
     }
 
-    Database &DbManager::loadDb(const FilePath &dbFilePath, size_t dependencyDepth)
+    Database &DbManager::loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth)
     {
     	if(dependencyDepth > OD_MAX_DEPENDENCY_DEPTH)
     	{
-    		throw Exception("Dependency depth exceeded maximum. Possible undetected circular dependency?");
+    		throw od::Exception("Dependency depth exceeded maximum. Possible undetected circular dependency?");
     	}
 
     	// force the right extension
-    	FilePath actualFilePath = dbFilePath.ext(".db");
+    	od::FilePath actualFilePath = dbFilePath.ext(".db");
 
     	try
     	{
     	    Database &db = getDb(actualFilePath);
     	    return db;
 
-    	}catch(NotFoundException &e)
+    	}catch(od::NotFoundException &e)
     	{
     	    // not loaded -> load
     	}
@@ -71,7 +71,7 @@ namespace od
         return *db;
     }
 
-    Database &DbManager::getDb(const FilePath &dbFilePath)
+    Database &DbManager::getDb(const od::FilePath &dbFilePath)
     {
     	for(std::shared_ptr<Database> db : mRiotDbs)
         {
@@ -81,7 +81,7 @@ namespace od
         	}
         }
 
-        throw NotFoundException("Database with given path not loaded");
+        throw od::NotFoundException("Database with given path not loaded");
     }
 
 }

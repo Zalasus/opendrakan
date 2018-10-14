@@ -9,24 +9,24 @@
 
 #include <odCore/db/Database.h>
 
-namespace od
+namespace odDb
 {
 
-    SoundFactory::SoundFactory(AssetProvider &ap, SrscFile &soundContainer)
+    SoundFactory::SoundFactory(AssetProvider &ap, od::SrscFile &soundContainer)
     : AssetFactory<Sound>(ap, soundContainer)
     {
     }
 
-    osg::ref_ptr<Sound> SoundFactory::loadAsset(RecordId soundId)
+    osg::ref_ptr<Sound> SoundFactory::loadAsset(od::RecordId soundId)
     {
-        SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(SrscRecordType::SOUND, soundId);
+        od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::SOUND, soundId);
         if(dirIt == getSrscFile().getDirectoryEnd())
         {
             return nullptr;
         }
 
         osg::ref_ptr<Sound> sound(new Sound(getAssetProvider(), soundId));
-        DataReader dr(getSrscFile().getStreamForRecord(dirIt));
+        od::DataReader dr(getSrscFile().getStreamForRecord(dirIt));
         sound->loadFromRecord(dr);
 
         return sound;

@@ -15,20 +15,24 @@
 
 namespace od
 {
+    class Engine;
+}
+
+namespace odDb
+{
 
     class Database;
-    class Engine;
 
 	class DbManager
 	{
 	public:
 
-		DbManager(Engine &engine);
+		DbManager(od::Engine &engine);
 		~DbManager();
 
-		inline Engine &getEngine() { return mEngine; }
+		inline od::Engine &getEngine() { return mEngine; }
 
-		bool isDbLoaded(const FilePath &dbFilePath) const;
+		bool isDbLoaded(const od::FilePath &dbFilePath) const;
 
         /**
          * @brief Loads a database if not already loaded and returns the the RiotDb object.
@@ -36,14 +40,14 @@ namespace od
          * @param[in]   dbFile              Path to the *.db file defining the database to be loaded. Extension is ignored.
          * @param[in]   dependencyDepth     Depth of dependency loading. Used to prevent undectected circular dependencies. Only used by RiotDb objects.
          */
-		Database &loadDb(const FilePath &dbFilePath, size_t dependencyDepth = 0);
+		Database &loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth = 0);
 
-		Database &getDb(const FilePath &dbFilePath);
+		Database &getDb(const od::FilePath &dbFilePath);
 
 
 	private:
 
-		Engine &mEngine;
+		od::Engine &mEngine;
 		std::vector<std::shared_ptr<Database>> mRiotDbs;
 	};
 

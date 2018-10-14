@@ -17,25 +17,29 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/ClassBuilderProbe.h>
 
-namespace od
+namespace odRfl
 {
-	class ClassFactory;
 	class RflClassRegistrar;
 	class RflClass;
 	class Rfl;
+}
+
+namespace odDb
+{
+    class ClassFactory;
 
 	class Class : public Asset, public osg::Referenced
 	{
 	public:
 
-		Class(AssetProvider &ap, RecordId classId);
+		Class(AssetProvider &ap, od::RecordId classId);
 
 		inline bool hasModel() const { return mModel != nullptr; }
         inline osg::ref_ptr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
 
-        void loadFromRecord(ClassFactory &factory, DataReader dr);
-        std::unique_ptr<RflClass> makeInstance();
+        void loadFromRecord(ClassFactory &factory, od::DataReader dr);
+        std::unique_ptr<odRfl::RflClass> makeInstance();
 
 
 	private:
@@ -44,11 +48,11 @@ namespace od
         AssetRef mModelRef;
         osg::ref_ptr<Model> mModel;
         uint16_t mRflClassId;
-        ClassBuilderProbe mClassBuilder;
+        odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
 
-        Rfl *mRfl;
-        RflClassRegistrar *mRflClassRegistrar;
+        odRfl::Rfl *mRfl;
+        odRfl::RflClassRegistrar *mRflClassRegistrar;
 
 	};
 

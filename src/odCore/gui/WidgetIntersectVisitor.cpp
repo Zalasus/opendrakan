@@ -11,7 +11,7 @@
 
 #include <odCore/Logger.h>
 
-namespace od
+namespace odGui
 {
 
     WidgetIntersectVisitor::WidgetIntersectVisitor(const osg::Matrix &topWidgetToNdcXform, const osg::Matrix &ndcToTopWidgetXform)

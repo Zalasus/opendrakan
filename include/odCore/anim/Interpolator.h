@@ -16,7 +16,7 @@
 
 #include <odCore/Logger.h>
 
-namespace od
+namespace odAnim
 {
 
     template <typename T, typename _TimeType = float>

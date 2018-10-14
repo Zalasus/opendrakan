@@ -13,7 +13,6 @@
 #include <map>
 #include <osgViewer/Viewer>
 
-#include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/AssetProvider.h>
@@ -22,8 +21,11 @@
 
 namespace od
 {
-
     class Engine;
+}
+
+namespace odGui
+{
 
     class Widget;
 
@@ -31,13 +33,13 @@ namespace od
      * Class for managing the game's GUI, as well as an interface for accessing the
      * RRC file which contains GUI textures and localized GUI text.
      */
-    class GuiManager : public AssetProvider
+    class GuiManager : public odDb::AssetProvider
     {
     public:
 
-        GuiManager(Engine &engine, osgViewer::Viewer *viewer);
+        GuiManager(od::Engine &engine, osgViewer::Viewer *viewer);
 
-        inline Engine &getEngine() { return mEngine; }
+        inline od::Engine &getEngine() { return mEngine; }
         inline bool isMenuMode() const { return mMenuMode; }
 
         void quit();
@@ -77,7 +79,7 @@ namespace od
         /**
          * @brief Returns the string with the given ID or throws if string can not be found.
          */
-        std::string getStringById(RecordId stringId);
+        std::string getStringById(od::RecordId stringId);
 
         void dumpStrings();
         void dumpTextures();
@@ -86,7 +88,7 @@ namespace od
     protected:
 
         // override AssetProvider
-        virtual Texture *getTexture(RecordId recordId) override;
+        virtual odDb::Texture *getTexture(od::RecordId recordId) override;
 
 
     private:
@@ -94,13 +96,13 @@ namespace od
         inline void _decryptString(char * const str, const size_t len);
         void _setupGui();
 
-        Engine &mEngine;
+        od::Engine &mEngine;
         osg::ref_ptr<osgViewer::Viewer> mViewer;
-        SrscFile mRrcFile;
-        TextureFactory mTextureFactory;
+        od::SrscFile mRrcFile;
+        odDb::TextureFactory mTextureFactory;
         bool mMenuMode;
 
-        std::map<RecordId, std::string> mLocalizedStringCache;
+        std::map<od::RecordId, std::string> mLocalizedStringCache;
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group>  mGuiRoot;

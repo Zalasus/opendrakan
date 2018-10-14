@@ -16,8 +16,11 @@
 
 namespace od
 {
-
     class Engine;
+}
+
+namespace odRfl
+{
     class Rfl;
     class RflRegistrar;
 
@@ -25,7 +28,7 @@ namespace od
     {
     public:
 
-        RflManager(Engine &e);
+        RflManager(od::Engine &e);
 
         Rfl *getRfl(const std::string &name);
 
@@ -35,7 +38,7 @@ namespace od
 
     private:
 
-        Engine &mEngine;
+        od::Engine &mEngine;
         std::vector<std::unique_ptr<Rfl>> mLoadedRfls;
     };
 

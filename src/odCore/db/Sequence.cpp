@@ -9,7 +9,7 @@
 
 #include <odCore/Exception.h>
 
-namespace od
+namespace odDb
 {
 
     Action::Action(ActionType type, float timeOffset)
@@ -26,15 +26,15 @@ namespace od
     {
     }
 
-    void ActionTransform::load(DataReader &dr)
+    void ActionTransform::load(od::DataReader &dr)
     {
         uint16_t interpolationType;
 
         dr >> mRotation
            >> mPosition
-           >> DataReader::Ignore(4)
+           >> od::DataReader::Ignore(4)
            >> interpolationType
-           >> DataReader::Ignore(2);
+           >> od::DataReader::Ignore(2);
 
         mInterpolationType = static_cast<InterpolationType>(interpolationType);
     }
@@ -51,11 +51,11 @@ namespace od
     {
     }
 
-    void ActionStartAnim::load(DataReader &dr)
+    void ActionStartAnim::load(od::DataReader &dr)
     {
         dr >> mChannelIndex
            >> mAnimationRef
-           >> DataReader::Ignore(4)
+           >> od::DataReader::Ignore(4)
            >> mTransitionTime
            >> mSpeed
            >> mRootNodeTranslationFlags;
@@ -68,20 +68,20 @@ namespace od
     {
     }
 
-    void ActionPlaySound::load(DataReader &dr)
+    void ActionPlaySound::load(od::DataReader &dr)
     {
     }
 
 
 
 
-    void Actor::load(DataReader &dr)
+    void Actor::load(od::DataReader &dr)
     {
         uint32_t actionCount;
 
         dr >> mName
            >> mActorId
-           >> DataReader::Ignore(8)
+           >> od::DataReader::Ignore(8)
            >> mLevelObjectId
            >> actionCount;
 
@@ -105,7 +105,7 @@ namespace od
 
             default:
                 // can't continue to load as we have no idea where this action ends
-                throw Exception("Unknown action type in sequence actor '" + mName + "'");
+                throw od::Exception("Unknown action type in sequence actor '" + mName + "'");
             }
 
             mActions.back()->load(dr);
@@ -113,17 +113,17 @@ namespace od
     }
 
 
-    Sequence::Sequence(AssetProvider &ap, RecordId id)
+    Sequence::Sequence(AssetProvider &ap, od::RecordId id)
     : Asset(ap, id)
     {
     }
 
-	void Sequence::loadFromRecord(DataReader &dr)
+	void Sequence::loadFromRecord(od::DataReader &dr)
 	{
 		uint32_t actorCount;
 
 		dr >> mSequenceName
-		   >> DataReader::Ignore(12)
+		   >> od::DataReader::Ignore(12)
 		   >> actorCount;
 
 		mActors.reserve(actorCount);

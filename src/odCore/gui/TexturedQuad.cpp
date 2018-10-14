@@ -9,7 +9,7 @@
 
 #include <osg/Array>
 
-namespace od
+namespace odGui
 {
 
     TexturedQuad::TexturedQuad()
@@ -47,7 +47,7 @@ namespace od
         mTexture = static_cast<osg::Texture2D*>(this->getOrCreateStateSet()->getTextureAttribute(0, osg::StateAttribute::TEXTURE));
     }
 
-    void TexturedQuad::setTextureImage(Texture *t)
+    void TexturedQuad::setTextureImage(odDb::Texture *t)
     {
         if(t == nullptr && mTexture != nullptr)
         {

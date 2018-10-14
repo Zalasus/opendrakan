@@ -17,7 +17,7 @@
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
 
-namespace od
+namespace odDb
 {
 
 	class BoneInfoVisitor : public osg::NodeVisitor
@@ -121,7 +121,7 @@ namespace od
 	{
 		if(mJointInfos.size() >= OD_MAX_BONE_COUNT)
 		{
-			throw Exception("Can't add more bones. Maximum bone count reached");
+			throw od::Exception("Can't add more bones. Maximum bone count reached");
 		}
 
 		SkeletonJointInfo jointInfo;
@@ -143,7 +143,7 @@ namespace od
 		if(jointIndex >= mJointInfos.size())
 		{
 			Logger::error() << "Channel joint index out of bounds: was " << jointIndex << ", joint count is " << mJointInfos.size();
-			throw Exception("Channel joint index out of bounds");
+			throw od::Exception("Channel joint index out of bounds");
 			return;
 		}
 
@@ -151,7 +151,7 @@ namespace od
 
 		if(jointInfo.referencingBone == nullptr)
 		{
-			throw Exception("Tried to turn unreferenced joint into channel");
+			throw od::Exception("Tried to turn unreferenced joint into channel");
 		}
 
 		jointInfo.referencingBone->setIsChannel(true);
@@ -223,7 +223,7 @@ namespace od
 
 				}else if(jointInfoIndex >= (int32_t)mJointInfos.size())
 				{
-					throw Exception("Node's joint info index out of bounds");
+					throw od::Exception("Node's joint info index out of bounds");
 				}
 
 				SkeletonJointInfo &jointInfo = mJointInfos[jointInfoIndex];
@@ -241,7 +241,7 @@ namespace od
 	{
 		if(current.visited)
 		{
-			throw Exception("Bone tree is not a tree");
+			throw od::Exception("Bone tree is not a tree");
 
 		}else
 		{
@@ -255,13 +255,13 @@ namespace od
 		{
 			if(current.firstChildIndex >= (int32_t)mJointInfos.size())
 			{
-				throw Exception("First child index in joint info out of bounds");
+				throw od::Exception("First child index in joint info out of bounds");
 			}
 
 			SkeletonJointInfo &firstChildJointInfo = mJointInfos[current.firstChildIndex];
 			if(firstChildJointInfo.referencingBone == nullptr)
 			{
-				throw Exception("First child joint info is unreferenced joint");
+				throw od::Exception("First child joint info is unreferenced joint");
 			}
 
 			_buildRecursive(*newChild, firstChildJointInfo);
@@ -271,13 +271,13 @@ namespace od
 		{
 			if(current.nextSiblingIndex >= (int32_t)mJointInfos.size())
 			{
-				throw Exception("Next sibling index in joint info out of bounds");
+				throw od::Exception("Next sibling index in joint info out of bounds");
 			}
 
 			SkeletonJointInfo &nextSiblingJointInfo = mJointInfos[current.nextSiblingIndex];
 			if(nextSiblingJointInfo.referencingBone == nullptr)
 			{
-				throw Exception("Next sibling joint info is unreferenced joint");
+				throw od::Exception("Next sibling joint info is unreferenced joint");
 			}
 
 			_buildRecursive(parent, nextSiblingJointInfo);

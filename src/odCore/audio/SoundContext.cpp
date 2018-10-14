@@ -9,7 +9,7 @@
 
 #include <odCore/Exception.h>
 
-namespace od
+namespace odAudio
 {
 
     const ALCint SoundContext::AbsoluteMaximumSources = 128;
@@ -23,7 +23,7 @@ namespace od
         _doContextErrorCheck("Could not open device");
         if(mDeviceHandle == nullptr)
         {
-            throw Exception("Could not open device (alcOpenDevice return nullptr)");
+            throw od::Exception("Could not open device (alcOpenDevice return nullptr)");
         }
 
         const ALCint contextAttributes[] =
@@ -95,7 +95,7 @@ namespace od
             break;
         }
 
-        throw Exception(failmsg + alErrorMsg);
+        throw od::Exception(failmsg + alErrorMsg);
     }
 
 }

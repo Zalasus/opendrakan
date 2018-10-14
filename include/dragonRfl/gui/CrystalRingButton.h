@@ -18,14 +18,14 @@
 #include <odCore/audio/Source.h>
 #include <odCore/anim/Interpolator.h>
 
-namespace od
+namespace dragonRfl
 {
 
-    class CrystalRingButton : public Widget
+    class CrystalRingButton : public odGui::Widget
     {
     public:
 
-        CrystalRingButton(GuiManager &gm, Model *crystalModel, Model *innerRingModel, Model *outerRingModel, Sound *hoverSound, float noteOffset);
+        CrystalRingButton(odGui::GuiManager &gm, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel, odDb::Sound *hoverSound, float noteOffset);
 
         inline void setInactiveCrystalColor(const osg::Vec4 &color) { mCrystalColorInactive = color; mCrystalColor.set(mCrystalColorInactive); }
         inline void setActiveCrystalColor(const osg::Vec4 &color) { mCrystalColorActive = color; }
@@ -42,13 +42,13 @@ namespace od
 
         void _updateCrystalColor(double relTime);
 
-        Source *mSoundSource;
-        osg::ref_ptr<Model> mCrystalModel;
-        osg::ref_ptr<Model> mInnerRingModel;
-        osg::ref_ptr<Model> mOuterRingModel;
+        odAudio::Source *mSoundSource;
+        osg::ref_ptr<odDb::Model> mCrystalModel;
+        osg::ref_ptr<odDb::Model> mInnerRingModel;
+        osg::ref_ptr<odDb::Model> mOuterRingModel;
         osg::Vec4 mCrystalColorInactive;
         osg::Vec4 mCrystalColorActive;
-        Interpolated<osg::Vec4, double> mCrystalColor;
+        odAnim::Interpolated<osg::Vec4, double> mCrystalColor;
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::PositionAttitudeTransform> mCrystalTransform;
         osg::ref_ptr<osg::PositionAttitudeTransform> mOuterRingTransform;

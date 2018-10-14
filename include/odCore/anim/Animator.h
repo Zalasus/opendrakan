@@ -15,7 +15,7 @@
 
 #include <odCore/db/Animation.h>
 
-namespace od
+namespace odAnim
 {
     class TransformAccumulator;
 
@@ -26,7 +26,7 @@ namespace od
 	{
 	public:
 
-	    typedef std::vector<AnimationKeyframe>::const_iterator KfIterator;
+	    typedef std::vector<odDb::AnimationKeyframe>::const_iterator KfIterator;
 
 		Animator(osg::MatrixTransform *node);
 		Animator(const Animator &) = delete;
