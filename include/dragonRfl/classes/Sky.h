@@ -10,7 +10,8 @@
 
 #include <osg/Vec3>
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -29,19 +30,19 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflEnumYesNo	mPrimarySky;
-		odRfl::RflEnum			mFollowMode;
-		odRfl::RflFloat		mOffsetDown;
-		odRfl::RflEnum			mEffects;
-		odRfl::RflClassRef		mLightningObject;
-		odRfl::RflFloat		mAveLightningPeriod;
-		odRfl::RflInteger		mLightningHeight;
-		odRfl::RflInteger		mMinLightningDist;
-		odRfl::RflInteger		mMaxLightningDist;
-		odRfl::RflFloat		mLightningWedgeAngle;
-		odRfl::RflClassRef		mLensFlare;
-		odRfl::RflInteger		mFlareElevation;
-		odRfl::RflInteger		mFlareDirection;
+        odRfl::EnumYesNo	mPrimarySky;
+		odRfl::Enum			mFollowMode;
+		odRfl::Float		mOffsetDown;
+		odRfl::Enum			mEffects;
+		odRfl::ClassRef		mLightningObject;
+		odRfl::Float		mAveLightningPeriod;
+		odRfl::Integer		mLightningHeight;
+		odRfl::Integer		mMinLightningDist;
+		odRfl::Integer		mMaxLightningDist;
+		odRfl::Float		mLightningWedgeAngle;
+		odRfl::ClassRef		mLensFlare;
+		odRfl::Integer		mFlareElevation;
+		odRfl::Integer		mFlareDirection;
 
     };
 

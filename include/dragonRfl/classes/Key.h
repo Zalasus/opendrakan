@@ -26,7 +26,7 @@ namespace dragonRfl
 
 	private:
 
-		odRfl::RflInteger mLockCode;
+		odRfl::Integer mLockCode;
 
 	};
 

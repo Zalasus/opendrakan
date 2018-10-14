@@ -7,7 +7,7 @@
 
 #include <odCore/rfl/PrefetchProbe.h>
 
-#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace odRfl
 {

@@ -18,7 +18,7 @@
 #include <odCore/StringUtils.h>
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 #include <odCore/gui/GuiManager.h>
 
 
@@ -112,53 +112,53 @@ static void statClasses(od::SrscFile &file)
         	dr >> type
 			   >> name;
 
-        	switch(type & 0xff)
+        	switch(static_cast<odRfl::Field::Type>(type & 0xff))
         	{
-        	case odRfl::RflField::INTEGER:
+        	case odRfl::Field::Type::INTEGER:
         		std::cout << "RflInteger";
         		break;
 
-            case odRfl::RflField::FLOAT:
+            case odRfl::Field::Type::FLOAT:
             	std::cout << "RflFloat";
         		break;
 
-            case odRfl::RflField::CLASS:
+            case odRfl::Field::Type::CLASS:
             	std::cout << "RflClassRef";
         		break;
 
-            case odRfl::RflField::MODEL:
+            case odRfl::Field::Type::MODEL:
             	std::cout << "RflModelRef";
         		break;
 
-            case odRfl::RflField::SOUND:
+            case odRfl::Field::Type::SOUND:
             	std::cout << "RflSoundRef";
         		break;
 
-            case odRfl::RflField::ENUM:
+            case odRfl::Field::Type::ENUM:
             	std::cout << "RflEnum";
         		break;
 
-            case odRfl::RflField::CHAR_CHANNEL:
+            case odRfl::Field::Type::CHAR_CHANNEL:
             	std::cout << "RflCharChannel";
         		break;
 
-            case odRfl::RflField::ANIMATION:
+            case odRfl::Field::Type::ANIMATION:
             	std::cout << "RflAnimRef";
         		break;
 
-            case odRfl::RflField::STRING:
+            case odRfl::Field::Type::STRING:
             	std::cout << "RflString";
         		break;
 
-            case odRfl::RflField::SEUQUENCE:
+            case odRfl::Field::Type::SEUQUENCE:
             	std::cout << "RflSequenceRef";
         		break;
 
-            case odRfl::RflField::TEXTURE:
+            case odRfl::Field::Type::TEXTURE:
             	std::cout << "RflTextureRef";
         		break;
 
-            case odRfl::RflField::COLOR:
+            case odRfl::Field::Type::COLOR:
             	std::cout << "RflColor";
         		break;
 

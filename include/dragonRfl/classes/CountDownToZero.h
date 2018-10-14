@@ -9,7 +9,7 @@
 #define INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 #include <odCore/rfl/RflMessage.h>
 
 namespace dragonRfl
@@ -37,12 +37,12 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflInteger     mInitialCounterValue;
-        odRfl::RflEnumImpl<TimerTriggerMode, 0, 1> mWhenTriggered;
-        odRfl::RflEnumMessage mMessageToSend;
-        odRfl::RflEnumMessage mIncrementMessage;
-        odRfl::RflEnumMessage mDecrementMessage;
-        odRfl::RflEnumMessage mResetMessage;
+        odRfl::Integer     mInitialCounterValue;
+        odRfl::EnumImpl<TimerTriggerMode, 0, 1> mWhenTriggered;
+        odRfl::EnumMessage mMessageToSend;
+        odRfl::EnumMessage mIncrementMessage;
+        odRfl::EnumMessage mDecrementMessage;
+        odRfl::EnumMessage mResetMessage;
 
 
     private:

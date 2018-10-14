@@ -9,7 +9,7 @@
 #define INCLUDE_RFL_DRAGON_TIMER_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 
 namespace dragonRfl
 {
@@ -22,7 +22,7 @@ namespace dragonRfl
         RunWhenTriggered
     };
 
-    typedef odRfl::RflEnumImpl<TimerStartMode, 0, 1> RflEnumTimerStartMode;
+    typedef odRfl::EnumImpl<TimerStartMode, 0, 1> EnumTimerStartMode;
 
 
 	class Timer : public odRfl::RflClass
@@ -40,13 +40,13 @@ namespace dragonRfl
 
 	protected:
 
-		odRfl::RflFloat 		mTimeUntilTrigger;
-		RflEnumTimerStartMode   mStartMode;
-		odRfl::RflEnumYesNo	    mRepeat;
-		odRfl::RflEnumYesNo     mDestroyAfterTimeout;
-		odRfl::RflEnumMessage   mTriggerMessage; // message that will be sent upon timeout
-		odRfl::RflEnumYesNo     mToggle;
-		odRfl::RflEnumMessage   mDisableReenableMessage;
+		odRfl::Float 		 mTimeUntilTrigger;
+		EnumTimerStartMode   mStartMode;
+		odRfl::EnumYesNo	 mRepeat;
+		odRfl::EnumYesNo     mDestroyAfterTimeout;
+		odRfl::EnumMessage   mTriggerMessage; // message that will be sent upon timeout
+		odRfl::EnumYesNo     mToggle;
+		odRfl::EnumMessage   mDisableReenableMessage;
 
 	private:
 

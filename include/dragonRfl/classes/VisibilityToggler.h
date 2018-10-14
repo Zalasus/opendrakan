@@ -9,7 +9,7 @@
 #define INCLUDE_RFL_DRAGON_VISIBILITYTOGGLER_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 
 namespace dragonRfl
 {
@@ -36,9 +36,9 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflEnumImpl<TriggerMode, 0, 1>  mTriggerMode;
-        odRfl::RflEnumMessage                  mShowMessage;
-        odRfl::RflEnumMessage                  mHideMessage;
+        odRfl::EnumImpl<TriggerMode, 0, 1>  mTriggerMode;
+        odRfl::EnumMessage                  mShowMessage;
+        odRfl::EnumMessage                  mHideMessage;
 
     };
 

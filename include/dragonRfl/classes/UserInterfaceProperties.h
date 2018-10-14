@@ -9,7 +9,8 @@
 #define INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -27,43 +28,43 @@ namespace dragonRfl
 
     //protected:
 
-        odRfl::RflModelRef     mInnerRing;
-        odRfl::RflModelRef     mOuterRing;
-        odRfl::RflModelRef     mCrystalTop;
-        odRfl::RflFloat        mCrystalTopNoteOffset;
-        odRfl::RflModelRef     mCrystalLeft;
-        odRfl::RflFloat        mCrystalLeftNoteOffset;
-        odRfl::RflModelRef     mCrystalMiddle;
-        odRfl::RflFloat        mCrystalMiddleNoteOffset;
-        odRfl::RflModelRef     mCrystalRight;
-        odRfl::RflFloat        mCrystalRightNoteOffset;
-        odRfl::RflModelRef     mCrystalLowerLeft;
-        odRfl::RflFloat        mCrystalLowerLeftNoteOffset;
-        odRfl::RflModelRef     mCrystalLowerRight;
-        odRfl::RflFloat        mCrystalLowerRightNoteOffset;
-        odRfl::RflModelRef     mCrystalBottom;
-        odRfl::RflFloat        mCrystalBottomNoteOffset;
-        odRfl::RflModelRef     mArrowUpCrystal;
-        odRfl::RflModelRef     mButtonCrystal;
-        odRfl::RflModelRef     mWideButtonCrystal;
-        odRfl::RflModelRef     mNormalButtonRing;
-        odRfl::RflModelRef     mWideButtonRing;
-        odRfl::RflSoundRef     mHoverSoundLooped;
-        odRfl::RflSoundRef     mButtonClickSound;
-        odRfl::RflSoundRef     mMainGuiButtonClickSound;
-        odRfl::RflSoundRef     mScrollbarClickSound;
-        odRfl::RflSoundRef     mScrollbarReleaseSound;
-        odRfl::RflSoundRef     mScrollbarSlideLoopingSound;
-        odRfl::RflSoundRef     mNextOptionSound;
-        odRfl::RflSoundRef     mPreviousOptionSound;
-        odRfl::RflSoundRef     mMessageBoxSound;
-        odRfl::RflSoundRef     mExitSound;
-        odRfl::RflInteger      mBackgroundMusicId;
-        odRfl::RflInteger      mCreditsMusicId;
-        odRfl::RflInteger      mEasyScalePercent;
-        odRfl::RflInteger      mHardScalePercent;
-        odRfl::RflString       mIntroLevelFilename;
-        odRfl::RflString       mFirstLevelFilename;
+        odRfl::ModelRef     mInnerRing;
+        odRfl::ModelRef     mOuterRing;
+        odRfl::ModelRef     mCrystalTop;
+        odRfl::Float        mCrystalTopNoteOffset;
+        odRfl::ModelRef     mCrystalLeft;
+        odRfl::Float        mCrystalLeftNoteOffset;
+        odRfl::ModelRef     mCrystalMiddle;
+        odRfl::Float        mCrystalMiddleNoteOffset;
+        odRfl::ModelRef     mCrystalRight;
+        odRfl::Float        mCrystalRightNoteOffset;
+        odRfl::ModelRef     mCrystalLowerLeft;
+        odRfl::Float        mCrystalLowerLeftNoteOffset;
+        odRfl::ModelRef     mCrystalLowerRight;
+        odRfl::Float        mCrystalLowerRightNoteOffset;
+        odRfl::ModelRef     mCrystalBottom;
+        odRfl::Float        mCrystalBottomNoteOffset;
+        odRfl::ModelRef     mArrowUpCrystal;
+        odRfl::ModelRef     mButtonCrystal;
+        odRfl::ModelRef     mWideButtonCrystal;
+        odRfl::ModelRef     mNormalButtonRing;
+        odRfl::ModelRef     mWideButtonRing;
+        odRfl::SoundRef     mHoverSoundLooped;
+        odRfl::SoundRef     mButtonClickSound;
+        odRfl::SoundRef     mMainGuiButtonClickSound;
+        odRfl::SoundRef     mScrollbarClickSound;
+        odRfl::SoundRef     mScrollbarReleaseSound;
+        odRfl::SoundRef     mScrollbarSlideLoopingSound;
+        odRfl::SoundRef     mNextOptionSound;
+        odRfl::SoundRef     mPreviousOptionSound;
+        odRfl::SoundRef     mMessageBoxSound;
+        odRfl::SoundRef     mExitSound;
+        odRfl::Integer      mBackgroundMusicId;
+        odRfl::Integer      mCreditsMusicId;
+        odRfl::Integer      mEasyScalePercent;
+        odRfl::Integer      mHardScalePercent;
+        odRfl::String       mIntroLevelFilename;
+        odRfl::String       mFirstLevelFilename;
     };
 
 }

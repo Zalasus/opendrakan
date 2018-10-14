@@ -9,7 +9,8 @@
 #define INCLUDE_RFL_DRAGON_BUILDING_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -29,26 +30,26 @@ namespace dragonRfl
 
 	protected:
 
-		odRfl::RflInteger			mInitialHealth;
-		odRfl::RflEnum				mSnapMode;
-		odRfl::RflClassRef			mSoundEffectObject;
-		odRfl::RflEnumYesNo		mIsDoorWay;
-		odRfl::RflEnumYesNo		mCanArokhLandOn;
-		odRfl::RflEnum				mDoorWayAlong;
-		odRfl::RflEnumMessage		mMessageToSend;
-		odRfl::RflClassRef			m2DExplosionObject;
-		odRfl::RflClassRef			mExplosionGenerator;
-		odRfl::RflClassRef			mSmokeGenerator;
-		odRfl::RflModelRefArray	mRubbleAnimation;
-		odRfl::RflFloat			mRubbleAnimRate;
-		odRfl::RflEnumYesNo		mFlammable;
-		odRfl::RflEnum				mPushOverMode;
-		odRfl::RflEnumYesNo		mFallWhenDead;
-		odRfl::RflSoundRef			mHitGroundSound;
-		odRfl::RflEnumYesNo		mSendMessageWhenPushed;
-		odRfl::RflEnumMessage		mMessageToSendWhenPushed;
-		odRfl::RflEnumYesNo		mSendMessageAfterPushed;
-		odRfl::RflEnumMessage		mMessageToSendAfterPushed;
+		odRfl::Integer			mInitialHealth;
+		odRfl::Enum				mSnapMode;
+		odRfl::ClassRef			mSoundEffectObject;
+		odRfl::EnumYesNo		mIsDoorWay;
+		odRfl::EnumYesNo		mCanArokhLandOn;
+		odRfl::Enum				mDoorWayAlong;
+		odRfl::EnumMessage		mMessageToSend;
+		odRfl::ClassRef			m2DExplosionObject;
+		odRfl::ClassRef			mExplosionGenerator;
+		odRfl::ClassRef			mSmokeGenerator;
+		odRfl::ModelRefArray	mRubbleAnimation;
+		odRfl::Float			mRubbleAnimRate;
+		odRfl::EnumYesNo		mFlammable;
+		odRfl::Enum				mPushOverMode;
+		odRfl::EnumYesNo		mFallWhenDead;
+		odRfl::SoundRef			mHitGroundSound;
+		odRfl::EnumYesNo		mSendMessageWhenPushed;
+		odRfl::EnumMessage		mMessageToSendWhenPushed;
+		odRfl::EnumYesNo		mSendMessageAfterPushed;
+		odRfl::EnumMessage		mMessageToSendAfterPushed;
 	};
 
 }

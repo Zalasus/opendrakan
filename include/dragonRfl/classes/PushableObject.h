@@ -9,7 +9,8 @@
 #define PUSHABLEOBJECT_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -29,24 +30,24 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflEnumYesNo       mWaitForTrigger;
-        odRfl::RflEnumYesNo       mBurnable;
-        odRfl::RflSoundRefArray   mBounceSounds;
-        odRfl::RflSoundRef        mLoopedRollSound;
-        odRfl::RflEnumYesNo       mDetectOtherPushables;
-        odRfl::RflClassRef        mSpecialEffect;
-        odRfl::RflEnum            mWaterEffects;
-        odRfl::RflEnumYesNo       mGory;
-        odRfl::RflEnum            mPushMode;
-        odRfl::RflEnum            mPivotPoint;
-        odRfl::RflFloat           mFriction;
-        odRfl::RflFloat           mElasticity;
-        odRfl::RflEnumYesNo       mRigidBody;
-        odRfl::RflFloat           mLifeTime;
-        odRfl::RflInteger         mHealth;
-        odRfl::RflClassRef        mExplosionGenerator;
-        odRfl::RflInteger         mDamage;
-        odRfl::RflEnum            mDamagePlayer;
+        odRfl::EnumYesNo       mWaitForTrigger;
+        odRfl::EnumYesNo       mBurnable;
+        odRfl::SoundRefArray   mBounceSounds;
+        odRfl::SoundRef        mLoopedRollSound;
+        odRfl::EnumYesNo       mDetectOtherPushables;
+        odRfl::ClassRef        mSpecialEffect;
+        odRfl::Enum            mWaterEffects;
+        odRfl::EnumYesNo       mGory;
+        odRfl::Enum            mPushMode;
+        odRfl::Enum            mPivotPoint;
+        odRfl::Float           mFriction;
+        odRfl::Float           mElasticity;
+        odRfl::EnumYesNo       mRigidBody;
+        odRfl::Float           mLifeTime;
+        odRfl::Integer         mHealth;
+        odRfl::ClassRef        mExplosionGenerator;
+        odRfl::Integer         mDamage;
+        odRfl::Enum            mDamagePlayer;
 
     };
 

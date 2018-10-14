@@ -9,7 +9,8 @@
 #define INCLUDE_RFL_DRAGON_STATICLIGHT_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 #include <odCore/light/Light.h>
 
 namespace dragonRfl
@@ -32,11 +33,11 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflColor        mColor;
-        odRfl::RflFloat        mIntensityScaling;
-        odRfl::RflFloat        mRadius;
-        odRfl::RflTextureRef   mLightMap;
-        odRfl::RflEnum         mQualityLevelRequired;
+        odRfl::Color        mColor;
+        odRfl::Float        mIntensityScaling;
+        odRfl::Float        mRadius;
+        odRfl::TextureRef   mLightMap;
+        odRfl::Enum         mQualityLevelRequired;
 
         osg::ref_ptr<odLight::Light> mLight;
         osg::Vec3 mLightColorVector;

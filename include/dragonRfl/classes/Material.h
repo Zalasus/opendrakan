@@ -9,7 +9,8 @@
 #define INCLUDE_RFL_DRAGON_MATERIAL_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -27,22 +28,22 @@ namespace dragonRfl
 
 	private:
 
-		odRfl::RflSoundRefArray 	mRynnFootSounds;
-		odRfl::RflSoundRefArray	mDragonFootSounds;
-		odRfl::RflSoundRefArray	mWalkerFootSounds;
-		odRfl::RflSoundRefArray	mGiantFootSounds;
-		odRfl::RflSoundRefArray	mKnightFootSounds;
-		odRfl::RflSoundRefArray	mWeaponHitSounds;
-		odRfl::RflFloat			mWeaponFreqShiftRange;
-		odRfl::RflFloat			mMaterialDensity;
-		odRfl::RflClassRef			mWaterEffectProperties;
-		odRfl::RflFloat			mDamagePerSec;
-		odRfl::RflFloat			mFlammability;
-		odRfl::RflSoundRef			mLavaSizzleSound;
-		odRfl::RflClassRef	 		mBurnEffect;
-		odRfl::RflEnumYesNo 		mLandable;
-		odRfl::RflTextureRef		mDetailTexture;
-		odRfl::RflFloat			mDetailScaling;
+		odRfl::SoundRefArray 	mRynnFootSounds;
+		odRfl::SoundRefArray	mDragonFootSounds;
+		odRfl::SoundRefArray	mWalkerFootSounds;
+		odRfl::SoundRefArray	mGiantFootSounds;
+		odRfl::SoundRefArray	mKnightFootSounds;
+		odRfl::SoundRefArray	mWeaponHitSounds;
+		odRfl::Float			mWeaponFreqShiftRange;
+		odRfl::Float			mMaterialDensity;
+		odRfl::ClassRef			mWaterEffectProperties;
+		odRfl::Float			mDamagePerSec;
+		odRfl::Float			mFlammability;
+		odRfl::SoundRef			mLavaSizzleSound;
+		odRfl::ClassRef	 		mBurnEffect;
+		odRfl::EnumYesNo 		mLandable;
+		odRfl::TextureRef		mDetailTexture;
+		odRfl::Float			mDetailScaling;
 
 	};
 
@@ -58,11 +59,11 @@ namespace dragonRfl
 
 	private:
 
-		odRfl::RflTextureRef 	mFirstTexture;
-		odRfl::RflTextureRef 	mSecondTexture;
-		odRfl::RflInteger	  	mDirectionOfFlow;
-		odRfl::RflFloat		    mFirstSpeed;
-		odRfl::RflFloat		    mSecondSpeed;
+		odRfl::TextureRef   mFirstTexture;
+		odRfl::TextureRef   mSecondTexture;
+		odRfl::Integer      mDirectionOfFlow;
+		odRfl::Float        mFirstSpeed;
+		odRfl::Float        mSecondSpeed;
 	};
 
 }

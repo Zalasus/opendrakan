@@ -10,7 +10,7 @@
 
 #include <osg/Camera>
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
 #include <odCore/Camera.h>
 
 namespace dragonRfl
@@ -42,10 +42,10 @@ namespace dragonRfl
 
         void _setObjectPositionAndViewMatrix(const osg::Vec3f &eyepoint, const osg::Quat &lookDirection);
 
-		odRfl::RflEnum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
-		odRfl::RflFloat    mRubberBandStrength;
-		odRfl::RflFloat    mSpinSpeed;
-		odRfl::RflFloat	mCrosshairDistance;
+		odRfl::Enum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
+		odRfl::Float    mRubberBandStrength;
+		odRfl::Float    mSpinSpeed;
+		odRfl::Float	mCrosshairDistance;
 
 		osg::ref_ptr<osg::Camera> mOsgCamera;
 		osg::ref_ptr<osg::NodeCallback> mCamUpdateCallback;

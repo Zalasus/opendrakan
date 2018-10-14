@@ -11,7 +11,8 @@
 #include <random>
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace odAudio
 {
@@ -58,11 +59,11 @@ namespace dragonRfl
 
         void _playRandomSound();
 
-        odRfl::RflSoundRefArray            mSounds;
-        odRfl::RflEnumImpl<PlayMode, 0, 4> mPlayMode;
-        odRfl::RflFloat                    mAveragePeriod;
-        odRfl::RflFloat                    mPeriodRandomDeviation;
-        odRfl::RflEnumImpl<Location, 0, 3> mLocation;
+        odRfl::SoundRefArray            mSounds;
+        odRfl::EnumImpl<PlayMode, 0, 4> mPlayMode;
+        odRfl::Float                    mAveragePeriod;
+        odRfl::Float                    mPeriodRandomDeviation;
+        odRfl::EnumImpl<Location, 0, 3> mLocation;
 
         odAudio::Source *mSoundSource;
         double mTimeUntilNextPlay;

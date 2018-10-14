@@ -8,7 +8,8 @@
 #ifndef INCLUDE_RFL_COMMON_ITEMCOMMON_H_
 #define INCLUDE_RFL_COMMON_ITEMCOMMON_H_
 
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 #include <odCore/rfl/RflClass.h>
 
 namespace dragonRfl
@@ -27,7 +28,7 @@ namespace dragonRfl
         Any
     };
 
-    typedef odRfl::RflEnumImpl<PlayerSlot, 0, 8> RflEnumPlayerSlot;
+    typedef odRfl::EnumImpl<PlayerSlot, 0, 8> EnumPlayerSlot;
 
 
 
@@ -45,19 +46,19 @@ namespace dragonRfl
 
 	private:
 
-		odRfl::RflString         mDisplayName;
-		odRfl::RflInteger        mQuantity;
-		odRfl::RflEnumYesNo      mGrouped;
-		odRfl::RflInteger        mBitmapNumber;
-		odRfl::RflInteger        mIconIndex;
-		odRfl::RflInteger        mIconSlotSize;
-		RflEnumPlayerSlot        mPlayerSlot;
-		odRfl::RflClassRef		 mPowerupObject;
-		odRfl::RflSoundRef		 mActivateSound;
-		odRfl::RflSoundRef		 mDroppedSound;
-		odRfl::RflSoundRef		 mPickedUpSound;
-		odRfl::RflEnumYesNo	     mDroppable;
-		odRfl::RflFloat		     mFadeTime;
+		odRfl::String        mDisplayName;
+		odRfl::Integer       mQuantity;
+		odRfl::EnumYesNo     mGrouped;
+		odRfl::Integer       mBitmapNumber;
+		odRfl::Integer       mIconIndex;
+		odRfl::Integer       mIconSlotSize;
+		EnumPlayerSlot       mPlayerSlot;
+		odRfl::ClassRef		 mPowerupObject;
+		odRfl::SoundRef		 mActivateSound;
+		odRfl::SoundRef		 mDroppedSound;
+		odRfl::SoundRef		 mPickedUpSound;
+		odRfl::EnumYesNo	 mDroppable;
+		odRfl::Float		 mFadeTime;
 	};
 
 }

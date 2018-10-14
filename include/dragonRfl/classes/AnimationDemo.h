@@ -9,7 +9,8 @@
 #define INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
 namespace dragonRfl
@@ -31,8 +32,8 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflAnimRefArray mAnimations;
-        odRfl::RflFloat        mSwitchPeriodSeconds;
+        odRfl::AnimRefArray mAnimations;
+        odRfl::Float        mSwitchPeriodSeconds;
 
 
     private:

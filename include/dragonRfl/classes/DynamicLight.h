@@ -43,10 +43,10 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflEnumImpl<IntensityEffect, 0, 4>  mIntensityEffect;
-        odRfl::RflFloat                            mEffectTime;
-        odRfl::RflFloat                            mEffectAmplitude;
-        odRfl::RflEnumImpl<EffectStartType, 0, 1>  mStartEffect;
+        odRfl::EnumImpl<IntensityEffect, 0, 4>  mIntensityEffect;
+        odRfl::Float                            mEffectTime;
+        odRfl::Float                            mEffectAmplitude;
+        odRfl::EnumImpl<EffectStartType, 0, 1>  mStartEffect;
 
         bool mLightIsOn;
         bool mStarted;

@@ -9,7 +9,8 @@
 #define INCLUDE_RFL_DRAGON_DETECTOR_H_
 
 #include <odCore/rfl/RflClass.h>
-#include <odCore/rfl/RflField.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -29,18 +30,18 @@ namespace dragonRfl
 
     protected:
 
-        odRfl::RflEnum         mTask;
-        odRfl::RflEnum         mDetectWhich;
-        odRfl::RflEnum         mDetectMethod;
-        odRfl::RflEnumYesNo    mOneWay;
-        odRfl::RflClassRef     mTriggerOnlyIfCarryingItem;
-        odRfl::RflEnum         mInitialState;
-        odRfl::RflEnumMessage  mTriggerMessage;
-        odRfl::RflEnumYesNo    mDetectOnlyOnce;
-        odRfl::RflSequenceRef  mSequenceToPlay;
-        odRfl::RflString       mMessageString;
-        odRfl::RflEnumYesNo    mDoesCaveEntranceTeleport;
-        odRfl::RflEnumYesNo    mDragonTakesOffUponTeleport;
+        odRfl::Enum         mTask;
+        odRfl::Enum         mDetectWhich;
+        odRfl::Enum         mDetectMethod;
+        odRfl::EnumYesNo    mOneWay;
+        odRfl::ClassRef     mTriggerOnlyIfCarryingItem;
+        odRfl::Enum         mInitialState;
+        odRfl::EnumMessage  mTriggerMessage;
+        odRfl::EnumYesNo    mDetectOnlyOnce;
+        odRfl::SequenceRef  mSequenceToPlay;
+        odRfl::String       mMessageString;
+        odRfl::EnumYesNo    mDoesCaveEntranceTeleport;
+        odRfl::EnumYesNo    mDragonTakesOffUponTeleport;
     };
 
 }

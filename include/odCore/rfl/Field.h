@@ -13,6 +13,7 @@
 
 #include <odCore/rfl/RflMessage.h>
 #include <odCore/DataStream.h>
+#include <odCore/Exception.h>
 
 namespace odRfl
 {
