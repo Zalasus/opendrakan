@@ -13,12 +13,12 @@
 
 namespace odRfl
 {
-    class RflField;
-    class RflAssetRef;
+    class Field;
+    class AssetRefField;
 
     /**
-     * Common interface for classes that can be used to probe an RflClass for it's fields,
-     * possibly filling them while they do (see RflClassBuilder).
+     * Visitor for classes that need to query RflClasses for their fields,
+     * possibly filling them while they do (see ClassBuilder).
      */
     class FieldProbe
     {
@@ -30,10 +30,10 @@ namespace odRfl
         virtual void beginCategory(const char *categoryName);
 
         /// Registers a field in this probe. Should only be used by RflClass children.
-        virtual void registerField(RflField &field, const char *fieldName); // TODO: Could use std::string_view once we switch to C++17
+        virtual void registerField(Field &field, const char *fieldName); // TODO: Could use std::string_view once we switch to C++17
 
         /// Registers an asset ref field in this probe. Default behaviour is to pass field to generic method.
-        virtual void registerField(RflAssetRef &field, const char *fieldName);
+        virtual void registerField(AssetRefField &field, const char *fieldName);
 
         FieldProbe &operator()(const char *categoryName) { beginCategory(categoryName); return *this; }
 

@@ -24,7 +24,7 @@ namespace odRfl
 
         PrefetchProbe(odDb::AssetProvider &ap, bool ignoreMissing = true);
 
-        virtual void registerField(RflAssetRef &field, const char *fieldName) override;
+        virtual void registerField(AssetRefField &field, const char *fieldName) override;
 
 
     private:

@@ -8,6 +8,8 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
+#include <odCore/rfl/Field.h>
+
 namespace odRfl
 {
 
@@ -15,13 +17,13 @@ namespace odRfl
     {
     }
 
-    void FieldProbe::registerField(RflField &field, const char *fieldName)
+    void FieldProbe::registerField(Field &field, const char *fieldName)
     {
     }
 
-    void FieldProbe::registerField(RflAssetRef &field, const char *fieldName)
+    void FieldProbe::registerField(AssetRefField &field, const char *fieldName)
     {
-        this->registerField((RflField&)field, fieldName);
+        this->registerField(static_cast<Field&>(field), fieldName);
     }
 
 }
