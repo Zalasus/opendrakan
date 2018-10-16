@@ -66,17 +66,23 @@ namespace dragonRfl
 
     void Detector::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
-        if(mDetector == nullptr)
-        {
-            return;
-        }
-
-        if(mTask != Task::TriggerOnly)
+        if(mTask != Task::TriggerOnly || mDetector == nullptr)
         {
             return;
         }
 
         od::LevelObject *playerObject = &obj.getLevel().getEngine().getPlayer()->getLevelObject();
+
+        if(mDetectWhich != DetectWhich::RynnOrDragonOrNpcs)
+        {
+            // this detector detects only rynn -> no need to update when rynn is far away
+            float distance = (playerObject->getPosition() - obj.getPosition()).length();
+            float minDistance = obj.getBound().radius() + playerObject->getBound().radius();
+            if(distance > minDistance*2)
+            {
+                return;
+            }
+        }
 
         mDetector->update();
 
