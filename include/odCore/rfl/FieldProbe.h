@@ -9,7 +9,6 @@
 #define INCLUDE_ODCORE_RFL_FIELDPROBE_H_
 
 #include <string>
-#include <vector>
 
 namespace odRfl
 {

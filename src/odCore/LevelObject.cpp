@@ -17,6 +17,7 @@
 #include <odCore/NodeMasks.h>
 #include <odCore/UpdateCallback.h>
 #include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/ObjectBuilderProbe.h>
 #include <odCore/physics/BulletAdapter.h>
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
@@ -130,8 +131,18 @@ namespace od
             mInitialScale.set(1,1,1);
         }
 
-        odRfl::ClassBuilderProbe builder; // TODO: replace with ObjectBuilderProbe once implemented
-        builder.readFieldRecord(dr, true);
+        odRfl::ObjectBuilderProbe builder; // it is important that we probe the fields before reading the record for this one
+        mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
+        mRflClassInstance = mClass->makeInstance();
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->probeFields(builder);
+
+        }else
+        {
+            Logger::debug() << "Could not instantiate class of level object";
+        }
+        builder.readFieldRecord(dr); // this will read the field stuff and overwrite the fields in the class instance
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
         mInitialRotation = osg::Quat(
@@ -142,8 +153,6 @@ namespace od
         mTransform->setAttitude(mInitialRotation);
         mTransform->setPosition(mInitialPosition);
         mTransform->setScale(mInitialScale);
-
-        mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
 
         // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
         if(mClass->hasModel())
@@ -164,15 +173,9 @@ namespace od
 
         _setVisible(mFlags & OD_OBJECT_FLAG_VISIBLE);
 
-        mRflClassInstance = mClass->makeInstance();
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->probeFields(builder); // let builder override fields
-            mRflClassInstance->onLoaded(*this);
-
-        }else
-        {
-            Logger::debug() << "Could not instantiate class of level object";
+            mRflClassInstance->onLoaded(*this); // do this last! we want to pass a fully set up level object here
         }
     }
 

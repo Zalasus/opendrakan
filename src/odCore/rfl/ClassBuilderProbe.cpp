@@ -20,7 +20,7 @@ namespace odRfl
     {
     }
 
-    void ClassBuilderProbe::readFieldRecord(od::DataReader &dr, bool isObjectRecord)
+    void ClassBuilderProbe::readFieldRecord(od::DataReader &dr)
     {
         uint32_t fieldCount;
         uint32_t dwordCount;
@@ -29,22 +29,8 @@ namespace odRfl
         dr >> fieldCount
            >> dwordCount;
 
-        if(isObjectRecord)
-        {
-            std::swap(fieldCount, dwordCount);
-        }
-
         mFieldData.resize(dwordCount*4);
         dr.read(mFieldData.data(), mFieldData.size());
-
-        if(isObjectRecord)
-        {
-            fieldIndices.resize(fieldCount);
-            for(size_t i = 0; i < fieldCount; ++i)
-            {
-                dr >> fieldIndices[i];
-            }
-        }
 
         mFieldEntries.resize(fieldCount);
         for(size_t i = 0; i < fieldCount; ++i)
@@ -56,7 +42,7 @@ namespace odRfl
 
             mFieldEntries[i].fieldType = type & 0xff;
             mFieldEntries[i].fieldName = name;
-            mFieldEntries[i].index = isObjectRecord ? fieldIndices[i] : i;
+            mFieldEntries[i].index = i;
             mFieldEntries[i].dataOffset = i*4;
             mFieldEntries[i].isArray = (type & 0x1000) || (mFieldEntries[i].fieldType == static_cast<uint32_t>(Field::Type::STRING)); // strings are stored exactly like arrays
         }
@@ -74,29 +60,28 @@ namespace odRfl
 
     void ClassBuilderProbe::registerField(Field &field, const char *fieldName)
     {
-        auto pred = [this](FieldEntry &e){ return e.index == mRegistrationIndex; };
-        auto it = std::find_if(mFieldEntries.begin(), mFieldEntries.end(), pred); // FIXME: O(n) lookup. might split into classbuilder and objectbuilder, one with map and one with array
-        if(it == mFieldEntries.end())
+        if(mRegistrationIndex >= mFieldEntries.size())
         {
-            mRegistrationIndex++;
-            return; // FIXME: this should be an error when building a class
+            throw od::Exception("More fields probed than found in class record. Did you call resetIndexCounter() before probing?");
         }
 
-        if(it->fieldType != static_cast<uint32_t>(field.getFieldType()))
+        FieldEntry &entry = mFieldEntries[mRegistrationIndex];
+
+        if(entry.fieldType != static_cast<uint32_t>(field.getFieldType()))
         {
-            throw od::Exception("Type mismatch in RflClass. Field type as defined in RflClass does not match the one found in record.");
+            throw od::Exception("Type mismatch in class record. Field type as defined in RflClass does not match the one found in record.");
         }
 
-        if(it->fieldName != fieldName) // TODO: costly comparison. might want to make this optional
+        if(entry.fieldName != fieldName) // TODO: costly comparison. might want to make this optional
         {
-            Logger::error() << "Field name mismatch: Field in RflClass was named '" << fieldName << "' where field in record was named '" << it->fieldName << "'";
-            throw od::Exception("Field name mismatch in RflClass. Field name as defined in RflClass does not match the one found in record.");
+            Logger::error() << "Field name mismatch: Field in RflClass was named '" << fieldName << "' where field in record was named '" << entry.fieldName << "'";
+            throw od::Exception("Field name mismatch in class record. Field name as defined in RflClass does not match the one found in record.");
         }
 
-        if(it->isArray != field.isArray())
+        if(entry.isArray != field.isArray())
         {
             Logger::error() << "Field array flag mismatch: Field '" << fieldName << "' was array in RFL or file while in the other it was not.";
-            throw od::Exception("Field as defined in RflClass does not match array state as found in record.");
+            throw od::Exception("Field as defined in RflClass does not match array state as found in class record.");
         }
 
         // field seems reasonable. let's fill it
@@ -105,8 +90,8 @@ namespace odRfl
         std::istream dataStr(&buf);
         od::DataReader dr(dataStr);
 
-        dr.seek(it->dataOffset);
-        if(!it->isArray)
+        dr.seek(entry.dataOffset);
+        if(!entry.isArray)
         {
             field.fill(dr);
 

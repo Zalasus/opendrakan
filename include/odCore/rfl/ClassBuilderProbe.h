@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_RFL_CLASSBUILDERPROBE_H_
 #define INCLUDE_ODCORE_RFL_CLASSBUILDERPROBE_H_
 
+#include <vector>
+
 #include <odCore/rfl/FieldProbe.h>
 
 namespace od
@@ -24,7 +26,7 @@ namespace odRfl
 
         ClassBuilderProbe();
 
-        void readFieldRecord(od::DataReader &dr, bool isObjectRecord);
+        void readFieldRecord(od::DataReader &dr);
 
         /// Resets internal index counter so this builder can be used to build another class.
         void resetIndexCounter();

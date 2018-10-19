@@ -44,6 +44,7 @@ set(SOURCES
         "rfl/ClassBuilderProbe.cpp"
         "rfl/Field.cpp"
         "rfl/FieldProbe.cpp"
+        "rfl/ObjectBuilderProbe.cpp"
         "rfl/PrefetchProbe.cpp"
         "rfl/Rfl.cpp"
         "rfl/RflClass.cpp"

@@ -33,7 +33,7 @@ namespace odDb
            >> mRflClassId
 		   >> mIconNumber;
 
-        mClassBuilder.readFieldRecord(dr, false);
+        mClassBuilder.readFieldRecord(dr);
 
         if(mModelRef.assetId != 0)
         {
