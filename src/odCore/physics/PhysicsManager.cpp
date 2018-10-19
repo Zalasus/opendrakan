@@ -172,7 +172,7 @@ namespace odPhysics
 	            auto it = mLevelObjectMap.find(hitObject->getUserIndex());
                 if(it != mLevelObjectMap.end())
                 {
-                    result.hitLevelObject = it->second.first;
+                    result.hitLevelObject = it->second.object;
                 }
 	        }
 
@@ -190,7 +190,7 @@ namespace odPhysics
 	        auto it = mLevelObjectMap.find(exclude->getObjectId());
 	        if(it != mLevelObjectMap.end())
 	        {
-	            me = it->second.second.get();
+	            me = it->second.rigidBody.get();
 	        }
 	    }
 
@@ -226,7 +226,7 @@ namespace odPhysics
             auto it = mLevelObjectMap.find(hitObject->getUserIndex());
             if(it != mLevelObjectMap.end())
             {
-                result.hitLevelObject = it->second.first;
+                result.hitLevelObject = it->second.object;
             }
         }
 
@@ -270,24 +270,35 @@ namespace odPhysics
 		}
 	}
 
-	btRigidBody *PhysicsManager::addObject(od::LevelObject &o, float mass)
+	btRigidBody *PhysicsManager::addObject(od::LevelObject &obj, float mass)
 	{
-		if(o.getClass() == nullptr || o.getClass()->getModel() == nullptr || o.getClass()->getModel()->getModelBounds() == nullptr)
+		if(obj.getClass() == nullptr || obj.getClass()->getModel() == nullptr || obj.getClass()->getModel()->getModelBounds() == nullptr)
 		{
 			throw od::Exception("Tried to add object without model or collision shape to PhysicsManager");
 		}
 
-		btRigidBody::btRigidBodyConstructionInfo info(mass, &o, o.getClass()->getModel()->getModelBounds()->getCollisionShape());
-		o.getClass()->getModel()->getModelBounds()->getCollisionShape()->calculateLocalInertia(mass, info.m_localInertia);
+		ObjectRegistration reg;
+		reg.object = &obj;
+		if(!obj.isScaled())
+		{
+		    reg.shape = obj.getClass()->getModel()->getModelBounds()->getSharedCollisionShape();
 
-		ObjectBodyPair objectBodyPair;
-		objectBodyPair.second.reset(new btRigidBody(info));
+		}else
+		{
+		    reg.shape = obj.getClass()->getModel()->getModelBounds()->buildNewShape();
+		    reg.shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
+		}
 
-		btRigidBody *bodyPtr = objectBodyPair.second.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
-		bodyPtr->setUserIndex(o.getObjectId());
-		bodyPtr->setUserPointer(&o);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, &obj, reg.shape);
+        reg.shape->calculateLocalInertia(mass, info.m_localInertia);
 
-		mLevelObjectMap[o.getObjectId()] = std::move(objectBodyPair);
+		reg.rigidBody.reset(new btRigidBody(info));
+
+		btRigidBody *bodyPtr = reg.rigidBody.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
+		bodyPtr->setUserIndex(obj.getObjectId());
+		bodyPtr->setUserPointer(&obj);
+
+		mLevelObjectMap[obj.getObjectId()] = std::move(reg);
 
 		mDynamicsWorld->addRigidBody(bodyPtr, CollisionGroups::OBJECT, CollisionGroups::ALL);
 
@@ -299,7 +310,7 @@ namespace odPhysics
 		auto it = mLevelObjectMap.find(o.getObjectId());
 		if(it != mLevelObjectMap.end())
 		{
-			mDynamicsWorld->removeRigidBody(it->second.second.get());
+			mDynamicsWorld->removeRigidBody(it->second.rigidBody.get());
 
 			mLevelObjectMap.erase(it);
 		}
@@ -312,12 +323,19 @@ namespace odPhysics
             throw od::Exception("Tried to make detector from object without model or collision shape to PhysicsManager");
         }
 
-	    btCollisionShape *shape = obj.getClass()->getModel()->getModelBounds()->getCollisionShape();
+	    osg::ref_ptr<ModelCollisionShape> shape;
+	    if(!obj.isScaled())
+        {
+	        shape = obj.getClass()->getModel()->getModelBounds()->getSharedCollisionShape();
+
+        }else
+        {
+            shape = obj.getClass()->getModel()->getModelBounds()->buildNewShape();
+            shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
+        }
 
 	    mDetectors.push_back(std::unique_ptr<Detector>(new Detector(mDynamicsWorld.get(), shape, obj)));
-
 	    return mDetectors.back().get();
 	}
-
 
 }

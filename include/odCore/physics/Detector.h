@@ -12,6 +12,7 @@
 #include <memory>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
+#include <osg/ref_ptr>
 
 namespace od
 {
@@ -20,12 +21,13 @@ namespace od
 
 namespace odPhysics
 {
+    class ModelCollisionShape;
 
     class Detector
     {
     public:
 
-        Detector(btCollisionWorld *collisionWorld, btCollisionShape *objectShape, od::LevelObject &obj);
+        Detector(btCollisionWorld *collisionWorld, ModelCollisionShape *objectShape, od::LevelObject &obj);
         ~Detector();
 
         inline const std::vector<od::LevelObject*> &getIntersectingObjects() { return mIntersectingObjects; }
@@ -36,7 +38,7 @@ namespace odPhysics
     private:
 
         btCollisionWorld *mCollisionWorld;
-        btCollisionShape *mObjectShape;
+        osg::ref_ptr<ModelCollisionShape> mObjectShape;
         od::LevelObject &mLevelObject;
         std::unique_ptr<btPairCachingGhostObject> mGhostObject;
         std::vector<od::LevelObject*> mIntersectingObjects;

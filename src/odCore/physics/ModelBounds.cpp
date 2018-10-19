@@ -72,6 +72,20 @@ namespace odPhysics
 	}
 
 
+	ModelCollisionShape::ModelCollisionShape(size_t initialChildShapeCapacity)
+	: btCompoundShape(true, initialChildShapeCapacity)
+	{
+	    mChildShapes.reserve(initialChildShapeCapacity);
+	}
+
+	void ModelCollisionShape::addManagedChildShape(btTransform xform, btCollisionShape *shape)
+	{
+	    mChildShapes.push_back(std::unique_ptr<btCollisionShape>(shape));
+
+	    this->addChildShape(xform, shape);
+	}
+
+
 	ModelBounds::ModelBounds(ModelBounds::ShapeType type, size_t shapeCount)
 	: mType(type)
 	, mShapeCount(shapeCount)
@@ -94,7 +108,7 @@ namespace odPhysics
 		mMainBox = box;
 	}
 
-	void  ModelBounds::addHierarchyEntry(uint16_t firstChildIndex, uint16_t nextSiblingIndex)
+	void ModelBounds::addHierarchyEntry(uint16_t firstChildIndex, uint16_t nextSiblingIndex)
 	{
 		mHierarchy.push_back(std::make_pair(firstChildIndex, nextSiblingIndex));
 	}
@@ -119,50 +133,55 @@ namespace odPhysics
 		mBoxes.push_back(box);
 	}
 
-	btCollisionShape *ModelBounds::getCollisionShape()
+	ModelCollisionShape *ModelBounds::getSharedCollisionShape()
 	{
-	    if(mCompoundShape != nullptr)
+	    if(mSharedShape == nullptr)
 	    {
-	        return mCompoundShape.get();
+	        mSharedShape = buildNewShape();
 	    }
 
-	    mCompoundShape.reset(new btCompoundShape(true, mShapeCount));
-	    for(size_t index = 0; index < mShapeCount; ++index)
-	    {
-	    	size_t firstChild = mHierarchy[index].first;
-			size_t nextSibling = mHierarchy[index].second;
-			osg::Vec3f myTranslation;
-			osg::Quat myRotation;
+	    return mSharedShape;
+	}
 
-			// Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
-			//  leafs in the bounding hierarchy here and ignore all shapes that have children
-			if(firstChild == 0)
-			{
-				std::unique_ptr<btCollisionShape> newShape;
+	ModelCollisionShape *ModelBounds::buildNewShape()
+	{
+	    osg::ref_ptr<ModelCollisionShape> shape = new ModelCollisionShape(mShapeCount);
 
-				if(mType == SPHERES)
-				{
-					myTranslation = mSpheres[index].center();
-					myRotation = osg::Quat(0,0,0,1);
+        for(size_t index = 0; index < mShapeCount; ++index)
+        {
+            size_t firstChild = mHierarchy[index].first;
+            size_t nextSibling = mHierarchy[index].second;
+            osg::Vec3f myTranslation;
+            osg::Quat myRotation;
 
-					newShape.reset(new btSphereShape(mSpheres[index].radius()));
+            // Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
+            //  leafs in the bounding hierarchy here and ignore all shapes that have children
+            if(firstChild == 0)
+            {
+                std::unique_ptr<btCollisionShape> newShape;
 
-				}else
-				{
-					myTranslation = mBoxes[index].getBottomLeft() + mBoxes[index].getOrientation() * (mBoxes[index].getExtends() * 0.5);
-					myRotation = mBoxes[index].getOrientation();
+                if(mType == SPHERES)
+                {
+                    myTranslation = mSpheres[index].center();
+                    myRotation = osg::Quat(0,0,0,1);
 
-					btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
-					newShape.reset(new btBoxShape(halfExtends));
-				}
+                    newShape.reset(new btSphereShape(mSpheres[index].radius()));
 
-				btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);
-				mCompoundShape->addChildShape(t, newShape.get());
-				mChildShapes.push_back(std::move(newShape));
-			}
-		}
+                }else
+                {
+                    myTranslation = mBoxes[index].getBottomLeft() + mBoxes[index].getOrientation() * (mBoxes[index].getExtends() * 0.5);
+                    myRotation = mBoxes[index].getOrientation();
 
-	    return mCompoundShape.get();
+                    btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
+                    newShape.reset(new btBoxShape(halfExtends));
+                }
+
+                btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);
+                shape->addManagedChildShape(t, newShape.release());
+            }
+        }
+
+        return shape.release();
 	}
 
 	void ModelBounds::printInfo()

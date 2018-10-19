@@ -208,7 +208,7 @@ namespace odDb
 		//Logger::info() << "Bounding data for model " << mModelName;
 		//mModelBounds->printInfo();
 
-		mModelBounds->getCollisionShape(); // to trigger building the shape
+		mModelBounds->getSharedCollisionShape(); // to trigger building the shape
 	}
 
 	void Model::loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr)

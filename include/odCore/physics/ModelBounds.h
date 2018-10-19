@@ -44,8 +44,24 @@ namespace odPhysics
 		osg::Quat  mOrientation;
 	};
 
+	class ModelCollisionShape : public osg::Referenced, public btCompoundShape
+    {
+    public:
+
+	    ModelCollisionShape(size_t initialChildShapeCapacity);
+
+	    void addManagedChildShape(btTransform xform, btCollisionShape *shape);
+
+
+    private:
+
+	    using btCompoundShape::addChildShape;
+
+	    std::vector<std::unique_ptr<btCollisionShape>> mChildShapes;
+    };
+
 	/**
-	 * Builder and container for bounds information of a Model. This managed the bullet objects it creates
+	 * Builder and container for bounds information of a Model. This manages the bullet objects it creates
 	 * (collision shape, child shapes etc.)
 	 */
 	class ModelBounds
@@ -61,9 +77,17 @@ namespace odPhysics
 		void addSphere(const osg::BoundingSpheref &sphere);
 		void addBox(const OrientedBoundingBox &box);
 
-		/// Gets or creates a collision shape to be used for Bullet dynamics. The returned pointer looses validity once
-		///  the \c ModelBounds object is destroyed.
-		btCollisionShape *getCollisionShape();
+		/**
+		 * Builds or returns a shape that can be shared among all non-scaled uses of the model.
+		 */
+		ModelCollisionShape *getSharedCollisionShape();
+
+		/**
+		 * Allocates and builds a new shape, even if one is already cached in this bounds object.
+		 *
+		 * @note This transfers ownership. The returned pointer must be stored in an osg::ref_ptr
+		 */
+		ModelCollisionShape *buildNewShape();
 
 		void printInfo();
 
@@ -80,8 +104,7 @@ namespace odPhysics
 		std::vector<std::pair<uint16_t, uint16_t>> mHierarchy;
 		std::vector<osg::BoundingSpheref> mSpheres;
 		std::vector<OrientedBoundingBox> mBoxes;
-		std::unique_ptr<btCompoundShape> mCompoundShape;
-		std::vector<std::unique_ptr<btCollisionShape>> mChildShapes;
+		osg::ref_ptr<ModelCollisionShape> mSharedShape;
 	};
 
 }

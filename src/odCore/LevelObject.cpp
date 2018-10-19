@@ -57,6 +57,7 @@ namespace od
     , mLightingLayerId(0)
     , mFlags(0)
     , mInitialEventCount(0)
+    , mIsScaled(false)
     , mTransform(new osg::PositionAttitudeTransform)
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
@@ -119,7 +120,8 @@ namespace od
            >> yRot
            >> zRot;
 
-        if(mFlags & OD_OBJECT_FLAG_SCALED)
+        mIsScaled = mFlags & OD_OBJECT_FLAG_SCALED;
+        if(mIsScaled)
         {
             dr >> mInitialScale;
 
@@ -281,6 +283,8 @@ namespace od
     void LevelObject::setScale(const osg::Vec3 &scale)
     {
         mTransform->setScale(scale);
+
+        mIsScaled = (getScale() != osg::Vec3(1,1,1));
 
         _onTransformChanged(this);
     }

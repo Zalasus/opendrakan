@@ -71,6 +71,7 @@ namespace od
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline const std::vector<osg::ref_ptr<LevelObject>> &getLinkedObjects() const { return mLinkedObjects; }
         inline bool isVisible() const { return mIsVisible; }
+        inline bool isScaled() const { return mIsScaled; }
 
         void loadFromRecord(DataReader dr);
         void spawned();
@@ -172,6 +173,7 @@ namespace od
         std::vector<uint16_t> mLinks;
         osg::Vec3f mInitialScale;
         osg::Quat  mInitialRotation;
+        bool mIsScaled;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<osg::Group> mSkeletonRoot;

@@ -32,6 +32,7 @@ namespace odPhysics
 {
     class CharacterController;
     class Detector;
+    class ModelCollisionShape;
 
 	struct CollisionGroups
 	{
@@ -99,6 +100,13 @@ namespace odPhysics
 
 	private:
 
+		struct ObjectRegistration
+		{
+		    od::LevelObject *object;
+		    std::unique_ptr<btRigidBody> rigidBody;
+		    osg::ref_ptr<ModelCollisionShape> shape;
+		};
+
 		od::Level &mLevel;
 		osg::ref_ptr<osg::Group> mLevelRoot;
 		osg::ref_ptr<osg::NodeCallback> mTickCallback;
@@ -114,8 +122,7 @@ namespace odPhysics
         std::unique_ptr<DebugDrawer> mDebugDrawer;
 
         typedef std::pair<od::Layer*, std::unique_ptr<btRigidBody>> LayerBodyPair;
-        typedef std::pair<od::LevelObject*, std::unique_ptr<btRigidBody>> ObjectBodyPair;
-        std::map<uint32_t, ObjectBodyPair> mLevelObjectMap;
+        std::map<uint32_t, ObjectRegistration> mLevelObjectMap;
         std::map<uint32_t, LayerBodyPair> mLayerMap;
         std::vector<std::unique_ptr<Detector>> mDetectors;
 	};

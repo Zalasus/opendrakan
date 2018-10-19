@@ -9,13 +9,14 @@
 
 #include <odCore/physics/PhysicsManager.h>
 #include <odCore/physics/BulletAdapter.h>
+#include <odCore/physics/ModelBounds.h>
 #include <odCore/Exception.h>
 #include <odCore/LevelObject.h>
 
 namespace odPhysics
 {
 
-    Detector::Detector(btCollisionWorld *collisionWorld, btCollisionShape *objectShape, od::LevelObject &obj)
+    Detector::Detector(btCollisionWorld *collisionWorld, ModelCollisionShape *objectShape, od::LevelObject &obj)
     : mCollisionWorld(collisionWorld)
     , mObjectShape(objectShape)
     , mLevelObject(obj)
