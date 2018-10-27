@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odCore/light/LightState.h>
+#include <odCore/render/LightState.h>
 
 #include <osg/NodeVisitor>
 #include <osgUtil/CullVisitor>
@@ -14,20 +14,20 @@
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
-#include <odCore/light/LightManager.h>
+#include <odCore/render/RenderManager.h>
 
-namespace odLight
+namespace odRender
 {
 
-    LightStateAttribute::LightStateAttribute(LightManager &lm)
-    : mLightManager(lm)
+    LightStateAttribute::LightStateAttribute(RenderManager &rm)
+    : mRenderManager(rm)
     {
         mLights.reserve(OD_MAX_LIGHTS);
     }
 
     LightStateAttribute::LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp)
     : StateAttribute(l, copyOp)
-    , mLightManager(l.mLightManager)
+    , mRenderManager(l.mRenderManager)
     {
         mLights.reserve(OD_MAX_LIGHTS);
     }
@@ -74,28 +74,28 @@ namespace odLight
     {
         const osg::Matrix &viewMatrix = state.getInitialViewMatrix();
 
-        mLightManager.applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
+        mRenderManager.applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
 
         auto it = mLights.begin();
         for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
         {
             if(it != mLights.end())
             {
-                mLightManager.applyToLightUniform(viewMatrix, *it, i);
+                mRenderManager.applyToLightUniform(viewMatrix, *it, i);
                 ++it;
 
             }else
             {
 
-                mLightManager.applyNullLight(i);
+                mRenderManager.applyNullLight(i);
             }
         }
     }
 
 
 
-    LightStateCallback::LightStateCallback(LightManager &lm, osg::Node *node, bool ignoreCulledState)
-    : mLightManager(lm)
+    LightStateCallback::LightStateCallback(RenderManager &lm, osg::Node *node, bool ignoreCulledState)
+    : mRenderManager(lm)
     , mIgnoreCulledState(ignoreCulledState)
     , mLightingDirty(true)
     {
@@ -107,7 +107,7 @@ namespace odLight
         osg::StateSet *ss = node->getOrCreateStateSet();
         // TODO: perhaps remove all light-type attributes from state set here?
 
-        osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute(mLightManager));
+        osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute(mRenderManager));
         mLightStateAttribute = lightState.get();
         ss->setAttribute(lightState, osg::StateAttribute::ON);
 
@@ -147,7 +147,7 @@ namespace odLight
         mLightStateAttribute->clearLightList();
 
         mTmpAffectingLightsList.clear();
-        mLightManager.getLightsIntersectingSphere(node->getBound(), mTmpAffectingLightsList);
+        mRenderManager.getLightsIntersectingSphere(node->getBound(), mTmpAffectingLightsList);
 
         osg::Vec3 nodeCenter = node->getBound().center();
         auto pred = [&nodeCenter](Light *l, Light *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };

@@ -17,7 +17,7 @@
 #include <odCore/db/Model.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/gui/TexturedQuad.h>
-#include <odCore/light/LightState.h>
+#include <odCore/render/LightState.h>
 
 namespace dragonRfl
 {
@@ -96,7 +96,7 @@ namespace dragonRfl
         cont->setOrigin(odGui::WidgetOrigin::Center);
         this->addWidget(cont);
 
-        osg::ref_ptr<odLight::LightStateAttribute> lightAttribute = new odLight::LightStateAttribute(gm.getEngine().getLightManager());
+        osg::ref_ptr<odRender::LightStateAttribute> lightAttribute = new odRender::LightStateAttribute(gm.getEngine().getRenderManager());
         lightAttribute->setLayerLight(osg::Vec3(0.8, 0.8, 0.8), osg::Vec3(0.4, 0.4, 0.4), osg::Vec3(0.0, -1.0, 1.0));
         cont->getOrCreateStateSet()->setAttribute(lightAttribute);
 

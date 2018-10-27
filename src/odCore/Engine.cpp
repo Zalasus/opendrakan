@@ -16,7 +16,7 @@
 #include <odCore/Camera.h>
 #include <odCore/ShaderManager.h>
 #include <odCore/InputManager.h>
-#include <odCore/light/LightManager.h>
+#include <odCore/render/RenderManager.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/RflManager.h>
 #include <odCore/audio/SoundManager.h>
@@ -91,7 +91,7 @@ namespace od
 
         mInputManager = new InputManager(*this, mViewer);
 
-	    mLightManager.reset(new odLight::LightManager(*this, mRootNode));
+        mRenderManager.reset(new odRender::RenderManager(*this, mRootNode));
 
 	    mGuiManager.reset(new odGui::GuiManager(*this, mViewer));
 

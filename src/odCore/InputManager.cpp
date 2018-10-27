@@ -10,7 +10,7 @@
 #include <odCore/Engine.h>
 #include <odCore/Player.h>
 #include <odCore/Level.h>
-#include <odCore/light/LightManager.h>
+#include <odCore/render/RenderManager.h>
 #include <odCore/gui/GuiManager.h>
 
 namespace od
@@ -104,7 +104,7 @@ namespace od
 			return true;
 
 		case osgGA::GUIEventAdapter::KEY_F4:
-		    mEngine.getLightManager().toggleLighting();
+		    mEngine.getRenderManager().toggleLighting();
 		    break;
 
 		default:

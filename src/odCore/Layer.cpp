@@ -288,7 +288,7 @@ namespace od
         osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getShaderManager().makeProgram("layer");
         mLayerGeode->getOrCreateStateSet()->setAttribute(layerProg);
 
-        mLightCallback = new odLight::LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
+        mLightCallback = new odRender::LightStateCallback(mLevel.getEngine().getRenderManager(), mLayerGeode, true);
         mLightCallback->setLayerLight(osg::Vec3(), osg::Vec3(), osg::Vec3()); // disable layer light. we bake it into the color array
         mLightCallback->lightingDirty();
         this->addCullCallback(mLightCallback);

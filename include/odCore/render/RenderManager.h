@@ -1,33 +1,32 @@
 /*
- * LightManager.h
+ * RenderManager.h
  *
- *  Created on: Aug 14, 2018
+ *  Created on: Oct 27, 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_LIGHT_LIGHTMANAGER_H_
-#define INCLUDE_LIGHT_LIGHTMANAGER_H_
+#ifndef INCLUDE_ODCORE_RENDER_RENDERMANAGER_H_
+#define INCLUDE_ODCORE_RENDER_RENDERMANAGER_H_
 
 #include <vector>
 #include <osg/Group>
 #include <osg/Observer>
 
-#include <odCore/light/Light.h>
+#include <odCore/render/Light.h>
 
 namespace od
 {
     class Engine;
-    class LevelObject;
 }
 
-namespace odLight
+namespace odRender
 {
 
-    class LightManager : public osg::Observer
+    class RenderManager : public osg::Observer
     {
     public:
 
-        LightManager(od::Engine &engine, osg::Group *sceneRoot);
+        RenderManager(od::Engine &engine, osg::Group *sceneRoot);
 
         inline bool isLightingEnabled() const { return mLightingEnabled; }
 
@@ -71,4 +70,4 @@ namespace odLight
 }
 
 
-#endif /* INCLUDE_LIGHT_LIGHTMANAGER_H_ */
+#endif /* INCLUDE_ODCORE_RENDER_RENDERMANAGER_H_ */

@@ -29,9 +29,9 @@ namespace odGui
     class GuiManager;
 }
 
-namespace odLight
+namespace odRender
 {
-    class LightManager;
+    class RenderManager;
 }
 
 namespace odRfl
@@ -65,7 +65,7 @@ namespace od
 		inline ShaderManager &getShaderManager() { return *mShaderManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
 		inline odGui::GuiManager &getGuiManager() { return *mGuiManager; }
-		inline odLight::LightManager &getLightManager() { return *mLightManager; }
+		inline odRender::RenderManager &getRenderManager() { return *mRenderManager; }
 		inline odAudio::SoundManager &getSoundManager() { return *mSoundManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return mPlayer; }
@@ -92,7 +92,7 @@ namespace od
 		std::unique_ptr<odRfl::RflManager> mRflManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<odGui::GuiManager> mGuiManager;
-		std::unique_ptr<odLight::LightManager> mLightManager;
+		std::unique_ptr<odRender::RenderManager> mRenderManager;
 		std::unique_ptr<odAudio::SoundManager> mSoundManager;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;

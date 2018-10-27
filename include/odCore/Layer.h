@@ -19,7 +19,7 @@
 #include <odCore/DataStream.h>
 #include <odCore/OdDefines.h>
 #include <odCore/db/Asset.h>
-#include <odCore/light/LightState.h>
+#include <odCore/render/LightState.h>
 
 namespace od
 {
@@ -138,7 +138,7 @@ namespace od
         osg::ref_ptr<osg::Vec3Array> mGeometryVertexArray;
         osg::ref_ptr<osg::Vec3Array> mGeometryNormalArray;
         osg::ref_ptr<osg::Vec4Array> mGeometryColorArray;
-        osg::ref_ptr<odLight::LightStateCallback> mLightCallback;
+        osg::ref_ptr<odRender::LightStateCallback> mLightCallback;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;

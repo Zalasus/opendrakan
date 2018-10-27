@@ -69,7 +69,7 @@ namespace od
     , mIgnoreAttachmentScale(false)
     , mLayerBelowObjectDirty(true)
     , mUpdateCallback(new LevelObjectUpdateCallback(*this))
-    , mLightingCallback(new odLight::LightStateCallback(level.getEngine().getLightManager(), mTransform))
+    , mLightingCallback(new odRender::LightStateCallback(level.getEngine().getRenderManager(), mTransform))
     , mRflUpdateHookEnabled(false)
     {
         this->setNodeMask(NodeMasks::Object);
