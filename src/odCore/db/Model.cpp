@@ -128,7 +128,7 @@ namespace odDb
 			   >> vertexCount
 			   >> textureIndex;
 
-			od::Polygon poly;
+			odRender::Polygon poly;
 			poly.doubleSided = flags & OD_POLYGON_FLAG_DOUBLESIDED;
 			poly.texture = mTextureRefs[textureIndex];
 			poly.vertexCount = vertexCount;
@@ -274,7 +274,7 @@ namespace odDb
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
-            	std::vector<od::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
+            	std::vector<odRender::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
 
 				uint16_t affectedVertexCount;
 				dr >> affectedVertexCount;
@@ -286,7 +286,7 @@ namespace odDb
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					od::BoneAffection bAff;
+					odRender::BoneAffection bAff;
 					bAff.jointIndex = jointIndex;
 					bAff.vertexIndex = affectedVertexIndex;
 					bAff.vertexWeight = weight;
@@ -440,7 +440,7 @@ namespace odDb
 
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
-				od::GeodeBuilder gb(it->lodName, this->getAssetProvider());
+				odRender::GeodeBuilder gb(it->lodName, this->getAssetProvider());
 				gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 				gb.setClampTextures(false);
 
@@ -475,7 +475,7 @@ namespace odDb
 
 		}else
 		{
-			od::GeodeBuilder gb(mModelName, this->getAssetProvider());
+			odRender::GeodeBuilder gb(mModelName, this->getAssetProvider());
 			gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 			gb.setClampTextures(false);
 			gb.setVertexVector(mVertices.begin(), mVertices.end());

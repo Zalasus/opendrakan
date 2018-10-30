@@ -14,7 +14,7 @@
 #include <osg/Texture2D>
 #include <osg/Group>
 
-#include <odCore/GeodeBuilder.h>
+#include <odCore/render/GeodeBuilder.h>
 #include <odCore/physics/ModelBounds.h>
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
@@ -39,7 +39,7 @@ namespace odDb
 		uint32_t firstPolygonIndex;
 		uint32_t polygonCount;
 
-		std::vector<od::BoneAffection> boneAffections;
+		std::vector<odRender::BoneAffection> boneAffections;
 	};
 
 	enum class ModelShadingType
@@ -90,7 +90,7 @@ namespace odDb
 		bool mEnvironmentMapped;
 		std::vector<osg::Vec3f> mVertices;
 		std::vector<AssetRef> mTextureRefs;
-		std::vector<od::Polygon> mPolygons;
+		std::vector<odRender::Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::unique_ptr<odPhysics::ModelBounds> mModelBounds;

@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odCore/GeodeBuilder.h>
+#include <odCore/render/GeodeBuilder.h>
 
 #include <cassert>
 #include <algorithm>
@@ -15,7 +15,7 @@
 #include <odCore/OdDefines.h>
 #include <odCore/db/Database.h>
 
-namespace od
+namespace odRender
 {
 
 	GeodeBuilder::GeodeBuilder(const std::string &modelName, odDb::AssetProvider &assetProvider)
@@ -52,7 +52,7 @@ namespace od
 		{
 			if(it->vertexCount != 3 && it->vertexCount != 4)
 			{
-				throw UnsupportedException("Only triangle or quad polygons supported");
+				throw od::UnsupportedException("Only triangle or quad polygons supported");
 			}
 
 			// the 0 1 2 triangle always appears
@@ -107,7 +107,7 @@ namespace od
 
 		if(mVertices == nullptr)
 		{
-			throw Exception("Need to add vertex vector to GeodeBuilder before adding bone affections");
+			throw od::Exception("Need to add vertex vector to GeodeBuilder before adding bone affections");
 		}
 
 		mBoneIndices = new osg::Vec4Array;
@@ -127,7 +127,7 @@ namespace od
 			if(it->vertexIndex >= mVertices->size())
 			{
 				Logger::error() << "Affected vertex index of bone out of bounds. Was " << it->vertexIndex << " where size was " << mVertices->size();
-				throw Exception("Affected vertex index of bone out of bounds");
+				throw od::Exception("Affected vertex index of bone out of bounds");
 			}
 
 			size_t &currentBoneCount = influencingBonesCount[it->vertexIndex];
@@ -153,7 +153,7 @@ namespace od
 	{
 		if(mVertices == nullptr)
 		{
-			throw Exception("Need to add vertex vector to GeodeBuilder before building");
+			throw od::Exception("Need to add vertex vector to GeodeBuilder before building");
 		}
 
 		if(mSmoothNormals)

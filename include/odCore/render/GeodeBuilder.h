@@ -21,7 +21,7 @@ namespace odDb
 	class AssetProvider;
 }
 
-namespace od
+namespace odRender
 {
 
 	struct Polygon

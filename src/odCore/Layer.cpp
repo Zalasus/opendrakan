@@ -13,7 +13,7 @@
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 #include <odCore/Level.h>
-#include <odCore/GeodeBuilder.h>
+#include <odCore/render/GeodeBuilder.h>
 #include <odCore/NodeMasks.h>
 #include <odCore/Engine.h>
 #include <odCore/render/RenderManager.h>
@@ -170,7 +170,7 @@ namespace od
 
         // generate vertices and UVs for SegmentedGeode
 
-        GeodeBuilder gb("layer " + mLayerName, mLevel);
+        odRender::GeodeBuilder gb("layer " + mLayerName, mLevel);
         gb.setClampTextures(true);
         gb.setNormalsFromCcw(true);
 
@@ -185,14 +185,14 @@ namespace od
         }
         gb.setVertexVector(vertices.begin(), vertices.end());
 
-        std::vector<Polygon> polygons;
+        std::vector<odRender::Polygon> polygons;
         polygons.reserve(mVisibleTriangles);
         for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
         {
             size_t cellIndex = triIndex/2;
             bool isLeft = (triIndex%2 == 0);
             Cell cell = mCells[cellIndex];
-            Polygon poly;
+            odRender::Polygon poly;
         	poly.vertexCount = 3;
         	poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
         	poly.doubleSided = (mType == TYPE_BETWEEN);
