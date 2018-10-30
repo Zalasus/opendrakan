@@ -158,7 +158,7 @@ namespace od
         if(mClass->hasModel())
         {
             odDb::Model *model = mClass->getModel();
-            model->buildGeometry(getLevel().getEngine().getShaderManager());
+            model->buildGeometry(getLevel().getEngine().getRenderManager());
             mTransform->addChild(model);
             this->addChild(mTransform);
 

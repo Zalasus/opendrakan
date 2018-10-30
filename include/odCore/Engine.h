@@ -46,7 +46,6 @@ namespace od
     class Camera;
     class Level;
     class InputManager;
-    class ShaderManager;
 
 	class Engine
 	{
@@ -62,7 +61,6 @@ namespace od
 		inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline odDb::DbManager &getDbManager() { return *mDbManager; }
-		inline ShaderManager &getShaderManager() { return *mShaderManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
 		inline odGui::GuiManager &getGuiManager() { return *mGuiManager; }
 		inline odRender::RenderManager &getRenderManager() { return *mRenderManager; }
@@ -88,7 +86,6 @@ namespace od
 		void _findEngineRoot(const std::string &rrcFileName);
 
 		std::unique_ptr<odDb::DbManager> mDbManager;
-		std::unique_ptr<ShaderManager> mShaderManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
 		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<odGui::GuiManager> mGuiManager;

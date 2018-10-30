@@ -19,7 +19,8 @@
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
-#include <odCore/ShaderManager.h>
+#include <odCore/render/RenderManager.h>
+#include <odCore/render/ShaderFactory.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -419,7 +420,7 @@ namespace odDb
 		}
  	}
 
-	void Model::buildGeometry(od::ShaderManager &shaderManager)
+	void Model::buildGeometry(odRender::RenderManager &renderManager)
 	{
 	    if(mGeometryBuilt)
 	    {
@@ -493,7 +494,7 @@ namespace odDb
         // model faces are oriented CW for some reason
         ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
 
-        osg::ref_ptr<osg::Program> modelProgram = shaderManager.makeProgram("model");
+        osg::ref_ptr<osg::Program> modelProgram = renderManager.getShaderFactory().getProgram("model");
         ss->setAttribute(modelProgram, osg::StateAttribute::ON);
 
         if(mShadingType != ModelShadingType::None)

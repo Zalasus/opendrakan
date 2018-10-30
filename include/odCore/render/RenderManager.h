@@ -13,6 +13,7 @@
 #include <osg/Observer>
 
 #include <odCore/render/Light.h>
+#include <odCore/render/ShaderFactory.h>
 
 namespace od
 {
@@ -28,6 +29,7 @@ namespace odRender
 
         RenderManager(od::Engine &engine, osg::Group *sceneRoot);
 
+        inline ShaderFactory &getShaderFactory() { return mShaderFactory; }
         inline bool isLightingEnabled() const { return mLightingEnabled; }
 
         void addLight(Light *light);
@@ -54,6 +56,7 @@ namespace odRender
     private:
 
         od::Engine &mEngine;
+        ShaderFactory mShaderFactory;
         std::vector<Light*> mLights;
         bool mLightingEnabled;
 

@@ -14,9 +14,9 @@
 #include <odCore/Level.h>
 #include <odCore/Player.h>
 #include <odCore/Camera.h>
-#include <odCore/ShaderManager.h>
 #include <odCore/InputManager.h>
 #include <odCore/render/RenderManager.h>
+#include <odCore/render/ShaderFactory.h>
 #include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/RflManager.h>
 #include <odCore/audio/SoundManager.h>
@@ -48,10 +48,6 @@ namespace od
 
 	    _findEngineRoot("Dragon.rrc");
 
-	    mDbManager.reset(new odDb::DbManager(*this));
-	    mShaderManager.reset(new ShaderManager(FilePath(OD_SHADER_SRC_PATH)));
-	    mRflManager.reset(new odRfl::RflManager(*this));
-
 	    mViewer = new osgViewer::Viewer;
         mViewer->realize();
         mViewer->setName("OpenDrakan");
@@ -80,9 +76,7 @@ namespace od
         mRootNode = new osg::Group();
         mViewer->setSceneData(mRootNode);
 
-        // attach our default shaders to root node so we don't use the fixed function pipeline anymore
-        osg::ref_ptr<osg::Program> defaultProgram = mShaderManager->makeProgram("default");
-        mRootNode->getOrCreateStateSet()->setAttribute(defaultProgram);
+        mRenderManager.reset(new odRender::RenderManager(*this, mRootNode));
 
         mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);
         osg::StateSet *rootStateSet = mRootNode->getOrCreateStateSet();
@@ -90,8 +84,6 @@ namespace od
         rootStateSet->setMode(GL_FRAMEBUFFER_SRGB, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
 
         mInputManager = new InputManager(*this, mViewer);
-
-        mRenderManager.reset(new odRender::RenderManager(*this, mRootNode));
 
 	    mGuiManager.reset(new odGui::GuiManager(*this, mViewer));
 
@@ -102,6 +94,9 @@ namespace od
 	        Logger::info() << "Sound device: '" << s << "'";
 	    }
 	    mSoundManager.reset(new odAudio::SoundManager(nullptr));
+
+	    mDbManager.reset(new odDb::DbManager(*this));
+        mRflManager.reset(new odRfl::RflManager(*this));
 
 	    mRflManager->onStartup();
 

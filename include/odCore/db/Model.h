@@ -19,9 +19,9 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
 
-namespace od
+namespace odRender
 {
-    class ShaderManager;
+    class RenderManager;
 }
 
 namespace odDb
@@ -70,7 +70,7 @@ namespace odDb
 		void loadPolygons(ModelFactory &factory, od::DataReader &&dr);
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
-		void buildGeometry(od::ShaderManager &shaderManager);
+		void buildGeometry(odRender::RenderManager &renderManager);
 
 		/**
 		 * @brief Returns an axis-aligned bounding box that encapsulates all of this model's meshes and LODs.

@@ -21,9 +21,14 @@ namespace odRender
 
     RenderManager::RenderManager(od::Engine &engine, osg::Group *sceneRoot)
     : mEngine(engine)
+    , mShaderFactory(OD_SHADER_SRC_PATH)
     , mLightingEnabled(true)
     {
         osg::StateSet *ss = sceneRoot->getOrCreateStateSet();
+
+         // attach our default shaders to root node so we don't use the fixed function pipeline anymore
+        osg::ref_ptr<osg::Program> defaultProgram = getShaderFactory().getProgram("default");
+        ss->setAttribute(defaultProgram);
 
         mLayerLightDiffuse = new osg::Uniform("layerLightDiffuse", osg::Vec3(1.0, 1.0, 1.0));
         mLayerLightAmbient = new osg::Uniform("layerLightAmbient", osg::Vec3(1.0, 1.0, 1.0));
