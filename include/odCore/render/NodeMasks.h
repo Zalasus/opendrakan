@@ -10,7 +10,7 @@
 
 #include <osg/Node>
 
-namespace od
+namespace odRender
 {
 
     class NodeMasks

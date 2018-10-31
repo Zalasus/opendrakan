@@ -14,11 +14,11 @@
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
-#include <odCore/NodeMasks.h>
 #include <odCore/UpdateCallback.h>
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 #include <odCore/physics/BulletAdapter.h>
+#include <odCore/render/NodeMasks.h>
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -72,7 +72,7 @@ namespace od
     , mLightingCallback(new odRender::LightStateCallback(level.getEngine().getRenderManager(), mTransform))
     , mRflUpdateHookEnabled(false)
     {
-        this->setNodeMask(NodeMasks::Object);
+        this->setNodeMask(odRender::NodeMasks::Object);
     }
 
     LevelObject::~LevelObject()
@@ -502,7 +502,7 @@ namespace od
 
         if(mTransform != nullptr)
         {
-            mTransform->setNodeMask(v ? NodeMasks::Object : NodeMasks::Hidden);
+            mTransform->setNodeMask(v ? odRender::NodeMasks::Object : odRender::NodeMasks::Hidden);
         }
     }
 

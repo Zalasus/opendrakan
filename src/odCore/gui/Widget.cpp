@@ -10,9 +10,9 @@
 #include <osg/Geometry>
 #include <osgGA/EventVisitor>
 
-#include <odCore/NodeMasks.h>
 #include <odCore/UpdateCallback.h>
 #include <odCore/gui/GuiManager.h>
+#include <odCore/render/NodeMasks.h>
 
 namespace odGui
 {
@@ -58,7 +58,7 @@ namespace odGui
     , mUpdateCallback(new WidgetUpdateCallback(this))
     , mMouseOver(false)
     {
-        this->setNodeMask(od::NodeMasks::Gui);
+        this->setNodeMask(odRender::NodeMasks::Gui);
         this->setMatrix(osg::Matrix::identity());
 
         this->addUpdateCallback(mUpdateCallback);
@@ -109,7 +109,7 @@ namespace odGui
 
     void Widget::setVisible(bool b)
     {
-        this->setNodeMask(b ? od::NodeMasks::Gui : od::NodeMasks::Hidden);
+        this->setNodeMask(b ? odRender::NodeMasks::Gui : odRender::NodeMasks::Hidden);
     }
 
     void Widget::updateMatrix()
