@@ -47,7 +47,7 @@ namespace odRender
 
     private:
 
-        osg::ref_ptr<od::LevelObject> mLevelObject;
+        od::LevelObject *mLevelObject;
         osg::Vec3 mColor;
         float mIntensityScaling;
         float mRadius;

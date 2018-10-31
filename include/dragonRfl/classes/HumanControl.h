@@ -256,7 +256,6 @@ namespace dragonRfl
 		float mPrevYaw;
 		float mForwardSpeed;
 		float mRightSpeed;
-		osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
 		od::LevelObject *mPlayerObject;
 		osg::ref_ptr<odAnim::SkeletonAnimationPlayer> mAnimationPlayer;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;

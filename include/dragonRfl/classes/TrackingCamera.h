@@ -33,7 +33,7 @@ namespace dragonRfl
 		// implement od::Camera
 		virtual osg::Vec3f getEyePoint() const override;
         virtual void setOsgCamera(osg::Camera *osgCam) override;
-        virtual od::LevelObject  &getLevelObject() override;
+        virtual od::LevelObject &getLevelObject() override;
 
         void updateCamera();
 
@@ -49,7 +49,7 @@ namespace dragonRfl
 
 		osg::ref_ptr<osg::Camera> mOsgCamera;
 		osg::ref_ptr<osg::NodeCallback> mCamUpdateCallback;
-		osg::ref_ptr<od::LevelObject> mCameraLevelObject;
+		od::LevelObject *mCameraLevelObject;
 	};
 
 }

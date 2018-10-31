@@ -11,7 +11,6 @@
 
 #include <memory>
 #include <list>
-#include <osg/Group>
 #include <osg/PositionAttitudeTransform>
 #include <LinearMath/btMotionState.h>
 
@@ -50,7 +49,7 @@ namespace od
         Always
     };
 
-    class LevelObject : public osg::Group, public btMotionState
+    class LevelObject : public odRender::Renderable, public btMotionState
     {
     public:
 
@@ -61,15 +60,14 @@ namespace od
         inline odDb::Class *getClass() { return mClass; }
         inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
-        inline osg::Vec3 getPosition() const { return mTransform->getPosition(); }
-        inline osg::Vec3 getScale() const { return mTransform->getScale(); }
-        inline osg::Quat getRotation() const { return mTransform->getAttitude(); }
-        inline osg::PositionAttitudeTransform *getPositionAttitudeTransform() { return mTransform; }
+        inline osg::Vec3 getPosition() const { return mPosition; }
+        inline osg::Vec3 getScale() const { return mScale; }
+        inline osg::Quat getRotation() const { return mRotation; }
         inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
         inline LevelObjectState getState() const { return mState; }
         inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
-        inline const std::vector<osg::ref_ptr<LevelObject>> &getLinkedObjects() const { return mLinkedObjects; }
+        inline const std::vector<LevelObject*> &getLinkedObjects() const { return mLinkedObjects; }
         inline bool isVisible() const { return mIsVisible; }
         inline bool isScaled() const { return mIsScaled; }
 
@@ -142,13 +140,14 @@ namespace od
         void messageAllLinkedObjects(odRfl::RflMessage message);
         void requestDestruction();
 
-        // override osg::Group
-        virtual const char *libraryName() const override { return "od";    }
-        virtual const char *className()   const override { return "LevelObject"; }
-
         // implement btMotionState
         virtual void getWorldTransform(btTransform& worldTrans) const override;
         virtual void setWorldTransform(const btTransform& worldTrans) override;
+
+
+    protected:
+
+        virtual osg::ref_ptr<osg::Node> buildNode(odRender::RenderManager &renderManager) override;
 
 
     private:
@@ -175,17 +174,22 @@ namespace od
         osg::Quat  mInitialRotation;
         bool mIsScaled;
 
+        osg::Vec3 mPosition;
+        osg::Quat mRotation;
+        osg::Vec3 mScale;
+
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
+        osg::ref_ptr<odRender::LightStateCallback> mLightingCallback;
         osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
         LevelObjectType mObjectType;
         SpawnStrategy mSpawnStrategy;
         bool mIsVisible;
 
-        std::vector<osg::ref_ptr<LevelObject>> mLinkedObjects;
+        std::vector<LevelObject*> mLinkedObjects;
 
-        osg::ref_ptr<od::LevelObject> mAttachmentTarget;
-        std::list<osg::ref_ptr<od::LevelObject>> mAttachedObjects;
+        od::LevelObject *mAttachmentTarget;
+        std::list<od::LevelObject*> mAttachedObjects;
         osg::Vec3 mAttachmentTranslationOffset;
         osg::Quat mAttachmentRotationOffset;
         osg::Vec3 mAttachmentScaleRatio;
@@ -195,9 +199,6 @@ namespace od
 
         bool mLayerBelowObjectDirty;
         Layer *mLayerBelowObject;
-
-        osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-        osg::ref_ptr<odRender::LightStateCallback> mLightingCallback;
 
         bool mRflUpdateHookEnabled;
     };

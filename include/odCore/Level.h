@@ -12,7 +12,7 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <deque>
+#include <list>
 
 #include <osg/Group>
 #include <osg/Geode>
@@ -51,7 +51,7 @@ namespace od
 
         void update();
 
-        LevelObject &getLevelObjectByIndex(uint16_t index);
+        LevelObject *getLevelObjectByIndex(uint16_t index);
 
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;
@@ -74,14 +74,14 @@ namespace od
         uint32_t mMaxHeight;
         std::map<uint16_t, odDb::DbRefWrapper> mDependencyMap;
         std::vector<std::unique_ptr<Layer>> mLayers;
-        std::vector<osg::ref_ptr<LevelObject>> mLevelObjects;
+        std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
         osg::ref_ptr<osg::Group> mLevelRootNode;
         osg::ref_ptr<osg::Group> mLayerGroup;
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::Light> mSunLight;
 		odPhysics::PhysicsManager mPhysicsManager;
 
-		std::deque<osg::ref_ptr<LevelObject>> mDestructionQueue;
+		std::list<LevelObject*> mDestructionQueue;
 
 		std::vector<Layer*> mLayerLookupCache;
     };

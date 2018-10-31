@@ -435,10 +435,6 @@ namespace dragonRfl
 
     HumanControl::~HumanControl()
     {
-    	if(mUpdateCallback != nullptr && mPlayerObject != nullptr)
-		{
-			mPlayerObject->removeUpdateCallback(mUpdateCallback);
-		}
     }
 
     void HumanControl::onLoaded(od::LevelObject &obj)
@@ -479,7 +475,7 @@ namespace dragonRfl
     	{
     		mCharacterController.reset(new odPhysics::CharacterController(obj, 0.05, 0.3));
 
-			mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), mCharacterController.get());
+			mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(obj.getCachedNode(), obj.getSkeletonRoot(), mCharacterController.get());
     	}
     }
 

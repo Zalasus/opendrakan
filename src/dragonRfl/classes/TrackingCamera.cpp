@@ -46,6 +46,7 @@ namespace dragonRfl
 	, mRubberBandStrength(2)
 	, mSpinSpeed(20)
 	, mCrosshairDistance(8)
+	, mCameraLevelObject(nullptr)
 	{
 	}
 
@@ -94,17 +95,20 @@ namespace dragonRfl
 	    }
 
 	    // attach update callback to player so we always get updated after player
-	    mCamUpdateCallback = new CamUpdateCallback(this);
-	    engine.getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
+	    if(engine.getPlayer()->getLevelObject().getCachedNode() != nullptr)
+	    {
+	        mCamUpdateCallback = new CamUpdateCallback(this);
+	        engine.getPlayer()->getLevelObject().getCachedNode()->addUpdateCallback(mCamUpdateCallback);
+	    }
 	}
 
 	void TrackingCamera::onDespawned(od::LevelObject &obj)
 	{
 	    od::Engine &engine = obj.getLevel().getEngine();
 
-	    if(mCamUpdateCallback != nullptr && engine.getPlayer() != nullptr)
+	    if(mCamUpdateCallback != nullptr && engine.getPlayer() != nullptr && engine.getPlayer()->getLevelObject().getCachedNode() != nullptr)
 	    {
-	        engine.getPlayer()->getLevelObject().removeUpdateCallback(mCamUpdateCallback);
+	        engine.getPlayer()->getLevelObject().getCachedNode()->removeUpdateCallback(mCamUpdateCallback);
 	    }
 	}
 

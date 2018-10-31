@@ -32,17 +32,30 @@ namespace dragonRfl
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onLoaded(od::LevelObject &obj)
+    void AnimationDemo::onSpawned(od::LevelObject &obj)
     {
+        if(obj.getSkeletonRoot() == nullptr)
+        {
+            Logger::warn() << "Animation Demo class used on object without skeleton. This won't do anything";
+            return;
+        }
+
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), nullptr);
-
-        obj.setEnableRflUpdateHook(true);
+        if(obj.getCachedNode() != nullptr)
+        {
+            mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(obj.getCachedNode(), obj.getSkeletonRoot(), nullptr);
+            obj.setEnableRflUpdateHook(true);
+        }
     }
 
     void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
+        if(mAnimationPlayer == nullptr)
+        {
+            return;
+        }
+
         if(mAnimations.getAssetCount() == 0)
         {
             return;

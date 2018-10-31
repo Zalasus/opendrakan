@@ -22,6 +22,8 @@ namespace odRender
 
         virtual ~Renderable() = default;
 
+        inline osg::Node *getCachedNode() { return mCachedNode; }
+
         osg::Node *getOrBuildNode(RenderManager &renderManager)
         {
             if(mCachedNode == nullptr)

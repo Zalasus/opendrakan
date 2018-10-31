@@ -58,7 +58,12 @@ namespace dragonRfl
 
     void DomedSky::onSpawned(od::LevelObject &obj)
 	{
-    	osg::StateSet *ss = obj.getOrCreateStateSet();
+        if(obj.getCachedNode() == nullptr)
+        {
+            return;
+        }
+
+    	osg::StateSet *ss = obj.getCachedNode()->getOrCreateStateSet();
     	ss->setRenderBinDetails(-1, "RenderBin");
     	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
 		depth->setWriteMask(false);

@@ -77,7 +77,7 @@ namespace dragonRfl
         {
             // this detector detects only rynn -> no need to update when rynn is far away
             float distance = (playerObject->getPosition() - obj.getPosition()).length();
-            float minDistance = obj.getBound().radius() + playerObject->getBound().radius();
+            float minDistance = obj.getCachedNode()->getBound().radius() + playerObject->getCachedNode()->getBound().radius();
             if(distance > minDistance*2)
             {
                 return;

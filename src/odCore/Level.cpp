@@ -77,14 +77,14 @@ namespace od
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
-            mObjectGroup->addChild(*it);
+            mObjectGroup->addChild((*it)->getOrBuildNode(mEngine.getRenderManager()));
             (*it)->spawned();
         }
     }
 
     void Level::requestLevelObjectDestruction(LevelObject *obj)
     {
-        mDestructionQueue.push_back(osg::ref_ptr<LevelObject>(obj));
+        mDestructionQueue.push_back(obj);
     }
 
     Layer *Level::getLayerById(uint32_t id)
@@ -189,21 +189,24 @@ namespace od
             {
                 (*it)->despawned();
                 (*it)->destroyed();
-                mObjectGroup->removeChild(*it);
+                if((*it)->getCachedNode() != nullptr)
+                {
+                    mObjectGroup->removeChild((*it)->getCachedNode());
+                }
 
                 it = mDestructionQueue.erase(it);
             }
         }
     }
 
-    LevelObject &Level::getLevelObjectByIndex(uint16_t index)
+    LevelObject *Level::getLevelObjectByIndex(uint16_t index)
     {
         if(index >= mLevelObjects.size())
         {
-            throw NotFoundException("Level object with given index not found");
+            return nullptr;
         }
 
-        return *mLevelObjects[index];
+        return mLevelObjects[index].get();
     }
 
     odDb::AssetProvider &Level::getDependency(uint16_t index)
@@ -338,13 +341,13 @@ namespace od
 
     	Logger::verbose() << "Level has " << objectCount << " objects";
 
-    	mLevelObjects.resize(objectCount);
+    	mLevelObjects.reserve(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)
     	{
-    		osg::ref_ptr<od::LevelObject> object(new od::LevelObject(*this));
+    		std::unique_ptr<od::LevelObject> object(new od::LevelObject(*this));
     		object->loadFromRecord(dr);
 
-    		mLevelObjects[i] = object;
+    		mLevelObjects.push_back(std::move(object));
     	}
     }
 }

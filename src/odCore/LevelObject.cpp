@@ -65,16 +65,14 @@ namespace od
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mIsVisible(true)
+    , mAttachmentTarget(nullptr)
     , mIgnoreAttachmentTranslation(false)
     , mIgnoreAttachmentRotation(false)
     , mIgnoreAttachmentScale(false)
     , mLayerBelowObjectDirty(true)
     , mLayerBelowObject(nullptr)
-    , mUpdateCallback(new LevelObjectUpdateCallback(*this))
-    , mLightingCallback(new odRender::LightStateCallback(level.getEngine().getRenderManager(), mTransform))
     , mRflUpdateHookEnabled(false)
     {
-        this->setNodeMask(odRender::NodeMasks::Object);
     }
 
     LevelObject::~LevelObject()
@@ -152,25 +150,9 @@ namespace od
                 osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
                 osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1));
 
-        mTransform->setAttitude(mInitialRotation);
-        mTransform->setPosition(mInitialPosition);
-        mTransform->setScale(mInitialScale);
-
-        // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
-        if(mClass->hasModel())
-        {
-            osg::ref_ptr<osg::Node> modelNode = mClass->getModel()->getOrBuildNode(getLevel().getEngine().getRenderManager());
-            mTransform->addChild(modelNode);
-            this->addChild(mTransform);
-
-            // if model defines a skeleton, create an instance of that skeleton for this object
-            if(mClass->getModel()->getSkeletonBuilder() != nullptr)
-            {
-                mSkeletonRoot = new osg::Group;
-                mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
-                mTransform->addChild(mSkeletonRoot);
-            }
-        }
+        mPosition = mInitialPosition;
+        mRotation = mInitialRotation;
+        mScale = mInitialScale;
 
         _setVisible(mFlags & OD_OBJECT_FLAG_VISIBLE);
 
@@ -182,33 +164,36 @@ namespace od
 
     void LevelObject::spawned()
     {
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->onSpawned(*this);
-        }
-
-        this->addCullCallback(mLightingCallback);
-        mLightingCallback->lightingDirty();
-
-        this->addUpdateCallback(mUpdateCallback);
-
         _updateLayerBelowObject();
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
         {
+            mLinkedObjects.clear();
             mLinkedObjects.reserve(mLinks.size());
 
             for(auto it = mLinks.begin(); it != mLinks.end(); ++it)
             {
-                LevelObject &obj = mLevel.getLevelObjectByIndex(*it);
-                mLinkedObjects.push_back(osg::ref_ptr<LevelObject>(&obj));
+                LevelObject *obj = mLevel.getLevelObjectByIndex(*it);
+                if(obj == nullptr)
+                {
+                    Logger::warn() << "Object 0x" << std::hex << getObjectId() <<
+                            " linked to nonexistent object 0x" << *it << std::dec;
+                    continue;
+                }
+
+                mLinkedObjects.push_back(obj);
             }
         }
 
-        Logger::debug() << "Object " << getObjectId() << " spawned";
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onSpawned(*this);
+        }
 
         mState = LevelObjectState::Spawned;
+
+        Logger::debug() << "Object " << getObjectId() << " spawned";
     }
 
     void LevelObject::despawned()
@@ -220,8 +205,7 @@ namespace od
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
 
-        this->removeCullCallback(mLightingCallback);
-        this->removeUpdateCallback(mUpdateCallback);
+        // TODO: how to ensure no unnecessary updates/cullings happen on our subgraph if present?
 
         // detach this from any object it may be attached to, and detach all objects attached to this
         detach();
@@ -272,23 +256,23 @@ namespace od
 
     void LevelObject::setPosition(const osg::Vec3 &v)
     {
-        mTransform->setPosition(v);
+        mPosition = v;
 
         _onTransformChanged(this);
     }
 
     void LevelObject::setRotation(const osg::Quat &q)
     {
-        mTransform->setAttitude(q);
+        mRotation = q;
 
         _onTransformChanged(this);
     }
 
     void LevelObject::setScale(const osg::Vec3 &scale)
     {
-        mTransform->setScale(scale);
+        mScale = scale;
 
-        mIsScaled = (getScale() != osg::Vec3(1,1,1));
+        mIsScaled = (mScale != osg::Vec3(1,1,1));
 
         _onTransformChanged(this);
     }
@@ -350,7 +334,7 @@ namespace od
         }
 
         mAttachmentTarget = target;
-        target->mAttachedObjects.push_back(osg::ref_ptr<od::LevelObject>(this));
+        target->mAttachedObjects.push_back(this);
 
         mIgnoreAttachmentTranslation = ignoreTranslation;
         mIgnoreAttachmentRotation = ignoreRotation;
@@ -375,7 +359,7 @@ namespace od
             return;
         }
 
-        auto it = std::find(mAttachmentTarget->mAttachedObjects.begin(), mAttachmentTarget->mAttachedObjects.end(), osg::ref_ptr<od::LevelObject>(this));
+        auto it = std::find(mAttachmentTarget->mAttachedObjects.begin(), mAttachmentTarget->mAttachedObjects.end(), this);
         if(it != mAttachmentTarget->mAttachedObjects.end())
         {
             mAttachmentTarget->mAttachedObjects.erase(it);
@@ -417,9 +401,50 @@ namespace od
         setRotation(odPhysics::BulletAdapter::toOsg(worldTrans.getRotation()));
     }
 
+    osg::ref_ptr<osg::Node> LevelObject::buildNode(odRender::RenderManager &renderManager)
+    {
+        mTransform = new osg::PositionAttitudeTransform;
+        mTransform->setNodeMask(mIsVisible ? odRender::NodeMasks::Object : odRender::NodeMasks::Hidden);
+        mTransform->setPosition(mPosition);
+        mTransform->setAttitude(mRotation);
+        mTransform->setScale(mScale);
+
+        mLightingCallback = new odRender::LightStateCallback(renderManager, mTransform);
+        mTransform->addCullCallback(mLightingCallback);
+        mLightingCallback->lightingDirty();
+
+        mTransform->addUpdateCallback(new LevelObjectUpdateCallback(*this));
+
+        if(mClass->hasModel())
+        {
+            osg::ref_ptr<osg::Node> modelNode = mClass->getModel()->getOrBuildNode(getLevel().getEngine().getRenderManager());
+            mTransform->addChild(modelNode);
+
+            // if model defines a skeleton, create an instance of that skeleton for this object
+            if(mClass->getModel()->getSkeletonBuilder() != nullptr)
+            {
+                mSkeletonRoot = new osg::Group;
+                mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
+                mTransform->addChild(mSkeletonRoot);
+            }
+        }
+
+        return mTransform;
+    }
+
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
-        mLightingCallback->lightingDirty();
+        if(mTransform != nullptr)
+        {
+            mTransform->setPosition(mPosition);
+            mTransform->setAttitude(mRotation);
+            mTransform->setScale(mScale);
+        }
+
+        if(mLightingCallback != nullptr)
+        {
+            mLightingCallback->lightingDirty();
+        }
 
         mLayerBelowObjectDirty = true;
 
@@ -438,11 +463,10 @@ namespace od
     {
         mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
 
-        // additionally, give the pontially changed layer light to the lighting callback
-        Layer *lightingLayer = getLightingLayer();
-        if(lightingLayer != nullptr)
+        // if lighting layer is not fixed, apply potentially changed layer to object
+        if(mLightingCallback != nullptr && mLightingLayer == nullptr && mLayerBelowObject != nullptr)
         {
-            mLightingCallback->setLayerLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
+            mLightingCallback->setLayerLight(mLayerBelowObject->getLightColor(), mLayerBelowObject->getAmbientColor(), mLayerBelowObject->getLightDirection());
         }
 
         mLayerBelowObjectDirty = false;
@@ -469,7 +493,7 @@ namespace od
 
         if(!mIgnoreAttachmentTranslation)
         {
-            mTransform->setPosition(mAttachmentTarget->getPosition() + mAttachmentTranslationOffset);
+            mPosition = mAttachmentTarget->getPosition() + mAttachmentTranslationOffset;
         }
 
         if(!mIgnoreAttachmentRotation)
@@ -479,7 +503,7 @@ namespace od
 
         if(!mIgnoreAttachmentScale)
         {
-            mTransform->setScale(osg::componentMultiply(mAttachmentTarget->getScale(), mAttachmentScaleRatio));
+            mScale = osg::componentMultiply(mAttachmentTarget->getScale(), mAttachmentScaleRatio);
         }
 
         _onTransformChanged(transformChangeSource);
