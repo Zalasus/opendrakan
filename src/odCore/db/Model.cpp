@@ -38,14 +38,12 @@ namespace odDb
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
-	, mGeometryBuilt(false)
 	{
 	}
 
 	void Model::loadNameAndShading(ModelFactory &factory, od::DataReader &&dr)
 	{
 		dr >> mModelName;
-		this->setName(mModelName);
 
 		uint32_t shadingType;
 		dr >> shadingType;
@@ -420,21 +418,19 @@ namespace odDb
 		}
  	}
 
-	void Model::buildGeometry(odRender::RenderManager &renderManager)
+	osg::ref_ptr<osg::Node> Model::buildNode(odRender::RenderManager &renderManager)
 	{
-	    if(mGeometryBuilt)
-	    {
-	        return;
-	    }
-
 		if(!mTexturesLoaded || !mVerticesLoaded || !mPolygonsLoaded)
 		{
 			throw od::Exception("Must load at least vertices, textures and polygons before building geometry");
 		}
 
+		osg::ref_ptr<osg::Node> node;
+
 		if(mLodMeshInfos.size() > 0)
 		{
 			osg::ref_ptr<osg::LOD> lodNode(new osg::LOD);
+			node = lodNode;
 			lodNode->setRangeMode(osg::LOD::DISTANCE_FROM_EYE_POINT);
 			lodNode->setCenterMode(osg::LOD::USE_BOUNDING_SPHERE_CENTER);
 
@@ -471,8 +467,6 @@ namespace odDb
 				lodNode->addChild(newGeode, minDistance, maxDistance);
 			}
 
-			this->addChild(lodNode);
-
 		}else
 		{
 			odRender::GeodeBuilder gb(mModelName, this->getAssetProvider());
@@ -482,14 +476,15 @@ namespace odDb
 			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
 
 			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
+			node = newGeode;
 			gb.build(newGeode);
 
 			mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
-
-			this->addChild(newGeode);
 		}
 
-		osg::StateSet *ss = this->getOrCreateStateSet();
+		node->setName(mModelName);
+
+		osg::StateSet *ss = node->getOrCreateStateSet();
 
         // model faces are oriented CW for some reason
         ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
@@ -516,7 +511,7 @@ namespace odDb
             modelProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
         }
 
-        mGeometryBuilt = true;
+        return node;
 	}
 }
 

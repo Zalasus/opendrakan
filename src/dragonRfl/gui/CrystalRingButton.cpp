@@ -66,9 +66,8 @@ namespace dragonRfl
 
         if(mCrystalModel != nullptr)
         {
-            mCrystalModel->buildGeometry(gm.getEngine().getRenderManager());
             mCrystalTransform = new osg::PositionAttitudeTransform;
-            mCrystalTransform->addChild(mCrystalModel);
+            mCrystalTransform->addChild(mCrystalModel->getOrBuildNode(gm.getEngine().getRenderManager()));
 
             osg::StateSet *ss = mCrystalTransform->getOrCreateStateSet();
             ss->setDefine("COLOR_MODIFIER");
@@ -84,17 +83,15 @@ namespace dragonRfl
 
         if(mInnerRingModel != nullptr)
         {
-            mInnerRingModel->buildGeometry(gm.getEngine().getRenderManager());
             mInnerRingTransform = new osg::PositionAttitudeTransform;
-            mInnerRingTransform->addChild(mInnerRingModel);
+            mInnerRingTransform->addChild(mInnerRingModel->getOrBuildNode(gm.getEngine().getRenderManager()));
             mTransform->addChild(mInnerRingTransform);
         }
 
         if(mOuterRingModel != nullptr)
         {
-            mOuterRingModel->buildGeometry(gm.getEngine().getRenderManager());
             mOuterRingTransform = new osg::PositionAttitudeTransform;
-            mOuterRingTransform->addChild(mOuterRingModel);
+            mOuterRingTransform->addChild(mOuterRingModel->getOrBuildNode(gm.getEngine().getRenderManager()));
             mTransform->addChild(mOuterRingTransform);
         }
 

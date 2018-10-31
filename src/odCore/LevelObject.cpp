@@ -157,9 +157,8 @@ namespace od
         // TODO: We could probably put this into the spawning method, along with delaying model loading of classes to when getModel() is called
         if(mClass->hasModel())
         {
-            odDb::Model *model = mClass->getModel();
-            model->buildGeometry(getLevel().getEngine().getRenderManager());
-            mTransform->addChild(model);
+            osg::ref_ptr<osg::Node> modelNode = mClass->getModel()->getOrBuildNode(getLevel().getEngine().getRenderManager());
+            mTransform->addChild(modelNode);
             this->addChild(mTransform);
 
             // if model defines a skeleton, create an instance of that skeleton for this object
