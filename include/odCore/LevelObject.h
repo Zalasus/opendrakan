@@ -18,7 +18,7 @@
 #include <odCore/db/Class.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 #include <odCore/rfl/RflMessage.h>
-#include <odCore/light/LightState.h>
+#include <odCore/render/LightState.h>
 
 namespace od
 {
@@ -197,7 +197,7 @@ namespace od
         osg::ref_ptr<Layer> mLayerBelowObject;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
-        osg::ref_ptr<odLight::LightStateCallback> mLightingCallback;
+        osg::ref_ptr<odRender::LightStateCallback> mLightingCallback;
 
         bool mRflUpdateHookEnabled;
     };

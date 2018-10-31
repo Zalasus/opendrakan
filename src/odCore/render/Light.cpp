@@ -5,14 +5,14 @@
  *      Author: zal
  */
 
-#include <odCore/light/Light.h>
+#include <odCore/render/Light.h>
 
 #include <osg/BoundingSphere>
 
 #include <odCore/LevelObject.h>
-#include <odCore/light/LightManager.h>
+#include <odCore/render/RenderManager.h>
 
-namespace odLight
+namespace odRender
 {
 
     Light::Light(od::LevelObject *obj)

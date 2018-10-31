@@ -13,10 +13,11 @@
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 #include <odCore/Level.h>
-#include <odCore/GeodeBuilder.h>
+#include <odCore/render/GeodeBuilder.h>
 #include <odCore/NodeMasks.h>
 #include <odCore/Engine.h>
-#include <odCore/ShaderManager.h>
+#include <odCore/render/RenderManager.h>
+#include <odCore/render/ShaderFactory.h>
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
@@ -169,7 +170,7 @@ namespace od
 
         // generate vertices and UVs for SegmentedGeode
 
-        GeodeBuilder gb("layer " + mLayerName, mLevel);
+        odRender::GeodeBuilder gb("layer " + mLayerName, mLevel);
         gb.setClampTextures(true);
         gb.setNormalsFromCcw(true);
 
@@ -184,14 +185,14 @@ namespace od
         }
         gb.setVertexVector(vertices.begin(), vertices.end());
 
-        std::vector<Polygon> polygons;
+        std::vector<odRender::Polygon> polygons;
         polygons.reserve(mVisibleTriangles);
         for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
         {
             size_t cellIndex = triIndex/2;
             bool isLeft = (triIndex%2 == 0);
             Cell cell = mCells[cellIndex];
-            Polygon poly;
+            odRender::Polygon poly;
         	poly.vertexCount = 3;
         	poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
         	poly.doubleSided = (mType == TYPE_BETWEEN);
@@ -285,10 +286,10 @@ namespace od
         this->setName("layer " + mLayerName);
         this->addChild(mLayerGeode);
 
-        osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getShaderManager().makeProgram("layer");
+        osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getRenderManager().getShaderFactory().getProgram("layer");
         mLayerGeode->getOrCreateStateSet()->setAttribute(layerProg);
 
-        mLightCallback = new odLight::LightStateCallback(mLevel.getEngine().getLightManager(), mLayerGeode, true);
+        mLightCallback = new odRender::LightStateCallback(mLevel.getEngine().getRenderManager(), mLayerGeode, true);
         mLightCallback->setLayerLight(osg::Vec3(), osg::Vec3(), osg::Vec3()); // disable layer light. we bake it into the color array
         mLightCallback->lightingDirty();
         this->addCullCallback(mLightCallback);

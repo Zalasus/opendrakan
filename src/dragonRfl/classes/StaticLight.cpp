@@ -12,7 +12,7 @@
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
-#include <odCore/light/LightManager.h>
+#include <odCore/render/RenderManager.h>
 
 namespace dragonRfl
 {
@@ -45,9 +45,9 @@ namespace dragonRfl
     {
         if(mLight == nullptr)
         {
-            mLight = new odLight::Light(&obj);
+            mLight = new odRender::Light(&obj);
         }
-        obj.getLevel().getEngine().getLightManager().addLight(mLight);
+        obj.getLevel().getEngine().getRenderManager().addLight(mLight);
 
         osg::Vec4 color = mColor.asColorVector();
         mLightColorVector.set(color.x(), color.y(), color.z());
@@ -62,7 +62,7 @@ namespace dragonRfl
         static bool warned = false;
         if(!warned)
         {
-            Logger::warn() << "Moved static light! This is currently unsupported";
+            Logger::warn() << "Moved light! This is currently unsupported";
             Logger::warn() << "  If light moved into new objects, those will not receive new light until they move themselves";
             warned = true;
         }
@@ -72,7 +72,7 @@ namespace dragonRfl
     {
         if(mLight != nullptr)
         {
-            obj.getLevel().getEngine().getLightManager().removeLight(mLight);
+            obj.getLevel().getEngine().getRenderManager().removeLight(mLight);
         }
     }
 

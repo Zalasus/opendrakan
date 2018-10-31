@@ -11,12 +11,12 @@
 #include <osg/StateAttribute>
 #include <osg/NodeCallback>
 
-#include <odCore/light/Light.h>
+#include <odCore/render/Light.h>
 
-namespace odLight
+namespace odRender
 {
 
-    class LightManager;
+    class RenderManager;
 
     /**
      * @brief A StateAttribute handling a list of lights used internally by LightStateCallback.
@@ -27,7 +27,7 @@ namespace odLight
     {
     public:
 
-        LightStateAttribute(LightManager &lm);
+        LightStateAttribute(RenderManager &rm);
         LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp = osg::CopyOp::SHALLOW_COPY);
 
         // implement pure virtual stuff from osg::StateAttribute
@@ -61,7 +61,7 @@ namespace odLight
 
     private:
 
-        LightManager &mLightManager;
+        RenderManager &mRenderManager;
         std::vector<osg::ref_ptr<Light>> mLights;
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;
@@ -96,11 +96,11 @@ namespace odLight
          * FIXME: The ignoreCulledState is a dirty hack to get layers to update. For some reason, they
          * are always reported as being culled right now.
          *
-         * @param lm                 A LightManager to fetch lights from when updating light state
+         * @param rm                 A RenderManager to fetch lights from when updating light state
          * @param node               The node on which the light state should be applied
          * @param ignoreCulledState  Whether the callback should update lighting even if the node is culled
          */
-        LightStateCallback(LightManager &lm, osg::Node *node, bool ignoreCulledState = false);
+        LightStateCallback(RenderManager &rm, osg::Node *node, bool ignoreCulledState = false);
 
         inline void lightingDirty() { mLightingDirty = true; }
         inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
@@ -115,7 +115,7 @@ namespace odLight
 
         void _updateLightState(osg::Node *node);
 
-        LightManager &mLightManager;
+        RenderManager &mRenderManager;
         bool mIgnoreCulledState;
         bool mLightingDirty;
         LightStateAttribute *mLightStateAttribute;

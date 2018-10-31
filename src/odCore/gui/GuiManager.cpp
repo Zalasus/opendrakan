@@ -18,7 +18,6 @@
 #include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/WidgetGroup.h>
 #include <odCore/rfl/PrefetchProbe.h>
-#include <odCore/light/LightState.h>
 
 namespace odGui
 {

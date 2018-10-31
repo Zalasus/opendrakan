@@ -1,11 +1,11 @@
 /*
- * LightManager.cpp
+ * RenderManager.cpp
  *
- *  Created on: Aug 14, 2018
+ *  Created on: Oct 27, 2018
  *      Author: zal
  */
 
-#include <odCore/light/LightManager.h>
+#include <odCore/render/RenderManager.h>
 
 #include <algorithm>
 #include <osg/Light>
@@ -16,15 +16,19 @@
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 
-namespace odLight
+namespace odRender
 {
 
-
-    LightManager::LightManager(od::Engine &engine, osg::Group *sceneRoot)
+    RenderManager::RenderManager(od::Engine &engine, osg::Group *sceneRoot)
     : mEngine(engine)
+    , mShaderFactory(OD_SHADER_SRC_PATH)
     , mLightingEnabled(true)
     {
         osg::StateSet *ss = sceneRoot->getOrCreateStateSet();
+
+         // attach our default shaders to root node so we don't use the fixed function pipeline anymore
+        osg::ref_ptr<osg::Program> defaultProgram = getShaderFactory().getProgram("default");
+        ss->setAttribute(defaultProgram);
 
         mLayerLightDiffuse = new osg::Uniform("layerLightDiffuse", osg::Vec3(1.0, 1.0, 1.0));
         mLayerLightAmbient = new osg::Uniform("layerLightAmbient", osg::Vec3(1.0, 1.0, 1.0));
@@ -43,14 +47,14 @@ namespace odLight
         ss->addUniform(mLightPositions);
     }
 
-    void LightManager::addLight(Light *light)
+    void RenderManager::addLight(Light *light)
     {
         light->addObserver(this);
 
         mLights.push_back(light);
     }
 
-    void LightManager::removeLight(Light *lightHandle)
+    void RenderManager::removeLight(Light *lightHandle)
     {
         auto it = std::find(mLights.begin(), mLights.end(), lightHandle);
         if(it != mLights.end())
@@ -59,7 +63,7 @@ namespace odLight
         }
     }
 
-    void LightManager::getLightsAffectingPoint(const osg::Vec3 &point, std::vector<Light*> &lights)
+    void RenderManager::getLightsAffectingPoint(const osg::Vec3 &point, std::vector<Light*> &lights)
     {
         // TODO: organize lights in a structure with efficient spatial search
         //  for now, just use a brute force technique by iterating over all registered lights.
@@ -75,7 +79,7 @@ namespace odLight
         }
     }
 
-    void LightManager::getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<Light*> &lights)
+    void RenderManager::getLightsIntersectingSphere(const osg::BoundingSphere &sphere, std::vector<Light*> &lights)
     {
         // TODO: organize lights in a structure with efficient spatial search
         //  for now, just use a brute force technique by iterating over all registered lights.
@@ -91,7 +95,7 @@ namespace odLight
         }
     }
 
-    void LightManager::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
+    void RenderManager::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
     {
         if(!mLightingEnabled)
         {
@@ -105,7 +109,7 @@ namespace odLight
         mLayerLightDirection->set(osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
-    void LightManager::applyToLightUniform(const osg::Matrix &viewMatrix, Light *light, size_t index)
+    void RenderManager::applyToLightUniform(const osg::Matrix &viewMatrix, Light *light, size_t index)
     {
         if(index >= OD_MAX_LIGHTS)
         {
@@ -125,7 +129,7 @@ namespace odLight
         mLightPositions->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
-    void LightManager::applyNullLight(size_t index)
+    void RenderManager::applyNullLight(size_t index)
     {
         if(index >= OD_MAX_LIGHTS)
         {
@@ -141,7 +145,7 @@ namespace odLight
         mLightIntensities->setElement(index, 0.0f);
     }
 
-    void LightManager::setEnableLighting(bool enable)
+    void RenderManager::setEnableLighting(bool enable)
     {
         mLightingEnabled = enable;
 
@@ -157,9 +161,10 @@ namespace odLight
         }
     }
 
-    void LightManager::objectDeleted(void *object)
+    void RenderManager::objectDeleted(void *object)
     {
         removeLight(static_cast<Light*>(object));
     }
 
 }
+

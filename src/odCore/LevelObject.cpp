@@ -69,7 +69,7 @@ namespace od
     , mIgnoreAttachmentScale(false)
     , mLayerBelowObjectDirty(true)
     , mUpdateCallback(new LevelObjectUpdateCallback(*this))
-    , mLightingCallback(new odLight::LightStateCallback(level.getEngine().getLightManager(), mTransform))
+    , mLightingCallback(new odRender::LightStateCallback(level.getEngine().getRenderManager(), mTransform))
     , mRflUpdateHookEnabled(false)
     {
         this->setNodeMask(NodeMasks::Object);
@@ -158,7 +158,7 @@ namespace od
         if(mClass->hasModel())
         {
             odDb::Model *model = mClass->getModel();
-            model->buildGeometry(getLevel().getEngine().getShaderManager());
+            model->buildGeometry(getLevel().getEngine().getRenderManager());
             mTransform->addChild(model);
             this->addChild(mTransform);
 

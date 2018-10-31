@@ -21,10 +21,8 @@ namespace od
     class LevelObject;
 }
 
-namespace odLight
+namespace odRender
 {
-
-    class LightManager;
 
     class Light : public osg::Referenced
     {

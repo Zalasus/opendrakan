@@ -19,7 +19,8 @@
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
-#include <odCore/ShaderManager.h>
+#include <odCore/render/RenderManager.h>
+#include <odCore/render/ShaderFactory.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -127,7 +128,7 @@ namespace odDb
 			   >> vertexCount
 			   >> textureIndex;
 
-			od::Polygon poly;
+			odRender::Polygon poly;
 			poly.doubleSided = flags & OD_POLYGON_FLAG_DOUBLESIDED;
 			poly.texture = mTextureRefs[textureIndex];
 			poly.vertexCount = vertexCount;
@@ -273,7 +274,7 @@ namespace odDb
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
-            	std::vector<od::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
+            	std::vector<odRender::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
 
 				uint16_t affectedVertexCount;
 				dr >> affectedVertexCount;
@@ -285,7 +286,7 @@ namespace odDb
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					od::BoneAffection bAff;
+					odRender::BoneAffection bAff;
 					bAff.jointIndex = jointIndex;
 					bAff.vertexIndex = affectedVertexIndex;
 					bAff.vertexWeight = weight;
@@ -419,7 +420,7 @@ namespace odDb
 		}
  	}
 
-	void Model::buildGeometry(od::ShaderManager &shaderManager)
+	void Model::buildGeometry(odRender::RenderManager &renderManager)
 	{
 	    if(mGeometryBuilt)
 	    {
@@ -439,7 +440,7 @@ namespace odDb
 
 			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
 			{
-				od::GeodeBuilder gb(it->lodName, this->getAssetProvider());
+				odRender::GeodeBuilder gb(it->lodName, this->getAssetProvider());
 				gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 				gb.setClampTextures(false);
 
@@ -474,7 +475,7 @@ namespace odDb
 
 		}else
 		{
-			od::GeodeBuilder gb(mModelName, this->getAssetProvider());
+			odRender::GeodeBuilder gb(mModelName, this->getAssetProvider());
 			gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
 			gb.setClampTextures(false);
 			gb.setVertexVector(mVertices.begin(), mVertices.end());
@@ -493,7 +494,7 @@ namespace odDb
         // model faces are oriented CW for some reason
         ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
 
-        osg::ref_ptr<osg::Program> modelProgram = shaderManager.makeProgram("model");
+        osg::ref_ptr<osg::Program> modelProgram = renderManager.getShaderFactory().getProgram("model");
         ss->setAttribute(modelProgram, osg::StateAttribute::ON);
 
         if(mShadingType != ModelShadingType::None)
