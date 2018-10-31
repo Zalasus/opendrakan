@@ -89,7 +89,7 @@ namespace od
 
     Layer *Level::getLayerById(uint32_t id)
     {
-        auto pred = [id](osg::ref_ptr<Layer> &l){ return l->getId() == id; };
+        auto pred = [id](std::unique_ptr<Layer> &l){ return l->getId() == id; };
 
         auto it = std::find_if(mLayers.begin(), mLayers.end(), pred);
         if(it == mLayers.end())
@@ -123,7 +123,7 @@ namespace od
         {
             if((*it)->contains(xz))
             {
-                mLayerLookupCache.push_back(*it);
+                mLayerLookupCache.push_back(it->get());
             }
         }
 
@@ -164,7 +164,7 @@ namespace od
 
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
-            if(*it == checkLayer)
+            if(it->get() == checkLayer)
             {
                 continue;
             }
@@ -175,7 +175,7 @@ namespace od
 
             if(newBox.intersects(checkLayer->getBoundingBox()))
             {
-                results.push_back(*it);
+                results.push_back(it->get());
             }
         }
     }
@@ -262,10 +262,10 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		osg::ref_ptr<Layer> layer(new Layer(*this));
+    		std::unique_ptr<Layer> layer(new Layer(*this));
     		layer->loadDefinition(dr);
 
-    		mLayers.push_back(layer);
+    		mLayers.push_back(std::move(layer));
     	}
 
     	dr >> DataReader::Expect<uint32_t>(1);
@@ -280,8 +280,7 @@ namespace od
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
 
-			mLayers[i]->buildGeometry();
-			mLayerGroup->addChild(mLayers[i]);
+			mLayerGroup->addChild(mLayers[i]->getOrBuildNode(mEngine.getRenderManager()));
 
 			if(mLayers[i]->getCollisionShape() != nullptr)
 			{

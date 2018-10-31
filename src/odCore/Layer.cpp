@@ -45,15 +45,10 @@ namespace od
     , mLightDropoffType(DROPOFF_NONE)
     , mVisibleTriangles(0)
     {
-        this->setNodeMask(odRender::NodeMasks::Layer);
     }
 
     Layer::~Layer()
     {
-        if(mLightCallback != nullptr)
-        {
-            this->removeCullCallback(mLightCallback);
-        }
     }
 
     void Layer::loadDefinition(DataReader &dr)
@@ -162,137 +157,6 @@ namespace od
             	++mVisibleTriangles;
             }
         }
-    }
-
-    void Layer::buildGeometry()
-    {
-        Logger::debug() << "Building geometry for layer " << mId;
-
-        // generate vertices and UVs for SegmentedGeode
-
-        odRender::GeodeBuilder gb("layer " + mLayerName, mLevel);
-        gb.setClampTextures(true);
-        gb.setNormalsFromCcw(true);
-
-        std::vector<osg::Vec3> vertices; // TODO: use internal vectors of GeodeBuilder. here we create two redundant vectors
-        vertices.reserve(mVertices.size());
-        for(size_t i = 0; i < mVertices.size(); ++i)
-        {
-        	size_t aXRel = i%(mWidth+1);
-            size_t aZRel = i/(mWidth+1); // has to be an integer operation to floor it
-
-            vertices.push_back(osg::Vec3(aXRel, mVertices[i].heightOffsetLu, aZRel));
-        }
-        gb.setVertexVector(vertices.begin(), vertices.end());
-
-        std::vector<odRender::Polygon> polygons;
-        polygons.reserve(mVisibleTriangles);
-        for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
-        {
-            size_t cellIndex = triIndex/2;
-            bool isLeft = (triIndex%2 == 0);
-            Cell cell = mCells[cellIndex];
-            odRender::Polygon poly;
-        	poly.vertexCount = 3;
-        	poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
-        	poly.doubleSided = (mType == TYPE_BETWEEN);
-
-        	if(poly.texture == HoleTextureRef || poly.texture == InvisibleTextureRef)
-        	{
-        		continue;
-        	}
-
-            int aZRel = cellIndex/mWidth; // has to be an integer operation to floor it
-
-            // calculate indices of corner vertices
-            // z x> --a------b---
-            // V      | cell | cell
-            //        |  #n  | #n+1
-            //      --c------d---
-            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
-            size_t b = a + 1;
-            size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
-            size_t d = c + 1;
-
-            osg::Vec2 uvA(cell.texCoords[3]/0xffff, cell.texCoords[7]/0xffff);
-            osg::Vec2 uvB(cell.texCoords[2]/0xffff, cell.texCoords[6]/0xffff);
-            osg::Vec2 uvC(cell.texCoords[0]/0xffff, cell.texCoords[4]/0xffff);
-            osg::Vec2 uvD(cell.texCoords[1]/0xffff, cell.texCoords[5]/0xffff);
-
-            if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
-            {
-                if(isLeft)
-                {
-                    poly.vertexIndices[0] = c;
-                    poly.vertexIndices[1] = b;
-                    poly.vertexIndices[2] = a;
-                    poly.uvCoords[0] = uvC;
-                    poly.uvCoords[1] = uvB;
-                    poly.uvCoords[2] = uvA;
-
-                }else
-                {
-                	poly.vertexIndices[0] = c;
-                    poly.vertexIndices[1] = d;
-                    poly.vertexIndices[2] = b;
-                    poly.uvCoords[0] = uvC;
-                    poly.uvCoords[1] = uvD;
-                    poly.uvCoords[2] = uvB;
-                }
-
-            }else // division = BACKSLASH
-            {
-                if(isLeft)
-                {
-                    poly.vertexIndices[0] = a;
-                    poly.vertexIndices[1] = c;
-                    poly.vertexIndices[2] = d;
-                    poly.uvCoords[0] = uvA;
-                    poly.uvCoords[1] = uvC;
-                    poly.uvCoords[2] = uvD;
-
-                }else
-                {
-                    poly.vertexIndices[0] = a;
-                    poly.vertexIndices[1] = d;
-                    poly.vertexIndices[2] = b;
-                    poly.uvCoords[0] = uvA;
-                    poly.uvCoords[1] = uvD;
-                    poly.uvCoords[2] = uvB;
-                }
-            }
-
-            if(mType == TYPE_CEILING)
-            {
-                // swap two vertices, thus reversing the winding order
-                std::swap(poly.vertexIndices[0], poly.vertexIndices[1]);
-                std::swap(poly.uvCoords[0], poly.uvCoords[1]);
-            }
-
-            polygons.push_back(poly);
-        }
-        gb.setPolygonVector(polygons.begin(), polygons.end());
-
-        mLayerGeode = new osg::Geode;
-        gb.build(mLayerGeode);
-
-        // store references to the shared arrays of the generated geometries. we need them to bake the layer lighting
-        mGeometryVertexArray = gb.getBuiltVertexArray();
-        mGeometryNormalArray = gb.getBuiltNormalArray();
-        mGeometryColorArray  = gb.getBuiltColorArray();
-        _bakeLocalLayerLight();
-
-        this->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
-        this->setName("layer " + mLayerName);
-        this->addChild(mLayerGeode);
-
-        osg::ref_ptr<osg::Program> layerProg = mLevel.getEngine().getRenderManager().getShaderFactory().getProgram("layer");
-        mLayerGeode->getOrCreateStateSet()->setAttribute(layerProg);
-
-        mLightCallback = new odRender::LightStateCallback(mLevel.getEngine().getRenderManager(), mLayerGeode, true);
-        mLightCallback->setLayerLight(osg::Vec3(), osg::Vec3(), osg::Vec3()); // disable layer light. we bake it into the color array
-        mLightCallback->lightingDirty();
-        this->addCullCallback(mLightCallback);
     }
 
     btCollisionShape *Layer::getCollisionShape()
@@ -574,6 +438,138 @@ namespace od
         }
 
         return val;
+    }
+
+    osg::ref_ptr<osg::Node> Layer::buildNode(odRender::RenderManager &renderManager)
+    {
+        osg::ref_ptr<osg::PositionAttitudeTransform> layerTransform = new osg::PositionAttitudeTransform;
+        layerTransform->setNodeMask(odRender::NodeMasks::Layer);
+        layerTransform->setPosition(osg::Vec3(mOriginX, getWorldHeightLu(), mOriginZ));
+        layerTransform->setName("layer " + mLayerName);
+
+        odRender::GeodeBuilder gb(layerTransform->getName(), mLevel);
+        gb.setClampTextures(true);
+        gb.setNormalsFromCcw(true);
+
+        std::vector<osg::Vec3> vertices; // TODO: use internal vectors of GeodeBuilder. here we create two redundant vectors
+        vertices.reserve(mVertices.size());
+        for(size_t i = 0; i < mVertices.size(); ++i)
+        {
+            size_t aXRel = i%(mWidth+1);
+            size_t aZRel = i/(mWidth+1); // has to be an integer operation to floor it
+
+            vertices.push_back(osg::Vec3(aXRel, mVertices[i].heightOffsetLu, aZRel));
+        }
+        gb.setVertexVector(vertices.begin(), vertices.end());
+
+        std::vector<odRender::Polygon> polygons;
+        polygons.reserve(mVisibleTriangles);
+        for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
+        {
+            size_t cellIndex = triIndex/2;
+            bool isLeft = (triIndex%2 == 0);
+            Cell cell = mCells[cellIndex];
+            odRender::Polygon poly;
+            poly.vertexCount = 3;
+            poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+            poly.doubleSided = (mType == TYPE_BETWEEN);
+
+            if(poly.texture == HoleTextureRef || poly.texture == InvisibleTextureRef)
+            {
+                continue;
+            }
+
+            int aZRel = cellIndex/mWidth; // has to be an integer operation to floor it
+
+            // calculate indices of corner vertices
+            // z x> --a------b---
+            // V      | cell | cell
+            //        |  #n  | #n+1
+            //      --c------d---
+            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
+            size_t b = a + 1;
+            size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
+            size_t d = c + 1;
+
+            osg::Vec2 uvA(cell.texCoords[3]/0xffff, cell.texCoords[7]/0xffff);
+            osg::Vec2 uvB(cell.texCoords[2]/0xffff, cell.texCoords[6]/0xffff);
+            osg::Vec2 uvC(cell.texCoords[0]/0xffff, cell.texCoords[4]/0xffff);
+            osg::Vec2 uvD(cell.texCoords[1]/0xffff, cell.texCoords[5]/0xffff);
+
+            if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
+            {
+                if(isLeft)
+                {
+                    poly.vertexIndices[0] = c;
+                    poly.vertexIndices[1] = b;
+                    poly.vertexIndices[2] = a;
+                    poly.uvCoords[0] = uvC;
+                    poly.uvCoords[1] = uvB;
+                    poly.uvCoords[2] = uvA;
+
+                }else
+                {
+                    poly.vertexIndices[0] = c;
+                    poly.vertexIndices[1] = d;
+                    poly.vertexIndices[2] = b;
+                    poly.uvCoords[0] = uvC;
+                    poly.uvCoords[1] = uvD;
+                    poly.uvCoords[2] = uvB;
+                }
+
+            }else // division = BACKSLASH
+            {
+                if(isLeft)
+                {
+                    poly.vertexIndices[0] = a;
+                    poly.vertexIndices[1] = c;
+                    poly.vertexIndices[2] = d;
+                    poly.uvCoords[0] = uvA;
+                    poly.uvCoords[1] = uvC;
+                    poly.uvCoords[2] = uvD;
+
+                }else
+                {
+                    poly.vertexIndices[0] = a;
+                    poly.vertexIndices[1] = d;
+                    poly.vertexIndices[2] = b;
+                    poly.uvCoords[0] = uvA;
+                    poly.uvCoords[1] = uvD;
+                    poly.uvCoords[2] = uvB;
+                }
+            }
+
+            if(mType == TYPE_CEILING)
+            {
+                // swap two vertices, thus reversing the winding order
+                std::swap(poly.vertexIndices[0], poly.vertexIndices[1]);
+                std::swap(poly.uvCoords[0], poly.uvCoords[1]);
+            }
+
+            polygons.push_back(poly);
+        }
+        gb.setPolygonVector(polygons.begin(), polygons.end());
+
+        osg::ref_ptr<osg::Geode> layerGeode = new osg::Geode;
+        gb.build(layerGeode);
+
+        // store references to the shared arrays of the generated geometries. we need them to bake the layer lighting
+        mGeometryVertexArray = gb.getBuiltVertexArray();
+        mGeometryNormalArray = gb.getBuiltNormalArray();
+        mGeometryColorArray  = gb.getBuiltColorArray();
+        _bakeLocalLayerLight();
+
+        osg::ref_ptr<osg::Program> layerProg = renderManager.getShaderFactory().getProgram("layer");
+        layerGeode->getOrCreateStateSet()->setAttribute(layerProg);
+
+        osg::ref_ptr<odRender::LightStateCallback> lightCallback = new odRender::LightStateCallback(mLevel.getEngine().getRenderManager(), layerGeode, true);
+        lightCallback->setLayerLight(osg::Vec3(), osg::Vec3(), osg::Vec3()); // disable layer light. we bake it into the color array
+        lightCallback->lightingDirty();
+        layerTransform->addCullCallback(lightCallback);
+
+        layerTransform->addChild(layerGeode);
+
+        return layerTransform;
     }
 
     void Layer::_bakeLocalLayerLight()

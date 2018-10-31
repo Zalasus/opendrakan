@@ -20,12 +20,13 @@
 #include <odCore/OdDefines.h>
 #include <odCore/db/Asset.h>
 #include <odCore/render/LightState.h>
+#include <odCore/render/Renderable.h>
 
 namespace od
 {
     class Level;
 
-    class Layer : public osg::PositionAttitudeTransform
+    class Layer : public odRender::Renderable
     {
     public:
 
@@ -56,7 +57,6 @@ namespace od
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
-        void buildGeometry();
         btCollisionShape *getCollisionShape();
 
         /**
@@ -93,6 +93,12 @@ namespace od
         inline osg::Vec3 getAmbientColor() const { return mAmbientColor; }
         inline osg::Vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
         inline const osg::BoundingBox &getBoundingBox() { return mBoundingBox; }
+
+
+    protected:
+
+        virtual osg::ref_ptr<osg::Node> buildNode(odRender::RenderManager &renderManager) override;
+
 
     private:
 
@@ -134,11 +140,10 @@ namespace od
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
-        osg::ref_ptr<osg::Geode> mLayerGeode;
+
         osg::ref_ptr<osg::Vec3Array> mGeometryVertexArray;
         osg::ref_ptr<osg::Vec3Array> mGeometryNormalArray;
         osg::ref_ptr<osg::Vec4Array> mGeometryColorArray;
-        osg::ref_ptr<odRender::LightStateCallback> mLightCallback;
 
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;

@@ -166,7 +166,7 @@ namespace od
         osg::ref_ptr<odDb::Class> mClass;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;
-        osg::ref_ptr<Layer> mLightingLayer;
+        Layer *mLightingLayer;
         osg::Vec3f mInitialPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
@@ -194,7 +194,7 @@ namespace od
         bool mIgnoreAttachmentScale;
 
         bool mLayerBelowObjectDirty;
-        osg::ref_ptr<Layer> mLayerBelowObject;
+        Layer *mLayerBelowObject;
 
         osg::ref_ptr<osg::NodeCallback> mUpdateCallback;
         osg::ref_ptr<odRender::LightStateCallback> mLightingCallback;
