@@ -60,7 +60,6 @@ namespace od
     , mFlags(0)
     , mInitialEventCount(0)
     , mIsScaled(false)
-    , mTransform(new osg::PositionAttitudeTransform)
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
@@ -165,6 +164,11 @@ namespace od
     void LevelObject::spawned()
     {
         _updateLayerBelowObject();
+
+        if(mLightingCallback != nullptr)
+        {
+            mLightingCallback->lightingDirty();
+        }
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
@@ -301,21 +305,6 @@ namespace od
         }
     }
 
-    Layer *LevelObject::getLightingLayer()
-    {
-        if(mLightingLayer != nullptr)
-        {
-            return mLightingLayer;
-        }
-
-        return getLayerBelowObject();
-    }
-
-    Layer *LevelObject::getLayerBelowObject()
-    {
-        return mLayerBelowObject;
-    }
-
     void LevelObject::attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale)
     {
         if(target == nullptr || mAttachmentTarget != nullptr)
@@ -409,9 +398,14 @@ namespace od
         mTransform->setAttitude(mRotation);
         mTransform->setScale(mScale);
 
-        mLightingCallback = new odRender::LightStateCallback(renderManager, mTransform);
+        mLightingCallback = new odRender::LightStateCallback(renderManager, mTransform, true);
         mTransform->addCullCallback(mLightingCallback);
-        mLightingCallback->lightingDirty();
+
+        Layer *lightSourceLayer = (mLightingLayer != nullptr) ? mLightingLayer : mLayerBelowObject;
+        if(lightSourceLayer != nullptr)
+        {
+            mLightingCallback->setLayerLight(lightSourceLayer->getLightColor(), lightSourceLayer->getAmbientColor(), lightSourceLayer->getLightDirection());
+        }
 
         mTransform->addUpdateCallback(new LevelObjectUpdateCallback(*this));
 

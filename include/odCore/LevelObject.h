@@ -68,6 +68,7 @@ namespace od
         inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline const std::vector<LevelObject*> &getLinkedObjects() const { return mLinkedObjects; }
+        inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }
         inline bool isScaled() const { return mIsScaled; }
 
@@ -84,9 +85,6 @@ namespace od
         void setVisible(bool v);
 
         void setObjectType(LevelObjectType type);
-
-        Layer *getLightingLayer();
-        Layer *getLayerBelowObject();
 
         /**
          * @brief Attaches this object to target object.
