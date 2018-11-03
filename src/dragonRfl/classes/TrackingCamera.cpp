@@ -100,6 +100,8 @@ namespace dragonRfl
 	        mCamUpdateCallback = new CamUpdateCallback(this);
 	        engine.getPlayer()->getLevelObject().getCachedNode()->addUpdateCallback(mCamUpdateCallback);
 	    }
+
+	    obj.setEnableRflUpdateHook(true);
 	}
 
 	void TrackingCamera::onDespawned(od::LevelObject &obj)
@@ -110,6 +112,11 @@ namespace dragonRfl
 	    {
 	        engine.getPlayer()->getLevelObject().getCachedNode()->removeUpdateCallback(mCamUpdateCallback);
 	    }
+	}
+
+	void TrackingCamera::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+	{
+	    updateCamera();
 	}
 
 	osg::Vec3f TrackingCamera::getEyePoint() const
