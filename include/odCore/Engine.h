@@ -88,6 +88,7 @@ namespace od
 		std::unique_ptr<Level> mLevel;
 		Player *mPlayer;
 		bool mSetUp;
+		bool mKeepRunning;
 	};
 
 }

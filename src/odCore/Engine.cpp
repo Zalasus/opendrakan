@@ -8,12 +8,13 @@
 
 #include <odCore/Engine.h>
 
+#include <chrono>
+#include <thread>
+
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
-#include <odCore/Player.h>
-#include <odCore/InputManager.h>
 #include <odCore/rfl/RflManager.h>
 
 namespace od
@@ -25,6 +26,7 @@ namespace od
 	, mEngineRootDir("")
 	, mPlayer(nullptr)
 	, mSetUp(false)
+	, mKeepRunning(true)
 	{
 	}
 
@@ -65,6 +67,28 @@ namespace od
         }
 
 		Logger::verbose() << "Everything set up. Starting main loop";
+
+		auto targetUpdateInterval = std::chrono::seconds(1/60.0);
+		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
+		while(mKeepRunning)
+		{
+		    auto loopStart = std::chrono::high_resolution_clock::now();
+
+		    if(mLevel != nullptr)
+		    {
+		        float relTime = std::chrono::duration_cast<std::chrono::seconds>(loopStart - lastUpdateStartTime).count();
+		        lastUpdateStartTime = loopStart;
+
+		        mLevel->update(relTime);
+		    }
+
+		    auto loopEnd = std::chrono::high_resolution_clock::now();
+		    auto loopTime = loopEnd - loopStart;
+		    if(loopTime < targetUpdateInterval)
+		    {
+		        std::this_thread::sleep_for(targetUpdateInterval - loopTime);
+		    }
+		}
 
 		Logger::info() << "Shutting down gracefully";
 	}

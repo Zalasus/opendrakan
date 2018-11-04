@@ -165,7 +165,7 @@ namespace od
         }
     }
 
-    void Level::update()
+    void Level::update(float relTime)
     {
         if(!mDestructionQueue.empty())
         {

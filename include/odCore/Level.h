@@ -45,7 +45,7 @@ namespace od
         Layer *getFirstLayerBelowPoint(const glm::vec3 &v);
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
 
-        void update();
+        void update(float relTime);
 
         LevelObject *getLevelObjectByIndex(uint16_t index);
 
