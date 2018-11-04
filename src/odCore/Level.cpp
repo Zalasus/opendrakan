@@ -9,7 +9,6 @@
 #include <odCore/Level.h>
 
 #include <algorithm>
-#include <osg/Depth>
 
 #include <odCore/OdDefines.h>
 #include <odCore/SrscRecordTypes.h>
@@ -19,17 +18,18 @@
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
+#include <odCore/BoundingBox.h>
 
 namespace od
 {
 
-    Level::Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode)
+    Level::Level(const FilePath &levelPath, Engine &engine)
     : mLevelPath(levelPath)
     , mEngine(engine)
     , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
-    , mPhysicsManager(*this, levelRootNode)
+    , mPhysicsManager(*this)
     {
     }
 
@@ -99,12 +99,12 @@ namespace od
         return mLayers[index].get();
     }
 
-    Layer *Level::getFirstLayerBelowPoint(const osg::Vec3 &v)
+    Layer *Level::getFirstLayerBelowPoint(const glm::vec3 &v)
     {
         // TODO: use an efficient spatial search here
         //  using brute force for now
 
-        osg::Vec2 xz(v.x(), v.z());
+        glm::vec2 xz(v.x, v.z);
 
         // first, find all candidate layers that overlap the given point in the xz plane
         mLayerLookupCache.clear();
@@ -149,7 +149,7 @@ namespace od
 
         results.clear();
 
-        osg::Vec3 epsilon(0.25, 0.25, 0.25);
+        float epsilon = 0.25;
 
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
@@ -158,11 +158,7 @@ namespace od
                 continue;
             }
 
-            osg::Vec3 min = (*it)->getBoundingBox()._min - epsilon;
-            osg::Vec3 max = (*it)->getBoundingBox()._max + epsilon;
-            osg::BoundingBox newBox(min, max);
-
-            if(newBox.intersects(checkLayer->getBoundingBox()))
+            if((*it)->getBoundingBox().intersects(checkLayer->getBoundingBox(), epsilon))
             {
                 results.push_back(it->get());
             }
@@ -272,11 +268,6 @@ namespace od
 			{
 				mPhysicsManager.addLayer(*mLayers[i]);
 			}
-    	}
-
-    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-    	{
-    	    (*it)->bakeOverlappingLayerLighting();
     	}
     }
 

@@ -19,9 +19,15 @@ namespace od
 
         AxisAlignedBoundingBox(const glm::vec3 &min, const glm::vec3 &max);
 
+        bool intersects(const AxisAlignedBoundingBox &aabb) const;
+        bool intersects(const AxisAlignedBoundingBox &aabb, glm::vec3::value_type epsilon) const;
+
     };
 
-    class OrientedBoundingBox;
+    class OrientedBoundingBox
+    {
+
+    };
 
 }
 
