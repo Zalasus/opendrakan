@@ -87,16 +87,6 @@ namespace odDb
         this->setName(name);
     }
 
-    BoneNode::BoneNode(const BoneNode &bn, const osg::CopyOp &copyop)
-    : osg::MatrixTransform(bn, copyop)
-    , mJointInfoIndex(bn.mJointInfoIndex)
-    , mInverseBindPoseXform(bn.mInverseBindPoseXform)
-    , mIsChannel(bn.mIsChannel)
-    , mIsRoot(bn.mIsRoot)
-    , mWeightCount(bn.mWeightCount)
-    {
-    }
-
     void BoneNode::setInverseBindPoseXform(const osg::Matrixf &m)
     {
         mInverseBindPoseXform = m;

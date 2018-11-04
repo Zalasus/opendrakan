@@ -12,7 +12,6 @@
 
 #include <odCore/Exception.h>
 #include <odCore/ZStream.h>
-#include <odCore/audio/Buffer.h>
 
 namespace odDb
 {
@@ -72,27 +71,6 @@ namespace odDb
 
         mTempSampleBuffer.resize(mDecompressedSize);
         sampleReader.read(reinterpret_cast<char*>(mTempSampleBuffer.data()), mDecompressedSize);
-    }
-
-    std::shared_ptr<odAudio::Buffer> Sound::getOrCreateBuffer(odAudio::SoundManager &soundManager)
-    {
-        if(mSoundBuffer != nullptr)
-        {
-            return mSoundBuffer;
-        }
-
-        mSoundBuffer.reset(new odAudio::Buffer(soundManager));
-
-        odAudio::Buffer::Format format = mSoundBuffer->getFormatFor(mBits, mChannels);
-
-        mSoundBuffer->setData(mTempSampleBuffer.data(), mTempSampleBuffer.size(), format, mFrequency);
-
-        // FIXME: this request is non-binding and may leave us with a huge block of unused but still allocated memory
-        //  (still better than just leaving it, though)
-        mTempSampleBuffer.clear();
-        mTempSampleBuffer.shrink_to_fit();
-
-        return mSoundBuffer;
     }
 
     float Sound::getLinearGain() const

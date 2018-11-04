@@ -248,7 +248,7 @@ namespace odPhysics
             throw od::Exception("Tried to make detector from object without model or collision shape to PhysicsManager");
         }
 
-	    osg::ref_ptr<ModelCollisionShape> shape;
+	    std::shared_ptr<ModelCollisionShape> shape;
 	    if(!obj.isScaled())
         {
 	        shape = obj.getClass()->getModel()->getModelBounds()->getSharedCollisionShape();

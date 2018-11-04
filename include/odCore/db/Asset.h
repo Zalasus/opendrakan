@@ -27,6 +27,7 @@ namespace odDb
 
 		void referenceCreated();
 		void referenceDestroyed();
+		void referenceReleased();
 		void setReferenceObserver(AssetReferenceObserver *observer);
 
 		inline od::RecordId getAssetId() const { return mId; }
@@ -148,6 +149,24 @@ namespace odDb
         }
 
         _AssetType *operator->() const
+        {
+            return mPtr;
+        }
+
+        _AssetType *release()
+        {
+            _AssetType *ptr = mPtr;
+            mPtr = nullptr;
+
+            if(ptr != nullptr)
+            {
+                mPtr->referenceReleased();
+            }
+
+            return ptr;
+        }
+
+        _AssetType *get()
         {
             return mPtr;
         }

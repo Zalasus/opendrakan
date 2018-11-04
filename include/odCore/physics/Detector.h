@@ -26,7 +26,7 @@ namespace odPhysics
     {
     public:
 
-        Detector(btCollisionWorld *collisionWorld, ModelCollisionShape *objectShape, od::LevelObject &obj);
+        Detector(btCollisionWorld *collisionWorld, std::shared_ptr<ModelCollisionShape> objectShape, od::LevelObject &obj);
         ~Detector();
 
         inline const std::vector<od::LevelObject*> &getIntersectingObjects() { return mIntersectingObjects; }
@@ -37,7 +37,7 @@ namespace odPhysics
     private:
 
         btCollisionWorld *mCollisionWorld;
-        osg::ref_ptr<ModelCollisionShape> mObjectShape;
+        std::shared_ptr<ModelCollisionShape> mObjectShape;
         od::LevelObject &mLevelObject;
         std::unique_ptr<btPairCachingGhostObject> mGhostObject;
         std::vector<od::LevelObject*> mIntersectingObjects;

@@ -9,9 +9,6 @@
 
 #include <algorithm>
 #include <limits>
-#include <osg/Geometry>
-#include <osg/LOD>
-#include <osg/FrontFace>
 
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
@@ -19,8 +16,7 @@
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
-#include <odCore/render/RenderManager.h>
-#include <odCore/render/ShaderFactory.h>
+
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -30,7 +26,7 @@ namespace odDb
 	Model::Model(AssetProvider &ap, od::RecordId modelId)
 	: Asset(ap, modelId)
 	, mModelName("")
-	, mShadingType(ModelShadingType::None)
+	, mShadingType(ShadingType::None)
 	, mBlendWithLandscape(false)
 	, mShiny(false)
 	, mUseAdditiveBlending(false)
@@ -49,16 +45,16 @@ namespace odDb
 		dr >> shadingType;
 		if((shadingType & 0x02) && !(shadingType & 0x01))
 		{
-		    mShadingType = ModelShadingType::Smooth;
+		    mShadingType = ShadingType::Smooth;
 
 		}else if((shadingType & 0x01) && !(shadingType & 0x02))
 		{
-		    mShadingType = ModelShadingType::Flat;
+		    mShadingType = ShadingType::Flat;
 
 		}else
 		{
 		    // if none or both flags are set, disable shading (the latter case as a failsafe)
-		    mShadingType = ModelShadingType::None;
+		    mShadingType = ShadingType::None;
 		}
 
 		mEnvironmentMapped = shadingType & 0x20;
@@ -72,14 +68,10 @@ namespace odDb
 		uint16_t vertexCount;
 		dr >> vertexCount;
 
-		mVertices.reserve(vertexCount);
+		mVertices.resize(vertexCount);
 		for(size_t i = 0; i < vertexCount; ++i)
 		{
-			osg::Vec3f vertex;
-
-			dr >> vertex;
-
-			mVertices.push_back(vertex);
+			dr >> mVertices[i];
 		}
 
 		mVerticesLoaded = true;
@@ -126,7 +118,7 @@ namespace odDb
 			   >> vertexCount
 			   >> textureIndex;
 
-			odRender::Polygon poly;
+			Polygon poly;
 			poly.doubleSided = flags & OD_POLYGON_FLAG_DOUBLESIDED;
 			poly.texture = mTextureRefs[textureIndex];
 			poly.vertexCount = vertexCount;
@@ -159,8 +151,8 @@ namespace odDb
 			throw od::Exception("Character models can't have bounds info");
 		}
 
-		osg::BoundingSpheref mainBs;
-		odPhysics::OrientedBoundingBox mainObb;
+		od::BoundingSphere mainBs;
+		od::OrientedBoundingBox mainObb;
 		uint16_t shapeCount;
 		uint16_t shapeType; // 0 = spheres, 1 = boxes
 
@@ -187,13 +179,13 @@ namespace odDb
 		{
 			if(shapeType == 0)
 			{
-				osg::BoundingSpheref bs;
+				od::BoundingSphere bs;
 				dr >> bs;
 				mModelBounds->addSphere(bs);
 
 			}else
 			{
-				odPhysics::OrientedBoundingBox obb;
+				od::OrientedBoundingBox obb;
 				dr >> obb;
 				mModelBounds->addBox(obb);
 
@@ -257,7 +249,7 @@ namespace odDb
 		dr >> jointInfoCount;
 		for(size_t jointIndex = 0; jointIndex < jointInfoCount; ++jointIndex)
 		{
-			osg::Matrixf inverseBoneTransform;
+			glm::mat4 inverseBoneTransform;
 			int32_t meshIndex;
             int32_t firstChildIndex;
             int32_t nextSiblingIndex;
@@ -272,7 +264,7 @@ namespace odDb
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
-            	std::vector<odRender::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
+            	std::vector<BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
 
 				uint16_t affectedVertexCount;
 				dr >> affectedVertexCount;
@@ -284,7 +276,7 @@ namespace odDb
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					odRender::BoneAffection bAff;
+					BoneAffection bAff;
 					bAff.jointIndex = jointIndex;
 					bAff.vertexIndex = affectedVertexIndex;
 					bAff.vertexWeight = weight;
@@ -345,8 +337,8 @@ namespace odDb
 		for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
 		{
 			uint32_t jointIndex;
-			osg::Matrixf xformA;
-			osg::Matrixf xformB;
+			glm::mat4 xformA;
+			glm::mat4 xformB;
             uint16_t capCount;
 
             dr >> jointIndex
@@ -417,101 +409,5 @@ namespace odDb
 		    }
 		}
  	}
-
-	osg::ref_ptr<osg::Node> Model::buildNode(odRender::RenderManager &renderManager)
-	{
-		if(!mTexturesLoaded || !mVerticesLoaded || !mPolygonsLoaded)
-		{
-			throw od::Exception("Must load at least vertices, textures and polygons before building geometry");
-		}
-
-		osg::ref_ptr<osg::Node> node;
-
-		if(mLodMeshInfos.size() > 0)
-		{
-			osg::ref_ptr<osg::LOD> lodNode(new osg::LOD);
-			node = lodNode;
-			lodNode->setRangeMode(osg::LOD::DISTANCE_FROM_EYE_POINT);
-			lodNode->setCenterMode(osg::LOD::USE_BOUNDING_SPHERE_CENTER);
-
-			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
-			{
-				odRender::GeodeBuilder gb(it->lodName, this->getAssetProvider());
-				gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
-				gb.setClampTextures(false);
-
-				// the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
-				//  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
-				size_t actualVertexCount = ((it+1 == mLodMeshInfos.end()) ? mVertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
-				size_t actualPolyCount = ((it+1 == mLodMeshInfos.end()) ? mPolygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
-
-				auto verticesBegin = mVertices.begin() + it->firstVertexIndex;
-				auto verticesEnd = mVertices.begin() + actualVertexCount + it->firstVertexIndex;
-				gb.setVertexVector(verticesBegin, verticesEnd);
-
-				auto polygonsBegin = mPolygons.begin() + it->firstPolygonIndex;
-				auto polygonsEnd = mPolygons.begin() + actualPolyCount + it->firstPolygonIndex;
-				gb.setPolygonVector(polygonsBegin, polygonsEnd);
-
-				auto bonesBegin = it->boneAffections.begin();
-				auto bonesEnd = it->boneAffections.end();
-				gb.setBoneAffectionVector(bonesBegin, bonesEnd);
-
-				osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
-				gb.build(newGeode);
-
-				mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
-
-				float minDistance = it->distanceThreshold;
-				float maxDistance = ((it+1) == mLodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
-				lodNode->addChild(newGeode, minDistance, maxDistance);
-			}
-
-		}else
-		{
-			odRender::GeodeBuilder gb(mModelName, this->getAssetProvider());
-			gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
-			gb.setClampTextures(false);
-			gb.setVertexVector(mVertices.begin(), mVertices.end());
-			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
-
-			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
-			node = newGeode;
-			gb.build(newGeode);
-
-			mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
-		}
-
-		node->setName(mModelName);
-
-		osg::StateSet *ss = node->getOrCreateStateSet();
-
-        // model faces are oriented CW for some reason
-        ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
-
-        osg::ref_ptr<osg::Program> modelProgram = renderManager.getShaderFactory().getProgram("model");
-        ss->setAttribute(modelProgram, osg::StateAttribute::ON);
-
-        if(mShadingType != ModelShadingType::None)
-        {
-            ss->setDefine("LIGHTING", osg::StateAttribute::ON);
-
-            if(mShiny)
-            {
-                ss->setDefine("SPECULAR", osg::StateAttribute::ON);
-            }
-        }
-
-        // if model is a character, bind the vertex attribute locations, but don't yet activate the RIGGING define.
-        //  doing so would cause characters without an attached SkeletonAnimationPlayer to glitch because
-        //  the shader would expect bone data to be uploaded but only receive all-zero-matrices.
-        if(isCharacter())
-        {
-            modelProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
-            modelProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
-        }
-
-        return node;
-	}
 }
 

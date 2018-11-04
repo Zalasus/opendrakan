@@ -23,7 +23,7 @@ namespace odDb
 
     protected:
 
-        virtual osg::ref_ptr<Animation> loadAsset(od::RecordId animId) override;
+        virtual AssetPtr<Animation> loadAsset(od::RecordId animId) override;
 
     };
 

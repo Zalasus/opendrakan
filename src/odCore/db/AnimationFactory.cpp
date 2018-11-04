@@ -17,7 +17,7 @@ namespace odDb
 	{
 	}
 
-	osg::ref_ptr<Animation> AnimationFactory::loadAsset(od::RecordId animId)
+	AssetPtr<Animation> AnimationFactory::loadAsset(od::RecordId animId)
 	{
 		od::SrscFile::DirIterator infoRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_INFO, animId);
         if(infoRecord == getSrscFile().getDirectoryEnd())
@@ -25,7 +25,7 @@ namespace odDb
         	return nullptr;
         }
 
-        osg::ref_ptr<Animation> newAnim(new Animation(getAssetProvider(), animId));
+        AssetPtr<Animation> newAnim(new Animation(getAssetProvider(), animId));
 
         newAnim->loadInfo(od::DataReader(getSrscFile().getStreamForRecord(infoRecord)));
 

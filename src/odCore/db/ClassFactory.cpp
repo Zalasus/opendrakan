@@ -49,7 +49,7 @@ namespace odDb
 	    return AssetRef::NULL_REF.assetId;
     }
 
-    osg::ref_ptr<Class> ClassFactory::loadAsset(od::RecordId classId)
+    AssetPtr<Class> ClassFactory::loadAsset(od::RecordId classId)
     {
         od::SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::CLASS, classId);
         if(it == getSrscFile().getDirectoryEnd())
@@ -57,7 +57,7 @@ namespace odDb
         	return nullptr;
         }
 
-        osg::ref_ptr<Class> newClass(new Class(getAssetProvider(), classId));
+        AssetPtr<Class> newClass(new Class(getAssetProvider(), classId));
         newClass->loadFromRecord(*this, od::DataReader(getSrscFile().getStreamForRecord(it)));
 
         return newClass;
