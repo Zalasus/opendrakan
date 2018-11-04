@@ -9,7 +9,8 @@
 #define INCLUDE_ODCORE_RFL_FIELD_H_
 
 #include <limits>
-#include <osg/Vec4>
+
+#include <glm/vec4.hpp>
 
 #include <odCore/rfl/RflMessage.h>
 #include <odCore/DataStream.h>
@@ -120,7 +121,7 @@ namespace odRfl
         inline uint8_t green() const { return (mValue >> 8) & 0xff; }
         inline uint8_t blue() const { return mValue & 0xff; }
         inline uint8_t alpha() const { return (mValue >> 24) & 0xff; }
-        inline osg::Vec4 asColorVector() const { return osg::Vec4(red()/255.0, green()/255.0, blue()/255.0, alpha()/255.0); }
+        inline glm::vec4 asColorVector() const { return glm::vec4(red()/255.0, green()/255.0, blue()/255.0, alpha()/255.0); }
 
     };
 
