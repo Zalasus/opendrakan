@@ -14,7 +14,6 @@
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
-#include <odCore/UpdateCallback.h>
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 #include <odCore/physics/BulletAdapter.h>
@@ -25,32 +24,6 @@
 
 namespace od
 {
-
-    class LevelObjectUpdateCallback : public UpdateCallback
-    {
-    public:
-
-        LevelObjectUpdateCallback(LevelObject &obj)
-        : mLevelObject(obj)
-        {
-        }
-
-        virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
-        {
-            tick(nv->getFrameStamp());
-
-            mLevelObject.update(mSimTime, mRelTime);
-
-            traverse(node, nv);
-        }
-
-    private:
-
-        LevelObject &mLevelObject;
-
-    };
-
-
 
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
@@ -127,7 +100,7 @@ namespace od
 
         }else
         {
-            mInitialScale.set(1,1,1);
+            mInitialScale = glm::vec3(1, 1, 1);
         }
 
         odRfl::ObjectBuilderProbe builder; // it is important that we probe the fields before reading the record for this one
@@ -144,16 +117,15 @@ namespace od
         builder.readFieldRecord(dr); // this will read the field stuff and overwrite the fields in the class instance
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
-        mInitialRotation = osg::Quat(
-                osg::DegreesToRadians((float)xRot), osg::Vec3(1,0,0),
-                osg::DegreesToRadians((float)yRot-90), osg::Vec3(0,1,0),  // -90 deg. determined to be correct through experiment
-                osg::DegreesToRadians((float)zRot), osg::Vec3(0,0,1));
+
+        glm::vec3 eulerAngles(glm::radians((float)xRot), glm::radians((float)yRot-90), glm::radians((float)zRot)); // -90 deg. determined to be correct through experiment
+        mInitialRotation = glm::quat(eulerAngles);
 
         mPosition = mInitialPosition;
         mRotation = mInitialRotation;
         mScale = mInitialScale;
 
-        _setVisible(mFlags & OD_OBJECT_FLAG_VISIBLE);
+        mIsVisible = mFlags & OD_OBJECT_FLAG_VISIBLE;
 
         if(mRflClassInstance != nullptr)
         {
@@ -164,11 +136,6 @@ namespace od
     void LevelObject::spawned()
     {
         _updateLayerBelowObject();
-
-        if(mLightingCallback != nullptr)
-        {
-            mLightingCallback->lightingDirty();
-        }
 
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
@@ -258,34 +225,34 @@ namespace od
         }
     }
 
-    void LevelObject::setPosition(const osg::Vec3 &v)
+    void LevelObject::setPosition(const glm::vec3 &v)
     {
         mPosition = v;
 
         _onTransformChanged(this);
     }
 
-    void LevelObject::setRotation(const osg::Quat &q)
+    void LevelObject::setRotation(const glm::quat &q)
     {
         mRotation = q;
 
         _onTransformChanged(this);
     }
 
-    void LevelObject::setScale(const osg::Vec3 &scale)
+    void LevelObject::setScale(const glm::vec3 &scale)
     {
         mScale = scale;
 
-        mIsScaled = (mScale != osg::Vec3(1,1,1));
+        mIsScaled = (mScale != glm::vec3(1,1,1));
 
         _onTransformChanged(this);
     }
 
     void LevelObject::setVisible(bool v)
     {
-        _setVisible(v);
-
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
+
+        mIsVisible = v;
     }
 
     void LevelObject::setObjectType(LevelObjectType type)
@@ -300,7 +267,7 @@ namespace od
         case LevelObjectType::Light:
         case LevelObjectType::Detector:
         default:
-            _setVisible(false);
+            mIsVisible = false;
             break;
         }
     }
@@ -330,8 +297,8 @@ namespace od
         mIgnoreAttachmentScale = ignoreScale;
 
         mAttachmentTranslationOffset = getPosition() - target->getPosition();
-        mAttachmentRotationOffset = getRotation().inverse() * target->getRotation();
-        mAttachmentScaleRatio = osg::componentDivide(getScale(), target->getScale());
+        mAttachmentRotationOffset = glm::inverse(getRotation()) * target->getRotation();
+        mAttachmentScaleRatio = getScale() / target->getScale();
     }
 
     void LevelObject::attachToChannel(LevelObject *target, size_t channelIndex, bool clearOffset)
@@ -386,60 +353,12 @@ namespace od
 
     void LevelObject::setWorldTransform(const btTransform& worldTrans)
     {
-        setPosition(odPhysics::BulletAdapter::toOsg(worldTrans.getOrigin()));
-        setRotation(odPhysics::BulletAdapter::toOsg(worldTrans.getRotation()));
-    }
-
-    osg::ref_ptr<osg::Node> LevelObject::buildNode(odRender::RenderManager &renderManager)
-    {
-        mTransform = new osg::PositionAttitudeTransform;
-        mTransform->setNodeMask(mIsVisible ? odRender::NodeMasks::Object : odRender::NodeMasks::Hidden);
-        mTransform->setPosition(mPosition);
-        mTransform->setAttitude(mRotation);
-        mTransform->setScale(mScale);
-
-        mLightingCallback = new odRender::LightStateCallback(renderManager, mTransform, true);
-        mTransform->addCullCallback(mLightingCallback);
-
-        Layer *lightSourceLayer = (mLightingLayer != nullptr) ? mLightingLayer : mLayerBelowObject;
-        if(lightSourceLayer != nullptr)
-        {
-            mLightingCallback->setLayerLight(lightSourceLayer->getLightColor(), lightSourceLayer->getAmbientColor(), lightSourceLayer->getLightDirection());
-        }
-
-        mTransform->addUpdateCallback(new LevelObjectUpdateCallback(*this));
-
-        if(mClass->hasModel())
-        {
-            osg::ref_ptr<osg::Node> modelNode = mClass->getModel()->getOrBuildNode(getLevel().getEngine().getRenderManager());
-            mTransform->addChild(modelNode);
-
-            // if model defines a skeleton, create an instance of that skeleton for this object
-            if(mClass->getModel()->getSkeletonBuilder() != nullptr)
-            {
-                mSkeletonRoot = new osg::Group;
-                mClass->getModel()->getSkeletonBuilder()->build(mSkeletonRoot);
-                mTransform->addChild(mSkeletonRoot);
-            }
-        }
-
-        return mTransform;
+        setPosition(odPhysics::BulletAdapter::toGlm(worldTrans.getOrigin()));
+        setRotation(odPhysics::BulletAdapter::toGlm(worldTrans.getRotation()));
     }
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
-        if(mTransform != nullptr)
-        {
-            mTransform->setPosition(mPosition);
-            mTransform->setAttitude(mRotation);
-            mTransform->setScale(mScale);
-        }
-
-        if(mLightingCallback != nullptr)
-        {
-            mLightingCallback->lightingDirty();
-        }
-
         mLayerBelowObjectDirty = true;
 
         if(mRflClassInstance != nullptr)
@@ -456,12 +375,6 @@ namespace od
     void LevelObject::_updateLayerBelowObject()
     {
         mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
-
-        // if lighting layer is not fixed, apply potentially changed layer to object
-        if(mLightingCallback != nullptr && mLightingLayer == nullptr && mLayerBelowObject != nullptr)
-        {
-            mLightingCallback->setLayerLight(mLayerBelowObject->getLightColor(), mLayerBelowObject->getAmbientColor(), mLayerBelowObject->getLightDirection());
-        }
 
         mLayerBelowObjectDirty = false;
     }
@@ -497,7 +410,7 @@ namespace od
 
         if(!mIgnoreAttachmentScale)
         {
-            mScale = osg::componentMultiply(mAttachmentTarget->getScale(), mAttachmentScaleRatio);
+            mScale = mAttachmentTarget->getScale() * mAttachmentScaleRatio;
         }
 
         _onTransformChanged(transformChangeSource);
@@ -514,17 +427,6 @@ namespace od
 
         mAttachedObjects.clear();
     }
-
-    void LevelObject::_setVisible(bool v)
-    {
-        mIsVisible = v;
-
-        if(mTransform != nullptr)
-        {
-            mTransform->setNodeMask(v ? odRender::NodeMasks::Object : odRender::NodeMasks::Hidden);
-        }
-    }
-
 }
 
 

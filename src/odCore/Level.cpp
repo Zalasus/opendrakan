@@ -29,15 +29,8 @@ namespace od
     , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
-    , mLevelRootNode(levelRootNode)
-    , mLayerGroup(new osg::Group)
-    , mObjectGroup(new osg::Group)
     , mPhysicsManager(*this, levelRootNode)
     {
-    	mLevelRootNode->addChild(mLayerGroup);
-    	mLevelRootNode->addChild(mObjectGroup);
-
-		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
     }
 
     Level::~Level()
@@ -53,9 +46,6 @@ namespace od
     	{
     		mPhysicsManager.removeLayer(*it->get());
     	}
-
-    	mLevelRootNode->removeChild(mLayerGroup);
-        mLevelRootNode->removeChild(mObjectGroup);
     }
 
     void Level::loadLevel()
@@ -77,7 +67,6 @@ namespace od
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
-            mObjectGroup->addChild((*it)->getOrBuildNode(mEngine.getRenderManager()));
             (*it)->spawned();
         }
     }
@@ -189,10 +178,6 @@ namespace od
             {
                 (*it)->despawned();
                 (*it)->destroyed();
-                if((*it)->getCachedNode() != nullptr)
-                {
-                    mObjectGroup->removeChild((*it)->getCachedNode());
-                }
 
                 it = mDestructionQueue.erase(it);
             }
@@ -282,8 +267,6 @@ namespace od
 			DataReader zdr(zstr);
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
-
-			mLayerGroup->addChild(mLayers[i]->getOrBuildNode(mEngine.getRenderManager()));
 
 			if(mLayers[i]->getCollisionShape() != nullptr)
 			{

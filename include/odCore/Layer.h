@@ -9,14 +9,13 @@
 #define LAYER_H_
 
 #include <memory>
-#include <osg/Group>
-#include <osg/PositionAttitudeTransform>
-#include <osg/Geode>
-#include <osg/Light>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 #include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 #include <odCore/DataStream.h>
+#include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
 #include <odCore/db/Asset.h>
 #include <odCore/render/LightState.h>
@@ -26,7 +25,7 @@ namespace od
 {
     class Level;
 
-    class Layer : public odRender::Renderable
+    class Layer
     {
     public:
 
@@ -60,23 +59,17 @@ namespace od
         btCollisionShape *getCollisionShape();
 
         /**
-         * Bakes lighting of overlapping layers into this layer's geometry. Call only after all potentially overlapping
-         * layer's geometries have been built.
-         */
-        void bakeOverlappingLayerLighting();
-
-        /**
          * Checks whether this layer has a hole at the absolute xz coordiante \c absolutePos.
          * Coordinates are in lu, relative to the level's origin.
          *
          * If the passed coordinate is outside the layer's bounds, true will be returned.
          */
-        bool hasHoleAt(const osg::Vec2 &absolutePos);
+        bool hasHoleAt(const glm::vec2 &absolutePos);
 
-        bool contains(const osg::Vec2 &xzCoord);
-        bool contains(const osg::Vec2 &xzCoord, float epsilon);
+        bool contains(const glm::vec2 &xzCoord);
+        bool contains(const glm::vec2 &xzCoord, float epsilon);
 
-        float getAbsoluteHeightAt(const osg::Vec2 &xzCoord);
+        float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
 
 
@@ -89,20 +82,14 @@ namespace od
         inline uint32_t getHeight() const { return mHeight; }
         inline float getWorldHeightWu() const { return mWorldHeightWu; }
         inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
-        inline osg::Vec3 getLightColor() const { return mLightColor; }
-        inline osg::Vec3 getAmbientColor() const { return mAmbientColor; }
-        inline osg::Vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
-        inline const osg::BoundingBox &getBoundingBox() { return mBoundingBox; }
-
-
-    protected:
-
-        virtual osg::ref_ptr<osg::Node> buildNode(odRender::RenderManager &renderManager) override;
+        inline glm::vec3 getLightColor() const { return mLightColor; }
+        inline glm::vec3 getAmbientColor() const { return mAmbientColor; }
+        inline glm::vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
+        inline const AxisAlignedBoundingBox &getBoundingBox() { return mBoundingBox; }
 
 
     private:
 
-        void _bakeLocalLayerLight();
 
         struct Cell
         {
@@ -116,7 +103,6 @@ namespace od
         {
             uint8_t type;
             float heightOffsetLu;
-            osg::Vec3 calculatedLightColor;
         };
 
         Level              	   &mLevel;
@@ -131,9 +117,9 @@ namespace od
         uint32_t                mFlags; // 2 = member of alternate blending group
         float                   mLightDirection;
         float                   mLightAscension;
-        osg::Vec3               mLightColor;
-        osg::Vec3               mAmbientColor;
-        osg::Vec3               mLightDirectionVector; // direction _towards_ light!
+        glm::vec3               mLightColor;
+        glm::vec3               mAmbientColor;
+        glm::vec3               mLightDirectionVector; // direction _towards_ light!
         LightDropoffType        mLightDropoffType;
         std::vector<uint32_t>   mVisibleLayers;
 
@@ -141,14 +127,9 @@ namespace od
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
 
-        osg::ref_ptr<osg::Vec3Array> mGeometryVertexArray;
-        osg::ref_ptr<osg::Vec3Array> mGeometryNormalArray;
-        osg::ref_ptr<osg::Vec4Array> mGeometryColorArray;
-
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;
-
-        osg::BoundingBox mBoundingBox;
+        AxisAlignedBoundingBox mBoundingBox;
     };
 
 }

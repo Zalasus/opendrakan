@@ -13,13 +13,8 @@
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
 #include <odCore/Player.h>
-#include <odCore/Camera.h>
 #include <odCore/InputManager.h>
-#include <odCore/render/RenderManager.h>
-#include <odCore/render/ShaderFactory.h>
-#include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/RflManager.h>
-#include <odCore/audio/SoundManager.h>
 
 namespace od
 {
@@ -28,9 +23,7 @@ namespace od
 	: mHasInitialLevelOverride(false)
 	, mInitialLevelOverride("")
 	, mEngineRootDir("")
-	, mCamera(nullptr)
 	, mPlayer(nullptr)
-	, mMaxFrameRate(60)
 	, mSetUp(false)
 	{
 	}
@@ -47,53 +40,6 @@ namespace od
 	    }
 
 	    _findEngineRoot("Dragon.rrc");
-
-	    mViewer = new osgViewer::Viewer;
-        mViewer->realize();
-        mViewer->setName("OpenDrakan");
-        mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-        mViewer->setKeyEventSetsDone(0); // we handle the escape key ourselves
-
-        // set window title
-        osgViewer::Viewer::Windows windows;
-        mViewer->getWindows(windows);
-        if(!windows.empty())
-        {
-            windows.back()->setWindowName(mViewer->getName());
-        }
-
-        osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =
-                new osgViewer::ScreenCaptureHandler::WriteToFile("screenshot", "png", osgViewer::ScreenCaptureHandler::WriteToFile::SEQUENTIAL_NUMBER);
-        mScreenshotHandler = new osgViewer::ScreenCaptureHandler(captureOp, 1);
-        mScreenshotHandler->setKeyEventTakeScreenShot(osgGA::GUIEventAdapter::KEY_F12);
-        mViewer->addEventHandler(mScreenshotHandler);
-
-        osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
-        statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
-        statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
-        mViewer->addEventHandler(statsHandler);
-
-        mRootNode = new osg::Group();
-        mViewer->setSceneData(mRootNode);
-
-        mRenderManager.reset(new odRender::RenderManager(*this, mRootNode));
-
-        mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);
-        osg::StateSet *rootStateSet = mRootNode->getOrCreateStateSet();
-        rootStateSet->addUniform(mGammaUniform, osg::StateAttribute::ON);
-        rootStateSet->setMode(GL_FRAMEBUFFER_SRGB, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-        mInputManager = new InputManager(*this, mViewer);
-
-	    mGuiManager.reset(new odGui::GuiManager(*this, mViewer));
-
-	    std::vector<std::string> devs;
-	    odAudio::SoundManager::listDeviceNames(devs);
-	    for(std::string s : devs)
-	    {
-	        Logger::info() << "Sound device: '" << s << "'";
-	    }
-	    mSoundManager.reset(new odAudio::SoundManager(nullptr));
 
 	    mDbManager.reset(new odDb::DbManager(*this));
         mRflManager.reset(new odRfl::RflManager(*this));
@@ -120,35 +66,6 @@ namespace od
 
 		Logger::verbose() << "Everything set up. Starting main loop";
 
-		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
-		double simTime = 0;
-		double frameTime = 0;
-		while(!mViewer->done())
-		{
-			double minFrameTime = (mMaxFrameRate > 0.0) ? (1.0/mMaxFrameRate) : 0.0;
-			osg::Timer_t startFrameTick = osg::Timer::instance()->tick();
-
-			mViewer->advance(simTime);
-			mViewer->eventTraversal();
-
-			if(mLevel != nullptr)
-			{
-			    mLevel->update(); // TODO: put in update callback
-			}
-
-			mViewer->updateTraversal();
-			mViewer->renderingTraversals();
-
-			osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
-			frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
-			simTime += frameTime;
-			if(frameTime < minFrameTime)
-			{
-				simTime += (minFrameTime-frameTime);
-				OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0*(minFrameTime-frameTime)));
-			}
-		}
-
 		Logger::info() << "Shutting down gracefully";
 	}
 
@@ -159,25 +76,10 @@ namespace od
 	        mLevel = nullptr;
 	    }
 
-	    mLevel.reset(new od::Level(levelFile, *this, mRootNode));
+	    mLevel.reset(new od::Level(levelFile, *this));
         mLevel->loadLevel();
 
-        if(mCamera != nullptr)
-        {
-            mCamera->setOsgCamera(mViewer->getCamera());
-        }
-
         mLevel->spawnAllObjects();
-	}
-
-	void Engine::setFullScreenGamma(float gamma)
-	{
-	    if(mGammaUniform == nullptr)
-	    {
-	        return;
-	    }
-
-	    mGammaUniform->set(gamma);
 	}
 
 	void Engine::_findEngineRoot(const std::string &rrcFileName)

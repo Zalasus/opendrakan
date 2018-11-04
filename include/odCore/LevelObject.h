@@ -11,7 +11,8 @@
 
 #include <memory>
 #include <list>
-#include <osg/PositionAttitudeTransform>
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <LinearMath/btMotionState.h>
 
 #include <odCore/db/Class.h>
@@ -49,7 +50,7 @@ namespace od
         Always
     };
 
-    class LevelObject : public odRender::Renderable, public btMotionState
+    class LevelObject : public btMotionState
     {
     public:
 
@@ -60,10 +61,9 @@ namespace od
         inline odDb::Class *getClass() { return mClass; }
         inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
-        inline osg::Vec3 getPosition() const { return mPosition; }
-        inline osg::Vec3 getScale() const { return mScale; }
-        inline osg::Quat getRotation() const { return mRotation; }
-        inline osg::Group *getSkeletonRoot() { return mSkeletonRoot; }
+        inline glm::vec3 getPosition() const { return mPosition; }
+        inline glm::vec3 getScale() const { return mScale; }
+        inline glm::quat getRotation() const { return mRotation; }
         inline LevelObjectState getState() const { return mState; }
         inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
@@ -79,9 +79,9 @@ namespace od
         void update(double simTime, double relTime);
         void messageReceived(LevelObject &sender, odRfl::RflMessage message);
 
-        void setPosition(const osg::Vec3 &v);
-        void setRotation(const osg::Quat &q);
-        void setScale(const osg::Vec3 &scale);
+        void setPosition(const glm::vec3 &v);
+        void setRotation(const glm::quat &q);
+        void setScale(const glm::vec3 &scale);
         void setVisible(bool v);
 
         void setObjectType(LevelObjectType type);
@@ -130,9 +130,6 @@ namespace od
 
         /**
          * @brief Enables or disables the RFL update hook.
-         *
-         * Do not disable the update callback by calling this method from the update hook itself! Doing so messes with
-         * OSG's update traversal and will likely cause it to segfault.
          */
         void setEnableRflUpdateHook(bool enableHook);
         void messageAllLinkedObjects(odRfl::RflMessage message);
@@ -143,42 +140,33 @@ namespace od
         virtual void setWorldTransform(const btTransform& worldTrans) override;
 
 
-    protected:
-
-        virtual osg::ref_ptr<osg::Node> buildNode(odRender::RenderManager &renderManager) override;
-
-
     private:
 
         void _onTransformChanged(LevelObject *transformChangeSource);
         void _updateLayerBelowObject();
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
-        void _setVisible(bool b); // just so we can switch visibility internally without producing logs everytime
 
 
         Level &mLevel;
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
-        osg::ref_ptr<odDb::Class> mClass;
+        odDb::AssetPtr<odDb::Class> mClass;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;
         Layer *mLightingLayer;
-        osg::Vec3f mInitialPosition;
+        glm::vec3 mInitialPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
         std::vector<uint16_t> mLinks;
-        osg::Vec3f mInitialScale;
-        osg::Quat  mInitialRotation;
+        glm::vec3 mInitialScale;
+        glm::quat mInitialRotation;
         bool mIsScaled;
 
-        osg::Vec3 mPosition;
-        osg::Quat mRotation;
-        osg::Vec3 mScale;
+        glm::vec3 mPosition;
+        glm::quat mRotation;
+        glm::vec3 mScale;
 
-        osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
-        osg::ref_ptr<odRender::LightStateCallback> mLightingCallback;
-        osg::ref_ptr<osg::Group> mSkeletonRoot;
         LevelObjectState mState;
         LevelObjectType mObjectType;
         SpawnStrategy mSpawnStrategy;
@@ -188,9 +176,9 @@ namespace od
 
         od::LevelObject *mAttachmentTarget;
         std::list<od::LevelObject*> mAttachedObjects;
-        osg::Vec3 mAttachmentTranslationOffset;
-        osg::Quat mAttachmentRotationOffset;
-        osg::Vec3 mAttachmentScaleRatio;
+        glm::vec3 mAttachmentTranslationOffset;
+        glm::quat mAttachmentRotationOffset;
+        glm::vec3 mAttachmentScaleRatio;
         bool mIgnoreAttachmentTranslation;
         bool mIgnoreAttachmentRotation;
         bool mIgnoreAttachmentScale;

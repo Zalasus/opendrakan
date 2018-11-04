@@ -10,8 +10,8 @@
 
 #include <LinearMath/btVector3.h>
 #include <LinearMath/btTransform.h>
-#include <osg/Vec3>
-#include <osg/Quat>
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace odPhysics
 {
@@ -20,27 +20,27 @@ namespace odPhysics
     {
     public:
 
-        inline static btVector3 toBullet(const osg::Vec3f &v)
+        inline static btVector3 toBullet(const glm::vec3 &v)
         {
-            return btVector3(v.x(), v.y(), v.z());
+            return btVector3(v.x, v.y, v.z);
         }
 
-        inline static osg::Vec3 toOsg(const btVector3 &v)
+        inline static glm::vec3 toGlm(const btVector3 &v)
         {
-            return osg::Vec3(v.getX(), v.getY(), v.getZ());
+            return glm::vec3(v.getX(), v.getY(), v.getZ());
         }
 
-        inline static btQuaternion toBullet(const osg::Quat &q)
+        inline static btQuaternion toBullet(const glm::quat &q)
         {
-            return btQuaternion(q.x(), q.y(), q.z(), q.w());
+            return btQuaternion(q.x, q.y, q.z, q.w);
         }
 
-        inline static osg::Quat toOsg(const btQuaternion &q)
+        inline static glm::quat toGlm(const btQuaternion &q)
         {
-            return osg::Quat(q.getX(), q.getY(), q.getZ(), q.getW());
+            return glm::quat(q.getX(), q.getY(), q.getZ(), q.getW());
         }
 
-        inline static btTransform makeBulletTransform(const osg::Vec3f &translation, const osg::Quat &rotation)
+        inline static btTransform makeBulletTransform(const glm::vec3 &translation, const glm::quat &rotation)
         {
             return btTransform(toBullet(rotation), toBullet(translation));
         }

@@ -9,8 +9,6 @@
 #define INCLUDE_ENGINE_H_
 
 #include <memory>
-#include <osgViewer/Viewer>
-#include <osgViewer/ViewerEventHandlers>
 
 #include <odCore/FilePath.h>
 
@@ -68,17 +66,11 @@ namespace od
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline Player *getPlayer() { return mPlayer; }
         inline void setPlayer(Player *p) { mPlayer = p; }
-		inline void setCamera(Camera *cam) { mCamera = cam; }
-		inline Camera *getCamera() { return mCamera; }
-		inline double getMaxFrameRate() const { return mMaxFrameRate; }
-		inline void setMaxFrameRate(double fps) { mMaxFrameRate = fps; } // 0 for no cap
 
 		void setUp();
 		void run();
 
 		void loadLevel(const FilePath &levelFile);
-
-		void setFullScreenGamma(float gamma);
 
 
 	private:
@@ -87,7 +79,6 @@ namespace od
 
 		std::unique_ptr<odDb::DbManager> mDbManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
-		osg::ref_ptr<InputManager> mInputManager;
 		std::unique_ptr<odGui::GuiManager> mGuiManager;
 		std::unique_ptr<odRender::RenderManager> mRenderManager;
 		std::unique_ptr<odAudio::SoundManager> mSoundManager;
@@ -95,13 +86,7 @@ namespace od
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;
-		osg::ref_ptr<osg::Group> mRootNode;
-		osg::ref_ptr<osgViewer::Viewer> mViewer;
-		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
-		osg::ref_ptr<osg::Uniform> mGammaUniform;
-		Camera *mCamera;
 		Player *mPlayer;
-		double mMaxFrameRate;
 		bool mSetUp;
 	};
 
