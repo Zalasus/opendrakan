@@ -71,11 +71,10 @@ namespace odDb
 		Model(AssetProvider &ap, od::RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
 
-		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
-		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
+		inline Skeleton *getSkeleton() { return mSkeleton.get(); } ///< May return nullptr if no skeleton present.
 		inline odPhysics::ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
-		inline bool isCharacter() const { return mSkeletonBuilder != nullptr; }
+		inline bool hasSkeleton() const { return mSkeleton != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
 		inline ShadingType getShadingType() const { return mShadingType; }
 
@@ -108,7 +107,7 @@ namespace odDb
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::unique_ptr<odPhysics::ModelBounds> mModelBounds;
-		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
+		std::unique_ptr<Skeleton> mSkeleton;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;

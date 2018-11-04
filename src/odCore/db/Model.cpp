@@ -146,11 +146,6 @@ namespace odDb
 
 	void Model::loadBoundingData(ModelFactory &factory, od::DataReader &&dr)
 	{
-		if(isCharacter())
-		{
-			throw od::Exception("Character models can't have bounds info");
-		}
-
 		od::BoundingSphere mainBs;
 		od::OrientedBoundingBox mainObb;
 		uint16_t shapeCount;
@@ -204,11 +199,6 @@ namespace odDb
 
 	void Model::loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr)
 	{
-		if(hasBounds())
-		{
-			throw od::Exception("Character models can't have bounds info");
-		}
-
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
@@ -228,7 +218,7 @@ namespace odDb
 		}
 
 
-		mSkeletonBuilder.reset(new SkeletonBuilder);
+		mSkeleton.reset(new Skeleton);
 
 		// node info
 		uint16_t nodeInfoCount;
@@ -241,7 +231,7 @@ namespace odDb
 			dr.read(nodeName, 32);
 			dr >> jointInfoIndex;
 
-			mSkeletonBuilder->addBoneNode(std::string(nodeName), jointInfoIndex);
+			mSkeleton->addNode(std::string(nodeName), jointInfoIndex);
 		}
 
 		// joint info
@@ -259,7 +249,7 @@ namespace odDb
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
 
-            mSkeletonBuilder->addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeleton->addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
@@ -281,11 +271,6 @@ namespace odDb
 					bAff.vertexIndex = affectedVertexIndex;
 					bAff.vertexWeight = weight;
 					boneAffections.push_back(bAff);
-				}
-
-				if(lodIndex == 0)
-				{
-					mSkeletonBuilder->pfffSetWeightCount(affectedVertexCount);
 				}
             }
 
@@ -346,7 +331,7 @@ namespace odDb
 			   >> xformB
 			   >> capCount;
 
-            mSkeletonBuilder->makeChannel(jointIndex);
+            mSkeleton->markJointAsChannel(jointIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {
