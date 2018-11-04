@@ -10,7 +10,6 @@
 
 #include <vector>
 #include <memory>
-#include <osg/Referenced>
 
 #include <odCore/db/Asset.h>
 
@@ -26,8 +25,7 @@ namespace odAudio
 namespace odDb
 {
 
-
-	class Sound : public Asset, public osg::Referenced
+	class Sound : public Asset
 	{
 	public:
 

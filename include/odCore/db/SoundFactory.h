@@ -25,7 +25,7 @@ namespace odDb
     protected:
 
         // implement AssetFactory<Texture>
-        virtual osg::ref_ptr<Sound> loadAsset(od::RecordId soundId) override;
+        virtual AssetPtr<Sound> loadAsset(od::RecordId soundId) override;
 
 
     };

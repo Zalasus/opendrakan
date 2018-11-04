@@ -9,8 +9,6 @@
 #define INCLUDE_ASSETFACTORY_H_
 
 #include <map>
-#include <osg/ref_ptr>
-#include <osg/Observer>
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
@@ -26,7 +24,7 @@ namespace odDb
 	 * Common interface for TextureFactory, AssetFactory etc.
 	 */
 	template <typename _AssetType>
-	class AssetFactory : public osg::Observer
+	class AssetFactory : public AssetReferenceObserver
 	{
 	public:
 
@@ -39,7 +37,7 @@ namespace odDb
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
 		inline od::SrscFile &getSrscFile() { return mSrscFile; }
 
-		osg::ref_ptr<_AssetType> getAsset(od::RecordId assetId);
+		AssetPtr<_AssetType> getAsset(od::RecordId assetId);
 
 
 	protected:
@@ -53,10 +51,10 @@ namespace odDb
 		 * The implementing class must load the asset with the given ID and return it, or return nullptr if
 		 * it could not be found. In the latter case, AssetFactory will produce an appropriate error message and exception.
 		 */
-		virtual osg::ref_ptr<_AssetType> loadAsset(od::RecordId id) = 0;
+		virtual AssetPtr<_AssetType> loadAsset(od::RecordId id) = 0;
 
-		// override osg::Observer
-		virtual void objectDeleted(void *object) override;
+		// implement AssetReferenceObserver
+		virtual void onLastReferenceDestroyed(Asset *asset) override;
 
 
 	private:
@@ -83,18 +81,18 @@ namespace odDb
 	}
 
 	template <typename _AssetType>
-	osg::ref_ptr<_AssetType> AssetFactory<_AssetType>::getAsset(od::RecordId assetId)
+	AssetPtr<_AssetType> AssetFactory<_AssetType>::getAsset(od::RecordId assetId)
 	{
 		_AssetType *cached = this->_getAssetFromCache(assetId);
 	    if(cached != nullptr)
 	    {
 	        Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
-	        return osg::ref_ptr<_AssetType>(cached);
+	        return AssetPtr<_AssetType>(cached);
 	    }
 
 	    // not cached. let implementation handle loading
 	    Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile.getFilePath().fileStr();
-	    osg::ref_ptr<_AssetType> loaded = this->loadAsset(assetId);
+	    AssetPtr<_AssetType> loaded = this->loadAsset(assetId);
 	    if(loaded == nullptr)
 	    {
 	        Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
@@ -106,16 +104,16 @@ namespace odDb
 	}
 
 	template <typename _AssetType>
-	void AssetFactory<_AssetType>::objectDeleted(void *object)
+	void AssetFactory<_AssetType>::onLastReferenceDestroyed(Asset *asset)
 	{
-		_AssetType *asset = dynamic_cast<_AssetType*>(static_cast<osg::Referenced*>(object)); // a bit unsafe but osg gives us no choice
-	    if(asset == nullptr)
+		_AssetType *childAsset = dynamic_cast<_AssetType*>(asset); // FIXME: kinda unneccessary dyanmic cast. only used for type-checking
+	    if(childAsset == nullptr)
 	    {
 	        Logger::warn() << AssetTraits<_AssetType>::name() << " factory was notified of deletion of non-" << AssetTraits<_AssetType>::name() << " object";
 	        return;
 	    }
 
-	    od::RecordId assetId = asset->getAssetId();
+	    od::RecordId assetId = childAsset->getAssetId();
 
 	    Logger::debug() << "Unregistering " << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " from cache";
 
@@ -143,7 +141,7 @@ namespace odDb
 			return;
 		}
 
-		asset->addObserver(this);
+		asset->setReferenceObserver(this);
 
 		mAssetCache[assetId] = asset;
 	}

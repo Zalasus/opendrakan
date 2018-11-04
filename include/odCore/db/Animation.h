@@ -10,8 +10,7 @@
 
 #include <vector>
 #include <utility>
-#include <osg/Matrix>
-#include <osg/Referenced>
+#include <glm/mat4x4.hpp>
 
 #include <odCore/db/Asset.h>
 
@@ -21,13 +20,13 @@ namespace odDb
 	struct AnimationKeyframe
 	{
 		float time;
-		osg::Matrixf xform;
+		glm::mat4 xform;
 	};
 
 	/**
 	 * An animation for a rigged character, as found in *.adb containers.
 	 */
-	class Animation : public Asset, public osg::Referenced
+	class Animation : public Asset
 	{
 	public:
 

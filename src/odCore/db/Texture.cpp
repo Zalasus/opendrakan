@@ -8,8 +8,6 @@
 #include <odCore/db/Texture.h>
 
 #include <functional>
-#include <osgDB/WriteFile>
-#include <osgDB/ReadFile>
 
 #include <odCore/ZStream.h>
 #include <odCore/Logger.h>
@@ -228,7 +226,7 @@ namespace odDb
         }
 
         // translate whatever is stored in texture into 8-bit RGBA format
-        unsigned char *pixBuffer = new unsigned char[mWidth*mHeight*4]; // no need for RAII, osg takes ownership
+        mRgba8888Data.reserve(mWidth*mHeight*4);
         for(size_t i = 0; i < mWidth*mHeight*4; i += 4)
         {
         	uint8_t red;
@@ -243,19 +241,16 @@ namespace odDb
             	alpha = 0;
             }
 
-            pixBuffer[i]   = red;
-            pixBuffer[i+1] = green;
-            pixBuffer[i+2] = blue;
-            pixBuffer[i+3] = alpha;
+            mRgba8888Data[i]   = red;
+            mRgba8888Data[i+1] = green;
+            mRgba8888Data[i+2] = blue;
+            mRgba8888Data[i+3] = alpha;
         }
+
         if(zstr != nullptr)
         {
             zstr->seekToEndOfZlib();
         }
-
-
-
-        this->setImage(mWidth, mHeight, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
 
         if(!mMaterialClassRef.isNull())
         {
@@ -276,7 +271,7 @@ namespace odDb
                 << " with dimensions " << mWidth << "x" << mHeight
                 << " to file '" << path.str() << "'";
 
-		osgDB::writeImageFile(*this, path.str());
+		throw od::UnsupportedException("PNG export is unsupported as of now");
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)

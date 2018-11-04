@@ -10,10 +10,9 @@
 
 #include <memory>
 #include <string>
-#include <osg/Vec3>
-#include <osg/Texture2D>
-#include <osg/Group>
+#include <glm/vec3.hpp>
 
+#include <odCore/BoundingBox.h>
 #include <odCore/render/GeodeBuilder.h>
 #include <odCore/render/Renderable.h>
 #include <odCore/physics/ModelBounds.h>
@@ -50,7 +49,7 @@ namespace odDb
 	    Smooth
 	};
 
-	class Model : public Asset, public odRender::Renderable, public osg::Referenced
+	class Model : public Asset
 	{
 	public:
 
@@ -77,7 +76,7 @@ namespace odDb
 		 *
 		 * This ignores any bounding info stored in the model. The box's expands are directly calculated from the vertex data.
 		 */
-		inline osg::BoundingBox getCalculatedBoundingBox() { return mCalculatedBoundingBox; }
+		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() { return mCalculatedBoundingBox; }
 
 
 	protected:
@@ -93,7 +92,7 @@ namespace odDb
 		bool mShiny;
 		bool mUseAdditiveBlending;
 		bool mEnvironmentMapped;
-		std::vector<osg::Vec3f> mVertices;
+		std::vector<glm::vec3> mVertices;
 		std::vector<AssetRef> mTextureRefs;
 		std::vector<odRender::Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
@@ -103,7 +102,7 @@ namespace odDb
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
-		osg::BoundingBox mCalculatedBoundingBox;
+		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
 	};
 
 	template <>

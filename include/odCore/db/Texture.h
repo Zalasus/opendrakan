@@ -8,8 +8,6 @@
 #ifndef TEXTURE_H_
 #define TEXTURE_H_
 
-#include <osg/Image>
-
 #include <odCore/SrscFile.h>
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
@@ -19,7 +17,7 @@ namespace odDb
 
 	class TextureFactory;
 
-    class Texture : public Asset, public osg::Image
+    class Texture : public Asset
     {
     public:
 
@@ -29,10 +27,6 @@ namespace odDb
 
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
         void exportToPng(const od::FilePath &path);
-
-        // override osg::Image
-        virtual const char *libraryName() const override { return "od";    }
-        virtual const char *className()   const override { return "Texture"; }
 
 
     private:
@@ -54,8 +48,10 @@ namespace odDb
         uint32_t mCompressedSize;
 
         bool mHasAlphaChannel;
-        osg::ref_ptr<Class> mMaterialClass;
+        AssetPtr<Class> mMaterialClass;
         std::unique_ptr<odRfl::RflClass> mMaterialInstance;
+
+        std::vector<uint8_t> mRgba8888Data;
     };
 
     template <>

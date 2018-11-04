@@ -8,8 +8,6 @@
 #ifndef INCLUDE_CLASS_H_
 #define INCLUDE_CLASS_H_
 
-#include <osg/Referenced>
-#include <osg/ref_ptr>
 #include <memory>
 
 #include <odCore/db/Asset.h>
@@ -28,14 +26,14 @@ namespace odDb
 {
     class ClassFactory;
 
-	class Class : public Asset, public osg::Referenced
+	class Class : public Asset
 	{
 	public:
 
 		Class(AssetProvider &ap, od::RecordId classId);
 
 		inline bool hasModel() const { return mModel != nullptr; }
-        inline osg::ref_ptr<Model> getModel() { return mModel; }
+        inline AssetPtr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
 
         void loadFromRecord(ClassFactory &factory, od::DataReader dr);
@@ -46,7 +44,7 @@ namespace odDb
 
         std::string mClassName;
         AssetRef mModelRef;
-        osg::ref_ptr<Model> mModel;
+        AssetPtr<Model> mModel;
         uint16_t mRflClassId;
         odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;

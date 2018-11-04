@@ -14,6 +14,7 @@ namespace odDb
 {
 
 	class AssetProvider;
+	class AssetReferenceObserver;
 
 	class Asset
 	{
@@ -26,6 +27,7 @@ namespace odDb
 
 		void referenceCreated();
 		void referenceDestroyed();
+		void setReferenceObserver(AssetReferenceObserver *observer);
 
 		inline od::RecordId getAssetId() const { return mId; }
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
@@ -41,10 +43,7 @@ namespace odDb
 	template <typename T>
 	struct AssetTraits
 	{
-	    static const char *name()
-	    {
-	        return "<N/A>";
-	    }
+	    static const char *name();
 	};
 
 	/**
@@ -76,6 +75,19 @@ namespace odDb
 	od::DataReader &operator>>(od::DataReader &left, AssetRef &right);
 
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
+
+
+	class AssetReferenceObserver
+    {
+    protected:
+
+        friend class Asset;
+
+        virtual ~AssetReferenceObserver() = default;
+
+        virtual void onLastReferenceDestroyed(Asset *asset) = 0;
+
+    };
 
 
 	template <typename _AssetType>
