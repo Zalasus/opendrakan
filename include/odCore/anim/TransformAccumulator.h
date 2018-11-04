@@ -8,7 +8,7 @@
 #ifndef INCLUDE_ANIM_TRANSFORMACCUMULATOR_H_
 #define INCLUDE_ANIM_TRANSFORMACCUMULATOR_H_
 
-#include <osg/Vec3f>
+#include <glm/vec3.hpp>
 
 namespace odAnim
 {
@@ -22,7 +22,7 @@ namespace odAnim
 
         virtual ~TransformAccumulator() = default;
 
-        virtual void moveRelative(const osg::Vec3f &v) = 0;
+        virtual void moveRelative(const glm::vec3 &v) = 0;
 
     };
 

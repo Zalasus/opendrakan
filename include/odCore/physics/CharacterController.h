@@ -12,7 +12,6 @@
 #include <BulletCollision/CollisionShapes/btCapsuleShape.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
-#include <osg/Vec3f>
 
 #include <odCore/physics/BulletAdapter.h>
 #include <odCore/anim/TransformAccumulator.h>
@@ -24,7 +23,6 @@ namespace od
 
 namespace odPhysics
 {
-
 
 	class PhysicsManager;
 
@@ -42,10 +40,9 @@ namespace odPhysics
 		CharacterController(od::LevelObject &charObject, float radius, float height);
 
 		inline CharacterState getCharacterState() const { return mCharacterState; }
-		inline void setVelocity(const osg::Vec3f &v) { mVelocity = BulletAdapter::toBullet(v); }
 
 		// implement od::TransformAccumulator
-        virtual void moveRelative(const osg::Vec3f &v);
+        virtual void moveRelative(const glm::vec3 &v);
 
 		void update(double dt);
 

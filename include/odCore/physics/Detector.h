@@ -12,7 +12,6 @@
 #include <memory>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/BroadphaseCollision/btCollisionAlgorithm.h>
-#include <osg/ref_ptr>
 
 namespace od
 {

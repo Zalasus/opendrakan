@@ -13,64 +13,8 @@
 #include <odCore/Exception.h>
 #include <odCore/physics/BulletAdapter.h>
 
-namespace od
-{
-    template <>
-    DataReader &DataReader::operator >> <odPhysics::OrientedBoundingBox>(odPhysics::OrientedBoundingBox &obb)
-    {
-        osg::Vec3f bottomLeftCorner;
-        (*this) >> bottomLeftCorner;
-
-        float t[9];
-        osg::Matrixf m; // don't read transform matrix directly, as the deserializer for osg::Matrix reads a 3x4 matrix!!!
-        for(size_t i = 0; i < sizeof(t)/sizeof(float); ++i)
-        {
-            (*this) >> t[i];
-        }
-
-        m.set(t[0], t[1], t[2], 0,
-              t[3], t[4], t[5], 0,
-              t[6], t[7], t[8], 0,
-                 0,    0,    0, 1);
-
-        osg::Vec3f dummyTranslate;
-        osg::Quat  orientation;
-        osg::Vec3f scale;
-        osg::Quat  dummySo;
-        m.decompose(dummyTranslate, orientation, scale, dummySo);
-
-        obb.setBottomLeft(bottomLeftCorner);
-        obb.setExtends(scale);
-        obb.setOrientation(orientation);
-
-        return *this;
-    }
-}
-
 namespace odPhysics
 {
-
-	OrientedBoundingBox::OrientedBoundingBox()
-	{
-	}
-
-	OrientedBoundingBox::OrientedBoundingBox(const OrientedBoundingBox &obb)
-	: mBottomLeft(obb.mBottomLeft)
-	, mExtends(obb.mExtends)
-	, mOrientation(obb.mOrientation)
-	{
-
-	}
-
-	OrientedBoundingBox &OrientedBoundingBox::operator=(const OrientedBoundingBox &obb)
-	{
-		mBottomLeft = obb.getMidPoint();
-		mExtends = obb.getExtends();
-		mOrientation = obb.getOrientation();
-
-		return *this;
-	}
-
 
 	ModelCollisionShape::ModelCollisionShape(size_t initialChildShapeCapacity)
 	: btCompoundShape(true, initialChildShapeCapacity)
@@ -102,7 +46,7 @@ namespace odPhysics
 		}
 	}
 
-	void ModelBounds::setMainBounds(const osg::BoundingSpheref &sphere, const OrientedBoundingBox &box)
+	void ModelBounds::setMainBounds(const od::BoundingSphere &sphere, const od::OrientedBoundingBox &box)
 	{
 		mMainSphere = sphere;
 		mMainBox = box;
@@ -113,7 +57,7 @@ namespace odPhysics
 		mHierarchy.push_back(std::make_pair(firstChildIndex, nextSiblingIndex));
 	}
 
-	void ModelBounds::addSphere(const osg::BoundingSpheref &sphere)
+	void ModelBounds::addSphere(const od::BoundingSphere &sphere)
 	{
 		if(mType != SPHERES)
 		{
@@ -123,7 +67,7 @@ namespace odPhysics
 		mSpheres.push_back(sphere);
 	}
 
-	void ModelBounds::addBox(const OrientedBoundingBox &box)
+	void ModelBounds::addBox(const od::OrientedBoundingBox &box)
 	{
 		if(mType != BOXES)
 		{
@@ -133,7 +77,7 @@ namespace odPhysics
 		mBoxes.push_back(box);
 	}
 
-	ModelCollisionShape *ModelBounds::getSharedCollisionShape()
+	std::shared_ptr<ModelCollisionShape> ModelBounds::getSharedCollisionShape()
 	{
 	    if(mSharedShape == nullptr)
 	    {
@@ -145,14 +89,14 @@ namespace odPhysics
 
 	ModelCollisionShape *ModelBounds::buildNewShape()
 	{
-	    osg::ref_ptr<ModelCollisionShape> shape = new ModelCollisionShape(mShapeCount);
+	    std::unique_ptr<ModelCollisionShape> shape(new ModelCollisionShape(mShapeCount));
 
         for(size_t index = 0; index < mShapeCount; ++index)
         {
             size_t firstChild = mHierarchy[index].first;
             size_t nextSibling = mHierarchy[index].second;
-            osg::Vec3f myTranslation;
-            osg::Quat myRotation;
+            glm::vec3 myTranslation;
+            glm::quat myRotation;
 
             // Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
             //  leafs in the bounding hierarchy here and ignore all shapes that have children
@@ -163,7 +107,7 @@ namespace odPhysics
                 if(mType == SPHERES)
                 {
                     myTranslation = mSpheres[index].center();
-                    myRotation = osg::Quat(0,0,0,1);
+                    myRotation = glm::quat(0,0,0,1);
 
                     newShape.reset(new btSphereShape(mSpheres[index].radius()));
 
@@ -208,16 +152,16 @@ namespace odPhysics
 
 		if(mType == BOXES)
 		{
-			OrientedBoundingBox &obb = mBoxes[index];
+			od::OrientedBoundingBox &obb = mBoxes[index];
 
-			std::cout << "[] x=" << obb.getBottomLeft().x() << " y=" << obb.getBottomLeft().y() << " z=" << obb.getBottomLeft().z()
-                      << " ex="<< obb.getExtends().x() << " y=" << obb.getExtends().y() << " z=" << obb.getExtends().z();
+			std::cout << "[] x=" << obb.getBottomLeft().x << " y=" << obb.getBottomLeft().y << " z=" << obb.getBottomLeft().z
+                      << " ex="<< obb.getExtends().x << " ey=" << obb.getExtends().y << " ez=" << obb.getExtends().z;
 
 		}else
 		{
-			osg::BoundingSpheref &bs = mSpheres[index];
+			od::BoundingSphere &bs = mSpheres[index];
 
-			std::cout << "()" << " r=" << bs.radius() << " x=" << bs.center().x() << " y=" << bs.center().y() << " z=" << bs.center().z();
+			std::cout << "()" << " r=" << bs.radius() << " x=" << bs.center().x << " y=" << bs.center().y << " z=" << bs.center().z;
 		}
 
 		std::cout << std::endl;
