@@ -23,6 +23,11 @@ namespace od
         bool intersects(const AxisAlignedBoundingBox &aabb) const;
         bool intersects(const AxisAlignedBoundingBox &aabb, glm::vec3::value_type epsilon) const;
 
+
+    private:
+
+        glm::vec3 mMin;
+        glm::vec3 mMax;
     };
 
     class OrientedBoundingBox
