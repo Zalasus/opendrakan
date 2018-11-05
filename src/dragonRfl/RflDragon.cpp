@@ -8,10 +8,8 @@
 #include <dragonRfl/RflDragon.h>
 
 #include <odCore/Engine.h>
-#include <odCore/gui/GuiManager.h>
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/db/DbManager.h>
-#include <dragonRfl/gui/Cursor.h>
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
@@ -44,7 +42,7 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
         }
 
-        osg::ref_ptr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
+        odDb::AssetPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
         std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
         mUserInterfacePropertiesInstance.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfacePropertiesInstance == nullptr)
@@ -63,21 +61,10 @@ namespace dragonRfl
             engine.loadLevel(initialLevel.adjustCase());
         }
 
-
-        odGui::GuiManager &gm = engine.getGuiManager();
-
-        mMainMenu = new MainMenu(gm, mUserInterfacePropertiesInstance.get());
-        mMainMenu->setVisible(gm.isMenuMode());
-        gm.addWidget(mMainMenu);
-
-        osg::ref_ptr<Cursor> cursor = new Cursor(gm);
-        cursor->setPosition(0.5, 0.5);
-        engine.getGuiManager().setCursorWidget(cursor);
     }
 
     void DragonRfl::onMenuToggle(bool newMode)
     {
-        mMainMenu->setVisible(newMode);
     }
 
 

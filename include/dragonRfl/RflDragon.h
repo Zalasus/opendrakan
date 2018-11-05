@@ -10,7 +10,6 @@
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/db/Database.h>
-#include <dragonRfl/gui/MainMenu.h>
 
 namespace dragonRfl
 {
@@ -31,7 +30,6 @@ namespace dragonRfl
 
         odDb::Database *mInterfaceDb;
         std::unique_ptr<UserInterfaceProperties> mUserInterfacePropertiesInstance;
-        osg::ref_ptr<MainMenu> mMainMenu;
 
     };
 
