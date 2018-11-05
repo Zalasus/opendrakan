@@ -11,7 +11,8 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
-#include <odCore/render/Light.h>
+
+#include <glm/vec3.hpp>
 
 namespace dragonRfl
 {
@@ -38,9 +39,6 @@ namespace dragonRfl
         odRfl::Float        mRadius;
         odRfl::TextureRef   mLightMap;
         odRfl::Enum         mQualityLevelRequired;
-
-        osg::ref_ptr<odRender::Light> mLight;
-        osg::Vec3 mLightColorVector;
     };
 
 }

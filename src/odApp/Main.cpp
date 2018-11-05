@@ -19,7 +19,6 @@
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
 #include <odCore/rfl/Field.h>
-#include <odCore/gui/GuiManager.h>
 
 
 static void srscStat(od::SrscFile &file)
@@ -330,7 +329,7 @@ int main(int argc, char **argv)
         	odDb::DbManager dbm(engine);
         	odDb::Database &db = dbm.loadDb(filename);
 
-        	osg::ref_ptr<odDb::Texture> tex = db.getAsset<odDb::Texture>(extractRecordId);
+        	odDb::AssetPtr<odDb::Texture> tex = db.getAsset<odDb::Texture>(extractRecordId);
 
 			std::ostringstream ss;
 			ss << outputPath << "texture" << extractRecordId << ".png";
@@ -346,20 +345,7 @@ int main(int argc, char **argv)
 
         }else if(rrcExtract)
         {
-            std::cout << "Dumping RRC contents to /out" << std::endl;
-
-            od::Engine engine;
-
-            if(!filename.empty())
-            {
-                engine.setInitialLevelOverride(filename);
-            }
-
-            engine.setUp();
-            odGui::GuiManager &gm = engine.getGuiManager();
-
-            gm.dumpTextures();
-            gm.dumpStrings();
+            std::cout << "RRC extraction has been temporarily removed" << std::endl;
 
         }else
 		{

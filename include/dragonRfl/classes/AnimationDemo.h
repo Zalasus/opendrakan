@@ -11,7 +11,6 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
-#include <odCore/anim/SkeletonAnimationPlayer.h>
 
 namespace dragonRfl
 {
@@ -41,7 +40,6 @@ namespace dragonRfl
         bool mFirstUpdate;
         double mRunningTime;
         size_t mCurrentAnimIndex;
-        osg::ref_ptr<odAnim::SkeletonAnimationPlayer> mAnimationPlayer;
 
     };
 

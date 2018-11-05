@@ -34,28 +34,11 @@ namespace dragonRfl
 
     void AnimationDemo::onSpawned(od::LevelObject &obj)
     {
-        if(obj.getSkeletonRoot() == nullptr)
-        {
-            Logger::warn() << "Animation Demo class used on object without skeleton. This won't do anything";
-            return;
-        }
-
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
-
-        if(obj.getCachedNode() != nullptr)
-        {
-            mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(obj.getCachedNode(), obj.getSkeletonRoot(), nullptr);
-            obj.setEnableRflUpdateHook(true);
-        }
     }
 
     void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
-        if(mAnimationPlayer == nullptr)
-        {
-            return;
-        }
-
         if(mAnimations.getAssetCount() == 0)
         {
             return;
@@ -74,9 +57,7 @@ namespace dragonRfl
                 mCurrentAnimIndex = 0;
             }
 
-            mAnimationPlayer->stop();
-            mAnimationPlayer->setAnimation(mAnimations.getAsset(mCurrentAnimIndex), 0.0);
-            mAnimationPlayer->play(true);
+            Logger::verbose() << "Animation Demo now playing '" << mAnimations.getAsset(mCurrentAnimIndex)->getName() << "'";
         }
     }
 

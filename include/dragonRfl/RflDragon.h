@@ -13,14 +13,17 @@
 
 namespace dragonRfl
 {
-
     class UserInterfaceProperties;
+    class LocalPlayer;
 
     class DragonRfl : public odRfl::AutoRegisteringRfl<DragonRfl>
     {
     public:
 
         DragonRfl(od::Engine &engine);
+
+        inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
+        inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
 
         virtual void onStartup() override;
         virtual void onMenuToggle(bool newMode) override;
@@ -31,6 +34,7 @@ namespace dragonRfl
         odDb::Database *mInterfaceDb;
         std::unique_ptr<UserInterfaceProperties> mUserInterfacePropertiesInstance;
 
+        LocalPlayer *mLocalPlayer;
     };
 
 }

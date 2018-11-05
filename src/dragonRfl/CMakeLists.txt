@@ -21,11 +21,6 @@ set(SOURCES
     "classes/TrackingCamera.cpp"
     "classes/UserInterfaceProperties.cpp"
     "classes/VisibilityToggler.cpp"
-    "gui/CrystalRingButton.cpp"
-    "gui/Cursor.cpp"
-    "gui/HealthIndicator.cpp"
-    "gui/LoadingBar.cpp"
-    "gui/MainMenu.cpp"
     "RflDragon.cpp")
 
 add_library(dragonRfl STATIC ${SOURCES})

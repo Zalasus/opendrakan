@@ -12,11 +12,7 @@
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Player.h>
 #include <odCore/Engine.h>
-#include <odCore/Camera.h>
-#include <odCore/anim/SkeletonAnimationPlayer.h>
-#include <odCore/audio/SoundManager.h>
 
 namespace dragonRfl
 {
@@ -423,14 +419,14 @@ namespace dragonRfl
 
 
     HumanControl::HumanControl(DragonRfl &rfl)
-    : mYaw(0)
+    : mRfl(rfl)
+    , mYaw(0)
 	, mPitch(0)
     , mPrevYaw(0)
 	, mForwardSpeed(0)
 	, mRightSpeed(0)
     , mPlayerObject(nullptr)
     {
-
     }
 
     HumanControl::~HumanControl()
@@ -439,9 +435,7 @@ namespace dragonRfl
 
     void HumanControl::onLoaded(od::LevelObject &obj)
     {
-        od::Engine &engine = obj.getLevel().getEngine();
-
-        if(engine.getPlayer() != nullptr)
+        if(mRfl.getLocalPlayer() != nullptr)
         {
             Logger::warn() << "Duplicate HumanControl objects found in level. Destroying duplicate";
             obj.requestDestruction();
@@ -451,7 +445,7 @@ namespace dragonRfl
         obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
         mPlayerObject = &obj;
-        engine.setPlayer(this);
+        mRfl.setLocalPlayer(this);
 
         // prefetch referenced assets
         odRfl::PrefetchProbe probe(mPlayerObject->getClass()->getAssetProvider());
@@ -461,22 +455,11 @@ namespace dragonRfl
     void HumanControl::onSpawned(od::LevelObject &obj)
     {
     	Logger::verbose() << "Spawned Human Control at "
-    			<< obj.getPosition().x() << "/"
-				<< obj.getPosition().y() << "/"
-				<< obj.getPosition().z();
+    			<< obj.getPosition().x << "/"
+				<< obj.getPosition().y << "/"
+				<< obj.getPosition().z;
 
     	obj.setEnableRflUpdateHook(true);
-
-    	if(obj.getSkeletonRoot() == nullptr)
-    	{
-    		Logger::error() << "HumanControl class used on object without skeleton. Prepare for chaos";
-
-    	}else
-    	{
-    		mCharacterController.reset(new odPhysics::CharacterController(obj, 0.05, 0.3));
-
-			mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(obj.getCachedNode(), obj.getSkeletonRoot(), mCharacterController.get());
-    	}
     }
 
     void HumanControl::onUpdate(od::LevelObject &obj, double simTime, double relTime)
@@ -488,7 +471,7 @@ namespace dragonRfl
 
     void HumanControl::onMoved(od::LevelObject &obj)
     {
-        osg::Vec3 pos = obj.getPosition();
+        /*osg::Vec3 pos = obj.getPosition();
 
         osg::Quat lookDirection = obj.getRotation();
         osg::Vec3 at = lookDirection * osg::Vec3f(0, 0, -1);
@@ -496,7 +479,7 @@ namespace dragonRfl
 
         odAudio::SoundManager &sm = obj.getLevel().getEngine().getSoundManager();
         sm.setListenerPosition(pos.x(), pos.y(), pos.z());
-        sm.setListenerOrientation(at, up);
+        sm.setListenerOrientation(at, up);*/
     }
 
     void HumanControl::moveForward(float speed)
@@ -509,11 +492,11 @@ namespace dragonRfl
     	mRightSpeed = speed;
     }
 
-	osg::Vec3f HumanControl::getPosition()
+	glm::vec3 HumanControl::getPosition()
     {
     	if(mPlayerObject == nullptr)
     	{
-    		return osg::Vec3f(0,0,0);
+    		return glm::vec3(0,0,0);
     	}
 
     	return mPlayerObject->getPosition();
@@ -526,37 +509,7 @@ namespace dragonRfl
 
     void HumanControl::_updateMotion(double relTime)
     {
-        osg::Quat rot = osg::Quat(mYaw, osg::Vec3(0, 1, 0));
-        mPlayerObject->setRotation(rot);
-        mPrevYaw = mYaw;
 
-        if(mCharacterController->getCharacterState() == odPhysics::CharacterState::Penetrated_Object)
-        {
-        	if(mAnimationPlayer->getCurrentAnimation() == mReadyAnim.getAsset())
-			{
-        		return;
-			}
-
-        	mAnimationPlayer->setAnimation(mReadyAnim.getAsset(), 0.15);
-			mAnimationPlayer->play(true);
-
-        }else
-        {
-
-			/*float yawSpeed = (mYaw - mPrevYaw)/relTime;
-			*/
-
-			if(mForwardSpeed > 0 && mAnimationPlayer->getCurrentAnimation() != mRunAnim.getAsset())
-			{
-				mAnimationPlayer->setAnimation(mRunAnim.getAsset(), 0.01);
-				mAnimationPlayer->play(true);
-
-			}else if(mForwardSpeed == 0 && mAnimationPlayer->getCurrentAnimation() != mReadyAnim.getAsset())
-			{
-				mAnimationPlayer->setAnimation(mReadyAnim.getAsset(), 0.15);
-				mAnimationPlayer->play(true);
-			}
-        }
     }
 
 

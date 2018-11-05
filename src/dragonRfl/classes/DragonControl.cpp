@@ -11,7 +11,6 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Player.h>
 
 namespace dragonRfl
 {

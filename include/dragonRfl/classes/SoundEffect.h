@@ -14,11 +14,6 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
-namespace odAudio
-{
-    class Source;
-}
-
 namespace dragonRfl
 {
     class DragonRfl;
@@ -65,7 +60,6 @@ namespace dragonRfl
         odRfl::Float                    mPeriodRandomDeviation;
         odRfl::EnumImpl<Location, 0, 3> mLocation;
 
-        odAudio::Source *mSoundSource;
         double mTimeUntilNextPlay;
 
         std::minstd_rand mRandomNumberGenerator;

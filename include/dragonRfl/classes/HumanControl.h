@@ -8,17 +8,11 @@
 #ifndef INCLUDE_RFL_DRAGON_HUMANCONTROL_H_
 #define INCLUDE_RFL_DRAGON_HUMANCONTROL_H_
 
-#include <osg/NodeCallback>
 #include <odCore/db/Animation.h>
 #include <odCore/physics/CharacterController.h>
-#include <odCore/Player.h>
 
 #include <dragonRfl/classes/common/PlayerCommon.h>
-
-namespace odAnim
-{
-    class SkeletonAnimationPlayer;
-}
+#include <dragonRfl/LocalPlayer.h>
 
 namespace dragonRfl
 {
@@ -223,7 +217,7 @@ namespace dragonRfl
 
 
 
-	class HumanControl : public HumanControlFields, public od::Player
+	class HumanControl : public HumanControlFields, public LocalPlayer
 	{
 	public:
 
@@ -235,15 +229,13 @@ namespace dragonRfl
 		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
 		virtual void onMoved(od::LevelObject &obj) override;
 
-
-		// implement od::Player
 		virtual float getYaw() const override { return mYaw; }
 		virtual void setYaw(float f) override { mYaw = f; }
 		virtual float getPitch() const override { return mPitch; }
 		virtual void setPitch(float f) override { mPitch = f; }
 		virtual void moveForward(float speed) override;
 		virtual void moveRight(float speed) override;
-		virtual osg::Vec3f getPosition() override;
+		virtual glm::vec3 getPosition() override;
 		virtual od::LevelObject &getLevelObject() override;
 
 
@@ -251,13 +243,14 @@ namespace dragonRfl
 
 		void _updateMotion(double relTime);
 
+		DragonRfl &mRfl;
+
 		float mYaw;
 		float mPitch;
 		float mPrevYaw;
 		float mForwardSpeed;
 		float mRightSpeed;
 		od::LevelObject *mPlayerObject;
-		osg::ref_ptr<odAnim::SkeletonAnimationPlayer> mAnimationPlayer;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
 	};

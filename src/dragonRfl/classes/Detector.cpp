@@ -8,10 +8,11 @@
 #include <dragonRfl/classes/Detector.h>
 
 #include <dragonRfl/RflDragon.h>
+#include <dragonRfl/LocalPlayer.h>
+
 #include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Player.h>
 #include <odCore/Engine.h>
 
 namespace dragonRfl
@@ -71,18 +72,7 @@ namespace dragonRfl
             return;
         }
 
-        od::LevelObject *playerObject = &obj.getLevel().getEngine().getPlayer()->getLevelObject();
-
-        if(mDetectWhich != DetectWhich::RynnOrDragonOrNpcs)
-        {
-            // this detector detects only rynn -> no need to update when rynn is far away
-            float distance = (playerObject->getPosition() - obj.getPosition()).length();
-            float minDistance = obj.getCachedNode()->getBound().radius() + playerObject->getCachedNode()->getBound().radius();
-            if(distance > minDistance*2)
-            {
-                return;
-            }
-        }
+        od::LevelObject *playerObject = (mRfl.getLocalPlayer() != nullptr) ? &mRfl.getLocalPlayer()->getLevelObject() : nullptr;
 
         mDetector->update();
 
@@ -95,7 +85,7 @@ namespace dragonRfl
                 continue;
             }
 
-            if(*it == playerObject)
+            if(playerObject != nullptr && *it == playerObject)
             {
                 playerIsIn = true;
                 break;
