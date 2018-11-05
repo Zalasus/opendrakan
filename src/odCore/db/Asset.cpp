@@ -22,6 +22,10 @@ namespace odDb
 
 	Asset::~Asset()
 	{
+	    if(mReferenceCount > 0)
+	    {
+	        Logger::warn() << "Asset destroyed when referenced to it still existed";
+	    }
 	}
 
 	void Asset::referenceCreated()
