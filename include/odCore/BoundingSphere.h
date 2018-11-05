@@ -17,7 +17,9 @@ namespace od
     {
     public:
 
+        BoundingSphere();
         BoundingSphere(const glm::vec3 &center, glm::vec3::value_type radius);
+        BoundingSphere(const BoundingSphere &bs);
 
         inline const glm::vec3 &center() const { return mCenter; }
         inline glm::vec3::value_type radius() const { return mRadius; }

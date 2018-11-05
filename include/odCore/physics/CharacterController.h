@@ -14,7 +14,6 @@
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
 
 #include <odCore/physics/BulletAdapter.h>
-#include <odCore/anim/TransformAccumulator.h>
 
 namespace od
 {
@@ -33,7 +32,7 @@ namespace odPhysics
 		Falling
 	};
 
-	class CharacterController : public odAnim::TransformAccumulator
+	class CharacterController
 	{
 	public:
 

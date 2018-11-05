@@ -18,8 +18,6 @@
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
 #include <odCore/db/Asset.h>
-#include <odCore/render/LightState.h>
-#include <odCore/render/Renderable.h>
 
 namespace od
 {

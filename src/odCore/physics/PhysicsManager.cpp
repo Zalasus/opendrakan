@@ -210,11 +210,11 @@ namespace odPhysics
 
 		}else
 		{
-		    reg.shape = obj.getClass()->getModel()->getModelBounds()->buildNewShape();
+		    reg.shape.reset(obj.getClass()->getModel()->getModelBounds()->buildNewShape());
 		    reg.shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
 		}
 
-		btRigidBody::btRigidBodyConstructionInfo info(mass, &obj, reg.shape);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, &obj, reg.shape.get());
         reg.shape->calculateLocalInertia(mass, info.m_localInertia);
 
 		reg.rigidBody.reset(new btRigidBody(info));
@@ -255,7 +255,7 @@ namespace odPhysics
 
         }else
         {
-            shape = obj.getClass()->getModel()->getModelBounds()->buildNewShape();
+            shape.reset(obj.getClass()->getModel()->getModelBounds()->buildNewShape());
             shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
         }
 

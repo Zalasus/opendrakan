@@ -17,7 +17,6 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 #include <odCore/physics/BulletAdapter.h>
-#include <odCore/render/NodeMasks.h>
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100

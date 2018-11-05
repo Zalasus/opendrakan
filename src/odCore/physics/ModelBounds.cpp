@@ -81,7 +81,7 @@ namespace odPhysics
 	{
 	    if(mSharedShape == nullptr)
 	    {
-	        mSharedShape = buildNewShape();
+	        mSharedShape.reset(buildNewShape());
 	    }
 
 	    return mSharedShape;
@@ -113,10 +113,10 @@ namespace odPhysics
 
                 }else
                 {
-                    myTranslation = mBoxes[index].getBottomLeft() + mBoxes[index].getOrientation() * (mBoxes[index].getExtends() * 0.5);
-                    myRotation = mBoxes[index].getOrientation();
+                    myTranslation = mBoxes[index].center();
+                    myRotation = mBoxes[index].orientation();
 
-                    btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].getExtends() * 0.5); // btBoxShape wants half extends, so we multiply by 0.5
+                    btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].extends() * 0.5f); // btBoxShape wants half extends, so we multiply by 0.5
                     newShape.reset(new btBoxShape(halfExtends));
                 }
 
@@ -154,8 +154,8 @@ namespace odPhysics
 		{
 			od::OrientedBoundingBox &obb = mBoxes[index];
 
-			std::cout << "[] x=" << obb.getBottomLeft().x << " y=" << obb.getBottomLeft().y << " z=" << obb.getBottomLeft().z
-                      << " ex="<< obb.getExtends().x << " ey=" << obb.getExtends().y << " ez=" << obb.getExtends().z;
+			std::cout << "[] x=" << obb.center().x << " y=" << obb.center().y << " z=" << obb.center().z
+                      << " ex="<< obb.extends().x << " ey=" << obb.extends().y << " ez=" << obb.extends().z;
 
 		}else
 		{

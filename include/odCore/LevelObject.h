@@ -16,9 +16,7 @@
 #include <LinearMath/btMotionState.h>
 
 #include <odCore/db/Class.h>
-#include <odCore/anim/SkeletonAnimationPlayer.h>
 #include <odCore/rfl/RflMessage.h>
-#include <odCore/render/LightState.h>
 
 namespace od
 {

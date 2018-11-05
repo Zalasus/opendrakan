@@ -12,10 +12,6 @@
 
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
-#include <odCore/render/GeodeBuilder.h>
-#include <odCore/render/RenderManager.h>
-#include <odCore/render/ShaderFactory.h>
-#include <odCore/render/NodeMasks.h>
 
 // yeah, i know these are unintuitive at first. but they are kinda shorter
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1

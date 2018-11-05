@@ -41,12 +41,12 @@ namespace odPhysics
 		mRelativeHighPoint = mUp * (radius+height*0.5);
 	}
 
-    void CharacterController::moveRelative(const osg::Vec3f &v)
+    void CharacterController::moveRelative(const glm::vec3 &v)
     {
-        osg::Vec3f moveDirection = mCharObject.getRotation()*v;
-        osg::Vec3f moveTarget = moveDirection + mCharObject.getPosition();
+        glm::vec3 moveDirection = mCharObject.getRotation()*v;
+        glm::vec3 moveTarget = moveDirection + mCharObject.getPosition();
 
-        mDesiredDirection = BulletAdapter::toBullet(moveDirection/moveDirection.length());
+        mDesiredDirection = BulletAdapter::toBullet(glm::normalize(moveDirection));
         mDesiredPosition = BulletAdapter::toBullet(moveTarget);
     }
 
@@ -79,7 +79,7 @@ namespace odPhysics
 		//mCharacterState = penetration ? CharacterState::Penetrated_Object : CharacterState::Ok;
 
 		mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
-		mCharObject.setPosition(BulletAdapter::toOsg(mCurrentPosition));
+		mCharObject.setPosition(BulletAdapter::toGlm(mCurrentPosition));
 	}
 
 	bool CharacterController::_step(bool up)

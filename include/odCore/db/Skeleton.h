@@ -22,7 +22,7 @@ namespace odDb
 
         void addNode(const std::string &name, int32_t jointInfoIndex);
         void addJointInfo(const glm::mat4 &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
-        void markJointAsChannel(int32_t jointIndex);
+        void markJointAsChannel(size_t jointIndex);
 
 
     private:

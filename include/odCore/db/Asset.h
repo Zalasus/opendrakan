@@ -32,12 +32,17 @@ namespace odDb
 
 		inline od::RecordId getAssetId() const { return mId; }
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
+		inline size_t getReferenceCount() { return mReferenceCount; }
+		inline AssetReferenceObserver *getReferenceObserver() const { return mObserver; }
 
 
 	private:
 
 		AssetProvider &mAssetProvider;
 		od::RecordId mId;
+
+		size_t mReferenceCount;
+		AssetReferenceObserver *mObserver;
 
 	};
 
@@ -121,11 +126,27 @@ namespace odDb
             }
         }
 
-        typename AssetPtr<_AssetType> &operator=(_AssetType *ptr)
+        ~AssetPtr()
         {
             if(mPtr != nullptr)
             {
                 mPtr->referenceDestroyed();
+                if(mPtr->getReferenceCount() <= 0)
+                {
+                    delete mPtr;
+                }
+            }
+        }
+
+        AssetPtr<_AssetType> &operator=(_AssetType *ptr)
+        {
+            if(mPtr != nullptr)
+            {
+                mPtr->referenceDestroyed();
+                if(mPtr->getReferenceCount() <= 0)
+                {
+                    delete mPtr;
+                }
             }
 
             mPtr = ptr;
@@ -138,12 +159,12 @@ namespace odDb
             return *this;
         }
 
-        typename AssetPtr<_AssetType> &operator=(const AssetPtr<_AssetType> &refPtr)
+        AssetPtr<_AssetType> &operator=(const AssetPtr<_AssetType> &refPtr)
         {
             return this->operator=(refPtr.mPtr);
         }
 
-        _AssetType *operator _AssetType*() const
+        operator _AssetType*() const
         {
             return mPtr;
         }

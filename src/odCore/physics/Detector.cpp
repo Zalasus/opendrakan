@@ -16,13 +16,13 @@
 namespace odPhysics
 {
 
-    Detector::Detector(btCollisionWorld *collisionWorld, ModelCollisionShape *objectShape, od::LevelObject &obj)
+    Detector::Detector(btCollisionWorld *collisionWorld, std::shared_ptr<ModelCollisionShape> objectShape, od::LevelObject &obj)
     : mCollisionWorld(collisionWorld)
     , mObjectShape(objectShape)
     , mLevelObject(obj)
     , mGhostObject(new btPairCachingGhostObject)
     {
-        mGhostObject->setCollisionShape(mObjectShape);
+        mGhostObject->setCollisionShape(mObjectShape.get());
         mGhostObject->setCollisionFlags(mGhostObject->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);
         mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(mLevelObject.getPosition(), mLevelObject.getRotation()));
 

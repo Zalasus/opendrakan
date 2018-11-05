@@ -126,7 +126,7 @@ namespace od
                 continue;
             }
 
-            float heightDifferenceDown = v.y() - (*it)->getAbsoluteHeightAt(xz);
+            float heightDifferenceDown = v.y - (*it)->getAbsoluteHeightAt(xz);
             if(heightDifferenceDown < 0)
             {
                 continue; // don't care about layers above us

@@ -34,9 +34,9 @@ namespace odDb
         mJoints.push_back(info);
     }
 
-    void Skeleton::markJointAsChannel(int32_t jointIndex)
+    void Skeleton::markJointAsChannel(size_t jointIndex)
     {
-        if(jointIndex < 0 || jointIndex >= mJoints.size())
+        if(jointIndex >= mJoints.size())
         {
             throw od::Exception("Channel index in skeleton out of joint index range");
         }

@@ -24,7 +24,6 @@ namespace od
 	: mHasInitialLevelOverride(false)
 	, mInitialLevelOverride("")
 	, mEngineRootDir("")
-	, mPlayer(nullptr)
 	, mSetUp(false)
 	, mKeepRunning(true)
 	{
@@ -68,7 +67,7 @@ namespace od
 
 		Logger::verbose() << "Everything set up. Starting main loop";
 
-		auto targetUpdateInterval = std::chrono::seconds(1/60.0);
+		auto targetUpdateInterval = std::chrono::microseconds((int64_t)(1e6/60.0));
 		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
 		while(mKeepRunning)
 		{
@@ -76,7 +75,7 @@ namespace od
 
 		    if(mLevel != nullptr)
 		    {
-		        float relTime = std::chrono::duration_cast<std::chrono::seconds>(loopStart - lastUpdateStartTime).count();
+		        double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
 		        lastUpdateStartTime = loopStart;
 
 		        mLevel->update(relTime);

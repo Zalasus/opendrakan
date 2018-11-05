@@ -33,6 +33,8 @@ set(SOURCES
         "rfl/RflClass.cpp"
         "rfl/RflManager.cpp"
         "rfl/RflMessage.cpp"
+        "BoundingBox.cpp"
+        "BoundingSphere.cpp"
         "DataStream.cpp"
         "Engine.cpp"
         "Exception.cpp"
