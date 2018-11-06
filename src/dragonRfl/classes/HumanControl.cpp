@@ -464,8 +464,6 @@ namespace dragonRfl
 
     void HumanControl::onUpdate(od::LevelObject &obj, double simTime, double relTime)
     {
-        mCharacterController->update(relTime);
-
         _updateMotion(relTime);
     }
 

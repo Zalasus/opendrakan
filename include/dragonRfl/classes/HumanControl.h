@@ -251,7 +251,6 @@ namespace dragonRfl
 		float mForwardSpeed;
 		float mRightSpeed;
 		od::LevelObject *mPlayerObject;
-		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
 	};
 

@@ -178,6 +178,11 @@ namespace od
                 it = mDestructionQueue.erase(it);
             }
         }
+
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            (*it)->update(0, relTime);
+        }
     }
 
     LevelObject *Level::getLevelObjectByIndex(uint16_t index)
