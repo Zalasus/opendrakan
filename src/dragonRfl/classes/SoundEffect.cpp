@@ -67,7 +67,7 @@ namespace dragonRfl
         mSounds.releaseAssets();
     }
 
-    void SoundEffect::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void SoundEffect::onUpdate(od::LevelObject &obj, float relTime)
     {
         if(mPlayMode == PlayMode::Once)
         {

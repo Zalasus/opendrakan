@@ -52,7 +52,7 @@ namespace dragonRfl
         mStarted = (mStartEffect == EffectStartType::WhenCreated);
     }
 
-    void DynamicLight::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void DynamicLight::onUpdate(od::LevelObject &obj, float relTime)
     {
         if(!mStarted)
         {

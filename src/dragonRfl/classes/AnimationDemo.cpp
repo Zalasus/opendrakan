@@ -37,7 +37,7 @@ namespace dragonRfl
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
     }
 
-    void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void AnimationDemo::onUpdate(od::LevelObject &obj, float relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {

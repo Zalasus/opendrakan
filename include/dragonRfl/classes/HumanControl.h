@@ -226,7 +226,7 @@ namespace dragonRfl
 
 		virtual void onLoaded(od::LevelObject &obj) override;
 		virtual void onSpawned(od::LevelObject &obj) override;
-		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+		virtual void onUpdate(od::LevelObject &obj, float relTime) override;
 		virtual void onMoved(od::LevelObject &obj) override;
 
 		virtual float getYaw() const override { return mYaw; }
@@ -241,7 +241,7 @@ namespace dragonRfl
 
 	 private:
 
-		void _updateMotion(double relTime);
+		void _updateMotion(float relTime);
 
 		DragonRfl &mRfl;
 

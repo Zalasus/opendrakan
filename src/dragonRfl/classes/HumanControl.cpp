@@ -462,7 +462,7 @@ namespace dragonRfl
     	obj.setEnableRflUpdateHook(true);
     }
 
-    void HumanControl::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void HumanControl::onUpdate(od::LevelObject &obj, float relTime)
     {
         _updateMotion(relTime);
     }
@@ -505,7 +505,7 @@ namespace dragonRfl
 	    return *mPlayerObject;
 	}
 
-    void HumanControl::_updateMotion(double relTime)
+    void HumanControl::_updateMotion(float relTime)
     {
 
     }

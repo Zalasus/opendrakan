@@ -181,7 +181,7 @@ namespace od
 
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
-            (*it)->update(0, relTime);
+            (*it)->update(relTime);
         }
     }
 

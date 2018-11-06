@@ -83,7 +83,7 @@ namespace odRfl
 
 		virtual void onSpawned(od::LevelObject &obj);
 		virtual void onDespawned(od::LevelObject &obj);
-		virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime);
+		virtual void onUpdate(od::LevelObject &obj, float relTime);
 		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);

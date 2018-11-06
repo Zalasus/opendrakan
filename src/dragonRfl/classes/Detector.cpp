@@ -65,7 +65,7 @@ namespace dragonRfl
         mDetector = obj.getLevel().getPhysicsManager().makeDetector(obj);
     }
 
-    void Detector::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void Detector::onUpdate(od::LevelObject &obj, float relTime)
     {
         if(mTask != Task::TriggerOnly || mDetector == nullptr)
         {

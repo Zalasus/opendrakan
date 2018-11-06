@@ -74,7 +74,7 @@ namespace od
         void spawned();
         void despawned();
         void destroyed();
-        void update(double simTime, double relTime);
+        void update(float relTime);
         void messageReceived(LevelObject &sender, odRfl::RflMessage message);
 
         void setPosition(const glm::vec3 &v);

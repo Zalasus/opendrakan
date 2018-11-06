@@ -62,7 +62,7 @@ namespace dragonRfl
 	{
 	}
 
-	void TrackingCamera::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+	void TrackingCamera::onUpdate(od::LevelObject &obj, float relTime)
 	{
 	    updateCamera();
 	}

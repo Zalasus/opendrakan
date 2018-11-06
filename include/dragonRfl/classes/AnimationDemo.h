@@ -26,7 +26,7 @@ namespace dragonRfl
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
         virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
 
 
     protected:
@@ -38,7 +38,7 @@ namespace dragonRfl
     private:
 
         bool mFirstUpdate;
-        double mRunningTime;
+        float mRunningTime;
         size_t mCurrentAnimIndex;
 
     };

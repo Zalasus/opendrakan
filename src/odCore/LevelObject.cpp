@@ -191,7 +191,7 @@ namespace od
         mState = LevelObjectState::Destroyed;
     }
 
-    void LevelObject::update(double simTime, double relTime)
+    void LevelObject::update(float relTime)
     {
         if(mState != LevelObjectState::Spawned)
         {
@@ -205,7 +205,7 @@ namespace od
 
         if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onUpdate(*this, simTime, relTime);
+            mRflClassInstance->onUpdate(*this, relTime);
         }
     }
 
