@@ -19,7 +19,6 @@ endif()
 target_link_libraries(opendrakan 
                         odCore 
                         ${WHOLE_ARCHIVE_START} dragonRfl ${WHOLE_ARCHIVE_END}
-                        ${OPENSCENEGRAPH_LIBRARIES} 
                         ${ZLIB_LIBRARIES} 
                         ${BULLET_LIBRARIES})
-target_include_directories(opendrakan PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
+target_include_directories(opendrakan PRIVATE ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})

@@ -57,6 +57,7 @@ target_link_libraries(odCore
                         ${ZLIB_LIBRARIES} 
                         ${BULLET_LIBRARIES})
                     
-target_include_directories(odCore PRIVATE ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
+target_include_directories(odCore PRIVATE ${ZLIB_INCLUDE_DIRS})
+target_include_directories(odCore PUBLIC ${GLM_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
     
     
