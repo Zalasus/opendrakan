@@ -8,6 +8,7 @@
 #include <odCore/BoundingBox.h>
 
 #include <glm/mat3x3.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <odCore/DataStream.h>
 
@@ -98,7 +99,18 @@ namespace od
         (*this) >> center
                 >> xform;
 
-        // FIXME: fuck it. just needs to compile for now. implement this later!!!!
+        glm::mat4 m(xform);
+
+        glm::vec3 scale;
+        glm::quat orientation;
+        glm::vec3 tranlation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose(m, scale, orientation, tranlation, skew, perspective);
+
+        // TODO: xform will probably never have skew, and definetly no perspective and translation. find faster decomposition!
+
+        obb = OrientedBoundingBox(scale, center, orientation);
 
         return *this;
     }
