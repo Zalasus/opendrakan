@@ -181,7 +181,7 @@ namespace odDb
 
             if(ptr != nullptr)
             {
-                mPtr->referenceReleased();
+                ptr->referenceReleased();
             }
 
             return ptr;
