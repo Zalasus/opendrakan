@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <memory>
 #include <unistd.h>
+#include <signal.h>
 
 #include <odCore/Engine.h>
 #include <odCore/ZStream.h>
@@ -19,6 +20,19 @@
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
 #include <odCore/rfl/Field.h>
+
+static od::Engine *sEngine = nullptr;
+
+static void handleSignal(int signal)
+{
+    if(signal == SIGINT)
+    {
+        if(sEngine != nullptr)
+        {
+            sEngine->done();
+        }
+    }
+}
 
 
 static void srscStat(od::SrscFile &file)
@@ -351,18 +365,23 @@ int main(int argc, char **argv)
 		{
 		    od::Engine engine;
 
+		    sEngine = &engine;
+		    signal(SIGINT, &handleSignal);
+
 		    if(!filename.empty())
 		    {
 		    	engine.setInitialLevelOverride(filename);
 		    }
 
 		    engine.run();
+		    sEngine = nullptr;
 		}
 
 
 	}catch(std::exception &e)
 	{
 		std::cerr << "Error: " << e.what() << std::endl;
+        sEngine = nullptr;
 		return 1;
 	}
 

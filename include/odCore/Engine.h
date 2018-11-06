@@ -43,6 +43,7 @@ namespace od
 		inline odDb::DbManager &getDbManager() { return *mDbManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
+		inline void done() { mKeepRunning = false; }
 
 		void setUp();
 		void run();
