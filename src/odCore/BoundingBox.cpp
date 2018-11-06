@@ -32,6 +32,14 @@ namespace od
     {
     }
 
+    AxisAlignedBoundingBox &AxisAlignedBoundingBox::operator=(const AxisAlignedBoundingBox &aabb)
+    {
+        mMin = aabb.mMin;
+        mMax = aabb.mMax;
+
+        return *this;
+    }
+
     bool AxisAlignedBoundingBox::intersects(const AxisAlignedBoundingBox &aabb) const
     {
         return    aabb.mMin.x >= mMin.x && aabb.mMin.x <= mMax.x
@@ -62,6 +70,13 @@ namespace od
     : mExtends(extends)
     , mCenter(center)
     , mOrientation(orientation)
+    {
+    }
+
+    OrientedBoundingBox::OrientedBoundingBox(const OrientedBoundingBox &obb)
+    : mExtends(obb.mExtends)
+    , mCenter(obb.mCenter)
+    , mOrientation(obb.mOrientation)
     {
     }
 

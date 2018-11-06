@@ -7,6 +7,8 @@
 
 #include <odCore/BoundingSphere.h>
 
+#include <odCore/DataStream.h>
+
 namespace od
 {
 
@@ -27,6 +29,27 @@ namespace od
     , mRadius(radius)
     {
     }
+
+    BoundingSphere &BoundingSphere::operator=(const BoundingSphere &bs)
+    {
+        mCenter = bs.mCenter;
+        mRadius = bs.mRadius;
+
+        return *this;
+    }
+
+    template <>
+    DataReader &DataReader::operator >> <BoundingSphere>(BoundingSphere &bs)
+    {
+        glm::vec3 center;
+        float radius;
+
+        (*this) >> center
+                >> radius;
+
+        return *this;
+    }
+
 
 }
 

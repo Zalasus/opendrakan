@@ -20,6 +20,7 @@ namespace dragonRfl
     DragonRfl::DragonRfl(od::Engine &engine)
     : AutoRegisteringRfl<DragonRfl>(engine)
     , mInterfaceDb(nullptr)
+    , mLocalPlayer(nullptr)
     {
     }
 
