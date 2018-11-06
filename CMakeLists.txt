@@ -30,7 +30,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 find_package(ZLIB REQUIRED)
 find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
 find_package(OpenAL REQUIRED)
-#find_package(GLM REQUIRED)
+find_package(glm REQUIRED)
 
 include_directories("include")
 
