@@ -49,9 +49,9 @@ namespace odPhysics
 		Logger::debug() << "Physics Manager destroyed with " << mLevelObjectMap.size() + mLayerMap.size() << " rigid bodies left";
 	}
 
-	void PhysicsManager::stepSimulation(double dt)
+	void PhysicsManager::update(float relTime)
 	{
-		mDynamicsWorld->stepSimulation(dt, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
+		mDynamicsWorld->stepSimulation(relTime, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
 	}
 
 	size_t PhysicsManager::raycast(const glm::vec3 &start, const glm::vec3 &end, RaycastResultArray &results)

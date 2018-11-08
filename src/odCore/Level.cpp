@@ -179,6 +179,8 @@ namespace od
             }
         }
 
+        mPhysicsManager.update(relTime);
+
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
             (*it)->update(relTime);

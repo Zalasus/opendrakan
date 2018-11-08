@@ -70,7 +70,7 @@ namespace odPhysics
 		PhysicsManager(od::Level &level);
 		~PhysicsManager();
 
-		void stepSimulation(double dt);
+		void update(float relTime);
 
 		/**
 		 * Casts a ray into the scene, returning all hit objects sorted by distance from start point.
