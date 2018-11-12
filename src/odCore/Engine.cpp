@@ -21,7 +21,8 @@ namespace od
 {
 
 	Engine::Engine()
-	: mHasInitialLevelOverride(false)
+	: mRenderer(nullptr)
+    , mHasInitialLevelOverride(false)
 	, mInitialLevelOverride("")
 	, mEngineRootDir("")
 	, mSetUp(false)
@@ -31,6 +32,16 @@ namespace od
 
 	Engine::~Engine()
 	{
+	}
+
+	void Engine::setRenderer(odRender::Renderer *renderer)
+	{
+	    if(mRenderer != nullptr)
+	    {
+	        Logger::warn() << "Hotswapping renderer. This might have undesired side-effects";
+	    }
+
+	    mRenderer = renderer;
 	}
 
 	void Engine::setUp()

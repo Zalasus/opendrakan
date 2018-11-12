@@ -22,6 +22,11 @@ namespace odRfl
     class RflManager;
 }
 
+namespace odRender
+{
+    class Renderer;
+}
+
 namespace od
 {
 
@@ -42,8 +47,11 @@ namespace od
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline odDb::DbManager &getDbManager() { return *mDbManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
+		inline odRender::Renderer *getRenderer() { return mRenderer; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline void done() { mKeepRunning = false; }
+
+		void setRenderer(odRender::Renderer *renderer);
 
 		void setUp();
 		void run();
@@ -57,6 +65,7 @@ namespace od
 
 		std::unique_ptr<odDb::DbManager> mDbManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
+		odRender::Renderer *mRenderer;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;
