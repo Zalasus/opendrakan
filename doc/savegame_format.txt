@@ -1,0 +1,35 @@
+
+
+Notes on riot engine savegames (.rsg)
+-------------------------------------
+
+
+The savegame's timestamp is pulled from the file's "last modified" time.
+
+
+[0x400] Level name
+    string    level_name; // relative to engine root
+    
+[0x401] Savegame name
+    string    save_name; // as entered by the player
+    
+    // this record type appears thrice. two times with ID=0x37b, of which both contain the same data (savegame name)
+    //  and once with ID=0x37d, containing unknown data
+    
+[0x21] Savegame info
+    // seems to contain a few indices here, including object count etc.
+    
+[0x22] Databases
+    uint32            db_count;
+    string[db_count]  db_list;  // a list of all databases loaded for the level, relative to engine root
+    
+    
+[0x102] Object state
+    uint8[8]  ???;
+    float x_position; // in wu
+    float y_position; //  "
+    float z_position; //  "
+    
+    float[9]  xform; // transformation matrix containing rotation and scale of the object
+    
+    float[15+] ???;
