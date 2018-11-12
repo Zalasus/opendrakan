@@ -17,6 +17,8 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 #include <odCore/physics/BulletAdapter.h>
+#include <odCore/render/Renderer.h>
+#include <odCore/render/Handle.h>
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -162,6 +164,11 @@ namespace od
         }
 
         mState = LevelObjectState::Spawned;
+
+        if(mLevel.getEngine().getRenderer() != nullptr)
+        {
+            mRenderHandle.reset(mLevel.getEngine().getRenderer()->createHandle(*this));
+        }
 
         Logger::debug() << "Object " << getObjectId() << " spawned";
     }

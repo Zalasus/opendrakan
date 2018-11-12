@@ -20,12 +20,17 @@ namespace odRender
     {
     public:
 
-        std::vector<glm::vec3> &getVertexArray();
-        std::vector<glm::vec4> &getColorArray();
-        std::vector<glm::vec3> &getNormalArray();
+        virtual ~Geometry() = default;
 
-        std::vector<glm::vec4> &getBoneIndexArray();
-        std::vector<glm::vec4> &getBoneWeightArray();
+        virtual std::vector<glm::vec3> &getVertexArray() = 0;
+        virtual std::vector<glm::vec4> &getColorArray() = 0;
+        virtual std::vector<glm::vec3> &getNormalArray() = 0;
+
+        virtual std::vector<glm::vec4> &getBoneIndexArray() = 0;
+        virtual std::vector<glm::vec4> &getBoneWeightArray() = 0;
+
+        virtual void dirty() = 0;
+
 
     };
 

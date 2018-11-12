@@ -15,22 +15,30 @@ namespace odRender
 {
 
     class Geometry;
+    class Renderer;
 
     class Handle
     {
     public:
 
-        void setPosition(const glm::vec3 &pos);
-        void setOrientation(const glm::quat &orientation);
-        void setScale(const glm::vec3 &scale);
+        Handle(Renderer *renderer);
+        virtual ~Handle() = default;
+
+        virtual void setPosition(const glm::vec3 &pos) = 0;
+        virtual void setOrientation(const glm::quat &orientation) = 0;
+        virtual void setScale(const glm::vec3 &scale) = 0;
 
         /**
          * Returns any geometry that might be present in this render node. Note that this may return nullptr
          * for some nodes like level objects, the latter not having actual geometry, instead referring to the model's
          * node internally.
          */
-        Geometry *getGeometry();
+        virtual Geometry *getGeometry() = 0;
 
+
+    private:
+
+        Renderer *mRenderer;
 
     };
 

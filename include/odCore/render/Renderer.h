@@ -35,12 +35,14 @@ namespace odRender
 
         inline void toggleLighting() { setEnableLighting(!isLightingEnabled()); }
 
-        virtual void setEnableLighting(bool b);
-        virtual bool isLightingEnabled() const;
+        virtual void onStart() = 0;
+        virtual void onEnd() = 0;
 
-        virtual Handle *createHandle(od::LevelObject &obj);
-        virtual Handle *createHandle(od::Layer &layer);
-        virtual Handle *createHandle(odDb::Model &model);
+        virtual void setEnableLighting(bool b) = 0;
+        virtual bool isLightingEnabled() const = 0;
+
+        virtual Handle *createHandle(od::LevelObject &obj) = 0;
+        virtual Handle *createHandle(od::Layer &layer) = 0;
 
     };
 

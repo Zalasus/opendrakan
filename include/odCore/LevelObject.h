@@ -18,6 +18,11 @@
 #include <odCore/db/Class.h>
 #include <odCore/rfl/RflMessage.h>
 
+namespace odRender
+{
+    class Handle;
+}
+
 namespace od
 {
 
@@ -185,6 +190,8 @@ namespace od
         Layer *mLayerBelowObject;
 
         bool mRflUpdateHookEnabled;
+
+        std::unique_ptr<odRender::Handle> mRenderHandle;
     };
 
 }
