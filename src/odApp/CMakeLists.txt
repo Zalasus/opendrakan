@@ -3,7 +3,8 @@
 set(SOURCES
         "Main.cpp")
         
-
+find_package(glfw3 REQUIRED)
+        
 add_executable(opendrakan ${SOURCES})
 
 # we need to link the whole RFL so the registrars work 
@@ -19,6 +20,4 @@ endif()
 target_link_libraries(opendrakan 
                         odCore 
                         ${WHOLE_ARCHIVE_START} dragonRfl ${WHOLE_ARCHIVE_END}
-                        ${ZLIB_LIBRARIES} 
-                        ${BULLET_LIBRARIES})
-target_include_directories(opendrakan PRIVATE ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
+                        ${GLFW3_LIBRARIES})
