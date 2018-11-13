@@ -10,11 +10,13 @@
 
 #include <vector>
 
+#include <osg/Vec2>
 #include <osg/Vec3>
 #include <osg/Vec4>
 #include <osg/Quat>
 #include <osg/Array>
 
+#include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -25,6 +27,11 @@ namespace odOsg
     class GlmAdapter
     {
     public:
+
+        inline static osg::Vec2 toOsg(const glm::vec2 &v)
+        {
+            return osg::Vec2(v.x, v.y);
+        }
 
         inline static osg::Vec3 toOsg(const glm::vec3 &v)
         {

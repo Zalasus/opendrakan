@@ -1,48 +1,58 @@
 /*
- * GeodeBuilder.cpp
+ * GeometryBuilder.cpp
  *
  *  Created on: 26 Mar 2018
  *      Author: zal
  */
 
-#include <odOsg/GeodeBuilder.h>
+#include <odCore/render/GeometryBuilder.h>
 
 #include <cassert>
 #include <algorithm>
-#include <osg/Geometry>
-#include <osg/Texture2D>
 
 #include <odCore/Exception.h>
-#include <odCore/OdDefines.h>
-#include <odCore/db/Database.h>
+#include <odCore/db/AssetProvider.h>
+#include <odCore/db/Texture.h>
+#include <odCore/render/Geometry.h>
 
 #include <odOsg/GlmAdapter.h>
 
-namespace odOsg
+namespace odRender
 {
 
-	GeodeBuilder::GeodeBuilder(const std::string &modelName, odDb::AssetProvider &assetProvider)
-	: mModelName(modelName)
+	GeometryBuilder::GeometryBuilder(Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider)
+	: mGeometryName(geometryName)
 	, mAssetProvider(assetProvider)
-	, mColors(1, glm::vec4(1.0))
 	, mClampTextures(false)
 	, mSmoothNormals(true)
 	, mNormalsFromCcw(false)
-	, mHasBoneInfo(false)
+	, mGeometry(geometry)
+	, mVertices(geometry.getVertexArray())
+    , mNormals(geometry.getNormalArray())
+    , mUvCoords(geometry.getTextureCoordArray())
+    , mBoneIndices(geometry.getBoneIndexArray())
+    , mBoneWeights(geometry.getBoneWeightArray())
 	{
+	    mVertices.clear();
+	    mNormals.clear();
+	    mUvCoords.clear();
+	    mBoneIndices.clear();
+	    mBoneWeights.clear();
 	}
 
-	void GeodeBuilder::setVertexVector(std::vector<glm::vec3>::iterator begin, std::vector<glm::vec3>::iterator end)
+	void GeometryBuilder::setVertexVector(std::vector<glm::vec3>::iterator begin, std::vector<glm::vec3>::iterator end)
 	{
 		mVertices.assign(begin, end);
 	}
 
-	void GeodeBuilder::setPolygonVector(std::vector<odDb::Model::Polygon>::iterator begin, std::vector<odDb::Model::Polygon>::iterator end)
+	void GeometryBuilder::setPolygonVector(std::vector<odDb::Model::Polygon>::iterator begin, std::vector<odDb::Model::Polygon>::iterator end)
 	{
 		// need to iterate over polygons and convert quads to triangles and duplicate polygon if it is double-sided
 
+	    size_t polygonCount = (end - begin); // assuming we only have single-sided triangles, this is the minimum we have to allocate
+
 		mTriangles.clear();
-		mTriangles.reserve(end - begin); // assuming we only have single-sided triangles, this is the minimum we have to allocate
+		mTriangles.reserve(polygonCount * 1.05); // assume we need 5% more triangles than polys most of the time TODO: run a statistic on this
 
 		for(auto it = begin; it != end; ++it)
 		{
@@ -91,7 +101,7 @@ namespace odOsg
 		}
 	}
 
-	void GeodeBuilder::setBoneAffectionVector(std::vector<odDb::Model::BoneAffection>::iterator begin, std::vector<odDb::Model::BoneAffection>::iterator end)
+	void GeometryBuilder::setBoneAffectionVector(std::vector<odDb::Model::BoneAffection>::iterator begin, std::vector<odDb::Model::BoneAffection>::iterator end)
 	{
 		// here we turn the BoneAffection objects into the index and weight vectors
 
@@ -115,7 +125,7 @@ namespace odOsg
 				// TODO: perhaps overwrite bone with lowest weight rather than ignoring all bones past the fourth?
 				if(!alreadyWarned)
 				{
-					Logger::warn() << "Found vertex with more than 4 affecting bones in model '" << mModelName << "'. Ignoring excess bones";
+					Logger::warn() << "Found vertex with more than 4 affecting bones in '" << mGeometryName << "'. Ignoring excess bones";
 					alreadyWarned = true;
 				}
 
@@ -127,10 +137,10 @@ namespace odOsg
 			++currentBoneCount;
 		}
 
-		mHasBoneInfo = true;
+		mGeometry.setHasBoneInfo(true);
 	}
 
-	void GeodeBuilder::build(osg::Geode *geode)
+	void GeometryBuilder::build()
 	{
 		if(mSmoothNormals)
 		{
@@ -180,121 +190,41 @@ namespace odOsg
             triangleCountsPerTexture[textureIndex]++;
         }
 
-        // create OSG arrays from our built vectors
-        osg::ref_ptr<osg::Vec3Array> vertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertices);
-        osg::ref_ptr<osg::Vec3Array> normalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormals);
-        osg::ref_ptr<osg::Vec4Array> colorArray  = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mColors);
-        osg::ref_ptr<osg::Vec2Array> uvArray     = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mUvCoords);
-
-        osg::ref_ptr<osg::Vec4Array> boneIndexArray;
-        osg::ref_ptr<osg::Vec4Array> boneWeightArray;
-        if(mHasBoneInfo)
-        {
-            boneIndexArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneIndices);
-            boneWeightArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneWeights);
-        }
-
-
-		osg::ref_ptr<osg::Geometry> geom;
-		osg::ref_ptr<osg::DrawElements> drawElements;
+		odRender::GeometrySegment *segment = nullptr;
 		lastTexture = odDb::AssetRef::NULL_REF;
 		textureIndex = 0;
 		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
 		{
-			if(lastTexture != it->texture || geom == nullptr)
+		    if(it->texture.isNull())
+		    {
+		        continue;
+		    }
+
+			if(lastTexture != it->texture || segment == nullptr)
 			{
-			    if(geom != nullptr)
+			    if(segment != nullptr)
 			    {
-			        assert(drawElements->getNumIndices() == triangleCountsPerTexture[textureIndex]*3);
+			        assert(segment->getNumIndices() == triangleCountsPerTexture[textureIndex]*3);
 
 			        ++textureIndex;
 			    }
 
-				geom = new osg::Geometry;
-				geode->addDrawable(geom);
+			    odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
+			    size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
 
-				geom->setUseVertexBufferObjects(true);
-				geom->setUseDisplayList(false);
-
-				// shared VBOs
-				geom->setVertexArray(vertexArray);
-				geom->setNormalArray(normalArray, osg::Array::BIND_PER_VERTEX);
-				geom->setColorArray(colorArray, osg::Array::BIND_OVERALL);
-				geom->setTexCoordArray(0, uvArray);
-				if(mHasBoneInfo)
-				{
-					// FIXME: these locations may get inconsistent with what we use in the shader
-					geom->setVertexAttribArray(OD_ATTRIB_INFLUENCE_LOCATION, boneIndexArray, osg::Array::BIND_PER_VERTEX);
-					geom->setVertexAttribArray(OD_ATTRIB_WEIGHT_LOCATION, boneWeightArray, osg::Array::BIND_PER_VERTEX);
-				}
-
-				// create unique IBO array. select index size best suited for count of verts to save memory.
-				//  Important! make element size decision based on total vertex count! we share the VBO and need indices
-				//  that can address all vertices, even if we use only part of the vertex array for each geometry
-				size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
-				if(mVertices.size() <= 0xff)
-				{
-				    osg::ref_ptr<osg::DrawElementsUByte> drawElementsUbyte = new osg::DrawElementsUByte(osg::PrimitiveSet::TRIANGLES);
-                    drawElementsUbyte->reserve(vertsForThisTexture);
-                    drawElements = drawElementsUbyte;
-
-				}else if(mVertices.size() <= 0xffff)
-				{
-
-				    osg::ref_ptr<osg::DrawElementsUShort> drawElementsUshort = new osg::DrawElementsUShort(osg::PrimitiveSet::TRIANGLES);
-                    drawElementsUshort->reserve(vertsForThisTexture);
-                    drawElements = drawElementsUshort;
-
-				}else
-				{
-				    osg::ref_ptr<osg::DrawElementsUInt> drawElementsUint = new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES);
-				    drawElementsUint->reserve(vertsForThisTexture);
-				    drawElements = drawElementsUint;
-				}
-				geom->addPrimitiveSet(drawElements);
-
-				// texture also unique per geometry
-				if(!it->texture.isNull())
-				{
-					odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
-
-					// TODO: here's where we'd need to create an osg::Image from the dbTexture
-					osg::ref_ptr<osg::Image> textureImage;
-
-					osg::StateSet *ss = geom->getOrCreateStateSet();
-					if(dbTexture->hasAlpha())
-					{
-						ss->setMode(GL_BLEND, osg::StateAttribute::ON);
-						ss->setRenderBinDetails(1, "DepthSortedBin");
-					}
-
-					osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(textureImage));
-					if(!mClampTextures)
-					{
-						// this is the default for model textures
-						texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-						texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
-
-					}else
-					{
-						// for layers we should use clamp to border instead
-						texture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
-						texture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
-					}
-					ss->setTextureAttributeAndModes(0, texture);
-				}
+				segment = mGeometry.addSegment(vertsForThisTexture, dbTexture);
 
 				lastTexture = it->texture;
 			}
 
 			for(size_t vn = 0; vn < 3; ++vn)
 			{
-				drawElements->addElement(it->vertexIndices[vn]);
+				segment->addIndex(it->vertexIndices[vn]);
 			}
 		}
 	}
 
-	void GeodeBuilder::_buildNormals()
+	void GeometryBuilder::_buildNormals()
 	{
 		// calculate normals per triangle, sum them up for each vertex and normalize them in the end
 		//  TODO: perhaps consider maximum crease here?
@@ -322,7 +252,7 @@ namespace odOsg
 		}
 	}
 
-	void GeodeBuilder::_makeIndicesUniqueAndGenerateUvs()
+	void GeometryBuilder::_makeIndicesUniqueAndGenerateUvs()
 	{
 	    // for flat shading, we can't use shared vertices. this method will duplicate all shared vertices
 	    //  since that makes disambiguating UVs unnecessary, we create the UV array here, too.
@@ -345,7 +275,7 @@ namespace odOsg
                     mVertices.push_back(mVertices.at(vertIndex));
 
                     // if there is bone affection info, duplicate that too
-                    if(mHasBoneInfo)
+                    if(mGeometry.hasBoneInfo())
                     {
                         mBoneIndices.push_back(mBoneIndices[vertIndex]);
                         mBoneWeights.push_back(mBoneWeights[vertIndex]);
@@ -370,7 +300,7 @@ namespace odOsg
         }
 	}
 
-	void GeodeBuilder::_disambiguateAndGenerateUvs()
+	void GeometryBuilder::_disambiguateAndGenerateUvs()
 	{
 		// iterate over triangles and duplicate shared vertices when their uv coordinates are incompatible.
 		//  NOTE: we share VBOs between all geometries. only IBOs are unique per texture. thus, we only need to
@@ -400,7 +330,7 @@ namespace odOsg
 					mNormals.push_back(mNormals[vertIndex]);
 
 					// if there is bone affection info, duplicate that too
-					if(mHasBoneInfo)
+					if(mGeometry.hasBoneInfo())
 					{
 						mBoneIndices.push_back(mBoneIndices[vertIndex]);
 						mBoneWeights.push_back(mBoneWeights[vertIndex]);
