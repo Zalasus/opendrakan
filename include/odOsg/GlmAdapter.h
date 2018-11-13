@@ -8,9 +8,12 @@
 #ifndef INCLUDE_ODOSG_GLMADAPTER_H_
 #define INCLUDE_ODOSG_GLMADAPTER_H_
 
+#include <vector>
+
 #include <osg/Vec3>
 #include <osg/Vec4>
 #include <osg/Quat>
+#include <osg/Array>
 
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -37,6 +40,19 @@ namespace odOsg
         {
             return osg::Quat(q.x, q.y, q.z, q.w);
         }
+
+        template <typename _OsgArrayType, typename _GlmVectorType>
+        static _OsgArrayType *convertToOsgArray(const std::vector<_GlmVectorType> &v)
+        {
+            osg::ref_ptr<_OsgArrayType> osgArray = new _OsgArrayType(v.size());
+            for(size_t i = 0; i < v.size(); ++i)
+            {
+                (*osgArray)[i] = GlmAdapter::toOsg(v[i]);
+            }
+
+            return osgArray.release();
+        }
+
 
     };
 
