@@ -89,6 +89,11 @@ namespace odOsg
         return nullptr;
     }
 
+    odRender::Geometry *Renderer::createGeometry()
+    {
+        return nullptr;
+    }
+
     void Renderer::_threadedRender()
     {
         static const double maxFrameRate = 60;

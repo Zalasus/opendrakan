@@ -45,7 +45,6 @@ namespace odRender
 		void setVertexVector(std::vector<glm::vec3>::iterator begin, std::vector<glm::vec3>::iterator end);
 		void setPolygonVector(std::vector<odDb::Model::Polygon>::iterator begin, std::vector<odDb::Model::Polygon>::iterator end);
 		void setBoneAffectionVector(std::vector<odDb::Model::BoneAffection>::iterator begin, std::vector<odDb::Model::BoneAffection>::iterator end);
-		void setClampTextures(bool b) { mClampTextures = b; }
 
 		void build();
 
@@ -66,7 +65,6 @@ namespace odRender
 		std::string mGeometryName;
 		odDb::AssetProvider &mAssetProvider;
 
-		bool mClampTextures;
 		bool mSmoothNormals;
 		bool mNormalsFromCcw;
 

@@ -23,6 +23,7 @@ namespace odRender
 {
 
     class Handle;
+    class Geometry;
 
     /**
      * Interface for a renderer implementation.
@@ -43,6 +44,8 @@ namespace odRender
 
         virtual Handle *createHandle(od::LevelObject &obj) = 0;
         virtual Handle *createHandle(od::Layer &layer) = 0;
+
+        virtual Geometry *createGeometry() = 0;
 
     };
 

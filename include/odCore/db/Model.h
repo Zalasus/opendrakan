@@ -18,9 +18,11 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
 
+#include <odCore/render/Geometry.h>
+
 namespace odRender
 {
-    class RenderManager;
+    class Renderer;
 }
 
 namespace odDb
@@ -85,12 +87,7 @@ namespace odDb
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
 
-		/**
-		 * @brief Returns an axis-aligned bounding box that encapsulates all of this model's meshes and LODs.
-		 *
-		 * This ignores any bounding info stored in the model. The box's expands are directly calculated from the vertex data.
-		 */
-		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() { return mCalculatedBoundingBox; }
+		odRender::Geometry *getOrCreateGeometry(odRender::Renderer *renderer);
 
 
 	private:
@@ -111,7 +108,8 @@ namespace odDb
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
-		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
+
+		std::unique_ptr<odRender::Geometry> mSharedGeometry;
 	};
 
 	template <>

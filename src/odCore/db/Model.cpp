@@ -17,6 +17,9 @@
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
 
+#include <odCore/render/Renderer.h>
+#include <odCore/render/Geometry.h>
+#include <odCore/render/GeometryBuilder.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -365,34 +368,58 @@ namespace odDb
 		dr >> od::DataReader::Expect<uint16_t>(lodCount);
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
-		    uint16_t shapeCount;
-		    dr >> shapeCount;
+		    uint16_t sphereCount;
+		    dr >> sphereCount;
 
-		    for(size_t shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
+		    for(size_t sphereIndex = 0; sphereIndex < sphereCount; ++sphereIndex)
 		    {
 		        uint16_t firstChild;
 		        uint16_t nextSibling;
+		        uint32_t positionVertexIndex;
 		        float radius;
 		        uint16_t channelIndex;
 
 		        dr >> firstChild
 		           >> nextSibling
-		           >> od::DataReader::Ignore(4)
+		           >> positionVertexIndex
 		           >> radius
 		           >> channelIndex
 		           >> od::DataReader::Ignore(2);
 
-		        // where do the spheres go? there is no field in the structure for that. are they placed exactly at their joint?
+		        if(positionVertexIndex >= mVertices.size())
+		        {
+		            Logger::warn() << "Character bounding sphere center vertex index out of bounds. PC LOAD LETTER";
 
-		        /*Logger::info() << "Model '" << mModelName << "' lod=" << lodIndex
-		                       << " ch=" << channelIndex
-		                       << " fc="
-		                       << firstChild
-		                       << " ns="
-		                       << nextSibling
-		                       << " r=" << radius;*/
+		        }else
+		        {
+		            //glm::vec3 sphereCenter = mVertices[positionVertexIndex];
+		            //od::BoundingSphere sphere(sphereCenter, radius);
+		        }
 		    }
 		}
  	}
+
+	odRender::Geometry *Model::getOrCreateGeometry(odRender::Renderer *renderer)
+	{
+	    if(mSharedGeometry != nullptr)
+	    {
+	        return mSharedGeometry.get();
+	    }
+
+        mSharedGeometry.reset(renderer->createGeometry());
+        if(mSharedGeometry == nullptr)
+        {
+            return nullptr;
+        }
+
+        // TODO: implement LODs here
+
+        odRender::GeometryBuilder builder(*mSharedGeometry, mModelName, getAssetProvider());
+        builder.setVertexVector(mVertices.begin(), mVertices.end());
+        builder.setPolygonVector(mPolygons.begin(), mPolygons.end());
+        builder.build();
+
+	    return mSharedGeometry.get();
+	}
 }
 

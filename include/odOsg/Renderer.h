@@ -37,6 +37,8 @@ namespace odOsg
         virtual odRender::Handle *createHandle(od::LevelObject &obj) override;
         virtual odRender::Handle *createHandle(od::Layer &layer) override;
 
+        virtual odRender::Geometry *createGeometry() override;
+
 
     private:
 

@@ -23,7 +23,6 @@ namespace odRender
 	GeometryBuilder::GeometryBuilder(Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider)
 	: mGeometryName(geometryName)
 	, mAssetProvider(assetProvider)
-	, mClampTextures(false)
 	, mSmoothNormals(true)
 	, mNormalsFromCcw(false)
 	, mGeometry(geometry)
