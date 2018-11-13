@@ -15,13 +15,11 @@ namespace odRender
 {
 
     class Geometry;
-    class Renderer;
 
     class Handle
     {
     public:
 
-        Handle(Renderer *renderer);
         virtual ~Handle() = default;
 
         virtual void setPosition(const glm::vec3 &pos) = 0;
@@ -34,11 +32,6 @@ namespace odRender
          * node internally.
          */
         virtual Geometry *getGeometry() = 0;
-
-
-    private:
-
-        Renderer *mRenderer;
 
     };
 

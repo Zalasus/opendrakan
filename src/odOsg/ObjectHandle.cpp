@@ -11,12 +11,13 @@
 #include <odCore/render/Renderer.h>
 
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Renderer.h>
 
 namespace odOsg
 {
 
     ObjectHandle::ObjectHandle(Renderer *renderer, osg::Group *objectGroup)
-    : odRender::Handle(renderer)
+    : mObjectGroup(objectGroup)
     , mTransform(new osg::PositionAttitudeTransform)
     {
         if(objectGroup == nullptr)
@@ -25,6 +26,11 @@ namespace odOsg
         }
 
         objectGroup->addChild(mTransform);
+    }
+
+    ObjectHandle::~ObjectHandle()
+    {
+        mObjectGroup->removeChild(mTransform);
     }
 
     void ObjectHandle::setPosition(const glm::vec3 &pos)
@@ -46,8 +52,6 @@ namespace odOsg
     {
         return nullptr; // must be aquired via model instead
     }
-
-
 
 }
 

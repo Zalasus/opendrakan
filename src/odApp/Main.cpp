@@ -29,7 +29,7 @@ static void handleSignal(int signal)
     {
         if(sEngine != nullptr)
         {
-            sEngine->done();
+            sEngine->setDone(true);
         }
     }
 }

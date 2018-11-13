@@ -16,6 +16,7 @@
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
 #include <odCore/rfl/RflManager.h>
+#include <odCore/render/Renderer.h>
 
 namespace od
 {
@@ -26,7 +27,7 @@ namespace od
 	, mInitialLevelOverride("")
 	, mEngineRootDir("")
 	, mSetUp(false)
-	, mKeepRunning(true)
+	, mIsDone(false)
 	{
 	}
 
@@ -78,9 +79,14 @@ namespace od
 
 		Logger::verbose() << "Everything set up. Starting main loop";
 
+		if(mRenderer != nullptr)
+		{
+		    mRenderer->onStart();
+		}
+
 		auto targetUpdateInterval = std::chrono::microseconds((int64_t)(1e6/60.0));
 		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
-		while(mKeepRunning)
+		while(!mIsDone)
 		{
 		    auto loopStart = std::chrono::high_resolution_clock::now();
 
@@ -101,6 +107,11 @@ namespace od
 		}
 
 		Logger::info() << "Shutting down gracefully";
+
+		if(mRenderer != nullptr)
+        {
+            mRenderer->onEnd();
+        }
 	}
 
 	void Engine::loadLevel(const FilePath &levelFile)

@@ -9,6 +9,7 @@
 #define INCLUDE_ENGINE_H_
 
 #include <memory>
+#include <atomic>
 
 #include <odCore/FilePath.h>
 
@@ -49,7 +50,8 @@ namespace od
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
 		inline odRender::Renderer *getRenderer() { return mRenderer; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
-		inline void done() { mKeepRunning = false; }
+		inline bool isDone() { return mIsDone; }
+		inline void setDone(bool done) { mIsDone = done; }
 
 		void setRenderer(odRender::Renderer *renderer);
 
@@ -71,7 +73,7 @@ namespace od
 		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;
 		bool mSetUp;
-		bool mKeepRunning;
+		std::atomic_bool mIsDone;
 	};
 
 }

@@ -22,6 +22,7 @@ namespace odOsg
     public:
 
         ObjectHandle(Renderer *renderer, osg::Group *objectGroup);
+        virtual ~ObjectHandle();
 
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
@@ -31,6 +32,7 @@ namespace odOsg
 
     private:
 
+        osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
 
     };
