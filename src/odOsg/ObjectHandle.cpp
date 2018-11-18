@@ -12,6 +12,7 @@
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Renderer.h>
+#include <odOsg/Geometry.h>
 
 namespace odOsg
 {
@@ -19,6 +20,7 @@ namespace odOsg
     ObjectHandle::ObjectHandle(Renderer *renderer, osg::Group *objectGroup)
     : mObjectGroup(objectGroup)
     , mTransform(new osg::PositionAttitudeTransform)
+    , mGeometry(nullptr)
     {
         if(objectGroup == nullptr)
         {
@@ -50,7 +52,25 @@ namespace odOsg
 
     odRender::Geometry *ObjectHandle::getGeometry()
     {
-        return nullptr; // must be aquired via model instead
+        return mGeometry;
+    }
+
+    void ObjectHandle::setGeometry(odRender::Geometry *g)
+    {
+        if(g == nullptr && mGeometry != nullptr)
+        {
+            mTransform->removeChild(mGeometry->getNode());
+            mGeometry = nullptr;
+            return;
+        }
+
+        mGeometry = dynamic_cast<Geometry*>(g);
+        if(mGeometry == nullptr)
+        {
+            return;
+        }
+
+        mTransform->addChild(mGeometry->getNode());
     }
 
 }

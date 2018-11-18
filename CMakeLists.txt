@@ -40,7 +40,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 find_package(ZLIB REQUIRED)
 find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
 find_package(OpenAL REQUIRED)
-find_package(glm REQUIRED)
+
+# This breaks builds on Travis' Ubuntu Trusty platform. Omiting it still allows compiling on my linux machines
+# and stops Travis from spamming my inbox 
+#find_package(glm REQUIRED) 
 
 include_directories("include")
 

@@ -14,6 +14,7 @@
 #include <odCore/LevelObject.h>
 
 #include <odOsg/ObjectHandle.h>
+#include <odOsg/Geometry.h>
 
 namespace odOsg
 {
@@ -91,7 +92,9 @@ namespace odOsg
 
     odRender::Geometry *Renderer::createGeometry()
     {
-        return nullptr;
+        std::unique_ptr<Geometry> geometry(new Geometry);
+
+        return geometry.release();
     }
 
     void Renderer::_threadedRender()

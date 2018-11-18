@@ -26,11 +26,7 @@ namespace odRender
         virtual void setOrientation(const glm::quat &orientation) = 0;
         virtual void setScale(const glm::vec3 &scale) = 0;
 
-        /**
-         * Returns any geometry that might be present in this render node. Note that this may return nullptr
-         * for some nodes like level objects, the latter not having actual geometry, instead referring to the model's
-         * node internally.
-         */
+        virtual void setGeometry(Geometry *g) = 0;
         virtual Geometry *getGeometry() = 0;
 
     };

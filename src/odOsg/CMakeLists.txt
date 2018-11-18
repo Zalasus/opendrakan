@@ -1,5 +1,6 @@
 
 set(SOURCES
+        "Geometry.cpp"
         "Main.cpp"
         "ObjectHandle.cpp"
         "Renderer.cpp"

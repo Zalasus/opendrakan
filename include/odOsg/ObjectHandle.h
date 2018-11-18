@@ -16,6 +16,7 @@ namespace odOsg
 {
 
     class Renderer;
+    class Geometry;
 
     class ObjectHandle : public odRender::Handle
     {
@@ -28,12 +29,15 @@ namespace odOsg
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;
         virtual odRender::Geometry *getGeometry() override;
+        virtual void setGeometry(odRender::Geometry *g) override;
 
 
     private:
 
         osg::ref_ptr<osg::Group> mObjectGroup;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
+
+        Geometry *mGeometry;
 
     };
 
