@@ -14,6 +14,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
+#include <odCore/RefCounted.h>
+
 namespace odDb
 {
     class Texture;
@@ -44,7 +46,7 @@ namespace odRender
      * represantation of choice. This makes it necessary that a user always calls notifyVertexDataChanged()
      * after making edits to the vertex data, so the implementation can update it's local data.
      */
-    class Geometry
+    class Geometry : public od::RefCounted
     {
     public:
 

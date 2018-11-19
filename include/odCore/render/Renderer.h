@@ -22,7 +22,9 @@ namespace odDb
 namespace odRender
 {
 
-    class Handle;
+    class ModelNode;
+    class ObjectNode;
+    class LayerNode;
     class Geometry;
 
     /**
@@ -42,8 +44,9 @@ namespace odRender
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
 
-        virtual Handle *createHandle(od::LevelObject &obj) = 0;
-        virtual Handle *createHandle(od::Layer &layer) = 0;
+        virtual ModelNode *createModelNode() = 0;
+        virtual ObjectNode *createObjectNode() = 0;
+        virtual LayerNode *createLayerNode() = 0;
 
         virtual Geometry *createGeometry() = 0;
 
