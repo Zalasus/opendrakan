@@ -9,14 +9,14 @@
 #define INCLUDE_ASSET_H_
 
 #include <odCore/SrscFile.h>
+#include <odCore/RefCounted.h>
 
 namespace odDb
 {
 
 	class AssetProvider;
-	class AssetReferenceObserver;
 
-	class Asset
+	class Asset : public od::RefCounted
 	{
 	public:
 
@@ -25,24 +25,14 @@ namespace odDb
 		Asset(const Asset &a) = delete;
 		virtual ~Asset();
 
-		void referenceCreated();
-		void referenceDestroyed();
-		void referenceReleased();
-		void setReferenceObserver(AssetReferenceObserver *observer);
-
 		inline od::RecordId getAssetId() const { return mId; }
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
-		inline size_t getReferenceCount() { return mReferenceCount; }
-		inline AssetReferenceObserver *getReferenceObserver() const { return mObserver; }
 
 
 	private:
 
 		AssetProvider &mAssetProvider;
 		od::RecordId mId;
-
-		size_t mReferenceCount;
-		AssetReferenceObserver *mObserver;
 
 	};
 
@@ -83,121 +73,9 @@ namespace odDb
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
 
 
-	class AssetReferenceObserver
-    {
-    protected:
-
-        friend class Asset;
-
-        virtual ~AssetReferenceObserver() = default;
-
-        virtual void onLastReferenceDestroyed(Asset *asset) = 0;
-
-    };
-
-
-	template <typename _AssetType>
-    class AssetPtr
-    {
-    public:
-
-        static_assert(std::is_base_of<Asset, _AssetType>::value, "_AssetType in odDb::AssetPtr<_AssetType> must have odDb::Asset as a base!");
-
-        AssetPtr()
-        : mPtr(nullptr)
-        {
-        }
-
-        AssetPtr(_AssetType *ptr)
-        : mPtr(ptr)
-        {
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceCreated();
-            }
-        }
-
-        AssetPtr(const AssetPtr<_AssetType> &refPtr)
-        : mPtr(refPtr.mPtr)
-        {
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceCreated();
-            }
-        }
-
-        ~AssetPtr()
-        {
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceDestroyed();
-                if(mPtr->getReferenceCount() <= 0)
-                {
-                    delete mPtr;
-                }
-            }
-        }
-
-        AssetPtr<_AssetType> &operator=(_AssetType *ptr)
-        {
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceDestroyed();
-                if(mPtr->getReferenceCount() <= 0)
-                {
-                    delete mPtr;
-                }
-            }
-
-            mPtr = ptr;
-
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceCreated();
-            }
-
-            return *this;
-        }
-
-        AssetPtr<_AssetType> &operator=(const AssetPtr<_AssetType> &refPtr)
-        {
-            return this->operator=(refPtr.mPtr);
-        }
-
-        operator _AssetType*() const
-        {
-            return mPtr;
-        }
-
-        _AssetType *operator->() const
-        {
-            return mPtr;
-        }
-
-        _AssetType *release()
-        {
-            _AssetType *ptr = mPtr;
-            mPtr = nullptr;
-
-            if(ptr != nullptr)
-            {
-                ptr->referenceReleased();
-            }
-
-            return ptr;
-        }
-
-        _AssetType *get()
-        {
-            return mPtr;
-        }
-
-
-    private:
-
-        _AssetType *mPtr;
-
-    };
+	// TODO: find all instances of this and replace it with the real template
+	template <typename T>
+	using AssetPtr = od::RefPtr<T>;
 
 }
 

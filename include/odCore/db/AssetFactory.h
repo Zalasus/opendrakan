@@ -24,7 +24,7 @@ namespace odDb
 	 * Common interface for TextureFactory, AssetFactory etc.
 	 */
 	template <typename _AssetType>
-	class AssetFactory : public AssetReferenceObserver
+	class AssetFactory : public od::ReferenceObserver
 	{
 	public:
 
@@ -53,8 +53,8 @@ namespace odDb
 		 */
 		virtual AssetPtr<_AssetType> loadAsset(od::RecordId id) = 0;
 
-		// implement AssetReferenceObserver
-		virtual void onLastReferenceDestroyed(Asset *asset) override;
+		// implement od::ReferenceObserver
+		virtual void onReferencedAboutToBeDestroyed(od::RefCounted *r) override;
 
 
 	private:
@@ -104,9 +104,9 @@ namespace odDb
 	}
 
 	template <typename _AssetType>
-	void AssetFactory<_AssetType>::onLastReferenceDestroyed(Asset *asset)
+	void AssetFactory<_AssetType>::onReferencedAboutToBeDestroyed(od::RefCounted *r)
 	{
-		_AssetType *childAsset = dynamic_cast<_AssetType*>(asset); // FIXME: kinda unneccessary dyanmic cast. only used for type-checking
+		_AssetType *childAsset = dynamic_cast<_AssetType*>(r);
 	    if(childAsset == nullptr)
 	    {
 	        Logger::warn() << AssetTraits<_AssetType>::name() << " factory was notified of deletion of non-" << AssetTraits<_AssetType>::name() << " object";

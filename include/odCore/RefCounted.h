@@ -20,7 +20,12 @@ namespace od
     {
     public:
 
+        friend class RefCounted;
+
         virtual ~ReferenceObserver() = default;
+
+
+    protected:
 
         virtual void onReferencedAboutToBeDestroyed(RefCounted *r) = 0;
     };
@@ -31,6 +36,7 @@ namespace od
     public:
 
         RefCounted();
+        virtual ~RefCounted();
 
         size_t referenceCreated();
         size_t referenceDestroyed();
@@ -131,7 +137,7 @@ namespace od
 
             if(ptr != nullptr)
             {
-                ptr->referenceDestroyed();
+                ptr->referenceReleased();
             }
 
             return ptr;
