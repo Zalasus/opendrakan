@@ -45,6 +45,7 @@ set(SOURCES
         "Level.cpp"
         "LevelObject.cpp"
         "Logger.cpp"
+        "RefCounted.cpp"
         "GlmSerializers.cpp"
         "SrscFile.cpp"
         "StringUtils.cpp"
