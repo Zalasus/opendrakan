@@ -27,7 +27,7 @@ namespace odOsg
 
         Geometry();
 
-        inline osg::Geode *getNode() { return mGeode; }
+        inline osg::Geode *getOsgNode() { return mGeode; }
 
         virtual std::vector<glm::vec3> &getVertexArray() override;
         virtual std::vector<glm::vec4> &getColorArray() override;

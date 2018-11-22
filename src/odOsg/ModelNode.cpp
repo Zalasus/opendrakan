@@ -10,6 +10,7 @@
 #include <odCore/Exception.h>
 
 #include <odOsg/Renderer.h>
+#include <odOsg/Geometry.h>
 
 namespace odOsg
 {
@@ -31,15 +32,48 @@ namespace odOsg
 
     void ModelNode::addGeometry(odRender::Geometry *g)
     {
+        if(g == nullptr)
+        {
+            return;
+        }
 
+        od::RefPtr<Geometry> geometry = dynamic_cast<Geometry*>(g);
+        if(geometry == nullptr)
+        {
+            throw od::Exception("Passed geometry was no odOsg::Geometry");
+        }
+
+        mGeometryGroup->addChild(geometry->getOsgNode());
+        mGeometries.push_back(geometry);
     }
 
     void ModelNode::addGeometry(odRender::Geometry *g, size_t lodIndex)
     {
+        if(g == nullptr)
+        {
+            return;
+        }
+
         if(lodIndex >= mLods.size())
         {
             throw od::Exception("LOD index out of bounds");
         }
+
+        od::RefPtr<Geometry> geometry = dynamic_cast<Geometry*>(g);
+        if(geometry == nullptr)
+        {
+            throw od::Exception("Passed geometry was no odOsg::Geometry");
+        }
+
+        if(mLodNode == nullptr)
+        {
+            mLodNode = new osg::LOD;
+        }
+
+        std::pair<float, float> &lod = mLods[lodIndex];
+
+        mLodNode->addChild(geometry->getOsgNode(), lod.first, lod.second);
+        mGeometries.push_back(geometry);
     }
 
     void ModelNode::addGeometry(odRender::Geometry *g, size_t lodIndex, size_t partIndex)
@@ -48,6 +82,8 @@ namespace odOsg
         {
             throw od::Exception("LOD index out of bounds");
         }
+
+        throw od::UnsupportedException("Model parts unimplemented");
     }
 
     void ModelNode::setLightingMode(LightingMode lm)

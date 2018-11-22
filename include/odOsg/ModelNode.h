@@ -18,6 +18,7 @@ namespace odOsg
 {
 
     class Renderer;
+    class Geometry;
 
     class ModelNode : public odRender::ModelNode
     {
@@ -41,6 +42,7 @@ namespace odOsg
         osg::ref_ptr<osg::LOD> mLodNode;
 
         std::vector<std::pair<float, float>> mLods;
+        std::vector<od::RefPtr<Geometry>> mGeometries;
 
     };
 
