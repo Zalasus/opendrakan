@@ -20,7 +20,7 @@
 
 namespace odRender
 {
-    class Handle;
+    class ObjectNode;
 }
 
 namespace od
@@ -191,7 +191,7 @@ namespace od
 
         bool mRflUpdateHookEnabled;
 
-        std::unique_ptr<odRender::Handle> mRenderHandle;
+        od::RefPtr<odRender::ObjectNode> mRenderNode;
     };
 
 }

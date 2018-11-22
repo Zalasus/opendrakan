@@ -57,7 +57,7 @@ namespace od
     {
     public:
 
-        static_assert(std::is_base_of<RefCounted, T>::value, "T in od::RefPtr<T> must have od::RefCounted as a base!");
+        //static_assert(std::is_base_of<RefCounted, T>::value, "T in od::RefPtr<T> must have od::RefCounted as a base!");
 
         RefPtr()
         : mPtr(nullptr)

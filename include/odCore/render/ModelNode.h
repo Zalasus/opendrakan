@@ -21,12 +21,22 @@ namespace odRender
     {
     public:
 
+        enum class LightingMode
+        {
+            Off,
+            AmbientDiffuse,
+            AmbientDiffuseSpecular
+        };
+
         virtual ~ModelNode() = default;
+
+        virtual size_t addLod(float minDistance, float maxDistance) = 0;
 
         virtual void addGeometry(Geometry *g) = 0;
         virtual void addGeometry(Geometry *g, size_t lodIndex) = 0;
         virtual void addGeometry(Geometry *g, size_t lodIndex, size_t partIndex) = 0;
 
+        virtual void setLightingMode(LightingMode lm) = 0;
 
     };
 

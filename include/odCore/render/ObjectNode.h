@@ -28,7 +28,8 @@ namespace odRender
         virtual void setOrientation(const glm::quat &orientation) = 0;
         virtual void setScale(const glm::vec3 &scale) = 0;
 
-        virtual ModelNode *getModelNode() = 0;
+        virtual ModelNode *getModel() = 0;
+        virtual void setModel(ModelNode *node) = 0;
         virtual void showModelPart(size_t index) = 0;
         virtual void hideModelPart(size_t index) = 0;
     };

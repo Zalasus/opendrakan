@@ -22,8 +22,8 @@ namespace odDb
 namespace odRender
 {
 
-    class Handle;
-    class Geometry;
+    class ObjectNode;
+    class ModelNode;
 
     /**
      * Interface for a renderer implementation.
@@ -42,8 +42,8 @@ namespace odRender
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
 
-        virtual Handle *createHandle(od::LevelObject &obj) = 0;
-        virtual Handle *createHandle(od::Layer &layer) = 0;
+        virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
+        virtual ModelNode *createModelNode(odDb::Model &model) = 0;
 
         virtual Geometry *createGeometry() = 0;
 

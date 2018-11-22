@@ -18,7 +18,7 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
 
-#include <odCore/render/Geometry.h>
+#include <odCore/render/ModelNode.h>
 
 namespace odRender
 {
@@ -87,10 +87,13 @@ namespace odDb
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
 
-		odRender::Geometry *getOrCreateGeometry(odRender::Renderer *renderer);
+		odRender::ModelNode *getOrCreateNode(odRender::Renderer *renderer);
 
 
 	private:
+
+		void _buildSingleLodNode(odRender::ModelNode *node, odRender::Renderer *renderer);
+		void _buildMultiLodNode(odRender::ModelNode *node, odRender::Renderer *renderer);
 
 		std::string mModelName;
 		ShadingType mShadingType;
@@ -109,7 +112,7 @@ namespace odDb
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
 
-		std::unique_ptr<odRender::Geometry> mSharedGeometry;
+		od::RefPtr<odRender::ModelNode> mSharedNode;
 	};
 
 	template <>
