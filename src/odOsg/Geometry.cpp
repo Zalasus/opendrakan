@@ -9,6 +9,8 @@
 
 #include <odCore/Exception.h>
 
+#include <odOsg/GlmAdapter.h>
+
 namespace odOsg
 {
 
@@ -61,12 +63,41 @@ namespace odOsg
 
     void Geometry::notifyVertexDataChanged(bool lastUpdate)
     {
+        mOsgVertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertexArray);
+        mOsgColorArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mColorArray);
+        mOsgNormalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormalArray);
+        mOsgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mTextureCoordArray);
 
+        if(lastUpdate)
+        {
+            mVertexArray.clear();
+            mVertexArray.shrink_to_fit();
+
+            mColorArray.clear();
+            mColorArray.shrink_to_fit();
+
+            mNormalArray.clear();
+            mNormalArray.shrink_to_fit();
+
+            mTextureCoordArray.clear();
+            mTextureCoordArray.shrink_to_fit();
+        }
     }
 
     odRender::GeometrySegment *Geometry::addSegment(size_t indexCount, odDb::Texture *texture)
     {
         return nullptr;
+    }
+
+    void Geometry::_buildOsgObjects()
+    {
+        mOsgVertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertexArray);
+        mOsgColorArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mColorArray);
+        mOsgNormalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormalArray);
+        mOsgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mTextureCoordArray);
+
+        mGeode = new osg::Geode;
+
     }
 
 }

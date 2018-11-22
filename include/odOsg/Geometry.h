@@ -43,6 +43,8 @@ namespace odOsg
 
     private:
 
+        void _buildOsgObjects();
+
         osg::ref_ptr<osg::Geode> mGeode;
         osg::ref_ptr<osg::Vec3Array> mOsgVertexArray;
         osg::ref_ptr<osg::Vec4Array> mOsgColorArray;
