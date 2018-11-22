@@ -24,6 +24,7 @@ namespace odRender
 
     class ObjectNode;
     class ModelNode;
+    class Geometry;
 
     /**
      * Interface for a renderer implementation.

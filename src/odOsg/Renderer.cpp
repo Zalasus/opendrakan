@@ -13,7 +13,8 @@
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 
-#include <odOsg/ObjectHandle.h>
+#include <odOsg/ObjectNode.h>
+#include <odOsg/ModelNode.h>
 #include <odOsg/Geometry.h>
 
 namespace odOsg
@@ -68,31 +69,19 @@ namespace odOsg
         return false;
     }
 
-    odRender::Handle *Renderer::createHandle(od::LevelObject &obj)
+    odRender::ObjectNode *Renderer::createObjectNode(od::LevelObject &obj)
     {
-        if(!obj.getClass()->hasModel())
-        {
-            return nullptr; // no need to create a handle for an object without a model
-        }
-
-        std::lock_guard<std::mutex> lock(mRenderMutex);
-
-        std::unique_ptr<ObjectHandle> handle(new ObjectHandle(this, mObjects));
-        handle->setPosition(obj.getPosition());
-        handle->setOrientation(obj.getRotation());
-        handle->setScale(obj.getScale());
-
-        return handle.release();
+        return new ObjectNode(this, mObjects);
     }
 
-    odRender::Handle *Renderer::createHandle(od::Layer &layer)
+    odRender::ModelNode *Renderer::createModelNode(odDb::Model &model)
     {
-        return nullptr;
+        return new ModelNode(this);
     }
 
     odRender::Geometry *Renderer::createGeometry()
     {
-        std::unique_ptr<Geometry> geometry(new Geometry);
+        od::RefPtr<Geometry> geometry(new Geometry);
 
         return geometry.release();
     }

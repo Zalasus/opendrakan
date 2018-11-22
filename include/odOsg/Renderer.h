@@ -28,14 +28,16 @@ namespace odOsg
         Renderer();
         ~Renderer();
 
+        inline ShaderFactory &getShaderFactory() { return mShaderFactory; }
+
         virtual void onStart() override;
         virtual void onEnd() override;
 
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
 
-        virtual odRender::Handle *createHandle(od::LevelObject &obj) override;
-        virtual odRender::Handle *createHandle(od::Layer &layer) override;
+        virtual odRender::ObjectNode *createObjectNode(od::LevelObject &obj) override;
+        virtual odRender::ModelNode *createModelNode(odDb::Model &model) override;
 
         virtual odRender::Geometry *createGeometry() override;
 

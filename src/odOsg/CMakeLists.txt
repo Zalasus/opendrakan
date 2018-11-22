@@ -2,7 +2,8 @@
 set(SOURCES
         "Geometry.cpp"
         "Main.cpp"
-        "ObjectHandle.cpp"
+        "ModelNode.cpp"
+        "ObjectNode.cpp"
         "Renderer.cpp"
         "ShaderFactory.cpp")
         

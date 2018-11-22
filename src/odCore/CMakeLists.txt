@@ -25,7 +25,6 @@ set(SOURCES
         "physics/ModelBounds.cpp"
         "physics/PhysicsManager.cpp"
         "render/GeometryBuilder.cpp"
-        "render/Handle.cpp"
         "rfl/ClassBuilderProbe.cpp"
         "rfl/Field.cpp"
         "rfl/FieldProbe.cpp"
