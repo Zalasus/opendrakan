@@ -1,5 +1,7 @@
 language: cpp
 
+dist: xenial
+
 env:
   - EVAL="CXX=g++-6"
   - EVAL="CXX=clang++-3.8"
