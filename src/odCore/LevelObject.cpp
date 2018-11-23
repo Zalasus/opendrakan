@@ -174,9 +174,15 @@ namespace od
         if(renderer != nullptr && mClass->hasModel())
         {
             mRenderNode = mLevel.getEngine().getRenderer()->createObjectNode(*this);
+            if(mRenderNode != nullptr)
+            {
+                od::RefPtr<odRender::ModelNode> model = mClass->getModel()->getOrCreateNode(renderer);
+                mRenderNode->setModel(model);
 
-            od::RefPtr<odRender::ModelNode> model = mClass->getModel()->getOrCreateNode(renderer);
-            mRenderNode->setModel(model);
+                mRenderNode->setPosition(mPosition);
+                mRenderNode->setOrientation(mRotation);
+                mRenderNode->setScale(mScale);
+            }
         }
 
         Logger::debug() << "Object " << getObjectId() << " spawned";
@@ -384,6 +390,13 @@ namespace od
         for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
         {
             (*it)->_attachmentTargetsTransformUpdated(this);
+        }
+
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setPosition(mPosition);
+            mRenderNode->setOrientation(mRotation);
+            mRenderNode->setScale(mScale);
         }
     }
 

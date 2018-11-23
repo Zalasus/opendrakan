@@ -10,6 +10,9 @@
 
 #include <memory>
 
+#include <osgGA/TrackballManipulator>
+#include <osgViewer/ViewerEventHandlers>
+
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 
@@ -26,15 +29,25 @@ namespace odOsg
     {
         mViewer = new osgViewer::Viewer;
 
+        osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
+        statsHandler->setKeyEventPrintsOutStats(0);
+        statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
+        mViewer->addEventHandler(statsHandler);
+
+        mViewer->setCameraManipulator(new osgGA::TrackballManipulator, true);
+        mViewer->setKeyEventSetsDone(osgGA::GUIEventAdapter::KEY_Escape);
+
         mSceneRoot = new osg::Group;
         mSceneRoot->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("default"));
         mViewer->setSceneData(mSceneRoot);
 
         mObjects = new osg::Group;
         mObjects->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("model"));
+        mSceneRoot->addChild(mObjects);
 
         mLayers = new osg::Group;
         mLayers->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("layer"));
+        mSceneRoot->addChild(mLayers);
     }
 
     Renderer::~Renderer()

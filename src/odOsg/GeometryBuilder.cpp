@@ -202,12 +202,14 @@ namespace odOsg
         osg::ref_ptr<osg::Vec3Array> osgVertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertices);
         osg::ref_ptr<osg::Vec3Array> osgNormalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormals);
         osg::ref_ptr<osg::Vec2Array> osgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mUvCoords);
+        osg::ref_ptr<osg::Vec4Array> osgColorArray = new osg::Vec4Array;
+        osgColorArray->push_back(osg::Vec4(1.0, 1.0, 1.0, 1.0));
         //osg::ref_ptr<osg::Vec4Array> osgBoneIndexArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneIndices);
         //osg::ref_ptr<osg::Vec4Array> osgBoneWeightArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneWeights);
 
         // give osg arrays to geometry
         mGeometry.setOsgVertexArray(osgVertexArray);
-        //mGeometry.setOsgColorArray(osgColorArray);
+        mGeometry.setOsgColorArray(osgColorArray);
         mGeometry.setOsgNormalArray(osgNormalArray);
         mGeometry.setOsgTextureCoordArray(osgTextureCoordArray);
 
