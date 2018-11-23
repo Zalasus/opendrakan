@@ -21,12 +21,14 @@ namespace odDb
 	class AssetProvider;
 }
 
-namespace odRender
+namespace odOsg
 {
 
     class Geometry;
 
 	/**
+	 * TODO: this can potentially be integrated into out Geometry implementation
+	 *
 	 * Class for constructing geodes from Riot engine model data. It splits models into multiple segments
 	 * with only one texture per segment. VBOs are shared among all segments and vertices are reused where possible.
 	 * Automatically generates normals and duplicates vertices if neccessary.
@@ -37,14 +39,18 @@ namespace odRender
 	{
 	public:
 
+        typedef std::vector<glm::vec3>::const_iterator VertexIterator;
+        typedef std::vector<odDb::Model::Polygon>::const_iterator PolygonIterator;
+        typedef std::vector<odDb::Model::BoneAffection>::const_iterator BoneAffectionIterator;
+
 		GeometryBuilder(Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
 
-		void setVertexVector(std::vector<glm::vec3>::iterator begin, std::vector<glm::vec3>::iterator end);
-		void setPolygonVector(std::vector<odDb::Model::Polygon>::iterator begin, std::vector<odDb::Model::Polygon>::iterator end);
-		void setBoneAffectionVector(std::vector<odDb::Model::BoneAffection>::iterator begin, std::vector<odDb::Model::BoneAffection>::iterator end);
+		void setVertexVector(VertexIterator begin, VertexIterator end);
+		void setPolygonVector(PolygonIterator begin, PolygonIterator end);
+		void setBoneAffectionVector(BoneAffectionIterator begin, BoneAffectionIterator end);
 
 		void build();
 

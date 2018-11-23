@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_RENDER_MODELNODE_H_
 
 #include <stdlib.h>
+#include <vector>
 
 #include <odCore/RefCounted.h>
 
@@ -21,22 +22,10 @@ namespace odRender
     {
     public:
 
-        enum class LightingMode
-        {
-            Off,
-            AmbientDiffuse,
-            AmbientDiffuseSpecular
-        };
-
         virtual ~ModelNode() = default;
 
-        virtual size_t addLod(float minDistance, float maxDistance) = 0;
-
-        virtual void addGeometry(Geometry *g) = 0;
-        virtual void addGeometry(Geometry *g, size_t lodIndex) = 0;
-        virtual void addGeometry(Geometry *g, size_t lodIndex, size_t partIndex) = 0;
-
-        virtual void setLightingMode(LightingMode lm) = 0;
+        virtual const std::vector<std::pair<float, float>> &getLods() = 0;
+        virtual Geometry *getGeometry(size_t lodIndex) = 0;
 
     };
 

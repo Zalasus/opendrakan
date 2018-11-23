@@ -73,12 +73,17 @@ namespace odDb
 		Model(AssetProvider &ap, od::RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
 
+        inline const std::string &getName() const { return mModelName; }
 		inline Skeleton *getSkeleton() { return mSkeleton.get(); } ///< May return nullptr if no skeleton present.
 		inline odPhysics::ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 		inline bool hasSkeleton() const { return mSkeleton != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
 		inline ShadingType getShadingType() const { return mShadingType; }
+		inline bool isShiny() const { return mShiny; }
+		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
+		inline const std::vector<Polygon> &getPolygonVector() { return mPolygons; }
+		inline const std::vector<LodMeshInfo> &getLodInfoVector() { return mLodMeshInfos; }
 
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
@@ -91,9 +96,6 @@ namespace odDb
 
 
 	private:
-
-		void _buildSingleLodNode(odRender::ModelNode *node, odRender::Renderer *renderer);
-		void _buildMultiLodNode(odRender::ModelNode *node, odRender::Renderer *renderer);
 
 		std::string mModelName;
 		ShadingType mShadingType;

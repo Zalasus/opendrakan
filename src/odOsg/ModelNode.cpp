@@ -23,6 +23,21 @@ namespace odOsg
         mGeometryGroup->getOrCreateStateSet()->setAttribute(modelProgram);
     }
 
+    const std::vector<std::pair<float, float>> &ModelNode::getLods()
+    {
+        return mLods;
+    }
+
+    odRender::Geometry *ModelNode::getGeometry(size_t lodIndex)
+    {
+        if(lodIndex >= mGeometries.size())
+        {
+            throw od::Exception("LOD index out of bounds");
+        }
+
+        return mGeometries[lodIndex];
+    }
+
     size_t ModelNode::addLod(float minDistance, float maxDistance)
     {
         mLods.push_back(std::make_pair(minDistance, maxDistance));
@@ -30,24 +45,18 @@ namespace odOsg
         return mLods.size() - 1;
     }
 
-    void ModelNode::addGeometry(odRender::Geometry *g)
+    void ModelNode::addGeometry(Geometry *g)
     {
         if(g == nullptr)
         {
             return;
         }
 
-        od::RefPtr<Geometry> geometry = dynamic_cast<Geometry*>(g);
-        if(geometry == nullptr)
-        {
-            throw od::Exception("Passed geometry was no odOsg::Geometry");
-        }
-
-        mGeometryGroup->addChild(geometry->getOsgNode());
-        mGeometries.push_back(geometry);
+        mGeometryGroup->addChild(g->getOsgGeode());
+        mGeometries.push_back(g);
     }
 
-    void ModelNode::addGeometry(odRender::Geometry *g, size_t lodIndex)
+    void ModelNode::addGeometry(Geometry *g, size_t lodIndex)
     {
         if(g == nullptr)
         {
@@ -57,33 +66,18 @@ namespace odOsg
         if(lodIndex >= mLods.size())
         {
             throw od::Exception("LOD index out of bounds");
-        }
-
-        od::RefPtr<Geometry> geometry = dynamic_cast<Geometry*>(g);
-        if(geometry == nullptr)
-        {
-            throw od::Exception("Passed geometry was no odOsg::Geometry");
         }
 
         if(mLodNode == nullptr)
         {
             mLodNode = new osg::LOD;
+            mGeometryGroup->addChild(mLodNode);
         }
 
         std::pair<float, float> &lod = mLods[lodIndex];
 
-        mLodNode->addChild(geometry->getOsgNode(), lod.first, lod.second);
-        mGeometries.push_back(geometry);
-    }
-
-    void ModelNode::addGeometry(odRender::Geometry *g, size_t lodIndex, size_t partIndex)
-    {
-        if(lodIndex >= mLods.size())
-        {
-            throw od::Exception("LOD index out of bounds");
-        }
-
-        throw od::UnsupportedException("Model parts unimplemented");
+        mLodNode->addChild(g->getOsgGeode(), lod.first, lod.second);
+        mGeometries.push_back(g);
     }
 
     void ModelNode::setLightingMode(LightingMode lm)
@@ -112,8 +106,6 @@ namespace odOsg
     {
         return mGeometryGroup;
     }
-
-
 
 }
 

@@ -24,7 +24,6 @@ namespace odRender
 
     class ObjectNode;
     class ModelNode;
-    class Geometry;
 
     /**
      * Interface for a renderer implementation.
@@ -45,8 +44,6 @@ namespace odRender
 
         virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
         virtual ModelNode *createModelNode(odDb::Model &model) = 0;
-
-        virtual Geometry *createGeometry() = 0;
 
     };
 

@@ -63,11 +63,6 @@ namespace odOsg
 
     void Geometry::notifyVertexDataChanged(bool lastUpdate)
     {
-        mOsgVertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertexArray);
-        mOsgColorArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mColorArray);
-        mOsgNormalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormalArray);
-        mOsgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mTextureCoordArray);
-
         if(lastUpdate)
         {
             mVertexArray.clear();
@@ -82,22 +77,6 @@ namespace odOsg
             mTextureCoordArray.clear();
             mTextureCoordArray.shrink_to_fit();
         }
-    }
-
-    odRender::GeometrySegment *Geometry::addSegment(size_t indexCount, odDb::Texture *texture)
-    {
-        return nullptr;
-    }
-
-    void Geometry::_buildOsgObjects()
-    {
-        mOsgVertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertexArray);
-        mOsgColorArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mColorArray);
-        mOsgNormalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormalArray);
-        mOsgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mTextureCoordArray);
-
-        mGeode = new osg::Geode;
-
     }
 
 }

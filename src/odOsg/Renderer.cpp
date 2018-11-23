@@ -16,6 +16,7 @@
 #include <odOsg/ObjectNode.h>
 #include <odOsg/ModelNode.h>
 #include <odOsg/Geometry.h>
+#include <odOsg/GeometryBuilder.h>
 
 namespace odOsg
 {
@@ -76,14 +77,31 @@ namespace odOsg
 
     odRender::ModelNode *Renderer::createModelNode(odDb::Model &model)
     {
-        return new ModelNode(this);
-    }
+        od::RefPtr<ModelNode> node(new ModelNode(this));
 
-    odRender::Geometry *Renderer::createGeometry()
-    {
-        od::RefPtr<Geometry> geometry(new Geometry);
+        if(model.getLodInfoVector().empty())
+        {
+            _buildSingleLodModelNode(model, node);
 
-        return geometry.release();
+        }else
+        {
+            _buildMultiLodModelNode(model, node);
+        }
+
+        if(model.getShadingType() == odDb::Model::ShadingType::None)
+        {
+            node->setLightingMode(ModelNode::LightingMode::Off);
+
+        }else if(!model.isShiny())
+        {
+            node->setLightingMode(ModelNode::LightingMode::AmbientDiffuse);
+
+        }else
+        {
+            node->setLightingMode(ModelNode::LightingMode::AmbientDiffuseSpecular);
+        }
+
+        return node.release();
     }
 
     void Renderer::_threadedRender()
@@ -119,6 +137,59 @@ namespace odOsg
         }
 
         // FIXME: we need to notify the engine that it should shut down here
+    }
+
+    void Renderer::_buildSingleLodModelNode(odDb::Model &model, ModelNode *node)
+    {
+        od::RefPtr<Geometry> geometry = new Geometry;
+
+        GeometryBuilder gb(*geometry, model.getName(), model.getAssetProvider());
+        gb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
+        gb.setVertexVector(model.getVertexVector().begin(), model.getVertexVector().end());
+        gb.setPolygonVector(model.getPolygonVector().begin(), model.getPolygonVector().end());
+        gb.build();
+
+        node->addGeometry(geometry);
+    }
+
+    void Renderer::_buildMultiLodModelNode(odDb::Model &model, ModelNode *node)
+    {
+        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model.getLodInfoVector();
+        const std::vector<glm::vec3> &vertices = model.getVertexVector();
+        const std::vector<odDb::Model::Polygon> &polygons = model.getPolygonVector();
+
+        for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
+        {
+            od::RefPtr<Geometry> geometry = new Geometry;
+
+            GeometryBuilder gb(*geometry, model.getName() + " (LOD '" + it->lodName + "')", model.getAssetProvider());
+            gb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
+
+            // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
+            //  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
+            size_t actualVertexCount = ((it+1 == lodMeshInfos.end()) ? vertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
+            size_t actualPolyCount = ((it+1 == lodMeshInfos.end()) ? polygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
+
+            auto verticesBegin = vertices.begin() + it->firstVertexIndex;
+            auto verticesEnd = vertices.begin() + actualVertexCount + it->firstVertexIndex;
+            gb.setVertexVector(verticesBegin, verticesEnd);
+
+            auto polygonsBegin = polygons.begin() + it->firstPolygonIndex;
+            auto polygonsEnd = polygons.begin() + actualPolyCount + it->firstPolygonIndex;
+            gb.setPolygonVector(polygonsBegin, polygonsEnd);
+
+            auto bonesBegin = it->boneAffections.begin();
+            auto bonesEnd = it->boneAffections.end();
+            gb.setBoneAffectionVector(bonesBegin, bonesEnd);
+
+            gb.build();
+
+            float minDistance = it->distanceThreshold;
+            float maxDistance = ((it+1) == lodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
+            size_t lodIndex = node->addLod(minDistance, maxDistance);
+
+            node->addGeometry(geometry, lodIndex);
+        }
     }
 
 }

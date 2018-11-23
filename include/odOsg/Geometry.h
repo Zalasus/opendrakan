@@ -16,18 +16,17 @@
 namespace odOsg
 {
 
-    class GeometrySegment : public odRender::GeometrySegment
-    {
-
-    };
-
     class Geometry : public odRender::Geometry
     {
     public:
 
         Geometry();
 
-        inline osg::Geode *getOsgNode() { return mGeode; }
+        inline osg::Geode *getOsgGeode() { return mGeode; }
+        inline void setOsgVertexArray(osg::Vec3Array *a) { mOsgVertexArray = a; }
+        inline void setOsgColorArray(osg::Vec4Array *a) { mOsgColorArray = a; }
+        inline void setOsgNormalArray(osg::Vec3Array *a) { mOsgNormalArray = a; }
+        inline void setOsgTextureCoordArray(osg::Vec2Array *a) { mOsgTextureCoordArray = a; }
 
         virtual std::vector<glm::vec3> &getVertexArray() override;
         virtual std::vector<glm::vec4> &getColorArray() override;
@@ -38,7 +37,6 @@ namespace odOsg
         virtual std::vector<glm::vec4> &getBoneIndexArray() override;
         virtual std::vector<glm::vec4> &getBoneWeightArray() override;
         virtual void notifyVertexDataChanged(bool lastUpdate) override;
-        virtual odRender::GeometrySegment *addSegment(size_t indexCount, odDb::Texture *texture) override;
 
 
     private:

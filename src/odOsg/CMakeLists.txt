@@ -1,6 +1,7 @@
 
 set(SOURCES
         "Geometry.cpp"
+        "GeometryBuilder.cpp"
         "Main.cpp"
         "ModelNode.cpp"
         "ObjectNode.cpp"

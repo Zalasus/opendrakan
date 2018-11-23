@@ -24,13 +24,23 @@ namespace odOsg
     {
     public:
 
+        enum class LightingMode
+        {
+            Off,
+            AmbientDiffuse,
+            AmbientDiffuseSpecular
+        };
+
         explicit ModelNode(Renderer *renderer);
 
-        virtual size_t addLod(float minDistance, float maxDistance) override;
-        virtual void addGeometry(odRender::Geometry *g) override;
-        virtual void addGeometry(odRender::Geometry *g, size_t lodIndex) override;
-        virtual void addGeometry(odRender::Geometry *g, size_t lodIndex, size_t partIndex) override;
-        virtual void setLightingMode(LightingMode lm) override;
+        // implement odRender::ModelNode
+        virtual const std::vector<std::pair<float, float>> &getLods() override;
+        virtual odRender::Geometry *getGeometry(size_t lodIndex) override;
+
+        size_t addLod(float minDistance, float maxDistance);
+        void addGeometry(Geometry *g);
+        void addGeometry(Geometry *g, size_t lodIndex);
+        void setLightingMode(LightingMode lm);
 
         osg::Node *getOsgNode();
 

@@ -5,10 +5,12 @@
  *      Author: zal
  */
 
-#include <odCore/render/GeometryBuilder.h>
+#include <odOsg/GeometryBuilder.h>
 
 #include <cassert>
 #include <algorithm>
+
+#include <osg/Geometry>
 
 #include <odCore/Exception.h>
 #include <odCore/db/AssetProvider.h>
@@ -16,8 +18,9 @@
 #include <odCore/render/Geometry.h>
 
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Geometry.h>
 
-namespace odRender
+namespace odOsg
 {
 
 	GeometryBuilder::GeometryBuilder(Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider)
@@ -39,12 +42,12 @@ namespace odRender
 	    mBoneWeights.clear();
 	}
 
-	void GeometryBuilder::setVertexVector(std::vector<glm::vec3>::iterator begin, std::vector<glm::vec3>::iterator end)
+	void GeometryBuilder::setVertexVector(VertexIterator begin, VertexIterator end)
 	{
 		mVertices.assign(begin, end);
 	}
 
-	void GeometryBuilder::setPolygonVector(std::vector<odDb::Model::Polygon>::iterator begin, std::vector<odDb::Model::Polygon>::iterator end)
+	void GeometryBuilder::setPolygonVector(PolygonIterator begin, PolygonIterator end)
 	{
 		// need to iterate over polygons and convert quads to triangles and duplicate polygon if it is double-sided
 
@@ -100,9 +103,15 @@ namespace odRender
 		}
 	}
 
-	void GeometryBuilder::setBoneAffectionVector(std::vector<odDb::Model::BoneAffection>::iterator begin, std::vector<odDb::Model::BoneAffection>::iterator end)
+	void GeometryBuilder::setBoneAffectionVector(BoneAffectionIterator begin, BoneAffectionIterator end)
 	{
 		// here we turn the BoneAffection objects into the index and weight vectors
+
+	    if(begin == end)
+	    {
+	        mGeometry.setHasBoneInfo(false);
+	        return;
+	    }
 
 		mBoneIndices.resize(mVertices.size(), glm::vec4(0.0));
 		mBoneWeights.resize(mVertices.size(), glm::vec4(0.0)); // default weight of 0 will make unused bones uneffective,
@@ -189,7 +198,21 @@ namespace odRender
             triangleCountsPerTexture[textureIndex]++;
         }
 
-		odRender::GeometrySegment *segment = nullptr;
+        osg::ref_ptr<osg::Geode> geode = mGeometry.getOsgGeode();
+        osg::ref_ptr<osg::Vec3Array> osgVertexArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mVertices);
+        osg::ref_ptr<osg::Vec3Array> osgNormalArray = GlmAdapter::convertToOsgArray<osg::Vec3Array>(mNormals);
+        osg::ref_ptr<osg::Vec2Array> osgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mUvCoords);
+        //osg::ref_ptr<osg::Vec4Array> osgBoneIndexArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneIndices);
+        //osg::ref_ptr<osg::Vec4Array> osgBoneWeightArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneWeights);
+
+        // give osg arrays to geometry
+        mGeometry.setOsgVertexArray(osgVertexArray);
+        //mGeometry.setOsgColorArray(osgColorArray);
+        mGeometry.setOsgNormalArray(osgNormalArray);
+        mGeometry.setOsgTextureCoordArray(osgTextureCoordArray);
+
+		osg::ref_ptr<osg::Geometry> osgGeometry;
+		osg::ref_ptr<osg::DrawElements> drawElements;
 		lastTexture = odDb::AssetRef::NULL_REF;
 		textureIndex = 0;
 		for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
@@ -199,26 +222,51 @@ namespace odRender
 		        continue;
 		    }
 
-			if(lastTexture != it->texture || segment == nullptr)
+			if(lastTexture != it->texture || osgGeometry == nullptr)
 			{
-			    if(segment != nullptr)
+			    if(osgGeometry != nullptr)
 			    {
-			        assert(segment->getNumIndices() == triangleCountsPerTexture[textureIndex]*3);
+			        assert(drawElements->getNumIndices() == triangleCountsPerTexture[textureIndex]*3);
 
 			        ++textureIndex;
 			    }
 
-			    odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
-			    size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
+			    osgGeometry = new osg::Geometry;
+			    osgGeometry->setVertexArray(osgVertexArray);
+			    osgGeometry->setNormalArray(osgNormalArray);
+			    osgGeometry->setTexCoordArray(0, osgTextureCoordArray);
+			    geode->addDrawable(osgGeometry);
 
-				segment = mGeometry.addSegment(vertsForThisTexture, dbTexture);
+			    size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
+			    if(mVertices.size() <= 0xff)
+                {
+                    osg::ref_ptr<osg::DrawElementsUByte> drawElementsUbyte = new osg::DrawElementsUByte(osg::PrimitiveSet::TRIANGLES);
+                    drawElementsUbyte->reserve(vertsForThisTexture);
+                    drawElements = drawElementsUbyte;
+
+                }else if(mVertices.size() <= 0xffff)
+                {
+
+                    osg::ref_ptr<osg::DrawElementsUShort> drawElementsUshort = new osg::DrawElementsUShort(osg::PrimitiveSet::TRIANGLES);
+                    drawElementsUshort->reserve(vertsForThisTexture);
+                    drawElements = drawElementsUshort;
+
+                }else
+                {
+                    osg::ref_ptr<osg::DrawElementsUInt> drawElementsUint = new osg::DrawElementsUInt(osg::PrimitiveSet::TRIANGLES);
+                    drawElementsUint->reserve(vertsForThisTexture);
+                    drawElements = drawElementsUint;
+                }
+			    osgGeometry->addPrimitiveSet(drawElements);
+
+				//odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
 
 				lastTexture = it->texture;
 			}
 
 			for(size_t vn = 0; vn < 3; ++vn)
 			{
-				segment->addIndex(it->vertexIndices[vn]);
+				drawElements->addElement(it->vertexIndices[vn]);
 			}
 		}
 	}

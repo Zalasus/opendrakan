@@ -16,24 +16,8 @@
 
 #include <odCore/RefCounted.h>
 
-namespace odDb
-{
-    class Texture;
-}
-
 namespace odRender
 {
-
-    class GeometrySegment
-    {
-    public:
-
-        virtual ~GeometrySegment() = default;
-
-        virtual size_t getNumIndices() = 0;
-        virtual void addIndex(int index) = 0;
-
-    };
 
     /**
      * An interface for a renderable geometry, to be implemented by the renderer module.
@@ -69,8 +53,6 @@ namespace odRender
          * systems that need to make copies of the vertex data in order to use it.
          */
         virtual void notifyVertexDataChanged(bool lastUpdate) = 0;
-
-        virtual GeometrySegment *addSegment(size_t indexCount, odDb::Texture *texture) = 0;
 
     };
 

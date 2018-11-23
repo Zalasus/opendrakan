@@ -21,6 +21,8 @@
 namespace odOsg
 {
 
+    class ModelNode;
+
     class Renderer : public odRender::Renderer
     {
     public:
@@ -39,12 +41,13 @@ namespace odOsg
         virtual odRender::ObjectNode *createObjectNode(od::LevelObject &obj) override;
         virtual odRender::ModelNode *createModelNode(odDb::Model &model) override;
 
-        virtual odRender::Geometry *createGeometry() override;
-
 
     private:
 
         void _threadedRender();
+
+        void _buildSingleLodModelNode(odDb::Model &model, ModelNode *node);
+        void _buildMultiLodModelNode(odDb::Model &model, ModelNode *node);
 
         ShaderFactory mShaderFactory;
         std::thread mRenderThread;

@@ -18,8 +18,6 @@
 #include <odCore/db/Skeleton.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/Geometry.h>
-#include <odCore/render/GeometryBuilder.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -401,87 +399,12 @@ namespace odDb
 
 	odRender::ModelNode *Model::getOrCreateNode(odRender::Renderer *renderer)
 	{
-	    if(mSharedNode != nullptr)
+	    if(mSharedNode == nullptr)
 	    {
-	        return mSharedNode;
+	        mSharedNode = renderer->createModelNode(*this);
 	    }
-
-	    od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(*this);
-
-	    if(mLodMeshInfos.empty())
-	    {
-	        _buildSingleLodNode(node, renderer);
-
-	    }else
-	    {
-	        _buildMultiLodNode(node, renderer);
-	    }
-
-	    if(mShadingType == ShadingType::None)
-	    {
-	        node->setLightingMode(odRender::ModelNode::LightingMode::Off);
-
-	    }else if(!mShiny)
-	    {
-	        node->setLightingMode(odRender::ModelNode::LightingMode::AmbientDiffuse);
-
-	    }else
-	    {
-	        node->setLightingMode(odRender::ModelNode::LightingMode::AmbientDiffuseSpecular);
-	    }
-
-	    mSharedNode = node;
 
 	    return mSharedNode;
-	}
-
-	void Model::_buildSingleLodNode(odRender::ModelNode *node, odRender::Renderer *renderer)
-	{
-	    od::RefPtr<odRender::Geometry> geometry = renderer->createGeometry();
-
-	    odRender::GeometryBuilder gb(*geometry, mModelName, this->getAssetProvider());
-        gb.setBuildSmoothNormals(mShadingType != ShadingType::Flat);
-        gb.setVertexVector(mVertices.begin(), mVertices.end());
-        gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
-        gb.build();
-
-        node->addGeometry(geometry);
-	}
-
-	void Model::_buildMultiLodNode(odRender::ModelNode *node, odRender::Renderer *renderer)
-	{
-	    for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
-        {
-            od::RefPtr<odRender::Geometry> geometry = renderer->createGeometry();
-
-            odRender::GeometryBuilder gb(*geometry, mModelName + " (LOD '" + it->lodName + "')", this->getAssetProvider());
-            gb.setBuildSmoothNormals(mShadingType != ShadingType::Flat);
-
-            // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
-            //  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
-            size_t actualVertexCount = ((it+1 == mLodMeshInfos.end()) ? mVertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
-            size_t actualPolyCount = ((it+1 == mLodMeshInfos.end()) ? mPolygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
-
-            auto verticesBegin = mVertices.begin() + it->firstVertexIndex;
-            auto verticesEnd = mVertices.begin() + actualVertexCount + it->firstVertexIndex;
-            gb.setVertexVector(verticesBegin, verticesEnd);
-
-            auto polygonsBegin = mPolygons.begin() + it->firstPolygonIndex;
-            auto polygonsEnd = mPolygons.begin() + actualPolyCount + it->firstPolygonIndex;
-            gb.setPolygonVector(polygonsBegin, polygonsEnd);
-
-            auto bonesBegin = it->boneAffections.begin();
-            auto bonesEnd = it->boneAffections.end();
-            gb.setBoneAffectionVector(bonesBegin, bonesEnd);
-
-            gb.build();
-
-            float minDistance = it->distanceThreshold;
-            float maxDistance = ((it+1) == mLodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
-            size_t lodIndex = node->addLod(minDistance, maxDistance);
-
-            node->addGeometry(geometry, lodIndex);
-        }
 	}
 }
 
