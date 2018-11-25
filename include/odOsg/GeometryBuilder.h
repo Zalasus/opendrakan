@@ -25,6 +25,7 @@ namespace odOsg
 {
 
     class Geometry;
+    class Renderer;
 
 	/**
 	 * TODO: this can potentially be integrated into out Geometry implementation
@@ -43,7 +44,7 @@ namespace odOsg
         typedef std::vector<odDb::Model::Polygon>::const_iterator PolygonIterator;
         typedef std::vector<odDb::Model::BoneAffection>::const_iterator BoneAffectionIterator;
 
-		GeometryBuilder(Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider);
+		GeometryBuilder(Renderer *renderer, Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
@@ -67,6 +68,8 @@ namespace odOsg
 		void _buildNormals();
 		void _makeIndicesUniqueAndGenerateUvs();
 		void _disambiguateAndGenerateUvs();
+
+		Renderer *mRenderer;
 
 		std::string mGeometryName;
 		odDb::AssetProvider &mAssetProvider;

@@ -14,6 +14,11 @@
 
 #include <osg/Group>
 
+namespace odDb
+{
+    class Model;
+}
+
 namespace odOsg
 {
 
@@ -31,7 +36,7 @@ namespace odOsg
             AmbientDiffuseSpecular
         };
 
-        explicit ModelNode(Renderer *renderer);
+        ModelNode(Renderer *renderer, odDb::Model *model);
 
         // implement odRender::ModelNode
         virtual const std::vector<std::pair<float, float>> &getLods() override;
@@ -47,7 +52,12 @@ namespace odOsg
 
     private:
 
+        void _buildSingleLodModelNode();
+        void _buildMultiLodModelNode();
+
         Renderer *mRenderer;
+        od::RefPtr<odDb::Model> mModel;
+
         osg::ref_ptr<osg::Group> mGeometryGroup;
         osg::ref_ptr<osg::LOD> mLodNode;
 

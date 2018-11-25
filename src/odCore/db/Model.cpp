@@ -12,12 +12,12 @@
 
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
+
 #include <odCore/db/Asset.h>
+#include <odCore/db/AssetProvider.h>
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
-
-#include <odCore/render/Renderer.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -397,14 +397,5 @@ namespace odDb
 		}
  	}
 
-	odRender::ModelNode *Model::getOrCreateNode(odRender::Renderer *renderer)
-	{
-	    if(mSharedNode == nullptr)
-	    {
-	        mSharedNode = renderer->createModelNode(*this);
-	    }
-
-	    return mSharedNode;
-	}
 }
 

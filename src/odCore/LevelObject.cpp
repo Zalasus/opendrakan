@@ -173,10 +173,10 @@ namespace od
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr && mClass->hasModel())
         {
-            mRenderNode = mLevel.getEngine().getRenderer()->createObjectNode(*this);
+            mRenderNode = renderer->createObjectNode(*this);
             if(mRenderNode != nullptr)
             {
-                od::RefPtr<odRender::ModelNode> model = mClass->getModel()->getOrCreateNode(renderer);
+                od::RefPtr<odRender::ModelNode> model = renderer->getNodeForModel(mClass->getModel());
                 mRenderNode->setModel(model);
 
                 mRenderNode->setPosition(mPosition);

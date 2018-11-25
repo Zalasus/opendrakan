@@ -18,13 +18,6 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
 
-#include <odCore/render/ModelNode.h>
-
-namespace odRender
-{
-    class Renderer;
-}
-
 namespace odDb
 {
     class ModelFactory;
@@ -92,8 +85,6 @@ namespace odDb
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
 
-		odRender::ModelNode *getOrCreateNode(odRender::Renderer *renderer);
-
 
 	private:
 
@@ -113,8 +104,6 @@ namespace odDb
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
-
-		od::RefPtr<odRender::ModelNode> mSharedNode;
 	};
 
 	template <>

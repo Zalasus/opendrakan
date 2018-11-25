@@ -11,6 +11,7 @@
 #include <algorithm>
 
 #include <osg/Geometry>
+#include <osg/Texture2D>
 
 #include <odCore/Exception.h>
 #include <odCore/db/AssetProvider.h>
@@ -19,12 +20,15 @@
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Geometry.h>
+#include <odOsg/Texture.h>
+#include <odOsg/Renderer.h>
 
 namespace odOsg
 {
 
-	GeometryBuilder::GeometryBuilder(Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider)
-	: mGeometryName(geometryName)
+	GeometryBuilder::GeometryBuilder(Renderer *renderer, Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider)
+	: mRenderer(renderer)
+    , mGeometryName(geometryName)
 	, mAssetProvider(assetProvider)
 	, mSmoothNormals(true)
 	, mNormalsFromCcw(false)
@@ -235,8 +239,9 @@ namespace odOsg
 
 			    osgGeometry = new osg::Geometry;
 			    osgGeometry->setVertexArray(osgVertexArray);
-			    osgGeometry->setNormalArray(osgNormalArray);
-			    osgGeometry->setTexCoordArray(0, osgTextureCoordArray);
+			    osgGeometry->setNormalArray(osgNormalArray, osg::Array::BIND_PER_VERTEX);
+			    osgGeometry->setTexCoordArray(0, osgTextureCoordArray, osg::Array::BIND_PER_VERTEX);
+			    osgGeometry->setColorArray(osgColorArray, osg::Array::BIND_OVERALL);
 			    geode->addDrawable(osgGeometry);
 
 			    size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
@@ -261,7 +266,12 @@ namespace odOsg
                 }
 			    osgGeometry->addPrimitiveSet(drawElements);
 
-				//odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
+				odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
+				Texture *renderTexture = mRenderer->getTexture(dbTexture);
+				osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(renderTexture->getImage()));
+				texture->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
+				texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
+				osgGeometry->getOrCreateStateSet()->setTextureAttribute(0, texture);
 
 				lastTexture = it->texture;
 			}

@@ -17,6 +17,7 @@ namespace od
 namespace odDb
 {
     class Model;
+    class Texture;
 }
 
 namespace odRender
@@ -24,6 +25,7 @@ namespace odRender
 
     class ObjectNode;
     class ModelNode;
+    class Texture;
 
     /**
      * Interface for a renderer implementation.
@@ -43,7 +45,7 @@ namespace odRender
         virtual bool isLightingEnabled() const = 0;
 
         virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
-        virtual ModelNode *createModelNode(odDb::Model &model) = 0;
+        virtual ModelNode *getNodeForModel(odDb::Model *model) = 0;
 
     };
 

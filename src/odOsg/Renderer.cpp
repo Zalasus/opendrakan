@@ -19,7 +19,7 @@
 #include <odOsg/ObjectNode.h>
 #include <odOsg/ModelNode.h>
 #include <odOsg/Geometry.h>
-#include <odOsg/GeometryBuilder.h>
+#include <odOsg/Texture.h>
 
 namespace odOsg
 {
@@ -48,6 +48,9 @@ namespace odOsg
         mLayers = new osg::Group;
         mLayers->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("layer"));
         mSceneRoot->addChild(mLayers);
+
+        mGlobalAmbient = new osg::Uniform("layerLightAmbient", osg::Vec3(1.0, 1.0, 1.0));
+        mSceneRoot->getOrCreateStateSet()->addUniform(mGlobalAmbient);
     }
 
     Renderer::~Renderer()
@@ -88,33 +91,34 @@ namespace odOsg
         return new ObjectNode(this, mObjects);
     }
 
-    odRender::ModelNode *Renderer::createModelNode(odDb::Model &model)
+    odRender::ModelNode *Renderer::getNodeForModel(odDb::Model *model)
     {
-        od::RefPtr<ModelNode> node(new ModelNode(this));
-
-        if(model.getLodInfoVector().empty())
+        auto it = mModelNodeMap.find(model);
+        if(it != mModelNodeMap.end())
         {
-            _buildSingleLodModelNode(model, node);
-
-        }else
-        {
-            _buildMultiLodModelNode(model, node);
+            return it->second;
         }
 
-        if(model.getShadingType() == odDb::Model::ShadingType::None)
-        {
-            node->setLightingMode(ModelNode::LightingMode::Off);
+        od::RefPtr<ModelNode> node(new ModelNode(this, model));
 
-        }else if(!model.isShiny())
-        {
-            node->setLightingMode(ModelNode::LightingMode::AmbientDiffuse);
+        mModelNodeMap.insert(std::make_pair(model, node));
 
-        }else
+        return node;
+    }
+
+    Texture *Renderer::getTexture(odDb::Texture *texture)
+    {
+        auto it = mTextureMap.find(texture);
+        if(it != mTextureMap.end())
         {
-            node->setLightingMode(ModelNode::LightingMode::AmbientDiffuseSpecular);
+            return it->second;
         }
 
-        return node.release();
+        od::RefPtr<Texture> rTex = new Texture(*texture);
+
+        mTextureMap.insert(std::make_pair(texture, rTex));
+
+        return rTex;
     }
 
     void Renderer::_threadedRender()
@@ -150,59 +154,6 @@ namespace odOsg
         }
 
         // FIXME: we need to notify the engine that it should shut down here
-    }
-
-    void Renderer::_buildSingleLodModelNode(odDb::Model &model, ModelNode *node)
-    {
-        od::RefPtr<Geometry> geometry = new Geometry;
-
-        GeometryBuilder gb(*geometry, model.getName(), model.getAssetProvider());
-        gb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
-        gb.setVertexVector(model.getVertexVector().begin(), model.getVertexVector().end());
-        gb.setPolygonVector(model.getPolygonVector().begin(), model.getPolygonVector().end());
-        gb.build();
-
-        node->addGeometry(geometry);
-    }
-
-    void Renderer::_buildMultiLodModelNode(odDb::Model &model, ModelNode *node)
-    {
-        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model.getLodInfoVector();
-        const std::vector<glm::vec3> &vertices = model.getVertexVector();
-        const std::vector<odDb::Model::Polygon> &polygons = model.getPolygonVector();
-
-        for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
-        {
-            od::RefPtr<Geometry> geometry = new Geometry;
-
-            GeometryBuilder gb(*geometry, model.getName() + " (LOD '" + it->lodName + "')", model.getAssetProvider());
-            gb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
-
-            // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
-            //  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
-            size_t actualVertexCount = ((it+1 == lodMeshInfos.end()) ? vertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
-            size_t actualPolyCount = ((it+1 == lodMeshInfos.end()) ? polygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
-
-            auto verticesBegin = vertices.begin() + it->firstVertexIndex;
-            auto verticesEnd = vertices.begin() + actualVertexCount + it->firstVertexIndex;
-            gb.setVertexVector(verticesBegin, verticesEnd);
-
-            auto polygonsBegin = polygons.begin() + it->firstPolygonIndex;
-            auto polygonsEnd = polygons.begin() + actualPolyCount + it->firstPolygonIndex;
-            gb.setPolygonVector(polygonsBegin, polygonsEnd);
-
-            auto bonesBegin = it->boneAffections.begin();
-            auto bonesEnd = it->boneAffections.end();
-            gb.setBoneAffectionVector(bonesBegin, bonesEnd);
-
-            gb.build();
-
-            float minDistance = it->distanceThreshold;
-            float maxDistance = ((it+1) == lodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
-            size_t lodIndex = node->addLod(minDistance, maxDistance);
-
-            node->addGeometry(geometry, lodIndex);
-        }
     }
 
 }

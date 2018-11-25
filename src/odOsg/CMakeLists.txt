@@ -6,7 +6,8 @@ set(SOURCES
         "ModelNode.cpp"
         "ObjectNode.cpp"
         "Renderer.cpp"
-        "ShaderFactory.cpp")
+        "ShaderFactory.cpp"
+        "Texture.cpp")
         
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 

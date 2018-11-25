@@ -12,9 +12,12 @@
 #include <odCore/ZStream.h>
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
+
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 #include <odCore/db/DbManager.h>
+
+#include <odCore/render/Texture.h>
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040

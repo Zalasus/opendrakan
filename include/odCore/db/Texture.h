@@ -23,6 +23,9 @@ namespace odDb
 
         Texture(AssetProvider &ap, od::RecordId id);
 
+        inline uint32_t getWidth() const { return mWidth; }
+        inline uint32_t getHeight() const { return mHeight; }
+        inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.data(); }
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
