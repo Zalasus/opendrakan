@@ -12,7 +12,6 @@
 
 #include <thread>
 #include <mutex>
-#include <map>
 
 #include <osg/Group>
 #include <osg/Uniform>
@@ -44,7 +43,8 @@ namespace odOsg
         virtual bool isLightingEnabled() const override;
 
         virtual odRender::ObjectNode *createObjectNode(od::LevelObject &obj) override;
-        virtual odRender::ModelNode *getNodeForModel(odDb::Model *model) override;
+        virtual odRender::ModelNode *createModelNode(odDb::Model *model) override;
+        virtual odRender::Texture *createTexture(odDb::Texture *texture) override;
 
         Texture *getTexture(odDb::Texture *texture);
 
@@ -56,9 +56,6 @@ namespace odOsg
         ShaderFactory mShaderFactory;
         std::thread mRenderThread;
         std::mutex mRenderMutex;
-
-        std::map<odDb::Model*, od::RefPtr<ModelNode>> mModelNodeMap;
-        std::map<odDb::Texture*, od::RefPtr<Texture>> mTextureMap;
 
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         osg::ref_ptr<osg::Group> mSceneRoot;

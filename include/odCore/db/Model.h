@@ -18,6 +18,12 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
 
+namespace odRender
+{
+    class ModelNode;
+    class Renderer;
+}
+
 namespace odDb
 {
     class ModelFactory;
@@ -77,6 +83,8 @@ namespace odDb
 		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
 		inline const std::vector<Polygon> &getPolygonVector() { return mPolygons; }
 		inline const std::vector<LodMeshInfo> &getLodInfoVector() { return mLodMeshInfos; }
+		inline void setRenderNode(odRender::ModelNode *node) { mRenderNode = node; }
+		inline odRender::ModelNode *getRenderNode() const { return mRenderNode; }
 
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
@@ -84,6 +92,10 @@ namespace odDb
 		void loadPolygons(ModelFactory &factory, od::DataReader &&dr);
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
+
+		// returns a refptr since this class only takes weak ownership of potentially created objects
+		od::RefPtr<odRender::ModelNode> getOrCreateRenderNode(odRender::Renderer *renderer);
+		void renderNodeDestroyed(); /// < Called by the associated ModelNode when it is about to be destroyed
 
 
 	private:
@@ -104,6 +116,8 @@ namespace odDb
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
+
+		odRender::ModelNode *mRenderNode; // weak ref~ model node is responsible for managing this
 	};
 
 	template <>

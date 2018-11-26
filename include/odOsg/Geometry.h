@@ -13,6 +13,8 @@
 #include <osg/Node>
 #include <osg/Geode>
 
+#include <odOsg/Texture.h>
+
 namespace odOsg
 {
 
@@ -38,6 +40,8 @@ namespace odOsg
         virtual std::vector<glm::vec4> &getBoneWeightArray() override;
         virtual void notifyVertexDataChanged(bool lastUpdate) override;
 
+        void addTexture(Texture *texture);
+
 
     private:
 
@@ -60,6 +64,8 @@ namespace odOsg
         bool mHasBoneInfo;
         std::vector<glm::vec4> mBoneIndexArray;
         std::vector<glm::vec4> mBoneWeightArray;
+
+        std::vector<od::RefPtr<Texture>> mTextures;
     };
 
 }

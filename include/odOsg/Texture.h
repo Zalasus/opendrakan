@@ -14,19 +14,17 @@
 
 #include <odCore/render/Texture.h>
 
-namespace odDb
-{
-    class Texture;
-}
-
 namespace odOsg
 {
+
+    class Renderer;
 
     class Texture : public odRender::Texture
     {
     public:
 
-        Texture(odDb::Texture &dbTexture);
+        Texture(Renderer *renderer, odDb::Texture *dbTexture);
+        virtual ~Texture();
 
         inline osg::Image *getImage() { return mImage; }
 

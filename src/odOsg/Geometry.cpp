@@ -10,6 +10,7 @@
 #include <odCore/Exception.h>
 
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Texture.h>
 
 namespace odOsg
 {
@@ -77,6 +78,11 @@ namespace odOsg
             mTextureCoordArray.clear();
             mTextureCoordArray.shrink_to_fit();
         }
+    }
+
+    void Geometry::addTexture(Texture *texture)
+    {
+        mTextures.push_back(texture);
     }
 
 }

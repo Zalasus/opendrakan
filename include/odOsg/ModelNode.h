@@ -37,6 +37,7 @@ namespace odOsg
         };
 
         ModelNode(Renderer *renderer, odDb::Model *model);
+        ~ModelNode();
 
         // implement odRender::ModelNode
         virtual const std::vector<std::pair<float, float>> &getLods() override;

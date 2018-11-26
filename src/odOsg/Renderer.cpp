@@ -91,34 +91,14 @@ namespace odOsg
         return new ObjectNode(this, mObjects);
     }
 
-    odRender::ModelNode *Renderer::getNodeForModel(odDb::Model *model)
+    odRender::ModelNode *Renderer::createModelNode(odDb::Model *model)
     {
-        auto it = mModelNodeMap.find(model);
-        if(it != mModelNodeMap.end())
-        {
-            return it->second;
-        }
-
-        od::RefPtr<ModelNode> node(new ModelNode(this, model));
-
-        mModelNodeMap.insert(std::make_pair(model, node));
-
-        return node;
+        return new ModelNode(this, model);
     }
 
-    Texture *Renderer::getTexture(odDb::Texture *texture)
+    odRender::Texture *Renderer::createTexture(odDb::Texture *texture)
     {
-        auto it = mTextureMap.find(texture);
-        if(it != mTextureMap.end())
-        {
-            return it->second;
-        }
-
-        od::RefPtr<Texture> rTex = new Texture(*texture);
-
-        mTextureMap.insert(std::make_pair(texture, rTex));
-
-        return rTex;
+        return new Texture(this, texture);
     }
 
     void Renderer::_threadedRender()

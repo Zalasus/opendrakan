@@ -266,11 +266,16 @@ namespace odOsg
                 }
 			    osgGeometry->addPrimitiveSet(drawElements);
 
-				odDb::AssetPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
-				Texture *renderTexture = mRenderer->getTexture(dbTexture);
-				osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(renderTexture->getImage()));
+				od::RefPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
+				od::RefPtr<odRender::Texture> renderTexture = dbTexture->getOrCreateRenderTexture(mRenderer);
+				Texture *odOsgTexture = dynamic_cast<Texture*>(renderTexture.get());
+				if(odOsgTexture == nullptr) throw od::Exception("Render texture stored in db texture was no odOsg::Texture");
+				mGeometry.addTexture(odOsgTexture);
+
+				osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(odOsgTexture->getImage()));
 				texture->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
 				texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
+				texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
 				osgGeometry->getOrCreateStateSet()->setTextureAttribute(0, texture);
 
 				lastTexture = it->texture;

@@ -15,6 +15,8 @@
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
 
+#include <odCore/db/Model.h>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 
@@ -176,7 +178,7 @@ namespace od
             mRenderNode = renderer->createObjectNode(*this);
             if(mRenderNode != nullptr)
             {
-                od::RefPtr<odRender::ModelNode> model = renderer->getNodeForModel(mClass->getModel());
+                od::RefPtr<odRender::ModelNode> model = mClass->getModel()->getOrCreateRenderNode(renderer);
                 mRenderNode->setModel(model);
 
                 mRenderNode->setPosition(mPosition);

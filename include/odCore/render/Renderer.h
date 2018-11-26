@@ -45,7 +45,8 @@ namespace odRender
         virtual bool isLightingEnabled() const = 0;
 
         virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
-        virtual ModelNode *getNodeForModel(odDb::Model *model) = 0;
+        virtual ModelNode *createModelNode(odDb::Model *model) = 0;
+        virtual Texture *createTexture(odDb::Texture *texture) = 0;
 
     };
 

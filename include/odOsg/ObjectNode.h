@@ -39,7 +39,7 @@ namespace odOsg
 
         Renderer *mRenderer;
         osg::ref_ptr<osg::Group> mObjectGroup;
-        ModelNode *mModelNode;
+        od::RefPtr<ModelNode> mModelNode;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
 
     };

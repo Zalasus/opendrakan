@@ -18,6 +18,7 @@
 #include <odCore/db/DbManager.h>
 
 #include <odCore/render/Texture.h>
+#include <odCore/render/Renderer.h>
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040
@@ -47,6 +48,7 @@ namespace odDb
     , mCompressionLevel(0)
     , mCompressedSize(0)
     , mHasAlphaChannel(false)
+    , mRenderTexture(nullptr)
     {
 
     }
@@ -275,6 +277,23 @@ namespace odDb
                 << " to file '" << path.str() << "'";
 
 		throw od::UnsupportedException("PNG export is unsupported as of now");
+    }
+
+    od::RefPtr<odRender::Texture> Texture::getOrCreateRenderTexture(odRender::Renderer *renderer)
+    {
+        if(mRenderTexture == nullptr)
+        {
+            od::RefPtr<odRender::Texture> texture = renderer->createTexture(this);
+            mRenderTexture = texture;
+            return texture;
+        }
+
+        return od::RefPtr<odRender::Texture>(mRenderTexture);
+    }
+
+    void Texture::renderTextureDestroyed()
+    {
+        mRenderTexture = nullptr;
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)

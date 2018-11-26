@@ -12,6 +12,11 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
 
+namespace odRender
+{
+    class Texture;
+}
+
 namespace odDb
 {
 
@@ -30,6 +35,9 @@ namespace odDb
 
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
         void exportToPng(const od::FilePath &path);
+
+        od::RefPtr<odRender::Texture> getOrCreateRenderTexture(odRender::Renderer *renderer);
+        void renderTextureDestroyed();
 
 
     private:
@@ -55,6 +63,8 @@ namespace odDb
         std::unique_ptr<odRfl::RflClass> mMaterialInstance;
 
         std::vector<uint8_t> mRgba8888Data;
+
+        odRender::Texture *mRenderTexture;
     };
 
     template <>

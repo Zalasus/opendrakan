@@ -49,6 +49,11 @@ namespace odOsg
         mGeometryGroup->getOrCreateStateSet()->setAttribute(modelProgram);
     }
 
+    ModelNode::~ModelNode()
+    {
+        mModel->setRenderNode(nullptr);
+    }
+
     const std::vector<std::pair<float, float>> &ModelNode::getLods()
     {
         return mLods;
