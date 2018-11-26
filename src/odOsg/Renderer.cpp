@@ -42,11 +42,9 @@ namespace odOsg
         mViewer->setSceneData(mSceneRoot);
 
         mObjects = new osg::Group;
-        mObjects->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("model"));
         mSceneRoot->addChild(mObjects);
 
         mLayers = new osg::Group;
-        mLayers->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("layer"));
         mSceneRoot->addChild(mLayers);
 
         mGlobalAmbient = new osg::Uniform("layerLightAmbient", osg::Vec3(1.0, 1.0, 1.0));
