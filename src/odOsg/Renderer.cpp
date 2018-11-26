@@ -18,6 +18,7 @@
 
 #include <odOsg/ObjectNode.h>
 #include <odOsg/ModelNode.h>
+#include <odOsg/LayerNode.h>
 #include <odOsg/Geometry.h>
 #include <odOsg/Texture.h>
 
@@ -92,6 +93,11 @@ namespace odOsg
     odRender::ModelNode *Renderer::createModelNode(odDb::Model *model)
     {
         return new ModelNode(this, model);
+    }
+
+    odRender::LayerNode *Renderer::createLayerNode(od::Layer *layer)
+    {
+        return new LayerNode(this, layer, mLayers);
     }
 
     odRender::Texture *Renderer::createTexture(odDb::Texture *texture)

@@ -69,6 +69,11 @@ namespace od
         {
             (*it)->spawned();
         }
+
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            (*it)->spawn();
+        }
     }
 
     void Level::requestLevelObjectDestruction(LevelObject *obj)

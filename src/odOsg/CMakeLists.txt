@@ -2,6 +2,7 @@
 set(SOURCES
         "Geometry.cpp"
         "GeometryBuilder.cpp"
+        "LayerNode.cpp"
         "Main.cpp"
         "ModelNode.cpp"
         "ObjectNode.cpp"

@@ -13,8 +13,7 @@
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 
-// yeah, i know these are unintuitive at first. but they are kinda shorter
-#define OD_LAYER_FLAG_DIV_BACKSLASH 1
+#include <odCore/render/Renderer.h>
 
 namespace od
 {
@@ -235,6 +234,20 @@ namespace od
         mCollisionShape.reset(new btBvhTriangleMeshShape(mesh, true, true));
 
         return mCollisionShape.get();
+    }
+
+    void Layer::spawn()
+    {
+        odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
+        if(renderer != nullptr)
+        {
+            mLayerNode = renderer->createLayerNode(this);
+        }
+    }
+
+    void Layer::despawn()
+    {
+        mLayerNode = nullptr;
     }
 
     bool Layer::hasHoleAt(const glm::vec2 &absolutePos)

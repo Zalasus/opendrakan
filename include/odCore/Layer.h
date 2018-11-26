@@ -17,7 +17,12 @@
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
+
 #include <odCore/db/Asset.h>
+
+#include <odCore/render/LayerNode.h>
+
+#define OD_LAYER_FLAG_DIV_BACKSLASH 1
 
 namespace od
 {
@@ -43,6 +48,22 @@ namespace od
             DROPOFF_W2E = 4
         };
 
+        struct Cell
+        {
+            uint16_t flags;
+            odDb::AssetRef leftTextureRef;
+            odDb::AssetRef rightTextureRef;
+            uint16_t texCoords[8];
+
+            inline bool isBackslashCell() { return flags & OD_LAYER_FLAG_DIV_BACKSLASH; }
+        };
+
+        struct Vertex
+        {
+            uint8_t type;
+            float heightOffsetLu;
+        };
+
         /// @brief The magic texture reference that indicates a hole in the layer.
         static const odDb::AssetRef HoleTextureRef;
 
@@ -52,9 +73,31 @@ namespace od
         Layer(Level &level);
         ~Layer();
 
+        inline Level &getLevel() { return mLevel; }
+        inline uint32_t getId() const { return mId; };
+        inline std::string getName() const { return mLayerName; };
+        inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
+        inline uint32_t getOriginX() const { return mOriginX; }
+        inline uint32_t getOriginZ() const { return mOriginZ; }
+        inline uint32_t getWidth() const { return mWidth; }
+        inline uint32_t getHeight() const { return mHeight; }
+        inline float getWorldHeightWu() const { return mWorldHeightWu; }
+        inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
+        inline glm::vec3 getLightColor() const { return mLightColor; }
+        inline glm::vec3 getAmbientColor() const { return mAmbientColor; }
+        inline glm::vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
+        inline const AxisAlignedBoundingBox &getBoundingBox() { return mBoundingBox; }
+        inline const std::vector<Vertex> &getVertexVector() { return mVertices; }
+        inline const std::vector<Cell> &getCellVector() { return mCells; }
+        inline size_t getVisibleTriangleCount() const { return mVisibleTriangles; }
+        inline LayerType getLayerType() const { return mType; }
+
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
         btCollisionShape *getCollisionShape();
+
+        void spawn();
+        void despawn();
 
         /**
          * Checks whether this layer has a hole at the absolute xz coordiante \c absolutePos.
@@ -70,38 +113,7 @@ namespace od
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
 
-
-        inline uint32_t getId() const { return mId; };
-        inline std::string getName() const { return mLayerName; };
-        inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
-        inline uint32_t getOriginX() const { return mOriginX; }
-        inline uint32_t getOriginZ() const { return mOriginZ; }
-        inline uint32_t getWidth() const { return mWidth; }
-        inline uint32_t getHeight() const { return mHeight; }
-        inline float getWorldHeightWu() const { return mWorldHeightWu; }
-        inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
-        inline glm::vec3 getLightColor() const { return mLightColor; }
-        inline glm::vec3 getAmbientColor() const { return mAmbientColor; }
-        inline glm::vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
-        inline const AxisAlignedBoundingBox &getBoundingBox() { return mBoundingBox; }
-
-
     private:
-
-
-        struct Cell
-        {
-            uint16_t flags;
-            odDb::AssetRef leftTextureRef;
-            odDb::AssetRef rightTextureRef;
-            uint16_t texCoords[8];
-        };
-
-        struct Vertex
-        {
-            uint8_t type;
-            float heightOffsetLu;
-        };
 
         Level              	   &mLevel;
         uint32_t                mId;
@@ -128,6 +140,8 @@ namespace od
         std::unique_ptr<btTriangleMesh> mBulletMesh;
         std::unique_ptr<btCollisionShape> mCollisionShape;
         AxisAlignedBoundingBox mBoundingBox;
+
+        od::RefPtr<odRender::LayerNode> mLayerNode;
     };
 
 }

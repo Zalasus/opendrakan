@@ -8,22 +8,20 @@
 #ifndef INCLUDE_ODCORE_RENDER_LAYERNODE_H_
 #define INCLUDE_ODCORE_RENDER_LAYERNODE_H_
 
-#include <glm/vec3.hpp>
+#include <odCore/RefCounted.h>
 
 namespace odRender
 {
 
     class Geometry;
 
-    class LayerNode
+    class LayerNode : public od::RefCounted
     {
     public:
 
         virtual ~LayerNode() = default;
 
-        virtual void setPosition(const glm::vec3 &p) = 0;
-
-        virtual void setGeometry(Geometry *geometry) = 0;
+        virtual Geometry *getGeometry() = 0;
 
     };
 

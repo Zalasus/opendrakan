@@ -44,6 +44,7 @@ namespace odOsg
 
         virtual odRender::ObjectNode *createObjectNode(od::LevelObject &obj) override;
         virtual odRender::ModelNode *createModelNode(odDb::Model *model) override;
+        virtual odRender::LayerNode *createLayerNode(od::Layer *layer) override;
         virtual odRender::Texture *createTexture(odDb::Texture *texture) override;
 
         Texture *getTexture(odDb::Texture *texture);

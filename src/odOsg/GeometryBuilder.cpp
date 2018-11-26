@@ -39,11 +39,6 @@ namespace odOsg
     , mBoneIndices(geometry.getBoneIndexArray())
     , mBoneWeights(geometry.getBoneWeightArray())
 	{
-	    mVertices.clear();
-	    mNormals.clear();
-	    mUvCoords.clear();
-	    mBoneIndices.clear();
-	    mBoneWeights.clear();
 	}
 
 	void GeometryBuilder::setVertexVector(VertexIterator begin, VertexIterator end)

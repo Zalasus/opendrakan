@@ -25,6 +25,7 @@ namespace odRender
 
     class ObjectNode;
     class ModelNode;
+    class LayerNode;
     class Texture;
 
     /**
@@ -46,6 +47,7 @@ namespace odRender
 
         virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
         virtual ModelNode *createModelNode(odDb::Model *model) = 0;
+        virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
         virtual Texture *createTexture(odDb::Texture *texture) = 0;
 
     };
