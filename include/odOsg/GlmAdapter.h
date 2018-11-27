@@ -48,6 +48,28 @@ namespace odOsg
             return osg::Quat(q.x, q.y, q.z, q.w);
         }
 
+
+        inline static glm::vec2 toGlm(const osg::Vec2 &v)
+        {
+            return glm::vec2(v.x(), v.y());
+        }
+
+        inline static glm::vec3 toGlm(const osg::Vec3 &v)
+        {
+            return glm::vec3(v.x(), v.y(), v.z());
+        }
+
+        inline static glm::vec4 toGlm(const osg::Vec4 &v)
+        {
+            return glm::vec4(v.x(), v.y(), v.z(), v.w());
+        }
+
+        inline static glm::quat toGlm(const osg::Quat &q)
+        {
+            return glm::quat(q.x(), q.y(), q.z(), q.w());
+        }
+
+
         template <typename _OsgArrayType, typename _GlmVectorType>
         static _OsgArrayType *convertToOsgArray(const std::vector<_GlmVectorType> &v)
         {

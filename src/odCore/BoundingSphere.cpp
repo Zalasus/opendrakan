@@ -7,6 +7,8 @@
 
 #include <odCore/BoundingSphere.h>
 
+#include <glm/gtx/norm.hpp>
+
 #include <odCore/DataStream.h>
 
 namespace od
@@ -38,6 +40,14 @@ namespace od
         return *this;
     }
 
+    bool BoundingSphere::intersects(const BoundingSphere &bs, float epsilon)
+    {
+        glm::vec3 cc = mCenter - bs.center();
+        glm::vec3::value_type dist = mRadius + bs.radius() - epsilon;
+
+        return (glm::length2(cc) <= dist*dist);
+    }
+
     template <>
     DataReader &DataReader::operator >> <BoundingSphere>(BoundingSphere &bs)
     {
@@ -46,6 +56,8 @@ namespace od
 
         (*this) >> center
                 >> radius;
+
+        bs = BoundingSphere(center, radius);
 
         return *this;
     }

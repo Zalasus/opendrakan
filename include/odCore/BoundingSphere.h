@@ -26,6 +26,8 @@ namespace od
         inline const glm::vec3 &center() const { return mCenter; }
         inline glm::vec3::value_type radius() const { return mRadius; }
 
+        bool intersects(const BoundingSphere &bs, float epsilon = 0.0f);
+
 
     private:
 
