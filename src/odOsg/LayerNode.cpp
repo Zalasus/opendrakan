@@ -41,6 +41,7 @@ namespace odOsg
     void LayerNode::_buildLayerGeometry(od::Layer *layer)
     {
         GeometryBuilder gb(mRenderer, *mGeometry, "layer " + layer->getName(), layer->getLevel());
+        gb.setNormalsFromCcw(true);
 
         uint32_t width = layer->getWidth();
         uint32_t height = layer->getHeight();

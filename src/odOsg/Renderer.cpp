@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include <osg/FrontFace>
 #include <osgGA/TrackballManipulator>
 #include <osgViewer/ViewerEventHandlers>
 
@@ -40,9 +41,11 @@ namespace odOsg
 
         mSceneRoot = new osg::Group;
         mSceneRoot->getOrCreateStateSet()->setAttribute(mShaderFactory.getProgram("default"));
+        mSceneRoot->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
         mViewer->setSceneData(mSceneRoot);
 
         mObjects = new osg::Group;
+        mObjects->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE));
         mSceneRoot->addChild(mObjects);
 
         mLayers = new osg::Group;
