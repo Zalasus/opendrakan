@@ -28,12 +28,15 @@ namespace od
     protected:
 
         virtual void onReferencedAboutToBeDestroyed(RefCounted *r) = 0;
+
     };
 
 
     class RefCounted
     {
     public:
+
+
 
         RefCounted();
         virtual ~RefCounted();
@@ -42,13 +45,23 @@ namespace od
         size_t referenceDestroyed();
         size_t referenceReleased();
         size_t getReferenceCount();
-        void setReferenceObserver(ReferenceObserver *observer);
+
+        void addReferenceObserver(ReferenceObserver *observer);
+        void removeReferenceObserver(ReferenceObserver *observer);
+
+
+    protected:
+
+        static const size_t MaxObservers = 4;
 
 
     private:
 
+        void _notifyAllObservers();
+
         size_t mRefCount;
-        ReferenceObserver *mObserver;
+        size_t mObserverCount;
+        ReferenceObserver *mObservers[MaxObservers];
     };
 
 

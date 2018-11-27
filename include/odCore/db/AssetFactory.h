@@ -14,6 +14,8 @@
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/db/Asset.h>
 
 namespace odDb
@@ -24,7 +26,7 @@ namespace odDb
 	 * Common interface for TextureFactory, AssetFactory etc.
 	 */
 	template <typename _AssetType>
-	class AssetFactory : public od::ReferenceObserver
+	class AssetFactory
 	{
 	public:
 
@@ -37,7 +39,7 @@ namespace odDb
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
 		inline od::SrscFile &getSrscFile() { return mSrscFile; }
 
-		AssetPtr<_AssetType> getAsset(od::RecordId assetId);
+		od::RefPtr<_AssetType> getAsset(od::RecordId assetId);
 
 
 	protected:
@@ -51,22 +53,17 @@ namespace odDb
 		 * The implementing class must load the asset with the given ID and return it, or return nullptr if
 		 * it could not be found. In the latter case, AssetFactory will produce an appropriate error message and exception.
 		 */
-		virtual AssetPtr<_AssetType> loadAsset(od::RecordId id) = 0;
-
-		// implement od::ReferenceObserver
-		virtual void onReferencedAboutToBeDestroyed(od::RefCounted *r) override;
+		virtual od::RefPtr<_AssetType> loadAsset(od::RecordId id) = 0;
 
 
 	private:
 
-		_AssetType *_getAssetFromCache(od::RecordId id);
-		void _addAssetToCache(od::RecordId id, _AssetType *asset);
-
 		AssetProvider &mAssetProvider;
 		od::SrscFile &mSrscFile;
 
-		std::map<od::RecordId, _AssetType*> mAssetCache;
+		std::map<od::RecordId, od::WeakRefPtr<_AssetType>> mAssetCache;
 	};
+
 
 	template <typename _AssetType>
 	AssetFactory<_AssetType>::AssetFactory(AssetProvider &ap, od::SrscFile &assetContainer)
@@ -81,69 +78,34 @@ namespace odDb
 	}
 
 	template <typename _AssetType>
-	AssetPtr<_AssetType> AssetFactory<_AssetType>::getAsset(od::RecordId assetId)
+	od::RefPtr<_AssetType> AssetFactory<_AssetType>::getAsset(od::RecordId assetId)
 	{
-		_AssetType *cached = this->_getAssetFromCache(assetId);
-	    if(cached != nullptr)
-	    {
-	        Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
-	        return AssetPtr<_AssetType>(cached);
-	    }
+	    auto it = mAssetCache.find(assetId);
+        if(it != mAssetCache.end() && it->second != nullptr)
+        {
+            Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
+            return od::RefPtr<_AssetType>(it->second.get());
+        }
 
-	    // not cached. let implementation handle loading
+        // asset was not cached or got deleted. let implementation handle loading
 	    Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile.getFilePath().fileStr();
-	    AssetPtr<_AssetType> loaded = this->loadAsset(assetId);
+	    od::RefPtr<_AssetType> loaded = this->loadAsset(assetId);
 	    if(loaded == nullptr)
 	    {
 	        Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
             throw od::NotFoundException("Asset not found in cache or asset container");
 	    }
-	    this->_addAssetToCache(assetId, loaded.get());
 
-	    return loaded;
-	}
-
-	template <typename _AssetType>
-	void AssetFactory<_AssetType>::onReferencedAboutToBeDestroyed(od::RefCounted *r)
-	{
-		_AssetType *childAsset = dynamic_cast<_AssetType*>(r);
-	    if(childAsset == nullptr)
-	    {
-	        Logger::warn() << AssetTraits<_AssetType>::name() << " factory was notified of deletion of non-" << AssetTraits<_AssetType>::name() << " object";
-	        return;
-	    }
-
-	    od::RecordId assetId = childAsset->getAssetId();
-
-	    Logger::debug() << "Unregistering " << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " from cache";
-
-	    mAssetCache.erase(assetId);
-	}
-
-	template <typename _AssetType>
-	_AssetType *AssetFactory<_AssetType>::_getAssetFromCache(od::RecordId assetId)
-	{
-		auto it = mAssetCache.find(assetId);
 	    if(it != mAssetCache.end())
 	    {
-	        return it->second;
+	        it->second = loaded;
+
+	    }else
+	    {
+	        mAssetCache[assetId] = od::WeakRefPtr<_AssetType>(loaded);
 	    }
 
-	    return nullptr;
-	}
-
-	template <typename _AssetType>
-	void AssetFactory<_AssetType>::_addAssetToCache(od::RecordId assetId, _AssetType *asset)
-	{
-		if(_getAssetFromCache(assetId) != nullptr)
-		{
-			Logger::warn() << "Ignoring double caching of " << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec;
-			return;
-		}
-
-		asset->setReferenceObserver(this);
-
-		mAssetCache[assetId] = asset;
+	    return loaded;
 	}
 
 }
