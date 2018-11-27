@@ -22,6 +22,6 @@ namespace odOsg
 
     Texture::~Texture()
     {
-        mDbTexture->renderTextureDestroyed();
     }
+
 }

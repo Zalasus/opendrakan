@@ -9,6 +9,8 @@
 #define TEXTURE_H_
 
 #include <odCore/SrscFile.h>
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
 
@@ -27,6 +29,7 @@ namespace odDb
     public:
 
         Texture(AssetProvider &ap, od::RecordId id);
+        ~Texture();
 
         inline uint32_t getWidth() const { return mWidth; }
         inline uint32_t getHeight() const { return mHeight; }
@@ -37,7 +40,6 @@ namespace odDb
         void exportToPng(const od::FilePath &path);
 
         od::RefPtr<odRender::Texture> getOrCreateRenderTexture(odRender::Renderer *renderer);
-        void renderTextureDestroyed();
 
 
     private:
@@ -64,7 +66,7 @@ namespace odDb
 
         std::vector<uint8_t> mRgba8888Data;
 
-        odRender::Texture *mRenderTexture;
+        od::WeakRefPtr<odRender::Texture> mRenderTexture;
     };
 
     template <>

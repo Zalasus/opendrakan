@@ -14,7 +14,10 @@
 #include <glm/vec3.hpp>
 
 #include <odCore/BoundingBox.h>
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/physics/ModelBounds.h>
+
 #include <odCore/db/Asset.h>
 #include <odCore/db/Skeleton.h>
 
@@ -71,6 +74,7 @@ namespace odDb
 
 		Model(AssetProvider &ap, od::RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
+        ~Model();
 
         inline const std::string &getName() const { return mModelName; }
 		inline Skeleton *getSkeleton() { return mSkeleton.get(); } ///< May return nullptr if no skeleton present.
@@ -83,8 +87,6 @@ namespace odDb
 		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
 		inline const std::vector<Polygon> &getPolygonVector() { return mPolygons; }
 		inline const std::vector<LodMeshInfo> &getLodInfoVector() { return mLodMeshInfos; }
-		inline void setRenderNode(odRender::ModelNode *node) { mRenderNode = node; }
-		inline odRender::ModelNode *getRenderNode() const { return mRenderNode; }
 
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
@@ -95,7 +97,6 @@ namespace odDb
 
 		// returns a refptr since this class only takes weak ownership of potentially created objects
 		od::RefPtr<odRender::ModelNode> getOrCreateRenderNode(odRender::Renderer *renderer);
-		void renderNodeDestroyed(); /// < Called by the associated ModelNode when it is about to be destroyed
 
 
 	private:
@@ -117,7 +118,7 @@ namespace odDb
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
 
-		odRender::ModelNode *mRenderNode; // weak ref~ model node is responsible for managing this
+		od::WeakRefPtr<odRender::ModelNode> mRenderNode;
 	};
 
 	template <>

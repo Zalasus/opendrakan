@@ -19,8 +19,8 @@
 #include <odCore/db/Texture.h>
 #include <odCore/db/Skeleton.h>
 
-#include <odCore/render/ModelNode.h>
 #include <odCore/render/Renderer.h>
+#include <odCore/render/ModelNode.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -39,6 +39,10 @@ namespace odDb
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
 	, mRenderNode(nullptr)
+	{
+	}
+
+	Model::~Model()
 	{
 	}
 
@@ -406,17 +410,12 @@ namespace odDb
 	    if(mRenderNode == nullptr)
 	    {
 	        od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(this);
-	        mRenderNode = node;
+	        mRenderNode = node.get();
 	        return node;
 	    }
 
-	    return od::RefPtr<odRender::ModelNode>(mRenderNode);
+	    return od::RefPtr<odRender::ModelNode>(mRenderNode.get());
 	}
-
-    void Model::renderNodeDestroyed()
-    {
-        mRenderNode = nullptr; // FIXME: maybe implement this using a reference observer?
-    }
 
 }
 

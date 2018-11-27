@@ -52,7 +52,6 @@ namespace odOsg
 
     ModelNode::~ModelNode()
     {
-        mModel->setRenderNode(nullptr);
     }
 
     const std::vector<std::pair<float, float>> &ModelNode::getLods()

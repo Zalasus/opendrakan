@@ -17,8 +17,8 @@
 #include <odCore/db/Database.h>
 #include <odCore/db/DbManager.h>
 
-#include <odCore/render/Texture.h>
 #include <odCore/render/Renderer.h>
+#include <odCore/render/Texture.h>
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040
@@ -50,7 +50,10 @@ namespace odDb
     , mHasAlphaChannel(false)
     , mRenderTexture(nullptr)
     {
+    }
 
+    Texture::~Texture()
+    {
     }
 
     void Texture::loadFromRecord(TextureFactory &factory, od::DataReader dr)
@@ -284,16 +287,11 @@ namespace odDb
         if(mRenderTexture == nullptr)
         {
             od::RefPtr<odRender::Texture> texture = renderer->createTexture(this);
-            mRenderTexture = texture;
+            mRenderTexture = texture.get();
             return texture;
         }
 
-        return od::RefPtr<odRender::Texture>(mRenderTexture);
-    }
-
-    void Texture::renderTextureDestroyed()
-    {
-        mRenderTexture = nullptr;
+        return od::RefPtr<odRender::Texture>(mRenderTexture.get());
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)
