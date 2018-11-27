@@ -14,6 +14,8 @@
 
 #include <glm/vec3.hpp>
 
+#include <odCore/render/Light.h>
+
 namespace dragonRfl
 {
 
@@ -39,6 +41,9 @@ namespace dragonRfl
         odRfl::Float        mRadius;
         odRfl::TextureRef   mLightMap;
         odRfl::Enum         mQualityLevelRequired;
+
+        glm::vec3 mLightColorVector;
+        od::RefPtr<odRender::Light> mLight;
     };
 
 }

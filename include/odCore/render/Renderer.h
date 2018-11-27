@@ -45,7 +45,7 @@ namespace odRender
 
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
-        virtual void addLight(Light *light) = 0;
+        virtual odRender::Light *createLight(od::LevelObject *obj) = 0;
 
         virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
         virtual ModelNode *createModelNode(odDb::Model *model) = 0;

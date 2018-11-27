@@ -3,6 +3,7 @@ set(SOURCES
         "Geometry.cpp"
         "GeometryBuilder.cpp"
         "LayerNode.cpp"
+        "LightState.cpp"
         "Main.cpp"
         "ModelNode.cpp"
         "ObjectNode.cpp"

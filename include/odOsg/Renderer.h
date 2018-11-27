@@ -43,7 +43,7 @@ namespace odOsg
 
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
-        virtual void addLight(odRender::Light *light) override;
+        virtual odRender::Light *createLight(od::LevelObject *obj) override;
 
         virtual odRender::ObjectNode *createObjectNode(od::LevelObject &obj) override;
         virtual odRender::ModelNode *createModelNode(odDb::Model *model) override;
@@ -69,8 +69,8 @@ namespace odOsg
         osg::ref_ptr<osg::Group> mObjects;
         osg::ref_ptr<osg::Group> mLayers;
 
-        std::vector<odRender::Light*> mLights;
         bool mLightingEnabled;
+        std::vector<od::RefPtr<odRender::Light>> mLights;
         osg::ref_ptr<osg::Uniform> mGlobalLightDiffuse;
         osg::ref_ptr<osg::Uniform> mGlobalLightAmbient;
         osg::ref_ptr<osg::Uniform> mGlobalLightDirection;

@@ -54,7 +54,7 @@ namespace dragonRfl
 
     void DynamicLight::onUpdate(od::LevelObject &obj, float relTime)
     {
-        if(!mStarted)
+        if(mLight == nullptr || !mStarted)
         {
             return;
         }
@@ -93,11 +93,11 @@ namespace dragonRfl
 
         if(mLightIsOn)
         {
-            //mLight->setColor(mLightColorVector*mColorFactor);
+            mLight->setColor(mLightColorVector*mColorFactor);
 
         }else
         {
-            //mLight->setColor(osg::Vec3(0.0, 0.0, 0.0));
+            mLight->setColor(glm::vec3(0.0, 0.0, 0.0));
         }
     }
 

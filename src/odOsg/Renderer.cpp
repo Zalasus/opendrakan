@@ -32,7 +32,7 @@ namespace odOsg
 
     Renderer::Renderer()
     : mShaderFactory("resources/shader_src")
-    , mLightingEnabled(false)
+    , mLightingEnabled(true)
     {
         mViewer = new osgViewer::Viewer;
 
@@ -60,7 +60,7 @@ namespace odOsg
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
 
         mGlobalLightDiffuse   = new osg::Uniform("layerLightDiffuse",   osg::Vec3(0.0, 0.0, 0.0));
-        mGlobalLightAmbient   = new osg::Uniform("layerLightAmbient",   osg::Vec3(1.0, 1.0, 1.0));
+        mGlobalLightAmbient   = new osg::Uniform("layerLightAmbient",   osg::Vec3(0.0, 0.0, 0.0));
         mGlobalLightDirection = new osg::Uniform("layerLightDirection", osg::Vec3(0.0, 1.0, 0.0));
         ss->addUniform(mGlobalLightDiffuse);
         ss->addUniform(mGlobalLightAmbient);
@@ -103,6 +103,11 @@ namespace odOsg
     void Renderer::setEnableLighting(bool b)
     {
         mLightingEnabled = b;
+
+        if(!b)
+        {
+            mGlobalLightAmbient->set(osg::Vec3(1.0, 1.0, 1.0));
+        }
     }
 
     bool Renderer::isLightingEnabled() const
@@ -110,9 +115,13 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    void Renderer::addLight(odRender::Light *light)
+    odRender::Light *Renderer::createLight(od::LevelObject *obj)
     {
+        od::RefPtr<odRender::Light> light = new odRender::Light(obj);
+
         mLights.push_back(light);
+
+        return light;
     }
 
     odRender::ObjectNode *Renderer::createObjectNode(od::LevelObject &obj)

@@ -8,10 +8,14 @@
 #include <dragonRfl/classes/StaticLight.h>
 
 #include <dragonRfl/RflDragon.h>
+
 #include <odCore/rfl/Rfl.h>
+
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
+
+#include <odCore/render/Renderer.h>
 
 namespace dragonRfl
 {
@@ -38,10 +42,22 @@ namespace dragonRfl
     void StaticLight::onLoaded(od::LevelObject &obj)
     {
         obj.setObjectType(od::LevelObjectType::Light);
+
+        glm::vec4 color = mColor.asColorVector();
+        mLightColorVector = glm::vec3(color.r, color.g, color.b);
     }
 
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
+        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        if(renderer != nullptr)
+        {
+            mLight = renderer->createLight(&obj);
+            mLight->setColor(mLightColorVector);
+            mLight->setRadius(mRadius);
+            mLight->setIntensityScaling(mIntensityScaling);
+            mLight->setRequiredQualityLevel(mQualityLevelRequired);
+        }
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
@@ -57,6 +73,7 @@ namespace dragonRfl
 
     void StaticLight::onDespawned(od::LevelObject &obj)
     {
+        mLight = nullptr;
     }
 
 

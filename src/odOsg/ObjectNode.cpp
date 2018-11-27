@@ -23,10 +23,15 @@ namespace odOsg
         mTransform = new osg::PositionAttitudeTransform;
 
         mObjectGroup->addChild(mTransform);
+
+        mLightStateCallback = new LightStateCallback(renderer, mTransform, false);
+        mTransform->addCullCallback(mLightStateCallback);
     }
 
     ObjectNode::~ObjectNode()
     {
+        mTransform->removeCullCallback(mLightStateCallback);
+
         mObjectGroup->removeChild(mTransform);
     }
 
