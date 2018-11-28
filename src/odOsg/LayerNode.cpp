@@ -21,15 +21,20 @@ namespace odOsg
     : mRenderer(renderer)
     , mLayerGroup(layerGroup)
     , mLayerTransform(new osg::PositionAttitudeTransform)
+    , mLightStateCallback(new LightStateCallback(renderer, mLayerTransform, false))
     , mGeometry(new Geometry)
     {
         _buildLayerGeometry(layer);
+
+        mLayerTransform->addCullCallback(mLightStateCallback);
 
         mLayerGroup->addChild(mLayerTransform);
     }
 
     LayerNode::~LayerNode()
     {
+        mLayerTransform->removeCullCallback(mLightStateCallback);
+
         mLayerGroup->removeChild(mLayerTransform);
     }
 

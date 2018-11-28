@@ -14,6 +14,7 @@
 #include <odCore/render/LayerNode.h>
 
 #include <odOsg/Geometry.h>
+#include <odOsg/LightState.h>
 
 namespace od
 {
@@ -42,6 +43,7 @@ namespace odOsg
         osg::ref_ptr<osg::Group> mLayerGroup;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mLayerTransform;
+        osg::ref_ptr<LightStateCallback> mLightStateCallback;
         od::RefPtr<Geometry> mGeometry;
     };
 
