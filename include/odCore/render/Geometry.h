@@ -46,13 +46,8 @@ namespace odRender
         virtual std::vector<glm::vec4> &getBoneIndexArray() = 0;
         virtual std::vector<glm::vec4> &getBoneWeightArray() = 0;
 
-        /**
-         * Notifies the underlying geometry that the vertex data has changes. If \c lastUpdate
-         * is true the implementation is allowed to clear the vectors and throw if any more
-         * accesses are made to the vertex data. This can be used to save memory for rendering
-         * systems that need to make copies of the vertex data in order to use it.
-         */
-        virtual void notifyVertexDataChanged(bool lastUpdate) = 0;
+        virtual void notifyColorDirty() = 0;
+
 
     };
 

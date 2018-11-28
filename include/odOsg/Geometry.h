@@ -38,7 +38,8 @@ namespace odOsg
         virtual bool hasBoneInfo() const override;
         virtual std::vector<glm::vec4> &getBoneIndexArray() override;
         virtual std::vector<glm::vec4> &getBoneWeightArray() override;
-        virtual void notifyVertexDataChanged(bool lastUpdate) override;
+
+        virtual void notifyColorDirty() override;
 
         void addTexture(Texture *texture);
 

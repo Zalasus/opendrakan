@@ -62,6 +62,8 @@ namespace od
         {
             uint8_t type;
             float heightOffsetLu;
+
+            glm::vec3 bakedLightColor;
         };
 
         /// @brief The magic texture reference that indicates a hole in the layer.
@@ -114,6 +116,8 @@ namespace od
 
 
     private:
+
+        void _bakeLocalLayerLight();
 
         Level              	   &mLevel;
         uint32_t                mId;

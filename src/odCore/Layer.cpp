@@ -14,6 +14,7 @@
 #include <odCore/Engine.h>
 
 #include <odCore/render/Renderer.h>
+#include <odCore/render/Geometry.h>
 
 namespace od
 {
@@ -243,6 +244,8 @@ namespace od
         {
             mLayerNode = renderer->createLayerNode(this);
         }
+
+        _bakeLocalLayerLight();
     }
 
     void Layer::despawn()
@@ -430,6 +433,44 @@ namespace od
         }
 
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
+    }
+
+    void Layer::_bakeLocalLayerLight()
+    {
+        if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
+        {
+            return;
+        }
+
+        odRender::Geometry *geometry = mLayerNode->getGeometry();
+        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
+        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
+        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+
+        if(normalArray.size() != vertexArray.size())
+        {
+            throw Exception("Bad generated geometry arrays. Normal and vertex array sizes must match for baking lighting");
+        }
+
+        colorArray.resize(vertexArray.size());
+
+        for(size_t i = 0; i < vertexArray.size(); ++i)
+        {
+            // for some reason, the Riot Engine seems to add the ambient component twice in layer lighting
+            glm::vec3::value_type cosTheta = std::max(glm::dot(normalArray[i], mLightDirectionVector), (glm::vec3::value_type)0.0);
+            glm::vec3 lightColor = mLightColor*cosTheta + mAmbientColor*glm::vec3::value_type(2);
+
+            colorArray[i] = glm::vec4(lightColor, 1.0);
+
+            // also store the color in the layer heightmap. this will allow us to easily implement layer light dropoff later and
+            //  also simplifies blending lighting of adjacent layers since it can't operate in-place on color array
+            uint32_t x = std::round(vertexArray[i].x);
+            uint32_t z = std::round(vertexArray[i].z);
+            size_t vertIndex = x + z*(mWidth+1);
+            mVertices.at(vertIndex).bakedLightColor = lightColor;
+        }
+
+        geometry->notifyColorDirty();
     }
 }
 

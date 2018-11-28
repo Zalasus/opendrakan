@@ -62,21 +62,28 @@ namespace odOsg
         return mBoneWeightArray;
     }
 
-    void Geometry::notifyVertexDataChanged(bool lastUpdate)
+    void Geometry::notifyColorDirty()
     {
-        if(lastUpdate)
+        if(mOsgColorArray == nullptr)
         {
-            mVertexArray.clear();
-            mVertexArray.shrink_to_fit();
+            mOsgColorArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mColorArray);
 
-            mColorArray.clear();
-            mColorArray.shrink_to_fit();
+        }else
+        {
+            mOsgColorArray->resize(mColorArray.size(), osg::Vec4());
+            for(size_t i = 0; i < mColorArray.size(); ++i)
+            {
+                (*mOsgColorArray)[i] = GlmAdapter::toOsg(mColorArray[i]);
+            }
 
-            mNormalArray.clear();
-            mNormalArray.shrink_to_fit();
+            if(mOsgColorArray->size() != mOsgVertexArray->size())
+            {
+                mOsgColorArray->setBinding(osg::Array::BIND_OVERALL);
 
-            mTextureCoordArray.clear();
-            mTextureCoordArray.shrink_to_fit();
+            }else
+            {
+                mOsgColorArray->setBinding(osg::Array::BIND_PER_VERTEX);
+            }
         }
     }
 
