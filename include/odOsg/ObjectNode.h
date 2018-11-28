@@ -34,8 +34,9 @@ namespace odOsg
 
         virtual odRender::ModelNode *getModel() override;
         virtual void setModel(odRender::ModelNode *node) override;
-        virtual void showModelPart(size_t index) override;
-        virtual void hideModelPart(size_t index) override;
+
+        virtual void setVisible(bool visible) override;
+        virtual void setModelPartVisible(size_t partIndex, bool visible) override;
 
 
     private:

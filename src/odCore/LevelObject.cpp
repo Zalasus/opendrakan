@@ -180,6 +180,8 @@ namespace od
             }
         }
 
+        _setRenderNodeVisible(mIsVisible);
+
         _updateLayerBelowObject();
 
         if(mRflClassInstance != nullptr)
@@ -277,6 +279,8 @@ namespace od
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
 
         mIsVisible = v;
+
+        _setRenderNodeVisible(mIsVisible);
     }
 
     void LevelObject::setObjectType(LevelObjectType type)
@@ -286,6 +290,7 @@ namespace od
         switch(type)
         {
         case LevelObjectType::Normal:
+            mIsVisible = true;
             break;
 
         case LevelObjectType::Light:
@@ -294,6 +299,8 @@ namespace od
             mIsVisible = false;
             break;
         }
+
+        _setRenderNodeVisible(mIsVisible);
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale)
@@ -463,6 +470,15 @@ namespace od
 
         mAttachedObjects.clear();
     }
+
+    void LevelObject::_setRenderNodeVisible(bool visible)
+    {
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setVisible(visible);
+        }
+    }
+
 }
 
 

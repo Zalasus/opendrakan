@@ -149,6 +149,7 @@ namespace od
         void _updateLayerBelowObject();
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
+        void _setRenderNodeVisible(bool visible);
 
 
         Level &mLevel;

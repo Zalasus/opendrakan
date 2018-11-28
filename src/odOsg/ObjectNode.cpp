@@ -99,14 +99,13 @@ namespace odOsg
         mTransform->addChild(mModelNode->getOsgNode());
     }
 
-    void ObjectNode::showModelPart(size_t index)
+    void ObjectNode::setVisible(bool visible)
     {
-
+        mTransform->setNodeMask(visible ? -1 : 0);
     }
 
-    void ObjectNode::hideModelPart(size_t index)
+    void ObjectNode::setModelPartVisible(size_t partIndex, bool visible)
     {
-
     }
 
 }

@@ -36,8 +36,9 @@ namespace odRender
 
         virtual ModelNode *getModel() = 0;
         virtual void setModel(ModelNode *node) = 0;
-        virtual void showModelPart(size_t index) = 0;
-        virtual void hideModelPart(size_t index) = 0;
+
+        virtual void setVisible(bool visible) = 0;
+        virtual void setModelPartVisible(size_t partIndex, bool visible) = 0;
     };
 
 }
