@@ -115,7 +115,7 @@ namespace dragonRfl
             // don't bother with randomness when only one sound in list
             sound = mSounds.getAsset(0);
 
-        }else
+        }else if(mSounds.getAssetCount() > 1)
         {
             std::uniform_int_distribution<size_t> uniformDistribution(0, mSounds.getAssetCount() - 1);
             size_t soundIndex = uniformDistribution(mRandomNumberGenerator);
