@@ -13,6 +13,11 @@
 
 #include <odCore/RefCounted.h>
 
+namespace od
+{
+    class Layer;
+}
+
 namespace odRender
 {
 
@@ -27,6 +32,7 @@ namespace odRender
         virtual void setPosition(const glm::vec3 &pos) = 0;
         virtual void setOrientation(const glm::quat &orientation) = 0;
         virtual void setScale(const glm::vec3 &scale) = 0;
+        virtual void setLightingLayer(od::Layer *layer) = 0;
 
         virtual ModelNode *getModel() = 0;
         virtual void setModel(ModelNode *node) = 0;

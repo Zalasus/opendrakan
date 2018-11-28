@@ -143,8 +143,6 @@ namespace od
 
     void LevelObject::spawned()
     {
-        _updateLayerBelowObject();
-
         // build vector of linked object pointers from the stored indices if we haven't done that yet
         if(mLinkedObjects.size() != mLinks.size())
         {
@@ -165,13 +163,6 @@ namespace od
             }
         }
 
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->onSpawned(*this);
-        }
-
-        mState = LevelObjectState::Spawned;
-
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr && mClass->hasModel())
         {
@@ -184,9 +175,19 @@ namespace od
                 mRenderNode->setPosition(mPosition);
                 mRenderNode->setOrientation(mRotation);
                 mRenderNode->setScale(mScale);
+
+                mRenderNode->setLightingLayer(mLightingLayer);
             }
         }
 
+        _updateLayerBelowObject();
+
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onSpawned(*this);
+        }
+
+        mState = LevelObjectState::Spawned;
         Logger::debug() << "Object " << getObjectId() << " spawned";
     }
 
@@ -405,6 +406,11 @@ namespace od
     void LevelObject::_updateLayerBelowObject()
     {
         mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
+
+        if(mRenderNode != nullptr && mLightingLayer == nullptr)
+        {
+            mRenderNode->setLightingLayer(mLayerBelowObject);
+        }
 
         mLayerBelowObjectDirty = false;
     }

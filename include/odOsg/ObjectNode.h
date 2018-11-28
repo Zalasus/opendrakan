@@ -30,6 +30,7 @@ namespace odOsg
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;
+        virtual void setLightingLayer(od::Layer *layer) override;
 
         virtual odRender::ModelNode *getModel() override;
         virtual void setModel(odRender::ModelNode *node) override;

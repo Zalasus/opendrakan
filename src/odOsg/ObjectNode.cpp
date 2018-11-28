@@ -8,6 +8,7 @@
 #include <odOsg/ObjectNode.h>
 
 #include <odCore/Exception.h>
+#include <odCore/Layer.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/ModelNode.h>
@@ -38,16 +39,35 @@ namespace odOsg
     void ObjectNode::setPosition(const glm::vec3 &pos)
     {
         mTransform->setPosition(GlmAdapter::toOsg(pos));
+        mLightStateCallback->lightingDirty();
     }
 
     void ObjectNode::setOrientation(const glm::quat &orientation)
     {
         mTransform->setAttitude(GlmAdapter::toOsg(orientation));
+        mLightStateCallback->lightingDirty();
     }
 
     void ObjectNode::setScale(const glm::vec3 &scale)
     {
         mTransform->setScale(GlmAdapter::toOsg(scale));
+        mLightStateCallback->lightingDirty();
+    }
+
+    void ObjectNode::setLightingLayer(od::Layer *layer)
+    {
+        if(layer != nullptr)
+        {
+            osg::Vec3 diffuse = GlmAdapter::toOsg(layer->getLightColor());
+            osg::Vec3 ambient = GlmAdapter::toOsg(layer->getAmbientColor());
+            osg::Vec3 direction = GlmAdapter::toOsg(layer->getLightDirection());
+            mLightStateCallback->setLayerLight(diffuse, ambient, direction);
+
+        }else
+        {
+            osg::Vec3 zero(0, 0, 0);
+            mLightStateCallback->setLayerLight(zero, zero, zero);
+        }
     }
 
     odRender::ModelNode *ObjectNode::getModel()
