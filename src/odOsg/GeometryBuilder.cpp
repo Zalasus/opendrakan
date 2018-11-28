@@ -271,7 +271,14 @@ namespace odOsg
 				texture->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
 				texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
 				texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
-				osgGeometry->getOrCreateStateSet()->setTextureAttribute(0, texture);
+				osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
+				geomSs->setTextureAttribute(0, texture);
+
+				if(dbTexture->hasAlpha())
+				{
+				    geomSs->setRenderBinDetails(1, "DepthSortedBin");
+				    geomSs->setMode(GL_BLEND, osg::StateAttribute::ON);
+				}
 
 				lastTexture = it->texture;
 			}
