@@ -24,4 +24,33 @@ namespace odOsg
     {
     }
 
+    osg::Texture2D *Texture::getOsgTexture(bool clamping)
+    {
+        if(clamping)
+        {
+            if(mClampingTexture == nullptr)
+            {
+                mClampingTexture = new osg::Texture2D(mImage);
+                mClampingTexture->setWrap(osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE);
+                mClampingTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
+                mClampingTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
+            }
+
+            return mClampingTexture;
+
+        }else
+        {
+            if(mWrappingTexture == nullptr)
+            {
+                mWrappingTexture = new osg::Texture2D(mImage);
+                mWrappingTexture->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
+                mWrappingTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
+                mWrappingTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
+            }
+
+            return mWrappingTexture;
+        }
+    }
+
+
 }

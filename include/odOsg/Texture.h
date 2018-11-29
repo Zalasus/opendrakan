@@ -9,6 +9,7 @@
 #define INCLUDE_ODOSG_TEXTURE_H_
 
 #include <osg/Image>
+#include <osg/Texture2D>
 
 #include <odCore/db/Texture.h>
 
@@ -28,12 +29,16 @@ namespace odOsg
 
         inline osg::Image *getImage() { return mImage; }
 
+        osg::Texture2D *getOsgTexture(bool clamping);
+
 
     private:
 
         od::RefPtr<odDb::Texture> mDbTexture;
 
         osg::ref_ptr<osg::Image> mImage;
+        osg::ref_ptr<osg::Texture2D> mWrappingTexture;
+        osg::ref_ptr<osg::Texture2D> mClampingTexture;
 
     };
 

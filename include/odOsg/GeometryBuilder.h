@@ -48,6 +48,7 @@ namespace odOsg
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
+		inline void setUseClampedTextures(bool b) { mUseClampedTextures = b; }
 
 		void setVertexVector(VertexIterator begin, VertexIterator end);
 		void setPolygonVector(PolygonIterator begin, PolygonIterator end);
@@ -76,6 +77,7 @@ namespace odOsg
 
 		bool mSmoothNormals;
 		bool mNormalsFromCcw;
+		bool mUseClampedTextures;
 
 		std::vector<Triangle> mTriangles;
 

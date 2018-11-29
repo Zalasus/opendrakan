@@ -32,6 +32,7 @@ namespace odOsg
 	, mAssetProvider(assetProvider)
 	, mSmoothNormals(true)
 	, mNormalsFromCcw(false)
+	, mUseClampedTextures(false)
 	, mGeometry(geometry)
 	, mVertices(geometry.getVertexArray())
     , mNormals(geometry.getNormalArray())
@@ -267,12 +268,8 @@ namespace odOsg
 				if(odOsgTexture == nullptr) throw od::Exception("Render texture stored in db texture was no odOsg::Texture");
 				mGeometry.addTexture(odOsgTexture);
 
-				osg::ref_ptr<osg::Texture2D> texture(new osg::Texture2D(odOsgTexture->getImage()));
-				texture->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
-				texture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-				texture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
 				osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
-				geomSs->setTextureAttribute(0, texture);
+				geomSs->setTextureAttribute(0, odOsgTexture->getOsgTexture(mUseClampedTextures));
 
 				if(dbTexture->hasAlpha())
 				{
