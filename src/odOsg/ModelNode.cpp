@@ -128,7 +128,7 @@ namespace odOsg
             break;
 
         case LightingMode::AmbientDiffuseSpecular:
-            ss->setDefine("LIGHTNG");
+            ss->setDefine("LIGHTING");
             ss->setDefine("SPECULAR");
             break;
         }
