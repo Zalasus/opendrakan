@@ -26,6 +26,7 @@
 #include <odOsg/Geometry.h>
 #include <odOsg/Texture.h>
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Camera.h>
 
 namespace odOsg
 {
@@ -35,6 +36,8 @@ namespace odOsg
     , mLightingEnabled(true)
     {
         mViewer = new osgViewer::Viewer;
+
+        mCamera = new Camera(mViewer->getCamera());
 
         osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
         statsHandler->setKeyEventPrintsOutStats(0);
@@ -142,6 +145,11 @@ namespace odOsg
     odRender::Texture *Renderer::createTexture(odDb::Texture *texture)
     {
         return new Texture(this, texture);
+    }
+
+    odRender::Camera *Renderer::getCamera()
+    {
+        return mCamera;
     }
 
     void Renderer::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction)

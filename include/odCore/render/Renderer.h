@@ -23,6 +23,7 @@ namespace odDb
 namespace odRender
 {
 
+    class Camera;
     class ObjectNode;
     class ModelNode;
     class LayerNode;
@@ -52,7 +53,7 @@ namespace odRender
         virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
         virtual Texture *createTexture(odDb::Texture *texture) = 0;
 
-
+        virtual Camera *getCamera() = 0;
 
     };
 

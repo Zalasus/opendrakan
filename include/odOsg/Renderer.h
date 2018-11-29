@@ -28,6 +28,7 @@ namespace odOsg
 
     class ModelNode;
     class Texture;
+    class Camera;
 
     class Renderer : public odRender::Renderer
     {
@@ -50,6 +51,8 @@ namespace odOsg
         virtual odRender::LayerNode *createLayerNode(od::Layer *layer) override;
         virtual odRender::Texture *createTexture(odDb::Texture *texture) override;
 
+        virtual odRender::Camera *getCamera() override;
+
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
         void applyToLightUniform(const osg::Matrix &viewMatrix, odRender::Light *light, size_t index);
         void applyNullLight(size_t index);
@@ -63,6 +66,8 @@ namespace odOsg
         ShaderFactory mShaderFactory;
         std::thread mRenderThread;
         std::mutex mRenderMutex;
+
+        od::RefPtr<Camera> mCamera;
 
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         osg::ref_ptr<osg::Group> mSceneRoot;

@@ -1,5 +1,6 @@
 
 set(SOURCES
+        "Camera.cpp"
         "Geometry.cpp"
         "GeometryBuilder.cpp"
         "LayerNode.cpp"
