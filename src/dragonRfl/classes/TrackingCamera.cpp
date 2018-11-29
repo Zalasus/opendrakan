@@ -10,10 +10,13 @@
 #include <dragonRfl/RflDragon.h>
 #include <dragonRfl/LocalPlayer.h>
 
-#include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Engine.h>
+
+#include <odCore/rfl/Rfl.h>
+
+#include <odCore/render/Renderer.h>
 
 namespace dragonRfl
 {
@@ -42,6 +45,12 @@ namespace dragonRfl
 	    mCameraObject = &obj;
 
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
+
+	    odRender::Renderer *renderer = mRfl.getEngine().getRenderer();
+	    if(renderer != nullptr)
+	    {
+	        mRenderCamera = renderer->getCamera();
+	    }
 	}
 
 	void TrackingCamera::onSpawned(od::LevelObject &obj)
@@ -102,6 +111,11 @@ namespace dragonRfl
 
         mCameraObject->setPosition(eyepoint);
         mCameraObject->setRotation(lookDirection);
+
+        if(mRenderCamera != nullptr)
+        {
+            mRenderCamera->lookAt(eyepoint, up, front);
+        }
     }
 
 

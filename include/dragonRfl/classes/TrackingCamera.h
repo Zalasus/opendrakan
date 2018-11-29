@@ -8,11 +8,13 @@
 #ifndef INCLUDE_RFL_DRAGON_TRACKINGCAMERA_H_
 #define INCLUDE_RFL_DRAGON_TRACKINGCAMERA_H_
 
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 
-#include <glm/vec3.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <odCore/render/Camera.h>
 
 namespace dragonRfl
 {
@@ -46,6 +48,8 @@ namespace dragonRfl
 
 		DragonRfl &mRfl;
 		od::LevelObject *mCameraObject;
+
+		od::RefPtr<odRender::Camera> mRenderCamera;
 	};
 
 }
