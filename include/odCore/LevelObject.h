@@ -74,6 +74,7 @@ namespace od
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }
         inline bool isScaled() const { return mIsScaled; }
+        inline odRender::ObjectNode *getRenderNode() { return mRenderNode; }
 
         void loadFromRecord(DataReader dr);
         void spawned();

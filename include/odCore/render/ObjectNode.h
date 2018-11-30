@@ -27,6 +27,12 @@ namespace odRender
     {
     public:
 
+        enum class RenderMode
+        {
+            Normal,
+            Sky
+        };
+
         virtual ~ObjectNode() = default;
 
         virtual void setPosition(const glm::vec3 &pos) = 0;
@@ -39,6 +45,8 @@ namespace odRender
 
         virtual void setVisible(bool visible) = 0;
         virtual void setModelPartVisible(size_t partIndex, bool visible) = 0;
+
+        virtual void setRenderMode(RenderMode rm) = 0;
     };
 
 }

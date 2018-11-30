@@ -8,13 +8,17 @@
 
 #include <dragonRfl/classes/Sky.h>
 
-#include <osg/Depth>
 #include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
+
 #include <odCore/Level.h>
 #include <odCore/OdDefines.h>
 #include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
+
+#include <odCore/rfl/Rfl.h>
+
+#include <odCore/render/ObjectNode.h>
+
 
 namespace dragonRfl
 {
@@ -57,6 +61,11 @@ namespace dragonRfl
 
     void DomedSky::onSpawned(od::LevelObject &obj)
 	{
+        odRender::ObjectNode *skyNode = obj.getRenderNode();
+        if(skyNode != nullptr)
+        {
+            skyNode->setRenderMode(odRender::ObjectNode::RenderMode::Sky);
+        }
 	}
 
 

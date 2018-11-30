@@ -11,6 +11,7 @@
 #include <odCore/render/ObjectNode.h>
 
 #include <osg/PositionAttitudeTransform>
+#include <osg/Depth>
 
 #include <odOsg/LightState.h>
 
@@ -38,6 +39,9 @@ namespace odOsg
         virtual void setVisible(bool visible) override;
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
 
+        virtual void setRenderMode(RenderMode rm) override;
+
+
 
     private:
 
@@ -46,6 +50,7 @@ namespace odOsg
         od::RefPtr<ModelNode> mModelNode;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<LightStateCallback> mLightStateCallback;
+        osg::ref_ptr<osg::Depth> mDepth;
 
     };
 

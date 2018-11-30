@@ -7,6 +7,8 @@
 
 #include <odOsg/ObjectNode.h>
 
+#include <osg/Depth>
+
 #include <odCore/Exception.h>
 #include <odCore/Layer.h>
 
@@ -106,6 +108,35 @@ namespace odOsg
 
     void ObjectNode::setModelPartVisible(size_t partIndex, bool visible)
     {
+    }
+
+    void ObjectNode::setRenderMode(RenderMode rm)
+    {
+        osg::StateSet *ss = mTransform->getOrCreateStateSet();
+
+        switch(rm)
+        {
+        case RenderMode::Normal:
+            if(mDepth != nullptr)
+            {
+                ss->removeAttribute(mDepth);
+                mDepth = nullptr;
+            }
+            ss->setRenderBinDetails(0, "RenderBin");
+            break;
+
+        case RenderMode::Sky:
+            {
+                if(mDepth == nullptr)
+                {
+                    mDepth = new osg::Depth;
+                    mDepth->setWriteMask(false);
+                }
+                ss->setAttribute(mDepth, osg::StateAttribute::ON);
+                ss->setRenderBinDetails(-1, "RenderBin");
+            }
+
+        }
     }
 
 }
