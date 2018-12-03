@@ -13,6 +13,11 @@
 #include <glm/mat4x4.hpp>
 #include <glm/mat3x4.hpp>
 
+namespace odRender
+{
+    class Rig;
+}
+
 namespace odDb
 {
 
@@ -24,7 +29,9 @@ namespace odDb
         {
         public:
 
-            explicit Bone(Skeleton &skeleton);
+            friend class Skeleton;
+
+            Bone(Skeleton &skeleton, Bone *parent, int32_t jointIndex);
             Bone(const Bone &bone);
 
             inline const std::string &getName() const { return mName; }
@@ -34,14 +41,18 @@ namespace odDb
 
             size_t getChildBoneCount();
             Bone *getChildBone(size_t index);
-            Bone *addChildBone();
+            Bone *addChildBone(int32_t jointIndex);
 
             void moveToBindPose();
 
 
         private:
 
+            void _flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix);
+
             Skeleton &mSkeleton;
+            Bone *mParent;
+            int32_t mJointIndex;
             std::string mName;
             glm::mat4 mInverseBindPoseTransform;
             std::vector<Bone*> mChildBones;
@@ -54,12 +65,15 @@ namespace odDb
         explicit Skeleton(size_t initialBoneCapacity = 0);
         Skeleton(const Skeleton &skeleton) = delete;
 
-        Bone *addRootBone();
+        Bone *addRootBone(int32_t jointIndex);
+
+        void flatten(odRender::Rig *rig);
 
 
     private:
 
         std::vector<Bone> mBones;
+        std::vector<Bone*> mRootBones;
 
     };
 
@@ -100,7 +114,7 @@ namespace odDb
             bool visited;
         };
 
-        void _buildRecursive(Skeleton::Bone *parent, JointInfo *jointInfo);
+        void _buildRecursive(Skeleton::Bone *parent, JointInfo *jointInfo, int32_t jointIndex);
 
         std::vector<JointNameInfo> mNameInfos;
         std::vector<JointInfo> mJointInfos;

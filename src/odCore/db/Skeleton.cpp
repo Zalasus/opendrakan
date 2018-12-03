@@ -11,16 +11,22 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/render/Rig.h>
+
 namespace odDb
 {
 
-    Skeleton::Bone::Bone(Skeleton &skeleton)
+    Skeleton::Bone::Bone(Skeleton &skeleton, Bone *parent, int32_t jointIndex)
     : mSkeleton(skeleton)
+    , mParent(parent)
+    , mJointIndex(jointIndex)
     {
     }
 
     Skeleton::Bone::Bone(const Bone &bone)
     : mSkeleton(bone.mSkeleton)
+    , mParent(bone.mParent)
+    , mJointIndex(bone.mJointIndex)
     , mName(bone.mName)
     , mInverseBindPoseTransform(bone.mInverseBindPoseTransform)
     {
@@ -45,9 +51,9 @@ namespace odDb
         return mChildBones[index];
     }
 
-    Skeleton::Bone *Skeleton::Bone::addChildBone()
+    Skeleton::Bone *Skeleton::Bone::addChildBone(int32_t jointIndex)
     {
-        mSkeleton.mBones.push_back(Bone(mSkeleton));
+        mSkeleton.mBones.push_back(Bone(mSkeleton, this, jointIndex));
         mChildBones.push_back(&mSkeleton.mBones.back());
         return mChildBones.back();
     }
@@ -57,17 +63,40 @@ namespace odDb
         mCurrentMatrix = glm::inverse(mInverseBindPoseTransform);
     }
 
+    void Skeleton::Bone::_flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix)
+    {
+        glm::mat4 currentMatrix = parentMatrix * mCurrentMatrix * mInverseBindPoseTransform;
+
+        rig->setBoneTransform(mJointIndex, currentMatrix);
+
+        for(auto it = mChildBones.begin(); it != mChildBones.end(); ++it)
+        {
+            (*it)->_flattenRecursive(rig, currentMatrix);
+        }
+    }
+
 
     Skeleton::Skeleton(size_t initialBoneCapacity)
     {
         mBones.reserve(initialBoneCapacity);
+        mRootBones.reserve(2);
     }
 
-    Skeleton::Bone *Skeleton::addRootBone()
+    Skeleton::Bone *Skeleton::addRootBone(int32_t jointIndex)
     {
-        mBones.push_back(Bone(*this));
+        mBones.push_back(Bone(*this, nullptr, jointIndex));
+        mRootBones.push_back(&mBones.back());
+        return mRootBones.back();
+    }
 
-        return &mBones.back();
+    void Skeleton::flatten(odRender::Rig *rig)
+    {
+        glm::mat4 eye(1.0);
+
+        for(auto it = mRootBones.begin(); it != mRootBones.end(); ++it)
+        {
+            (*it)->_flattenRecursive(rig, eye);
+        }
     }
 
 
@@ -137,12 +166,13 @@ namespace odDb
                 continue;
             }
 
-            Skeleton::Bone *root = skeleton.addRootBone();
-            _buildRecursive(root, &(*it));
+            int32_t jointIndex = it - mJointInfos.begin();
+            Skeleton::Bone *root = skeleton.addRootBone(jointIndex);
+            _buildRecursive(root, &(*it), jointIndex);
         }
     }
 
-    void SkeletonBuilder::_buildRecursive(Skeleton::Bone *parent, JointInfo *jointInfo)
+    void SkeletonBuilder::_buildRecursive(Skeleton::Bone *parent, JointInfo *jointInfo, int32_t jointIndex)
     {
         if(parent == nullptr || jointInfo == nullptr)
         {
@@ -158,7 +188,7 @@ namespace odDb
             jointInfo->visited = true;
         }
 
-        Skeleton::Bone *bone = parent->addChildBone();
+        Skeleton::Bone *bone = parent->addChildBone(jointIndex);
         bone->setInverseBindPoseTransform(jointInfo->boneXform);
         if(jointInfo->nameInfo != nullptr)
         {
@@ -173,7 +203,7 @@ namespace odDb
             }
 
             JointInfo *firstChildJointInfo = &mJointInfos[jointInfo->firstChildIndex];
-            _buildRecursive(bone, firstChildJointInfo);
+            _buildRecursive(bone, firstChildJointInfo, jointInfo->firstChildIndex);
         }
 
         if(jointInfo->nextSiblingIndex > 0)
@@ -184,7 +214,7 @@ namespace odDb
             }
 
             JointInfo *nextSiblingJointInfo = &mJointInfos[jointInfo->nextSiblingIndex];
-            _buildRecursive(parent, nextSiblingJointInfo);
+            _buildRecursive(parent, nextSiblingJointInfo, jointInfo->nextSiblingIndex);
         }
     }
 
