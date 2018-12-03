@@ -77,10 +77,10 @@ namespace odDb
         ~Model();
 
         inline const std::string &getName() const { return mModelName; }
-		inline Skeleton *getSkeleton() { return mSkeleton.get(); } ///< May return nullptr if no skeleton present.
+		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); } ///< May return nullptr if no skeleton present.
 		inline odPhysics::ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
-		inline bool hasSkeleton() const { return mSkeleton != nullptr; }
+		inline bool hasSkeleton() const { return mSkeletonBuilder != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
 		inline ShadingType getShadingType() const { return mShadingType; }
 		inline bool isShiny() const { return mShiny; }
@@ -113,7 +113,7 @@ namespace odDb
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::unique_ptr<odPhysics::ModelBounds> mModelBounds;
-		std::unique_ptr<Skeleton> mSkeleton;
+		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;

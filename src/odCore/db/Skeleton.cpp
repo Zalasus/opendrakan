@@ -23,9 +23,11 @@ namespace odDb
     : mSkeleton(bone.mSkeleton)
     , mName(bone.mName)
     , mInverseBindPoseTransform(bone.mInverseBindPoseTransform)
-    , mChildBones(bone.mChildBones)
-    , mCurrentMatrix(mInverseBindPoseTransform)
     {
+        if(bone.mChildBones.size() > 0)
+        {
+            throw od::Exception("Copying bone with set child links");
+        }
     }
 
     size_t Skeleton::Bone::getChildBoneCount()
@@ -59,11 +61,6 @@ namespace odDb
     Skeleton::Skeleton(size_t initialBoneCapacity)
     {
         mBones.reserve(initialBoneCapacity);
-    }
-
-    Skeleton::Skeleton(const Skeleton &skeleton)
-    : mBones(skeleton.mBones)
-    {
     }
 
     Skeleton::Bone *Skeleton::addRootBone()
@@ -120,7 +117,7 @@ namespace odDb
                 {
                     continue;
 
-                }else if(it->jointIndex >= mJointInfos.size())
+                }else if(it->jointIndex >= (int32_t)mJointInfos.size())
                 {
                     throw od::Exception("Joint name info's referenced joint index is out of bounds");
                 }

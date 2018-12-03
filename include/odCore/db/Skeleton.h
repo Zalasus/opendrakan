@@ -52,7 +52,7 @@ namespace odDb
         friend class Bone;
 
         explicit Skeleton(size_t initialBoneCapacity = 0);
-        Skeleton(const Skeleton &skeleton);
+        Skeleton(const Skeleton &skeleton) = delete;
 
         Bone *addRootBone();
 

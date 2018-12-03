@@ -227,7 +227,7 @@ namespace odDb
 		}
 
 
-		SkeletonBuilder skeletonBuilder;
+        mSkeletonBuilder.reset(new SkeletonBuilder);
 
 		// node info
 		uint16_t nodeInfoCount;
@@ -240,7 +240,7 @@ namespace odDb
 			dr.read(nodeName, 32);
 			dr >> jointInfoIndex;
 
-			skeletonBuilder.addJointNameInfo(std::string(nodeName), jointInfoIndex);
+			mSkeletonBuilder->addJointNameInfo(std::string(nodeName), jointInfoIndex);
 		}
 
 		// joint info
@@ -258,7 +258,7 @@ namespace odDb
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
 
-            skeletonBuilder.addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeletonBuilder->addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
@@ -340,7 +340,7 @@ namespace odDb
 			   >> xformB
 			   >> capCount;
 
-            skeletonBuilder.markJointAsChannel(jointIndex);
+            mSkeletonBuilder->markJointAsChannel(jointIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {
@@ -367,9 +367,6 @@ namespace odDb
 				}
             }
 		}
-
-		mSkeleton.reset(new Skeleton(skeletonBuilder.getJointCount()));
-		skeletonBuilder.build(*mSkeleton);
 
 		//Logger::info() << "Skel info for model " << mModelName;
 		//mSkeletonBuilder->printInfo(std::cout);
