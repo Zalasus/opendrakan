@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+#include <glm/matrix.hpp>
+
 #include <odCore/Exception.h>
 
 #include <odCore/render/Rig.h>
