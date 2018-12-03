@@ -12,6 +12,7 @@
 
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
+#include <osg/NodeCallback>
 
 #include <odOsg/LightState.h>
 
@@ -41,6 +42,7 @@ namespace odOsg
 
         virtual void setRenderMode(RenderMode rm) override;
 
+        virtual void addFrameListener(odRender::FrameListener *listener) override;
 
 
     private:
@@ -51,7 +53,8 @@ namespace odOsg
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<LightStateCallback> mLightStateCallback;
         osg::ref_ptr<osg::Depth> mDepth;
-
+        odRender::FrameListener *mFrameListener;
+        osg::ref_ptr<osg::Callback> mUpdateCallback;
     };
 
 }

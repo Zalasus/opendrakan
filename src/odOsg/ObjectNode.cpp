@@ -18,10 +18,64 @@
 namespace odOsg
 {
 
+
+    class FrameListenerCallback : public osg::Callback
+    {
+    public:
+
+        FrameListenerCallback(odRender::FrameListener *fl)
+        : mFrameListener(fl)
+        , mLastSimTime(0.0)
+        , mFirstUpdate(true)
+        {
+        }
+
+        virtual bool run(osg::Object* object, osg::Object* data) override
+        {
+            osg::NodeVisitor *nv = data->asNodeVisitor();
+            if(nv == nullptr)
+            {
+                return traverse(object, data);
+            }
+
+            const osg::FrameStamp *fs = nv->getFrameStamp();
+            if(fs == nullptr)
+            {
+                return traverse(object, data);
+            }
+
+            double simTime = fs->getSimulationTime();
+
+            if(mFirstUpdate)
+            {
+                mLastSimTime = simTime;
+                mFirstUpdate = false;
+            }
+
+            if(mFrameListener != nullptr)
+            {
+                mFrameListener->onFrameUpdate(simTime, simTime-mLastSimTime, fs->getFrameNumber());
+            }
+
+            mLastSimTime = simTime;
+
+            return traverse(object, data);
+        }
+
+
+    private:
+
+        odRender::FrameListener *mFrameListener;
+        double mLastSimTime;
+        bool mFirstUpdate;
+    };
+
+
     ObjectNode::ObjectNode(Renderer *renderer, osg::Group *objectGroup)
     : mRenderer(renderer)
     , mObjectGroup(objectGroup)
     , mModelNode(nullptr)
+    , mFrameListener(nullptr)
     {
         mTransform = new osg::PositionAttitudeTransform;
 
@@ -34,6 +88,11 @@ namespace odOsg
     ObjectNode::~ObjectNode()
     {
         mTransform->removeCullCallback(mLightStateCallback);
+
+        if(mUpdateCallback != nullptr)
+        {
+            mTransform->removeUpdateCallback(mUpdateCallback);
+        }
 
         mObjectGroup->removeChild(mTransform);
     }
@@ -136,6 +195,22 @@ namespace odOsg
                 ss->setRenderBinDetails(-1, "RenderBin");
             }
 
+        }
+    }
+
+    void ObjectNode::addFrameListener(odRender::FrameListener *listener)
+    {
+        mFrameListener = listener;
+
+        if(mFrameListener != nullptr && mUpdateCallback == nullptr)
+        {
+            mUpdateCallback = new FrameListenerCallback(mFrameListener);
+            mTransform->addUpdateCallback(mUpdateCallback);
+
+        }else if(mFrameListener == nullptr && mUpdateCallback != nullptr)
+        {
+            mTransform->removeUpdateCallback(mUpdateCallback);
+            mUpdateCallback = nullptr;
         }
     }
 

@@ -23,6 +23,18 @@ namespace odRender
 
     class ModelNode;
 
+
+    class FrameListener
+    {
+    public:
+
+        virtual ~FrameListener();
+
+        virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) = 0;
+
+    };
+
+
     class ObjectNode : public od::RefCounted
     {
     public:
@@ -47,6 +59,8 @@ namespace odRender
         virtual void setModelPartVisible(size_t partIndex, bool visible) = 0;
 
         virtual void setRenderMode(RenderMode rm) = 0;
+
+        virtual void addFrameListener(FrameListener *listener) = 0;
     };
 
 }
