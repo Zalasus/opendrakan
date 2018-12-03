@@ -21,6 +21,7 @@ namespace odDb
     , mParent(parent)
     , mJointIndex(jointIndex)
     {
+        moveToBindPose();
     }
 
     Skeleton::Bone::Bone(const Bone &bone)
@@ -34,6 +35,8 @@ namespace odDb
         {
             throw od::Exception("Copying bone with set child links");
         }
+
+        moveToBindPose();
     }
 
     size_t Skeleton::Bone::getChildBoneCount()

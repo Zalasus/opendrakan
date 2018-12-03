@@ -53,7 +53,7 @@ namespace odDb
             Skeleton &mSkeleton;
             Bone *mParent;
             int32_t mJointIndex;
-            std::string mName;
+            std::string mName;   // TODO: the name and IBPT are the same for all instances of a skeleton. might want to save some memory here
             glm::mat4 mInverseBindPoseTransform;
             std::vector<Bone*> mChildBones;
 
