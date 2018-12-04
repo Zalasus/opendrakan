@@ -459,6 +459,10 @@ namespace dragonRfl
 				<< obj.getPosition().y << "/"
 				<< obj.getPosition().z;
 
+    	glm::vec3 playerLookDirection = glm::eulerAngles(obj.getRotation());
+    	mPitch = playerLookDirection.x;
+    	mYaw = playerLookDirection.y;
+
     	obj.setEnableRflUpdateHook(true);
     }
 

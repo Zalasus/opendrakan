@@ -22,7 +22,11 @@ namespace odRender
         virtual ~Camera() = default;
 
         virtual glm::vec3 getEyePoint() = 0;
-        virtual void lookAt(const glm::vec3 &eye, const glm::vec3 &up, const glm::vec3 &front) = 0;
+
+        /**
+         * @brief Sets camera look direction using the same convention as gluLookAt
+         */
+        virtual void lookAt(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) = 0;
 
 
     };

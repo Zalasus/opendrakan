@@ -85,11 +85,11 @@ namespace dragonRfl
         }
 
         glm::vec3 eye = player->getPosition();
-        glm::quat lookDirection(glm::vec3(player->getPitch(), player->getYaw() + M_PI/2, 0));
+        glm::quat lookDirection(glm::vec3(player->getPitch(), player->getYaw(), 0));
 
         // perform raycast to find obstacle closest point with unobstructed view of player
         glm::vec3 from = player->getPosition();
-        glm::vec3 to = from + lookDirection * glm::vec3(-3, 0, 0);
+        glm::vec3 to = from + lookDirection * glm::vec3(0, 0, 3);
         odPhysics::RaycastResult result;
         bool hit = player->getLevelObject().getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
         if(!hit)
@@ -106,7 +106,7 @@ namespace dragonRfl
 
     void TrackingCamera::_setObjectPositionAndViewMatrix(const glm::vec3 &eyepoint, const glm::quat &lookDirection)
     {
-        glm::vec3 front = lookDirection * glm::vec3(1, 0, 0);
+        glm::vec3 front = lookDirection * glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
         glm::vec3 up = lookDirection * glm::vec3(0, 1, 0);
 
         mCameraObject->setPosition(eyepoint);
@@ -114,7 +114,7 @@ namespace dragonRfl
 
         if(mRenderCamera != nullptr)
         {
-            mRenderCamera->lookAt(eyepoint, up, front);
+            mRenderCamera->lookAt(eyepoint, eyepoint + front, up);
         }
     }
 

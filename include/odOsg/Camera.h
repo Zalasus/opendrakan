@@ -24,7 +24,7 @@ namespace odOsg
         inline void setIgnoreViewChanges(bool b) { mIgnoreViewChanges = b; }
 
         virtual glm::vec3 getEyePoint() override;
-        virtual void lookAt(const glm::vec3 &eye, const glm::vec3 &up, const glm::vec3 &front) override;
+        virtual void lookAt(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) override;
 
 
     private:
