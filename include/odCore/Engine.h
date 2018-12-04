@@ -13,6 +13,8 @@
 
 #include <odCore/FilePath.h>
 
+#include <odCore/render/RendererEventListener.h>
+
 namespace odDb
 {
     class DbManager;
@@ -33,7 +35,7 @@ namespace od
 
     class Level;
 
-	class Engine
+	class Engine : public odRender::RendererEventListener
 	{
 	public:
 
@@ -59,6 +61,8 @@ namespace od
 		void run();
 
 		void loadLevel(const FilePath &levelFile);
+
+		virtual void onRenderWindowClosed() override;
 
 
 	private:

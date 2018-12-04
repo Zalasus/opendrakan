@@ -41,6 +41,7 @@ namespace odOsg
 
         virtual void onStart() override;
         virtual void onEnd() override;
+        virtual void setRendererEventListener(odRender::RendererEventListener *listener) override;
 
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
@@ -66,6 +67,8 @@ namespace odOsg
         ShaderFactory mShaderFactory;
         std::thread mRenderThread;
         std::mutex mRenderMutex;
+
+        odRender::RendererEventListener *mEventListener;
 
         od::RefPtr<Camera> mCamera;
 

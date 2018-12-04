@@ -19,6 +19,7 @@
 #include <odCore/OdDefines.h>
 
 #include <odCore/render/Light.h>
+#include <odCore/render/RendererEventListener.h>
 
 #include <odOsg/ObjectNode.h>
 #include <odOsg/ModelNode.h>
@@ -33,6 +34,7 @@ namespace odOsg
 
     Renderer::Renderer()
     : mShaderFactory("resources/shader_src")
+    , mEventListener(nullptr)
     , mLightingEnabled(true)
     {
         mViewer = new osgViewer::Viewer;
@@ -81,12 +83,14 @@ namespace odOsg
 
     Renderer::~Renderer()
     {
-        if(mRenderThread.joinable() && mViewer != nullptr)
+        if(mViewer != nullptr)
         {
             Logger::warn() << "Render thread was not stopped when renderer was destroyed";
             mViewer->setDone(true);
-            mRenderThread.join();
         }
+
+        // note: we need to do this even if the render thread already left it's thread function, or else it will std::terminate() us
+        mRenderThread.join();
     }
 
     void Renderer::onStart()
@@ -101,6 +105,11 @@ namespace odOsg
             mViewer->setDone(true);
             mRenderThread.join();
         }
+    }
+
+    void Renderer::setRendererEventListener(odRender::RendererEventListener *listener)
+    {
+        mEventListener = listener;
     }
 
     void Renderer::setEnableLighting(bool b)
@@ -251,7 +260,14 @@ namespace odOsg
             }
         }
 
-        // FIXME: we need to notify the engine that it should shut down here
+        mViewer = nullptr;
+
+        if(mEventListener != nullptr)
+        {
+            mEventListener->onRenderWindowClosed();
+        }
+
+        Logger::verbose() << "Render thread terminated";
     }
 
 }

@@ -43,6 +43,11 @@ namespace od
 	    }
 
 	    mRenderer = renderer;
+
+	    if(mRenderer != nullptr)
+	    {
+	        mRenderer->setRendererEventListener(this);
+	    }
 	}
 
 	void Engine::setUp()
@@ -125,6 +130,16 @@ namespace od
         mLevel->loadLevel();
 
         mLevel->spawnAllObjects();
+	}
+
+	void Engine::onRenderWindowClosed()
+	{
+	    if(mRenderer == nullptr)
+	    {
+	        return;
+	    }
+
+	    setDone(true);
 	}
 
 	void Engine::_findEngineRoot(const std::string &rrcFileName)

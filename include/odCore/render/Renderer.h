@@ -29,6 +29,7 @@ namespace odRender
     class LayerNode;
     class Texture;
     class Light;
+    class RendererEventListener;
 
     /**
      * Interface for a renderer implementation.
@@ -43,6 +44,7 @@ namespace odRender
 
         virtual void onStart() = 0;
         virtual void onEnd() = 0;
+        virtual void setRendererEventListener(RendererEventListener *listener) = 0;
 
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
