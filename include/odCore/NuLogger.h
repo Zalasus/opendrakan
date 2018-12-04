@@ -85,9 +85,7 @@ namespace od
 
             Logger &mLogger;
             LogLevel mLogLevel;
-
-            mutable bool mCopied;
-
+            mutable std::unique_lock<std::mutex> mLock;
         };
 
         friend class StreamProxy;

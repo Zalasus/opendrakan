@@ -30,28 +30,23 @@ namespace od
     Logger::StreamProxy::StreamProxy(Logger &logger, LogLevel level)
     : mLogger(logger)
     , mLogLevel(level)
-    , mCopied(false)
+    , mLock(logger.mLogMutex)
     {
-        mLogger.mLogMutex.lock();
-
         mLogger.mProxyStream.str("");
     }
 
     Logger::StreamProxy::StreamProxy(const StreamProxy &proxy)
     : mLogger(proxy.mLogger)
     , mLogLevel(proxy.mLogLevel)
-    , mCopied(false)
+    , mLock(std::move(proxy.mLock))
     {
-        proxy.mCopied = true;
     }
 
     Logger::StreamProxy::~StreamProxy()
     {
-        if(!mCopied)
+        if(mLock.owns_lock())
         {
             mLogger._logLocked(mLogLevel, mLogger.mProxyStream.str());
-
-            mLogger.mLogMutex.unlock();
         }
     }
 
