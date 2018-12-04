@@ -66,7 +66,7 @@ namespace odOsg
 
         inline static glm::quat toGlm(const osg::Quat &q)
         {
-            return glm::quat(q.x(), q.y(), q.z(), q.w());
+            return glm::quat(q.w(), q.x(), q.y(), q.z()); // yep, order is correct. GLM defines this differently. easy to miss
         }
 
 
