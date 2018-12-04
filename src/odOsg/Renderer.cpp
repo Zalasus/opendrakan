@@ -46,7 +46,6 @@ namespace odOsg
         statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
         mViewer->addEventHandler(statsHandler);
 
-        mViewer->setCameraManipulator(new osgGA::TrackballManipulator, true);
         mViewer->setKeyEventSetsDone(osgGA::GUIEventAdapter::KEY_Escape);
 
         mSceneRoot = new osg::Group;
@@ -228,6 +227,20 @@ namespace odOsg
             {
                 lights.push_back(l);
             }
+        }
+    }
+
+    void Renderer::setFreeLook(bool f)
+    {
+        mCamera->setIgnoreViewChanges(f);
+
+        if(f)
+        {
+            mViewer->setCameraManipulator(new osgGA::TrackballManipulator, true);
+
+        }else
+        {
+            mViewer->setCameraManipulator(nullptr, false);
         }
     }
 

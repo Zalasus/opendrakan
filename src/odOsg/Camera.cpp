@@ -17,6 +17,7 @@ namespace odOsg
 
     Camera::Camera(osg::Camera *osgCam)
     : mOsgCamera(osgCam)
+    , mIgnoreViewChanges(false)
     {
         if(osgCam == nullptr)
         {
@@ -37,7 +38,16 @@ namespace odOsg
 
     void Camera::lookAt(const glm::vec3 &eye, const glm::vec3 &up, const glm::vec3 &front)
     {
+        if(mIgnoreViewChanges)
+        {
+            return;
+        }
 
+        osg::Vec3 osgEye = GlmAdapter::toOsg(eye);
+        osg::Vec3 osgUp = GlmAdapter::toOsg(up);
+        osg::Vec3 osgFront = GlmAdapter::toOsg(front);
+
+        mOsgCamera->setViewMatrixAsLookAt(osgEye, osgFront, osgUp);
     }
 
 

@@ -34,8 +34,9 @@ static void printUsage()
         << "Usage: odOsg [options] [level file]" << std::endl
         << "OpenDrakan with OpenSceneGraph renderer" << std::endl
         << "Options:" << std::endl
-        << "    -v         Increase verbosity of logger" << std::endl
-        << "    -h         Display this message and exit" << std::endl
+        << "    -v  Increase verbosity of logger" << std::endl
+        << "    -h  Display this message and exit" << std::endl
+        << "    -c  Use free look trackball view and ignore in-game camera controllers" << std::endl
         << "If no level file and no options are given, the default intro level is loaded." << std::endl
         << "The latter assumes the current directory to be the game root." << std::endl
         << std::endl;
@@ -51,7 +52,8 @@ int main(int argc, char **argv)
     signal(SIGINT, &handleSignal);
 
     int c;
-    while((c = getopt(argc, argv, "vh")) != -1)
+    bool freeLook = false;
+    while((c = getopt(argc, argv, "vhc")) != -1)
     {
         switch(c)
         {
@@ -62,6 +64,10 @@ int main(int argc, char **argv)
         case 'h':
             printUsage();
             return 0;
+
+        case 'c':
+            freeLook = true;
+            break;
 
         case '?':
             std::cout << "Unknown option -" << optopt << std::endl;
@@ -77,6 +83,7 @@ int main(int argc, char **argv)
     }
 
     odOsg::Renderer osgRenderer;
+    osgRenderer.setFreeLook(freeLook);
     engine.setRenderer(&osgRenderer);
 
     try

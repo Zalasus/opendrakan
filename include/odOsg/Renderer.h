@@ -59,6 +59,8 @@ namespace odOsg
         void applyNullLight(size_t index);
         void getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights);
 
+        void setFreeLook(bool f);
+
 
     private:
 
