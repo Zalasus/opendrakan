@@ -90,7 +90,10 @@ namespace odOsg
         }
 
         // note: we need to do this even if the render thread already left it's thread function, or else it will std::terminate() us
-        mRenderThread.join();
+        if(mRenderThread.joinable())
+        {
+            mRenderThread.join();
+        }
     }
 
     void Renderer::onStart()
