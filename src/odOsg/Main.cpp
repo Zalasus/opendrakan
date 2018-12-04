@@ -7,6 +7,7 @@
 
 #include <signal.h>
 #include <unistd.h>
+#include <iostream>
 
 #include <odCore/Logger.h>
 #include <odCore/Engine.h>
@@ -42,22 +43,20 @@ static void printUsage()
 
 int main(int argc, char **argv)
 {
+    od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
+
     od::Engine engine;
     sEngine = &engine;
 
     signal(SIGINT, &handleSignal);
 
-    Logger::LogLevel logLevel = Logger::LOGLEVEL_INFO;
     int c;
     while((c = getopt(argc, argv, "vh")) != -1)
     {
         switch(c)
         {
         case 'v':
-            if(logLevel < Logger::LOGLEVEL_DEBUG)
-            {
-                logLevel = static_cast<Logger::LogLevel>(1 + static_cast<int>(logLevel)); // i know, yucky enum abuse
-            }
+            od::Logger::getDefaultLogger().increaseOutputLogLevel();
             break;
 
         case 'h':
@@ -70,8 +69,6 @@ int main(int argc, char **argv)
             return 1;
         }
     }
-
-    Logger::getDefaultLogger().setOutputLogLevel(logLevel);
 
     if(optind < argc)
     {

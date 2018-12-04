@@ -7,6 +7,8 @@
 
 #include <odCore/physics/ModelBounds.h>
 
+#include <iostream>
+
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 

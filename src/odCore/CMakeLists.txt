@@ -43,7 +43,7 @@ set(SOURCES
         "Layer.cpp"
         "Level.cpp"
         "LevelObject.cpp"
-        "Logger.cpp"
+        "NuLogger.cpp"
         "RefCounted.cpp"
         "GlmSerializers.cpp"
         "SrscFile.cpp"

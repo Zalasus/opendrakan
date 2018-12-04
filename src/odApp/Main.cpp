@@ -213,7 +213,8 @@ void printUsage()
 
 int main(int argc, char **argv)
 {
-	Logger::LogLevel logLevel = Logger::LOGLEVEL_INFO;
+    od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
+
 	std::string filename;
 	std::string outputPath = "out/";
 	bool extract = false;
@@ -252,10 +253,7 @@ int main(int argc, char **argv)
 			break;
 
 		case 'v':
-			if(logLevel < Logger::LOGLEVEL_DEBUG)
-			{
-				logLevel = static_cast<Logger::LogLevel>(1 + static_cast<int>(logLevel)); // i know, yucky enum abuse
-			}
+			od::Logger::getDefaultLogger().increaseOutputLogLevel();
 			break;
 
 		case 't':
@@ -306,8 +304,6 @@ int main(int argc, char **argv)
 
 	try
 	{
-		Logger::getDefaultLogger().setOutputLogLevel(logLevel);
-
 		if(stat)
 		{
 		    od::SrscFile srscFile(filename);
