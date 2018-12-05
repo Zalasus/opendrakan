@@ -14,6 +14,7 @@
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/ModelNode.h>
+#include <odOsg/Rig.h>
 
 namespace odOsg
 {
@@ -229,6 +230,15 @@ namespace odOsg
         mFrameListener = nullptr;;
     }
 
+    odRender::Rig *ObjectNode::getRig()
+    {
+        if(mRig == nullptr)
+        {
+            mRig.reset(new Rig(mTransform));
+        }
+
+        return mRig.get();
+    }
 }
 
 

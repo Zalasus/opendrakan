@@ -8,11 +8,13 @@
 #ifndef INCLUDE_ODOSG_OBJECTNODE_H_
 #define INCLUDE_ODOSG_OBJECTNODE_H_
 
-#include <odCore/render/ObjectNode.h>
+#include <memory>
 
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
 #include <osg/NodeCallback>
+
+#include <odCore/render/ObjectNode.h>
 
 #include <odOsg/LightState.h>
 
@@ -21,6 +23,7 @@ namespace odOsg
 
     class Renderer;
     class ModelNode;
+    class Rig;
 
     class ObjectNode : public odRender::ObjectNode
     {
@@ -45,6 +48,8 @@ namespace odOsg
         virtual void addFrameListener(odRender::FrameListener *listener) override;
         virtual void removeFrameListener(odRender::FrameListener *listener) override;
 
+        virtual odRender::Rig *getRig() override;
+
 
     private:
 
@@ -56,6 +61,7 @@ namespace odOsg
         osg::ref_ptr<osg::Depth> mDepth;
         odRender::FrameListener *mFrameListener;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
+        std::unique_ptr<Rig> mRig;
     };
 
 }

@@ -22,7 +22,7 @@ namespace odRender
 {
 
     class ModelNode;
-
+    class Rig;
 
     class FrameListener
     {
@@ -62,6 +62,8 @@ namespace odRender
 
         virtual void addFrameListener(FrameListener *listener) = 0;
         virtual void removeFrameListener(FrameListener *listener) = 0;
+
+        virtual Rig *getRig() = 0;
     };
 
 }

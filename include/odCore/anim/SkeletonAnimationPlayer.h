@@ -73,8 +73,9 @@ namespace odAnim
 
     private:
 
-        odRender::ObjectNode *mObjectNode;
+        od::RefPtr<odRender::ObjectNode> mObjectNode;
         Skeleton *mSkeleton;
+        odRender::Rig *mRig;
         std::vector<BoneAnimator> mBoneAnimators;
     };
 

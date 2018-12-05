@@ -8,6 +8,7 @@
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
 #include <odCore/Logger.h>
+#include <odCore/Exception.h>
 
 namespace odAnim
 {
@@ -105,14 +106,33 @@ namespace odAnim
     SkeletonAnimationPlayer::SkeletonAnimationPlayer(odRender::ObjectNode *objectNode, Skeleton *skeleton)
     : mObjectNode(objectNode)
     , mSkeleton(skeleton)
+    , mRig(nullptr)
     {
+        if(mSkeleton == nullptr)
+        {
+            throw od::Exception("Tried to create SkeletonAnimationPlayer with null skeleton");
+        }
+
         mBoneAnimators.reserve(mSkeleton->getBoneCount());
         for(size_t i = 0; i < mSkeleton->getBoneCount(); ++i)
         {
             mBoneAnimators.push_back(BoneAnimator(mSkeleton->getBoneByJointIndex(i)));
         }
 
-        mObjectNode->addFrameListener(this);
+        if(mObjectNode != nullptr)
+        {
+            mObjectNode->addFrameListener(this);
+
+            mRig = mObjectNode->getRig();
+            if(mRig == nullptr)
+            {
+                throw od::Exception("Failed to get Rig from object node");
+            }
+
+        }else
+        {
+            // TODO: Hook us into another update callback here
+        }
     }
 
     SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
@@ -139,6 +159,12 @@ namespace odAnim
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
             it->update((float)relTime);
+        }
+
+        if(mRig != nullptr)
+        {
+            // TODO: only flatten if any updates to the skeleton's pose happened
+            mSkeleton->flatten(mRig);
         }
     }
 

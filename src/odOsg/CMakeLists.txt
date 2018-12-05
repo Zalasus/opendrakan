@@ -9,6 +9,7 @@ set(SOURCES
         "ModelNode.cpp"
         "ObjectNode.cpp"
         "Renderer.cpp"
+        "Rig.cpp"
         "ShaderFactory.cpp"
         "Texture.cpp")
         
