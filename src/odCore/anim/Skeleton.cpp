@@ -18,9 +18,9 @@
 namespace odAnim
 {
 
-    Skeleton::Bone::Bone(Skeleton &skeleton, Bone *parent, int32_t jointIndex)
+    Skeleton::Bone::Bone(Skeleton &skeleton, int32_t jointIndex)
     : mSkeleton(skeleton)
-    , mParent(parent)
+    , mParent(nullptr)
     , mJointIndex(jointIndex)
     {
         moveToBindPose();
@@ -58,9 +58,16 @@ namespace odAnim
 
     Skeleton::Bone *Skeleton::Bone::addChildBone(int32_t jointIndex)
     {
-        mSkeleton.mBones.push_back(Bone(mSkeleton, this, jointIndex));
-        mChildBones.push_back(&mSkeleton.mBones.back());
-        return mChildBones.back();
+        if(jointIndex < 0 || (size_t)jointIndex >= mSkeleton.mBones.size())
+        {
+            throw od::Exception("Child bone joint index passed to bone out of bounds");
+        }
+
+        Bone *childBone = &mSkeleton.mBones[jointIndex];
+        childBone->mParent = this;
+        mChildBones.push_back(childBone);
+
+        return childBone;
     }
 
     void Skeleton::Bone::moveToBindPose()
@@ -81,17 +88,37 @@ namespace odAnim
     }
 
 
-    Skeleton::Skeleton(size_t initialBoneCapacity)
+    Skeleton::Skeleton(size_t boneCount)
     {
-        mBones.reserve(initialBoneCapacity);
-        mRootBones.reserve(2);
+        mBones.reserve(boneCount);
+        for(size_t i = 0; i < boneCount; ++i)
+        {
+            mBones.push_back(Bone(*this, i));
+        }
     }
 
     Skeleton::Bone *Skeleton::addRootBone(int32_t jointIndex)
     {
-        mBones.push_back(Bone(*this, nullptr, jointIndex));
-        mRootBones.push_back(&mBones.back());
-        return mRootBones.back();
+        if(jointIndex < 0 || (size_t)jointIndex >= mBones.size())
+        {
+            throw od::Exception("Root bone joint index passed to skeleton out of bounds");
+        }
+
+        Bone *rootBone = &mBones[jointIndex];
+        rootBone->mParent = nullptr;
+        mRootBones.push_back(rootBone);
+
+        return rootBone;
+    }
+
+    Skeleton::Bone *Skeleton::getBoneByJointIndex(int32_t jointIndex)
+    {
+        if(jointIndex < 0 || (size_t)jointIndex >= mBones.size())
+        {
+            throw od::Exception("Joint index passed to skeleton out of bounds");
+        }
+
+        return &mBones[jointIndex];
     }
 
     void Skeleton::flatten(odRender::Rig *rig)

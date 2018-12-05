@@ -32,13 +32,14 @@ namespace odAnim
 
             friend class Skeleton;
 
-            Bone(Skeleton &skeleton, Bone *parent, int32_t jointIndex);
+            Bone(Skeleton &skeleton, int32_t jointIndex);
             Bone(const Bone &bone);
 
             inline const std::string &getName() const { return mName; }
             inline const glm::mat4 &getInverseBinPoseTransform() const { return mInverseBindPoseTransform; }
             inline void setName(const std::string &name) { mName = name; }
             inline void setInverseBindPoseTransform(const glm::mat4 &tform) { mInverseBindPoseTransform = tform; }
+            inline Bone *getParent() { return mParent; }
 
             size_t getChildBoneCount();
             Bone *getChildBone(size_t index);
@@ -63,10 +64,11 @@ namespace odAnim
 
         friend class Bone;
 
-        explicit Skeleton(size_t initialBoneCapacity = 0);
+        explicit Skeleton(size_t boneCount);
         Skeleton(const Skeleton &skeleton) = delete;
 
         Bone *addRootBone(int32_t jointIndex);
+        Bone *getBoneByJointIndex(int32_t jointIndex);
 
         void flatten(odRender::Rig *rig);
 
