@@ -2,6 +2,7 @@
 # config for odCore
 
 set(SOURCES
+        "anim/Skeleton.cpp"
         "db/Animation.cpp"
         "db/AnimationFactory.cpp"
         "db/Asset.cpp"
@@ -14,7 +15,7 @@ set(SOURCES
         "db/ModelFactory.cpp"
         "db/Sequence.cpp"
         "db/SequenceFactory.cpp"
-        "db/Skeleton.cpp"
+        "db/SkeletonBuilder.cpp"
         "db/Sound.cpp"
         "db/SoundFactory.cpp"
         "db/Texture.cpp"

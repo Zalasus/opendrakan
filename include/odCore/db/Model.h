@@ -19,7 +19,7 @@
 #include <odCore/physics/ModelBounds.h>
 
 #include <odCore/db/Asset.h>
-#include <odCore/db/Skeleton.h>
+#include <odCore/db/SkeletonBuilder.h>
 
 namespace odRender
 {

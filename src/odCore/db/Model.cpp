@@ -16,9 +16,8 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/ModelFactory.h>
+#include <odCore/db/SkeletonBuilder.h>
 #include <odCore/db/Texture.h>
-#include <odCore/db/Skeleton.h>
-
 #include <odCore/render/Renderer.h>
 #include <odCore/render/ModelNode.h>
 
