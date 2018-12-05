@@ -37,6 +37,7 @@ namespace odDb
 
 		inline std::string getName() const { return mAnimationName; }
 		inline uint32_t getModelNodeCount() const { return mModelNodeCount; }
+		inline bool isLooping() const { return mIsLooping; }
 
 		void loadInfo(od::DataReader &&dr);
 		void loadFrames(od::DataReader &&dr);
@@ -59,6 +60,8 @@ namespace odDb
         float mRotationThreshold;
         float mScaleThreshold;
         float mTranslationThreshold;
+
+        bool mIsLooping;
 
         std::vector<AnimationKeyframe> mKeyframes;
         std::vector<FrameLookupEntry> mFrameLookup;

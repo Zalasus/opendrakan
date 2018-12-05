@@ -48,6 +48,7 @@ namespace odAnim
             Bone *addChildBone(int32_t jointIndex);
 
             void moveToBindPose();
+            void move(const glm::mat4 &transform);
 
 
         private:

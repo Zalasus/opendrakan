@@ -75,6 +75,11 @@ namespace odAnim
         mCurrentMatrix = glm::inverse(mInverseBindPoseTransform);
     }
 
+    void Skeleton::Bone::move(const glm::mat4 &transform)
+    {
+        mCurrentMatrix = transform;
+    }
+
     void Skeleton::Bone::_flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix)
     {
         glm::mat4 currentMatrix = parentMatrix * mCurrentMatrix * mInverseBindPoseTransform;

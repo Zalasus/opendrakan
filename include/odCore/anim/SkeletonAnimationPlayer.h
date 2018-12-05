@@ -11,6 +11,9 @@
 #include <stdint.h>
 #include <vector>
 
+#include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
+#include <glm/gtx/dual_quaternion.hpp>
+
 #include <odCore/RefCounted.h>
 
 #include <odCore/db/Animation.h>
@@ -28,6 +31,7 @@ namespace odAnim
         BoneAnimator(Skeleton::Bone *bone);
 
         void setAnimation(odDb::Animation *animation);
+        void play();
         void update(float relTime);
 
 
@@ -35,7 +39,13 @@ namespace odAnim
 
         Skeleton::Bone *mBone;
         od::RefPtr<odDb::Animation> mCurrentAnimation;
-        odDb::Animation::AnimStartEndPair mKeyframes;
+        odDb::Animation::AnimStartEndPair mKeyframesStartEnd;
+
+        bool mPlaying;
+        float mCurrentTime;
+        odDb::Animation::AnimKfIterator mCurrentKeyframe;
+        glm::dualquat mLeftTransform;
+        glm::dualquat mRightTransform;
     };
 
     class SkeletonAnimationPlayer : public odRender::FrameListener

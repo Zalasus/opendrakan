@@ -23,19 +23,20 @@ namespace odDb
 	, mRotationThreshold(0)
 	, mScaleThreshold(0)
 	, mTranslationThreshold(0)
+	, mIsLooping(false)
 	{
 	}
 
 	void Animation::loadInfo(od::DataReader &&dr)
 	{
-		uint32_t unk0;
+		uint32_t flags;
 		uint32_t unk1;
 
 		dr >> mAnimationName
 		   >> mDuration
            >> mOriginalFrameCount
            >> mFrameCount
-		   >> unk0
+		   >> flags
            >> mModelNodeCount
            >> mModelChannelCount
 		   >> unk1
@@ -43,6 +44,8 @@ namespace odDb
            >> mRotationThreshold
            >> mScaleThreshold
            >> mTranslationThreshold;
+
+		mIsLooping = !(flags & 0x01);
 	}
 
 	void Animation::loadFrames(od::DataReader &&dr)
