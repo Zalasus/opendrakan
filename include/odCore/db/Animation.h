@@ -30,7 +30,8 @@ namespace odDb
 	{
 	public:
 
-		typedef std::pair<std::vector<AnimationKeyframe>::const_iterator, std::vector<AnimationKeyframe>::const_iterator> AnimStartEndPair;
+	    typedef std::vector<AnimationKeyframe>::const_iterator AnimKfIterator;
+		typedef std::pair<AnimKfIterator, AnimKfIterator> AnimStartEndPair;
 
 		Animation(AssetProvider &ap, od::RecordId id);
 
