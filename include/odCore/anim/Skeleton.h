@@ -40,6 +40,8 @@ namespace odAnim
             inline void setName(const std::string &name) { mName = name; }
             inline void setInverseBindPoseTransform(const glm::mat4 &tform) { mInverseBindPoseTransform = tform; }
             inline Bone *getParent() { return mParent; }
+            inline int32_t getJointIndex() const { return mJointIndex; }
+            inline bool isRoot() const { return mParent == nullptr; }
 
             size_t getChildBoneCount();
             Bone *getChildBone(size_t index);
@@ -66,6 +68,8 @@ namespace odAnim
 
         explicit Skeleton(size_t boneCount);
         Skeleton(const Skeleton &skeleton) = delete;
+
+        inline size_t getBoneCount() const { return mBones.size(); }
 
         Bone *addRootBone(int32_t jointIndex);
         Bone *getBoneByJointIndex(int32_t jointIndex);
