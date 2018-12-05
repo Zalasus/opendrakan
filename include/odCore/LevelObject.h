@@ -8,15 +8,21 @@
 #ifndef OBJECT_H_
 #define OBJECT_H_
 
-
 #include <memory>
 #include <list>
+
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+
 #include <LinearMath/btMotionState.h>
 
 #include <odCore/db/Class.h>
 #include <odCore/rfl/RflMessage.h>
+
+namespace odAnim
+{
+    class Skeleton;
+}
 
 namespace odRender
 {
@@ -89,6 +95,13 @@ namespace od
         void setVisible(bool v);
 
         void setObjectType(LevelObjectType type);
+
+        /**
+         * @brief Returns the skeleton for this object or builds it if that has not yet been done.
+         *
+         * This may return nullptr if this object has no model or the object's model has no skeleton.
+         */
+        odAnim::Skeleton *getOrCreateSkeleton();
 
         /**
          * @brief Attaches this object to target object.
@@ -194,6 +207,8 @@ namespace od
         bool mRflUpdateHookEnabled;
 
         od::RefPtr<odRender::ObjectNode> mRenderNode;
+
+        std::unique_ptr<odAnim::Skeleton> mSkeleton;
     };
 
 }

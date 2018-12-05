@@ -15,7 +15,10 @@
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
 
+#include <odCore/anim/Skeleton.h>
+
 #include <odCore/db/Model.h>
+#include <odCore/db/SkeletonBuilder.h>
 
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
@@ -301,6 +304,18 @@ namespace od
         }
 
         _setRenderNodeVisible(mIsVisible);
+    }
+
+    odAnim::Skeleton *LevelObject::getOrCreateSkeleton()
+    {
+        if(mSkeleton == nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
+        {
+            odDb::SkeletonBuilder *sb = mClass->getModel()->getSkeletonBuilder();
+            mSkeleton.reset(new odAnim::Skeleton(sb->getJointCount()));
+            sb->build(*mSkeleton);
+        }
+
+        return mSkeleton.get();
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale)
