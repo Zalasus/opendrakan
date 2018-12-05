@@ -64,6 +64,12 @@ namespace odAnim
         }
 
         Bone *childBone = &mSkeleton.mBones[jointIndex];
+
+        if(childBone == this)
+        {
+            throw od::Exception("Tried to add bone to itself as a child");
+        }
+
         childBone->mParent = this;
         mChildBones.push_back(childBone);
 
@@ -89,6 +95,20 @@ namespace odAnim
         for(auto it = mChildBones.begin(); it != mChildBones.end(); ++it)
         {
             (*it)->_flattenRecursive(rig, currentMatrix);
+        }
+    }
+
+    void Skeleton::Bone::_traverse(const std::function<bool(Bone*)> &f)
+    {
+        bool shouldContinue = f(this);
+        if(!shouldContinue)
+        {
+            return;
+        }
+
+        for(auto it = mChildBones.begin(); it != mChildBones.end(); ++it)
+        {
+            (*it)->_traverse(f);
         }
     }
 
@@ -126,6 +146,14 @@ namespace odAnim
         return &mBones[jointIndex];
     }
 
+    void Skeleton::traverse(const std::function<bool(Bone*)> &f)
+    {
+        for(auto it = mRootBones.begin(); it != mRootBones.end(); ++it)
+        {
+            (*it)->_traverse(f);
+        }
+    }
+
     void Skeleton::flatten(odRender::Rig *rig)
     {
         glm::mat4 eye(1.0);
@@ -134,5 +162,26 @@ namespace odAnim
         {
             (*it)->_flattenRecursive(rig, eye);
         }
+    }
+
+    bool Skeleton::checkForLoops()
+    {
+        std::vector<bool> visited(mBones.size(), false);
+        bool hasLoop = false;
+        auto f = [&visited, &hasLoop](Bone *b)
+        {
+            if(visited[b->getJointIndex()])
+            {
+                hasLoop = true;
+                return false;
+            }
+
+            visited[b->getJointIndex()] = true;
+            return true;
+        };
+
+        traverse(f);
+
+        return hasLoop;
     }
 }

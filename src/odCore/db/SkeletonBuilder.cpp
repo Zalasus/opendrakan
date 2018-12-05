@@ -39,6 +39,8 @@ namespace odDb
         info.meshIndex = meshIndex;
         info.firstChildIndex = firstChildIndex;
         info.nextSiblingIndex = nextSiblingIndex;
+        info.visited = false;
+        info.nameInfo = nullptr;
 
         mJointInfos.push_back(info);
     }
@@ -74,6 +76,11 @@ namespace odDb
             mAlreadyBuiltNameLinks = true;
         }
 
+        for(auto it = mJointInfos.begin(); it != mJointInfos.end(); ++it)
+        {
+            it->visited = false;
+        }
+
         // by iterating over all joints and starting to build from all untouched joints we encounter, we can
         //  also handle skeletons that have more than one root for some reason
         for(auto it = mJointInfos.begin(); it != mJointInfos.end(); ++it)
@@ -84,54 +91,53 @@ namespace odDb
             }
 
             int32_t jointIndex = it - mJointInfos.begin();
-            odAnim::Skeleton::Bone *root = skeleton.addRootBone(jointIndex);
-            _buildRecursive(root, &(*it), jointIndex);
+            _buildRecursive(skeleton, nullptr, *it, jointIndex);
+        }
+
+        if(skeleton.checkForLoops())
+        {
+            throw od::Exception("SkeletonBuilder fucked up and built skeleton with loops");
         }
     }
 
-    void SkeletonBuilder::_buildRecursive(odAnim::Skeleton::Bone *parent, JointInfo *jointInfo, int32_t jointIndex)
+    void SkeletonBuilder::_buildRecursive(odAnim::Skeleton &skeleton, odAnim::Skeleton::Bone *parent, JointInfo &jointInfo, int32_t jointIndex)
     {
-        if(parent == nullptr || jointInfo == nullptr)
+        if(jointInfo.visited)
         {
-            return;
-        }
-
-        if(jointInfo->visited)
-        {
-            throw od::Exception("Encountered loop in bone tree");
+            throw od::Exception("SkeletonBuilder encountered loop in bone tree");
 
         }else
         {
-            jointInfo->visited = true;
+            jointInfo.visited = true;
         }
 
-        odAnim::Skeleton::Bone *bone = parent->addChildBone(jointIndex);
-        bone->setInverseBindPoseTransform(jointInfo->boneXform);
-        if(jointInfo->nameInfo != nullptr)
+        odAnim::Skeleton::Bone *bone = (parent == nullptr) ? skeleton.addRootBone(jointIndex) : parent->addChildBone(jointIndex);
+        bone->setInverseBindPoseTransform(jointInfo.boneXform);
+        if(jointInfo.nameInfo != nullptr)
         {
-            bone->setName(jointInfo->nameInfo->name);
+            bone->setName(jointInfo.nameInfo->name);
         }
 
-        if(jointInfo->firstChildIndex > 0)
+        if(jointInfo.firstChildIndex > 0)
         {
-            if(jointInfo->firstChildIndex >= (int32_t)mJointInfos.size())
+            if(jointInfo.firstChildIndex >= (int32_t)mJointInfos.size())
             {
                 throw od::Exception("First child index in joint info out of bounds");
             }
 
-            JointInfo *firstChildJointInfo = &mJointInfos[jointInfo->firstChildIndex];
-            _buildRecursive(bone, firstChildJointInfo, jointInfo->firstChildIndex);
+            JointInfo &firstChildJointInfo = mJointInfos[jointInfo.firstChildIndex];
+            _buildRecursive(skeleton, bone, firstChildJointInfo, jointInfo.firstChildIndex);
         }
 
-        if(jointInfo->nextSiblingIndex > 0)
+        if(jointInfo.nextSiblingIndex > 0)
         {
-            if(jointInfo->nextSiblingIndex >= (int32_t)mJointInfos.size())
+            if(jointInfo.nextSiblingIndex >= (int32_t)mJointInfos.size())
             {
                 throw od::Exception("Next sibling index in joint info out of bounds");
             }
 
-            JointInfo *nextSiblingJointInfo = &mJointInfos[jointInfo->nextSiblingIndex];
-            _buildRecursive(parent, nextSiblingJointInfo, jointInfo->nextSiblingIndex);
+            JointInfo &nextSiblingJointInfo = mJointInfos[jointInfo.nextSiblingIndex];
+            _buildRecursive(skeleton, parent, nextSiblingJointInfo, jointInfo.nextSiblingIndex);
         }
     }
 

@@ -42,6 +42,8 @@ namespace odOsg
             throw od::Exception("Bone index passed to renderer exceeds supported number of bones");
         }
 
+        Logger::info() << "Bone " << boneIndex << " set";
+
         mBoneMatrixUniform->setElement(boneIndex, GlmAdapter::toOsg(transform));
     }
 

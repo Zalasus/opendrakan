@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <functional>
 
 #include <glm/mat4x4.hpp>
 #include <glm/mat3x4.hpp>
@@ -36,9 +37,10 @@ namespace odAnim
             Bone(const Bone &bone);
 
             inline const std::string &getName() const { return mName; }
-            inline const glm::mat4 &getInverseBinPoseTransform() const { return mInverseBindPoseTransform; }
+            inline const glm::mat4 &getInverseBindPoseTransform() const { return mInverseBindPoseTransform; }
             inline void setName(const std::string &name) { mName = name; }
             inline void setInverseBindPoseTransform(const glm::mat4 &tform) { mInverseBindPoseTransform = tform; }
+            inline const glm::mat4 &getCurrentTransform() const { return mCurrentMatrix; }
             inline Bone *getParent() { return mParent; }
             inline int32_t getJointIndex() const { return mJointIndex; }
             inline bool isRoot() const { return mParent == nullptr; }
@@ -54,6 +56,7 @@ namespace odAnim
         private:
 
             void _flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix);
+            void _traverse(const std::function<bool(Bone*)> &f);
 
             Skeleton &mSkeleton;
             Bone *mParent;
@@ -75,7 +78,10 @@ namespace odAnim
         Bone *addRootBone(int32_t jointIndex);
         Bone *getBoneByJointIndex(int32_t jointIndex);
 
+        void traverse(const std::function<bool(Bone*)> &f);
+
         void flatten(odRender::Rig *rig);
+        bool checkForLoops(); ///< @brief Returns true if skeleton has loops
 
 
     private:

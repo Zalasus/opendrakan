@@ -29,6 +29,7 @@ namespace odDb
     public:
 
         SkeletonBuilder();
+        SkeletonBuilder(SkeletonBuilder &sb) = delete;
 
         inline size_t getJointCount() const { return mJointInfos.size(); }
 
@@ -60,7 +61,7 @@ namespace odDb
             bool visited;
         };
 
-        void _buildRecursive(odAnim::Skeleton::Bone *parent, JointInfo *jointInfo, int32_t jointIndex);
+        void _buildRecursive(odAnim::Skeleton &skeleton, odAnim::Skeleton::Bone *parent, JointInfo &jointInfo, int32_t jointIndex);
 
         std::vector<JointNameInfo> mNameInfos;
         std::vector<JointInfo> mJointInfos;
