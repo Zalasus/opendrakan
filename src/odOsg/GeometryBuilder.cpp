@@ -14,8 +14,11 @@
 #include <osg/Texture2D>
 
 #include <odCore/Exception.h>
+#include <odCore/OdDefines.h>
+
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/Texture.h>
+
 #include <odCore/render/Geometry.h>
 
 #include <odOsg/GlmAdapter.h>
@@ -204,8 +207,14 @@ namespace odOsg
         osg::ref_ptr<osg::Vec2Array> osgTextureCoordArray = GlmAdapter::convertToOsgArray<osg::Vec2Array>(mUvCoords);
         osg::ref_ptr<osg::Vec4Array> osgColorArray = new osg::Vec4Array;
         osgColorArray->push_back(osg::Vec4(1.0, 1.0, 1.0, 1.0));
-        //osg::ref_ptr<osg::Vec4Array> osgBoneIndexArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneIndices);
-        //osg::ref_ptr<osg::Vec4Array> osgBoneWeightArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneWeights);
+
+        osg::ref_ptr<osg::Vec4Array> osgBoneIndexArray;
+        osg::ref_ptr<osg::Vec4Array> osgBoneWeightArray;
+        if(mGeometry.hasBoneInfo())
+        {
+            osgBoneIndexArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneIndices);
+            osgBoneWeightArray = GlmAdapter::convertToOsgArray<osg::Vec4Array>(mBoneWeights);
+        }
 
         // give osg arrays to geometry
         mGeometry.setOsgVertexArray(osgVertexArray);
@@ -238,6 +247,11 @@ namespace odOsg
 			    osgGeometry->setNormalArray(osgNormalArray, osg::Array::BIND_PER_VERTEX);
 			    osgGeometry->setTexCoordArray(0, osgTextureCoordArray, osg::Array::BIND_PER_VERTEX);
 			    osgGeometry->setColorArray(osgColorArray, osg::Array::BIND_OVERALL);
+			    if(mGeometry.hasBoneInfo())
+			    {
+                    osgGeometry->setVertexAttribArray(OD_ATTRIB_INFLUENCE_LOCATION, osgBoneIndexArray, osg::Array::BIND_PER_VERTEX);
+                    osgGeometry->setVertexAttribArray(OD_ATTRIB_WEIGHT_LOCATION, osgBoneWeightArray, osg::Array::BIND_PER_VERTEX);
+			    }
 			    geode->addDrawable(osgGeometry);
 
 			    size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;

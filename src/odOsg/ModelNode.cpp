@@ -47,6 +47,8 @@ namespace odOsg
         }
 
         osg::ref_ptr<osg::Program> modelProgram = mRenderer->getShaderFactory().getProgram("model");
+        modelProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
+        modelProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
         mGeometryGroup->getOrCreateStateSet()->setAttribute(modelProgram);
     }
 

@@ -23,6 +23,11 @@ namespace odOsg
 
         ss->addUniform(mBoneMatrixUniform);
         ss->setDefine("RIGGING");
+
+        for(size_t i = 0; i < mBoneMatrixUniform->getNumElements(); ++i)
+        {
+            mBoneMatrixUniform->setElement(i, osg::Matrix::identity());
+        }
     }
 
     Rig::~Rig()
