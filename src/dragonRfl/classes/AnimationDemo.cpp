@@ -8,8 +8,10 @@
 #include <dragonRfl/classes/AnimationDemo.h>
 
 #include <dragonRfl/RflDragon.h>
+
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
+
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 
@@ -35,6 +37,21 @@ namespace dragonRfl
     void AnimationDemo::onSpawned(od::LevelObject &obj)
     {
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
+
+        odRender::ObjectNode *objNode = obj.getRenderNode();
+        if(objNode == nullptr)
+        {
+            return; // no need to warn. we are probably running on a server
+        }
+
+        odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
+        if(skeleton == nullptr)
+        {
+            Logger::warn() << "Animation Demo class used on object without skeleton";
+            return;
+        }
+
+        mPlayer.reset(new odAnim::SkeletonAnimationPlayer(objNode, skeleton));
     }
 
     void AnimationDemo::onUpdate(od::LevelObject &obj, float relTime)
@@ -57,7 +74,15 @@ namespace dragonRfl
                 mCurrentAnimIndex = 0;
             }
 
-            Logger::verbose() << "Animation Demo now playing '" << mAnimations.getAsset(mCurrentAnimIndex)->getName() << "'";
+            odDb::Animation *currentAnimation = mAnimations.getAsset(mCurrentAnimIndex);
+            if(currentAnimation == nullptr || mPlayer == nullptr)
+            {
+                return;
+            }
+
+            mPlayer->playAnimation(currentAnimation);
+
+            Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }
     }
 

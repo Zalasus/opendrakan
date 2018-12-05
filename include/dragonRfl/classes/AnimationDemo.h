@@ -8,9 +8,13 @@
 #ifndef INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_
 #define INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_
 
+#include <memory>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
+
+#include <odCore/anim/SkeletonAnimationPlayer.h>
 
 namespace dragonRfl
 {
@@ -40,6 +44,8 @@ namespace dragonRfl
         bool mFirstUpdate;
         float mRunningTime;
         size_t mCurrentAnimIndex;
+
+        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mPlayer;
 
     };
 

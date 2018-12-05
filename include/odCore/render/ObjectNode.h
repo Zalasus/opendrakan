@@ -28,7 +28,7 @@ namespace odRender
     {
     public:
 
-        virtual ~FrameListener();
+        virtual ~FrameListener() = default;
 
         virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) = 0;
 

@@ -170,6 +170,8 @@ namespace od
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
         odDb::AssetPtr<odDb::Class> mClass;
+        od::RefPtr<odRender::ObjectNode> mRenderNode;
+        std::unique_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;
         Layer *mLightingLayer;
@@ -205,10 +207,6 @@ namespace od
         Layer *mLayerBelowObject;
 
         bool mRflUpdateHookEnabled;
-
-        od::RefPtr<odRender::ObjectNode> mRenderNode;
-
-        std::unique_ptr<odAnim::Skeleton> mSkeleton;
     };
 
 }

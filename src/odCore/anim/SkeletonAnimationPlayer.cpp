@@ -28,7 +28,7 @@ namespace odAnim
 
     void BoneAnimator::update(float relTime)
     {
-        Logger::info() << "Bone animator update " << relTime;
+        //Logger::info() << "Bone animator update " << relTime;
     }
 
 
