@@ -7,6 +7,8 @@
 
 #include <odCore/db/Animation.h>
 
+#include <glm/mat3x4.hpp>
+
 #include <odCore/Exception.h>
 
 namespace odDb
@@ -56,9 +58,13 @@ namespace odDb
 		mKeyframes.reserve(frameCount);
 		for(size_t i = 0; i < frameCount; ++i)
 		{
+		    glm::mat3x4 xform3x4;
+
 			AnimationKeyframe kf;
 			dr >> kf.time
-			   >> kf.xform;
+			   >> xform3x4;
+
+			kf.xform = glm::mat4(xform3x4);
 
 			mKeyframes.push_back(kf);
 		}

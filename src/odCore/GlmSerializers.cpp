@@ -10,7 +10,7 @@
 #include <glm/vec4.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat3x3.hpp>
-#include <glm/mat4x4.hpp>
+#include <glm/mat3x4.hpp>
 
 #include <odCore/DataStream.h>
 
@@ -82,22 +82,18 @@ namespace od
     }
 
     template <>
-    DataReader &DataReader::operator >> <glm::mat4>(glm::mat4 &m)
+    DataReader &DataReader::operator >> <glm::mat3x4>(glm::mat3x4 &m)
     {
-        float l[9]; // linear thingy
-        glm::vec3 t; // offset
+        glm::mat3 mat;
+        (*this) >> mat;
 
-        for(size_t i = 0; i < sizeof(l)/sizeof(float); ++i)
-        {
-            (*this) >> l[i];
-        }
+        glm::vec3 translation;
+        (*this) >> translation;
 
-        (*this) >> t;
-
-        m = glm::mat4(l[0], l[1], l[2], 0,
-                      l[3], l[4], l[5], 0,
-                      l[6], l[7], l[8], 0,
-                      t[0], t[1], t[2], 1); // TODO: do i need to transpose this?
+        m = glm::mat3x4(mat);
+        m[0].w = translation.x;
+        m[1].w = translation.y;
+        m[2].w = translation.z;
 
         return *this;
     }

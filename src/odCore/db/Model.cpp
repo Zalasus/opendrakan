@@ -247,7 +247,7 @@ namespace odDb
 		dr >> jointInfoCount;
 		for(size_t jointIndex = 0; jointIndex < jointInfoCount; ++jointIndex)
 		{
-			glm::mat4 inverseBoneTransform;
+			glm::mat3x4 inverseBoneTransform;
 			int32_t meshIndex;
             int32_t firstChildIndex;
             int32_t nextSiblingIndex;
@@ -257,7 +257,7 @@ namespace odDb
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
 
-            mSkeletonBuilder->addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeletonBuilder->addJointInfo(glm::mat4(inverseBoneTransform), meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
@@ -330,8 +330,8 @@ namespace odDb
 		for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
 		{
 			uint32_t jointIndex;
-			glm::mat4 xformA;
-			glm::mat4 xformB;
+			glm::mat3x4 xformA;
+			glm::mat3x4 xformB;
             uint16_t capCount;
 
             dr >> jointIndex
