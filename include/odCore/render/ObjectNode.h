@@ -61,6 +61,7 @@ namespace odRender
         virtual void setRenderMode(RenderMode rm) = 0;
 
         virtual void addFrameListener(FrameListener *listener) = 0;
+        virtual void removeFrameListener(FrameListener *listener) = 0;
     };
 
 }

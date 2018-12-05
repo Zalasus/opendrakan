@@ -43,6 +43,7 @@ namespace odOsg
         virtual void setRenderMode(RenderMode rm) override;
 
         virtual void addFrameListener(odRender::FrameListener *listener) override;
+        virtual void removeFrameListener(odRender::FrameListener *listener) override;
 
 
     private:

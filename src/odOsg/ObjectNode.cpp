@@ -200,6 +200,11 @@ namespace odOsg
 
     void ObjectNode::addFrameListener(odRender::FrameListener *listener)
     {
+        if(mFrameListener != nullptr)
+        {
+            throw od::UnsupportedException("Multiple frame listeners unsupported as of now");
+        }
+
         mFrameListener = listener;
 
         if(mFrameListener != nullptr && mUpdateCallback == nullptr)
@@ -212,6 +217,16 @@ namespace odOsg
             mTransform->removeUpdateCallback(mUpdateCallback);
             mUpdateCallback = nullptr;
         }
+    }
+
+    void ObjectNode::removeFrameListener(odRender::FrameListener *listener)
+    {
+        if(mFrameListener != listener)
+        {
+            return;
+        }
+
+        mFrameListener = nullptr;;
     }
 
 }
