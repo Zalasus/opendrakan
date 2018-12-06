@@ -88,13 +88,13 @@ namespace odAnim
 
     void Skeleton::Bone::_flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix)
     {
-        glm::mat4 currentMatrix = (mCurrentMatrix * mInverseBindPoseTransform) * parentMatrix;
+        glm::mat4 chainMatrix = mCurrentMatrix * mInverseBindPoseTransform * parentMatrix;
 
-        rig->setBoneTransform(mJointIndex, currentMatrix);
+        rig->setBoneTransform(mJointIndex, chainMatrix);
 
         for(auto it = mChildBones.begin(); it != mChildBones.end(); ++it)
         {
-            (*it)->_flattenRecursive(rig, currentMatrix);
+            (*it)->_flattenRecursive(rig, chainMatrix);
         }
     }
 

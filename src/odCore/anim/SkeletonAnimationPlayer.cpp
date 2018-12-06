@@ -39,6 +39,7 @@ namespace odAnim
         }
 
         mBone->move(glm::mat4(mKeyframesStartEnd.first->xform));
+        mBone->moveToBindPose();
 
         if(mKeyframesStartEnd.first+1 == mKeyframesStartEnd.second)
         {
@@ -63,6 +64,16 @@ namespace odAnim
         }
 
         mCurrentTime += relTime;
+
+        if(mBone->getJointIndex() == 5) // head
+        {
+        float angle = 0.25*3.1415912654*std::sin(mCurrentTime*2*3.141592654);
+        glm::quat q(glm::vec3(0, angle, 0));
+        glm::mat4 m = glm::mat4_cast(q);
+        mBone->move(m);
+        }
+
+        return;
 
         if(mCurrentTime >= (mCurrentKeyframe+1)->time)
         {
