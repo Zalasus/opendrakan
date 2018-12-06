@@ -90,8 +90,8 @@ namespace odAnim
                 }
             }
 
-            mLeftTransform = glm::dualquat(glm::mat3x4(mCurrentKeyframe->xform));
-            mRightTransform = glm::dualquat(glm::mat3x4((mCurrentKeyframe+1)->xform));
+            mLeftTransform = glm::dualquat(mCurrentKeyframe->xform);
+            mRightTransform = glm::dualquat((mCurrentKeyframe+1)->xform);
         }
 
         float delta = (mCurrentTime - mCurrentKeyframe->time)/((mCurrentKeyframe+1)->time - mCurrentKeyframe->time); // 0=exactly at current frame, 1=exactly at next frame

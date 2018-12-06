@@ -10,7 +10,7 @@
 
 #include <vector>
 #include <utility>
-#include <glm/mat4x4.hpp>
+#include <glm/mat3x4.hpp>
 
 #include <odCore/db/Asset.h>
 
@@ -20,7 +20,7 @@ namespace odDb
 	struct AnimationKeyframe
 	{
 		float time;
-		glm::mat4 xform;
+		glm::mat3x4 xform;
 	};
 
 	/**
