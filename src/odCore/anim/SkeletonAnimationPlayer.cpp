@@ -38,7 +38,7 @@ namespace odAnim
             return;
         }
 
-        mBone->move(mKeyframesStartEnd.first->xform);
+        mBone->move(glm::mat4(mKeyframesStartEnd.first->xform));
 
         if(mKeyframesStartEnd.first+1 == mKeyframesStartEnd.second)
         {
@@ -48,6 +48,8 @@ namespace odAnim
         }else
         {
             mCurrentKeyframe = mKeyframesStartEnd.first;
+            mLeftTransform = glm::dualquat(mCurrentKeyframe->xform);
+            mRightTransform = glm::dualquat((mCurrentKeyframe+1)->xform);
             mCurrentTime = 0;
             mPlaying = true;
         }

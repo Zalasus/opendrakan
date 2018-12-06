@@ -52,6 +52,8 @@ namespace dragonRfl
         }
 
         mPlayer.reset(new odAnim::SkeletonAnimationPlayer(objNode, skeleton));
+
+        obj.setEnableRflUpdateHook(true);
     }
 
     void AnimationDemo::onUpdate(od::LevelObject &obj, float relTime)
