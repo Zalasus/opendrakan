@@ -51,9 +51,9 @@ namespace odOsg
         inline static osg::Matrix toOsg(const glm::mat4 &m)
         {
             osg::Matrix om;
-            for(size_t r = 0; r < 3; ++r)
+            for(size_t r = 0; r < 4; ++r)
             {
-                for(size_t c = 0; c < 3; ++c)
+                for(size_t c = 0; c < 4; ++c)
                 {
                     om(r, c) = m[c][r];
                 }

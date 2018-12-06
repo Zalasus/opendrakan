@@ -23,7 +23,6 @@ namespace odAnim
     , mParent(nullptr)
     , mJointIndex(jointIndex)
     {
-        moveToBindPose();
     }
 
     Skeleton::Bone::Bone(const Bone &bone)
@@ -32,6 +31,7 @@ namespace odAnim
     , mJointIndex(bone.mJointIndex)
     , mName(bone.mName)
     , mInverseBindPoseTransform(bone.mInverseBindPoseTransform)
+    , mBindPoseTransform(bone.mBindPoseTransform)
     {
         if(bone.mChildBones.size() > 0)
         {
@@ -39,6 +39,12 @@ namespace odAnim
         }
 
         moveToBindPose();
+    }
+
+    void Skeleton::Bone::setInverseBindPoseTransform(const glm::mat4 &tform)
+    {
+        mInverseBindPoseTransform = tform;
+        mBindPoseTransform = glm::inverse(tform);
     }
 
     size_t Skeleton::Bone::getChildBoneCount()
@@ -78,12 +84,12 @@ namespace odAnim
 
     void Skeleton::Bone::moveToBindPose()
     {
-        mCurrentMatrix = glm::inverse(mInverseBindPoseTransform);
+        mCurrentMatrix = mBindPoseTransform;
     }
 
     void Skeleton::Bone::move(const glm::mat4 &transform)
     {
-        mCurrentMatrix = transform;
+        mCurrentMatrix = transform * mBindPoseTransform;
     }
 
     void Skeleton::Bone::_flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix)

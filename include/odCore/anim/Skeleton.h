@@ -39,11 +39,12 @@ namespace odAnim
             inline const std::string &getName() const { return mName; }
             inline const glm::mat4 &getInverseBindPoseTransform() const { return mInverseBindPoseTransform; }
             inline void setName(const std::string &name) { mName = name; }
-            inline void setInverseBindPoseTransform(const glm::mat4 &tform) { mInverseBindPoseTransform = tform; }
             inline const glm::mat4 &getCurrentTransform() const { return mCurrentMatrix; }
             inline Bone *getParent() { return mParent; }
             inline int32_t getJointIndex() const { return mJointIndex; }
             inline bool isRoot() const { return mParent == nullptr; }
+
+            void setInverseBindPoseTransform(const glm::mat4 &tform);
 
             size_t getChildBoneCount();
             Bone *getChildBone(size_t index);
@@ -63,6 +64,7 @@ namespace odAnim
             int32_t mJointIndex;
             std::string mName;   // TODO: the name and IBPT are the same for all instances of a skeleton. might want to save some memory here
             glm::mat4 mInverseBindPoseTransform;
+            glm::mat4 mBindPoseTransform;
             std::vector<Bone*> mChildBones;
 
             glm::mat4 mCurrentMatrix;
