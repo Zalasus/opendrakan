@@ -437,9 +437,8 @@ namespace od
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
-    void Layer::bakeOverlappingLayerLighting()
+    void Layer::_bakeLocalLayerLight()
     {
-        // FIXME: this function is a mess. clean it up!
         if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
         {
             return;
@@ -447,7 +446,13 @@ namespace od
 
         odRender::Geometry *geometry = mLayerNode->getGeometry();
         std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
+        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
         std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+
+        if(normalArray.size() != vertexArray.size())
+        {
+            throw Exception("Bad generated geometry arrays. Normal and vertex array sizes must match for baking lighting");
+        }
 
         // build overlap map
         std::vector<Layer*> overlappingLayers;
@@ -502,69 +507,36 @@ namespace od
             }
         }
 
-        for(size_t i = 0; i < vertexArray.size(); ++i)
-        {
-            // find this vertex in overlap map. note that we can't use the index here, as the geometry's vertex array potentially
-            //  contains more vertices than the layer itself. we need to derive x and z from the vertex coordinates
-            uint32_t x = std::round(vertexArray[i].x);
-            uint32_t z = std::round(vertexArray[i].z);
-            size_t vertIndex = x + z*(mWidth+1);
-
-            VertexOverlap &overlap = overlapMap.at(vertIndex);
-            for(size_t layerIndex = 0; layerIndex < overlap.layerCount; ++layerIndex)
-            {
-                Layer *layer = overlap.layers[layerIndex];
-                if(layer == nullptr)
-                {
-                    continue;
-                }
-
-                int32_t relOriginX = layer->getOriginX() - mOriginX;
-                int32_t relOriginZ = layer->getOriginZ() - mOriginZ;
-                size_t theirVertIndex = (x - relOriginX) + (z - relOriginZ)*(layer->getWidth()+1);
-
-                colorArray[i] += glm::vec4(layer->mVertices.at(theirVertIndex).bakedLightColor, 0.0);
-            }
-
-            colorArray[i] = glm::clamp(colorArray[i], glm::vec4(0.0), glm::vec4(1.0)) / (glm::vec4::value_type)(overlap.layerCount + 1);
-        }
-
-        geometry->notifyColorDirty();
-    }
-
-    void Layer::_bakeLocalLayerLight()
-    {
-        if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
-        {
-            return;
-        }
-
-        odRender::Geometry *geometry = mLayerNode->getGeometry();
-        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
-        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
-        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
-
-        if(normalArray.size() != vertexArray.size())
-        {
-            throw Exception("Bad generated geometry arrays. Normal and vertex array sizes must match for baking lighting");
-        }
-
         colorArray.resize(vertexArray.size());
 
         for(size_t i = 0; i < vertexArray.size(); ++i)
         {
-            // for some reason, the Riot Engine seems to add the ambient component twice in layer lighting
-            glm::vec3::value_type cosTheta = std::max(glm::dot(normalArray[i], mLightDirectionVector), (glm::vec3::value_type)0.0);
-            glm::vec3 lightColor = mLightColor*cosTheta + mAmbientColor*glm::vec3::value_type(2);
-
-            colorArray[i] = glm::vec4(lightColor, 1.0);
-
-            // also store the color in the layer heightmap. this will allow us to easily implement layer light dropoff later and
-            //  also simplifies blending lighting of adjacent layers since it can't operate in-place on color array
             uint32_t x = std::round(vertexArray[i].x);
             uint32_t z = std::round(vertexArray[i].z);
             size_t vertIndex = x + z*(mWidth+1);
-            mVertices.at(vertIndex).bakedLightColor = lightColor;
+
+            // calculate average color of this and all overlapping layers at this vertex
+            glm::vec3 color = mLightColor;
+            glm::vec3 ambient = mAmbientColor;
+            VertexOverlap &overlap = overlapMap[vertIndex];
+            for(size_t layerIndex = 0; layerIndex < overlap.layerCount; ++layerIndex)
+            {
+                if(overlap.layers[layerIndex] == nullptr)
+                {
+                    continue;
+                }
+
+                color += overlap.layers[layerIndex]->mLightColor;
+                ambient += overlap.layers[layerIndex]->mAmbientColor;
+            }
+            color /= glm::vec3::value_type(overlap.layerCount + 1);
+            ambient /= glm::vec3::value_type(overlap.layerCount + 1);
+
+            // for some reason, the Riot Engine seems to add the ambient component twice in layer lighting
+            glm::vec3::value_type cosTheta = std::max(glm::dot(normalArray[i], mLightDirectionVector), (glm::vec3::value_type)0.0);
+            glm::vec3 lightColor = color*cosTheta + ambient*glm::vec3::value_type(2);
+
+            colorArray[i] = glm::vec4(lightColor, 1.0);
         }
 
         geometry->notifyColorDirty();

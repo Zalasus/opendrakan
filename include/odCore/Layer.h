@@ -62,8 +62,6 @@ namespace od
         {
             uint8_t type;
             float heightOffsetLu;
-
-            glm::vec3 bakedLightColor;
         };
 
         /// @brief The magic texture reference that indicates a hole in the layer.
@@ -113,8 +111,6 @@ namespace od
         bool contains(const glm::vec2 &xzCoord, float epsilon);
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
-
-        void bakeOverlappingLayerLighting();
 
 
     private:
