@@ -74,6 +74,11 @@ namespace od
         {
             (*it)->spawn();
         }
+
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            (*it)->bakeOverlappingLayerLighting();
+        }
     }
 
     void Level::requestLevelObjectDestruction(LevelObject *obj)

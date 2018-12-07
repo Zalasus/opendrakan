@@ -114,6 +114,8 @@ namespace od
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
+        void bakeOverlappingLayerLighting();
+
 
     private:
 

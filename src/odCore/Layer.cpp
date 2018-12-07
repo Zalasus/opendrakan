@@ -10,6 +10,8 @@
 #include <limits>
 #include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
+#include <glm/common.hpp>
+
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 
@@ -433,6 +435,101 @@ namespace od
         }
 
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
+    }
+
+    void Layer::bakeOverlappingLayerLighting()
+    {
+        // FIXME: this function is a mess. clean it up!
+        if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
+        {
+            return;
+        }
+
+        odRender::Geometry *geometry = mLayerNode->getGeometry();
+        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
+        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+
+        // build overlap map
+        std::vector<Layer*> overlappingLayers;
+        overlappingLayers.reserve(10);
+        mLevel.findAdjacentAndOverlappingLayers(this, overlappingLayers);
+
+        struct VertexOverlap
+        {
+            VertexOverlap() : layerCount(0) {}
+            void addLayer(Layer *layer)
+            {
+                if(layerCount < (sizeof(layers)/sizeof(layers[0])))
+                {
+                    layers[layerCount] = layer;
+                    ++layerCount;
+                }
+            }
+            size_t layerCount;
+            Layer* layers[4];
+        };
+        std::vector<VertexOverlap> overlapMap(mVertices.size());
+
+        for(auto layerIt = overlappingLayers.begin(); layerIt != overlappingLayers.end(); ++layerIt)
+        {
+            Layer *layer = *layerIt;
+
+            // for every overlapping layer, find xz range of overlapping vertices
+            int32_t relOriginX = layer->getOriginX() - mOriginX;
+            int32_t relOriginZ = layer->getOriginZ() - mOriginZ;
+            uint32_t xStart = glm::clamp(relOriginX, 0, (int32_t)mWidth);
+            uint32_t zStart = glm::clamp(relOriginZ, 0, (int32_t)mHeight);
+            uint32_t xEnd =   glm::clamp((int32_t)(relOriginX + layer->getWidth()), 0, (int32_t)mWidth);
+            uint32_t zEnd =   glm::clamp((int32_t)(relOriginZ + layer->getHeight()), 0, (int32_t)mHeight);
+
+            // for each vertex in that range, check for vertices within height threshold
+            for(uint32_t z = zStart; z <= zEnd; ++z)
+            {
+                for(uint32_t x = xStart; x <= xEnd; ++x)
+                {
+                    size_t ourVertIndex = x + z*(mWidth+1);
+                    size_t theirVertIndex = (x - relOriginX) + (z - relOriginZ)*(layer->getWidth()+1);
+
+                    float ourVertexHeight = mVertices.at(ourVertIndex).heightOffsetLu + getWorldHeightLu();
+                    float theirVertexHeight = layer->mVertices.at(theirVertIndex).heightOffsetLu + layer->getWorldHeightLu();
+
+                    if(std::abs(ourVertexHeight - theirVertexHeight) <= 2*OD_WORLD_SCALE) // threshold is +/- 2wu
+                    {
+                        // vertices are within range! add to list
+                        overlapMap.at(ourVertIndex).addLayer(layer);
+                    }
+                }
+            }
+        }
+
+        for(size_t i = 0; i < vertexArray.size(); ++i)
+        {
+            // find this vertex in overlap map. note that we can't use the index here, as the geometry's vertex array potentially
+            //  contains more vertices than the layer itself. we need to derive x and z from the vertex coordinates
+            uint32_t x = std::round(vertexArray[i].x);
+            uint32_t z = std::round(vertexArray[i].z);
+            size_t vertIndex = x + z*(mWidth+1);
+
+            VertexOverlap &overlap = overlapMap.at(vertIndex);
+            for(size_t layerIndex = 0; layerIndex < overlap.layerCount; ++layerIndex)
+            {
+                Layer *layer = overlap.layers[layerIndex];
+                if(layer == nullptr)
+                {
+                    continue;
+                }
+
+                int32_t relOriginX = layer->getOriginX() - mOriginX;
+                int32_t relOriginZ = layer->getOriginZ() - mOriginZ;
+                size_t theirVertIndex = (x - relOriginX) + (z - relOriginZ)*(layer->getWidth()+1);
+
+                colorArray[i] += glm::vec4(layer->mVertices.at(theirVertIndex).bakedLightColor, 0.0);
+            }
+
+            colorArray[i] = glm::clamp(colorArray[i], glm::vec4(0.0), glm::vec4(1.0)) / (glm::vec4::value_type)(overlap.layerCount + 1);
+        }
+
+        geometry->notifyColorDirty();
     }
 
     void Layer::_bakeLocalLayerLight()

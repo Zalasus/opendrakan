@@ -43,9 +43,9 @@ namespace od
 
     bool AxisAlignedBoundingBox::intersects(const AxisAlignedBoundingBox &aabb) const
     {
-        return    aabb.mMin.x >= mMin.x && aabb.mMin.x <= mMax.x
-               && aabb.mMin.y >= mMin.y && aabb.mMin.y <= mMax.y
-               && aabb.mMin.z >= mMin.z && aabb.mMin.z <= mMax.z;
+        return !(mMax.x < aabb.mMin.x || mMin.x > aabb.mMax.x ||
+                 mMax.y < aabb.mMin.y || mMin.y > aabb.mMax.y ||
+                 mMax.z < aabb.mMin.z || mMin.z > aabb.mMax.z);
     }
 
     bool AxisAlignedBoundingBox::intersects(const AxisAlignedBoundingBox &aabb, glm::vec3::value_type epsilon) const
@@ -53,9 +53,9 @@ namespace od
         glm::vec3 eMin = mMin - epsilon;
         glm::vec3 eMax = mMax + epsilon;
 
-        return    aabb.mMin.x >= eMin.x && aabb.mMin.x <= eMax.x
-               && aabb.mMin.y >= eMin.y && aabb.mMin.y <= eMax.y
-               && aabb.mMin.z >= eMin.z && aabb.mMin.z <= eMax.z;
+        return !(eMax.x < aabb.mMin.x || eMin.x > aabb.mMax.x ||
+                 eMax.y < aabb.mMin.y || eMin.y > aabb.mMax.y ||
+                 eMax.z < aabb.mMin.z || eMin.z > aabb.mMax.z);
     }
 
 
