@@ -43,6 +43,8 @@ namespace odAnim
 
     void Skeleton::Bone::setInverseBindPoseTransform(const glm::mat4 &tform)
     {
+        // turns out these aren't actually needed for animating a model. they are baked into the animations!
+        //  still, i keep them here for future reference
         mInverseBindPoseTransform = tform;
         mBindPoseTransform = glm::inverse(tform);
     }
@@ -84,17 +86,17 @@ namespace odAnim
 
     void Skeleton::Bone::moveToBindPose()
     {
-        mCurrentMatrix = mBindPoseTransform;
+        mCurrentMatrix = glm::mat4(1.0);
     }
 
     void Skeleton::Bone::move(const glm::mat4 &transform)
     {
-        mCurrentMatrix = transform * mBindPoseTransform;
+        mCurrentMatrix = transform;
     }
 
     void Skeleton::Bone::_flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix)
     {
-        glm::mat4 chainMatrix = mCurrentMatrix * mInverseBindPoseTransform * parentMatrix;
+        glm::mat4 chainMatrix = mCurrentMatrix * parentMatrix;
 
         rig->setBoneTransform(mJointIndex, chainMatrix);
 
