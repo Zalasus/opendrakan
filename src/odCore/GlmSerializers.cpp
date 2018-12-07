@@ -68,15 +68,13 @@ namespace od
     template <>
     DataReader &DataReader::operator >> <glm::mat3>(glm::mat3 &m)
     {
-        float l[9];
-        for(size_t i = 0; i < sizeof(l)/sizeof(float); ++i)
+        // riot engine uses row-major storage -> read as column vectors, then transpose
+        for(size_t i = 0; i < 3; ++i)
         {
-            (*this) >> l[i];
+            (*this) >> m[i];
         }
 
-        m = glm::mat3(l[0], l[1], l[2],
-                      l[3], l[4], l[5],
-                      l[6], l[7], l[8]); // TODO: do i need to transpose this?
+        m = glm::transpose(m);
 
         return *this;
     }
