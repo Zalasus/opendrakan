@@ -153,7 +153,7 @@ namespace odAnim
 
     void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex)
     {
-
+        throw od::UnsupportedException("Partial skeleton animation not implmented yet");
     }
 
     void SkeletonAnimationPlayer::onFrameUpdate(double simTime, double relTime, uint32_t frameNumber)

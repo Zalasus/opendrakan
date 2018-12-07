@@ -11,6 +11,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/mat3x3.hpp>
 #include <glm/mat3x4.hpp>
+#include <glm/matrix.hpp>
 
 #include <odCore/DataStream.h>
 
