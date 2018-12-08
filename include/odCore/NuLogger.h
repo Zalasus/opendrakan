@@ -67,7 +67,8 @@ namespace od
         public:
 
             StreamProxy(Logger &logger, LogLevel level);
-            StreamProxy(const StreamProxy &proxy);
+            StreamProxy(const StreamProxy &proxy) = delete;
+            StreamProxy(StreamProxy &&proxy); // a stream proxy uniquely owns the log mutex. only allow it to be moved, not copied!
             ~StreamProxy();
 
             StreamProxy &operator=(const StreamProxy &proxy) = delete;
@@ -85,7 +86,7 @@ namespace od
 
             Logger &mLogger;
             LogLevel mLogLevel;
-            mutable std::unique_lock<std::mutex> mLock;
+            std::unique_lock<std::mutex> mLock;
         };
 
         friend class StreamProxy;
@@ -109,6 +110,11 @@ namespace od
         void setOutputLogLevel(LogLevel level);
         void increaseOutputLogLevel();
         void decreaseOutputLogLevel();
+
+        /**
+         * @brief Adds a log listener.
+         * @note Building a circle out of listeners will result in a deadlock condition upon the first log!
+         */
         void addListener(LogListener *listener);
         void removeListener(LogListener *listener);
 

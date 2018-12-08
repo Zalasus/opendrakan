@@ -35,7 +35,7 @@ namespace od
         mLogger.mProxyStream.str("");
     }
 
-    Logger::StreamProxy::StreamProxy(const StreamProxy &proxy)
+    Logger::StreamProxy::StreamProxy(StreamProxy &&proxy)
     : mLogger(proxy.mLogger)
     , mLogLevel(proxy.mLogLevel)
     , mLock(std::move(proxy.mLock))
