@@ -15,6 +15,8 @@
 
 #include <odCore/render/RendererEventListener.h>
 
+#include <odCore/gui/GuiManager.h>
+
 namespace odDb
 {
     class DbManager;
@@ -51,6 +53,7 @@ namespace od
 		inline odDb::DbManager &getDbManager() { return *mDbManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
 		inline odRender::Renderer *getRenderer() { return mRenderer; }
+		inline odGui::GuiManager &getGuiManager() { return mGuiManager; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline bool isDone() { return mIsDone; }
 		inline void setDone(bool done) { mIsDone = done; }
@@ -72,6 +75,7 @@ namespace od
 		std::unique_ptr<odDb::DbManager> mDbManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
 		odRender::Renderer *mRenderer;
+		odGui::GuiManager mGuiManager;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;

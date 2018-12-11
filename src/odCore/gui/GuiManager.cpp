@@ -21,11 +21,14 @@
 namespace odGui
 {
 
-    GuiManager::GuiManager(od::Engine &engine)
-    : mEngine(engine)
-    , mMenuMode(false)
+    GuiManager::GuiManager()
+    : mMenuMode(false)
     {
         _setupGui();
+    }
+
+    GuiManager::~GuiManager()
+    {
     }
 
     void GuiManager::quit()

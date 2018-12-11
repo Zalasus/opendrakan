@@ -35,9 +35,9 @@ namespace odGui
     {
     public:
 
-        GuiManager(od::Engine &engine);
+        GuiManager();
+        ~GuiManager();
 
-        inline od::Engine &getEngine() { return mEngine; }
         inline bool isMenuMode() const { return mMenuMode; }
 
         void quit();
@@ -68,10 +68,8 @@ namespace odGui
 
     private:
 
-        inline void _decryptString(char * const str, const size_t len);
         void _setupGui();
 
-        od::Engine &mEngine;
         bool mMenuMode;
 
         std::vector<od::RefPtr<Widget>> mRootWidgets;
