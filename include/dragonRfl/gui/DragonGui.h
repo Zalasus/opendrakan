@@ -36,6 +36,20 @@ namespace dragonRfl
 
         inline UserInterfaceProperties *getUserInterfaceProperties() { return mUserInterfaceProperties.get(); }
 
+        /**
+         * @brief Localizes string with localization tag.
+         *
+         * Will check whether passed string begins with a localization tag "<0x...>". If not, the string is returned as-is.
+         * If it does, the string ID in the tag will be looked up and the localized version of that string returned.
+         * If the string ID can not be found in the RRC, the tag will be stripped and the unlocalized string returned.
+         */
+        std::string localizeString(const std::string &s);
+
+        /**
+         * @brief Returns the string with the given ID or throws if string can not be found.
+         */
+        std::string getStringById(od::RecordId stringId);
+
 
     protected:
 
@@ -44,11 +58,15 @@ namespace dragonRfl
 
     private:
 
+        void _decryptString(char * const str, const size_t len);
+
         od::SrscFile mRrcFile;
         odDb::TextureFactory mRrcTextureFactory;
         odDb::Database *mInterfaceDb;
 
         std::unique_ptr<UserInterfaceProperties> mUserInterfaceProperties;
+
+        std::map<od::RecordId, std::string> mLocalizedStringCache;
     };
 
 }

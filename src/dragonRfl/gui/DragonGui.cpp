@@ -58,9 +58,89 @@ namespace dragonRfl
     {
     }
 
+    std::string DragonGui::localizeString(const std::string &s)
+    {
+        if(s.size() < 8 || s[0] != '<' || s[1] != '0' || s[2] != 'x' || s[7] != '>') // probably still the fastest method
+        {
+            return s;
+        }
+
+        od::RecordId stringId;
+        std::istringstream iss(s.substr(3, 4));
+        iss >> std::hex >> stringId;
+        if(iss.fail())
+        {
+            return s;
+        }
+
+        Logger::debug() << "Localized string " << std::hex << stringId << " requested from RRC";
+
+        try
+        {
+            return getStringById(stringId);
+
+        }catch(od::NotFoundException &e)
+        {
+        }
+
+        // string not found. return unlocalized one
+        return s.substr(8, std::string::npos);
+    }
+
+    std::string DragonGui::getStringById(od::RecordId stringId)
+    {
+        // was string cached? if yes, no need to load and decrypt it again
+        auto cacheIt = mLocalizedStringCache.find(stringId);
+        if(cacheIt != mLocalizedStringCache.end())
+        {
+            return cacheIt->second;
+        }
+
+        // string was not cached. load and decrypt it
+        auto dirIt = mRrcFile.getDirIteratorByTypeId(od::SrscRecordType::LOCALIZED_STRING, stringId);
+        if(dirIt == mRrcFile.getDirectoryEnd())
+        {
+            std::ostringstream oss;
+            oss << "String with ID 0x" << std::hex << stringId << std::dec << " not found";
+
+            throw od::NotFoundException(oss.str());
+        }
+
+        if(dirIt->dataSize > 255)
+        {
+            throw od::Exception("String buffer too small");
+        }
+
+        std::istream &in = mRrcFile.getStreamForRecord(dirIt);
+
+        char str[256] = {0}; // should be big enough. might alloc it dynamically but can't be bothered right now
+        in.read(str, dirIt->dataSize);
+        size_t readBytes = in.gcount();
+
+        _decryptString(str, readBytes);
+
+        // TODO: Transcode from Latin-1 or what you got to UTF-8
+
+        std::string decryptedString(str);
+        mLocalizedStringCache.insert(std::make_pair(stringId, decryptedString));
+
+        return std::move(decryptedString);
+    }
+
     odDb::Texture *DragonGui::getTexture(od::RecordId recordId)
     {
         return mRrcTextureFactory.getAsset(recordId).release();
+    }
+
+    void DragonGui::_decryptString(char * const str, const size_t len)
+    {
+        uint32_t key = 0x5FDD390D;
+
+        for(size_t i = 0; i < len; ++i)
+        {
+            str[i] ^= key & 0xFF;
+            key = (key<<3) | (key>>(32-3));
+        }
     }
 
 }
