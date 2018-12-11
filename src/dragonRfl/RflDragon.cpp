@@ -10,17 +10,21 @@
 #include <odCore/Engine.h>
 #include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/db/DbManager.h>
+
+#include <dragonRfl/gui/DragonGui.h>
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
-#define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
 namespace dragonRfl
 {
 
     DragonRfl::DragonRfl(od::Engine &engine)
     : AutoRegisteringRfl<DragonRfl>(engine)
-    , mInterfaceDb(nullptr)
     , mLocalPlayer(nullptr)
+    {
+    }
+
+    DragonRfl::~DragonRfl()
     {
     }
 
@@ -28,40 +32,13 @@ namespace dragonRfl
     {
         od::Engine &engine = getEngine();
 
-        mInterfaceDb = &engine.getDbManager().loadDb(od::FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase());
-
-        // retrieve UserInterfaceProperties object
-        if(mInterfaceDb->getClassFactory() == nullptr)
-        {
-            throw od::Exception("Can not initialize user interface. Interface.db has no class container");
-        }
-
-        odRfl::RflClassId uiPropsClassId = odRfl::RflClassTraits<UserInterfaceProperties>::classId();
-        od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
-        if(id == odDb::AssetRef::NULL_REF.assetId)
-        {
-            throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
-        }
-
-        odDb::AssetPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
-        mUserInterfacePropertiesInstance.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
-        if(mUserInterfacePropertiesInstance == nullptr)
-        {
-            throw od::Exception("Could not cast or instantiate User Interface Properties instance");
-        }
-        mUserInterfacePropertiesInstance->onLoaded(engine);
-
-        odRfl::PrefetchProbe probe(*mInterfaceDb);
-        mUserInterfacePropertiesInstance->probeFields(probe);
-
+        mGui.reset(new DragonGui(engine));
 
         if(!engine.hasInitialLevelOverride())
         {
-            od::FilePath initialLevel(mUserInterfacePropertiesInstance->mIntroLevelFilename);
+            od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
             engine.loadLevel(initialLevel.adjustCase());
         }
-
     }
 
     void DragonRfl::onMenuToggle(bool newMode)

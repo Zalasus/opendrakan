@@ -8,19 +8,21 @@
 #ifndef INCLUDE_DRAGONRFL_RFLDRAGON_H_
 #define INCLUDE_DRAGONRFL_RFLDRAGON_H_
 
+#include <memory>
+
 #include <odCore/rfl/Rfl.h>
-#include <odCore/db/Database.h>
 
 namespace dragonRfl
 {
-    class UserInterfaceProperties;
     class LocalPlayer;
+    class DragonGui;
 
     class DragonRfl : public odRfl::AutoRegisteringRfl<DragonRfl>
     {
     public:
 
         DragonRfl(od::Engine &engine);
+        ~DragonRfl();
 
         inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
         inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
@@ -31,10 +33,8 @@ namespace dragonRfl
 
     private:
 
-        odDb::Database *mInterfaceDb;
-        std::unique_ptr<UserInterfaceProperties> mUserInterfacePropertiesInstance;
-
         LocalPlayer *mLocalPlayer;
+        std::unique_ptr<DragonGui> mGui;
     };
 
 }
