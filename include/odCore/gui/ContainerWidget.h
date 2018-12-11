@@ -19,9 +19,10 @@ namespace odGui
     {
     public:
 
-        ContainerWidget(GuiManager &gm);
+        ContainerWidget();
 
         void addWidget(Widget *w);
+        void removeWidget(Widget *w);
 
 
     protected:

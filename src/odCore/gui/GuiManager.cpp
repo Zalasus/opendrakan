@@ -17,6 +17,7 @@
 #include <odCore/Engine.h>
 
 #include <odCore/gui/Widget.h>
+#include <odCore/gui/ContainerWidget.h>
 
 namespace odGui
 {
@@ -38,10 +39,7 @@ namespace odGui
     void GuiManager::mouseDown()
     {
         mCurrentHitWidgets.clear();
-        for(auto it = mRootWidgets.begin(); it != mRootWidgets.end(); ++it)
-        {
-            (*it)->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
-        }
+        mRootWidget->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
 
         Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
 
@@ -63,7 +61,7 @@ namespace odGui
             return;
         }
 
-        mRootWidgets.push_back(od::RefPtr<Widget>(widget));
+        mRootWidget->addWidget(widget);
 
         widget->setParent(nullptr);
     }
@@ -75,37 +73,7 @@ namespace odGui
             return;
         }
 
-        auto it = std::find(mRootWidgets.begin(), mRootWidgets.end(), widget);
-        if(it != mRootWidgets.end())
-        {
-            mRootWidgets.erase(it);
-        }
-    }
-
-    size_t GuiManager::getWidgetCount()
-    {
-        return mRootWidgets.size();
-    }
-
-    std::pair<int32_t, int32_t> GuiManager::getWidgetZRange()
-    {
-        /*if(mWidgets.size() == 0)
-        {
-            return std::pair<int32_t, int32_t>(0, 0);
-        }
-
-        int32_t minZ = std::numeric_limits<int32_t>::max();
-        int32_t maxZ = std::numeric_limits<int32_t>::min();
-        for(auto it = mWidgets.begin(); it != mWidgets.end(); ++it)
-        {
-            int32_t z = (*it)->getZIndex();
-            minZ = std::min(minZ, z);
-            maxZ = std::max(maxZ, z);
-        }
-
-        return std::pair<int32_t, int32_t>(minZ, maxZ);*/
-
-        return std::pair<int32_t, int32_t>(-1000, 1000);
+        mRootWidget->removeWidget(widget);
     }
 
     void GuiManager::setMenuMode(bool b)
@@ -156,10 +124,7 @@ namespace odGui
         //  happened can be determined from the mouse-over state that is stored in those widgets.
         //  FIXME: this only works if every widget in the scenegraph is unique
         mCurrentHitWidgets.clear();
-        for(auto it = mRootWidgets.begin(); it != mRootWidgets.end(); ++it)
-        {
-            (*it)->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
-        }
+        mRootWidget->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
 
         mJoinedHitWidgets.clear();
         mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), mCurrentHitWidgets.begin(), mCurrentHitWidgets.end());

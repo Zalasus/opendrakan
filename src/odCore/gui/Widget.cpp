@@ -10,14 +10,15 @@
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <odCore/Exception.h>
+
 #include <odCore/gui/GuiManager.h>
 
 namespace odGui
 {
 
-    Widget::Widget(GuiManager &gm)
-    : mGuiManager(gm)
-    , mOrigin(WidgetOrigin::TopLeft)
+    Widget::Widget()
+    : mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
     , mDimensions(1.0, 1.0)
     , mPositionInParentSpace(0.0, 0.0)
@@ -94,13 +95,13 @@ namespace odGui
 
         }else
         {
-            return this->getParentDimensionsInPixels() * this->getDimensions();
-        }
-    }
+            if(mParentWidget == nullptr)
+            {
+                throw od::Exception("Widget without parent asked to translate parent-relative dimensions to pixels. Is the GuiManager's root widget configured properly?");
+            }
 
-    glm::vec2 Widget::getParentDimensionsInPixels()
-    {
-        return (mParentWidget != nullptr) ? mParentWidget->getDimensionsInPixels() : mGuiManager.getScreenResolution();
+            return mParentWidget->getDimensionsInPixels() * this->getDimensions();
+        }
     }
 
     void Widget::setVisible(bool b)
@@ -118,7 +119,7 @@ namespace odGui
 
         matrix = glm::translate(matrix, glm::vec3(-_getOriginVector(), 0.0));
 
-        glm::vec2 widgetSizeInParentSpace = this->getDimensionsInPixels() / this->getParentDimensionsInPixels();
+        glm::vec2 widgetSizeInParentSpace = (mParentWidget != nullptr) ? (getDimensionsInPixels() / mParentWidget->getDimensionsInPixels()) : glm::vec2(1.0);
         matrix = glm::scale(matrix, glm::vec3(widgetSizeInParentSpace, 1.0));
         matrix = glm::translate(matrix, glm::vec3(mPositionInParentSpace, 0.0));
 

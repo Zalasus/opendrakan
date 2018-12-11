@@ -69,10 +69,9 @@ namespace odGui
     {
     public:
 
-        Widget(GuiManager &gm);
+        Widget();
         virtual ~Widget();
 
-        inline GuiManager &getGuiManager() { return mGuiManager; }
         inline int32_t getZIndex() const { return mZIndexInParentSpace; }
         inline glm::vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
@@ -132,8 +131,6 @@ namespace odGui
         void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
         glm::vec2 getDimensionsInPixels();
-        glm::vec2 getParentDimensionsInPixels();
-        std::pair<int32_t, int32_t> getParentZRange();
 
         void setVisible(bool b);
 
@@ -149,7 +146,6 @@ namespace odGui
 
         glm::vec2 _getOriginVector();
 
-        GuiManager &mGuiManager;
         WidgetOrigin mOrigin;
         WidgetDimensionType mDimensionType;
         glm::vec2 mDimensions;

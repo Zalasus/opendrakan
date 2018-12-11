@@ -27,6 +27,7 @@ namespace odGui
 {
 
     class Widget;
+    class ContainerWidget;
 
     /**
      * Class for managing the game's GUI.
@@ -46,8 +47,6 @@ namespace odGui
 
         void addWidget(Widget *widget);
         void removeWidget(Widget *widget);
-        size_t getWidgetCount();
-        std::pair<int32_t, int32_t> getWidgetZRange();
 
         void setMenuMode(bool b);
 
@@ -61,7 +60,7 @@ namespace odGui
         void setCursorWidget(Widget *cursor);
 
         /**
-         * @brief Positions cursor in screen space.
+         * @brief Positions cursor in NDC.
          */
         void setCursorPosition(const glm::vec2 &pos);
 
@@ -72,7 +71,7 @@ namespace odGui
 
         bool mMenuMode;
 
-        std::vector<od::RefPtr<Widget>> mRootWidgets;
+        od::RefPtr<ContainerWidget> mRootWidget;
         glm::vec2 mCursorPosInNdc;
         od::RefPtr<Widget> mCursorWidget;
 
