@@ -8,39 +8,32 @@
 #ifndef INCLUDE_ODOSG_TEXTURE_H_
 #define INCLUDE_ODOSG_TEXTURE_H_
 
-#include <osg/Image>
 #include <osg/Texture2D>
-
-#include <odCore/db/Texture.h>
 
 #include <odCore/render/Texture.h>
 
 namespace odOsg
 {
-
-    class Renderer;
+    class Image;
 
     class Texture : public odRender::Texture
     {
     public:
 
-        Texture(Renderer *renderer, odDb::Texture *dbTexture);
+        Texture(Image *image);
         virtual ~Texture();
 
-        inline osg::Image *getImage() { return mImage; }
+        inline osg::Texture2D *getOsgTexture() { return mTexture; }
 
+        virtual void setEnableWrapping(bool wrap) override;
         virtual void setEnableWrapping(Dimension dimension, bool wrap) override;
-
-        osg::Texture2D *getOsgTexture(bool clamping);
 
 
     private:
 
-        od::RefPtr<odDb::Texture> mDbTexture;
+        od::RefPtr<odOsg::Image> mImage;
 
-        osg::ref_ptr<osg::Image> mImage;
-        osg::ref_ptr<osg::Texture2D> mWrappingTexture;
-        osg::ref_ptr<osg::Texture2D> mClampingTexture;
+        osg::ref_ptr<osg::Texture2D> mTexture;
 
     };
 

@@ -277,13 +277,14 @@ namespace odOsg
 			    osgGeometry->addPrimitiveSet(drawElements);
 
 				od::RefPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
-				od::RefPtr<odRender::Texture> renderTexture = dbTexture->getOrCreateRenderTexture(mRenderer);
+				odDb::Texture::Usage textureUsage = mUseClampedTextures ? odDb::Texture::Usage::Layer : odDb::Texture::Usage::Model; // FIXME: rename property
+				od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderTexture(mRenderer, textureUsage);
 				Texture *odOsgTexture = dynamic_cast<Texture*>(renderTexture.get());
 				if(odOsgTexture == nullptr) throw od::Exception("Render texture stored in db texture was no odOsg::Texture");
 				mGeometry.addTexture(odOsgTexture);
 
 				osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
-				geomSs->setTextureAttribute(0, odOsgTexture->getOsgTexture(mUseClampedTextures));
+				geomSs->setTextureAttribute(0, odOsgTexture->getOsgTexture());
 
 				if(dbTexture->hasAlpha())
 				{

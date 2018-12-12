@@ -3,6 +3,7 @@ set(SOURCES
         "Camera.cpp"
         "Geometry.cpp"
         "GeometryBuilder.cpp"
+        "Image.cpp"
         "LayerNode.cpp"
         "LightState.cpp"
         "Main.cpp"

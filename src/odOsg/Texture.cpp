@@ -9,53 +9,48 @@
 
 #include <odCore/db/Texture.h>
 
+#include <odOsg/Image.h>
+
 namespace odOsg
 {
 
-    Texture::Texture(Renderer *renderer, odDb::Texture *dbTexture)
-    : mDbTexture(dbTexture)
+    Texture::Texture(odOsg::Image *image)
+    : mImage(image)
     {
-        mImage = new osg::Image;
-        mImage->setImage(mDbTexture->getWidth(), mDbTexture->getHeight(), 1, 4, GL_RGBA, GL_UNSIGNED_BYTE,
-                mDbTexture->getRawR8G8B8A8Data(), osg::Image::NO_DELETE);
+        mTexture = new osg::Texture2D(mImage->getOsgImage());
     }
 
     Texture::~Texture()
     {
     }
 
+    void Texture::setEnableWrapping(bool wrap)
+    {
+        setEnableWrapping(Dimension::U, wrap);
+        setEnableWrapping(Dimension::V, wrap);
+        setEnableWrapping(Dimension::W, wrap);
+    }
+
     void Texture::setEnableWrapping(Dimension dimension, bool wrap)
     {
-
-    }
-
-    osg::Texture2D *Texture::getOsgTexture(bool clamping)
-    {
-        if(clamping)
+        osg::Texture::WrapParameter param;
+        osg::Texture::WrapMode mode = wrap ? osg::Texture::REPEAT : osg::Texture::CLAMP_TO_EDGE;
+        switch(dimension)
         {
-            if(mClampingTexture == nullptr)
-            {
-                mClampingTexture = new osg::Texture2D(mImage);
-                mClampingTexture->setWrap(osg::Texture::WRAP_R, osg::Texture::CLAMP_TO_EDGE);
-                mClampingTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::CLAMP_TO_EDGE);
-                mClampingTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::CLAMP_TO_EDGE);
-            }
+        case odRender::Texture::Dimension::U:
+            param = osg::Texture::WRAP_S;
+            break;
 
-            return mClampingTexture;
+        case odRender::Texture::Dimension::V:
+            param = osg::Texture::WRAP_T;
+            break;
 
-        }else
-        {
-            if(mWrappingTexture == nullptr)
-            {
-                mWrappingTexture = new osg::Texture2D(mImage);
-                mWrappingTexture->setWrap(osg::Texture::WRAP_R, osg::Texture::REPEAT);
-                mWrappingTexture->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-                mWrappingTexture->setWrap(osg::Texture::WRAP_T, osg::Texture::REPEAT);
-            }
-
-            return mWrappingTexture;
+        case odRender::Texture::Dimension::W:
+            param = osg::Texture::WRAP_R;
+            break;
         }
-    }
 
+        mTexture->setWrap(param, mode);
+    }
 
 }

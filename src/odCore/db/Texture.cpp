@@ -18,6 +18,7 @@
 #include <odCore/db/DbManager.h>
 
 #include <odCore/render/Renderer.h>
+#include <odCore/render/Image.h>
 #include <odCore/render/Texture.h>
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
@@ -48,7 +49,6 @@ namespace odDb
     , mCompressionLevel(0)
     , mCompressedSize(0)
     , mHasAlphaChannel(false)
-    , mRenderTexture(nullptr)
     {
     }
 
@@ -282,16 +282,58 @@ namespace odDb
 		throw od::UnsupportedException("PNG export is unsupported as of now");
     }
 
-    od::RefPtr<odRender::Texture> Texture::getOrCreateRenderTexture(odRender::Renderer *renderer)
+    od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
     {
-        if(mRenderTexture == nullptr)
+        if(renderer == nullptr)
         {
-            od::RefPtr<odRender::Texture> texture = renderer->createTexture(this);
-            mRenderTexture = texture.get();
-            return texture;
+            throw od::Exception("Passed nullptr as renderer to getRenderImage");
         }
 
-        return od::RefPtr<odRender::Texture>(mRenderTexture.get());
+        if(mRenderImage == nullptr)
+        {
+            od::RefPtr<odRender::Image> image = renderer->createImage(this);
+            mRenderImage = image.get();
+            return image;
+        }
+
+        return od::RefPtr<odRender::Image>(mRenderImage.get());
+    }
+
+    od::RefPtr<odRender::Texture> Texture::getRenderTexture(odRender::Renderer *renderer, Usage usage)
+    {
+        if(renderer == nullptr)
+        {
+            throw od::Exception("Passed nullptr as renderer to getRenderTexture");
+        }
+
+        od::RefPtr<odRender::Image> image = getRenderImage(renderer);
+
+        switch(usage)
+        {
+        case Usage::Model:
+            if(mModelRenderTexture == nullptr)
+            {
+                od::RefPtr<odRender::Texture> texture = renderer->createTexture(image);
+                texture->setEnableWrapping(true);
+                mModelRenderTexture = texture.get();
+                return texture;
+            }
+            return mModelRenderTexture.get();
+
+        case Usage::Layer:
+            if(mLayerRenderTexture == nullptr)
+            {
+                od::RefPtr<odRender::Texture> texture = renderer->createTexture(image);
+                texture->setEnableWrapping(false);
+                mLayerRenderTexture = texture.get();
+                return texture;
+            }
+            return mLayerRenderTexture.get();
+
+        case Usage::Custom:
+        default:
+            return od::RefPtr<odRender::Texture>(renderer->createTexture(image));
+        }
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)

@@ -26,6 +26,7 @@ namespace odRender
 
         virtual ~Texture() = default;
 
+        virtual void setEnableWrapping(bool wrap) = 0;
         virtual void setEnableWrapping(Dimension dimension, bool wrap) = 0;
     };
 

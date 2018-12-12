@@ -25,6 +25,7 @@
 #include <odOsg/ModelNode.h>
 #include <odOsg/LayerNode.h>
 #include <odOsg/Geometry.h>
+#include <odOsg/Image.h>
 #include <odOsg/Texture.h>
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Camera.h>
@@ -153,9 +154,20 @@ namespace odOsg
         return new LayerNode(this, layer, mLayers);
     }
 
-    odRender::Texture *Renderer::createTexture(odDb::Texture *texture)
+    odRender::Image *Renderer::createImage(odDb::Texture *dbTexture)
     {
-        return new Texture(this, texture);
+        return new Image(dbTexture);
+    }
+
+    odRender::Texture *Renderer::createTexture(odRender::Image *image)
+    {
+        Image *odOsgImage = dynamic_cast<Image*>(image);
+        if(odOsgImage == nullptr)
+        {
+            throw od::Exception("Tried to create texture from non-odOsg image");
+        }
+
+        return new Texture(odOsgImage);
     }
 
     odRender::Camera *Renderer::getCamera()

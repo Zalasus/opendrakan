@@ -28,6 +28,7 @@ namespace odRender
     class ModelNode;
     class LayerNode;
     class Texture;
+    class Image;
     class Light;
     class RendererEventListener;
 
@@ -53,7 +54,8 @@ namespace odRender
         virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
         virtual ModelNode *createModelNode(odDb::Model *model) = 0;
         virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
-        virtual Texture *createTexture(odDb::Texture *texture) = 0;
+        virtual Image *createImage(odDb::Texture *dbTexture) = 0;
+        virtual Texture *createTexture(Image *image) = 0;
 
         virtual Camera *getCamera() = 0;
 
