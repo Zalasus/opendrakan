@@ -24,6 +24,11 @@ namespace odOsg
     {
     }
 
+    void Texture::setEnableWrapping(Dimension dimension, bool wrap)
+    {
+
+    }
+
     osg::Texture2D *Texture::getOsgTexture(bool clamping)
     {
         if(clamping)

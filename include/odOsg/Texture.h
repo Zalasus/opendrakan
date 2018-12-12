@@ -29,6 +29,8 @@ namespace odOsg
 
         inline osg::Image *getImage() { return mImage; }
 
+        virtual void setEnableWrapping(Dimension dimension, bool wrap) override;
+
         osg::Texture2D *getOsgTexture(bool clamping);
 
 

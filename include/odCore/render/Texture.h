@@ -17,7 +17,16 @@ namespace odRender
     {
     public:
 
+        enum class Dimension
+        {
+            U,
+            V,
+            W
+        };
+
         virtual ~Texture() = default;
+
+        virtual void setEnableWrapping(Dimension dimension, bool wrap) = 0;
     };
 
 }
