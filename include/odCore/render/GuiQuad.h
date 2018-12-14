@@ -23,8 +23,7 @@ namespace odRender
 
         virtual ~GuiQuad();
 
-        virtual void setTexture(odDb::Texture *texture) = 0;
-        virtual Texture *getRenderTexture() = 0;
+        virtual void setTexture(odRender::Texture *texture) = 0;
 
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &topRight) = 0;
 
