@@ -29,6 +29,7 @@
 #include <odOsg/Texture.h>
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Camera.h>
+#include <odOsg/GuiQuad.h>
 
 namespace odOsg
 {
@@ -79,6 +80,8 @@ namespace odOsg
         ss->addUniform(mLocalLightsIntensity);
         ss->addUniform(mLocalLightsRadius);
         ss->addUniform(mLocalLightsPosition);
+
+        _setupGuiStuff();
     }
 
     Renderer::~Renderer()
@@ -172,7 +175,7 @@ namespace odOsg
 
     odRender::GuiQuad *Renderer::createGuiQuad()
     {
-        return nullptr;
+        return new GuiQuad(mGuiRoot);
     }
 
     odRender::Camera *Renderer::getCamera()
@@ -259,6 +262,25 @@ namespace odOsg
         {
             mViewer->setCameraManipulator(nullptr, false);
         }
+    }
+
+    void Renderer::_setupGuiStuff()
+    {
+        mGuiCamera = new osg::Camera;
+        mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
+        mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
+        mGuiCamera->setViewMatrix(osg::Matrix::identity());
+        mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
+        mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
+        mGuiCamera->setAllowEventFocus(false);
+        mSceneRoot->addChild(mGuiCamera);
+
+        mGuiRoot = new osg::Group;
+        mGuiRoot->setCullingActive(false);
+        osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
+        ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+        ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+        mGuiCamera->addChild(mGuiRoot);
     }
 
     void Renderer::_threadedRender()
