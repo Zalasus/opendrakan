@@ -8,12 +8,10 @@
 #ifndef INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 #define INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 
-#include <odCore/RefCounted.h>
+#include <glm/vec2.hpp>
+#include <glm/mat4x4.hpp>
 
-namespace odDb
-{
-    class Texture;
-}
+#include <odCore/RefCounted.h>
 
 namespace odRender
 {
@@ -23,11 +21,11 @@ namespace odRender
     {
     public:
 
+        virtual void setMatrix(const glm::mat4 &m) = 0;
+
         virtual void setTexture(odRender::Texture *texture) = 0;
-
-        virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &topRight) = 0;
-
-        virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &topRight) = 0;
+        virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
+        virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
 
     };
 

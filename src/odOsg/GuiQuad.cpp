@@ -1,0 +1,86 @@
+/*
+ * GuiQuad.cpp
+ *
+ *  Created on: 14 Dec 2018
+ *      Author: zal
+ */
+
+#include <odOsg/GuiQuad.h>
+
+#include <odCore/Exception.h>
+
+#include <odOsg/GlmAdapter.h>
+#include <odOsg/Texture.h>
+
+namespace odOsg
+{
+
+    GuiQuad::GuiQuad(osg::Group *guiRoot)
+    : mGuiRoot(guiRoot)
+    , mTransform(new osg::MatrixTransform)
+    , mGeode(new osg::Geode)
+    , mGeometry(new osg::Geometry)
+    , mVertexArray(new osg::Vec3Array(4))
+    , mTextureCoordArray(new osg::Vec2Array(4))
+    {
+        mTransform->addChild(mGeode);
+        mGeode->addDrawable(mGeometry);
+        mGuiRoot->addChild(mTransform);
+
+        // vertex order is top-left, bottom-left, bottom-right, top-right
+        //  this allows us to use glDrawArrays using a triangle fan, minimizing memory usage
+        mGeometry->setVertexArray(mVertexArray);
+        mGeometry->setTexCoordArray(0, mTextureCoordArray);
+        mGeometry->addPrimitiveSet(new osg::DrawArrays(GL_TRIANGLE_FAN, 0, 4));
+    }
+
+    GuiQuad::~GuiQuad()
+    {
+        mGuiRoot->removeChild(mTransform);
+    }
+
+    void GuiQuad::setMatrix(const glm::mat4 &m)
+    {
+        mTransform->setMatrix(GlmAdapter::toOsg(m));
+    }
+
+    void GuiQuad::setTexture(odRender::Texture *texture)
+    {
+        if(texture == nullptr)
+        {
+            mTexture = nullptr;
+            return;
+        }
+
+        mTexture = dynamic_cast<Texture*>(texture);
+        if(mTexture == nullptr)
+        {
+            throw od::Exception("Texture passed to GuiQuad was no odOsg::Texture");
+        }
+
+        mGeometry->getOrCreateStateSet()->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
+    }
+
+    void GuiQuad::setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
+    {
+        glm::vec2 textureDims = (mTexture != nullptr) ?
+                  glm::vec2(mTexture->getOsgTexture()->getTextureWidth(), mTexture->getOsgTexture()->getTextureHeight())
+                : glm::vec2(1.0);
+        glm::vec2 tlNorm = topLeft / textureDims;
+        glm::vec2 brNorm = bottomRight / textureDims;
+
+        mTextureCoordArray->at(0).set(tlNorm.x, tlNorm.y);
+        mTextureCoordArray->at(1).set(tlNorm.x, brNorm.y);
+        mTextureCoordArray->at(2).set(brNorm.x, brNorm.y);
+        mTextureCoordArray->at(3).set(brNorm.x, tlNorm.y);
+    }
+
+    void GuiQuad::setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
+    {
+        mVertexArray->at(0).set(topLeft.x, topLeft.y, 0.0);
+        mVertexArray->at(1).set(topLeft.x, bottomRight.y, 0.0);
+        mVertexArray->at(2).set(bottomRight.x, bottomRight.y, 0.0);
+        mVertexArray->at(3).set(bottomRight.x, topLeft.y, 0.0);
+    }
+
+}
