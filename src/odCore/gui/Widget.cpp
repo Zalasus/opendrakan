@@ -59,8 +59,8 @@ namespace odGui
         glm::mat4 currentMatrix = mParentSpaceToWidgetSpace * parentMatrix;
         glm::mat4 currentInverseMatrix = mWidgetSpaceToParentSpace * parentInverseMatrix;
 
-        glm::vec3 min = glm::vec4(0.0, 1.0, 0.0, 1.0) * currentMatrix;
-        glm::vec3 max = glm::vec4(1.0, 0.0, 0.0, 1.0) * currentMatrix;
+        glm::vec4 min = glm::vec4(0.0, 1.0, 0.0, 1.0) * currentMatrix;
+        glm::vec4 max = glm::vec4(1.0, 0.0, 0.0, 1.0) * currentMatrix;
 
         if(pointNdc.x < min.x ||
            pointNdc.x > max.x ||
@@ -70,12 +70,13 @@ namespace odGui
             return;
         }
 
-        glm::vec3 pointInWidget = glm::vec4(pointNdc, 0.0, 1.0) * currentInverseMatrix;
+        glm::vec4 pointInWidget = glm::vec4(pointNdc, 0.0, 1.0) * currentInverseMatrix;
 
         if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
         {
             HitWidgetInfo info;
-            info.hitPointInWidget = pointInWidget;
+            info.hitPointInWidget.x = pointInWidget.x;
+            info.hitPointInWidget.y = pointInWidget.y;
             info.widget = this;
             hitWidgets.push_back(info);
         }
