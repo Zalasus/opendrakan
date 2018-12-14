@@ -21,6 +21,7 @@ set(SOURCES
     "classes/TrackingCamera.cpp"
     "classes/UserInterfaceProperties.cpp"
     "classes/VisibilityToggler.cpp"
+    "gui/Cursor.cpp"
     "gui/DragonGui.cpp"
     "RflDragon.cpp")
 

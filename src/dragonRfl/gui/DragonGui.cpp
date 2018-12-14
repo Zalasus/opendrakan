@@ -13,6 +13,8 @@
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
+#include <dragonRfl/gui/Cursor.h>
+
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 #define OD_DRAGONRRC_PATH "Dragon.rrc"
@@ -53,6 +55,8 @@ namespace dragonRfl
 
         odRfl::PrefetchProbe probe(*mInterfaceDb);
         mUserInterfaceProperties->probeFields(probe);
+
+        engine.getGuiManager().setCursorWidget(new Cursor(*this));
     }
 
     DragonGui::~DragonGui()

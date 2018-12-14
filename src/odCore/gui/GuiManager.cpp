@@ -173,6 +173,8 @@ namespace odGui
         mWidgetSpaceToNdcTransform = glm::translate(mWidgetSpaceToNdcTransform, glm::vec3(-1.0, 1.0, -0.5));
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
+
+        mRootWidget = new ContainerWidget;
     }
 
 }
