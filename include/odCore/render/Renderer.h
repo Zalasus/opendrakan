@@ -31,6 +31,7 @@ namespace odRender
     class Image;
     class Light;
     class RendererEventListener;
+    class GuiQuad;
 
     /**
      * Interface for a renderer implementation.
@@ -56,6 +57,7 @@ namespace odRender
         virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
         virtual Image *createImage(odDb::Texture *dbTexture) = 0;
         virtual Texture *createTexture(Image *image) = 0;
+        virtual GuiQuad *createGuiQuad() = 0;
 
         virtual Camera *getCamera() = 0;
 

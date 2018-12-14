@@ -50,6 +50,8 @@ namespace dragonRfl
          */
         std::string getStringById(od::RecordId stringId);
 
+        odRender::Renderer *getRenderer();
+
 
     protected:
 
@@ -60,6 +62,7 @@ namespace dragonRfl
 
         void _decryptString(char * const str, const size_t len);
 
+        od::Engine &mEngine;
         od::SrscFile mRrcFile;
         odDb::TextureFactory mRrcTextureFactory;
         odDb::Database *mInterfaceDb;

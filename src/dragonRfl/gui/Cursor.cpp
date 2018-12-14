@@ -7,6 +7,7 @@
 
 #include <dragonRfl/gui/Cursor.h>
 
+#include <odCore/render/Renderer.h>
 #include <odCore/render/GuiQuad.h>
 #include <odCore/render/Texture.h>
 
@@ -18,8 +19,8 @@ namespace dragonRfl
 
     Cursor::Cursor(DragonGui &gui)
     {
-        od::RefPtr<odRender::GuiQuad> cursorQuad;
-        od::RefPtr<odRender::Texture> texture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor)->getRenderTexture(renderer, odDb::Texture::Usage::Custom);
+        od::RefPtr<odRender::GuiQuad> cursorQuad = gui.getRenderer()->createGuiQuad();
+        od::RefPtr<odRender::Texture> texture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor)->getRenderTexture(gui.getRenderer(), odDb::Texture::Usage::Custom);
         cursorQuad->setTexture(texture);
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping

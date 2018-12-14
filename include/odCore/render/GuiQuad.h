@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 #define INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 
+#include <odCore/RefCounted.h>
+
 namespace odDb
 {
     class Texture;
@@ -17,11 +19,9 @@ namespace odRender
 {
     class Texture;
 
-    class GuiQuad
+    class GuiQuad : public od::RefCounted
     {
     public:
-
-        virtual ~GuiQuad();
 
         virtual void setTexture(odRender::Texture *texture) = 0;
 

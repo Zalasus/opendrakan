@@ -22,6 +22,7 @@ set(SOURCES
         "db/Texture.cpp"
         "db/TextureFactory.cpp"
         "gui/ContainerWidget.cpp"
+        "gui/DrawableWidget.cpp"
         "gui/GuiManager.cpp"
         "gui/Widget.cpp"
         "physics/BulletCallbacks.cpp"

@@ -170,6 +170,11 @@ namespace odOsg
         return new Texture(odOsgImage);
     }
 
+    odRender::GuiQuad *Renderer::createGuiQuad()
+    {
+        return nullptr;
+    }
+
     odRender::Camera *Renderer::getCamera()
     {
         return mCamera;
