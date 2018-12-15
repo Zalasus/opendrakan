@@ -22,6 +22,7 @@ namespace odOsg
     , mGeometry(new osg::Geometry)
     , mVertexArray(new osg::Vec3Array(4))
     , mTextureCoordArray(new osg::Vec2Array(4))
+    , mColorArray(new osg::Vec4Array(4))
     {
         mTransform->addChild(mGeode);
         mGeode->addDrawable(mGeometry);
@@ -30,8 +31,16 @@ namespace odOsg
         // vertex order is top-left, bottom-left, bottom-right, top-right
         //  this allows us to use glDrawArrays using a triangle fan, minimizing memory usage
         mGeometry->setVertexArray(mVertexArray);
-        mGeometry->setTexCoordArray(0, mTextureCoordArray);
+        mGeometry->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
+        mGeometry->setColorArray(mColorArray, osg::Array::BIND_PER_VERTEX);
         mGeometry->addPrimitiveSet(new osg::DrawArrays(GL_TRIANGLE_FAN, 0, 4));
+
+        setVertexCoords(glm::vec2(0, 0), glm::vec2(1, 1));
+
+        mColorArray->at(0) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        mColorArray->at(1) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        mColorArray->at(2) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        mColorArray->at(3) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
     }
 
     GuiQuad::~GuiQuad()
