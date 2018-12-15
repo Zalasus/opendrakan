@@ -56,7 +56,8 @@ namespace dragonRfl
         odRfl::PrefetchProbe probe(*mInterfaceDb);
         mUserInterfaceProperties->probeFields(probe);
 
-        engine.getGuiManager().setCursorWidget(new Cursor(*this));
+        od::RefPtr<Cursor> cursor(new Cursor(*this));
+        engine.getGuiManager().setCursorWidget(cursor);
     }
 
     DragonGui::~DragonGui()

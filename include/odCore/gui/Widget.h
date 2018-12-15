@@ -144,8 +144,7 @@ namespace odGui
         void setVisible(bool b);
 
         void updateMatrix();
-
-        void flattenDrawables(const glm::mat4 &parentMatrix);
+        void flatten(const glm::mat4 &parentMatrix);
 
 
     protected:
@@ -167,6 +166,7 @@ namespace odGui
         bool mMatrixDirty;
         glm::mat4 mParentSpaceToWidgetSpace;
         glm::mat4 mWidgetSpaceToParentSpace;
+        glm::mat4 mMySpaceToRootSpace;
         bool mMouseOver;
 
         std::vector<od::RefPtr<Widget>> mChildWidgets;

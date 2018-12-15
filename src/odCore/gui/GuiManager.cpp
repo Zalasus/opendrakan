@@ -176,6 +176,7 @@ namespace odGui
         mRootWidget = new Widget;
         mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
         mRootWidget->updateMatrix();
+        mRootWidget->flatten(mWidgetSpaceToNdcTransform);
     }
 
 }

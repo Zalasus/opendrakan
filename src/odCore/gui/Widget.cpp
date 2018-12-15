@@ -68,6 +68,8 @@ namespace odGui
         mChildWidgets.push_back(od::RefPtr<Widget>(w));
 
         w->setParent(this);
+
+        w->flatten(mMySpaceToRootSpace);
     }
 
     void Widget::removeChild(Widget *w)
@@ -84,10 +86,6 @@ namespace odGui
         }
 
         w->setParent(nullptr);
-    }
-
-    void Widget::flattenDrawables(const glm::mat4 &parentMatrix)
-    {
     }
 
     void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets)
@@ -151,20 +149,43 @@ namespace odGui
             return;
         }
 
-        glm::mat4 matrix(1.0);
+        if(mParentWidget == nullptr)
+        {
+            // for the root widget, both of these are identity. the transformation widget space -> NDC is handled
+            //  by passing the appropriate matrix to flatten()
+            mParentSpaceToWidgetSpace = glm::mat4(1.0);
+            mWidgetSpaceToParentSpace = mParentSpaceToWidgetSpace;
 
-        matrix = glm::translate(matrix, glm::vec3(-_getOriginVector(), 0.0));
+        }else
+        {
+            glm::mat4 matrix(1.0);
 
-        glm::vec2 widgetSizeInParentSpace = (mParentWidget != nullptr) ? (getDimensionsInPixels() / mParentWidget->getDimensionsInPixels()) : glm::vec2(1.0);
-        matrix = glm::scale(matrix, glm::vec3(widgetSizeInParentSpace, 1.0));
-        matrix = glm::translate(matrix, glm::vec3(mPositionInParentSpace, 0.0));
+            matrix = glm::translate(matrix, glm::vec3(-_getOriginVector(), 0.0));
 
-        mParentSpaceToWidgetSpace = matrix;
-        mWidgetSpaceToParentSpace = glm::inverse(matrix);
+            glm::vec2 widgetSizeInParentSpace = getDimensionsInPixels() / mParentWidget->getDimensionsInPixels();
+            matrix = glm::scale(matrix, glm::vec3(widgetSizeInParentSpace, 1.0));
+            matrix = glm::translate(matrix, glm::vec3(mPositionInParentSpace, 0.0));
+
+            mParentSpaceToWidgetSpace = matrix;
+            mWidgetSpaceToParentSpace = glm::inverse(matrix);
+        }
 
         mMatrixDirty = false;
+    }
 
-        flattenDrawables(glm::mat4(1.0));
+    void Widget::flatten(const glm::mat4 &parentMatrix)
+    {
+        mMySpaceToRootSpace = mWidgetSpaceToParentSpace * parentMatrix;
+
+        for(auto &&d : mDrawables)
+        {
+            d->setMatrix(mMySpaceToRootSpace);
+        }
+
+        for(auto &&child : mChildWidgets)
+        {
+            child->flatten(mMySpaceToRootSpace);
+        }
     }
 
     void Widget::addDrawable(odRender::GuiQuad *quad)
