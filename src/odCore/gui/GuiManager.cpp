@@ -17,7 +17,6 @@
 #include <odCore/Engine.h>
 
 #include <odCore/gui/Widget.h>
-#include <odCore/gui/ContainerWidget.h>
 
 namespace odGui
 {
@@ -61,7 +60,7 @@ namespace odGui
             return;
         }
 
-        mRootWidget->addWidget(widget);
+        mRootWidget->addChild(widget);
 
         widget->setParent(nullptr);
     }
@@ -73,7 +72,7 @@ namespace odGui
             return;
         }
 
-        mRootWidget->removeWidget(widget);
+        mRootWidget->removeChild(widget);
     }
 
     void GuiManager::setMenuMode(bool b)
@@ -174,7 +173,7 @@ namespace odGui
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
-        mRootWidget = new ContainerWidget;
+        mRootWidget = new Widget;
         mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
         mRootWidget->updateMatrix();
     }

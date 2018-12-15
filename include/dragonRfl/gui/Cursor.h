@@ -8,14 +8,14 @@
 #ifndef INCLUDE_GUI_CURSOR_H_
 #define INCLUDE_GUI_CURSOR_H_
 
-#include <odCore/gui/DrawableWidget.h>
+#include <odCore/gui/Widget.h>
 
 namespace dragonRfl
 {
 
     class DragonGui;
 
-    class Cursor : public odGui::DrawableWidget
+    class Cursor : public odGui::Widget
     {
     public:
 

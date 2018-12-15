@@ -17,6 +17,11 @@
 
 #include <odCore/gui/WidgetIntersector.h>
 
+namespace odRender
+{
+    class GuiQuad;
+}
+
 namespace odGui
 {
 
@@ -129,6 +134,9 @@ namespace odGui
          */
         virtual void onMouseLeave(const glm::vec2 &pos);
 
+        void addChild(Widget *w);
+        void removeChild(Widget *w);
+
         void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
         glm::vec2 getDimensionsInPixels();
@@ -137,12 +145,13 @@ namespace odGui
 
         void updateMatrix();
 
-        virtual void flattenDrawables(const glm::mat4 &parentMatrix);
+        void flattenDrawables(const glm::mat4 &parentMatrix);
 
 
     protected:
 
-        virtual void intersectChildren(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets);
+        void addDrawable(odRender::GuiQuad *quad);
+        void removeDrawable(odRender::GuiQuad *quad);
 
 
     private:
@@ -159,6 +168,10 @@ namespace odGui
         glm::mat4 mParentSpaceToWidgetSpace;
         glm::mat4 mWidgetSpaceToParentSpace;
         bool mMouseOver;
+
+        std::vector<od::RefPtr<Widget>> mChildWidgets;
+
+        std::vector<od::RefPtr<odRender::GuiQuad>> mDrawables;
     };
 
 }

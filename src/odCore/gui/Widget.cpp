@@ -7,12 +7,16 @@
 
 #include <odCore/gui/Widget.h>
 
+#include <algorithm>
+
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <odCore/Exception.h>
 
 #include <odCore/gui/GuiManager.h>
+
+#include <odCore/render/GuiQuad.h>
 
 namespace odGui
 {
@@ -54,6 +58,34 @@ namespace odGui
     {
     }
 
+    void Widget::addChild(Widget *w)
+    {
+        if(w == nullptr || w == this)
+        {
+            return;
+        }
+
+        mChildWidgets.push_back(od::RefPtr<Widget>(w));
+
+        w->setParent(this);
+    }
+
+    void Widget::removeChild(Widget *w)
+    {
+        if(w == nullptr || w == this)
+        {
+            return;
+        }
+
+        auto it = std::find(mChildWidgets.begin(), mChildWidgets.end(), w);
+        if(it != mChildWidgets.end())
+        {
+            mChildWidgets.erase(it);
+        }
+
+        w->setParent(nullptr);
+    }
+
     void Widget::flattenDrawables(const glm::mat4 &parentMatrix)
     {
     }
@@ -85,11 +117,10 @@ namespace odGui
             hitWidgets.push_back(info);
         }
 
-        this->intersectChildren(pointNdc, currentMatrix, currentInverseMatrix, hitWidgets);
-    }
-
-    void Widget::intersectChildren(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets)
-    {
+        for(auto &&child : mChildWidgets)
+        {
+            child->intersect(pointNdc, currentMatrix, currentInverseMatrix, hitWidgets);
+        }
     }
 
     glm::vec2 Widget::getDimensionsInPixels()
@@ -134,6 +165,20 @@ namespace odGui
         mMatrixDirty = false;
 
         flattenDrawables(glm::mat4(1.0));
+    }
+
+    void Widget::addDrawable(odRender::GuiQuad *quad)
+    {
+        mDrawables.emplace_back(quad);
+    }
+
+    void Widget::removeDrawable(odRender::GuiQuad *quad)
+    {
+        auto it = std::find(mDrawables.begin(), mDrawables.end(), quad);
+        if(it != mDrawables.end())
+        {
+            mDrawables.erase(it);
+        }
     }
 
     glm::vec2 Widget::_getOriginVector()

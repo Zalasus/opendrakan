@@ -27,7 +27,6 @@ namespace odGui
 {
 
     class Widget;
-    class ContainerWidget;
 
     /**
      * Class for managing the game's GUI.
@@ -71,7 +70,7 @@ namespace odGui
 
         bool mMenuMode;
 
-        od::RefPtr<ContainerWidget> mRootWidget;
+        od::RefPtr<Widget> mRootWidget;
         glm::vec2 mCursorPosInNdc;
         od::RefPtr<Widget> mCursorWidget;
 
