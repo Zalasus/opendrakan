@@ -39,6 +39,9 @@ namespace dragonRfl
             od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
             engine.loadLevel(initialLevel.adjustCase());
         }
+
+        engine.getGuiManager().setCursorPosition(glm::vec2(0));
+        engine.getGuiManager().setMenuMode(true);
     }
 
     void DragonRfl::onMenuToggle(bool newMode)

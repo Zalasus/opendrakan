@@ -76,6 +76,7 @@ namespace odGui
         inline glm::vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline glm::vec2 getDimensions() const { return mDimensions; }
+        inline const glm::mat4 &getParentToWidgetSpaceMatrix() const { return mParentSpaceToWidgetSpace; }
         inline bool isMatrixDirty() const { return mMatrixDirty; }
         inline bool isMouseOver() const { return mMouseOver; }
         inline void setDimensions(const glm::vec2 &dim) { mDimensions = dim; mMatrixDirty = true; }
@@ -135,6 +136,8 @@ namespace odGui
         void setVisible(bool b);
 
         void updateMatrix();
+
+        virtual void flattenDrawables(const glm::mat4 &parentMatrix);
 
 
     protected:

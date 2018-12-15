@@ -28,6 +28,8 @@ namespace odGui
 
         virtual ~DrawableWidget();
 
+        virtual void flattenDrawables(const glm::mat4 &parentMatrix) override;
+
 
     protected:
 

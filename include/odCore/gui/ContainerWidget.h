@@ -24,6 +24,8 @@ namespace odGui
         void addWidget(Widget *w);
         void removeWidget(Widget *w);
 
+        virtual void flattenDrawables(const glm::mat4 &parentMatrix) override;
+
 
     protected:
 

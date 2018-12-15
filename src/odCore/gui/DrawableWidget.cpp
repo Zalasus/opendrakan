@@ -32,5 +32,15 @@ namespace odGui
         }
     }
 
+    void DrawableWidget::flattenDrawables(const glm::mat4 &parentMatrix)
+    {
+        glm::mat4 myMatrix = getParentToWidgetSpaceMatrix() * parentMatrix;
+
+        for(auto &&d : mDrawables)
+        {
+            d->setMatrix(myMatrix);
+        }
+    }
+
 
 }

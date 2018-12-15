@@ -110,11 +110,11 @@ namespace odGui
         mCursorPosInNdc = pos;
 
         // pos is in NDC, we need it in widget space
-        glm::vec2 posWs = glm::vec4(pos, 0.0, 1.0) * mNdcToWidgetSpaceTransform;
+        glm::vec4 posWs = glm::vec4(pos, 0.0, 1.0) * mNdcToWidgetSpaceTransform;
 
         if(mCursorWidget != nullptr)
         {
-            mCursorWidget->setPosition(glm::vec2(posWs));
+            mCursorWidget->setPosition(posWs.x, posWs.y);
         }
 
         // okay, here is the algorithm for determining mouse enter/leave:
@@ -175,6 +175,8 @@ namespace odGui
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
         mRootWidget = new ContainerWidget;
+        mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
+        mRootWidget->updateMatrix();
     }
 
 }

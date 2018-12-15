@@ -54,6 +54,10 @@ namespace odGui
     {
     }
 
+    void Widget::flattenDrawables(const glm::mat4 &parentMatrix)
+    {
+    }
+
     void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets)
     {
         glm::mat4 currentMatrix = mParentSpaceToWidgetSpace * parentMatrix;
@@ -128,6 +132,8 @@ namespace odGui
         mWidgetSpaceToParentSpace = glm::inverse(matrix);
 
         mMatrixDirty = false;
+
+        flattenDrawables(glm::mat4(1.0));
     }
 
     glm::vec2 Widget::_getOriginVector()
