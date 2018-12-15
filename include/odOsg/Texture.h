@@ -20,13 +20,14 @@ namespace odOsg
     {
     public:
 
-        Texture(Image *image);
+        explicit Texture(Image *image);
         virtual ~Texture();
 
         inline osg::Texture2D *getOsgTexture() { return mTexture; }
 
         virtual void setEnableWrapping(bool wrap) override;
         virtual void setEnableWrapping(Dimension dimension, bool wrap) override;
+        virtual odRender::Image *getImage() override;
 
 
     private:

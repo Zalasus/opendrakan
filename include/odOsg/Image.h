@@ -25,12 +25,13 @@ namespace odOsg
     {
     public:
 
-        Image(odDb::Texture *dbTexture);
+        explicit Image(odDb::Texture *dbTexture);
         virtual ~Image();
 
         inline osg::Image *getOsgImage() { return mOsgImage; }
 
         virtual void makePixelsUnique() override;
+        virtual glm::vec2 getDimensionsUV() override;
 
 
     private:

@@ -24,6 +24,7 @@ namespace odRender
         virtual void setMatrix(const glm::mat4 &m) = 0;
 
         virtual void setTexture(odRender::Texture *texture) = 0;
+        virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
         virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
 

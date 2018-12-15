@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_RENDER_IMAGE_H_
 #define INCLUDE_ODCORE_RENDER_IMAGE_H_
 
+#include <glm/vec2.hpp>
+
 #include <odCore/RefCounted.h>
 
 namespace odRender
@@ -23,6 +25,7 @@ namespace odRender
     public:
 
         virtual void makePixelsUnique() = 0;
+        virtual glm::vec2 getDimensionsUV() = 0;
 
     };
 

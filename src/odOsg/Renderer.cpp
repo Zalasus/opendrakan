@@ -273,6 +273,7 @@ namespace odOsg
         mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
         mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
         mGuiCamera->setAllowEventFocus(false);
+        mSceneRoot->addChild(mGuiCamera);
 
         mGuiRoot = new osg::Group;
         mGuiRoot->setCullingActive(false);
@@ -280,8 +281,6 @@ namespace odOsg
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
-
-        mViewer->addSlave(mGuiCamera, false);
     }
 
     void Renderer::_threadedRender()

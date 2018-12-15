@@ -12,6 +12,7 @@
 
 namespace odRender
 {
+    class Image;
 
     class Texture : public od::RefCounted
     {
@@ -28,6 +29,7 @@ namespace odRender
 
         virtual void setEnableWrapping(bool wrap) = 0;
         virtual void setEnableWrapping(Dimension dimension, bool wrap) = 0;
+        virtual Image *getImage() = 0;
     };
 
 }

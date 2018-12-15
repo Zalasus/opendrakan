@@ -31,6 +31,11 @@ namespace odOsg
         throw od::UnsupportedException("makePixelsUnique() is unimplemented as of now");
     }
 
+     glm::vec2 Image::getDimensionsUV()
+     {
+         return glm::vec2(mDbTexture->getWidth(), mDbTexture->getHeight());
+     }
+
 }
 
 

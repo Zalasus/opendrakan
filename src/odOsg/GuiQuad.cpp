@@ -11,6 +11,7 @@
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Texture.h>
+#include <odOsg/Image.h>
 
 namespace odOsg
 {
@@ -36,6 +37,7 @@ namespace odOsg
         mGeometry->addPrimitiveSet(new osg::DrawArrays(GL_TRIANGLE_FAN, 0, 4));
 
         setVertexCoords(glm::vec2(0, 0), glm::vec2(1, 1));
+        setTextureCoords(glm::vec2(0, 1), glm::vec2(1, 0));
 
         mColorArray->at(0) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
         mColorArray->at(1) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
@@ -70,11 +72,17 @@ namespace odOsg
         mGeometry->getOrCreateStateSet()->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
     }
 
+    void GuiQuad::setTextureCoords(const glm::vec2 &tl, const glm::vec2 &br)
+    {
+        mTextureCoordArray->at(0).set(tl.x, tl.y);
+        mTextureCoordArray->at(1).set(tl.x, br.y);
+        mTextureCoordArray->at(2).set(br.x, br.y);
+        mTextureCoordArray->at(3).set(br.x, tl.y);
+    }
+
     void GuiQuad::setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
     {
-        glm::vec2 textureDims = (mTexture != nullptr) ?
-                  glm::vec2(mTexture->getOsgTexture()->getTextureWidth(), mTexture->getOsgTexture()->getTextureHeight())
-                : glm::vec2(1.0);
+        glm::vec2 textureDims = (mTexture != nullptr) ? mTexture->getImage()->getDimensionsUV() : glm::vec2(1.0);
         glm::vec2 tlNorm = topLeft / textureDims;
         glm::vec2 brNorm = bottomRight / textureDims;
 
@@ -84,12 +92,12 @@ namespace odOsg
         mTextureCoordArray->at(3).set(brNorm.x, tlNorm.y);
     }
 
-    void GuiQuad::setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
+    void GuiQuad::setVertexCoords(const glm::vec2 &tl, const glm::vec2 &br)
     {
-        mVertexArray->at(0).set(topLeft.x, topLeft.y, 0.0);
-        mVertexArray->at(1).set(topLeft.x, bottomRight.y, 0.0);
-        mVertexArray->at(2).set(bottomRight.x, bottomRight.y, 0.0);
-        mVertexArray->at(3).set(bottomRight.x, topLeft.y, 0.0);
+        mVertexArray->at(0).set(tl.x, tl.y, 0.0);
+        mVertexArray->at(1).set(tl.x, br.y, 0.0);
+        mVertexArray->at(2).set(br.x, br.y, 0.0);
+        mVertexArray->at(3).set(br.x, tl.y, 0.0);
     }
 
 }

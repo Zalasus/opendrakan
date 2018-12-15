@@ -29,6 +29,7 @@ namespace odOsg
         virtual void setMatrix(const glm::mat4 &m) override;
 
         virtual void setTexture(odRender::Texture *texture) override;
+        virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
         virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
 

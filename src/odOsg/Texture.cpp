@@ -53,4 +53,9 @@ namespace odOsg
         mTexture->setWrap(param, mode);
     }
 
+    odRender::Image *Texture::getImage()
+    {
+        return mImage;
+    }
+
 }
