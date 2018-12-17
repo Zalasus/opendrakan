@@ -299,43 +299,6 @@ namespace odDb
         return od::RefPtr<odRender::Image>(mRenderImage.get());
     }
 
-    od::RefPtr<odRender::Texture> Texture::getRenderTexture(odRender::Renderer *renderer, Usage usage)
-    {
-        if(renderer == nullptr)
-        {
-            throw od::Exception("Passed nullptr as renderer to getRenderTexture");
-        }
-
-        od::RefPtr<odRender::Image> image = getRenderImage(renderer);
-
-        switch(usage)
-        {
-        case Usage::Model:
-            if(mModelRenderTexture == nullptr)
-            {
-                od::RefPtr<odRender::Texture> texture = renderer->createTexture(image);
-                texture->setEnableWrapping(true);
-                mModelRenderTexture = texture.get();
-                return texture;
-            }
-            return mModelRenderTexture.get();
-
-        case Usage::Layer:
-            if(mLayerRenderTexture == nullptr)
-            {
-                od::RefPtr<odRender::Texture> texture = renderer->createTexture(image);
-                texture->setEnableWrapping(false);
-                mLayerRenderTexture = texture.get();
-                return texture;
-            }
-            return mLayerRenderTexture.get();
-
-        case Usage::Custom:
-        default:
-            return od::RefPtr<odRender::Texture>(renderer->createTexture(image));
-        }
-    }
-
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)
     {
     	// filtering algorithm:

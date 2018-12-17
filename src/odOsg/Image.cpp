@@ -11,6 +11,8 @@
 
 #include <odCore/db/Texture.h>
 
+#include <odOsg/Texture.h>
+
 namespace odOsg
 {
 
@@ -31,10 +33,43 @@ namespace odOsg
         throw od::UnsupportedException("makePixelsUnique() is unimplemented as of now");
     }
 
-     glm::vec2 Image::getDimensionsUV()
-     {
-         return glm::vec2(mDbTexture->getWidth(), mDbTexture->getHeight());
-     }
+    glm::vec2 Image::getDimensionsUV()
+    {
+        return glm::vec2(mDbTexture->getWidth(), mDbTexture->getHeight());
+    }
+
+    odRender::Texture *Image::createTexture()
+    {
+        return new Texture(this);
+    }
+
+    odRender::Texture *Image::getTextureForUsage(odRender::TextureUsage usage)
+    {
+        switch(usage)
+        {
+        case odRender::TextureUsage::Model:
+            if(mModelRenderTexture == nullptr)
+            {
+                od::RefPtr<odRender::Texture> texture = createTexture();
+                texture->setEnableWrapping(true);
+                mModelRenderTexture = texture.release();
+            }
+            return mModelRenderTexture.get();
+
+        case odRender::TextureUsage::Layer:
+            if(mLayerRenderTexture == nullptr)
+            {
+                od::RefPtr<odRender::Texture> texture = createTexture();
+                texture->setEnableWrapping(false);
+                mLayerRenderTexture = texture.release();
+            }
+            return mLayerRenderTexture.get();
+
+        case odRender::TextureUsage::Custom:
+        default:
+            return createTexture();
+        }
+    }
 
 }
 

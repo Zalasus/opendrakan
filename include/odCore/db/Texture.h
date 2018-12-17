@@ -29,13 +29,6 @@ namespace odDb
     {
     public:
 
-	    enum class Usage
-	    {
-	        Model,
-	        Layer,
-	        Custom
-	    };
-
         Texture(AssetProvider &ap, od::RecordId id);
         ~Texture();
 
@@ -47,21 +40,12 @@ namespace odDb
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
         void exportToPng(const od::FilePath &path);
 
-        od::RefPtr<odRender::Image> getRenderImage(odRender::Renderer *renderer);
-
         /**
-         * Provides an odRender::Texture object that can be used in the rendering system.
+         * Provides an odRender::Image object that can be used to create Texture objects.
          *
-         * Pixel storage is shared between both this object and all created render textures.
-         * The odRender::Texture object itself only represents the texture's rendering parameters
-         * like filtering, wrapping etc.
-         *
-         * If an odRender::Texture with a usage other than Usage::Custom has already been aquired,
-         * the same object will be returned, as they can be shared among using models/layers.
-         *
-         * Textures aquired via this method with usage = Usage::Custom are always unique.
+         * An Image encapsulates pixel data storage, so pixel data may be shared between multiple textures.
          */
-        od::RefPtr<odRender::Texture> getRenderTexture(odRender::Renderer *renderer, Usage usage);
+        od::RefPtr<odRender::Image> getRenderImage(odRender::Renderer *renderer);
 
 
     private:
@@ -89,8 +73,6 @@ namespace odDb
         std::vector<uint8_t> mRgba8888Data;
 
         od::WeakRefPtr<odRender::Image> mRenderImage;
-        od::WeakRefPtr<odRender::Texture> mModelRenderTexture;
-        od::WeakRefPtr<odRender::Texture> mLayerRenderTexture;
     };
 
     template <>

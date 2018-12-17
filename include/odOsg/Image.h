@@ -10,7 +10,10 @@
 
 #include <osg/Image>
 
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/render/Image.h>
+#include <odCore/render/Texture.h>
 
 namespace odDb
 {
@@ -33,10 +36,15 @@ namespace odOsg
         virtual void makePixelsUnique() override;
         virtual glm::vec2 getDimensionsUV() override;
 
+        virtual odRender::Texture *createTexture() override;
+        virtual odRender::Texture *getTextureForUsage(odRender::TextureUsage usage) override;
+
 
     private:
 
         od::RefPtr<odDb::Texture> mDbTexture;
+        od::WeakRefPtr<odRender::Texture> mModelRenderTexture;
+        od::WeakRefPtr<odRender::Texture> mLayerRenderTexture;
 
         osg::ref_ptr<osg::Image> mOsgImage;
 

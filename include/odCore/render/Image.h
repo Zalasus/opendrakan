@@ -15,6 +15,15 @@
 namespace odRender
 {
 
+    class Texture;
+
+    enum class TextureUsage
+    {
+        Layer,
+        Model,
+        Custom
+    };
+
     /**
      * Interface for encapsulating texture pixel storage.
      *
@@ -26,6 +35,10 @@ namespace odRender
 
         virtual void makePixelsUnique() = 0;
         virtual glm::vec2 getDimensionsUV() = 0;
+
+        virtual odRender::Texture *createTexture() = 0;
+        virtual odRender::Texture *getTextureForUsage(TextureUsage usage) = 0;
+
 
     };
 

@@ -20,6 +20,7 @@
 #include <odCore/db/Texture.h>
 
 #include <odCore/render/Geometry.h>
+#include <odCore/render/Image.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Geometry.h>
@@ -277,8 +278,8 @@ namespace odOsg
 			    osgGeometry->addPrimitiveSet(drawElements);
 
 				od::RefPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
-				odDb::Texture::Usage textureUsage = mUseClampedTextures ? odDb::Texture::Usage::Layer : odDb::Texture::Usage::Model; // FIXME: rename property
-				od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderTexture(mRenderer, textureUsage);
+				odRender::TextureUsage textureUsage = mUseClampedTextures ? odRender::TextureUsage::Layer : odRender::TextureUsage::Model; // FIXME: rename property
+				od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderImage(mRenderer)->getTextureForUsage(textureUsage);
 				Texture *odOsgTexture = dynamic_cast<Texture*>(renderTexture.get());
 				if(odOsgTexture == nullptr) throw od::Exception("Render texture stored in db texture was no odOsg::Texture");
 				mGeometry.addTexture(odOsgTexture);
