@@ -50,8 +50,7 @@ namespace odGui
     };
 
     /**
-     * Base class for UI elements. Widgets can group together other Widgets (see Container)
-     * and/or define their own geometry.
+     * Base class for UI elements. Widgets can group together other Widgets and/or define their own geometry.
      *
      * Widgets have their own coordinate system, called "widget space" here.
      * Widget space is similar to the window space as used by many windowing systems, where 0/0 is the widget's
@@ -115,10 +114,9 @@ namespace odGui
 
         /**
          * @brief Update hook for widget. Gets called every frame if widget is active.
-         * @param simTime   Absolute time, in seconds
          * @param relTime   Relative time since last update, in seconds
          */
-        virtual void onUpdate(double simTime, double relTime);
+        virtual void onUpdate(float relTime);
 
         /**
          * @brief Hook for when a the mouse cursor enters the logical widget area.

@@ -54,7 +54,7 @@ namespace odGui
     {
     }
 
-    void Widget::onUpdate(double simTime, double relTime)
+    void Widget::onUpdate(float relTime)
     {
     }
 
@@ -175,6 +175,11 @@ namespace odGui
 
     void Widget::flatten(const glm::mat4 &parentMatrix)
     {
+        if(mMatrixDirty)
+        {
+            updateMatrix();
+        }
+
         mMySpaceToRootSpace = mWidgetSpaceToParentSpace * parentMatrix;
 
         for(auto &&d : mDrawables)
@@ -191,6 +196,7 @@ namespace odGui
     void Widget::addDrawable(odRender::GuiQuad *quad)
     {
         mDrawables.emplace_back(quad);
+        mDrawables.back()->setMatrix(mMySpaceToRootSpace);
     }
 
     void Widget::removeDrawable(odRender::GuiQuad *quad)
