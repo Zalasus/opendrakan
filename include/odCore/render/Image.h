@@ -20,8 +20,7 @@ namespace odRender
     enum class TextureUsage
     {
         Layer,
-        Model,
-        Custom
+        Model
     };
 
     /**
@@ -33,10 +32,22 @@ namespace odRender
     {
     public:
 
-        virtual void makePixelsUnique() = 0;
+        /**
+         * @brief Returns UV image dimensions. W dimension (depth for 3D textures) is ignored.
+         */
         virtual glm::vec2 getDimensionsUV() = 0;
 
+        /**
+         * Creates a new texture (encapsulating sample state, not texel state) for use with the
+         * rendering system. Note that this will create a new texture everytime.
+         */
         virtual odRender::Texture *createTexture() = 0;
+
+        /**
+         * @brief Creates or returns a previously created texture configured for a specific use case.
+         *
+         * This will not create a new texture if one has already been created for the given use case.
+         */
         virtual odRender::Texture *getTextureForUsage(TextureUsage usage) = 0;
 
 

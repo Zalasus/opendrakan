@@ -28,11 +28,6 @@ namespace odOsg
     {
     }
 
-    void Image::makePixelsUnique()
-    {
-        throw od::UnsupportedException("makePixelsUnique() is unimplemented as of now");
-    }
-
     glm::vec2 Image::getDimensionsUV()
     {
         return glm::vec2(mDbTexture->getWidth(), mDbTexture->getHeight());
@@ -65,7 +60,6 @@ namespace odOsg
             }
             return mLayerRenderTexture.get();
 
-        case odRender::TextureUsage::Custom:
         default:
             return createTexture();
         }

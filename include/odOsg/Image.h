@@ -33,7 +33,6 @@ namespace odOsg
 
         inline osg::Image *getOsgImage() { return mOsgImage; }
 
-        virtual void makePixelsUnique() override;
         virtual glm::vec2 getDimensionsUV() override;
 
         virtual odRender::Texture *createTexture() override;
