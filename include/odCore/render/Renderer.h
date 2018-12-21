@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_RENDER_RENDERER_H_
 #define INCLUDE_ODCORE_RENDER_RENDERER_H_
 
+#include <odCore/RefCounted.h>
+
 namespace od
 {
     class LevelObject;
@@ -18,6 +20,11 @@ namespace odDb
 {
     class Model;
     class Texture;
+}
+
+namespace odGui
+{
+    class Widget;
 }
 
 namespace odRender
@@ -31,7 +38,7 @@ namespace odRender
     class Image;
     class Light;
     class RendererEventListener;
-    class GuiQuad;
+    class GuiNode;
 
     /**
      * Interface for a renderer implementation.
@@ -57,7 +64,8 @@ namespace odRender
         virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
         virtual Image *createImage(odDb::Texture *dbTexture) = 0;
         virtual Texture *createTexture(Image *image) = 0;
-        virtual GuiQuad *createGuiQuad() = 0;
+        virtual od::RefPtr<GuiNode> createGuiNode() = 0;
+        virtual GuiNode *getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;
 

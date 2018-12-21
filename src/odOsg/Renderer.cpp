@@ -29,7 +29,7 @@
 #include <odOsg/Texture.h>
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Camera.h>
-#include <odOsg/GuiQuad.h>
+#include <odOsg/GuiNode.h>
 
 namespace odOsg
 {
@@ -173,9 +173,14 @@ namespace odOsg
         return new Texture(odOsgImage);
     }
 
-    odRender::GuiQuad *Renderer::createGuiQuad()
+    od::RefPtr<odRender::GuiNode> Renderer::createGuiNode()
     {
-        return new GuiQuad(mGuiRoot);
+        return od::RefPtr<odRender::GuiNode>(new GuiNode);
+    }
+
+    odRender::GuiNode *Renderer::getGuiRootNode()
+    {
+        return mGuiRootNode;
     }
 
     odRender::Camera *Renderer::getCamera()
@@ -281,6 +286,9 @@ namespace odOsg
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
+
+        mGuiRootNode = new GuiNode();
+        mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 
     void Renderer::_threadedRender()

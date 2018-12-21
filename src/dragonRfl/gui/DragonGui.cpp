@@ -23,11 +23,17 @@ namespace dragonRfl
 {
 
     DragonGui::DragonGui(od::Engine &engine)
-    : mEngine(engine)
+    : odGui::Gui(*engine.getRenderer())
+    , mEngine(engine)
     , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, engine.getEngineRootDir()).adjustCase())
     , mRrcTextureFactory(*this, mRrcFile, engine)
     , mInterfaceDb(nullptr)
     {
+        if(engine.getRenderer() == nullptr)
+        {
+            Logger::warn() << "Created DragonGui using Engine without renderer. Prepare for chaos";
+        }
+
         od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir());
         mInterfaceDb = &engine.getDbManager().loadDb(interfaceDbPath.adjustCase());
 
@@ -57,7 +63,7 @@ namespace dragonRfl
         mUserInterfaceProperties->probeFields(probe);
 
         od::RefPtr<Cursor> cursor(new Cursor(*this));
-        engine.getGuiManager().setCursorWidget(cursor);
+        setCursorWidget(cursor);
     }
 
     DragonGui::~DragonGui()
@@ -131,11 +137,6 @@ namespace dragonRfl
         mLocalizedStringCache.insert(std::make_pair(stringId, decryptedString));
 
         return std::move(decryptedString);
-    }
-
-    odRender::Renderer *DragonGui::getRenderer()
-    {
-        return mEngine.getRenderer();
     }
 
     odDb::Texture *DragonGui::getTexture(od::RecordId recordId)

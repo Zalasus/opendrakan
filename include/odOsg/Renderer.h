@@ -29,6 +29,7 @@ namespace odOsg
     class ModelNode;
     class Texture;
     class Camera;
+    class GuiNode;
 
     class Renderer : public odRender::Renderer
     {
@@ -52,7 +53,8 @@ namespace odOsg
         virtual odRender::LayerNode *createLayerNode(od::Layer *layer) override;
         virtual odRender::Image *createImage(odDb::Texture *dbTexture) override;
         virtual odRender::Texture *createTexture(odRender::Image *image) override;
-        virtual odRender::GuiQuad *createGuiQuad() override;
+        virtual od::RefPtr<odRender::GuiNode> createGuiNode() override;
+        virtual odRender::GuiNode *getGuiRootNode() override;
 
         virtual odRender::Camera *getCamera() override;
 
@@ -85,6 +87,7 @@ namespace odOsg
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group> mGuiRoot;
+        od::RefPtr<GuiNode> mGuiRootNode;
 
         bool mLightingEnabled;
         std::vector<od::RefPtr<odRender::Light>> mLights;

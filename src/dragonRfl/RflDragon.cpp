@@ -32,16 +32,16 @@ namespace dragonRfl
     {
         od::Engine &engine = getEngine();
 
-        mGui.reset(new DragonGui(engine));
+        if(engine.getRenderer() != nullptr)
+        {
+            mGui.reset(new DragonGui(engine));
+        }
 
         if(!engine.hasInitialLevelOverride())
         {
             od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
             engine.loadLevel(initialLevel.adjustCase());
         }
-
-        engine.getGuiManager().setCursorPosition(glm::vec2(0));
-        engine.getGuiManager().setMenuMode(true);
     }
 
     void DragonRfl::onMenuToggle(bool newMode)

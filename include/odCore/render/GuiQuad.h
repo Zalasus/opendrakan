@@ -9,7 +9,6 @@
 #define INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 
 #include <glm/vec2.hpp>
-#include <glm/mat4x4.hpp>
 
 #include <odCore/RefCounted.h>
 
@@ -20,8 +19,6 @@ namespace odRender
     class GuiQuad : public od::RefCounted
     {
     public:
-
-        virtual void setMatrix(const glm::mat4 &m) = 0;
 
         virtual void setTexture(odRender::Texture *texture) = 0;
         virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;

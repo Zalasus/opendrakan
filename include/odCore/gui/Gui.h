@@ -1,12 +1,12 @@
 /*
- * GuiManager.h
+ * Gui.h
  *
- *  Created on: 8 Jun 2018
+ *  Created on: 21 Dec 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_GUI_GUIMANAGER_H_
-#define INCLUDE_GUI_GUIMANAGER_H_
+#ifndef INCLUDE_ODCORE_GUI_GUI_H_
+#define INCLUDE_ODCORE_GUI_GUI_H_
 
 #include <string>
 #include <vector>
@@ -18,9 +18,9 @@
 
 #include <odCore/gui/WidgetIntersector.h>
 
-namespace od
+namespace odRender
 {
-    class Engine;
+    class Renderer;
 }
 
 namespace odGui
@@ -28,21 +28,17 @@ namespace odGui
 
     class Widget;
 
-    /**
-     * Class for managing the game's GUI.
-     */
-    class GuiManager
+    class Gui
     {
     public:
 
-        GuiManager();
-        ~GuiManager();
+        Gui(odRender::Renderer &renderer);
+        ~Gui();
 
         inline bool isMenuMode() const { return mMenuMode; }
+        inline odRender::Renderer &getRenderer() { return mRenderer; }
 
         void quit();
-
-        glm::vec2 getScreenResolution();
 
         void addWidget(Widget *widget);
         void removeWidget(Widget *widget);
@@ -68,6 +64,8 @@ namespace odGui
 
         void _setupGui();
 
+        odRender::Renderer &mRenderer;
+
         bool mMenuMode;
 
         od::RefPtr<Widget> mRootWidget;
@@ -80,8 +78,9 @@ namespace odGui
         std::vector<HitWidgetInfo> mCurrentHitWidgets;
         std::vector<HitWidgetInfo> mLastHitWidgets;
         std::vector<HitWidgetInfo> mJoinedHitWidgets; // vector for combining last and current hits
+
     };
 
 }
 
-#endif /* INCLUDE_GUI_GUIMANAGER_H_ */
+#endif /* INCLUDE_ODCORE_GUI_GUI_H_ */

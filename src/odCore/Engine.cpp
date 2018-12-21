@@ -15,7 +15,9 @@
 #include <odCore/Exception.h>
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
+
 #include <odCore/rfl/RflManager.h>
+
 #include <odCore/render/Renderer.h>
 
 namespace od

@@ -14,15 +14,22 @@
 
 #include <odCore/Exception.h>
 
-#include <odCore/gui/GuiManager.h>
+#include <odCore/gui/Gui.h>
 
-#include <odCore/render/GuiQuad.h>
+#include <odCore/render/Renderer.h>
+#include <odCore/render/GuiNode.h>
 
 namespace odGui
 {
 
-    Widget::Widget()
-    : mOrigin(WidgetOrigin::TopLeft)
+    Widget::Widget(Gui &gui)
+    : Widget(gui, gui.getRenderer().createGuiNode())
+    {
+    }
+
+    Widget::Widget(Gui &gui, odRender::GuiNode *node)
+    : mGui(gui)
+    , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
     , mDimensions(1.0, 1.0)
     , mPositionInParentSpace(0.0, 0.0)
@@ -30,6 +37,7 @@ namespace odGui
     , mParentWidget(nullptr)
     , mMatrixDirty(false)
     , mMouseOver(false)
+    , mRenderNode(node)
     {
     }
 
@@ -69,7 +77,10 @@ namespace odGui
 
         w->setParent(this);
 
-        w->flatten(mMySpaceToRootSpace);
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->addChild(w->getRenderNode());
+        }
     }
 
     void Widget::removeChild(Widget *w)
@@ -83,6 +94,11 @@ namespace odGui
         if(it != mChildWidgets.end())
         {
             mChildWidgets.erase(it);
+
+            if(mRenderNode != nullptr)
+            {
+                mRenderNode->removeChild(w->getRenderNode());
+            }
         }
 
         w->setParent(nullptr);
@@ -170,42 +186,12 @@ namespace odGui
             mWidgetSpaceToParentSpace = glm::inverse(matrix);
         }
 
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setMatrix(mWidgetSpaceToParentSpace);
+        }
+
         mMatrixDirty = false;
-    }
-
-    void Widget::flatten(const glm::mat4 &parentMatrix)
-    {
-        if(mMatrixDirty)
-        {
-            updateMatrix();
-        }
-
-        mMySpaceToRootSpace = mWidgetSpaceToParentSpace * parentMatrix;
-
-        for(auto &&d : mDrawables)
-        {
-            d->setMatrix(mMySpaceToRootSpace);
-        }
-
-        for(auto &&child : mChildWidgets)
-        {
-            child->flatten(mMySpaceToRootSpace);
-        }
-    }
-
-    void Widget::addDrawable(odRender::GuiQuad *quad)
-    {
-        mDrawables.emplace_back(quad);
-        mDrawables.back()->setMatrix(mMySpaceToRootSpace);
-    }
-
-    void Widget::removeDrawable(odRender::GuiQuad *quad)
-    {
-        auto it = std::find(mDrawables.begin(), mDrawables.end(), quad);
-        if(it != mDrawables.end())
-        {
-            mDrawables.erase(it);
-        }
     }
 
     glm::vec2 Widget::_getOriginVector()

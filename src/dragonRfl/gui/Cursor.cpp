@@ -8,6 +8,7 @@
 #include <dragonRfl/gui/Cursor.h>
 
 #include <odCore/render/Renderer.h>
+#include <odCore/render/GuiNode.h>
 #include <odCore/render/GuiQuad.h>
 #include <odCore/render/Image.h>
 #include <odCore/render/Texture.h>
@@ -19,10 +20,11 @@ namespace dragonRfl
 {
 
     Cursor::Cursor(DragonGui &gui)
+    : Widget(gui)
     {
-        od::RefPtr<odRender::GuiQuad> cursorQuad = gui.getRenderer()->createGuiQuad();
+        od::RefPtr<odRender::GuiQuad> cursorQuad = this->getRenderNode()->createGuiQuad();
         od::RefPtr<odDb::Texture> cursorDbTexture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor);
-        od::RefPtr<odRender::Texture> texture = cursorDbTexture->getRenderImage(gui.getRenderer())->createTexture();
+        od::RefPtr<odRender::Texture> texture = cursorDbTexture->getRenderImage(&gui.getRenderer())->createTexture();
         cursorQuad->setTexture(texture);
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping
@@ -32,8 +34,6 @@ namespace dragonRfl
         cursorQuad->setTextureCoordsFromPixels(glm::vec2(-2.5, 0), glm::vec2(29.5, 32));
 
         cursorQuad->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1, 1));
-
-        this->addDrawable(cursorQuad);
 
         this->setOrigin(odGui::WidgetOrigin::TopLeft);
         this->setDimensions(32.0, 32.0, odGui::WidgetDimensionType::Pixels);

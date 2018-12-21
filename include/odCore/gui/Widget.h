@@ -19,13 +19,13 @@
 
 namespace odRender
 {
-    class GuiQuad;
+    class GuiNode;
 }
 
 namespace odGui
 {
 
-    class GuiManager;
+    class Gui;
 
     enum class WidgetOrigin
     {
@@ -73,7 +73,9 @@ namespace odGui
     {
     public:
 
-        Widget();
+        friend class Gui;
+
+        Widget(Gui &gui);
         virtual ~Widget();
 
         inline int32_t getZIndex() const { return mZIndexInParentSpace; }
@@ -142,19 +144,24 @@ namespace odGui
         void setVisible(bool b);
 
         void updateMatrix();
-        void flatten(const glm::mat4 &parentMatrix);
 
 
     protected:
 
-        void addDrawable(odRender::GuiQuad *quad);
-        void removeDrawable(odRender::GuiQuad *quad);
+        inline odRender::GuiNode *getRenderNode() { return mRenderNode; }
 
 
     private:
 
+        /**
+         * Constructs a Widget with a predefined render node. This is only used directly by
+         * the Gui to create it's root widget.
+         */
+        Widget(Gui &gui, odRender::GuiNode *node);
+
         glm::vec2 _getOriginVector();
 
+        Gui &mGui;
         WidgetOrigin mOrigin;
         WidgetDimensionType mDimensionType;
         glm::vec2 mDimensions;
@@ -169,7 +176,7 @@ namespace odGui
 
         std::vector<od::RefPtr<Widget>> mChildWidgets;
 
-        std::vector<od::RefPtr<odRender::GuiQuad>> mDrawables;
+        od::RefPtr<odRender::GuiNode> mRenderNode;
     };
 
 }

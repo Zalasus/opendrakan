@@ -8,9 +8,6 @@
 #ifndef INCLUDE_ODOSG_GUIQUAD_H_
 #define INCLUDE_ODOSG_GUIQUAD_H_
 
-#include <osg/Group>
-#include <osg/MatrixTransform>
-#include <osg/Geode>
 #include <osg/Geometry>
 
 #include <odCore/render/GuiQuad.h>
@@ -23,10 +20,10 @@ namespace odOsg
     {
     public:
 
-        GuiQuad(osg::Group *guiRoot);
+        GuiQuad();
         virtual ~GuiQuad();
 
-        virtual void setMatrix(const glm::mat4 &m) override;
+        inline osg::Geometry *getGeometry() { return mGeometry; }
 
         virtual void setTexture(odRender::Texture *texture) override;
         virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
@@ -36,9 +33,6 @@ namespace odOsg
 
     private:
 
-        osg::ref_ptr<osg::Group> mGuiRoot;
-        osg::ref_ptr<osg::MatrixTransform> mTransform;
-        osg::ref_ptr<osg::Geode> mGeode;
         osg::ref_ptr<osg::Geometry> mGeometry;
         osg::ref_ptr<osg::Vec3Array> mVertexArray;
         osg::ref_ptr<osg::Vec2Array> mTextureCoordArray;

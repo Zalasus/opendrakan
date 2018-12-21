@@ -16,19 +16,12 @@
 namespace odOsg
 {
 
-    GuiQuad::GuiQuad(osg::Group *guiRoot)
-    : mGuiRoot(guiRoot)
-    , mTransform(new osg::MatrixTransform)
-    , mGeode(new osg::Geode)
-    , mGeometry(new osg::Geometry)
+    GuiQuad::GuiQuad()
+    : mGeometry(new osg::Geometry)
     , mVertexArray(new osg::Vec3Array(4))
     , mTextureCoordArray(new osg::Vec2Array(4))
     , mColorArray(new osg::Vec4Array(4))
     {
-        mTransform->addChild(mGeode);
-        mGeode->addDrawable(mGeometry);
-        mGuiRoot->addChild(mTransform);
-
         // vertex order is top-left, bottom-left, bottom-right, top-right
         //  this allows us to use glDrawArrays using a triangle fan, minimizing memory usage
         mGeometry->setVertexArray(mVertexArray);
@@ -47,12 +40,6 @@ namespace odOsg
 
     GuiQuad::~GuiQuad()
     {
-        mGuiRoot->removeChild(mTransform);
-    }
-
-    void GuiQuad::setMatrix(const glm::mat4 &m)
-    {
-        mTransform->setMatrix(GlmAdapter::toOsg(m));
     }
 
     void GuiQuad::setTexture(odRender::Texture *texture)

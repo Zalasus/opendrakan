@@ -1,11 +1,11 @@
 /*
- * GuiManager.cpp
+ * Gui.cpp
  *
- *  Created on: 8 Jun 2018
+ *  Created on: 21 Dec 2018
  *      Author: zal
  */
 
-#include <odCore/gui/GuiManager.h>
+#include <odCore/gui/Gui.h>
 
 #include <algorithm>
 
@@ -16,26 +16,29 @@
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Engine.h>
 
+#include <odCore/render/Renderer.h>
+
 #include <odCore/gui/Widget.h>
 
 namespace odGui
 {
 
-    GuiManager::GuiManager()
-    : mMenuMode(false)
+    Gui::Gui(odRender::Renderer &renderer)
+    : mRenderer(renderer)
+    , mMenuMode(false)
     {
         _setupGui();
     }
 
-    GuiManager::~GuiManager()
+    Gui::~Gui()
     {
     }
 
-    void GuiManager::quit()
+    void Gui::quit()
     {
     }
 
-    void GuiManager::mouseDown()
+    void Gui::mouseDown()
     {
         mCurrentHitWidgets.clear();
         mRootWidget->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
@@ -48,12 +51,7 @@ namespace odGui
         }
     }
 
-    glm::vec2 GuiManager::getScreenResolution()
-    {
-        return glm::vec2(1, 1);
-    }
-
-    void GuiManager::addWidget(Widget *widget)
+    void Gui::addWidget(Widget *widget)
     {
         if(widget == nullptr)
         {
@@ -65,7 +63,7 @@ namespace odGui
         widget->setParent(nullptr);
     }
 
-    void GuiManager::removeWidget(Widget *widget)
+    void Gui::removeWidget(Widget *widget)
     {
         if(widget == nullptr)
         {
@@ -75,7 +73,7 @@ namespace odGui
         mRootWidget->removeChild(widget);
     }
 
-    void GuiManager::setMenuMode(bool b)
+    void Gui::setMenuMode(bool b)
     {
         mMenuMode = b;
 
@@ -85,7 +83,7 @@ namespace odGui
         }
     }
 
-    void GuiManager::setCursorWidget(Widget *cursor)
+    void Gui::setCursorWidget(Widget *cursor)
     {
         if(mCursorWidget != nullptr)
         {
@@ -98,7 +96,7 @@ namespace odGui
         this->addWidget(mCursorWidget);
     }
 
-    void GuiManager::setCursorPosition(const glm::vec2 &pos)
+    void Gui::setCursorPosition(const glm::vec2 &pos)
     {
         if(mCursorPosInNdc == pos)
         {
@@ -164,7 +162,7 @@ namespace odGui
         std::swap(mCurrentHitWidgets, mLastHitWidgets);
     }
 
-    void GuiManager::_setupGui()
+    void Gui::_setupGui()
     {
         glm::mat4 eye(1.0);
 
@@ -173,10 +171,9 @@ namespace odGui
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
-        mRootWidget = new Widget;
+        mRootWidget = new Widget(*this, mRenderer.getGuiRootNode());
         mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
         mRootWidget->updateMatrix();
-        mRootWidget->flatten(mWidgetSpaceToNdcTransform);
     }
 
 }

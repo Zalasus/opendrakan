@@ -21,7 +21,7 @@ set(SOURCES
         "db/SoundFactory.cpp"
         "db/Texture.cpp"
         "db/TextureFactory.cpp"
-        "gui/GuiManager.cpp"
+        "gui/Gui.cpp"
         "gui/Widget.cpp"
         "physics/BulletCallbacks.cpp"
         "physics/CharacterController.cpp"

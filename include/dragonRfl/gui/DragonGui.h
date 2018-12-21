@@ -14,6 +14,8 @@
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 
+#include <odCore/gui/Gui.h>
+
 namespace od
 {
     class Engine;
@@ -27,7 +29,7 @@ namespace dragonRfl
     /**
      * Class handling Drakan's GUI, as well as providing GUI resources via Dragon.rrc and Interface.db.
      */
-    class DragonGui : public odDb::AssetProvider
+    class DragonGui : public odGui::Gui, public odDb::AssetProvider
     {
     public:
 
@@ -49,8 +51,6 @@ namespace dragonRfl
          * @brief Returns the string with the given ID or throws if string can not be found.
          */
         std::string getStringById(od::RecordId stringId);
-
-        odRender::Renderer *getRenderer();
 
 
     protected:
