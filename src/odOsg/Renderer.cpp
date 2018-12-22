@@ -285,6 +285,7 @@ namespace odOsg
         osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
         ss->setMode(GL_BLEND, osg::StateAttribute::ON);
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+        ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
 
         mGuiRootNode = new GuiNode();

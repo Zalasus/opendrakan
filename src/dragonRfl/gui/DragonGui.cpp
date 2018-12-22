@@ -64,6 +64,9 @@ namespace dragonRfl
 
         od::RefPtr<Cursor> cursor(new Cursor(*this));
         setCursorWidget(cursor);
+
+        setCursorPosition(glm::vec2(0, 0));
+        cursor->updateMatrix();
     }
 
     DragonGui::~DragonGui()

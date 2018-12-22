@@ -23,7 +23,7 @@ namespace odOsg
         GuiQuad();
         virtual ~GuiQuad();
 
-        inline osg::Geometry *getGeometry() { return mGeometry; }
+        inline osg::Geometry *getOsgGeometry() { return mGeometry; }
 
         virtual void setTexture(odRender::Texture *texture) override;
         virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;

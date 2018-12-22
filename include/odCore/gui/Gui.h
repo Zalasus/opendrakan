@@ -37,6 +37,8 @@ namespace odGui
 
         inline bool isMenuMode() const { return mMenuMode; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
+        inline const glm::mat4 &getWidgetSpaceToNdcTransform() const { return mWidgetSpaceToNdcTransform; }
+        inline const glm::mat4 &getNdcToWidgetSpaceTransform() const { return mNdcToWidgetSpaceTransform; }
 
         void quit();
 

@@ -35,7 +35,7 @@ namespace odGui
     , mPositionInParentSpace(0.0, 0.0)
     , mZIndexInParentSpace(0)
     , mParentWidget(nullptr)
-    , mMatrixDirty(false)
+    , mMatrixDirty(true)
     , mMouseOver(false)
     , mRenderNode(node)
     {
@@ -106,11 +106,11 @@ namespace odGui
 
     void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::mat4 currentMatrix = mParentSpaceToWidgetSpace * parentMatrix;
-        glm::mat4 currentInverseMatrix = mWidgetSpaceToParentSpace * parentInverseMatrix;
+        glm::mat4 currentMatrix = parentMatrix * mParentSpaceToWidgetSpace;
+        glm::mat4 currentInverseMatrix = parentInverseMatrix * mWidgetSpaceToParentSpace;
 
-        glm::vec4 min = glm::vec4(0.0, 1.0, 0.0, 1.0) * currentMatrix;
-        glm::vec4 max = glm::vec4(1.0, 0.0, 0.0, 1.0) * currentMatrix;
+        glm::vec4 min = currentMatrix * glm::vec4(0.0, 1.0, 0.0, 1.0);
+        glm::vec4 max = currentMatrix * glm::vec4(1.0, 0.0, 0.0, 1.0);
 
         if(pointNdc.x < min.x ||
            pointNdc.x > max.x ||
@@ -120,7 +120,7 @@ namespace odGui
             return;
         }
 
-        glm::vec4 pointInWidget = glm::vec4(pointNdc, 0.0, 1.0) * currentInverseMatrix;
+        glm::vec4 pointInWidget = currentInverseMatrix * glm::vec4(pointNdc, 0.0, 1.0);
 
         if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
         {
@@ -167,28 +167,25 @@ namespace odGui
 
         if(mParentWidget == nullptr)
         {
-            // for the root widget, both of these are identity. the transformation widget space -> NDC is handled
-            //  by passing the appropriate matrix to flatten()
-            mParentSpaceToWidgetSpace = glm::mat4(1.0);
-            mWidgetSpaceToParentSpace = mParentSpaceToWidgetSpace;
+            mParentSpaceToWidgetSpace = mGui.getNdcToWidgetSpaceTransform();
+            mWidgetSpaceToParentSpace = mGui.getWidgetSpaceToNdcTransform();
 
         }else
         {
-            glm::mat4 matrix(1.0);
+            mWidgetSpaceToParentSpace = glm::mat4(1.0);
+            mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(mPositionInParentSpace, 0.0));
+            glm::vec2 widgetSizeInParentSpace =
+                    (mDimensionType == WidgetDimensionType::ParentRelative) ?
+                      mDimensions : (getDimensionsInPixels() / mParentWidget->getDimensionsInPixels());
+            mWidgetSpaceToParentSpace = glm::scale(mWidgetSpaceToParentSpace, glm::vec3(widgetSizeInParentSpace, 1.0));
+            mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(-_getOriginVector(), 0.0));
 
-            matrix = glm::translate(matrix, glm::vec3(-_getOriginVector(), 0.0));
-
-            glm::vec2 widgetSizeInParentSpace = getDimensionsInPixels() / mParentWidget->getDimensionsInPixels();
-            matrix = glm::scale(matrix, glm::vec3(widgetSizeInParentSpace, 1.0));
-            matrix = glm::translate(matrix, glm::vec3(mPositionInParentSpace, 0.0));
-
-            mParentSpaceToWidgetSpace = matrix;
-            mWidgetSpaceToParentSpace = glm::inverse(matrix);
+            mParentSpaceToWidgetSpace = glm::inverse(mWidgetSpaceToParentSpace);
         }
 
         if(mRenderNode != nullptr)
         {
-            mRenderNode->setMatrix(mWidgetSpaceToParentSpace);
+            mRenderNode->setMatrix(glm::transpose(mWidgetSpaceToParentSpace));
         }
 
         mMatrixDirty = false;

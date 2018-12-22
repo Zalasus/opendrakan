@@ -59,8 +59,6 @@ namespace odGui
         }
 
         mRootWidget->addChild(widget);
-
-        widget->setParent(nullptr);
     }
 
     void Gui::removeWidget(Widget *widget)
@@ -94,6 +92,8 @@ namespace odGui
         mCursorWidget->setZIndex(-1000);
         mCursorWidget->setVisible(mMenuMode);
         this->addWidget(mCursorWidget);
+
+        mCursorPosInNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
     }
 
     void Gui::setCursorPosition(const glm::vec2 &pos)
@@ -107,7 +107,7 @@ namespace odGui
         mCursorPosInNdc = pos;
 
         // pos is in NDC, we need it in widget space
-        glm::vec4 posWs = glm::vec4(pos, 0.0, 1.0) * mNdcToWidgetSpaceTransform;
+        glm::vec4 posWs = mNdcToWidgetSpaceTransform * glm::vec4(pos, 0.0, 1.0);
 
         if(mCursorWidget != nullptr)
         {
@@ -164,10 +164,9 @@ namespace odGui
 
     void Gui::_setupGui()
     {
-        glm::mat4 eye(1.0);
-
-        mWidgetSpaceToNdcTransform = glm::scale(eye, glm::vec3(2.0, -2.0, -1.0));
-        mWidgetSpaceToNdcTransform = glm::translate(mWidgetSpaceToNdcTransform, glm::vec3(-1.0, 1.0, -0.5));
+        mWidgetSpaceToNdcTransform = glm::mat4(1.0);
+        mWidgetSpaceToNdcTransform = glm::scale(mWidgetSpaceToNdcTransform, glm::vec3(2.0, -2.0, -1.0));
+        mWidgetSpaceToNdcTransform = glm::translate(mWidgetSpaceToNdcTransform, glm::vec3(-0.5, -0.5, 0.0));
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 

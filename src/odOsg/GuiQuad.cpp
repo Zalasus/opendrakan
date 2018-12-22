@@ -70,8 +70,11 @@ namespace odOsg
     void GuiQuad::setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
     {
         glm::vec2 textureDims = (mTexture != nullptr) ? mTexture->getImage()->getDimensionsUV() : glm::vec2(1.0);
-        glm::vec2 tlNorm = topLeft / textureDims;
-        glm::vec2 brNorm = bottomRight / textureDims;
+        glm::vec2 halfPixelOffset(0.5, 0.5);
+        glm::vec2 tlNorm = (topLeft + halfPixelOffset) / textureDims;
+        glm::vec2 brNorm = (bottomRight + halfPixelOffset) / textureDims;
+        tlNorm.y = 1.0 - tlNorm.y;
+        brNorm.y = 1.0 - brNorm.y;
 
         mTextureCoordArray->at(0).set(tlNorm.x, tlNorm.y);
         mTextureCoordArray->at(1).set(tlNorm.x, brNorm.y);

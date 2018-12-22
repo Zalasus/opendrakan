@@ -73,6 +73,8 @@ namespace odOsg
 
         mGuiQuads.emplace_back(new GuiQuad);
 
+        mGeode->addDrawable(mGuiQuads.back()->getOsgGeometry());
+
         return mGuiQuads.back();
     }
 
@@ -87,7 +89,7 @@ namespace odOsg
         {
             if((*it) == quad)
             {
-                mGeode->removeDrawable((*it)->getGeometry());
+                mGeode->removeDrawable((*it)->getOsgGeometry());
                 mGuiQuads.erase(it);
                 break;
             }
