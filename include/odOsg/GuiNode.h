@@ -32,6 +32,8 @@ namespace odOsg
 
         virtual void setMatrix(const glm::mat4 &matrix) override;
 
+        virtual void setVisible(bool visible) override;
+
         virtual void setEnableFrameCallback(bool b) override;
 
         virtual odRender::GuiQuad *createGuiQuad() override;

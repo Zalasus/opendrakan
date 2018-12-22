@@ -59,6 +59,11 @@ namespace odOsg
         mTransform->setMatrix(GlmAdapter::toOsg(matrix));
     }
 
+    void GuiNode::setVisible(bool visible)
+    {
+        mTransform->setNodeMask(visible ? 1 : 0);
+    }
+
     void GuiNode::setEnableFrameCallback(bool b)
     {
     }

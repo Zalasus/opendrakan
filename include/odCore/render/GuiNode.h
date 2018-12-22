@@ -25,6 +25,8 @@ namespace odRender
 
         virtual void setMatrix(const glm::mat4 &matrix) = 0;
 
+        virtual void setVisible(bool visible) = 0;
+
         virtual void setEnableFrameCallback(bool b) = 0;
 
         virtual GuiQuad *createGuiQuad() = 0;

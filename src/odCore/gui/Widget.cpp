@@ -156,6 +156,10 @@ namespace odGui
 
     void Widget::setVisible(bool b)
     {
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setVisible(b);
+        }
     }
 
     void Widget::updateMatrix()
