@@ -30,6 +30,7 @@
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Camera.h>
 #include <odOsg/GuiNode.h>
+#include <odOsg/Utils.h>
 
 namespace odOsg
 {
@@ -133,49 +134,50 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    odRender::Light *Renderer::createLight(od::LevelObject *obj)
+    od::RefPtr<odRender::Light> Renderer::createLight(od::LevelObject *obj)
     {
-        od::RefPtr<odRender::Light> light = new odRender::Light(obj);
+        auto light = od::make_refd<odRender::Light>(obj);
 
         mLights.push_back(light);
 
         return light;
     }
 
-    odRender::ObjectNode *Renderer::createObjectNode(od::LevelObject &obj)
+    od::RefPtr<odRender::ObjectNode> Renderer::createObjectNode(od::LevelObject &obj)
     {
-        return new ObjectNode(this, mObjects);
+        auto on = od::make_refd<ObjectNode>(this, mObjects);
+        return od::RefPtr<odRender::ObjectNode>(on);
     }
 
-    odRender::ModelNode *Renderer::createModelNode(odDb::Model *model)
+    od::RefPtr<odRender::ModelNode> Renderer::createModelNode(odDb::Model *model)
     {
-        return new ModelNode(this, model);
+        auto mn = od::make_refd<ModelNode>(this, model);
+        return od::RefPtr<odRender::ModelNode>(mn);
     }
 
-    odRender::LayerNode *Renderer::createLayerNode(od::Layer *layer)
+    od::RefPtr<odRender::LayerNode> Renderer::createLayerNode(od::Layer *layer)
     {
-        return new LayerNode(this, layer, mLayers);
+        auto ln = od::make_refd<LayerNode>(this, layer, mLayers);
+        return od::RefPtr<odRender::LayerNode>(ln);
     }
 
-    odRender::Image *Renderer::createImage(odDb::Texture *dbTexture)
+    od::RefPtr<odRender::Image> Renderer::createImage(odDb::Texture *dbTexture)
     {
-        return new Image(dbTexture);
+        auto image = od::make_refd<Image>(dbTexture);
+        return od::RefPtr<odRender::Image>(image);
     }
 
-    odRender::Texture *Renderer::createTexture(odRender::Image *image)
+    od::RefPtr<odRender::Texture> Renderer::createTexture(odRender::Image *image)
     {
-        Image *odOsgImage = dynamic_cast<Image*>(image);
-        if(odOsgImage == nullptr)
-        {
-            throw od::Exception("Tried to create texture from non-odOsg image");
-        }
-
-        return new Texture(odOsgImage);
+        Image *odOsgImage = upcast<Image>(image);
+        auto texture = od::make_refd<Texture>(odOsgImage);
+        return od::RefPtr<odRender::Texture>(texture);
     }
 
     od::RefPtr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
     {
-        return od::RefPtr<odRender::GuiNode>(new GuiNode(widget));
+        auto gn = od::make_refd<GuiNode>(widget);
+        return od::RefPtr<odRender::GuiNode>(gn);
     }
 
     odRender::GuiNode *Renderer::getGuiRootNode()
@@ -288,7 +290,7 @@ namespace odOsg
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
 
-        mGuiRootNode = new GuiNode();
+        mGuiRootNode = od::make_refd<GuiNode>();
         mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 

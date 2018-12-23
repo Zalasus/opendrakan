@@ -57,13 +57,13 @@ namespace odRender
 
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
-        virtual odRender::Light *createLight(od::LevelObject *obj) = 0;
+        virtual od::RefPtr<odRender::Light> createLight(od::LevelObject *obj) = 0;
 
-        virtual ObjectNode *createObjectNode(od::LevelObject &obj) = 0;
-        virtual ModelNode *createModelNode(odDb::Model *model) = 0;
-        virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
-        virtual Image *createImage(odDb::Texture *dbTexture) = 0;
-        virtual Texture *createTexture(Image *image) = 0;
+        virtual od::RefPtr<ObjectNode> createObjectNode(od::LevelObject &obj) = 0;
+        virtual od::RefPtr<ModelNode> createModelNode(odDb::Model *model) = 0;
+        virtual od::RefPtr<LayerNode> createLayerNode(od::Layer *layer) = 0;
+        virtual od::RefPtr<Image> createImage(odDb::Texture *dbTexture) = 0;
+        virtual od::RefPtr<Texture> createTexture(Image *image) = 0;
         virtual od::RefPtr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;
         virtual GuiNode *getGuiRootNode() = 0;
 

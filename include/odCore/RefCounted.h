@@ -10,6 +10,7 @@
 
 #include <stdlib.h>
 #include <type_traits>
+#include <utility>
 
 namespace od
 {
@@ -173,6 +174,13 @@ namespace od
         T *mPtr;
 
     };
+
+
+    template <typename T, typename... Args>
+    RefPtr<T> make_refd(Args&&... args)
+    {
+        return od::RefPtr<T>(new T(std::forward<Args>(args)...));
+    }
 
 }
 
