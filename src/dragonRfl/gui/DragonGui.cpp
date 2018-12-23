@@ -63,13 +63,13 @@ namespace dragonRfl
         odRfl::PrefetchProbe probe(*mInterfaceDb);
         mUserInterfaceProperties->probeFields(probe);
 
-        od::RefPtr<Cursor> cursor(new Cursor(*this));
+        auto cursor = od::make_refd<Cursor>(*this);
         setCursorWidget(cursor);
 
         setCursorPosition(glm::vec2(0, 0));
         cursor->updateMatrix();
 
-        od::RefPtr<MainMenu> mm(new MainMenu(*this, mUserInterfaceProperties.get()));
+        auto mainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
         addWidget(mm);
 
         setMenuMode(true);

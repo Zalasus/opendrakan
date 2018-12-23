@@ -51,7 +51,7 @@ namespace dragonRfl
             return;
         }
 
-        mPlayer.reset(new odAnim::SkeletonAnimationPlayer(objNode, skeleton));
+        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objNode, skeleton);
 
         obj.setEnableRflUpdateHook(true);
     }

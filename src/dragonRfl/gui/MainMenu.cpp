@@ -74,13 +74,13 @@ namespace dragonRfl
     : odGui::Widget(gui)
     , mDragonGui(gui)
     {
-        od::RefPtr<MainMenuImage> imageWidget(new MainMenuImage(gui));
+        auto imageWidget = od::make_refd<MainMenuImage>(gui);
         imageWidget->setZIndex(0);
         imageWidget->setOrigin(odGui::WidgetOrigin::Center);
         imageWidget->setPosition(glm::vec2(0.5, 0.5));
         this->addChild(imageWidget);
 
-        od::RefPtr<MainMenuBackground> bgWidget(new MainMenuBackground(gui));
+        auto bgWidget = od::make_refd<MainMenuBackground>(gui);
         bgWidget->setZIndex(1);
         this->addChild(bgWidget);
 

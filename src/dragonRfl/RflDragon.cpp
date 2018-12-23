@@ -34,7 +34,7 @@ namespace dragonRfl
 
         if(engine.getRenderer() != nullptr)
         {
-            mGui.reset(new DragonGui(engine));
+            mGui = std::make_unique<DragonGui>(engine);
         }
 
         if(!engine.hasInitialLevelOverride())
