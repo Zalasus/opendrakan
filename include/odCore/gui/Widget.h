@@ -78,7 +78,7 @@ namespace odGui
         Widget(Gui &gui);
         virtual ~Widget();
 
-        inline int32_t getZIndex() const { return mZIndexInParentSpace; }
+        inline int32_t getZIndex() const { return mZIndex; }
         inline glm::vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline glm::vec2 getDimensions() const { return mDimensions; }
@@ -93,7 +93,6 @@ namespace odGui
         inline void setOrigin(WidgetOrigin origin) { mOrigin = origin; mMatrixDirty = true; }
         inline void setPosition(const glm::vec2 &pos) { mPositionInParentSpace = pos; mMatrixDirty = true; }
         inline void setPosition(float x, float y) { setPosition(glm::vec2(x, y)); }
-        inline void setZIndex(int32_t i) { mZIndexInParentSpace = i; mMatrixDirty = true; }
         inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
         inline void setMouseOver(bool b) { mMouseOver = b; }
 
@@ -143,6 +142,8 @@ namespace odGui
 
         void setVisible(bool b);
 
+        void setZIndex(int32_t zIndex);
+
         void updateMatrix();
 
 
@@ -166,7 +167,7 @@ namespace odGui
         WidgetDimensionType mDimensionType;
         glm::vec2 mDimensions;
         glm::vec2 mPositionInParentSpace;
-        int32_t mZIndexInParentSpace;
+        int32_t mZIndex;
         Widget *mParentWidget;
         bool mMatrixDirty;
         glm::mat4 mParentSpaceToWidgetSpace;

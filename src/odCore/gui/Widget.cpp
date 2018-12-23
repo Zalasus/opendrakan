@@ -36,7 +36,7 @@ namespace odGui
     , mDimensionType(WidgetDimensionType::ParentRelative)
     , mDimensions(1.0, 1.0)
     , mPositionInParentSpace(0.0, 0.0)
-    , mZIndexInParentSpace(0)
+    , mZIndex(0)
     , mParentWidget(nullptr)
     , mMatrixDirty(true)
     , mMouseOver(false)
@@ -166,6 +166,21 @@ namespace odGui
         if(mRenderNode != nullptr)
         {
             mRenderNode->setVisible(b);
+        }
+    }
+
+    void Widget::setZIndex(int32_t zIndex)
+    {
+        mZIndex = zIndex;
+
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setZIndex(zIndex);
+        }
+
+        if(mParentWidget != nullptr && mParentWidget->getRenderNode() != nullptr)
+        {
+            mParentWidget->getRenderNode()->reorderChildren();
         }
     }
 

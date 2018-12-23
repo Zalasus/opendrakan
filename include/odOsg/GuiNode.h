@@ -42,6 +42,9 @@ namespace odOsg
 
         virtual void setVisible(bool visible) override;
 
+        virtual void setZIndex(int32_t zIndex) override;
+        virtual void reorderChildren() override;
+
         virtual odRender::GuiQuad *createGuiQuad() override;
         virtual void removeGuiQuad(odRender::GuiQuad *quad) override;
 

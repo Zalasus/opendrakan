@@ -81,6 +81,7 @@ namespace odOsg
     , mUpdateCallback(new UpdateCallback(this))
     {
         mTransform->addUpdateCallback(mUpdateCallback);
+        mTransform->getOrCreateStateSet()->setNestRenderBins(true);
     }
 
     GuiNode::~GuiNode()
@@ -130,6 +131,15 @@ namespace odOsg
     void GuiNode::setVisible(bool visible)
     {
         mTransform->setNodeMask(visible ? 1 : 0);
+    }
+
+    void GuiNode::setZIndex(int32_t zIndex)
+    {
+        mTransform->getOrCreateStateSet()->setRenderBinDetails(-zIndex, "RenderBin");
+    }
+
+    void GuiNode::reorderChildren()
+    {
     }
 
     odRender::GuiQuad *GuiNode::createGuiQuad()

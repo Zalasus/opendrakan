@@ -27,6 +27,9 @@ namespace odRender
 
         virtual void setVisible(bool visible) = 0;
 
+        virtual void setZIndex(int32_t zIndex) = 0;
+        virtual void reorderChildren() = 0;
+
         virtual GuiQuad *createGuiQuad() = 0;
         virtual void removeGuiQuad(GuiQuad *quad) = 0;
 
