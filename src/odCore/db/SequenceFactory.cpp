@@ -17,7 +17,7 @@ namespace odDb
     {
     }
 
-    AssetPtr<Sequence> SequenceFactory::loadAsset(od::RecordId assetId)
+    od::RefPtr<Sequence> SequenceFactory::loadAsset(od::RecordId assetId)
     {
         od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::SEQUENCE, assetId);
         if(dirIt == getSrscFile().getDirectoryEnd())
@@ -25,7 +25,7 @@ namespace odDb
             return nullptr;
         }
 
-        AssetPtr<Sequence> sequence(new Sequence(getAssetProvider(), assetId));
+        od::RefPtr<Sequence> sequence = od::make_refd<Sequence>(getAssetProvider(), assetId);
         od::DataReader dr(getSrscFile().getStreamForRecord(dirIt));
         sequence->loadFromRecord(dr);
 

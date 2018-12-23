@@ -17,7 +17,7 @@ namespace odDb
     {
     }
 
-    AssetPtr<Sound> SoundFactory::loadAsset(od::RecordId soundId)
+    od::RefPtr<Sound> SoundFactory::loadAsset(od::RecordId soundId)
     {
         od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::SOUND, soundId);
         if(dirIt == getSrscFile().getDirectoryEnd())
@@ -25,7 +25,7 @@ namespace odDb
             return nullptr;
         }
 
-        AssetPtr<Sound> sound(new Sound(getAssetProvider(), soundId));
+        od::RefPtr<Sound> sound = od::make_refd<Sound>(getAssetProvider(), soundId);
         od::DataReader dr(getSrscFile().getStreamForRecord(dirIt));
         sound->loadFromRecord(dr);
 

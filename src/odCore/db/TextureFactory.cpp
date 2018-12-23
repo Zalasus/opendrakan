@@ -32,7 +32,7 @@ namespace odDb
 		return mPalette[index];
 	}
 
-	AssetPtr<Texture> TextureFactory::loadAsset(od::RecordId textureId)
+	od::RefPtr<Texture> TextureFactory::loadAsset(od::RecordId textureId)
 	{
 		od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::TEXTURE, textureId);
 		if(dirIt == getSrscFile().getDirectoryEnd())
@@ -40,7 +40,7 @@ namespace odDb
 			return nullptr;
 		}
 
-		AssetPtr<Texture> texture(new Texture(getAssetProvider(), textureId));
+		od::RefPtr<Texture> texture = od::make_refd<Texture>(getAssetProvider(), textureId);
 		texture->loadFromRecord(*this, od::DataReader(getSrscFile().getStreamForRecord(dirIt)));
 
 		return texture;

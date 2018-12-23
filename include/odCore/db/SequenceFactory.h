@@ -24,7 +24,7 @@ namespace odDb
     protected:
 
         // implement AssetFactory<Sequence>
-        virtual AssetPtr<Sequence> loadAsset(od::RecordId textureId) override;
+        virtual od::RefPtr<Sequence> loadAsset(od::RecordId textureId) override;
 
     };
 

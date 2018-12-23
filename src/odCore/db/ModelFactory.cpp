@@ -18,7 +18,7 @@ namespace odDb
 	{
 	}
 
-	AssetPtr<Model> ModelFactory::loadAsset(od::RecordId id)
+	od::RefPtr<Model> ModelFactory::loadAsset(od::RecordId id)
 	{
 		od::SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_NAME, id);
 		if(nameRecord == getSrscFile().getDirectoryEnd())
@@ -27,7 +27,7 @@ namespace odDb
 		}
 
 		// required records
-		AssetPtr<Model> model(new Model(getAssetProvider(), id));
+		od::RefPtr<Model> model = od::make_refd<Model>(getAssetProvider(), id);
 		model->loadNameAndShading(*this, od::DataReader(getSrscFile().getStreamForRecord(nameRecord)));
 
 		od::SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_VERTICES, id, nameRecord);
