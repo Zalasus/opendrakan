@@ -185,7 +185,7 @@ namespace odDb
 			throw od::NotFoundException("Can't get texture. Database has no texture container");
 		}
 
-		AssetPtr<Texture> asset = mTextureFactory->getAsset(recordId);
+		od::RefPtr<Texture> asset = mTextureFactory->getAsset(recordId);
 
 		return asset.release();
 	}
@@ -197,7 +197,7 @@ namespace odDb
 			throw od::NotFoundException("Can't get class. Database has no class container");
 		}
 
-		AssetPtr<Class> asset = mClassFactory->getAsset(recordId);
+		od::RefPtr<Class> asset = mClassFactory->getAsset(recordId);
 
 		return asset.release();
 	}
@@ -209,7 +209,7 @@ namespace odDb
 			throw od::NotFoundException("Can't get model. Database has no model container");
 		}
 
-		AssetPtr<Model> asset = mModelFactory->getAsset(recordId);
+		od::RefPtr<Model> asset = mModelFactory->getAsset(recordId);
 
         return asset.release();
 	}
@@ -221,7 +221,7 @@ namespace odDb
             throw od::NotFoundException("Can't get sequence. Database has no sequence container");
         }
 
-        AssetPtr<Sequence> asset = mSequenceFactory->getAsset(recordId);
+        od::RefPtr<Sequence> asset = mSequenceFactory->getAsset(recordId);
 
         return asset.release();
 	}
@@ -233,7 +233,7 @@ namespace odDb
 			throw od::NotFoundException("Can't get animation. Database has no animation container");
 		}
 
-		AssetPtr<Animation> asset = mAnimFactory->getAsset(recordId);
+		od::RefPtr<Animation> asset = mAnimFactory->getAsset(recordId);
 
 		return asset.release();
 	}
@@ -245,7 +245,7 @@ namespace odDb
             throw od::NotFoundException("Can't get sound. Database has no sound container");
         }
 
-        AssetPtr<Sound> asset = mSoundFactory->getAsset(recordId);
+        od::RefPtr<Sound> asset = mSoundFactory->getAsset(recordId);
 
         return asset.release();
     }

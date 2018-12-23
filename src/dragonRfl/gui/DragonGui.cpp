@@ -51,7 +51,7 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
         }
 
-        odDb::AssetPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
+        od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
         std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
         mUserInterfaceProperties.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfaceProperties == nullptr)

@@ -169,7 +169,7 @@ namespace od
         Level &mLevel;
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
-        odDb::AssetPtr<odDb::Class> mClass;
+        od::RefPtr<odDb::Class> mClass;
         od::RefPtr<odRender::ObjectNode> mRenderNode;
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;

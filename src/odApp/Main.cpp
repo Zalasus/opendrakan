@@ -339,7 +339,7 @@ int main(int argc, char **argv)
         	odDb::DbManager dbm(engine);
         	odDb::Database &db = dbm.loadDb(filename);
 
-        	odDb::AssetPtr<odDb::Texture> tex = db.getAsset<odDb::Texture>(extractRecordId);
+        	od::RefPtr<odDb::Texture> tex = db.getAsset<odDb::Texture>(extractRecordId);
 
 			std::ostringstream ss;
 			ss << outputPath << "texture" << extractRecordId << ".png";

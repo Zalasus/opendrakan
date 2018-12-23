@@ -109,7 +109,7 @@ namespace dragonRfl
 
     void SoundEffect::_playRandomSound()
     {
-        odDb::AssetPtr<odDb::Sound> sound;
+        od::RefPtr<odDb::Sound> sound;
         if(mSounds.getAssetCount() == 1)
         {
             // don't bother with randomness when only one sound in list

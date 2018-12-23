@@ -33,7 +33,7 @@ namespace odDb
 		Class(AssetProvider &ap, od::RecordId classId);
 
 		inline bool hasModel() const { return mModel != nullptr; }
-        inline AssetPtr<Model> getModel() { return mModel; }
+        inline od::RefPtr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
 
         void loadFromRecord(ClassFactory &factory, od::DataReader dr);
@@ -44,7 +44,7 @@ namespace odDb
 
         std::string mClassName;
         AssetRef mModelRef;
-        AssetPtr<Model> mModel;
+        od::RefPtr<Model> mModel;
         uint16_t mRflClassId;
         odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;

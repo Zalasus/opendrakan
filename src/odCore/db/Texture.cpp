@@ -118,7 +118,7 @@ namespace odDb
             size_t uncompressedSize = mWidth*mHeight*(mBitsPerPixel/8) + mHeight*trailingBytes;
             size_t outputBufferSize = std::min(od::ZStreamBuffer::DefaultBufferSize, uncompressedSize);
 
-            zstr.reset(new od::ZStream(dr.getStream(), mCompressedSize, outputBufferSize));
+            zstr = std::make_unique<od::ZStream>(dr.getStream(), mCompressedSize, outputBufferSize);
             zdr.setStream(*zstr);
         }
 

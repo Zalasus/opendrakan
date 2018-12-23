@@ -93,7 +93,7 @@ namespace odRfl
     protected:
 
         odDb::AssetRef mReference;
-        odDb::AssetPtr<_AssetType> mReferencedAsset;
+        od::RefPtr<_AssetType> mReferencedAsset;
 
     };
 
@@ -143,7 +143,7 @@ namespace odRfl
             {
                 for(auto it = mReferences.begin(); it != mReferences.end(); ++it)
                 {
-                    odDb::AssetPtr<_AssetType> asset = ap.getAssetByRef<_AssetType>(*it);
+                    od::RefPtr<_AssetType> asset = ap.getAssetByRef<_AssetType>(*it);
                     mReferencedAssets.push_back(asset);
                 }
 
@@ -184,7 +184,7 @@ namespace odRfl
     protected:
 
         std::vector<odDb::AssetRef> mReferences;
-        std::vector<odDb::AssetPtr<_AssetType>> mReferencedAssets;
+        std::vector<od::RefPtr<_AssetType>> mReferencedAssets;
 
     };
 

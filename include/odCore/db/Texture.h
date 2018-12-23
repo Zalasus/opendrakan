@@ -67,7 +67,7 @@ namespace odDb
         uint32_t mCompressedSize;
 
         bool mHasAlphaChannel;
-        AssetPtr<Class> mMaterialClass;
+        od::RefPtr<Class> mMaterialClass;
         std::unique_ptr<odRfl::RflClass> mMaterialInstance;
 
         std::vector<uint8_t> mRgba8888Data;

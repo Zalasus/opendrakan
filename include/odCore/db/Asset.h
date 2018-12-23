@@ -72,11 +72,6 @@ namespace odDb
 
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
 
-
-	// TODO: find all instances of this and replace it with the real template
-	template <typename T>
-	using AssetPtr = od::RefPtr<T>;
-
 }
 
 #endif /* INCLUDE_ASSET_H_ */
