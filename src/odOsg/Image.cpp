@@ -33,12 +33,12 @@ namespace odOsg
         return glm::vec2(mDbTexture->getWidth(), mDbTexture->getHeight());
     }
 
-    odRender::Texture *Image::createTexture()
+    od::RefPtr<odRender::Texture> Image::createTexture()
     {
-        return new Texture(this);
+        return od::make_refd<Texture>(this);
     }
 
-    odRender::Texture *Image::getTextureForUsage(odRender::TextureUsage usage)
+    od::RefPtr<odRender::Texture> Image::getTextureForUsage(odRender::TextureUsage usage)
     {
         switch(usage)
         {

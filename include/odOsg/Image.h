@@ -35,8 +35,8 @@ namespace odOsg
 
         virtual glm::vec2 getDimensionsUV() override;
 
-        virtual odRender::Texture *createTexture() override;
-        virtual odRender::Texture *getTextureForUsage(odRender::TextureUsage usage) override;
+        virtual od::RefPtr<odRender::Texture> createTexture() override;
+        virtual od::RefPtr<odRender::Texture> getTextureForUsage(odRender::TextureUsage usage) override;
 
 
     private:

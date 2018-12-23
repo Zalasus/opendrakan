@@ -143,7 +143,7 @@ namespace odOsg
 
     void ModelNode::_buildSingleLodModelNode()
     {
-        od::RefPtr<Geometry> geometry = new Geometry;
+        auto geometry = od::make_refd<Geometry>();
 
         GeometryBuilder gb(mRenderer, *geometry, mModel->getName(), mModel->getAssetProvider());
         gb.setBuildSmoothNormals(mModel->getShadingType() != odDb::Model::ShadingType::Flat);
@@ -162,7 +162,7 @@ namespace odOsg
 
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
-            od::RefPtr<Geometry> geometry = new Geometry;
+            auto geometry = od::make_refd<Geometry>();
 
             GeometryBuilder gb(mRenderer, *geometry, mModel->getName() + " (LOD '" + it->lodName + "')", mModel->getAssetProvider());
             gb.setBuildSmoothNormals(mModel->getShadingType() != odDb::Model::ShadingType::Flat);

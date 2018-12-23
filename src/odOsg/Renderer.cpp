@@ -42,7 +42,7 @@ namespace odOsg
     {
         mViewer = new osgViewer::Viewer;
 
-        mCamera = new Camera(mViewer->getCamera());
+        mCamera = od::RefPtr<Camera>(mViewer->getCamera());
 
         osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
         statsHandler->setKeyEventPrintsOutStats(0);

@@ -234,7 +234,7 @@ namespace odOsg
     {
         if(mRig == nullptr)
         {
-            mRig.reset(new Rig(mTransform));
+            mRig = std::make_unique<Rig>(mTransform);
         }
 
         return mRig.get();

@@ -150,7 +150,7 @@ namespace odOsg
             mTransform->addChild(mGeode);
         }
 
-        mGuiQuads.emplace_back(new GuiQuad);
+        mGuiQuads.push_back(od::make_refd<GuiQuad>());
 
         mGeode->addDrawable(mGuiQuads.back()->getOsgGeometry());
 

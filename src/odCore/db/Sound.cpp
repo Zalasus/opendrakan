@@ -65,7 +65,7 @@ namespace odDb
         if(mCompressionLevel != 0)
         {
             size_t outputBufferSize = std::min(od::ZStreamBuffer::DefaultBufferSize, (size_t)mDecompressedSize);
-            zstr.reset(new od::ZStream(dr.getStream(), compressedSize, outputBufferSize));
+            zstr = std::make_unique<od::ZStream>(dr.getStream(), compressedSize, outputBufferSize);
             sampleReader.setStream(*zstr);
         }
 
