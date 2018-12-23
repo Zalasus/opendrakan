@@ -53,7 +53,7 @@ namespace odOsg
         virtual odRender::LayerNode *createLayerNode(od::Layer *layer) override;
         virtual odRender::Image *createImage(odDb::Texture *dbTexture) override;
         virtual odRender::Texture *createTexture(odRender::Image *image) override;
-        virtual od::RefPtr<odRender::GuiNode> createGuiNode() override;
+        virtual od::RefPtr<odRender::GuiNode> createGuiNode(odGui::Widget *widget) override;
         virtual odRender::GuiNode *getGuiRootNode() override;
 
         virtual odRender::Camera *getCamera() override;

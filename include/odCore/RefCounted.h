@@ -95,6 +95,12 @@ namespace od
             }
         }
 
+        RefPtr(RefPtr<T> &&refPtr)
+        : mPtr(refPtr.mPtr)
+        {
+            refPtr.mPtr = nullptr;
+        }
+
         ~RefPtr()
         {
             if(mPtr != nullptr)

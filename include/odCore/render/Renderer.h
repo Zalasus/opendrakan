@@ -64,7 +64,7 @@ namespace odRender
         virtual LayerNode *createLayerNode(od::Layer *layer) = 0;
         virtual Image *createImage(odDb::Texture *dbTexture) = 0;
         virtual Texture *createTexture(Image *image) = 0;
-        virtual od::RefPtr<GuiNode> createGuiNode() = 0;
+        virtual od::RefPtr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;
         virtual GuiNode *getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;

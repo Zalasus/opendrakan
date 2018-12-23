@@ -173,9 +173,9 @@ namespace odOsg
         return new Texture(odOsgImage);
     }
 
-    od::RefPtr<odRender::GuiNode> Renderer::createGuiNode()
+    od::RefPtr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
     {
-        return od::RefPtr<odRender::GuiNode>(new GuiNode);
+        return od::RefPtr<odRender::GuiNode>(new GuiNode(widget));
     }
 
     odRender::GuiNode *Renderer::getGuiRootNode()

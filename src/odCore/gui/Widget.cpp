@@ -23,8 +23,11 @@ namespace odGui
 {
 
     Widget::Widget(Gui &gui)
-    : Widget(gui, gui.getRenderer().createGuiNode())
+    : Widget(gui, nullptr)
     {
+        // doing this in the initializer list somehow seems to cause the RefCounted base
+        //  to still be unitialized when creating the weakptr in the GuiNode??? WTF?
+        mRenderNode = gui.getRenderer().createGuiNode(this);
     }
 
     Widget::Widget(Gui &gui, odRender::GuiNode *node)
@@ -64,6 +67,10 @@ namespace odGui
 
     void Widget::onUpdate(float relTime)
     {
+        if(mMatrixDirty)
+        {
+            updateMatrix();
+        }
     }
 
     void Widget::addChild(Widget *w)
@@ -164,11 +171,6 @@ namespace odGui
 
     void Widget::updateMatrix()
     {
-        if(!mMatrixDirty)
-        {
-            return;
-        }
-
         if(mParentWidget == nullptr)
         {
             mParentSpaceToWidgetSpace = mGui.getNdcToWidgetSpaceTransform();

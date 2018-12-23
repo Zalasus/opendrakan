@@ -27,8 +27,6 @@ namespace odRender
 
         virtual void setVisible(bool visible) = 0;
 
-        virtual void setEnableFrameCallback(bool b) = 0;
-
         virtual GuiQuad *createGuiQuad() = 0;
         virtual void removeGuiQuad(GuiQuad *quad) = 0;
 

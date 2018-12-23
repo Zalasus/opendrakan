@@ -11,16 +11,84 @@
 #include <odOsg/GuiQuad.h>
 #include <odOsg/Utils.h>
 
+#include <odCore/gui/Widget.h>
+
 namespace odOsg
 {
 
-    GuiNode::GuiNode()
-    : mTransform(new osg::MatrixTransform)
+    class UpdateCallback : public osg::Callback
     {
+    public:
+
+        UpdateCallback(GuiNode *n)
+        : mNode(n)
+        , mLastSimTime(0.0)
+        , mFirstUpdate(true)
+        {
+        }
+
+        virtual bool run(osg::Object* object, osg::Object* data) override
+        {
+            osg::NodeVisitor *nv = data->asNodeVisitor();
+            if(nv == nullptr)
+            {
+                return traverse(object, data);
+            }
+
+            const osg::FrameStamp *fs = nv->getFrameStamp();
+            if(fs == nullptr)
+            {
+                return traverse(object, data);
+            }
+
+            double simTime = fs->getSimulationTime();
+
+            if(mFirstUpdate)
+            {
+                mLastSimTime = simTime;
+                mFirstUpdate = false;
+            }
+
+            if(mNode != nullptr)
+            {
+                mNode->update(simTime - mLastSimTime);
+            }
+
+            mLastSimTime = simTime;
+
+            return traverse(object, data);
+        }
+
+
+    private:
+
+        GuiNode *mNode;
+        double mLastSimTime;
+        bool mFirstUpdate;
+    };
+
+
+    GuiNode::GuiNode()
+    : mWidget(nullptr)
+    , mTransform(new osg::MatrixTransform)
+    , mUpdateCallback(nullptr)
+    {
+    }
+
+    GuiNode::GuiNode(odGui::Widget *w)
+    : mWidget(w)
+    , mTransform(new osg::MatrixTransform)
+    , mUpdateCallback(new UpdateCallback(this))
+    {
+        mTransform->addUpdateCallback(mUpdateCallback);
     }
 
     GuiNode::~GuiNode()
     {
+        if(mUpdateCallback != nullptr)
+        {
+            mTransform->removeUpdateCallback(mUpdateCallback);
+        }
     }
 
     void GuiNode::addChild(odRender::GuiNode *node)
@@ -64,10 +132,6 @@ namespace odOsg
         mTransform->setNodeMask(visible ? 1 : 0);
     }
 
-    void GuiNode::setEnableFrameCallback(bool b)
-    {
-    }
-
     odRender::GuiQuad *GuiNode::createGuiQuad()
     {
         if(mGeode == nullptr)
@@ -98,6 +162,14 @@ namespace odOsg
                 mGuiQuads.erase(it);
                 break;
             }
+        }
+    }
+
+    void GuiNode::update(float relTime)
+    {
+        if(mWidget != nullptr)
+        {
+            mWidget->onUpdate(relTime);
         }
     }
 

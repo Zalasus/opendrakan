@@ -11,7 +11,14 @@
 #include <osg/MatrixTransform>
 #include <osg/Geode>
 
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/render/GuiNode.h>
+
+namespace odGui
+{
+    class Widget;
+}
 
 namespace odOsg
 {
@@ -23,6 +30,7 @@ namespace odOsg
     public:
 
         GuiNode();
+        GuiNode(odGui::Widget *widget);
         virtual ~GuiNode();
 
         inline osg::Node *getOsgNode() { return mTransform; }
@@ -34,16 +42,19 @@ namespace odOsg
 
         virtual void setVisible(bool visible) override;
 
-        virtual void setEnableFrameCallback(bool b) override;
-
         virtual odRender::GuiQuad *createGuiQuad() override;
         virtual void removeGuiQuad(odRender::GuiQuad *quad) override;
+
+        void update(float relTime);
 
 
     private:
 
+        od::WeakRefPtr<odGui::Widget> mWidget;
+
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;
+        osg::ref_ptr<osg::Callback> mUpdateCallback;
 
         std::vector<od::RefPtr<GuiNode>> mChildNodes;
         std::vector<od::RefPtr<GuiQuad>> mGuiQuads;
