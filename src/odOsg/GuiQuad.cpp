@@ -12,6 +12,7 @@
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Texture.h>
 #include <odOsg/Image.h>
+#include <odOsg/Utils.h>
 
 namespace odOsg
 {
@@ -50,11 +51,7 @@ namespace odOsg
             return;
         }
 
-        mTexture = dynamic_cast<Texture*>(texture);
-        if(mTexture == nullptr)
-        {
-            throw od::Exception("Texture passed to GuiQuad was no odOsg::Texture");
-        }
+        mTexture = upcast<Texture>(texture);
 
         mGeometry->getOrCreateStateSet()->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
     }
@@ -88,6 +85,15 @@ namespace odOsg
         mVertexArray->at(1).set(tl.x, br.y, 0.0);
         mVertexArray->at(2).set(br.x, br.y, 0.0);
         mVertexArray->at(3).set(br.x, tl.y, 0.0);
+    }
+
+    void GuiQuad::setColor(const glm::vec4 &color)
+    {
+        osg::Vec4 c = GlmAdapter::toOsg(color);
+        mColorArray->at(0) = c;
+        mColorArray->at(1) = c;
+        mColorArray->at(2) = c;
+        mColorArray->at(3) = c;
     }
 
 }

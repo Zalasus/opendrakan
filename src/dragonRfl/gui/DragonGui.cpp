@@ -14,6 +14,7 @@
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #include <dragonRfl/gui/Cursor.h>
+#include <dragonRfl/gui/MainMenu.h>
 
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
@@ -67,6 +68,11 @@ namespace dragonRfl
 
         setCursorPosition(glm::vec2(0, 0));
         cursor->updateMatrix();
+
+        od::RefPtr<MainMenu> mm(new MainMenu(*this, mUserInterfaceProperties.get()));
+        addWidget(mm);
+
+        setMenuMode(true);
     }
 
     DragonGui::~DragonGui()

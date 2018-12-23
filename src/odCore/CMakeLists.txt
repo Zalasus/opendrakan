@@ -28,6 +28,7 @@ set(SOURCES
         "physics/Detector.cpp"
         "physics/ModelBounds.cpp"
         "physics/PhysicsManager.cpp"
+        "render/GuiQuad.cpp"
         "render/Light.cpp"
         "rfl/ClassBuilderProbe.cpp"
         "rfl/Field.cpp"

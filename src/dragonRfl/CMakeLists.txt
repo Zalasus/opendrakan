@@ -23,6 +23,7 @@ set(SOURCES
     "classes/VisibilityToggler.cpp"
     "gui/Cursor.cpp"
     "gui/DragonGui.cpp"
+    "gui/MainMenu.cpp"
     "RflDragon.cpp")
 
 add_library(dragonRfl STATIC ${SOURCES})

@@ -30,6 +30,8 @@ namespace odOsg
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
         virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
 
+        virtual void setColor(const glm::vec4 &color) override;
+
 
     private:
 
