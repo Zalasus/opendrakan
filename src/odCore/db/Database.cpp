@@ -141,8 +141,8 @@ namespace odDb
         od::FilePath txdPath = mDbFilePath.ext(".txd");
         if(txdPath.exists())
         {
-            mTextureContainer.reset(new od::SrscFile(txdPath));
-            mTextureFactory.reset(new TextureFactory(*this, *mTextureContainer, mDbManager.getEngine()));
+            mTextureContainer = std::make_unique<od::SrscFile>(txdPath);
+            mTextureFactory = std::make_unique<TextureFactory>(*this, *mTextureContainer, mDbManager.getEngine());
 
             Logger::verbose() << "Opened database texture container " << txdPath.str();
 
@@ -155,8 +155,8 @@ namespace odDb
         od::FilePath odbPath = mDbFilePath.ext(".odb");
         if(odbPath.exists())
         {
-            mClassContainer.reset(new od::SrscFile(odbPath));
-            mClassFactory.reset(new ClassFactory(*this, *mClassContainer, mDbManager.getEngine()));
+            mClassContainer = std::make_unique<od::SrscFile>(odbPath);
+            mClassFactory = std::make_unique<ClassFactory>(*this, *mClassContainer, mDbManager.getEngine());
 
             Logger::verbose() << "Opened database class container " << odbPath.str();
 
@@ -178,76 +178,64 @@ namespace odDb
 	    return it->second;
 	}
 
-	Texture *Database::getTexture(od::RecordId recordId)
+	od::RefPtr<Texture> Database::getTexture(od::RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
 		{
 			throw od::NotFoundException("Can't get texture. Database has no texture container");
 		}
 
-		od::RefPtr<Texture> asset = mTextureFactory->getAsset(recordId);
-
-		return asset.release();
+		return mTextureFactory->getAsset(recordId);
 	}
 
-	Class *Database::getClass(od::RecordId recordId)
+	od::RefPtr<Class> Database::getClass(od::RecordId recordId)
 	{
 		if(mClassFactory == nullptr)
 		{
 			throw od::NotFoundException("Can't get class. Database has no class container");
 		}
 
-		od::RefPtr<Class> asset = mClassFactory->getAsset(recordId);
-
-		return asset.release();
+		return mClassFactory->getAsset(recordId);
 	}
 
-	Model *Database::getModel(od::RecordId recordId)
+	od::RefPtr<Model> Database::getModel(od::RecordId recordId)
 	{
 		if(mModelFactory == nullptr)
 		{
 			throw od::NotFoundException("Can't get model. Database has no model container");
 		}
 
-		od::RefPtr<Model> asset = mModelFactory->getAsset(recordId);
-
-        return asset.release();
+        return mModelFactory->getAsset(recordId);
 	}
 
-	Sequence *Database::getSequence(od::RecordId recordId)
+	od::RefPtr<Sequence> Database::getSequence(od::RecordId recordId)
 	{
         if(mSequenceFactory == nullptr)
         {
             throw od::NotFoundException("Can't get sequence. Database has no sequence container");
         }
 
-        od::RefPtr<Sequence> asset = mSequenceFactory->getAsset(recordId);
-
-        return asset.release();
+        return mSequenceFactory->getAsset(recordId);
 	}
 
-	Animation *Database::getAnimation(od::RecordId recordId)
+	od::RefPtr<Animation> Database::getAnimation(od::RecordId recordId)
 	{
 		if(mAnimFactory == nullptr)
 		{
 			throw od::NotFoundException("Can't get animation. Database has no animation container");
 		}
 
-		od::RefPtr<Animation> asset = mAnimFactory->getAsset(recordId);
-
-		return asset.release();
+		return mAnimFactory->getAsset(recordId);
 	}
 
-	Sound *Database::getSound(od::RecordId recordId)
+	od::RefPtr<Sound> Database::getSound(od::RecordId recordId)
     {
         if(mSoundFactory == nullptr)
         {
             throw od::NotFoundException("Can't get sound. Database has no sound container");
         }
 
-        od::RefPtr<Sound> asset = mSoundFactory->getAsset(recordId);
-
-        return asset.release();
+        return mSoundFactory->getAsset(recordId);
     }
 
 } 

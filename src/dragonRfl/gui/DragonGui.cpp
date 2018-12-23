@@ -148,9 +148,9 @@ namespace dragonRfl
         return std::move(decryptedString);
     }
 
-    odDb::Texture *DragonGui::getTexture(od::RecordId recordId)
+    od::RefPtr<odDb::Texture> DragonGui::getTexture(od::RecordId recordId)
     {
-        return mRrcTextureFactory.getAsset(recordId).release();
+        return mRrcTextureFactory.getAsset(recordId);
     }
 
     void DragonGui::_decryptString(char * const str, const size_t len)

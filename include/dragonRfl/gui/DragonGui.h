@@ -55,7 +55,7 @@ namespace dragonRfl
 
     protected:
 
-        virtual odDb::Texture *getTexture(od::RecordId recordId) override;
+        virtual od::RefPtr<odDb::Texture> getTexture(od::RecordId recordId) override;
 
 
     private:

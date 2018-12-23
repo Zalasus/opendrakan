@@ -56,12 +56,12 @@ namespace odDb
 
 	    // override AssetProvider
 		virtual AssetProvider &getDependency(uint16_t index) override;
-        virtual Texture   *getTexture(od::RecordId recordId) override;
-        virtual Class     *getClass(od::RecordId recordId) override;
-        virtual Model     *getModel(od::RecordId recordId) override;
-        virtual Sequence  *getSequence(od::RecordId recordId) override;
-        virtual Animation *getAnimation(od::RecordId recordId) override;
-        virtual Sound     *getSound(od::RecordId recordId) override;
+        virtual od::RefPtr<Texture>   getTexture(od::RecordId recordId) override;
+        virtual od::RefPtr<Class>     getClass(od::RecordId recordId) override;
+        virtual od::RefPtr<Model>     getModel(od::RecordId recordId) override;
+        virtual od::RefPtr<Sequence>  getSequence(od::RecordId recordId) override;
+        virtual od::RefPtr<Animation> getAnimation(od::RecordId recordId) override;
+        virtual od::RefPtr<Sound>     getSound(od::RecordId recordId) override;
 
 
 	private:
@@ -101,8 +101,8 @@ namespace odDb
         od::FilePath path = mDbFilePath.ext(extension);
         if(path.exists())
         {
-            containerPtr.reset(new od::SrscFile(path));
-            factoryPtr.reset(new T(*this, *containerPtr));
+            containerPtr = std::make_unique<od::SrscFile>(path);
+            factoryPtr = std::make_unique<T>(*this, *containerPtr);
 
             Logger::verbose() << AssetTraits<typename T::AssetType>::name() << " container of database opened";
 

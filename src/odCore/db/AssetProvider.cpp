@@ -8,6 +8,13 @@
 
 #include <odCore/db/AssetProvider.h>
 
+#include <odCore/db/TextureFactory.h>
+#include <odCore/db/ModelFactory.h>
+#include <odCore/db/ClassFactory.h>
+#include <odCore/db/AnimationFactory.h>
+#include <odCore/db/SoundFactory.h>
+#include <odCore/db/SequenceFactory.h>
+
 namespace odDb
 {
 
@@ -17,67 +24,67 @@ namespace odDb
     }
 
     template<>
-    Texture *AssetProvider::getAsset<Texture>(od::RecordId id)
+    od::RefPtr<Texture> AssetProvider::getAsset<Texture>(od::RecordId id)
     {
-        return this->getTexture(id);
+        return std::move(this->getTexture(id));
     }
 
     template<>
-    Class *AssetProvider::getAsset<Class>(od::RecordId id)
+    od::RefPtr<Class> AssetProvider::getAsset<Class>(od::RecordId id)
     {
-        return this->getClass(id);
+        return std::move(this->getClass(id));
     }
 
     template<>
-    Model *AssetProvider::getAsset<Model>(od::RecordId id)
+    od::RefPtr<Model> AssetProvider::getAsset<Model>(od::RecordId id)
     {
-        return this->getModel(id);
+        return std::move(this->getModel(id));
     }
 
     template<>
-    Sequence *AssetProvider::getAsset<Sequence>(od::RecordId id)
+    od::RefPtr<Sequence> AssetProvider::getAsset<Sequence>(od::RecordId id)
     {
-        return this->getSequence(id);
+        return std::move(this->getSequence(id));
     }
 
     template<>
-    Animation *AssetProvider::getAsset<Animation>(od::RecordId id)
+    od::RefPtr<Animation> AssetProvider::getAsset<Animation>(od::RecordId id)
     {
-        return this->getAnimation(id);
+        return std::move(this->getAnimation(id));
     }
 
     template<>
-    Sound *AssetProvider::getAsset<Sound>(od::RecordId id)
+    od::RefPtr<Sound> AssetProvider::getAsset<Sound>(od::RecordId id)
     {
-        return this->getSound(id);
+        return std::move(this->getSound(id));
     }
 
-    Texture *AssetProvider::getTexture(od::RecordId recordId)
+    od::RefPtr<Texture> AssetProvider::getTexture(od::RecordId recordId)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't provide textures");
     }
 
-    Class *AssetProvider::getClass(od::RecordId recordId)
+    od::RefPtr<Class> AssetProvider::getClass(od::RecordId recordId)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't provide classes");
     }
 
-    Model *AssetProvider::getModel(od::RecordId recordId)
+    od::RefPtr<Model> AssetProvider::getModel(od::RecordId recordId)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't provide models");
     }
 
-    Sequence *AssetProvider::getSequence(od::RecordId recordId)
+    od::RefPtr<Sequence> AssetProvider::getSequence(od::RecordId recordId)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't provide sequences");
     }
 
-    Animation *AssetProvider::getAnimation(od::RecordId recordId)
+    od::RefPtr<Animation> AssetProvider::getAnimation(od::RecordId recordId)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't provide animations");
     }
 
-    Sound *AssetProvider::getSound(od::RecordId recordId)
+    od::RefPtr<Sound> AssetProvider::getSound(od::RecordId recordId)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't provide sounds");
     }
