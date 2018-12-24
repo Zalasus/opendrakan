@@ -93,7 +93,8 @@ namespace odGui
         mCursorWidget->setVisible(mMenuMode);
         this->addWidget(mCursorWidget);
 
-        mCursorPosInNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
+        glm::vec4 widgetToNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
+        mCursorPosInNdc = glm::vec2(widgetToNdc.x, widgetToNdc.y);
     }
 
     void Gui::setCursorPosition(const glm::vec2 &pos)
