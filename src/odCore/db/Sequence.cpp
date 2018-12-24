@@ -96,11 +96,11 @@ namespace odDb
             switch(static_cast<ActionType>(actionType))
             {
             case ActionType::TRANSFORM:
-                mActions.push_back(std::unique_ptr<Action>(new ActionTransform(timeOffset)));
+                mActions.push_back(std::make_unique<ActionTransform>(timeOffset));
                 break;
 
             case ActionType::START_ANIM:
-                mActions.push_back(std::unique_ptr<Action>(new ActionStartAnim(timeOffset)));
+                mActions.push_back(std::make_unique<ActionStartAnim>(timeOffset));
                 break;
 
             default:
@@ -129,7 +129,7 @@ namespace odDb
 		mActors.reserve(actorCount);
 		for(size_t i = 0; i < actorCount; ++i)
 		{
-		    std::unique_ptr<Actor> newActor(new Actor);
+		    auto newActor = std::make_unique<Actor>();
 		    newActor->load(dr);
 		    mActors.push_back(std::move(newActor));
 		}

@@ -165,7 +165,7 @@ namespace odDb
 		   >> shapeType;
 
 		odPhysics::ModelBounds::ShapeType type = (shapeType == 0) ? odPhysics::ModelBounds::SPHERES : odPhysics::ModelBounds::BOXES;
-		mModelBounds.reset(new odPhysics::ModelBounds(type, shapeCount));
+		mModelBounds = std::make_unique<odPhysics::ModelBounds>(type, shapeCount);
 		mModelBounds->setMainBounds(mainBs, mainObb);
 
 		for(size_t i = 0; i < shapeCount; ++i)
@@ -226,7 +226,7 @@ namespace odDb
 		}
 
 
-        mSkeletonBuilder.reset(new SkeletonBuilder);
+        mSkeletonBuilder = std::make_unique<SkeletonBuilder>();
 
 		// node info
 		uint16_t nodeInfoCount;

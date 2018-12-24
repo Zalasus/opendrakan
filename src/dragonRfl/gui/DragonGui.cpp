@@ -70,7 +70,7 @@ namespace dragonRfl
         cursor->updateMatrix();
 
         auto mainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
-        addWidget(mm);
+        addWidget(mainMenu);
 
         setMenuMode(true);
     }

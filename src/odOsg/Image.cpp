@@ -35,7 +35,8 @@ namespace odOsg
 
     od::RefPtr<odRender::Texture> Image::createTexture()
     {
-        return od::make_refd<Texture>(this);
+        auto texture = od::make_refd<Texture>(this);
+        return od::RefPtr<odRender::Texture>(texture);
     }
 
     od::RefPtr<odRender::Texture> Image::getTextureForUsage(odRender::TextureUsage usage)
