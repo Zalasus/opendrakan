@@ -49,8 +49,8 @@ include_directories("include")
 
 add_subdirectory("src/odCore")
 add_subdirectory("src/dragonRfl")
-add_subdirectory("src/odApp")
 add_subdirectory("src/odOsg")
+add_subdirectory("src/srscEd")
 
 
 # copy shader sources
