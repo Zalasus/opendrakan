@@ -311,7 +311,7 @@ namespace od
         if(mSkeleton == nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
         {
             odDb::SkeletonBuilder *sb = mClass->getModel()->getSkeletonBuilder();
-            mSkeleton.reset(new odAnim::Skeleton(sb->getJointCount()));
+            mSkeleton = std::make_unique<odAnim::Skeleton>(sb->getJointCount());
             sb->build(*mSkeleton);
         }
 

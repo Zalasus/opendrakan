@@ -61,8 +61,8 @@ namespace od
 
 	    _findEngineRoot("Dragon.rrc");
 
-	    mDbManager.reset(new odDb::DbManager(*this));
-        mRflManager.reset(new odRfl::RflManager(*this));
+	    mDbManager = std::make_unique<odDb::DbManager>(*this);
+        mRflManager = std::make_unique<odRfl::RflManager>(*this);
 
 	    mRflManager->onStartup();
 
@@ -128,7 +128,7 @@ namespace od
 	        mLevel = nullptr;
 	    }
 
-	    mLevel.reset(new od::Level(levelFile, *this));
+	    mLevel = std::make_unique<od::Level>(levelFile, *this);
         mLevel->loadLevel();
 
         mLevel->spawnAllObjects();

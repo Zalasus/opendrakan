@@ -30,17 +30,17 @@ namespace odPhysics
 	PhysicsManager::PhysicsManager(od::Level &level)
 	: mLevel(level)
 	{
-		mBroadphase.reset(new btDbvtBroadphase());
-		mCollisionConfiguration.reset(new btDefaultCollisionConfiguration());
-		mDispatcher.reset(new btCollisionDispatcher(mCollisionConfiguration.get()));
-		mConstraintSolver.reset(new btSequentialImpulseConstraintSolver());
+		mBroadphase = std::make_unique<btDbvtBroadphase>();
+		mCollisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
+		mDispatcher = std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get());
+		mConstraintSolver = std::make_unique<btSequentialImpulseConstraintSolver>();
 
-		mDynamicsWorld.reset(new btDiscreteDynamicsWorld(mDispatcher.get(), mBroadphase.get(), mConstraintSolver.get(), mCollisionConfiguration.get()));
+		mDynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mBroadphase.get(), mConstraintSolver.get(), mCollisionConfiguration.get());
 
 		mDynamicsWorld->setGravity(btVector3(0, -1, 0));
 
 		// so we get ghost object interaction
-		mGhostPairCallback.reset(new btGhostPairCallback);
+		mGhostPairCallback = std::make_unique<btGhostPairCallback>();
 		mDynamicsWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
 	}
 
@@ -172,7 +172,7 @@ namespace odPhysics
 
 		LayerBodyPair layerBodyPair;
 		layerBodyPair.first = &l;
-		layerBodyPair.second.reset(new btRigidBody(info));
+		layerBodyPair.second = std::make_unique<btRigidBody>(info);
 
 		btRigidBody *bodyPtr = layerBodyPair.second.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
 		bodyPtr->setUserIndex(l.getId());
@@ -217,7 +217,7 @@ namespace odPhysics
 		btRigidBody::btRigidBodyConstructionInfo info(mass, &obj, reg.shape.get());
         reg.shape->calculateLocalInertia(mass, info.m_localInertia);
 
-		reg.rigidBody.reset(new btRigidBody(info));
+		reg.rigidBody = std::make_unique<btRigidBody>(info);
 
 		btRigidBody *bodyPtr = reg.rigidBody.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
 		bodyPtr->setUserIndex(obj.getObjectId());
@@ -259,7 +259,7 @@ namespace odPhysics
             shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
         }
 
-	    mDetectors.push_back(std::unique_ptr<Detector>(new Detector(mDynamicsWorld.get(), shape, obj)));
+	    mDetectors.push_back(std::make_unique<Detector>(mDynamicsWorld.get(), shape, obj));
 	    return mDetectors.back().get();
 	}
 

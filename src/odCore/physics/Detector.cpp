@@ -20,7 +20,7 @@ namespace odPhysics
     : mCollisionWorld(collisionWorld)
     , mObjectShape(objectShape)
     , mLevelObject(obj)
-    , mGhostObject(new btPairCachingGhostObject)
+    , mGhostObject(std::make_unique<btPairCachingGhostObject>())
     {
         mGhostObject->setCollisionShape(mObjectShape.get());
         mGhostObject->setCollisionFlags(mGhostObject->getCollisionFlags() | btCollisionObject::CF_NO_CONTACT_RESPONSE);

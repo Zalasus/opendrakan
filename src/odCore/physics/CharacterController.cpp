@@ -25,8 +25,8 @@ namespace odPhysics
 	, mUp(0, 1, 0)
 	, mVelocity(0, -1, 0)
 	{
-		mCharShape.reset(new btCapsuleShape(radius, height));
-		mGhostObject.reset(new btPairCachingGhostObject());
+		mCharShape = std::make_unique<btCapsuleShape>(radius, height);
+		mGhostObject = std::make_unique<btPairCachingGhostObject>();
 		mGhostObject->setCollisionShape(mCharShape.get());
 		mGhostObject->setCollisionFlags(mGhostObject->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_CHARACTER_OBJECT);
 		mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(charObject.getPosition(), charObject.getRotation()));

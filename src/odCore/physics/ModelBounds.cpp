@@ -91,7 +91,7 @@ namespace odPhysics
 
 	ModelCollisionShape *ModelBounds::buildNewShape()
 	{
-	    std::unique_ptr<ModelCollisionShape> shape(new ModelCollisionShape(mShapeCount));
+	    auto shape = std::make_unique<ModelCollisionShape>(mShapeCount);
 
         for(size_t index = 0; index < mShapeCount; ++index)
         {
@@ -111,7 +111,7 @@ namespace odPhysics
                     myTranslation = mSpheres[index].center();
                     myRotation = glm::quat(0,0,0,1);
 
-                    newShape.reset(new btSphereShape(mSpheres[index].radius()));
+                    newShape = std::make_unique<btSphereShape>(mSpheres[index].radius());
 
                 }else
                 {
@@ -119,7 +119,7 @@ namespace odPhysics
                     myRotation = mBoxes[index].orientation();
 
                     btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].extends() * 0.5f); // btBoxShape wants half extends, so we multiply by 0.5
-                    newShape.reset(new btBoxShape(halfExtends));
+                    newShape = std::make_unique<btBoxShape>(halfExtends);
                 }
 
                 btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);

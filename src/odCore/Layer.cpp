@@ -173,7 +173,7 @@ namespace od
         }
 
         bool mustUse32BitIndices = (mVertices.size() - 1 > 0xffff); // should save us some memory most of the time
-        mBulletMesh.reset(new btTriangleMesh(mustUse32BitIndices, false));
+        mBulletMesh = std::make_unique<btTriangleMesh>(mustUse32BitIndices, false);
         btTriangleMesh *mesh = mBulletMesh.get(); // because we call members very often and unique_ptr has some overhead
 
         // first, add all vertices in grid to shape
@@ -234,7 +234,7 @@ namespace od
             }
         }
 
-        mCollisionShape.reset(new btBvhTriangleMeshShape(mesh, true, true));
+        mCollisionShape = std::make_unique<btBvhTriangleMeshShape>(mesh, true, true);
 
         return mCollisionShape.get();
     }

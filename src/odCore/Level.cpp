@@ -258,7 +258,7 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		std::unique_ptr<Layer> layer(new Layer(*this));
+    		std::unique_ptr<Layer> layer = std::make_unique<Layer>(*this);
     		layer->loadDefinition(dr);
 
     		mLayers.push_back(std::move(layer));
@@ -330,7 +330,7 @@ namespace od
     	mLevelObjects.reserve(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)
     	{
-    		std::unique_ptr<od::LevelObject> object(new od::LevelObject(*this));
+    		std::unique_ptr<od::LevelObject> object = std::make_unique<od::LevelObject>(*this);
     		object->loadFromRecord(dr);
 
     		mLevelObjects.push_back(std::move(object));

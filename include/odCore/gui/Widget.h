@@ -73,7 +73,11 @@ namespace odGui
     {
     public:
 
-        friend class Gui;
+        /**
+         * Constructs a Widget with a predefined render node. This is only used directly by
+         * the Gui to create it's root widget.
+         */
+        Widget(Gui &gui, odRender::GuiNode *node);
 
         Widget(Gui &gui);
         virtual ~Widget();
@@ -153,12 +157,6 @@ namespace odGui
 
 
     private:
-
-        /**
-         * Constructs a Widget with a predefined render node. This is only used directly by
-         * the Gui to create it's root widget.
-         */
-        Widget(Gui &gui, odRender::GuiNode *node);
 
         glm::vec2 _getOriginVector();
 
