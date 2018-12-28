@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odOsg/Rig.h>
+#include <odOsg/render/Rig.h>
 
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>

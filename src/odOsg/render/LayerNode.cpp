@@ -5,14 +5,14 @@
  *      Author: zal
  */
 
-#include <odOsg/LayerNode.h>
+#include <odOsg/render/LayerNode.h>
 
 #include <odCore/Layer.h>
 #include <odCore/Level.h>
 
-#include <odOsg/GeometryBuilder.h>
-#include <odOsg/Renderer.h>
-#include <odOsg/ShaderFactory.h>
+#include <odOsg/render/GeometryBuilder.h>
+#include <odOsg/render/Renderer.h>
+#include <odOsg/render/ShaderFactory.h>
 
 namespace odOsg
 {

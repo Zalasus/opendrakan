@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odOsg/LightState.h>
+#include <odOsg/render/LightState.h>
 
 #include <osg/NodeVisitor>
 #include <osgUtil/CullVisitor>
@@ -17,8 +17,8 @@
 
 #include <odCore/render/Light.h>
 
-#include <odOsg/Renderer.h>
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/render/Renderer.h>
 
 namespace odOsg
 {

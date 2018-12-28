@@ -5,12 +5,12 @@
  *      Author: zal
  */
 
-#include <odOsg/Geometry.h>
+#include <odOsg/render/Geometry.h>
 
 #include <odCore/Exception.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Texture.h>
+#include <odOsg/render/Texture.h>
 
 namespace odOsg
 {

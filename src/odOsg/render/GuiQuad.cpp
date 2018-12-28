@@ -5,14 +5,14 @@
  *      Author: zal
  */
 
-#include <odOsg/GuiQuad.h>
+#include <odOsg/render/GuiQuad.h>
 
 #include <odCore/Exception.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Texture.h>
-#include <odOsg/Image.h>
 #include <odOsg/Utils.h>
+#include <odOsg/render/Texture.h>
+#include <odOsg/render/Image.h>
 
 namespace odOsg
 {

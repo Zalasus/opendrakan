@@ -5,16 +5,16 @@
  *      Author: zal
  */
 
-#include <odOsg/ModelNode.h>
+#include <odOsg/render/ModelNode.h>
 
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
 
 #include <odCore/db/Model.h>
 
-#include <odOsg/Renderer.h>
-#include <odOsg/Geometry.h>
-#include <odOsg/GeometryBuilder.h>
+#include <odOsg/render/Renderer.h>
+#include <odOsg/render/Geometry.h>
+#include <odOsg/render/GeometryBuilder.h>
 
 namespace odOsg
 {

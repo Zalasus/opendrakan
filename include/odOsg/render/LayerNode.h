@@ -13,8 +13,8 @@
 
 #include <odCore/render/LayerNode.h>
 
-#include <odOsg/Geometry.h>
-#include <odOsg/LightState.h>
+#include <odOsg/render/Geometry.h>
+#include <odOsg/render/LightState.h>
 
 namespace od
 {

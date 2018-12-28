@@ -6,7 +6,7 @@
  */
 
 
-#include <odOsg/Renderer.h>
+#include <odOsg/render/Renderer.h>
 
 #include <memory>
 
@@ -21,16 +21,17 @@
 #include <odCore/render/Light.h>
 #include <odCore/render/RendererEventListener.h>
 
-#include <odOsg/ObjectNode.h>
-#include <odOsg/ModelNode.h>
-#include <odOsg/LayerNode.h>
-#include <odOsg/Geometry.h>
-#include <odOsg/Image.h>
-#include <odOsg/Texture.h>
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Camera.h>
-#include <odOsg/GuiNode.h>
 #include <odOsg/Utils.h>
+
+#include <odOsg/render/ObjectNode.h>
+#include <odOsg/render/ModelNode.h>
+#include <odOsg/render/LayerNode.h>
+#include <odOsg/render/Geometry.h>
+#include <odOsg/render/Image.h>
+#include <odOsg/render/Texture.h>
+#include <odOsg/render/Camera.h>
+#include <odOsg/render/GuiNode.h>
 
 namespace odOsg
 {

@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odOsg/Camera.h>
+#include <odOsg/render/Camera.h>
 
 #include <odCore/Exception.h>
 

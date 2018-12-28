@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odOsg/ShaderFactory.h>
+#include <odOsg/render/ShaderFactory.h>
 
 #include <odCore/Exception.h>
 

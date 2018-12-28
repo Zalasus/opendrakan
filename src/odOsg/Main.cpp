@@ -13,7 +13,7 @@
 #include <odCore/Engine.h>
 #include <odCore/Exception.h>
 
-#include <odOsg/Renderer.h>
+#include <odOsg/render/Renderer.h>
 
 
 static od::Engine *sEngine = nullptr;

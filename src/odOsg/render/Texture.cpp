@@ -5,11 +5,11 @@
  *      Author: zal
  */
 
-#include <odOsg/Texture.h>
+#include <odOsg/render/Texture.h>
 
 #include <odCore/db/Texture.h>
 
-#include <odOsg/Image.h>
+#include <odOsg/render/Image.h>
 
 namespace odOsg
 {

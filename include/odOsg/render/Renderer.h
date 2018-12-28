@@ -21,7 +21,7 @@
 #include <odCore/RefCounted.h>
 #include <odCore/BoundingSphere.h>
 
-#include <odOsg/ShaderFactory.h>
+#include <odOsg/render/ShaderFactory.h>
 
 namespace odOsg
 {

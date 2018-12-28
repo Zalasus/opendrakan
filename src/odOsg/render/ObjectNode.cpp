@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odOsg/ObjectNode.h>
+#include <odOsg/render/ObjectNode.h>
 
 #include <osg/Depth>
 
@@ -13,8 +13,8 @@
 #include <odCore/Layer.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/ModelNode.h>
-#include <odOsg/Rig.h>
+#include <odOsg/render/ModelNode.h>
+#include <odOsg/render/Rig.h>
 
 namespace odOsg
 {

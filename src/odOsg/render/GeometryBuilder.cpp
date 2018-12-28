@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odOsg/GeometryBuilder.h>
+#include <odOsg/render/GeometryBuilder.h>
 
 #include <cassert>
 #include <algorithm>
@@ -23,9 +23,9 @@
 #include <odCore/render/Image.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Geometry.h>
-#include <odOsg/Texture.h>
-#include <odOsg/Renderer.h>
+#include <odOsg/render/Geometry.h>
+#include <odOsg/render/Texture.h>
+#include <odOsg/render/Renderer.h>
 
 namespace odOsg
 {

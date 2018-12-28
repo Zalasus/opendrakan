@@ -1,20 +1,20 @@
 
 set(SOURCES
-        "Camera.cpp"
-        "Geometry.cpp"
-        "GeometryBuilder.cpp"
-        "GuiNode.cpp"
-        "GuiQuad.cpp"
-        "Image.cpp"
-        "LayerNode.cpp"
-        "LightState.cpp"
-        "Main.cpp"
-        "ModelNode.cpp"
-        "ObjectNode.cpp"
-        "Renderer.cpp"
-        "Rig.cpp"
-        "ShaderFactory.cpp"
-        "Texture.cpp")
+        "render/Camera.cpp"
+        "render/Geometry.cpp"
+        "render/GeometryBuilder.cpp"
+        "render/GuiNode.cpp"
+        "render/GuiQuad.cpp"
+        "render/Image.cpp"
+        "render/LayerNode.cpp"
+        "render/LightState.cpp"
+        "render/ModelNode.cpp"
+        "render/ObjectNode.cpp"
+        "render/Renderer.cpp"
+        "render/Rig.cpp"
+        "render/ShaderFactory.cpp"
+        "render/Texture.cpp"
+        "Main.cpp")
         
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 

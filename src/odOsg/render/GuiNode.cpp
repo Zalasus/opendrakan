@@ -5,11 +5,11 @@
  *      Author: zal
  */
 
-#include <odOsg/GuiNode.h>
+#include <odOsg/render/GuiNode.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/GuiQuad.h>
 #include <odOsg/Utils.h>
+#include <odOsg/render/GuiQuad.h>
 
 #include <odCore/gui/Widget.h>
 

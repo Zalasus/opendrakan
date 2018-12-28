@@ -5,13 +5,13 @@
  *      Author: zal
  */
 
-#include <odOsg/Image.h>
+#include <odOsg/render/Image.h>
 
 #include <odCore/Exception.h>
 
 #include <odCore/db/Texture.h>
 
-#include <odOsg/Texture.h>
+#include <odOsg/render/Texture.h>
 
 namespace odOsg
 {

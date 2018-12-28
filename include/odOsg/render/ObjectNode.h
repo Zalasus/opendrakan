@@ -16,7 +16,7 @@
 
 #include <odCore/render/ObjectNode.h>
 
-#include <odOsg/LightState.h>
+#include <odOsg/render/LightState.h>
 
 namespace odOsg
 {

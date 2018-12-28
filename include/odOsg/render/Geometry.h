@@ -13,7 +13,7 @@
 #include <osg/Node>
 #include <osg/Geode>
 
-#include <odOsg/Texture.h>
+#include <odOsg/render/Texture.h>
 
 namespace odOsg
 {
