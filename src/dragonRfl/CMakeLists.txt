@@ -24,6 +24,7 @@ set(SOURCES
     "gui/Cursor.cpp"
     "gui/DragonGui.cpp"
     "gui/MainMenu.cpp"
+    "Actions.cpp"
     "RflDragon.cpp")
 
 add_library(dragonRfl STATIC ${SOURCES})
