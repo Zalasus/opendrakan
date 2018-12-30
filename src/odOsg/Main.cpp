@@ -14,6 +14,7 @@
 #include <odCore/Exception.h>
 
 #include <odOsg/render/Renderer.h>
+#include <odOsg/InputListener.h>
 
 
 static od::Engine *sEngine = nullptr;
@@ -85,6 +86,8 @@ int main(int argc, char **argv)
     odOsg::Renderer osgRenderer;
     osgRenderer.setFreeLook(freeLook);
     engine.setRenderer(&osgRenderer);
+
+    odOsg::InputListener inputListener(osgRenderer, engine.getInputManager());
 
     try
     {

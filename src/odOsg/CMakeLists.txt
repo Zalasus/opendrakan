@@ -14,6 +14,7 @@ set(SOURCES
         "render/Rig.cpp"
         "render/ShaderFactory.cpp"
         "render/Texture.cpp"
+        "InputListener.cpp"
         "Main.cpp")
         
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)

@@ -16,6 +16,8 @@
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
 
+#include <odCore/input/InputManager.h>
+
 #include <odCore/rfl/RflManager.h>
 
 #include <odCore/render/Renderer.h>
@@ -31,6 +33,7 @@ namespace od
 	, mSetUp(false)
 	, mIsDone(false)
 	{
+        mInputManager = std::make_unique<odInput::InputManager>();
 	}
 
 	Engine::~Engine()

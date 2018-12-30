@@ -39,6 +39,7 @@ namespace odOsg
         ~Renderer();
 
         inline ShaderFactory &getShaderFactory() { return mShaderFactory; }
+        inline osgViewer::Viewer *getViewer() { return mViewer; }
 
         virtual void onStart() override;
         virtual void onEnd() override;

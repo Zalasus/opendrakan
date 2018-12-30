@@ -20,6 +20,11 @@ namespace odDb
     class DbManager;
 }
 
+namespace odInput
+{
+    class InputManager;
+}
+
 namespace odRfl
 {
     class RflManager;
@@ -50,6 +55,7 @@ namespace od
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline odDb::DbManager &getDbManager() { return *mDbManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
+		inline odInput::InputManager &getInputManager() { return *mInputManager; }
 		inline odRender::Renderer *getRenderer() { return mRenderer; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline bool isDone() { return mIsDone; }
@@ -70,6 +76,7 @@ namespace od
 		void _findEngineRoot(const std::string &rrcFileName);
 
 		std::unique_ptr<odDb::DbManager> mDbManager;
+		std::unique_ptr<odInput::InputManager> mInputManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
 		odRender::Renderer *mRenderer;
 		bool mHasInitialLevelOverride;

@@ -23,6 +23,7 @@ set(SOURCES
         "db/TextureFactory.cpp"
         "gui/Gui.cpp"
         "gui/Widget.cpp"
+        "input/InputManager.cpp"
         "physics/BulletCallbacks.cpp"
         "physics/CharacterController.cpp"
         "physics/Detector.cpp"

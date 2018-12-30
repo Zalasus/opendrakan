@@ -8,10 +8,15 @@
 #include <dragonRfl/RflDragon.h>
 
 #include <odCore/Engine.h>
+
+#include <odCore/input/InputManager.h>
+
 #include <odCore/rfl/PrefetchProbe.h>
+
 #include <odCore/db/DbManager.h>
 
 #include <dragonRfl/gui/DragonGui.h>
+
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
 
@@ -35,6 +40,7 @@ namespace dragonRfl
         if(engine.getRenderer() != nullptr)
         {
             mGui = std::make_unique<DragonGui>(engine);
+            engine.getInputManager().setGui(mGui.get());
         }
 
         if(!engine.hasInitialLevelOverride())
