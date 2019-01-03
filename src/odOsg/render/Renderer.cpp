@@ -301,6 +301,14 @@ namespace odOsg
 
         mViewer->realize();
 
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows, true);
+        for(osgViewer::GraphicsWindow *window: windows)
+        {
+            window->setCursor(osgViewer::GraphicsWindow::NoCursor);
+            window->setWindowName("OpenDrakan (OSG)");
+        }
+
         double simTime = 0;
         double frameTime = 0;
         while(!mViewer->done())
