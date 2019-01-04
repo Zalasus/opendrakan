@@ -21,6 +21,8 @@ namespace dragonRfl
 
         Cursor(DragonGui &gui);
 
+        virtual bool liesWithinLogicalArea(const glm::vec2 &pos) override;
+
     };
 
 }

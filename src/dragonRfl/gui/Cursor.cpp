@@ -39,4 +39,10 @@ namespace dragonRfl
         this->setDimensions(32.0, 32.0, odGui::WidgetDimensionType::Pixels);
     }
 
+    bool Cursor::liesWithinLogicalArea(const glm::vec2 &pos)
+    {
+        // this causes the cursor widget to be excluded from any mouse events
+        return false;
+    }
+
 }
