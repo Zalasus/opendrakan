@@ -41,9 +41,10 @@ namespace odGui
     void Gui::mouseDown()
     {
         mCurrentHitWidgets.clear();
-        mRootWidget->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
+        glm::mat4 eye(1.0);
+        mRootWidget->intersect(mCursorPosInNdc, eye, eye, mCurrentHitWidgets);
 
-        Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
+        Logger::info() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
 
         for(auto it = mCurrentHitWidgets.begin(); it != mCurrentHitWidgets.end(); ++it)
         {
@@ -122,7 +123,8 @@ namespace odGui
         //  happened can be determined from the mouse-over state that is stored in those widgets.
         //  FIXME: this only works if every widget in the scenegraph is unique
         mCurrentHitWidgets.clear();
-        mRootWidget->intersect(mCursorPosInNdc, mNdcToWidgetSpaceTransform, mWidgetSpaceToNdcTransform, mCurrentHitWidgets);
+        glm::mat4 eye(1.0);
+        mRootWidget->intersect(mCursorPosInNdc, eye, eye, mCurrentHitWidgets);
 
         mJoinedHitWidgets.clear();
         mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), mCurrentHitWidgets.begin(), mCurrentHitWidgets.end());

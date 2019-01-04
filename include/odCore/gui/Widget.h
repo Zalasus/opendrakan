@@ -140,6 +140,8 @@ namespace odGui
         void addChild(Widget *w);
         void removeChild(Widget *w);
 
+        /// @param parentMatrix         The matrix representing a transformation from this widget's parent to that parent's parent
+        /// @param parentInverseMatrix  The inverse of parentMatrix
         void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
         glm::vec2 getDimensionsInPixels();

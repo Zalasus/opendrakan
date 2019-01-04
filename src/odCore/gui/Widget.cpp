@@ -113,16 +113,16 @@ namespace odGui
 
     void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::mat4 currentMatrix = parentMatrix * mParentSpaceToWidgetSpace;
-        glm::mat4 currentInverseMatrix = parentInverseMatrix * mWidgetSpaceToParentSpace;
+        glm::mat4 currentMatrix = parentMatrix * mWidgetSpaceToParentSpace;
+        glm::mat4 currentInverseMatrix = parentInverseMatrix * mParentSpaceToWidgetSpace;
 
-        glm::vec4 min = currentMatrix * glm::vec4(0.0, 1.0, 0.0, 1.0);
-        glm::vec4 max = currentMatrix * glm::vec4(1.0, 0.0, 0.0, 1.0);
+        glm::vec4 minNdc = currentMatrix * glm::vec4(0.0, 1.0, 0.0, 1.0);
+        glm::vec4 maxNdc = currentMatrix * glm::vec4(1.0, 0.0, 0.0, 1.0);
 
-        if(pointNdc.x < min.x ||
-           pointNdc.x > max.x ||
-           pointNdc.y < min.y ||
-           pointNdc.y > max.y)
+        if(pointNdc.x < minNdc.x ||
+           pointNdc.x > maxNdc.x ||
+           pointNdc.y < minNdc.y ||
+           pointNdc.y > maxNdc.y)
         {
             return;
         }
