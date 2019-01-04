@@ -42,9 +42,9 @@ namespace odGui
     {
         mCurrentHitWidgets.clear();
         glm::mat4 eye(1.0);
-        mRootWidget->intersect(mCursorPosInNdc, eye, eye, mCurrentHitWidgets);
+        mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
 
-        Logger::info() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
+        Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
 
         for(auto it = mCurrentHitWidgets.begin(); it != mCurrentHitWidgets.end(); ++it)
         {
@@ -124,7 +124,7 @@ namespace odGui
         //  FIXME: this only works if every widget in the scenegraph is unique
         mCurrentHitWidgets.clear();
         glm::mat4 eye(1.0);
-        mRootWidget->intersect(mCursorPosInNdc, eye, eye, mCurrentHitWidgets);
+        mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
 
         mJoinedHitWidgets.clear();
         mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), mCurrentHitWidgets.begin(), mCurrentHitWidgets.end());

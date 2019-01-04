@@ -111,23 +111,11 @@ namespace odGui
         w->setParent(nullptr);
     }
 
-    void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets)
+    void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::mat4 currentMatrix = parentMatrix * mWidgetSpaceToParentSpace;
-        glm::mat4 currentInverseMatrix = parentInverseMatrix * mParentSpaceToWidgetSpace;
+        glm::mat4 currentMatrix = mParentSpaceToWidgetSpace * parentMatrix;
 
-        glm::vec4 minNdc = currentMatrix * glm::vec4(0.0, 1.0, 0.0, 1.0);
-        glm::vec4 maxNdc = currentMatrix * glm::vec4(1.0, 0.0, 0.0, 1.0);
-
-        if(pointNdc.x < minNdc.x ||
-           pointNdc.x > maxNdc.x ||
-           pointNdc.y < minNdc.y ||
-           pointNdc.y > maxNdc.y)
-        {
-            return;
-        }
-
-        glm::vec4 pointInWidget = currentInverseMatrix * glm::vec4(pointNdc, 0.0, 1.0);
+        glm::vec4 pointInWidget = currentMatrix * glm::vec4(pointNdc, 0.0, 1.0);
 
         if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
         {
@@ -136,11 +124,11 @@ namespace odGui
             info.hitPointInWidget.y = pointInWidget.y;
             info.widget = this;
             hitWidgets.push_back(info);
-        }
 
-        for(auto &&child : mChildWidgets)
-        {
-            child->intersect(pointNdc, currentMatrix, currentInverseMatrix, hitWidgets);
+            for(auto &&child : mChildWidgets)
+            {
+                child->intersect(pointNdc, currentMatrix, hitWidgets);
+            }
         }
     }
 

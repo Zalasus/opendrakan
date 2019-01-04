@@ -103,9 +103,14 @@ namespace odGui
         /**
          * @brief Returns true if \c pos lies within the logical widget bounds.
          *
-         * This gets called when a UI event (mouse click etc.) happens within the rectangular screen space occupied by the widget.
-         * It can be used to limit the space inside which a widget responds to events. This is useful for round buttons, widgets with
-         * borders etc. The default behaviour is to return true for all points within [0.0 0.0] and [1.0 1.0].
+         * This gets called to check whether a UI event (mouse click etc.) happened within the widget.
+         * It can be used to limit the space inside which a widget responds to events. This is useful for
+         * round buttons, widgets with orders etc.
+         *
+         * The default behaviour is to return true for all points within [0.0 0.0] and [1.0 1.0].
+         *
+         * Children of a widget will only be considered for events if this method returns true for the
+         * event coordiantes.
          *
          * @param  pos[in]   Point in this widget's coordinate space to be checked.
          */
@@ -140,9 +145,8 @@ namespace odGui
         void addChild(Widget *w);
         void removeChild(Widget *w);
 
-        /// @param parentMatrix         The matrix representing a transformation from this widget's parent to that parent's parent
-        /// @param parentInverseMatrix  The inverse of parentMatrix
-        void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, const glm::mat4 &parentInverseMatrix, std::vector<HitWidgetInfo> &hitWidgets);
+        /// @param parentMatrix         The matrix representing a transformation from parent space to widget space of the parent recursion level
+        void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
         glm::vec2 getDimensionsInPixels();
 
