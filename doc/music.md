@@ -14,10 +14,10 @@ IDs in the range 0x1001 to 0x100b all contain only 4 bytes. These are simple int
 
 Further investigation has shown that the structure for the Music.rrc is based on the following concept:
 Each music entry consists of a segment, instrument and volume entry. 
-Segment entries are running IDs from 1-255 (0x00 - 0xFF)
-Instrument entries are running IDs starting from 256 (0x100 - 0x1FF)
-Volume entries starting at 4096 (0x1000 - 0x10FF)
+Segment entries are running IDs from 1-255 (0x01 - 0xFF)
+Instrument entries are running IDs starting from 256 (0x100 - 0x1FE)
+Volume entries starting at 4097 (0x1001 - 0x10FF)
 
-It can be seen that the most significant bit is used as range criterion and due to the fact that the segment files may only use the range 0x00 - 0xFF the other entries should also be limited down to a count of 255. 
+It can be seen that the most significant bit is used as range criterion and due to the fact that the segment files may only use the range 0x01 - 0xFF the other entries should also be limited down to a count of 255. 
 
 The Drakan Level Editor then adresses each music entry by an ID which corresponds to the ID of the segment. The Volume and Instrument entries are combined according to their IDs. That way the first sgt gets combined with first instrument and first volume file, and so on.
