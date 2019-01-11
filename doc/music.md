@@ -10,6 +10,6 @@ records with IDs 0x100 to 0x10a are DLS files (instrument data). Those records c
 header with all the information one would find in a DirectMusic .sgt or .dls file. Only
 the file names are missing.
 
-IDs in the range 0x1001 to 0x100b all contain only 4 bytes, the meaning of which is unclear.
+IDs in the range 0x1001 to 0x100b all contain only 4 bytes. These are simple int32 values which represent volume as pointed out in the riot_database_format.txt. (volume in millibels. 0 == full volume, -5000 == (basically) silent. Amplitude factor = 10^(volume / 2000)
 
 
