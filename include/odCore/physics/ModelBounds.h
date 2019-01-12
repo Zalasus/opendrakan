@@ -51,6 +51,9 @@ namespace odPhysics
 
 		ModelBounds(ShapeType type, size_t shapeCount);
 
+		inline const od::BoundingSphere &getMainSphere() const { return mMainSphere; }
+		inline const od::OrientedBoundingBox &getMainBox() const { return mMainBox; }
+
 		void setMainBounds(const od::BoundingSphere &sphere, const od::OrientedBoundingBox &box);
 		void addHierarchyEntry(uint16_t firstChildIndex, uint16_t nextSiblingIndex);
 		void addSphere(const od::BoundingSphere &sphere);
