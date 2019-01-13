@@ -38,4 +38,75 @@ namespace odInput
 
     }
 
+    void InputManager::keyDown(Key key)
+    {
+        auto it = mBindings.find(key);
+        if(it == mBindings.end())
+        {
+            return; // no bindings for this key
+        }
+
+        InputEvent event;
+        event.key = key;
+
+        for(auto &a : it->second.actions)
+        {
+            if(a != 0)
+            {
+                _triggerCallbackOnAction(a, event);
+            }
+        }
+    }
+
+    void InputManager::keyUp(Key key)
+    {
+
+    }
+
+    void InputManager::bindActionToKey(IAction *iaction, Key key)
+    {
+        Binding &binding = mBindings[key];
+        for(auto &a : binding.actions)
+        {
+            if(a == 0)
+            {
+                a = iaction->getActionAsInt();
+                return;
+            }
+        }
+
+        throw od::Exception("Exceeded maximum of actions per key");
+    }
+
+    void InputManager::unbindActionFromKey(IAction *iaction, Key key)
+    {
+        auto it = mBindings.find(key);
+        if(it == mBindings.end())
+        {
+            return;
+        }
+
+        for(auto &a : it->second.actions)
+        {
+            if(a == iaction->getActionAsInt())
+            {
+                a = 0;
+            }
+        }
+    }
+
+    void InputManager::_triggerCallbackOnAction(int action, InputEvent event)
+    {
+        auto it = mActions.find(action);
+        if(it == mActions.end())
+        {
+            return;
+        }
+
+        if(it->second != nullptr)
+        {
+            it->second->triggerCallback(event);
+        }
+    }
+
 }

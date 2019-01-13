@@ -10,10 +10,15 @@
 
 #include <memory>
 
+#include <odCore/input/Action.h>
+
 #include <odCore/rfl/Rfl.h>
+
+#include <dragonRfl/Actions.h>
 
 namespace dragonRfl
 {
+
     class LocalPlayer;
     class DragonGui;
 
@@ -33,8 +38,12 @@ namespace dragonRfl
 
     private:
 
+        void _handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
+
         LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
+
+        od::RefPtr<odInput::IAction> mMenuAction;
     };
 
 }

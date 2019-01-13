@@ -15,6 +15,8 @@
 
 #include <odCore/db/DbManager.h>
 
+#include <dragonRfl/Actions.h>
+
 #include <dragonRfl/gui/DragonGui.h>
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
@@ -48,10 +50,32 @@ namespace dragonRfl
             od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
             engine.loadLevel(initialLevel.adjustCase());
         }
+
+        odInput::InputManager &im = engine.getInputManager();
+
+        auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
+        auto mmAction = im.getOrCreateAction(Action::Main_Menu);
+        mmAction->setRepeatable(false);
+        mmAction->addCallback(actionHandler);
+        mmAction->bindToKey(odInput::Key::Escape);
+        mMenuAction = mmAction;
     }
 
     void DragonRfl::onMenuToggle(bool newMode)
     {
+    }
+
+    void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
+    {
+        switch(action->getAction())
+        {
+        case Action::Main_Menu:
+            mGui->setMenuMode(!mGui->isMenuMode());
+            break;
+
+        default:
+            break;
+        }
     }
 
 
