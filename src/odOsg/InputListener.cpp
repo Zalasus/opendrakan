@@ -61,7 +61,12 @@ namespace odOsg
         switch(ea.getEventType())
         {
         case osgGA::GUIEventAdapter::KEYDOWN:
-            break;
+            mInputManager.keyDown(_osgKeyToOdKey(ea.getKey()));
+            return true;
+
+        case osgGA::GUIEventAdapter::KEYUP:
+            mInputManager.keyUp(_osgKeyToOdKey(ea.getKey()));
+            return true;
 
         case osgGA::GUIEventAdapter::PUSH:
             mInputManager.mouseButtonDown(ea.getButton());
@@ -84,4 +89,9 @@ namespace odOsg
         return false;
     }
 
+    odInput::Key InputListener::_osgKeyToOdKey(int key)
+    {
+        // since OD adapted the key enum values from OSG, we can simply cast here
+        return static_cast<odInput::Key>(key);
+    }
 }

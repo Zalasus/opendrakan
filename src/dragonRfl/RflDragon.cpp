@@ -57,7 +57,7 @@ namespace dragonRfl
         auto mmAction = im.getOrCreateAction(Action::Main_Menu);
         mmAction->setRepeatable(false);
         mmAction->addCallback(actionHandler);
-        mmAction->bindToKey(odInput::Key::Escape);
+        mmAction->bindToKey(odInput::Key::Return);
         mMenuAction = mmAction;
     }
 

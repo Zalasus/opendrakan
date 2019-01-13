@@ -10,6 +10,8 @@
 
 #include <osgGA/GUIEventHandler>
 
+#include <odCore/input/Keys.h>
+
 namespace odInput
 {
     class InputManager;
@@ -30,6 +32,8 @@ namespace odOsg
 
 
     private:
+
+        odInput::Key _osgKeyToOdKey(int key);
 
         Renderer &mRenderer;
         odInput::InputManager &mInputManager;
