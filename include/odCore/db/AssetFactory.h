@@ -80,11 +80,15 @@ namespace odDb
 	template <typename _AssetType>
 	od::RefPtr<_AssetType> AssetFactory<_AssetType>::getAsset(od::RecordId assetId)
 	{
-	    auto it = mAssetCache.find(assetId);
-        if(it != mAssetCache.end() && it->second != nullptr)
+	    // we access the cache using the []-operator, so we create an entry for the asset if if not existed yet.
+        //  since most of the time the assets we are looking for are either cached or can be loaded from the container,
+	    //  doing it this way will save us one traversal of the map, as we don't have to use insert() to add a newly loaded
+	    //  asset to the cache. for the rare case that we can not find an asset in the file, just erase the unnecessary entry.
+	    od::WeakRefPtr<_AssetType> &asset = mAssetCache[assetId];
+        if(asset != nullptr)
         {
             Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
-            return od::RefPtr<_AssetType>(it->second.get());
+            return od::RefPtr<_AssetType>(asset.get());
         }
 
         // asset was not cached or got deleted. let implementation handle loading
@@ -92,18 +96,13 @@ namespace odDb
 	    od::RefPtr<_AssetType> loaded = this->loadAsset(assetId);
 	    if(loaded == nullptr)
 	    {
+	        mAssetCache.erase(assetId);
+
 	        Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
-            throw od::NotFoundException("Asset not found in cache or asset container");
+	        throw od::NotFoundException("Asset not found in cache or asset container");
 	    }
 
-	    if(it != mAssetCache.end())
-	    {
-	        it->second = loaded;
-
-	    }else
-	    {
-	        mAssetCache[assetId] = od::WeakRefPtr<_AssetType>(loaded);
-	    }
+	    asset = loaded; // this effectively inserts the asset into the cache
 
 	    return loaded;
 	}
