@@ -34,16 +34,7 @@ namespace od
 	{
 	public:
 
-		NotFoundException(const std::string &msg, RecordType type = 0, RecordId id = 0);
-
-		inline RecordType getRecordType() const { return mType; };
-		inline RecordId getRecordId() const { return mId; };
-
-
-	private:
-
-		RecordType mType;
-		RecordId mId;
+		NotFoundException(const std::string &msg);
 
 	};
 
