@@ -47,6 +47,10 @@ namespace odRender
 
         virtual ~ObjectNode() = default;
 
+        virtual glm::vec3 getPosition() = 0;
+        virtual glm::quat getOrientation() = 0;
+        virtual glm::vec3 getScale() = 0;
+
         virtual void setPosition(const glm::vec3 &pos) = 0;
         virtual void setOrientation(const glm::quat &orientation) = 0;
         virtual void setScale(const glm::vec3 &scale) = 0;

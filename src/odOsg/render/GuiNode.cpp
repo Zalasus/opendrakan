@@ -92,40 +92,24 @@ namespace odOsg
         }
     }
 
-    void GuiNode::addChild(odRender::GuiNode *node)
+    void GuiNode::setMatrix(const glm::mat4 &m)
     {
-        if(node == nullptr || node == this)
-        {
-            return;
-        }
-
-        od::RefPtr<GuiNode> osgNode = upcast<GuiNode>(node);
-        mChildNodes.push_back(osgNode);
-
-        mTransform->addChild(osgNode->getOsgNode());
+        mTransform->setMatrix(GlmAdapter::toOsg(m));
     }
 
-    void GuiNode::removeChild(odRender::GuiNode *node)
+    void GuiNode::setViewport(const glm::vec2 &offset, const glm::vec2 &size)
     {
-        if(node == nullptr || node == this)
-        {
-            return;
-        }
 
-        for(auto it = mChildNodes.begin(); it != mChildNodes.end(); ++it)
-        {
-            if((*it) == node)
-            {
-                mTransform->removeChild((*it)->getOsgNode());
-                mChildNodes.erase(it);
-                break;
-            }
-        }
     }
 
-    void GuiNode::setMatrix(const glm::mat4 &matrix)
+    void GuiNode::setOrthogonalMode()
     {
-        mTransform->setMatrix(GlmAdapter::toOsg(matrix));
+
+    }
+
+    void GuiNode::setPerspectiveMode(float fov, float aspect)
+    {
+
     }
 
     void GuiNode::setVisible(bool visible)
@@ -173,6 +157,16 @@ namespace odOsg
                 break;
             }
         }
+    }
+
+    odRender::ObjectNode *GuiNode::createObjectNode()
+    {
+        return nullptr;
+    }
+
+    void GuiNode::removeObjectNode(odRender::ObjectNode *node)
+    {
+
     }
 
     void GuiNode::update(float relTime)

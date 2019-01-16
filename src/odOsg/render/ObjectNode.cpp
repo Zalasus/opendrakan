@@ -98,6 +98,21 @@ namespace odOsg
         mObjectGroup->removeChild(mTransform);
     }
 
+    glm::vec3 ObjectNode::getPosition()
+    {
+        return GlmAdapter::toGlm(mTransform->getPosition());
+    }
+
+    glm::quat ObjectNode::getOrientation()
+    {
+        return GlmAdapter::toGlm(mTransform->getAttitude());
+    }
+
+    glm::vec3 ObjectNode::getScale()
+    {
+        return GlmAdapter::toGlm(mTransform->getScale());
+    }
+
     void ObjectNode::setPosition(const glm::vec3 &pos)
     {
         mTransform->setPosition(GlmAdapter::toOsg(pos));

@@ -83,11 +83,6 @@ namespace odGui
         mChildWidgets.push_back(od::RefPtr<Widget>(w));
 
         w->setParent(this);
-
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->addChild(w->getRenderNode());
-        }
     }
 
     void Widget::removeChild(Widget *w)
@@ -101,11 +96,6 @@ namespace odGui
         if(it != mChildWidgets.end())
         {
             mChildWidgets.erase(it);
-
-            if(mRenderNode != nullptr)
-            {
-                mRenderNode->removeChild(w->getRenderNode());
-            }
         }
 
         w->setParent(nullptr);

@@ -32,6 +32,10 @@ namespace odOsg
         ObjectNode(Renderer *renderer, osg::Group *objectGroup);
         ~ObjectNode();
 
+        virtual glm::vec3 getPosition() override;
+        virtual glm::quat getOrientation() override;
+        virtual glm::vec3 getScale() override;
+
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;

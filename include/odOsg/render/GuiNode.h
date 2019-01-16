@@ -35,10 +35,11 @@ namespace odOsg
 
         inline osg::Node *getOsgNode() { return mTransform; }
 
-        virtual void addChild(odRender::GuiNode *node) override;
-        virtual void removeChild(odRender::GuiNode *node) override;
+        virtual void setMatrix(const glm::mat4 &m) override;
+        virtual void setViewport(const glm::vec2 &offset, const glm::vec2 &size) override;
 
-        virtual void setMatrix(const glm::mat4 &matrix) override;
+        virtual void setOrthogonalMode() override;
+        virtual void setPerspectiveMode(float fov, float aspect) override;
 
         virtual void setVisible(bool visible) override;
 
@@ -47,6 +48,9 @@ namespace odOsg
 
         virtual odRender::GuiQuad *createGuiQuad() override;
         virtual void removeGuiQuad(odRender::GuiQuad *quad) override;
+
+        virtual odRender::ObjectNode *createObjectNode() override;
+        virtual void removeObjectNode(odRender::ObjectNode *node) override;
 
         void update(float relTime);
 
