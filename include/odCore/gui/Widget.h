@@ -73,12 +73,6 @@ namespace odGui
     {
     public:
 
-        /**
-         * Constructs a Widget with a predefined render node. This is only used directly by
-         * the Gui to create it's root widget.
-         */
-        Widget(Gui &gui, odRender::GuiNode *node);
-
         Widget(Gui &gui);
         virtual ~Widget();
 
@@ -145,7 +139,7 @@ namespace odGui
         void addChild(Widget *w);
         void removeChild(Widget *w);
 
-        /// @param parentMatrix         The matrix representing a transformation from parent space to widget space of the parent recursion level
+        /// @param parentMatrix  The matrix representing a transformation from parent space to widget space of the parent recursion level
         void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
         glm::vec2 getDimensionsInPixels();
@@ -153,13 +147,16 @@ namespace odGui
         void setVisible(bool b);
 
         void setZIndex(int32_t zIndex);
+        void reorderChildren();
 
         void updateMatrix();
+
+        void flatten(const glm::mat4 &parentMatrix, int32_t &globalZIndex);
 
 
     protected:
 
-        inline odRender::GuiNode *getRenderNode() { return mRenderNode; }
+        odRender::GuiNode *getOrCreateRenderNode();
 
 
     private:
@@ -180,6 +177,7 @@ namespace odGui
         bool mMouseOver;
 
         std::vector<od::RefPtr<Widget>> mChildWidgets;
+        bool mChildOrderDirty;
 
         od::RefPtr<odRender::GuiNode> mRenderNode;
     };

@@ -173,7 +173,7 @@ namespace odGui
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
-        mRootWidget = od::make_refd<Widget>(*this, mRenderer.getGuiRootNode());
+        mRootWidget = od::make_refd<Widget>(*this);
         mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
         mRootWidget->updateMatrix();
     }

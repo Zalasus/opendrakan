@@ -23,14 +23,6 @@ namespace odGui
 {
 
     Widget::Widget(Gui &gui)
-    : Widget(gui, nullptr)
-    {
-        // doing this in the initializer list somehow seems to cause the RefCounted base
-        //  to still be unitialized when creating the weakptr in the GuiNode??? WTF?
-        mRenderNode = gui.getRenderer().createGuiNode(this);
-    }
-
-    Widget::Widget(Gui &gui, odRender::GuiNode *node)
     : mGui(gui)
     , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
@@ -40,7 +32,7 @@ namespace odGui
     , mParentWidget(nullptr)
     , mMatrixDirty(true)
     , mMouseOver(false)
-    , mRenderNode(node)
+    , mChildOrderDirty(false)
     {
     }
 
@@ -67,10 +59,6 @@ namespace odGui
 
     void Widget::onUpdate(float relTime)
     {
-        if(mMatrixDirty)
-        {
-            updateMatrix();
-        }
     }
 
     void Widget::addChild(Widget *w)
@@ -156,10 +144,18 @@ namespace odGui
             mRenderNode->setZIndex(zIndex);
         }
 
-        if(mParentWidget != nullptr && mParentWidget->getRenderNode() != nullptr)
+        if(mParentWidget != nullptr)
         {
-            mParentWidget->getRenderNode()->reorderChildren();
+            mParentWidget->mChildOrderDirty = true;
         }
+    }
+
+    void Widget::reorderChildren()
+    {
+        auto pred = [](od::RefPtr<Widget> &left, od::RefPtr<Widget> &right) { return left->getZIndex() < right->getZIndex(); };
+        std::sort(mChildWidgets.begin(), mChildWidgets.end(), pred);
+
+        mChildOrderDirty = false;
     }
 
     void Widget::updateMatrix()
@@ -188,6 +184,41 @@ namespace odGui
         }
 
         mMatrixDirty = false;
+    }
+
+    void Widget::flatten(const glm::mat4 &parentMatrix, int32_t &globalZIndex)
+    {
+        if(mMatrixDirty)
+        {
+            updateMatrix();
+        }
+
+        mMySpaceToRootSpace = mWidgetSpaceToParentSpace * parentMatrix;
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setMatrix(glm::transpose(mMySpaceToRootSpace));
+            mRenderNode->setZIndex(globalZIndex);
+        }
+
+        if(mChildOrderDirty)
+        {
+            reorderChildren();
+        }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->flatten(mMySpaceToRootSpace, ++globalZIndex);
+        }
+    }
+
+    odRender::GuiNode *Widget::getOrCreateRenderNode()
+    {
+        if(mRenderNode == nullptr)
+        {
+            mRenderNode = mGui.getRenderer().createGuiNode(this);
+        }
+
+        return mRenderNode;
     }
 
     glm::vec2 Widget::_getOriginVector()

@@ -68,20 +68,15 @@ namespace odOsg
     };
 
 
-    GuiNode::GuiNode()
-    : mWidget(nullptr)
-    , mTransform(new osg::MatrixTransform)
-    , mUpdateCallback(nullptr)
-    {
-    }
-
-    GuiNode::GuiNode(odGui::Widget *w)
-    : mWidget(w)
+    GuiNode::GuiNode(osg::Group *guiRoot, odGui::Widget *w)
+    : mGuiRoot(guiRoot)
+    , mWidget(w)
     , mTransform(new osg::MatrixTransform)
     , mUpdateCallback(new UpdateCallback(this))
     {
         mTransform->addUpdateCallback(mUpdateCallback);
-        mTransform->getOrCreateStateSet()->setNestRenderBins(true);
+
+        mGuiRoot->addChild(mTransform);
     }
 
     GuiNode::~GuiNode()
@@ -90,6 +85,8 @@ namespace odOsg
         {
             mTransform->removeUpdateCallback(mUpdateCallback);
         }
+
+        mGuiRoot->removeChild(mTransform);
     }
 
     void GuiNode::setMatrix(const glm::mat4 &m)

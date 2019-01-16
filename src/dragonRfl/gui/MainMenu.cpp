@@ -28,22 +28,24 @@ namespace dragonRfl
         MainMenuImage(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            od::RefPtr<odRender::GuiQuad> topLeft = getRenderNode()->createGuiQuad();
+            auto node = getOrCreateRenderNode();
+
+            od::RefPtr<odRender::GuiQuad> topLeft = node->createGuiQuad();
             topLeft->setTextureFromDb(gui, GuiTextures::MainMenu_TopLeft, gui.getRenderer());
             topLeft->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             topLeft->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
 
-            od::RefPtr<odRender::GuiQuad> topRight = getRenderNode()->createGuiQuad();
+            od::RefPtr<odRender::GuiQuad> topRight = node->createGuiQuad();
             topRight->setTextureFromDb(gui, GuiTextures::MainMenu_TopRight, gui.getRenderer());
             topRight->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             topRight->setVertexCoords(glm::vec2(0.5, 0.0), glm::vec2(1, 0.5));
 
-            od::RefPtr<odRender::GuiQuad> bottomLeft = getRenderNode()->createGuiQuad();
+            od::RefPtr<odRender::GuiQuad> bottomLeft = node->createGuiQuad();
             bottomLeft->setTextureFromDb(gui, GuiTextures::MainMenu_BottomLeft, gui.getRenderer());
             bottomLeft->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             bottomLeft->setVertexCoords(glm::vec2(0.0, 0.5), glm::vec2(0.5, 1));
 
-            od::RefPtr<odRender::GuiQuad> bottomRight = getRenderNode()->createGuiQuad();
+            od::RefPtr<odRender::GuiQuad> bottomRight = node->createGuiQuad();
             bottomRight->setTextureFromDb(gui, GuiTextures::MainMenu_BottomRight, gui.getRenderer());
             bottomRight->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             bottomRight->setVertexCoords(glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
@@ -60,7 +62,7 @@ namespace dragonRfl
         MainMenuBackground(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            od::RefPtr<odRender::GuiQuad> bg = getRenderNode()->createGuiQuad();
+            od::RefPtr<odRender::GuiQuad> bg = getOrCreateRenderNode()->createGuiQuad();
             bg->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1.0, 1.0));
             bg->setColor(glm::vec4(0.0, 0.0, 0.0, 0.5));
 
