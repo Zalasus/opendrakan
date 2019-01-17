@@ -170,7 +170,7 @@ namespace odOsg
     {
         if(mWidget != nullptr)
         {
-            mWidget->onUpdate(relTime);
+            mWidget->update(relTime);
         }
     }
 

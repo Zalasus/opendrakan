@@ -22,7 +22,7 @@ namespace dragonRfl
     Cursor::Cursor(DragonGui &gui)
     : Widget(gui)
     {
-        od::RefPtr<odRender::GuiQuad> cursorQuad = this->getOrCreateRenderNode()->createGuiQuad();
+        od::RefPtr<odRender::GuiQuad> cursorQuad = this->getRenderNode()->createGuiQuad();
         od::RefPtr<odDb::Texture> cursorDbTexture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor);
         od::RefPtr<odRender::Texture> texture = cursorDbTexture->getRenderImage(&gui.getRenderer())->createTexture();
         cursorQuad->setTexture(texture);

@@ -67,7 +67,6 @@ namespace dragonRfl
         setCursorWidget(cursor);
 
         setCursorPosition(glm::vec2(0, 0));
-        cursor->updateMatrix();
 
         auto mainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
         addWidget(mainMenu);

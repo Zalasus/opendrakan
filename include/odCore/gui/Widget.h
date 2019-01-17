@@ -118,7 +118,10 @@ namespace odGui
 
         /**
          * @brief Update hook for widget. Gets called every frame if widget is active.
+         *
          * @param relTime   Relative time since last update, in seconds
+         *
+         * @note Renderers should call update() instead of calling this hook directly.
          */
         virtual void onUpdate(float relTime);
 
@@ -139,7 +142,10 @@ namespace odGui
         void addChild(Widget *w);
         void removeChild(Widget *w);
 
-        /// @param parentMatrix  The matrix representing a transformation from parent space to widget space of the parent recursion level
+        /**
+         * @brief Performs recursive intersection check, collecting all found widgets in a vector.
+         * @param parentMatrix  The matrix representing a transformation from parent space to widget space of the parent recursion level
+         */
         void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
         glm::vec2 getDimensionsInPixels();
@@ -149,19 +155,29 @@ namespace odGui
         void setZIndex(int32_t zIndex);
         void reorderChildren();
 
-        void updateMatrix();
+        void flatten();
 
-        void flatten(const glm::mat4 &parentMatrix, int32_t &globalZIndex);
+        /**
+         * @brief Performs necessary updates and flattens GUI tree, then calls onUpdate() hook.
+         * @note Call this from your GuiNode implementation. Don't call onUpdate() directly.
+         */
+        void update(float relTime);
+
+        odRender::GuiNode *getRenderNode();
 
 
     protected:
 
-        odRender::GuiNode *getOrCreateRenderNode();
+        void updateMatrix();
+        void flatten(const glm::mat4 &parentMatrix, int32_t &parentGlobalZIndex);
 
 
     private:
 
         glm::vec2 _getOriginVector();
+
+        void _dirty();
+        void _markThisAndParentsAsNeedingFlattening();
 
         Gui &mGui;
         WidgetOrigin mOrigin;
@@ -173,11 +189,16 @@ namespace odGui
         bool mMatrixDirty;
         glm::mat4 mParentSpaceToWidgetSpace;
         glm::mat4 mWidgetSpaceToParentSpace;
+
         glm::mat4 mMySpaceToRootSpace;
+        int32_t mGlobalZIndex;
+
         bool mMouseOver;
 
         std::vector<od::RefPtr<Widget>> mChildWidgets;
         bool mChildOrderDirty;
+
+        bool mNeedsFlattening;
 
         od::RefPtr<odRender::GuiNode> mRenderNode;
     };

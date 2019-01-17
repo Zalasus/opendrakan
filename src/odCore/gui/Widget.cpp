@@ -31,9 +31,12 @@ namespace odGui
     , mZIndex(0)
     , mParentWidget(nullptr)
     , mMatrixDirty(true)
+    , mGlobalZIndex(0)
     , mMouseOver(false)
     , mChildOrderDirty(false)
+    , mNeedsFlattening(true)
     {
+        mRenderNode = mGui.getRenderer().createGuiNode(this);
     }
 
     Widget::~Widget()
@@ -186,7 +189,21 @@ namespace odGui
         mMatrixDirty = false;
     }
 
-    void Widget::flatten(const glm::mat4 &parentMatrix, int32_t &globalZIndex)
+    void Widget::flatten()
+    {
+        glm::mat4 m(1.0);
+        int32_t globalZIndex = 0;
+
+        if(mParentWidget != nullptr)
+        {
+            m = mParentWidget->mMySpaceToRootSpace;
+            globalZIndex = mParentWidget->mGlobalZIndex;
+        }
+
+        flatten(m, globalZIndex);
+    }
+
+    void Widget::flatten(const glm::mat4 &parentMatrix, int32_t &parentGlobalZIndex)
     {
         if(mMatrixDirty)
         {
@@ -194,10 +211,11 @@ namespace odGui
         }
 
         mMySpaceToRootSpace = mWidgetSpaceToParentSpace * parentMatrix;
+        mGlobalZIndex = ++parentGlobalZIndex;
         if(mRenderNode != nullptr)
         {
             mRenderNode->setMatrix(glm::transpose(mMySpaceToRootSpace));
-            mRenderNode->setZIndex(globalZIndex);
+            mRenderNode->setZIndex(parentGlobalZIndex);
         }
 
         if(mChildOrderDirty)
@@ -207,17 +225,27 @@ namespace odGui
 
         for(auto &child : mChildWidgets)
         {
-            child->flatten(mMySpaceToRootSpace, ++globalZIndex);
+            if(child->mNeedsFlattening)
+            {
+                child->flatten(mMySpaceToRootSpace, parentGlobalZIndex);
+            }
         }
+
+        mNeedsFlattening = false;
     }
 
-    odRender::GuiNode *Widget::getOrCreateRenderNode()
+    void Widget::update(float relTime)
     {
-        if(mRenderNode == nullptr)
+        if(mNeedsFlattening)
         {
-            mRenderNode = mGui.getRenderer().createGuiNode(this);
+            flatten();
         }
 
+        this->onUpdate(relTime);
+    }
+
+    odRender::GuiNode *Widget::getRenderNode()
+    {
         return mRenderNode;
     }
 
@@ -249,6 +277,18 @@ namespace odGui
         }
 
         return origin;
+    }
+
+    void Widget::_markThisAndParentsAsNeedingFlattening()
+    {
+        mNeedsFlattening = true;
+
+        Widget *w = mParentWidget;
+        while(w != nullptr)
+        {
+            w->mNeedsFlattening = true;
+            w = w->mParentWidget;
+        }
     }
 
 }

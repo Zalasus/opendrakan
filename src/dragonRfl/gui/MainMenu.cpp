@@ -28,7 +28,7 @@ namespace dragonRfl
         MainMenuImage(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            auto node = getOrCreateRenderNode();
+            auto node = getRenderNode();
 
             od::RefPtr<odRender::GuiQuad> topLeft = node->createGuiQuad();
             topLeft->setTextureFromDb(gui, GuiTextures::MainMenu_TopLeft, gui.getRenderer());
@@ -62,7 +62,7 @@ namespace dragonRfl
         MainMenuBackground(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            od::RefPtr<odRender::GuiQuad> bg = getOrCreateRenderNode()->createGuiQuad();
+            od::RefPtr<odRender::GuiQuad> bg = getRenderNode()->createGuiQuad();
             bg->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1.0, 1.0));
             bg->setColor(glm::vec4(0.0, 0.0, 0.0, 0.5));
 
