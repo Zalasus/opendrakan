@@ -13,6 +13,7 @@
 #include <odCore/Engine.h>
 
 #include <odCore/render/GuiNode.h>
+#include <odCore/render/ModelNode.h>
 
 #include <dragonRfl/gui/DragonGui.h>
 
@@ -69,7 +70,7 @@ namespace dragonRfl
 
         if(crystalModel != nullptr)
         {
-            od::RefPtr<odRender::ModelNode> mn = crystalModel->getOrCreateRenderNode(&mGui.getRenderer());
+            od::RefPtr<odRender::ModelNode> mn = crystalModel->getOrCreateRenderNode(&getGui().getRenderer());
 
             mCrystalNode = getRenderNode()->createObjectNode();
             mCrystalNode->setModel(mn);
@@ -81,7 +82,7 @@ namespace dragonRfl
 
         if(innerRingModel != nullptr)
         {
-            od::RefPtr<odRender::ModelNode> mn = innerRingModel->getOrCreateRenderNode(&mGui.getRenderer());
+            od::RefPtr<odRender::ModelNode> mn = innerRingModel->getOrCreateRenderNode(&getGui().getRenderer());
 
             mInnerRingNode = getRenderNode()->createObjectNode();
             mInnerRingNode->setModel(mn);
@@ -89,7 +90,7 @@ namespace dragonRfl
 
         if(innerRingModel != nullptr)
         {
-            od::RefPtr<odRender::ModelNode> mn = outerRingModel->getOrCreateRenderNode(&mGui.getRenderer());
+            od::RefPtr<odRender::ModelNode> mn = outerRingModel->getOrCreateRenderNode(&getGui().getRenderer());
 
             mOuterRingNode = getRenderNode()->createObjectNode();
             mOuterRingNode->setModel(mn);
@@ -145,7 +146,7 @@ namespace dragonRfl
         mCrystalColor.move(mCrystalColorInactive, 1.0);*/
     }
 
-    void CrystalRingButton::onUpdate(double simTime, double relTime)
+    void CrystalRingButton::onUpdate(float relTime)
     {
         if(isMouseOver())
         {

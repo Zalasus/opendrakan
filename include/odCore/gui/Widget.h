@@ -169,6 +169,8 @@ namespace odGui
 
         void updateMatrix();
 
+        inline Gui &getGui() { return mGui; }
+
 
     private:
 

@@ -36,7 +36,7 @@ namespace dragonRfl
         virtual void onMouseDown(const glm::vec2 &pos, int button) override;
         virtual void onMouseEnter(const glm::vec2 &pos) override;
         virtual void onMouseLeave(const glm::vec2 &pos) override;
-        virtual void onUpdate(double simTime, double relTime) override;
+        virtual void onUpdate(float relTime) override;
 
 
     private:
