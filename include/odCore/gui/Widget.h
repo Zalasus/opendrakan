@@ -74,6 +74,7 @@ namespace odGui
     public:
 
         Widget(Gui &gui);
+        Widget(Gui &gui, odRender::GuiNode *node);
         virtual ~Widget();
 
         inline int32_t getZIndex() const { return mZIndex; }
@@ -155,8 +156,6 @@ namespace odGui
         void setZIndex(int32_t zIndex);
         void reorderChildren();
 
-        void flatten();
-
         /**
          * @brief Performs necessary updates and flattens GUI tree, then calls onUpdate() hook.
          * @note Call this from your GuiNode implementation. Don't call onUpdate() directly.
@@ -169,7 +168,6 @@ namespace odGui
     protected:
 
         void updateMatrix();
-        void flatten(const glm::mat4 &parentMatrix, int32_t &parentGlobalZIndex);
 
 
     private:
@@ -190,15 +188,10 @@ namespace odGui
         glm::mat4 mParentSpaceToWidgetSpace;
         glm::mat4 mWidgetSpaceToParentSpace;
 
-        glm::mat4 mMySpaceToRootSpace;
-        int32_t mGlobalZIndex;
-
         bool mMouseOver;
 
         std::vector<od::RefPtr<Widget>> mChildWidgets;
         bool mChildOrderDirty;
-
-        bool mNeedsFlattening;
 
         od::RefPtr<odRender::GuiNode> mRenderNode;
     };

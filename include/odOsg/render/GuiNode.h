@@ -29,8 +29,13 @@ namespace odOsg
     {
     public:
 
-        GuiNode(osg::Group *guiRoot, odGui::Widget *widget);
+        GuiNode(odGui::Widget *widget);
         virtual ~GuiNode();
+
+        inline osg::Node *getOsgNode() { return mTransform; }
+
+        virtual void addChild(odRender::GuiNode *node) override;
+        virtual void removeChild(odRender::GuiNode *node) override;
 
         virtual void setMatrix(const glm::mat4 &m) override;
         virtual void setViewport(const glm::vec2 &offset, const glm::vec2 &size) override;
@@ -54,13 +59,13 @@ namespace odOsg
 
     private:
 
-        osg::ref_ptr<osg::Group> mGuiRoot;
         od::WeakRefPtr<odGui::Widget> mWidget;
 
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
 
+        std::vector<od::RefPtr<GuiNode>> mChildren;
         std::vector<od::RefPtr<GuiQuad>> mGuiQuads;
     };
 

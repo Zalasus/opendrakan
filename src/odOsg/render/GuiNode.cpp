@@ -7,6 +7,8 @@
 
 #include <odOsg/render/GuiNode.h>
 
+#include <algorithm>
+
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Utils.h>
 #include <odOsg/render/GuiQuad.h>
@@ -68,15 +70,17 @@ namespace odOsg
     };
 
 
-    GuiNode::GuiNode(osg::Group *guiRoot, odGui::Widget *w)
-    : mGuiRoot(guiRoot)
-    , mWidget(w)
+    GuiNode::GuiNode(odGui::Widget *w)
+    : mWidget(w)
     , mTransform(new osg::MatrixTransform)
-    , mUpdateCallback(new UpdateCallback(this))
     {
-        mTransform->addUpdateCallback(mUpdateCallback);
+        if(mWidget != nullptr)
+        {
+            mUpdateCallback = new UpdateCallback(this);
+            mTransform->addUpdateCallback(mUpdateCallback);
+        }
 
-        mGuiRoot->addChild(mTransform);
+        mTransform->getOrCreateStateSet()->setNestRenderBins(true);
     }
 
     GuiNode::~GuiNode()
@@ -85,8 +89,30 @@ namespace odOsg
         {
             mTransform->removeUpdateCallback(mUpdateCallback);
         }
+    }
 
-        mGuiRoot->removeChild(mTransform);
+    void GuiNode::addChild(odRender::GuiNode *node)
+    {
+        if(node == nullptr)
+        {
+            return;
+        }
+
+        od::RefPtr<GuiNode> guiNode = upcast<GuiNode>(node);
+        mChildren.push_back(guiNode);
+
+        mTransform->addChild(guiNode->getOsgNode());
+    }
+
+    void GuiNode::removeChild(odRender::GuiNode *node)
+    {
+        GuiNode *gn = static_cast<GuiNode*>(node); // static cast should suffice. we'll just use it to compare adresses anyway
+        auto it = std::find(mChildren.begin(), mChildren.end(), gn);
+        if(it != mChildren.end())
+        {
+            mTransform->removeChild((*it)->getOsgNode());
+            mChildren.erase(it);
+        }
     }
 
     void GuiNode::setMatrix(const glm::mat4 &m)

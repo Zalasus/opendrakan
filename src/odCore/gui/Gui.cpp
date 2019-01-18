@@ -173,8 +173,9 @@ namespace odGui
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
-        mRootWidget = od::make_refd<Widget>(*this);
+        mRootWidget = od::make_refd<Widget>(*this, mRenderer.getGuiRootNode());
         mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
+        mRootWidget->update(0); // the root GuiNode has no reference to the root widget, so it can't trigger the initial update itself
     }
 
 }

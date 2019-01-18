@@ -23,6 +23,15 @@ namespace odGui
 {
 
     Widget::Widget(Gui &gui)
+    : Widget(gui, nullptr)
+    {
+        // don't put this in the initializer list, especially not as an argument
+        //  to the other constructor. undefined evalutation order may fuck up the
+        //  weak reference created by the GuiNode
+        mRenderNode = mGui.getRenderer().createGuiNode(this);
+    }
+
+    Widget::Widget(Gui &gui, odRender::GuiNode *node)
     : mGui(gui)
     , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
@@ -31,12 +40,10 @@ namespace odGui
     , mZIndex(0)
     , mParentWidget(nullptr)
     , mMatrixDirty(true)
-    , mGlobalZIndex(0)
     , mMouseOver(false)
     , mChildOrderDirty(false)
-    , mNeedsFlattening(true)
+    , mRenderNode(node)
     {
-        mRenderNode = mGui.getRenderer().createGuiNode(this);
     }
 
     Widget::~Widget()
@@ -74,6 +81,11 @@ namespace odGui
         mChildWidgets.push_back(od::RefPtr<Widget>(w));
 
         w->setParent(this);
+
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->addChild(w->getRenderNode());
+        }
     }
 
     void Widget::removeChild(Widget *w)
@@ -87,6 +99,11 @@ namespace odGui
         if(it != mChildWidgets.end())
         {
             mChildWidgets.erase(it);
+
+            if(mRenderNode != nullptr)
+            {
+                mRenderNode->removeChild(w->getRenderNode());
+            }
         }
 
         w->setParent(nullptr);
@@ -189,56 +206,11 @@ namespace odGui
         mMatrixDirty = false;
     }
 
-    void Widget::flatten()
-    {
-        glm::mat4 m(1.0);
-        int32_t globalZIndex = 0;
-
-        if(mParentWidget != nullptr)
-        {
-            m = mParentWidget->mMySpaceToRootSpace;
-            globalZIndex = mParentWidget->mGlobalZIndex;
-        }
-
-        flatten(m, globalZIndex);
-    }
-
-    void Widget::flatten(const glm::mat4 &parentMatrix, int32_t &parentGlobalZIndex)
+    void Widget::update(float relTime)
     {
         if(mMatrixDirty)
         {
             updateMatrix();
-        }
-
-        mMySpaceToRootSpace = mWidgetSpaceToParentSpace * parentMatrix;
-        mGlobalZIndex = ++parentGlobalZIndex;
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setMatrix(glm::transpose(mMySpaceToRootSpace));
-            mRenderNode->setZIndex(parentGlobalZIndex);
-        }
-
-        if(mChildOrderDirty)
-        {
-            reorderChildren();
-        }
-
-        for(auto &child : mChildWidgets)
-        {
-            if(child->mNeedsFlattening)
-            {
-                child->flatten(mMySpaceToRootSpace, parentGlobalZIndex);
-            }
-        }
-
-        mNeedsFlattening = false;
-    }
-
-    void Widget::update(float relTime)
-    {
-        if(mNeedsFlattening)
-        {
-            flatten();
         }
 
         this->onUpdate(relTime);
@@ -277,18 +249,6 @@ namespace odGui
         }
 
         return origin;
-    }
-
-    void Widget::_markThisAndParentsAsNeedingFlattening()
-    {
-        mNeedsFlattening = true;
-
-        Widget *w = mParentWidget;
-        while(w != nullptr)
-        {
-            w->mNeedsFlattening = true;
-            w = w->mParentWidget;
-        }
     }
 
 }

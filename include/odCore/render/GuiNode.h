@@ -22,6 +22,9 @@ namespace odRender
     {
     public:
 
+        virtual void addChild(GuiNode *node) = 0;
+        virtual void removeChild(GuiNode *node) = 0;
+
         virtual void setMatrix(const glm::mat4 &m) = 0;
         virtual void setViewport(const glm::vec2 &offset, const glm::vec2 &size) = 0;
 
