@@ -198,7 +198,7 @@ namespace dragonRfl
 
             // apply rotation to crystal
             glm::quat q = mCrystalNode->getOrientation();
-            q *= glm::quat(glm::vec3(-crystalSpeed*relTime, 0, 0));
+            q *= glm::quat(glm::vec3(0, -crystalSpeed*relTime, 0));
             mCrystalNode->setOrientation(q);
 
             _updateCrystalColor(relTime);

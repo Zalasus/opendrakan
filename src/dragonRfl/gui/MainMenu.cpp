@@ -90,6 +90,10 @@ namespace dragonRfl
         this->setDimensions(1.0, 1.0, odGui::WidgetDimensionType::ParentRelative);
 
         auto cont = od::make_refd<Widget>(gui);
+        cont->setDimensions(512, 512, odGui::WidgetDimensionType::Pixels);
+        cont->setOrigin(odGui::WidgetOrigin::Center);
+        cont->setPosition(0.5, 0.5);
+        cont->setZIndex(-1);
         this->addChild(cont);
 
         _addCrystal(gui, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
