@@ -67,6 +67,7 @@ namespace odOsg
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
+        osg::ref_ptr<osg::Group> mObjectGroup;
 
         std::vector<od::RefPtr<GuiNode>> mChildren;
         std::vector<od::RefPtr<GuiQuad>> mGuiQuads;

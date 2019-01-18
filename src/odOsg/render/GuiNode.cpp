@@ -186,7 +186,16 @@ namespace odOsg
 
     odRender::ObjectNode *GuiNode::createObjectNode()
     {
-        auto node = od::make_refd<ObjectNode>(mRenderer, mTransform);
+        if(mObjectGroup == nullptr)
+        {
+            mObjectGroup = new osg::Group;
+            osg::StateSet *ss = mObjectGroup->getOrCreateStateSet();
+            ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
+            ss->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
+            mTransform->addChild(mObjectGroup);
+        }
+
+        auto node = od::make_refd<ObjectNode>(mRenderer, mObjectGroup);
 
         node->setLocalLightMask(0); // usually, we don't want local lights to illuminate the GUI
 

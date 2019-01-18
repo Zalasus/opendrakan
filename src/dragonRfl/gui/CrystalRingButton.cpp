@@ -66,8 +66,6 @@ namespace dragonRfl
         float fovDegrees = 70;
         getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
 
-        getRenderNode()->createGuiQuad();
-
         if(crystalModel != nullptr)
         {
             od::RefPtr<odRender::ModelNode> mn = crystalModel->getOrCreateRenderNode(&getGui().getRenderer());
@@ -77,6 +75,7 @@ namespace dragonRfl
 
             mCrystalNode->setScale(glm::vec3(0.58/diameter));
             mCrystalNode->setPosition(glm::vec3(0.5, 0.5, 0));
+            mCrystalNode->setGlobalLight(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.2, 0.2, 0.2), glm::vec3(1.0, 0.0, 0.0));
         }
 
 
@@ -86,6 +85,10 @@ namespace dragonRfl
 
             mInnerRingNode = getRenderNode()->createObjectNode();
             mInnerRingNode->setModel(mn);
+
+            mInnerRingNode->setScale(glm::vec3(1/diameter));
+            mInnerRingNode->setPosition(glm::vec3(0.5, 0.5, 0));
+            mInnerRingNode->setGlobalLight(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.2, 0.2, 0.2), glm::vec3(1.0, 0.0, 0.0));
         }
 
         if(innerRingModel != nullptr)
@@ -94,6 +97,10 @@ namespace dragonRfl
 
             mOuterRingNode = getRenderNode()->createObjectNode();
             mOuterRingNode->setModel(mn);
+
+            mOuterRingNode->setScale(glm::vec3(1/diameter));
+            mOuterRingNode->setPosition(glm::vec3(0.5, 0.5, 0));
+            mOuterRingNode->setGlobalLight(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.2, 0.2, 0.2), glm::vec3(1.0, 0.0, 0.0));
         }
 
         /*if(hoverSound != nullptr)
