@@ -30,6 +30,22 @@ namespace dragonRfl
 
     private:
 
+        enum ButtonCode
+        {
+            BC_MULTIPLAYER,
+            BC_LOAD,
+            BC_NEW,
+            BC_SAVE,
+            BC_OPTIONS,
+            BC_CREDITS,
+            BC_QUIT
+        };
+
+        void _addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
+            UserInterfaceProperties *uiProps, odGui::Widget *cont, int buttonCode);
+
+        void _buttonClicked(int buttonCode);
+
         DragonGui &mDragonGui;
 
     };

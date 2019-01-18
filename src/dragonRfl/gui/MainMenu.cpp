@@ -11,6 +11,7 @@
 
 #include <dragonRfl/gui/DragonGui.h>
 #include <dragonRfl/gui/GuiTextures.h>
+#include <dragonRfl/gui/CrystalRingButton.h>
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #include <odCore/db/Model.h>
@@ -87,6 +88,51 @@ namespace dragonRfl
         this->addChild(bgWidget);
 
         this->setDimensions(1.0, 1.0, odGui::WidgetDimensionType::ParentRelative);
+
+        auto cont = od::make_refd<Widget>(gui);
+        this->addChild(cont);
+
+        _addCrystal(gui, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
+        _addCrystal(gui, uiProps->mCrystalLeft.getAsset(), uiProps->mCrystalLeftNoteOffset, 57, 110, 195, uiProps, cont, BC_LOAD);
+        _addCrystal(gui, uiProps->mCrystalMiddle.getAsset(), uiProps->mCrystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
+        _addCrystal(gui, uiProps->mCrystalRight.getAsset(), uiProps->mCrystalRightNoteOffset, 57, 400, 195, uiProps, cont, BC_SAVE);
+        _addCrystal(gui, uiProps->mCrystalLowerLeft.getAsset(), uiProps->mCrystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
+        _addCrystal(gui, uiProps->mCrystalLowerRight.getAsset(), uiProps->mCrystalLowerRightNoteOffset,35, 358, 292, uiProps, cont, BC_CREDITS);
+        _addCrystal(gui, uiProps->mCrystalBottom.getAsset(), uiProps->mCrystalBottomNoteOffset,61, 255, 440, uiProps, cont, BC_QUIT);
     }
 
+    void MainMenu::_addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
+            UserInterfaceProperties *uiProps, odGui::Widget *cont, int buttonCode)
+    {
+        auto crystal = od::make_refd<CrystalRingButton>(gui, crystalModel,
+                uiProps->mInnerRing.getAsset(),
+                uiProps->mOuterRing.getAsset(),
+                uiProps->mHoverSoundLooped.getAsset(),
+                noteOffset);
+        crystal->setDimensions(dia, dia, odGui::WidgetDimensionType::Pixels);
+        crystal->setPosition(x/512, y/512);
+        crystal->setOrigin(odGui::WidgetOrigin::Center);
+        crystal->setClickedCallback(std::bind(&MainMenu::_buttonClicked, this, std::placeholders::_1), buttonCode);
+        cont->addChild(crystal);
+    }
+
+    void MainMenu::_buttonClicked(int buttonCode)
+    {
+        switch(buttonCode)
+        {
+        default:
+        case BC_MULTIPLAYER:
+        case BC_LOAD:
+        case BC_NEW:
+        case BC_SAVE:
+        case BC_OPTIONS:
+        case BC_CREDITS:
+            break;
+
+        case BC_QUIT:
+            Logger::info() << "Exit button clicked. Quitting game";
+            getGui().quit();
+            break;
+        }
+    }
 }
