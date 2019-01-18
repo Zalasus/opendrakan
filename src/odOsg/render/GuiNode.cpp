@@ -188,6 +188,8 @@ namespace odOsg
     {
         auto node = od::make_refd<ObjectNode>(mRenderer, mTransform);
 
+        node->setLocalLightMask(0); // usually, we don't want local lights to illuminate the GUI
+
         mObjectNodes.push_back(node);
 
         return node.get();

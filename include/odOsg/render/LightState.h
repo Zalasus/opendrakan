@@ -104,6 +104,7 @@ namespace odOsg
         LightStateCallback(Renderer *renderer, osg::Node *node, bool ignoreCulledState = false);
 
         inline void lightingDirty() { mLightingDirty = true; }
+        inline void setLightMask(uint32_t lightMask) { mLightMask = lightMask; }
         inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
         {
             mLightStateAttribute->setLayerLight(color, ambient, direction);
@@ -119,6 +120,7 @@ namespace odOsg
         Renderer *mRenderer;
         bool mIgnoreCulledState;
         bool mLightingDirty;
+        uint32_t mLightMask;
         LightStateAttribute *mLightStateAttribute;
         std::vector<odRender::Light*> mTmpAffectingLightsList;
     };

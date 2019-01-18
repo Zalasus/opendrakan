@@ -51,7 +51,7 @@ namespace odRender
         virtual void setScale(const glm::vec3 &scale) = 0;
 
         virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) = 0;
-        virtual void setLocalLightSet(int32_t localLightSet) = 0;
+        virtual void setLocalLightMask(uint32_t localLightMask) = 0;
 
         virtual ModelNode *getModel() = 0;
         virtual void setModel(ModelNode *node) = 0;

@@ -101,6 +101,7 @@ namespace odOsg
     : mRenderer(renderer)
     , mIgnoreCulledState(ignoreCulledState)
     , mLightingDirty(true)
+    , mLightMask(odRender::Light::DefaultLightGroups::All)
     {
         if(node == nullptr)
         {
@@ -151,7 +152,7 @@ namespace odOsg
 
         mTmpAffectingLightsList.clear();
         od::BoundingSphere bound(GlmAdapter::toGlm(node->getBound()._center), node->getBound()._radius);
-        mRenderer->getLightsIntersectingSphere(bound, mTmpAffectingLightsList);
+        mRenderer->getLightsIntersectingSphere(bound, mTmpAffectingLightsList, mLightMask);
 
         glm::vec3 nodeCenter = GlmAdapter::toGlm(node->getBound().center());
         auto pred = [&nodeCenter](odRender::Light *l, odRender::Light *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };

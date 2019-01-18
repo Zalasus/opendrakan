@@ -139,9 +139,9 @@ namespace odOsg
         mLightStateCallback->setLayerLight(diff, amb, dir);
     }
 
-    void ObjectNode::setLocalLightSet(int32_t localLightSet)
+    void ObjectNode::setLocalLightMask(uint32_t localLightMask)
     {
-
+        mLightStateCallback->setLightMask(localLightMask);
     }
 
     odRender::ModelNode *ObjectNode::getModel()

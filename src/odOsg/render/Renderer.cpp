@@ -242,7 +242,7 @@ namespace odOsg
         mLocalLightsIntensity->setElement(index, 0.0f);
     }
 
-    void Renderer::getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights)
+    void Renderer::getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights, uint32_t lightMask)
     {
         // TODO: organize lights in a structure with efficient spatial search
         //  for now, just use a brute force technique by iterating over all registered lights.
@@ -251,7 +251,7 @@ namespace odOsg
         {
             odRender::Light *l = *it;
 
-            if(l->affects(sphere))
+            if(l->affects(sphere) && (l->getLightGroup() & lightMask))
             {
                 lights.push_back(l);
             }

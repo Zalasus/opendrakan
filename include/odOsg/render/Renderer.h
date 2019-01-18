@@ -62,7 +62,7 @@ namespace odOsg
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
         void applyToLightUniform(const osg::Matrix &viewMatrix, odRender::Light *light, size_t index);
         void applyNullLight(size_t index);
-        void getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights);
+        void getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights, uint32_t lightMask);
 
         void setFreeLook(bool f);
 

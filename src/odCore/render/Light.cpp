@@ -17,6 +17,7 @@ namespace odRender
     , mIntensityScaling(1)
     , mRadius(1)
     , mRequiredQualityLevel(0)
+    , mLightGroup(DefaultLightGroups::LevelObjects)
     {
     }
 

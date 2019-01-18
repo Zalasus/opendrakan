@@ -48,7 +48,7 @@ namespace odOsg
          * @param direction  Direction vector pointing towards the light source
          */
         virtual void setGlobalLight(const glm::vec3 &diffuse, const glm::vec3 &ambient, const glm::vec3 &direction) override;
-        virtual void setLocalLightSet(int32_t localLightSet) override;
+        virtual void setLocalLightMask(uint32_t localLightMask) override;
 
         virtual odRender::ModelNode *getModel() override;
         virtual void setModel(odRender::ModelNode *node) override;

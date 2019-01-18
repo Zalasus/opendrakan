@@ -25,6 +25,13 @@ namespace odRender
     {
     public:
 
+        struct DefaultLightGroups
+        {
+            static const uint32_t All = -1;
+            static const uint32_t LevelObjects = 1;
+            static const uint32_t Gui = 2;
+        };
+
         Light(od::LevelObject *obj);
 
         inline od::LevelObject *getLevelObject() { return mLevelObject; }
@@ -36,6 +43,8 @@ namespace odRender
         inline void setIntensityScaling(float f) { mIntensityScaling = f; }
         inline void setRadius(float f) { mRadius = f; }
         inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
+        inline uint32_t getLightGroup() const { return mLightGroup; }
+        inline void setLightGroup(uint32_t lightGroup) { mLightGroup = lightGroup; }
 
         bool affects(const glm::vec3 &point);
         bool affects(const od::BoundingSphere &sphere);
@@ -49,6 +58,8 @@ namespace odRender
         float mIntensityScaling;
         float mRadius;
         uint32_t mRequiredQualityLevel;
+
+        uint32_t mLightGroup;
     };
 
 }
