@@ -179,7 +179,10 @@ namespace od
                 mRenderNode->setOrientation(mRotation);
                 mRenderNode->setScale(mScale);
 
-                mRenderNode->setLightingLayer(mLightingLayer);
+                if(mLightingLayer != nullptr)
+                {
+                    mRenderNode->setGlobalLight(mLightingLayer->getLightColor(), mLightingLayer->getAmbientColor(), mLightingLayer->getLightDirection());
+                }
             }
         }
 
@@ -429,9 +432,9 @@ namespace od
     {
         mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
 
-        if(mRenderNode != nullptr && mLightingLayer == nullptr)
+        if(mRenderNode != nullptr && mLayerBelowObject != nullptr && mLightingLayer == nullptr)
         {
-            mRenderNode->setLightingLayer(mLayerBelowObject);
+            mRenderNode->setGlobalLight(mLayerBelowObject->getLightColor(), mLayerBelowObject->getAmbientColor(), mLayerBelowObject->getLightDirection());
         }
 
         mLayerBelowObjectDirty = false;

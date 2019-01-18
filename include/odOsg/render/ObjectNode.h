@@ -39,7 +39,16 @@ namespace odOsg
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;
-        virtual void setLightingLayer(od::Layer *layer) override;
+
+        /**
+         * @brief Sets the global directional light that is always applied to the object if it is shaded.
+         *
+         * @param diffuse    Diffuse component of the light
+         * @param ambient    Ambient component of the light
+         * @param direction  Direction vector pointing towards the light source
+         */
+        virtual void setGlobalLight(const glm::vec3 &diffuse, const glm::vec3 &ambient, const glm::vec3 &direction) override;
+        virtual void setLocalLightSet(int32_t localLightSet) override;
 
         virtual odRender::ModelNode *getModel() override;
         virtual void setModel(odRender::ModelNode *node) override;

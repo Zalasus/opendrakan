@@ -131,20 +131,17 @@ namespace odOsg
         mLightStateCallback->lightingDirty();
     }
 
-    void ObjectNode::setLightingLayer(od::Layer *layer)
+    void ObjectNode::setGlobalLight(const glm::vec3 &diffuse, const glm::vec3 &ambient, const glm::vec3 &direction)
     {
-        if(layer != nullptr)
-        {
-            osg::Vec3 diffuse = GlmAdapter::toOsg(layer->getLightColor());
-            osg::Vec3 ambient = GlmAdapter::toOsg(layer->getAmbientColor());
-            osg::Vec3 direction = GlmAdapter::toOsg(layer->getLightDirection());
-            mLightStateCallback->setLayerLight(diffuse, ambient, direction);
+        osg::Vec3 diff = GlmAdapter::toOsg(diffuse);
+        osg::Vec3 amb = GlmAdapter::toOsg(ambient);
+        osg::Vec3 dir = GlmAdapter::toOsg(direction);
+        mLightStateCallback->setLayerLight(diff, amb, dir);
+    }
 
-        }else
-        {
-            osg::Vec3 zero(0, 0, 0);
-            mLightStateCallback->setLayerLight(zero, zero, zero);
-        }
+    void ObjectNode::setLocalLightSet(int32_t localLightSet)
+    {
+
     }
 
     odRender::ModelNode *ObjectNode::getModel()
