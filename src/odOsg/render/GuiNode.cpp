@@ -9,11 +9,12 @@
 
 #include <algorithm>
 
+#include <odCore/gui/Widget.h>
+
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Utils.h>
 #include <odOsg/render/GuiQuad.h>
-
-#include <odCore/gui/Widget.h>
+#include <odOsg/render/ObjectNode.h>
 
 namespace odOsg
 {
@@ -70,8 +71,9 @@ namespace odOsg
     };
 
 
-    GuiNode::GuiNode(odGui::Widget *w)
-    : mWidget(w)
+    GuiNode::GuiNode(Renderer *renderer, odGui::Widget *w)
+    : mRenderer(renderer)
+    , mWidget(w)
     , mTransform(new osg::MatrixTransform)
     {
         if(mWidget != nullptr)
@@ -184,12 +186,21 @@ namespace odOsg
 
     odRender::ObjectNode *GuiNode::createObjectNode()
     {
-        return nullptr;
+        auto node = od::make_refd<ObjectNode>(mRenderer, mTransform);
+
+        mObjectNodes.push_back(node);
+
+        return node.get();
     }
 
     void GuiNode::removeObjectNode(odRender::ObjectNode *node)
     {
-
+        ObjectNode *on = static_cast<ObjectNode*>(node);
+        auto it = std::find(mObjectNodes.begin(), mObjectNodes.end(), on);
+        if(it != mObjectNodes.end())
+        {
+            mObjectNodes.erase(it);
+        }
     }
 
     void GuiNode::update(float relTime)

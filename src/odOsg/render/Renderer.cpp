@@ -177,7 +177,7 @@ namespace odOsg
 
     od::RefPtr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
     {
-        auto gn = od::make_refd<GuiNode>(widget);
+        auto gn = od::make_refd<GuiNode>(this, widget);
         return od::RefPtr<odRender::GuiNode>(gn);
     }
 
@@ -291,7 +291,7 @@ namespace odOsg
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
 
-        mGuiRootNode = od::make_refd<GuiNode>(nullptr);
+        mGuiRootNode = od::make_refd<GuiNode>(this, nullptr);
         mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 

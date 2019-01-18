@@ -24,12 +24,14 @@ namespace odOsg
 {
 
     class GuiQuad;
+    class Renderer;
+    class ObjectNode;
 
     class GuiNode : public odRender::GuiNode
     {
     public:
 
-        GuiNode(odGui::Widget *widget);
+        GuiNode(Renderer *renderer, odGui::Widget *widget);
         virtual ~GuiNode();
 
         inline osg::Node *getOsgNode() { return mTransform; }
@@ -59,6 +61,7 @@ namespace odOsg
 
     private:
 
+        Renderer *mRenderer;
         od::WeakRefPtr<odGui::Widget> mWidget;
 
         osg::ref_ptr<osg::MatrixTransform> mTransform;
@@ -67,6 +70,7 @@ namespace odOsg
 
         std::vector<od::RefPtr<GuiNode>> mChildren;
         std::vector<od::RefPtr<GuiQuad>> mGuiQuads;
+        std::vector<od::RefPtr<ObjectNode>> mObjectNodes;
     };
 
 }
