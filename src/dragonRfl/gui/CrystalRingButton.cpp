@@ -35,8 +35,8 @@ namespace dragonRfl
     CrystalRingButton::CrystalRingButton(DragonGui &gui, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel,
             odDb::Sound *hoverSound, float noteOffset)
     : odGui::Widget(gui)
-    , mCrystalColorInactive(0.38431, 0.36471, 0.54902)
-    , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255)
+    , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
+    , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
     , mCallbackUserData(-1)
     , mCrystalSpeedPercent(0.0)
     , mClicked(false)

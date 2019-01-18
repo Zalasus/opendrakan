@@ -46,8 +46,8 @@ namespace dragonRfl
         od::RefPtr<odRender::ObjectNode> mCrystalNode;
         od::RefPtr<odRender::ObjectNode> mInnerRingNode;
         od::RefPtr<odRender::ObjectNode> mOuterRingNode;
-        glm::vec3 mCrystalColorInactive;
-        glm::vec3 mCrystalColorActive;
+        glm::vec4 mCrystalColorInactive;
+        glm::vec4 mCrystalColorActive;
         std::function<void(int)> mClickedCallback;
         int mCallbackUserData;
 
