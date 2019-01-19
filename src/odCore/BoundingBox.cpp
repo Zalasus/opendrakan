@@ -7,6 +7,8 @@
 
 #include <odCore/BoundingBox.h>
 
+#include <limits>
+
 #include <glm/mat3x3.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -16,8 +18,8 @@ namespace od
 {
 
     AxisAlignedBoundingBox::AxisAlignedBoundingBox()
-    : mMin(0, 0, 0)
-    , mMax(0, 0, 0)
+    : mMin(std::numeric_limits<glm::vec3::value_type>::max())
+    , mMax(-mMin)
     {
     }
 
@@ -58,6 +60,23 @@ namespace od
                  eMax.z < aabb.mMin.z || eMin.z > aabb.mMax.z);
     }
 
+    bool AxisAlignedBoundingBox::contains(const glm::vec3 &v) const
+    {
+        return    v.x >= mMin.x && v.x <= mMax.x
+               && v.y >= mMin.x && v.y <= mMax.y
+               && v.z >= mMin.x && v.z <= mMax.z; // 15:55
+    }
+
+    void AxisAlignedBoundingBox::expandBy(const glm::vec3 &v)
+    {
+        if(contains(v))
+        {
+            return;
+        }
+
+        mMin = glm::min(mMin, v);
+        mMax = glm::max(mMax, v);
+    }
 
 
     OrientedBoundingBox::OrientedBoundingBox()

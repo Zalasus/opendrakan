@@ -28,6 +28,10 @@ namespace od
 
         bool intersects(const BoundingSphere &bs, float epsilon = 0.0f);
 
+        bool contains(const glm::vec3 &v) const;
+
+        void expandBy(const glm::vec3 &v);
+
 
     private:
 

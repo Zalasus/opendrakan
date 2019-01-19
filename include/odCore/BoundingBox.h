@@ -31,6 +31,10 @@ namespace od
         bool intersects(const AxisAlignedBoundingBox &aabb) const;
         bool intersects(const AxisAlignedBoundingBox &aabb, glm::vec3::value_type epsilon) const;
 
+        bool contains(const glm::vec3 &v) const;
+
+        void expandBy(const glm::vec3 &v);
+
 
     private:
 

@@ -51,20 +51,18 @@ namespace dragonRfl
             throw od::Exception("Passed no non-null models to CrystalRingButton");
         }
 
-        if(!modelForBounds->hasBounds())
-        {
-            throw od::Exception("Outermost model passed to CrystalRingButton has no bounds");
-        }
+        od::AxisAlignedBoundingBox aabb = modelForBounds->getCalculatedBoundingBox();
+        float diameter = aabb.max().y - aabb.min().y;
 
-        od::BoundingSphere bs = modelForBounds->getModelBounds()->getMainSphere();
-        float diameter = 2 * bs.radius();
-
-        od::OrientedBoundingBox obb = modelForBounds->getModelBounds()->getMainBox();
-        glm::vec3 extends = obb.extends();
+        glm::vec3 extends = aabb.max() - aabb.min();
         float aspectRatio = extends.x/extends.y;
 
         float fovDegrees = 70;
         getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
+
+        glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
+        glm::vec3 lightAmbient(0.2, 0.2, 0.2);
+        glm::vec3 lightDirection(glm::normalize(glm::vec3(1.0, 1.0, 1.0)));
 
         if(crystalModel != nullptr)
         {
@@ -75,9 +73,8 @@ namespace dragonRfl
 
             mCrystalNode->setScale(glm::vec3(0.58/diameter));
             mCrystalNode->setPosition(glm::vec3(0.5, 0.5, 0));
-            mCrystalNode->setGlobalLight(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.2, 0.2, 0.2), glm::vec3(1.0, 0.0, 0.0));
+            mCrystalNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
         }
-
 
         if(innerRingModel != nullptr)
         {
@@ -88,10 +85,10 @@ namespace dragonRfl
 
             mInnerRingNode->setScale(glm::vec3(1/diameter));
             mInnerRingNode->setPosition(glm::vec3(0.5, 0.5, 0));
-            mInnerRingNode->setGlobalLight(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.2, 0.2, 0.2), glm::vec3(1.0, 0.0, 0.0));
+            mInnerRingNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
         }
 
-        if(innerRingModel != nullptr)
+        if(outerRingModel != nullptr)
         {
             od::RefPtr<odRender::ModelNode> mn = outerRingModel->getOrCreateRenderNode(&getGui().getRenderer());
 
@@ -100,7 +97,7 @@ namespace dragonRfl
 
             mOuterRingNode->setScale(glm::vec3(1/diameter));
             mOuterRingNode->setPosition(glm::vec3(0.5, 0.5, 0));
-            mOuterRingNode->setGlobalLight(glm::vec3(1.0, 1.0, 1.0), glm::vec3(0.2, 0.2, 0.2), glm::vec3(1.0, 0.0, 0.0));
+            mOuterRingNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
         }
 
         /*if(hoverSound != nullptr)

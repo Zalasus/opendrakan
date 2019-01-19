@@ -13,6 +13,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include <odCore/BoundingSphere.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/WeakRefPtr.h>
 
@@ -87,6 +88,8 @@ namespace odDb
 		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
 		inline const std::vector<Polygon> &getPolygonVector() { return mPolygons; }
 		inline const std::vector<LodMeshInfo> &getLodInfoVector() { return mLodMeshInfos; }
+		inline const od::BoundingSphere &getCalculatedBoundingSphere() const { return mCalculatedBoundingSphere; }
+		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() const { return mCalculatedBoundingBox; }
 
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
@@ -117,6 +120,8 @@ namespace odDb
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
+		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
+		od::BoundingSphere mCalculatedBoundingSphere;
 
 		od::WeakRefPtr<odRender::ModelNode> mRenderNode;
 	};

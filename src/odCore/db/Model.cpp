@@ -80,6 +80,9 @@ namespace odDb
 		for(size_t i = 0; i < vertexCount; ++i)
 		{
 			dr >> mVertices[i];
+
+			mCalculatedBoundingBox.expandBy(mVertices[i]);
+			mCalculatedBoundingSphere.expandBy(mVertices[i]);
 		}
 
 		mVerticesLoaded = true;

@@ -48,6 +48,21 @@ namespace od
         return (glm::length2(cc) <= dist*dist);
     }
 
+    bool BoundingSphere::contains(const glm::vec3 &v) const
+    {
+        return glm::length(mCenter - v) <= mRadius;
+    }
+
+    void BoundingSphere::expandBy(const glm::vec3 &v)
+    {
+        glm::vec3::value_type d = glm::length(mCenter - v);
+
+        if(d > mRadius)
+        {
+            mRadius = d;
+        }
+    }
+
     template <>
     DataReader &DataReader::operator >> <BoundingSphere>(BoundingSphere &bs)
     {
