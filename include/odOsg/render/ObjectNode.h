@@ -13,6 +13,7 @@
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
 #include <osg/NodeCallback>
+#include <osg/Uniform>
 
 #include <odCore/render/ObjectNode.h>
 
@@ -61,6 +62,9 @@ namespace odOsg
         virtual void addFrameListener(odRender::FrameListener *listener) override;
         virtual void removeFrameListener(odRender::FrameListener *listener) override;
 
+        virtual void setEnableColorModifier(bool b) override;
+        virtual void setColorModifier(const glm::vec4 &cm) override;
+
         virtual odRender::Rig *getRig() override;
 
 
@@ -75,6 +79,7 @@ namespace odOsg
         odRender::FrameListener *mFrameListener;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
         std::unique_ptr<Rig> mRig;
+        osg::ref_ptr<osg::Uniform> mColorModifierUniform;
     };
 
 }

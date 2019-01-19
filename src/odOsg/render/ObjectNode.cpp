@@ -242,6 +242,34 @@ namespace odOsg
         mFrameListener = nullptr;;
     }
 
+    void ObjectNode::setEnableColorModifier(bool enable)
+    {
+        if(enable && mColorModifierUniform == nullptr)
+        {
+            mColorModifierUniform = new osg::Uniform("colorModifier", osg::Vec4(1.0, 1.0, 1.0, 1.0));
+
+            osg::StateSet *ss = mTransform->getOrCreateStateSet();
+            ss->setDefine("COLOR_MODIFIER");
+            ss->addUniform(mColorModifierUniform);
+
+        }else if(!enable && mColorModifierUniform != nullptr)
+        {
+            osg::StateSet *ss = mTransform->getOrCreateStateSet();
+            ss->removeDefine("COLOR_MODIFIER");
+            ss->removeUniform(mColorModifierUniform);
+
+            mColorModifierUniform = nullptr;
+        }
+    }
+
+    void ObjectNode::setColorModifier(const glm::vec4 &cm)
+    {
+        if(mColorModifierUniform != nullptr)
+        {
+            mColorModifierUniform->set(GlmAdapter::toOsg(cm));
+        }
+    }
+
     odRender::Rig *ObjectNode::getRig()
     {
         if(mRig == nullptr)

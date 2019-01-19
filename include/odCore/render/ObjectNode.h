@@ -64,6 +64,9 @@ namespace odRender
         virtual void addFrameListener(FrameListener *listener) = 0;
         virtual void removeFrameListener(FrameListener *listener) = 0;
 
+        virtual void setEnableColorModifier(bool b) = 0;
+        virtual void setColorModifier(const glm::vec4 &cm) = 0;
+
         virtual Rig *getRig() = 0;
     };
 

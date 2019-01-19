@@ -74,6 +74,8 @@ namespace dragonRfl
             mCrystalNode->setScale(glm::vec3(0.58/diameter));
             mCrystalNode->setPosition(glm::vec3(0.5, 0.5, 0));
             mCrystalNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mCrystalNode->setEnableColorModifier(true);
+            mCrystalNode->setColorModifier(mCrystalColorInactive);
         }
 
         if(innerRingModel != nullptr)
@@ -198,7 +200,9 @@ namespace dragonRfl
             q *= glm::quat(glm::vec3(0, -crystalSpeed*relTime, 0));
             mCrystalNode->setOrientation(q);
 
-            _updateCrystalColor(relTime);
+            float colorRelative = mCrystalSpeedPercent;
+            glm::vec4 crystalColor = colorRelative*mCrystalColorActive + (1-colorRelative)*mCrystalColorInactive;
+            mCrystalNode->setColorModifier(crystalColor);
         }
 
         if(mOuterRingNode != nullptr)
@@ -212,19 +216,6 @@ namespace dragonRfl
             glm::quat q(glm::vec3(0, -mRingAnimPercent*M_PI, 0));
             mInnerRingNode->setOrientation(q);
         }
-    }
-
-    void CrystalRingButton::_updateCrystalColor(double relTime)
-    {
-        /*if(mColorModifierUniform == nullptr)
-        {
-            return;
-        }
-
-        if(mCrystalColor.update(relTime))
-        {
-            mColorModifierUniform->set(mCrystalColor);
-        }*/
     }
 
 }

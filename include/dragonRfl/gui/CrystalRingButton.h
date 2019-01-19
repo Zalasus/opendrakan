@@ -41,8 +41,6 @@ namespace dragonRfl
 
     private:
 
-        void _updateCrystalColor(double relTime);
-
         od::RefPtr<odRender::ObjectNode> mCrystalNode;
         od::RefPtr<odRender::ObjectNode> mInnerRingNode;
         od::RefPtr<odRender::ObjectNode> mOuterRingNode;
