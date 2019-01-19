@@ -19,10 +19,6 @@ namespace odRfl
     {
     }
 
-    void Rfl::onMenuToggle(bool newMode)
-    {
-    }
-
     std::vector<RflRegistrar*> &RflRegistrar::getRflRegistrarListSingleton()
     {
         static std::vector<RflRegistrar*> list;

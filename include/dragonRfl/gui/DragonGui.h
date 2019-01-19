@@ -25,6 +25,7 @@ namespace dragonRfl
 {
 
     class UserInterfaceProperties;
+    class MainMenu;
 
     /**
      * Class handling Drakan's GUI, as well as providing GUI resources via Dragon.rrc and Interface.db.
@@ -52,6 +53,8 @@ namespace dragonRfl
          */
         std::string getStringById(od::RecordId stringId);
 
+        virtual void onMenuModeChanged() override;
+
 
     protected:
 
@@ -70,6 +73,8 @@ namespace dragonRfl
         std::unique_ptr<UserInterfaceProperties> mUserInterfaceProperties;
 
         std::map<od::RecordId, std::string> mLocalizedStringCache;
+
+        od::RefPtr<MainMenu> mMainMenu;
     };
 
 }

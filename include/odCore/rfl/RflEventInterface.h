@@ -19,7 +19,6 @@ namespace odRfl
         virtual ~RflEventInterface() = default;
 
         virtual void onStartup() = 0;
-        virtual void onMenuToggle(bool newMode) = 0;
 
 
     };

@@ -80,6 +80,8 @@ namespace odGui
         {
             mCursorWidget->setVisible(b);
         }
+
+        this->onMenuModeChanged();
     }
 
     void Gui::setCursorWidget(Widget *cursor)
@@ -163,6 +165,10 @@ namespace odGui
         }
 
         std::swap(mCurrentHitWidgets, mLastHitWidgets);
+    }
+
+    void Gui::onMenuModeChanged()
+    {
     }
 
     void Gui::_setupGui()

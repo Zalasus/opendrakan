@@ -61,10 +61,6 @@ namespace dragonRfl
         mMenuAction = mmAction;
     }
 
-    void DragonRfl::onMenuToggle(bool newMode)
-    {
-    }
-
     void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
         switch(action->getAction())

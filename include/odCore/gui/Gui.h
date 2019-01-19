@@ -33,7 +33,7 @@ namespace odGui
     public:
 
         Gui(odRender::Renderer &renderer);
-        ~Gui();
+        virtual ~Gui();
 
         inline bool isMenuMode() const { return mMenuMode; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
@@ -60,6 +60,11 @@ namespace odGui
          * @brief Positions cursor in NDC.
          */
         void setCursorPosition(const glm::vec2 &pos);
+
+        /**
+         * @brief Hook for child classes to react when menu mode is enabled/disabled. Does nothing by default.
+         */
+        virtual void onMenuModeChanged();
 
 
     private:

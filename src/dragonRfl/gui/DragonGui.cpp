@@ -16,7 +16,6 @@
 #include <dragonRfl/gui/Cursor.h>
 #include <dragonRfl/gui/MainMenu.h>
 
-
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 #define OD_DRAGONRRC_PATH "Dragon.rrc"
 
@@ -68,8 +67,8 @@ namespace dragonRfl
 
         setCursorPosition(glm::vec2(0, 0));
 
-        auto mainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
-        addWidget(mainMenu);
+        mMainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
+        addWidget(mMainMenu);
 
         setMenuMode(true);
     }
@@ -150,6 +149,14 @@ namespace dragonRfl
     od::RefPtr<odDb::Texture> DragonGui::getTexture(od::RecordId recordId)
     {
         return mRrcTextureFactory.getAsset(recordId);
+    }
+
+    void DragonGui::onMenuModeChanged()
+    {
+        if(mMainMenu != nullptr)
+        {
+            mMainMenu->setVisible(isMenuMode());
+        }
     }
 
     void DragonGui::_decryptString(char * const str, const size_t len)

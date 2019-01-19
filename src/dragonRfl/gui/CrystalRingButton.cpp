@@ -61,7 +61,7 @@ namespace dragonRfl
         getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
 
         glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
-        glm::vec3 lightAmbient(0.2, 0.2, 0.2);
+        glm::vec3 lightAmbient(0.4, 0.4, 0.4);
         glm::vec3 lightDirection(glm::normalize(glm::vec3(0.0, 1.0, 1.0)));
 
         if(crystalModel != nullptr)

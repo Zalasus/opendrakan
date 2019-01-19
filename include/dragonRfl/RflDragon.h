@@ -33,7 +33,6 @@ namespace dragonRfl
         inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
 
         virtual void onStartup() override;
-        virtual void onMenuToggle(bool newMode) override;
 
 
     private:
