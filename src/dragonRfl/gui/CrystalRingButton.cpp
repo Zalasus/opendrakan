@@ -206,13 +206,13 @@ namespace dragonRfl
 
         if(mOuterRingNode != nullptr)
         {
-            glm::quat q(glm::vec3(0, mRingAnimPercent*M_PI, 0));
+            glm::quat q(glm::vec3(-mRingAnimPercent*M_PI, 0, 0));
             mOuterRingNode->setOrientation(q);
         }
 
         if(mInnerRingNode != nullptr)
         {
-            glm::quat q(glm::vec3(mRingAnimPercent*M_PI, 0, 0));
+            glm::quat q(glm::vec3(0, -mRingAnimPercent*M_PI, 0));
             mInnerRingNode->setOrientation(q);
         }
     }

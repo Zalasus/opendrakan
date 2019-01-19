@@ -168,13 +168,13 @@ namespace odGui
     void Gui::_setupGui()
     {
         mWidgetSpaceToNdcTransform = glm::mat4(1.0);
-        mWidgetSpaceToNdcTransform = glm::scale(mWidgetSpaceToNdcTransform, glm::vec3(2.0, -2.0, -1.0));
+        mWidgetSpaceToNdcTransform = glm::scale(mWidgetSpaceToNdcTransform, glm::vec3(2.0, -2.0, 1.0));
         mWidgetSpaceToNdcTransform = glm::translate(mWidgetSpaceToNdcTransform, glm::vec3(-0.5, -0.5, 0.0));
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
         mRootWidget = od::make_refd<Widget>(*this, mRenderer.getGuiRootNode());
-        mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels);
+        mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels); // FIXME: get actual dimensions here
         mRootWidget->update(0); // the root GuiNode has no reference to the root widget, so it can't trigger the initial update itself
     }
 
