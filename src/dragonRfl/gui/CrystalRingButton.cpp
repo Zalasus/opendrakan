@@ -44,7 +44,7 @@ namespace dragonRfl
     {
         // select whatever model is not null for bounds calculation, starting with outer ring
         od::RefPtr<odDb::Model> modelForBounds =
-                (crystalModel != nullptr) ? crystalModel : ((innerRingModel != nullptr) ? innerRingModel : outerRingModel);
+                (outerRingModel != nullptr) ? outerRingModel : ((innerRingModel != nullptr) ? innerRingModel : crystalModel);
 
         if(modelForBounds == nullptr)
         {
@@ -52,7 +52,7 @@ namespace dragonRfl
         }
 
         od::AxisAlignedBoundingBox aabb = modelForBounds->getCalculatedBoundingBox();
-        float diameter = aabb.max().y - aabb.min().y;
+        float diameter = aabb.max().x - aabb.min().x;
 
         glm::vec3 extends = aabb.max() - aabb.min();
         float aspectRatio = extends.x/extends.y;
@@ -62,7 +62,7 @@ namespace dragonRfl
 
         glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
         glm::vec3 lightAmbient(0.2, 0.2, 0.2);
-        glm::vec3 lightDirection(glm::normalize(glm::vec3(1.0, 1.0, 1.0)));
+        glm::vec3 lightDirection(glm::normalize(glm::vec3(0.0, 1.0, 1.0)));
 
         if(crystalModel != nullptr)
         {

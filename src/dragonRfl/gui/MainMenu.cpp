@@ -101,8 +101,8 @@ namespace dragonRfl
         _addCrystal(gui, uiProps->mCrystalMiddle.getAsset(), uiProps->mCrystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
         _addCrystal(gui, uiProps->mCrystalRight.getAsset(), uiProps->mCrystalRightNoteOffset, 57, 400, 195, uiProps, cont, BC_SAVE);
         _addCrystal(gui, uiProps->mCrystalLowerLeft.getAsset(), uiProps->mCrystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
-        _addCrystal(gui, uiProps->mCrystalLowerRight.getAsset(), uiProps->mCrystalLowerRightNoteOffset,35, 358, 292, uiProps, cont, BC_CREDITS);
-        _addCrystal(gui, uiProps->mCrystalBottom.getAsset(), uiProps->mCrystalBottomNoteOffset,61, 255, 440, uiProps, cont, BC_QUIT);
+        _addCrystal(gui, uiProps->mCrystalLowerRight.getAsset(), uiProps->mCrystalLowerRightNoteOffset, 35, 358, 292, uiProps, cont, BC_CREDITS);
+        _addCrystal(gui, uiProps->mCrystalBottom.getAsset(), uiProps->mCrystalBottomNoteOffset, 61, 255, 440, uiProps, cont, BC_QUIT);
     }
 
     void MainMenu::_addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
