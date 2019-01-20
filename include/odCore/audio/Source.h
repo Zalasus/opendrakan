@@ -50,8 +50,8 @@ namespace odAudio
         virtual void setGain(float gain) = 0;
 
         virtual void setSound(odDb::Sound *s) = 0;
-        virtual void play(float fadeInTime = 0.0f) = 0;
-        virtual void stop(float fadeOutTime = 0.0f) = 0;
+        virtual void play(float fadeInTime) = 0;
+        virtual void stop(float fadeOutTime) = 0;
 
         virtual void update(float relTime) = 0;
 

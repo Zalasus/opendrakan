@@ -1,5 +1,7 @@
 
 set(SOURCES
+        "audio/SoundSystem.cpp"
+        "audio/Source.cpp"
         "render/Camera.cpp"
         "render/Geometry.cpp"
         "render/GeometryBuilder.cpp"
@@ -26,4 +28,4 @@ target_link_libraries(odOsg
                         odCore 
                         ${WHOLE_ARCHIVE_START} dragonRfl ${WHOLE_ARCHIVE_END}
                         ${OPENSCENEGRAPH_LIBRARIES}
-                        ${OPENAL_LIRARIES})
+                        ${OPENAL_LIBRARY})
