@@ -18,10 +18,12 @@ set(SOURCES
         "Main.cpp")
         
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
+find_package(OpenAL REQUIRED)
 
 add_executable(odOsg ${SOURCES})
 
 target_link_libraries(odOsg 
                         odCore 
                         ${WHOLE_ARCHIVE_START} dragonRfl ${WHOLE_ARCHIVE_END}
-                        ${OPENSCENEGRAPH_LIBRARIES})
+                        ${OPENSCENEGRAPH_LIBRARIES}
+                        ${OPENAL_LIRARIES})

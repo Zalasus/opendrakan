@@ -59,10 +59,13 @@ set(SOURCES
         "ZStream.cpp")
     
 find_package(Threads REQUIRED)
+find_package(glm REQUIRED) 
+find_package(ZLIB REQUIRED)
+find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
     
 add_library(odCore STATIC ${SOURCES})
 
-target_link_libraries(odCore 
+target_link_libraries(odCore
                         ${CMAKE_THREAD_LIBS_INIT}
                         ${ZLIB_LIBRARIES} 
                         ${BULLET_LIBRARIES})

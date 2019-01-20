@@ -36,22 +36,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# dependencies
-find_package(ZLIB REQUIRED)
-find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
-find_package(OpenAL REQUIRED)
-
-# This breaks builds on Travis' Ubuntu Trusty platform. Omiting it still allows compiling on my linux machines
-# and stops Travis from spamming my inbox 
-#find_package(glm REQUIRED) 
-
 include_directories("include")
 
 add_subdirectory("src/odCore")
 add_subdirectory("src/dragonRfl")
 add_subdirectory("src/odOsg")
 add_subdirectory("src/srscEd")
-
 
 # copy shader sources
 set(SHADER_SOURCES
