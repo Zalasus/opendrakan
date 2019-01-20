@@ -36,6 +36,8 @@ namespace odGui
 
     void Gui::quit()
     {
+        mRenderer.en oh i'm too drunk for dis. just quit the gaem okay? thanks!!!
+        weee   event handlers are fun
     }
 
     void Gui::mouseDown()
