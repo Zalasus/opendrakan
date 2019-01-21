@@ -35,6 +35,11 @@ namespace odRender
     class Renderer;
 }
 
+namespace odAudio
+{
+    class SoundSystem;
+}
+
 namespace od
 {
 
@@ -57,11 +62,13 @@ namespace od
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
 		inline odInput::InputManager &getInputManager() { return *mInputManager; }
 		inline odRender::Renderer *getRenderer() { return mRenderer; }
+		inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline bool isDone() { return mIsDone; }
 		inline void setDone(bool done) { mIsDone = done; }
 
 		void setRenderer(odRender::Renderer *renderer);
+		void setSoundSystem(odAudio::SoundSystem *soundSystem);
 
 		void setUp();
 		void run();
@@ -79,6 +86,7 @@ namespace od
 		std::unique_ptr<odInput::InputManager> mInputManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
 		odRender::Renderer *mRenderer;
+		odAudio::SoundSystem *mSoundSystem;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;

@@ -22,11 +22,14 @@
 
 #include <odCore/render/Renderer.h>
 
+#include <odCore/audio/SoundSystem.h>
+
 namespace od
 {
 
 	Engine::Engine()
 	: mRenderer(nullptr)
+	, mSoundSystem(nullptr)
     , mHasInitialLevelOverride(false)
 	, mInitialLevelOverride("")
 	, mEngineRootDir("")
@@ -53,6 +56,16 @@ namespace od
 	    {
 	        mRenderer->setRendererEventListener(this);
 	    }
+	}
+
+	void Engine::setSoundSystem(odAudio::SoundSystem *soundSystem)
+	{
+	    if(mSoundSystem != nullptr)
+	    {
+	        Logger::warn() << "Hotswapping sound system. Prepare for chaos";
+	    }
+
+	    mSoundSystem = soundSystem;
 	}
 
 	void Engine::setUp()
