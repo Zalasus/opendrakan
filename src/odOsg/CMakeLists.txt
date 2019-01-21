@@ -1,5 +1,6 @@
 
 set(SOURCES
+        "audio/OpenAlContext.cpp"
         "audio/SoundSystem.cpp"
         "audio/Source.cpp"
         "render/Camera.cpp"
