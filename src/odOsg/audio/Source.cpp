@@ -61,6 +61,12 @@ namespace odOsg
     {
         std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
 
+        alSourceStop(mSourceId);
+        SoundSystem::doErrorCheck("Could not stop source to delete it");
+
+        alSourcei(mSourceId, AL_BUFFER, AL_NONE); // unqueue any buffers
+        SoundSystem::doErrorCheck("Could not unqueue buffer when deleting source");
+
         alDeleteSources(1, &mSourceId);
         SoundSystem::doErrorCheck("Could not delete source");
     }
@@ -133,11 +139,23 @@ namespace odOsg
     {
         mCurrentSound = s;
 
+        if(mCurrentBuffer != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
+
+            alSourceStop(mSourceId);
+            SoundSystem::doErrorCheck("Could not stop source to unqueue buffer");
+
+            alSourcei(mSourceId, AL_BUFFER, AL_NONE); // unqueue any buffers
+            SoundSystem::doErrorCheck("Could not unqueue buffer");
+        }
+
         if(mCurrentSound != nullptr)
         {
             auto buffer = mCurrentSound->getOrCreateAudioBuffer(&mSoundSystem);
             mCurrentBuffer = upcast<Buffer>(buffer.get());
 
+            // warning, deadlock potential. Don't lock mutex before getOrCreateAudioBuffer() call
             std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
 
             alSourcei(mSourceId, AL_BUFFER, mCurrentBuffer->getBufferId());
