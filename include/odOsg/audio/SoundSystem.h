@@ -16,6 +16,8 @@
 
 #include <odCore/audio/SoundSystem.h>
 
+#include <odOsg/audio/OpenAlContext.h>
+
 namespace odOsg
 {
 
@@ -45,6 +47,8 @@ namespace odOsg
     private:
 
         void _doWorkerStuff();
+
+        OpenAlContext mContext;
 
         std::thread mWorkerThread;
         std::mutex  mWorkerMutex;

@@ -17,7 +17,8 @@ namespace odOsg
 {
 
     SoundSystem::SoundSystem()
-    : mTerminateFlag(false)
+    : mContext() // only support default device for now
+    , mTerminateFlag(false)
     {
         mWorkerThread = std::thread(&SoundSystem::_doWorkerStuff, this);
     }

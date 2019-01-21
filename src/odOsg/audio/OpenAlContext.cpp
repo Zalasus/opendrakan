@@ -9,7 +9,7 @@
 
 #include <odCore/Exception.h>
 
-namespace odAudio
+namespace odOsg
 {
 
     const ALCint OpenAlContext::AbsoluteMaximumSources = 128;
