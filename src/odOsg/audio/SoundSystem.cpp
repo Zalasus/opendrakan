@@ -63,7 +63,7 @@ namespace odOsg
     {
         auto source = od::make_refd<Source>(*this);
 
-        mSources.push_back(source);
+        mSources.push_back(source.get());
 
         return source.get();
     }
@@ -131,7 +131,13 @@ namespace odOsg
             {
                 for(auto &source : mSources)
                 {
-                    source->update(relTime);
+                    if(source != nullptr)
+                    {
+                        source->update(relTime);
+                    }
+
+                    //TODO: maybe delete null entries here? leaving them in poses a minor memory leak
+                    //  (not that severe since we don't create sources on the fly)
                 }
 
             }catch(od::Exception &e)

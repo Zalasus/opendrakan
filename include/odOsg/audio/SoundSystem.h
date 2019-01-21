@@ -14,6 +14,8 @@
 #include <string>
 #include <vector>
 
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/audio/SoundSystem.h>
 
 #include <odOsg/audio/OpenAlContext.h>
@@ -55,7 +57,7 @@ namespace odOsg
         std::mutex  mWorkerMutex;
         std::atomic_bool mTerminateFlag;
 
-        std::vector<od::RefPtr<Source>> mSources;
+        std::vector<od::WeakRefPtr<Source>> mSources;
     };
 
 }
