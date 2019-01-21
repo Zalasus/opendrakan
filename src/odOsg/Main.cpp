@@ -48,8 +48,15 @@ int main(int argc, char **argv)
 {
     od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
 
+    odOsg::SoundSystem soundSystem;
+
+    odOsg::Renderer osgRenderer;
+
     od::Engine engine;
     sEngine = &engine;
+
+    engine.setRenderer(&osgRenderer);
+    engine.setSoundSystem(&soundSystem);
 
     signal(SIGINT, &handleSignal);
 
@@ -84,12 +91,7 @@ int main(int argc, char **argv)
         engine.setInitialLevelOverride(initialLevel.adjustCase());
     }
 
-    odOsg::Renderer osgRenderer;
     osgRenderer.setFreeLook(freeLook);
-    engine.setRenderer(&osgRenderer);
-
-    odOsg::SoundSystem soundSystem;
-    engine.setSoundSystem(&soundSystem);
 
     odOsg::InputListener inputListener(osgRenderer, engine.getInputManager());
 
