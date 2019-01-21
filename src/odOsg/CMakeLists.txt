@@ -1,5 +1,6 @@
 
 set(SOURCES
+        "audio/Buffer.cpp"
         "audio/OpenAlContext.cpp"
         "audio/SoundSystem.cpp"
         "audio/Source.cpp"

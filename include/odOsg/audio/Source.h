@@ -25,6 +25,7 @@ namespace odOsg
 
         Source(SoundSystem &ss);
         Source(const Source &s) = delete;
+        virtual ~Source();
 
         virtual State getState() override;
 

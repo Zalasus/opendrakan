@@ -18,6 +18,7 @@ namespace odAudio
 {
 
     class Source;
+    class Buffer;
 
     /**
      * @brief Abstract interface for a sound system implementation.
@@ -33,6 +34,7 @@ namespace odAudio
         virtual void setListenerVelocity(const glm::vec3 &v) = 0;
 
         virtual od::RefPtr<Source> createSource() = 0;
+        virtual od::RefPtr<Buffer> createBuffer() = 0;
 
         virtual void setEaxPreset(EaxPreset preset) = 0;
 

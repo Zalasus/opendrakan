@@ -9,9 +9,10 @@
 
 #include <AL/al.h>
 
-#include <odOsg/audio/Source.h>
-
 #include <odCore/Exception.h>
+
+#include <odOsg/audio/Source.h>
+#include <odOsg/audio/Buffer.h>
 
 namespace odOsg
 {
@@ -20,6 +21,8 @@ namespace odOsg
     : mContext() // only support default device for now
     , mTerminateFlag(false)
     {
+        mContext.makeCurrent();
+
         mWorkerThread = std::thread(&SoundSystem::_doWorkerStuff, this);
     }
 
@@ -63,6 +66,13 @@ namespace odOsg
         mSources.push_back(source);
 
         return source.get();
+    }
+
+    od::RefPtr<odAudio::Buffer> SoundSystem::createBuffer()
+    {
+        auto buffer = od::make_refd<Buffer>(*this);
+
+        return buffer.get();
     }
 
     void SoundSystem::setEaxPreset(odAudio::EaxPreset preset)

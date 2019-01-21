@@ -37,6 +37,7 @@ namespace odOsg
         virtual void setListenerVelocity(const glm::vec3 &v) override;
 
         virtual od::RefPtr<odAudio::Source> createSource() override;
+        virtual od::RefPtr<odAudio::Buffer> createBuffer() override;
 
         virtual void setEaxPreset(odAudio::EaxPreset preset) override;
 

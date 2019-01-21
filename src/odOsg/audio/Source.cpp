@@ -51,6 +51,12 @@ namespace odOsg
         SoundSystem::doErrorCheck("Could not generate source");
     }
 
+    Source::~Source()
+    {
+        alDeleteSources(1, &mSourceId);
+        SoundSystem::doErrorCheck("Could not delete source");
+    }
+
     Source::State Source::getState()
     {
         std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
