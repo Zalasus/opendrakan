@@ -47,6 +47,11 @@ namespace odInput
         {
             int actionCode = static_cast<int>(action);
 
+            if(actionCode == 0)
+            {
+                throw od::InvalidArgumentException("Can't create actions whose int representation is 0");
+            }
+
             od::RefPtr<ActionHandle<_ActionEnum>> actionHandle;
             auto &weakRef = mActions[actionCode];
             if(weakRef == nullptr)

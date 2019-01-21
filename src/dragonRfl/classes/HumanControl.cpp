@@ -14,6 +14,9 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
 
+#include <odCore/input/InputManager.h>
+#include <odCore/input/Keys.h>
+
 #include <odCore/audio/SoundSystem.h>
 
 #include <dragonRfl/RflDragon.h>
@@ -53,6 +56,20 @@ namespace dragonRfl
         // prefetch referenced assets
         odRfl::PrefetchProbe probe(mPlayerObject->getClass()->getAssetProvider());
         this->probeFields(probe);
+
+        // configure controls
+        odInput::InputManager &im = obj.getLevel().getEngine().getInputManager();
+        auto actionHandler = std::bind(&HumanControl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
+
+        mForwardAction = im.getOrCreateAction(Action::Forward);
+        mForwardAction->setRepeatable(false);
+        mForwardAction->addCallback(actionHandler);
+        mForwardAction->bindToKey(odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
+
+        mBackwardAction = im.getOrCreateAction(Action::Backward);
+        mBackwardAction->setRepeatable(false);
+        mBackwardAction->addCallback(actionHandler);
+        mBackwardAction->bindToKey(odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
     }
 
     void HumanControl::onSpawned(od::LevelObject &obj)
@@ -71,7 +88,6 @@ namespace dragonRfl
 
     void HumanControl::onUpdate(od::LevelObject &obj, float relTime)
     {
-        _updateMotion(relTime);
     }
 
     void HumanControl::onMoved(od::LevelObject &obj)
@@ -115,11 +131,22 @@ namespace dragonRfl
 	    return *mPlayerObject;
 	}
 
-    void HumanControl::_updateMotion(float relTime)
+    void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
+        switch(action->getAction())
+        {
+        case Action::Forward:
+            Logger::info() << "I'm walking forward!";
+            break;
 
+        case Action::Backward:
+            Logger::info() << "I'm walking backward!";
+            break;
+
+        default:
+            break;
+        }
     }
-
 
     OD_REGISTER_RFLCLASS(DragonRfl, HumanControl);
 

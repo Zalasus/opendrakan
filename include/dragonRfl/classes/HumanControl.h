@@ -9,10 +9,14 @@
 #define INCLUDE_RFL_DRAGON_HUMANCONTROL_H_
 
 #include <odCore/db/Animation.h>
+
 #include <odCore/physics/CharacterController.h>
+
+#include <odCore/input/Action.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
 #include <dragonRfl/LocalPlayer.h>
+#include <dragonRfl/Actions.h>
 
 namespace dragonRfl
 {
@@ -42,7 +46,7 @@ namespace dragonRfl
 
 	 private:
 
-		void _updateMotion(float relTime);
+		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
 
 		DragonRfl &mRfl;
 
@@ -52,6 +56,9 @@ namespace dragonRfl
 		float mForwardSpeed;
 		float mRightSpeed;
 		od::LevelObject *mPlayerObject;
+
+		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
+		od::RefPtr<odInput::ActionHandle<Action>> mBackwardAction;
 
 	};
 

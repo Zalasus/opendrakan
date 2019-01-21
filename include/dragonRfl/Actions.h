@@ -17,6 +17,8 @@ namespace dragonRfl
 
     enum class Action
     {
+        Unknown = 0, // TODO: document somewhere that the action with zero representation can't be bound
+
         Forward,
         Backward,
         Strafe_Left,
