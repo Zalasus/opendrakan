@@ -14,10 +14,15 @@
 
 #include <AL/al.h>
 
+namespace odDb
+{
+    class Sound;
+}
+
 namespace odOsg
 {
-
     class SoundSystem;
+    class Buffer;
 
     class Source : public odAudio::Source
     {
@@ -51,6 +56,11 @@ namespace odOsg
 
         SoundSystem &mSoundSystem;
         ALuint mSourceId;
+
+        od::RefPtr<odDb::Sound> mCurrentSound;
+        od::RefPtr<Buffer> mCurrentBuffer;
+
+        float mGain; // soon to be replaced by interpolating float
     };
 
 }

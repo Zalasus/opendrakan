@@ -33,13 +33,14 @@ namespace odOsg
         virtual ~SoundSystem();
 
         inline std::mutex &getWorkerMutex() { return mWorkerMutex; }
+        inline OpenAlContext &getContext() { return mContext; }
 
         virtual void setListenerPosition(const glm::vec3 &pos) override;
         virtual void setListenerOrientation(const glm::vec3 &at, const glm::vec3 &up) override;
         virtual void setListenerVelocity(const glm::vec3 &v) override;
 
         virtual od::RefPtr<odAudio::Source> createSource() override;
-        virtual od::RefPtr<odAudio::Buffer> createBuffer() override;
+        virtual od::RefPtr<odAudio::Buffer> createBuffer(odDb::Sound *sound) override;
 
         virtual void setEaxPreset(odAudio::EaxPreset preset) override;
 

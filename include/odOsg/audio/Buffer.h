@@ -12,6 +12,11 @@
 
 #include <AL/al.h>
 
+namespace odDb
+{
+    class Sound;
+}
+
 namespace odOsg
 {
 
@@ -21,14 +26,18 @@ namespace odOsg
     {
     public:
 
-        Buffer(SoundSystem &ss);
+        Buffer(SoundSystem &ss, odDb::Sound *sound);
         virtual ~Buffer();
+
+        inline ALuint getBufferId() const { return mBufferId; }
 
 
     private:
 
         SoundSystem &mSoundSystem;
         ALuint mBufferId;
+
+        od::RefPtr<odDb::Sound> mSound;
 
     };
 

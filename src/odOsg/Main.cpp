@@ -14,6 +14,7 @@
 #include <odCore/Exception.h>
 
 #include <odOsg/render/Renderer.h>
+#include <odOsg/audio/SoundSystem.h>
 #include <odOsg/InputListener.h>
 
 
@@ -86,6 +87,9 @@ int main(int argc, char **argv)
     odOsg::Renderer osgRenderer;
     osgRenderer.setFreeLook(freeLook);
     engine.setRenderer(&osgRenderer);
+
+    odOsg::SoundSystem soundSystem;
+    engine.setSoundSystem(&soundSystem);
 
     odOsg::InputListener inputListener(osgRenderer, engine.getInputManager());
 

@@ -13,8 +13,16 @@
 
 #include <odCore/db/Asset.h>
 
+#include <odCore/WeakRefPtr.h>
+
 #define OD_SOUND_FLAG_FLUSH_AFTER_PLAYING 	0x04
 #define OD_SOUND_FLAG_PLAY_LOOPING			0x08
+
+namespace odAudio
+{
+    class Buffer;
+    class SoundSystem;
+}
 
 namespace odDb
 {
@@ -24,13 +32,19 @@ namespace odDb
 	public:
 
 		Sound(AssetProvider &ap, od::RecordId id);
+		virtual ~Sound();
 
+        inline uint32_t getChannelCount() const { return mChannels; }
+        inline uint32_t getBitsPerChannel() const { return mBits; }
 		inline uint32_t getSamplingFrequency() const { return mFrequency; }
+		inline const std::vector<uint8_t> &getDataBuffer() const { return mDataBuffer; }
 		inline const std::string &getName() const { return mSoundName; }
 
 		void loadFromRecord(od::DataReader &dr);
 
 		float getLinearGain() const;
+
+		od::RefPtr<odAudio::Buffer> getOrCreateAudioBuffer(odAudio::SoundSystem *soundSystem);
 
 
 	private:
@@ -46,8 +60,9 @@ namespace odDb
         uint32_t    mDecompressedSize;
         uint32_t 	mCompressionLevel; // 0 = none, 1 = lowest, 9 = highest
 
-        // temporary buffer for holding the sample data until \c mSoundBuffer is created for the sound system
-        std::vector<uint8_t> mTempSampleBuffer;
+        std::vector<uint8_t> mDataBuffer;
+
+        od::WeakRefPtr<odAudio::Buffer> mSoundBuffer;
 	};
 
 	template <>

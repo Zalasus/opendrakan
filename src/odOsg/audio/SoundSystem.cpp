@@ -68,9 +68,9 @@ namespace odOsg
         return source.get();
     }
 
-    od::RefPtr<odAudio::Buffer> SoundSystem::createBuffer()
+    od::RefPtr<odAudio::Buffer> SoundSystem::createBuffer(odDb::Sound *sound)
     {
-        auto buffer = od::make_refd<Buffer>(*this);
+        auto buffer = od::make_refd<Buffer>(*this, sound);
 
         return buffer.get();
     }

@@ -14,6 +14,11 @@
 
 #include <odCore/audio/EaxPresets.h>
 
+namespace odDb
+{
+    class Sound;
+}
+
 namespace odAudio
 {
 
@@ -34,7 +39,7 @@ namespace odAudio
         virtual void setListenerVelocity(const glm::vec3 &v) = 0;
 
         virtual od::RefPtr<Source> createSource() = 0;
-        virtual od::RefPtr<Buffer> createBuffer() = 0;
+        virtual od::RefPtr<Buffer> createBuffer(odDb::Sound *sound) = 0;
 
         virtual void setEaxPreset(EaxPreset preset) = 0;
 
