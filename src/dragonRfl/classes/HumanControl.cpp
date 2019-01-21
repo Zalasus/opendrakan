@@ -7,12 +7,16 @@
 
 #include <dragonRfl/classes/HumanControl.h>
 
-#include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
-#include <odCore/rfl/PrefetchProbe.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
+
+#include <odCore/rfl/Rfl.h>
+#include <odCore/rfl/PrefetchProbe.h>
+
+#include <odCore/audio/SoundSystem.h>
+
+#include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
 {
@@ -473,15 +477,18 @@ namespace dragonRfl
 
     void HumanControl::onMoved(od::LevelObject &obj)
     {
-        /*osg::Vec3 pos = obj.getPosition();
+        odAudio::SoundSystem *soundSystem = obj.getLevel().getEngine().getSoundSystem();
+        if(soundSystem != nullptr)
+        {
+            glm::vec3 pos = obj.getPosition();
 
-        osg::Quat lookDirection = obj.getRotation();
-        osg::Vec3 at = lookDirection * osg::Vec3f(0, 0, -1);
-        osg::Vec3 up = osg::Vec3f(0, 1, 0);
+            glm::quat lookDirection = obj.getRotation();
+            glm::vec3 at = lookDirection * glm::vec3(0, 0, -1);
+            glm::vec3 up = glm::vec3(0, 1, 0);
 
-        odAudio::SoundManager &sm = obj.getLevel().getEngine().getSoundManager();
-        sm.setListenerPosition(pos.x(), pos.y(), pos.z());
-        sm.setListenerOrientation(at, up);*/
+            soundSystem->setListenerPosition(pos);
+            soundSystem->setListenerOrientation(at, up);
+        }
     }
 
     void HumanControl::moveForward(float speed)
