@@ -47,7 +47,9 @@ namespace odOsg
     Source::Source(SoundSystem &ss)
     : mSoundSystem(ss)
     , mSourceId(0)
-    , mGain(1.0)
+    , mSourceGain(1.0)
+    , mSoundGain(1.0)
+    , mFadingValue(1.0)
     {
         std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
 
@@ -121,6 +123,10 @@ namespace odOsg
 
     void Source::setGain(float gain)
     {
+        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
+
+        mSourceGain = gain;
+        _updateSourceGain_locked();
     }
 
     void Source::setSound(odDb::Sound *s)
@@ -142,7 +148,8 @@ namespace odOsg
             //  to mimick the way Drakan behaves, we apply this to the overall gain.
             float resamplingGain = mSoundSystem.getContext().getOutputFrequency() / mCurrentSound->getSamplingFrequency();
 
-            mGain = resamplingGain * mCurrentSound->getLinearGain();
+            mSoundGain = resamplingGain * mCurrentSound->getLinearGain();
+            _updateSourceGain_locked();
 
         }else
         {
@@ -152,14 +159,50 @@ namespace odOsg
 
     void Source::play(float fadeInTime)
     {
+        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
+
+        if(fadeInTime > 0.0)
+        {
+            mFadingValue.move(1.0f, fadeInTime);
+
+        }else
+        {
+            mFadingValue.set(1.0);
+        }
+        _updateSourceGain_locked();
+
+        alSourcePlay(mSourceId);
+        SoundSystem::doErrorCheck("Could not play source");
     }
 
     void Source::stop(float fadeOutTime)
     {
+        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
+
+        if(fadeOutTime == 0.0)
+        {
+            alSourceStop(mSourceId);
+            SoundSystem::doErrorCheck("Could not stop source");
+
+        }else
+        {
+            mFadingValue.move(0.0f, fadeOutTime);
+            _updateSourceGain_locked();
+        }
     }
 
     void Source::update(float relTime)
     {
+        if(mFadingValue.update(relTime))
+        {
+            _updateSourceGain_locked();
+        }
+    }
+
+    void Source::_updateSourceGain_locked()
+    {
+        alSourcef(mSourceId, AL_GAIN, mSourceGain*mSoundGain*mFadingValue);
+        SoundSystem::doErrorCheck("Could not set source gain");
     }
 
 }

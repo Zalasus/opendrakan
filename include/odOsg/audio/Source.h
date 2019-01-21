@@ -12,6 +12,8 @@
 
 #include <odCore/audio/Source.h>
 
+#include <odCore/anim/Interpolator.h>
+
 #include <AL/al.h>
 
 namespace odDb
@@ -54,13 +56,17 @@ namespace odOsg
         template <typename T>
         void _setProperty(ALuint property, const T &value, const std::string &failMsg);
 
+        void _updateSourceGain_locked(); // call only with worker mutex held
+
         SoundSystem &mSoundSystem;
         ALuint mSourceId;
 
         od::RefPtr<odDb::Sound> mCurrentSound;
         od::RefPtr<Buffer> mCurrentBuffer;
 
-        float mGain; // soon to be replaced by interpolating float
+        float mSourceGain;
+        float mSoundGain;
+        odAnim::Interpolated<float> mFadingValue;
     };
 
 }
