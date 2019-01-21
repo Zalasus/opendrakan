@@ -11,6 +11,7 @@ set(SOURCES
     "classes/DynamicLight.cpp"
     "classes/HealthPack.cpp"
     "classes/HumanControl.cpp"
+    "classes/HumanControlFields.cpp"
     "classes/Key.cpp"
     "classes/Material.cpp"
     "classes/PushableObject.cpp"
