@@ -41,6 +41,7 @@ namespace dragonRfl
     , mCrystalSpeedPercent(0.0)
     , mClicked(false)
     , mRingAnimPercent(0.0)
+    , mCrystalColor(mCrystalColorInactive)
     {
         // select whatever model is not null for bounds calculation, starting with outer ring
         od::RefPtr<odDb::Model> modelForBounds =
@@ -75,7 +76,7 @@ namespace dragonRfl
             mCrystalNode->setPosition(glm::vec3(0.5, 0.5, 0));
             mCrystalNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
             mCrystalNode->setEnableColorModifier(true);
-            mCrystalNode->setColorModifier(mCrystalColorInactive);
+            mCrystalNode->setColorModifier(mCrystalColor);
         }
 
         if(innerRingModel != nullptr)
@@ -137,9 +138,9 @@ namespace dragonRfl
         /*if(mSoundSource != nullptr)
         {
             mSoundSource->play(1.0f);
-        }
+        }*/
 
-        mCrystalColor.move(mCrystalColorActive, 0.5);*/
+        mCrystalColor.move(mCrystalColorActive, 0.5);
     }
 
     void CrystalRingButton::onMouseLeave(const glm::vec2 &pos)
@@ -147,9 +148,9 @@ namespace dragonRfl
         /*if(mSoundSource != nullptr)
         {
             mSoundSource->stop(1.8f);
-        }
+        }*/
 
-        mCrystalColor.move(mCrystalColorInactive, 1.0);*/
+        mCrystalColor.move(mCrystalColorInactive, 1.0);
     }
 
     void CrystalRingButton::onUpdate(float relTime)
@@ -200,9 +201,10 @@ namespace dragonRfl
             q *= glm::quat(glm::vec3(0, -crystalSpeed*relTime, 0));
             mCrystalNode->setOrientation(q);
 
-            float colorRelative = mCrystalSpeedPercent;
-            glm::vec4 crystalColor = colorRelative*mCrystalColorActive + (1-colorRelative)*mCrystalColorInactive;
-            mCrystalNode->setColorModifier(crystalColor);
+            if(mCrystalColor.update(relTime))
+            {
+                mCrystalNode->setColorModifier(mCrystalColor);
+            }
         }
 
         if(mOuterRingNode != nullptr)

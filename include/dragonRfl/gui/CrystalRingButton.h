@@ -14,6 +14,8 @@
 
 #include <odCore/render/ObjectNode.h>
 
+#include <odCore/anim/Interpolator.h>
+
 #include <odCore/db/Model.h>
 #include <odCore/db/Sound.h>
 
@@ -52,7 +54,7 @@ namespace dragonRfl
         float mCrystalSpeedPercent; // 0=stop, 1=max speed
         bool mClicked;
         float mRingAnimPercent;
-
+        odAnim::Interpolated<glm::vec4> mCrystalColor;
     };
 
 }
