@@ -40,6 +40,11 @@ namespace odGui
 
     void Gui::mouseDown()
     {
+        if(!mMenuMode)
+        {
+            return;
+        }
+
         mCurrentHitWidgets.clear();
         glm::mat4 eye(1.0);
         mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
@@ -116,6 +121,11 @@ namespace odGui
         if(mCursorWidget != nullptr)
         {
             mCursorWidget->setPosition(posWs.x, posWs.y);
+        }
+
+        if(!mMenuMode)
+        {
+            return;
         }
 
         // okay, here is the algorithm for determining mouse enter/leave:
