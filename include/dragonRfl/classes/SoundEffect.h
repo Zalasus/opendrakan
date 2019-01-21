@@ -14,6 +14,11 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
+namespace odAudio
+{
+    class Source;
+}
+
 namespace dragonRfl
 {
     class DragonRfl;
@@ -59,6 +64,8 @@ namespace dragonRfl
         odRfl::Float                    mAveragePeriod;
         odRfl::Float                    mPeriodRandomDeviation;
         odRfl::EnumImpl<Location, 0, 3> mLocation;
+
+        od::RefPtr<odAudio::Source> mSoundSource;
 
         float mTimeUntilNextPlay;
 

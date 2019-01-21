@@ -7,10 +7,14 @@
 
 #include <dragonRfl/classes/SoundEffect.h>
 
-#include <dragonRfl/RflDragon.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
+
+#include <odCore/audio/SoundSystem.h>
+#include <odCore/audio/Source.h>
+
+#include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
 {
@@ -38,18 +42,31 @@ namespace dragonRfl
     void SoundEffect::onLoaded(od::LevelObject &obj)
     {
         obj.setObjectType(od::LevelObjectType::Detector);
+
+        odAudio::SoundSystem *soundSystem = obj.getLevel().getEngine().getSoundSystem();
+        if(soundSystem != nullptr)
+        {
+            mSoundSource = soundSystem->createSource();
+        }
     }
 
     void SoundEffect::onSpawned(od::LevelObject &obj)
     {
+        if(mSoundSource == nullptr)
+        {
+            return;
+        }
+
         mSounds.fetchAssets(obj.getClass()->getAssetProvider());
 
         if(mPlayMode == PlayMode::Once || mPlayMode == PlayMode::Intermittent)
         {
             obj.setEnableRflUpdateHook(true);
+            mSoundSource->setLooping(false);
 
         }else if(mPlayMode == PlayMode::Looping || mPlayMode == PlayMode::LoopingAndTriggered)
         {
+            mSoundSource->setLooping(true);
         }
 
         if(mPlayMode == PlayMode::Once || mPlayMode == PlayMode::Looping)
@@ -59,6 +76,7 @@ namespace dragonRfl
 
         if(mLocation == Location::EffectSite)
         {
+            mSoundSource->setPosition(obj.getPosition());
         }
     }
 
@@ -69,6 +87,11 @@ namespace dragonRfl
 
     void SoundEffect::onUpdate(od::LevelObject &obj, float relTime)
     {
+        if(mSoundSource == nullptr || mSoundSource->isPlaying())
+        {
+            return;
+        }
+
         if(mPlayMode == PlayMode::Once)
         {
             obj.requestDestruction();
@@ -92,6 +115,11 @@ namespace dragonRfl
 
     void SoundEffect::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
     {
+        if(mSoundSource == nullptr || mSoundSource->isPlaying())
+        {
+            return;
+        }
+
         // seems to trigger on any message
         if(mPlayMode == PlayMode::Triggered || mPlayMode == PlayMode::LoopingAndTriggered)
         {
@@ -105,10 +133,20 @@ namespace dragonRfl
         {
             return;
         }
+
+        if(mSoundSource != nullptr)
+        {
+            mSoundSource->setPosition(obj.getPosition());
+        }
     }
 
     void SoundEffect::_playRandomSound()
     {
+        if(mSoundSource == nullptr || mSounds.getAssetCount() == 0)
+        {
+            return;
+        }
+
         od::RefPtr<odDb::Sound> sound;
         if(mSounds.getAssetCount() == 1)
         {
@@ -125,6 +163,8 @@ namespace dragonRfl
 
         if(sound != nullptr)
         {
+            mSoundSource->setSound(sound);
+            mSoundSource->play(0.1);
             Logger::verbose() << "Sound Source now playing '" << sound->getName() << "'";
         }
     }
