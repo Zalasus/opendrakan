@@ -37,6 +37,7 @@ namespace dragonRfl
         DragonGui(od::Engine &engine);
         ~DragonGui();
 
+        inline od::Engine &getEngine() { return mEngine; }
         inline UserInterfaceProperties *getUserInterfaceProperties() { return mUserInterfaceProperties.get(); }
 
         /**

@@ -15,6 +15,9 @@
 #include <odCore/render/GuiNode.h>
 #include <odCore/render/ModelNode.h>
 
+#include <odCore/audio/SoundSystem.h>
+#include <odCore/audio/Source.h>
+
 #include <dragonRfl/gui/DragonGui.h>
 
 // max crystal speed in rad/s
@@ -103,10 +106,10 @@ namespace dragonRfl
             mOuterRingNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
         }
 
-        /*if(hoverSound != nullptr)
+        if(hoverSound != nullptr && gui.getEngine().getSoundSystem() != nullptr)
         {
-            mSoundSource = gm.getEngine().getSoundManager().createSource();
-            mSoundSource->setPosition(0.0, 0.0, 0.0);
+            mSoundSource = gui.getEngine().getSoundSystem()->createSource();
+            mSoundSource->setPosition(glm::vec3(0.0));
             mSoundSource->setRelative(true);
             mSoundSource->setLooping(true);
             mSoundSource->setSound(hoverSound);
@@ -118,7 +121,11 @@ namespace dragonRfl
             float resamplingFactor = hoverSound->getSamplingFrequency() / 22050; // TODO: maybe move this to the Source class. it may be universal to all pitch shifting
             float soundPitch = std::pow(halfTonePitch, noteOffset) / resamplingFactor;
             mSoundSource->setPitch(soundPitch);
-        }*/
+        }
+    }
+
+    CrystalRingButton::~CrystalRingButton()
+    {
     }
 
     bool CrystalRingButton::liesWithinLogicalArea(const glm::vec2 &pos)
@@ -135,20 +142,20 @@ namespace dragonRfl
 
     void CrystalRingButton::onMouseEnter(const glm::vec2 &pos)
     {
-        /*if(mSoundSource != nullptr)
+        if(mSoundSource != nullptr)
         {
             mSoundSource->play(1.0f);
-        }*/
+        }
 
         mCrystalColor.move(mCrystalColorActive, 0.5);
     }
 
     void CrystalRingButton::onMouseLeave(const glm::vec2 &pos)
     {
-        /*if(mSoundSource != nullptr)
+        if(mSoundSource != nullptr)
         {
             mSoundSource->stop(1.8f);
-        }*/
+        }
 
         mCrystalColor.move(mCrystalColorInactive, 1.0);
     }

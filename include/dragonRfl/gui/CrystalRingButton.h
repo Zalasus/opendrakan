@@ -19,6 +19,11 @@
 #include <odCore/db/Model.h>
 #include <odCore/db/Sound.h>
 
+namespace odAudio
+{
+    class Source;
+}
+
 namespace dragonRfl
 {
 
@@ -29,6 +34,8 @@ namespace dragonRfl
     public:
 
         CrystalRingButton(DragonGui &gui, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel, odDb::Sound *hoverSound, float noteOffset);
+        CrystalRingButton(const CrystalRingButton &c) = delete;
+        virtual ~CrystalRingButton();
 
         inline void setInactiveCrystalColor(const glm::vec4 &color) { mCrystalColorInactive = color; }
         inline void setActiveCrystalColor(const glm::vec4 &color) { mCrystalColorActive = color; }
@@ -55,6 +62,8 @@ namespace dragonRfl
         bool mClicked;
         float mRingAnimPercent;
         odAnim::Interpolated<glm::vec4> mCrystalColor;
+
+        od::RefPtr<odAudio::Source> mSoundSource;
     };
 
 }
