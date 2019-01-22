@@ -39,6 +39,7 @@ namespace odOsg
     Renderer::Renderer()
     : mShaderFactory("resources/shader_src")
     , mEventListener(nullptr)
+    , mFreeLook(false)
     , mLightingEnabled(true)
     {
         mViewer = new osgViewer::Viewer;
@@ -260,6 +261,8 @@ namespace odOsg
 
     void Renderer::setFreeLook(bool f)
     {
+        mFreeLook = f;
+
         mCamera->setIgnoreViewChanges(f);
 
         if(f)
@@ -305,8 +308,12 @@ namespace odOsg
         mViewer->getWindows(windows, true);
         for(osgViewer::GraphicsWindow *window: windows)
         {
-            window->setCursor(osgViewer::GraphicsWindow::NoCursor);
             window->setWindowName("OpenDrakan (OSG)");
+
+            if(!mFreeLook)
+            {
+                window->setCursor(osgViewer::GraphicsWindow::NoCursor);
+            }
         }
 
         double simTime = 0;

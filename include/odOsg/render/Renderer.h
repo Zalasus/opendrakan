@@ -81,6 +81,8 @@ namespace odOsg
 
         od::RefPtr<Camera> mCamera;
 
+        bool mFreeLook;
+
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         osg::ref_ptr<osg::Group> mSceneRoot;
         osg::ref_ptr<osg::Group> mObjects;

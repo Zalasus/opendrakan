@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <iostream>
+#include <memory>
 
 #include <odCore/Logger.h>
 #include <odCore/Engine.h>
@@ -93,7 +94,12 @@ int main(int argc, char **argv)
 
     osgRenderer.setFreeLook(freeLook);
 
-    odOsg::InputListener inputListener(osgRenderer, engine.getInputManager());
+    std::unique_ptr<odOsg::InputListener> inputListener;
+    if(!freeLook)
+    {
+        // only create listener if freelook mode is not forced. else we might catch input events the manipulator needs
+        inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, engine.getInputManager());
+    }
 
     try
     {

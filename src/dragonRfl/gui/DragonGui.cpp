@@ -70,7 +70,7 @@ namespace dragonRfl
         mMainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
         addWidget(mMainMenu);
 
-        setMenuMode(true);
+        setMenuMode(false);
     }
 
     DragonGui::~DragonGui()
