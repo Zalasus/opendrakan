@@ -19,13 +19,12 @@
 #include <odCore/db/Animation.h>
 
 #include <odCore/anim/Skeleton.h>
+#include <odCore/anim/MotionAccumulator.h>
 
 #include <odCore/render/ObjectNode.h>
 
 namespace odAnim
 {
-
-    class MotionAccumulator;
 
     class BoneAnimator
     {
@@ -35,10 +34,13 @@ namespace odAnim
 
         inline Skeleton::Bone *getBone() { return mBone; }
         inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
+        inline void setForceLooping(bool b) { mForceLooping = b; }
 
         void setAnimation(odDb::Animation *animation);
         void play();
         void update(float relTime);
+
+        void setAccumulationModes(const MotionAccumulator::AxesModes &modes);
 
 
     private:
@@ -48,6 +50,7 @@ namespace odAnim
         odDb::Animation::AnimStartEndPair mKeyframesStartEnd;
 
         bool mPlaying;
+        bool mForceLooping;
         float mCurrentTime;
         odDb::Animation::AnimKfIterator mCurrentKeyframe;
         glm::dualquat mLeftTransform;
@@ -56,6 +59,8 @@ namespace odAnim
         glm::dualquat mPreviousTransform; // last applied transform
 
         MotionAccumulator *mAccumulator;
+        glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
+        glm::vec3 mObjectAccumulationFactors; // tells what part of translation is pushed to accumulator
     };
 
 
@@ -91,10 +96,10 @@ namespace odAnim
          */
         void setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex = 0);
 
+        void setRootNodeAccumulationModes(MotionAccumulator::AxesModes modes, int32_t rootNodeIndex = 0);
+
         // implement odRender::FrameListener
         virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) override;
-
-
 
 
     private:

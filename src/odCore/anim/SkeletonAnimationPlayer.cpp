@@ -15,21 +15,22 @@
 namespace odAnim
 {
 
-    static void _dquatToTranslationAndRotation(const glm::dualquat &dq, glm::vec3 &trans, glm::quat &rot)
+    static glm::vec3 _translationFromDquat(const glm::dualquat &dq)
     {
         // see paper "A Beginners Guide to Dual-Quaternions" by Ben Kenwright
-        rot = dq.real;
-
         glm::quat transQuat = dq.dual * glm::conjugate(dq.real);
-        trans = 2.0f * glm::vec3(transQuat.x, transQuat.y, transQuat.z);
+        return 2.0f * glm::vec3(transQuat.x, transQuat.y, transQuat.z);
     }
 
 
     BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
     : mBone(bone)
     , mPlaying(false)
+    , mForceLooping(false)
     , mCurrentTime(0)
     , mAccumulator(nullptr)
+    , mBoneAccumulationFactors(0.0)
+    , mObjectAccumulationFactors(0.0)
     {
         if(mBone == nullptr)
         {
@@ -67,8 +68,34 @@ namespace odAnim
             mCurrentKeyframe = mKeyframesStartEnd.first;
             mLeftTransform = glm::dualquat(mCurrentKeyframe->xform);
             mRightTransform = glm::dualquat((mCurrentKeyframe+1)->xform);
+            mPreviousTransform = mLeftTransform;
             mCurrentTime = 0;
             mPlaying = true;
+        }
+    }
+
+    void BoneAnimator::setAccumulationModes(const MotionAccumulator::AxesModes &modes)
+    {
+        for(size_t i = 0; i < 3; ++i)
+        {
+            switch(modes[i])
+            {
+            case MotionAccumulator::Mode::Bone:
+                mObjectAccumulationFactors[i] = 0.0;
+                mBoneAccumulationFactors[i] = 1.0;
+                break;
+
+            case MotionAccumulator::Mode::Accumulate:
+                mObjectAccumulationFactors[i] = 0.0;
+                mBoneAccumulationFactors[i] = 1.0;
+                break;
+
+            case MotionAccumulator::Mode::Ignore:
+            default:
+                mObjectAccumulationFactors[i] = 0.0;
+                mBoneAccumulationFactors[i] = 0.0;
+                break;
+            }
         }
     }
 
@@ -100,7 +127,7 @@ namespace odAnim
             // did we advance past the last frame? if yes, stop animation or loop
             if(mCurrentKeyframe+1 >= mKeyframesStartEnd.second)
             {
-                if(mCurrentAnimation->isLooping())
+                if(mCurrentAnimation->isLooping() || mForceLooping)
                 {
                     mCurrentTime = mCurrentTime - mCurrentKeyframe->time;
                     mCurrentKeyframe = mKeyframesStartEnd.first;
@@ -121,6 +148,7 @@ namespace odAnim
 
         // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
         float delta = (mCurrentTime - mCurrentKeyframe->time)/((mCurrentKeyframe+1)->time - mCurrentKeyframe->time);
+        delta = glm::clamp(delta, 0.0f, 1.0f);
 
         glm::dualquat interpolatedTransform = glm::lerp(mLeftTransform, mRightTransform, delta);
 
@@ -131,36 +159,29 @@ namespace odAnim
 
         }else
         {
-            glm::vec3 prevOffset;
-            glm::quat prevRotation;
-            _dquatToTranslationAndRotation(mPreviousTransform, prevOffset, prevRotation);
-
-            glm::vec3 currentOffset;
-            glm::quat currentRotation;
-            _dquatToTranslationAndRotation(interpolatedTransform, currentOffset, currentRotation);
+            glm::vec3 prevOffset = _translationFromDquat(mPreviousTransform);
+            glm::vec3 currentOffset = _translationFromDquat(interpolatedTransform);
 
             glm::vec3 relativeOffset = currentOffset - prevOffset;
-            glm::quat relativeRotation = currentRotation * glm::conjugate(prevRotation);
 
             // if the current animation step looped back in time, we need to factor out the offset
             //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
             if(!continous)
             {
-                glm::vec3 leftKfOffset;
-                glm::quat leftKfRotation;
-                _dquatToTranslationAndRotation(mLeftTransform, leftKfOffset, leftKfRotation);
-
-                glm::vec3 rightKfOffset;
-                glm::quat rightKfRotation;
-                _dquatToTranslationAndRotation(prevRightXform, rightKfOffset, rightKfRotation);
+                glm::vec3 leftKfOffset = _translationFromDquat(mLeftTransform);
+                glm::vec3 rightKfOffset = _translationFromDquat(prevRightXform);
 
                 relativeOffset += rightKfOffset - leftKfOffset;
-                relativeRotation *= rightKfRotation * glm::conjugate(leftKfRotation);
             }
 
-            mAccumulator->pushMotionState(relativeOffset, relativeRotation, relTime);
+            mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
 
-            mBone->moveToBindPose();
+            glm::mat4 boneMatrix = glm::mat4_cast(interpolatedTransform.real); // real part represents rotation
+            glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
+            boneMatrix[0].w = boneTranslation.x;
+            boneMatrix[1].w = boneTranslation.y;
+            boneMatrix[2].w = boneTranslation.z;
+            mBone->move(boneMatrix);
         }
 
         mPreviousTransform = interpolatedTransform;
@@ -232,6 +253,22 @@ namespace odAnim
         }
 
         animator.setAccumulator(accu);
+    }
+
+    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(MotionAccumulator::AxesModes modes, int32_t rootNodeIndex)
+    {
+        if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
+        {
+            throw od::InvalidArgumentException("Root node index out of bounds");
+        }
+
+        BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
+        if(!animator.getBone()->isRoot())
+        {
+            throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
+        }
+
+        animator.setAccumulationModes(modes);
     }
 
     void SkeletonAnimationPlayer::onFrameUpdate(double simTime, double relTime, uint32_t frameNumber)

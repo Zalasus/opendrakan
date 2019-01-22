@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_ANIM_MOTIONACCUMULATOR_H_
 #define INCLUDE_ODCORE_ANIM_MOTIONACCUMULATOR_H_
 
+#include <array>
+
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -21,10 +23,22 @@ namespace odAnim
     {
     public:
 
+        enum class Mode
+        {
+            Bone,
+            Accumulate,
+            Ignore
+        };
+
+        typedef std::array<Mode, 3> AxesModes;
+
         virtual ~MotionAccumulator() = default;
 
-        virtual void pushMotionState(const glm::vec3 &relOffset, const glm::quat &relRotation, float relTime) = 0;
+        virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) = 0;
 
+        virtual Mode getXAccumulationMode() = 0;
+        virtual Mode getYAccumulationMode() = 0;
+        virtual Mode getZAccumulationMode() = 0;
     };
 
 }
