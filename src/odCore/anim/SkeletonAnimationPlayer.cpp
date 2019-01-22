@@ -10,14 +10,31 @@
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
+#include <odCore/anim/MotionAccumulator.h>
+
 namespace odAnim
 {
+
+    static void _dquatToTranslationAndRotation(const glm::dualquat &dq, glm::vec3 &trans, glm::quat &rot)
+    {
+        // see paper "A Beginners Guide to Dual-Quaternions" by Ben Kenwright
+        rot = dq.real;
+
+        glm::quat transQuat = dq.dual * glm::conjugate(dq.real);
+        trans = 2.0f * glm::vec3(transQuat.x, transQuat.y, transQuat.z);
+    }
+
 
     BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
     : mBone(bone)
     , mPlaying(false)
     , mCurrentTime(0)
+    , mAccumulator(nullptr)
     {
+        if(mBone == nullptr)
+        {
+            throw od::Exception("Created BoneAnimator with bone = nullptr");
+        }
     }
 
     void BoneAnimator::setAnimation(odDb::Animation *animation)
@@ -64,6 +81,9 @@ namespace odAnim
 
         mCurrentTime += relTime;
 
+        bool continous = true;
+        glm::dualquat prevRightXform;
+
         if(mCurrentTime >= (mCurrentKeyframe+1)->time)
         {
             // advance until we are at valid position again
@@ -85,6 +105,9 @@ namespace odAnim
                     mCurrentTime = mCurrentTime - mCurrentKeyframe->time;
                     mCurrentKeyframe = mKeyframesStartEnd.first;
 
+                    continous = false;
+                    prevRightXform = mRightTransform;
+
                 }else
                 {
                     mPlaying = false;
@@ -96,12 +119,51 @@ namespace odAnim
             mRightTransform = glm::dualquat((mCurrentKeyframe+1)->xform);
         }
 
-        float delta = (mCurrentTime - mCurrentKeyframe->time)/((mCurrentKeyframe+1)->time - mCurrentKeyframe->time); // 0=exactly at current frame, 1=exactly at next frame
+        // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
+        float delta = (mCurrentTime - mCurrentKeyframe->time)/((mCurrentKeyframe+1)->time - mCurrentKeyframe->time);
 
         glm::dualquat interpolatedTransform = glm::lerp(mLeftTransform, mRightTransform, delta);
-        glm::mat4 asMat(glm::mat3x4_cast(interpolatedTransform));
 
-        mBone->move(asMat);
+        if(mAccumulator == nullptr)
+        {
+            glm::mat4 asMat(glm::mat3x4_cast(interpolatedTransform));
+            mBone->move(asMat);
+
+        }else
+        {
+            glm::vec3 prevOffset;
+            glm::quat prevRotation;
+            _dquatToTranslationAndRotation(mPreviousTransform, prevOffset, prevRotation);
+
+            glm::vec3 currentOffset;
+            glm::quat currentRotation;
+            _dquatToTranslationAndRotation(interpolatedTransform, currentOffset, currentRotation);
+
+            glm::vec3 relativeOffset = currentOffset - prevOffset;
+            glm::quat relativeRotation = currentRotation * glm::conjugate(prevRotation);
+
+            // if the current animation step looped back in time, we need to factor out the offset
+            //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
+            if(!continous)
+            {
+                glm::vec3 leftKfOffset;
+                glm::quat leftKfRotation;
+                _dquatToTranslationAndRotation(mLeftTransform, leftKfOffset, leftKfRotation);
+
+                glm::vec3 rightKfOffset;
+                glm::quat rightKfRotation;
+                _dquatToTranslationAndRotation(prevRightXform, rightKfOffset, rightKfRotation);
+
+                relativeOffset += rightKfOffset - leftKfOffset;
+                relativeRotation *= rightKfRotation * glm::conjugate(leftKfRotation);
+            }
+
+            mAccumulator->pushMotionState(relativeOffset, relativeRotation, relTime);
+
+            mBone->moveToBindPose();
+        }
+
+        mPreviousTransform = interpolatedTransform;
     }
 
 
@@ -154,6 +216,22 @@ namespace odAnim
     void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex)
     {
         throw od::UnsupportedException("Partial skeleton animation not implmented yet");
+    }
+
+    void SkeletonAnimationPlayer::setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex)
+    {
+        if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
+        {
+            throw od::InvalidArgumentException("Root node index out of bounds");
+        }
+
+        BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
+        if(!animator.getBone()->isRoot())
+        {
+            throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
+        }
+
+        animator.setAccumulator(accu);
     }
 
     void SkeletonAnimationPlayer::onFrameUpdate(double simTime, double relTime, uint32_t frameNumber)

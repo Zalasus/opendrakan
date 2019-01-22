@@ -24,11 +24,17 @@
 
 namespace odAnim
 {
+
+    class MotionAccumulator;
+
     class BoneAnimator
     {
     public:
 
         BoneAnimator(Skeleton::Bone *bone);
+
+        inline Skeleton::Bone *getBone() { return mBone; }
+        inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
 
         void setAnimation(odDb::Animation *animation);
         void play();
@@ -46,7 +52,12 @@ namespace odAnim
         odDb::Animation::AnimKfIterator mCurrentKeyframe;
         glm::dualquat mLeftTransform;
         glm::dualquat mRightTransform;
+
+        glm::dualquat mPreviousTransform; // last applied transform
+
+        MotionAccumulator *mAccumulator;
     };
+
 
     class SkeletonAnimationPlayer : public odRender::FrameListener
     {
@@ -67,8 +78,23 @@ namespace odAnim
          */
         void playAnimation(odDb::Animation *anim, int32_t jointIndex);
 
+        /**
+         * @brief Sets accumulator for a root node.
+         *
+         * Setting this for a node overrides the default animation behaviour. Transforms will no
+         * longer be pushed to the rig for that node, but instead be reported to the accumulator.
+         *
+         * Passing nullptr as accumulator returns the bone to it's default behavior.
+         *
+         * The \c rootNodeIndex parameter determines which root node to assign the accumulator to
+         * for skeletons with multiple roots. This can be ignored most of the time.
+         */
+        void setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex = 0);
+
         // implement odRender::FrameListener
         virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) override;
+
+
 
 
     private:
@@ -76,7 +102,7 @@ namespace odAnim
         od::RefPtr<odRender::ObjectNode> mObjectNode;
         Skeleton *mSkeleton;
         odRender::Rig *mRig;
-        std::vector<BoneAnimator> mBoneAnimators;
+        std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!
     };
 
 }
