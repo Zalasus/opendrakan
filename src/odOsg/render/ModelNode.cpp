@@ -188,7 +188,7 @@ namespace odOsg
 
             float minDistance = it->distanceThreshold*OD_WORLD_SCALE;
             float maxDistance = ((it+1) == lodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold*OD_WORLD_SCALE;
-            size_t lodIndex = addLod(minDistance, maxDistance);
+            size_t lodIndex = addLod(minDistance*10000, maxDistance*10000);
 
             addGeometry(geometry, lodIndex);
         }
