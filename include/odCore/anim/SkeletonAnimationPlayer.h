@@ -40,7 +40,7 @@ namespace odAnim
         void play();
         void update(float relTime);
 
-        void setAccumulationModes(const MotionAccumulator::AxesModes &modes);
+        void setAccumulationModes(const AxesModes &modes);
 
 
     private:
@@ -96,7 +96,7 @@ namespace odAnim
          */
         void setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex = 0);
 
-        void setRootNodeAccumulationModes(MotionAccumulator::AxesModes modes, int32_t rootNodeIndex = 0);
+        void setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex = 0);
 
         // implement odRender::FrameListener
         virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) override;

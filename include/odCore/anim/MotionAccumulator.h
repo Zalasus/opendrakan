@@ -16,6 +16,15 @@
 namespace odAnim
 {
 
+    enum class AccumulationMode
+    {
+        Bone,
+        Accumulate,
+        Ignore
+    };
+
+    typedef std::array<AccumulationMode, 3> AxesModes;
+
     /**
      * Interface for objects that need to accumulate movement from an animation.
      */
@@ -23,22 +32,10 @@ namespace odAnim
     {
     public:
 
-        enum class Mode
-        {
-            Bone,
-            Accumulate,
-            Ignore
-        };
-
-        typedef std::array<Mode, 3> AxesModes;
-
         virtual ~MotionAccumulator() = default;
 
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) = 0;
 
-        virtual Mode getXAccumulationMode() = 0;
-        virtual Mode getYAccumulationMode() = 0;
-        virtual Mode getZAccumulationMode() = 0;
     };
 
 }

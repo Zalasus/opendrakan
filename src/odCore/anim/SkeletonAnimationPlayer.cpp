@@ -74,23 +74,23 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::setAccumulationModes(const MotionAccumulator::AxesModes &modes)
+    void BoneAnimator::setAccumulationModes(const AxesModes &modes)
     {
         for(size_t i = 0; i < 3; ++i)
         {
             switch(modes[i])
             {
-            case MotionAccumulator::Mode::Bone:
+            case AccumulationMode::Bone:
                 mObjectAccumulationFactors[i] = 0.0;
                 mBoneAccumulationFactors[i] = 1.0;
                 break;
 
-            case MotionAccumulator::Mode::Accumulate:
-                mObjectAccumulationFactors[i] = 0.0;
-                mBoneAccumulationFactors[i] = 1.0;
+            case AccumulationMode::Accumulate:
+                mObjectAccumulationFactors[i] = 1.0;
+                mBoneAccumulationFactors[i] = 0.0;
                 break;
 
-            case MotionAccumulator::Mode::Ignore:
+            case AccumulationMode::Ignore:
             default:
                 mObjectAccumulationFactors[i] = 0.0;
                 mBoneAccumulationFactors[i] = 0.0;
@@ -178,10 +178,8 @@ namespace odAnim
 
             glm::mat4 boneMatrix = glm::mat4_cast(interpolatedTransform.real); // real part represents rotation
             glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
-            boneMatrix[0].w = boneTranslation.x;
-            boneMatrix[1].w = boneTranslation.y;
-            boneMatrix[2].w = boneTranslation.z;
-            mBone->move(boneMatrix);
+            boneMatrix[3] = glm::vec4(boneTranslation, 1.0);
+            mBone->move(glm::transpose(boneMatrix));
         }
 
         mPreviousTransform = interpolatedTransform;
@@ -255,7 +253,7 @@ namespace odAnim
         animator.setAccumulator(accu);
     }
 
-    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(MotionAccumulator::AxesModes modes, int32_t rootNodeIndex)
+    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex)
     {
         if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
         {

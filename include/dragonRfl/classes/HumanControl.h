@@ -14,6 +14,8 @@
 
 #include <odCore/input/Action.h>
 
+#include <odCore/anim/SkeletonAnimationPlayer.h>
+
 #include <dragonRfl/classes/HumanControlFields.h>
 #include <dragonRfl/LocalPlayer.h>
 #include <dragonRfl/Actions.h>
@@ -22,7 +24,7 @@ namespace dragonRfl
 {
     class DragonRfl;
 
-	class HumanControl : public HumanControlFields, public LocalPlayer
+	class HumanControl : public HumanControlFields, public LocalPlayer, private odAnim::MotionAccumulator
 	{
 	public:
 
@@ -46,6 +48,9 @@ namespace dragonRfl
 
 	 private:
 
+		// implement odAnim::MotionAccumulator
+        virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
+
 		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
 
 		DragonRfl &mRfl;
@@ -56,6 +61,8 @@ namespace dragonRfl
 		float mForwardSpeed;
 		float mRightSpeed;
 		od::LevelObject *mPlayerObject;
+
+		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
 		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
 		od::RefPtr<odInput::ActionHandle<Action>> mBackwardAction;

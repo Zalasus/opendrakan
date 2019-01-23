@@ -83,6 +83,22 @@ namespace dragonRfl
     	mPitch = playerLookDirection.x;
     	mYaw = playerLookDirection.y;
 
+    	odRender::ObjectNode *objectNode = obj.getRenderNode();
+        odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
+        if(skeleton != nullptr)
+        {
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objectNode, skeleton);
+            mAnimPlayer->setRootNodeAccumulator(this);
+            mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes
+                                                             { odAnim::AccumulationMode::Accumulate,
+                                                               odAnim::AccumulationMode::Bone,
+                                                               odAnim::AccumulationMode::Accumulate
+                                                             });
+        }else
+        {
+            Logger::warn() << "Used Human Control class on object without skeleton";
+        }
+
     	obj.setEnableRflUpdateHook(true);
     }
 
@@ -131,16 +147,30 @@ namespace dragonRfl
 	    return *mPlayerObject;
 	}
 
+	void HumanControl::moveRelative(const glm::vec3 &relTranslation, float relTime)
+	{
+	    if(mPlayerObject != nullptr)
+	    {
+	        mPlayerObject->setPosition(mPlayerObject->getPosition() + mPlayerObject->getRotation()*relTranslation);
+	    }
+	}
+
     void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
         switch(action->getAction())
         {
         case Action::Forward:
-            Logger::info() << "I'm walking forward!";
+            if(mAnimPlayer != nullptr)
+            {
+                mAnimPlayer->playAnimation(mRunAnim.getAsset());
+            }
             break;
 
         case Action::Backward:
-            Logger::info() << "I'm walking backward!";
+            if(mAnimPlayer != nullptr)
+            {
+                mAnimPlayer->playAnimation(mRunBackwards.getAsset());
+            }
             break;
 
         default:
