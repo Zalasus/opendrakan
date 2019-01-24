@@ -89,11 +89,14 @@ namespace dragonRfl
         {
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objectNode, skeleton);
             mAnimPlayer->setRootNodeAccumulator(this);
-            mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes
-                                                             { odAnim::AccumulationMode::Accumulate,
-                                                               odAnim::AccumulationMode::Bone,
-                                                               odAnim::AccumulationMode::Accumulate
-                                                             });
+
+            mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
+                                                                         odAnim::AccumulationMode::Bone,
+                                                                         odAnim::AccumulationMode::Bone
+                                                                       });
+
+            mAnimPlayer->playAnimation(mReadyAnim.getAsset());
+
         }else
         {
             Logger::warn() << "Used Human Control class on object without skeleton";
@@ -157,24 +160,43 @@ namespace dragonRfl
 
     void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
-        switch(action->getAction())
+        if(mAnimPlayer == nullptr)
         {
-        case Action::Forward:
-            if(mAnimPlayer != nullptr)
+            return;
+        }
+
+        static const odAnim::AxesModes walkAccum{  odAnim::AccumulationMode::Accumulate,
+                                                   odAnim::AccumulationMode::Bone,
+                                                   odAnim::AccumulationMode::Accumulate
+                                                };
+
+        static const odAnim::AxesModes fixedAccum{ odAnim::AccumulationMode::Bone,
+                                                   odAnim::AccumulationMode::Bone,
+                                                   odAnim::AccumulationMode::Bone
+                                                 };
+
+        if(event.type == odInput::InputEvent::Type::Down)
+        {
+            switch(action->getAction())
             {
+            case Action::Forward:
                 mAnimPlayer->playAnimation(mRunAnim.getAsset());
-            }
-            break;
+                break;
 
-        case Action::Backward:
-            if(mAnimPlayer != nullptr)
-            {
+            case Action::Backward:
                 mAnimPlayer->playAnimation(mRunBackwards.getAsset());
-            }
-            break;
+                break;
 
-        default:
-            break;
+            default:
+                break;
+            }
+
+            mAnimPlayer->setRootNodeAccumulationModes(walkAccum);
+
+        }else
+        {
+            mAnimPlayer->playAnimation(mReadyAnim.getAsset());
+            mAnimPlayer->setRootNodeAccumulationModes(fixedAccum);
         }
     }
 
