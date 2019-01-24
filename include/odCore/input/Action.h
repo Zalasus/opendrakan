@@ -22,8 +22,16 @@ namespace odInput
 
     struct InputEvent
     {
+        enum class Type
+        {
+            Down,
+            Repeat,
+            Up
+        };
+
         Key key;
         float time;
+        Type type;
     };
 
     /**
@@ -43,7 +51,15 @@ namespace odInput
         virtual ~IAction() = default;
 
         inline int getActionAsInt() const { return mActionCode; }
-
+        inline bool isRepeatable() const { return mRepeatable; }
+        inline bool isDown() const { return mDown; }
+        inline void setDown(bool b) { mDown = b; }
+        /**
+         * @brief When set to true, enables repeated sending of events if action key is held down. Default is false.
+         *
+         * The interval at which repeated events are sent might become adjustable in the future, but as of now is fixed
+         * to the typematic interval defined by the OS.
+         */
         void setRepeatable(bool b);
         void bindToKey(Key key);
         void unbindFromKey(Key key);
@@ -55,6 +71,9 @@ namespace odInput
 
         InputManager &mInputManager;
         int mActionCode;
+        bool mRepeatable;
+
+        bool mDown;
 
     };
 

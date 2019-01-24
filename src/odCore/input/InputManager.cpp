@@ -48,6 +48,9 @@ namespace odInput
 
         InputEvent event;
         event.key = key;
+        event.type = it->second.down ? InputEvent::Type::Repeat : InputEvent::Type::Down;
+
+        it->second.down = true;
 
         for(auto &a : it->second.actions)
         {
@@ -60,7 +63,25 @@ namespace odInput
 
     void InputManager::keyUp(Key key)
     {
+        auto it = mBindings.find(key);
+        if(it == mBindings.end())
+        {
+            return; // no bindings for this key
+        }
 
+        InputEvent event;
+        event.key = key;
+        event.type = InputEvent::Type::Up;
+
+        it->second.down = false;
+
+        for(auto &a : it->second.actions)
+        {
+            if(a != 0)
+            {
+                _triggerCallbackOnAction(a, event);
+            }
+        }
     }
 
     void InputManager::bindActionToKey(IAction *iaction, Key key)
@@ -105,6 +126,11 @@ namespace odInput
 
         if(it->second != nullptr)
         {
+            if(event.type == InputEvent::Type::Repeat && !it->second->isRepeatable())
+            {
+                return;
+            }
+
             it->second->triggerCallback(event);
         }
     }

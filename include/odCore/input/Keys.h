@@ -212,7 +212,9 @@ namespace odInput
         Super_L         = 0xFFEB,
         Super_R         = 0xFFEC,
         Hyper_L         = 0xFFED,
-        Hyper_R         = 0xFFEE
+        Hyper_R         = 0xFFEE,
+
+        _HighestKeyId // not a key. keep this at the end so InputManager can allocate a key map
     };
 
 }

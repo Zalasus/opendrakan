@@ -15,11 +15,13 @@ namespace odInput
     IAction::IAction(InputManager &im, int actionCode)
     : mInputManager(im)
     , mActionCode(actionCode)
+    , mRepeatable(false)
     {
     }
 
     void IAction::setRepeatable(bool b)
     {
+        mRepeatable = b;
     }
 
     void IAction::bindToKey(Key key)

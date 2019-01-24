@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_INPUT_INPUTMANAGER_H_
 
 #include <map>
+#include <vector>
 #include <functional>
 
 #include <odCore/RefCounted.h>
@@ -84,9 +85,12 @@ namespace odInput
             static const size_t MAX_BINDINGS = 4;
 
             Binding()
-            : actions({0})
+            : down(false)
+            , actions({0})
             {
             }
+
+            bool down;
 
             // NOTE: storing direct references to the actions here is faster, but may overflow the max
             //  amount of observers per action very quickly
@@ -98,7 +102,6 @@ namespace odInput
         std::map<Key, Binding> mBindings;
 
         std::map<int, od::WeakRefPtr<IAction>> mActions;
-
     };
 
 }
