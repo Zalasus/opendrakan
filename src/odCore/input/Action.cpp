@@ -16,12 +16,18 @@ namespace odInput
     : mInputManager(im)
     , mActionCode(actionCode)
     , mRepeatable(false)
+    , mIgnoreUpEvents(false)
     {
     }
 
     void IAction::setRepeatable(bool b)
     {
         mRepeatable = b;
+    }
+
+    void IAction::setIgnoreUpEvents(bool b)
+    {
+        mIgnoreUpEvents = b;
     }
 
     void IAction::bindToKey(Key key)

@@ -52,8 +52,8 @@ namespace odInput
 
         inline int getActionAsInt() const { return mActionCode; }
         inline bool isRepeatable() const { return mRepeatable; }
-        inline bool isDown() const { return mDown; }
-        inline void setDown(bool b) { mDown = b; }
+        inline bool ignoresUpEvents() const { return mIgnoreUpEvents; }
+
         /**
          * @brief When set to true, enables repeated sending of events if action key is held down. Default is false.
          *
@@ -61,6 +61,12 @@ namespace odInput
          * to the typematic interval defined by the OS.
          */
         void setRepeatable(bool b);
+
+        /**
+         * @brief If set to true, no callbacks will be triggered when any key bound to this action is released. Default is false.
+         */
+        void setIgnoreUpEvents(bool b);
+
         void bindToKey(Key key);
         void unbindFromKey(Key key);
 
@@ -72,8 +78,7 @@ namespace odInput
         InputManager &mInputManager;
         int mActionCode;
         bool mRepeatable;
-
-        bool mDown;
+        bool mIgnoreUpEvents;
 
     };
 

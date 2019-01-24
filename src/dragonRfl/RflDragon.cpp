@@ -56,6 +56,7 @@ namespace dragonRfl
         auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
         auto mmAction = im.getOrCreateAction(Action::Main_Menu);
         mmAction->setRepeatable(false);
+        mmAction->setIgnoreUpEvents(true);
         mmAction->addCallback(actionHandler);
         mmAction->bindToKey(odInput::Key::Return);
         mMenuAction = mmAction;

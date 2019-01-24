@@ -129,6 +129,10 @@ namespace odInput
             if(event.type == InputEvent::Type::Repeat && !it->second->isRepeatable())
             {
                 return;
+
+            }else if(event.type == InputEvent::Type::Up && it->second->ignoresUpEvents())
+            {
+                return;
             }
 
             it->second->triggerCallback(event);
