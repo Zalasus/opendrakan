@@ -83,7 +83,7 @@ namespace odRfl
             return mReferencedAsset;
         }
 
-        _AssetType *getAsset()
+        _AssetType *getAsset() const
         {
             return mReferencedAsset;
         }

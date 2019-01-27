@@ -29,6 +29,8 @@ namespace dragonRfl
     , mYaw(0)
 	, mPitch(0)
     , mPlayerObject(nullptr)
+    , mState(State::Idling)
+    , mLastUpdatedYaw(0)
     {
     }
 
@@ -107,6 +109,39 @@ namespace dragonRfl
 
     void HumanControl::onUpdate(od::LevelObject &obj, float relTime)
     {
+        static const float turnAnimThreshold = M_PI/2; // angular yaw speed at which turn animation is triggered (in rad/sec)
+
+        obj.setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
+
+        float yawSpeed = (mYaw - mLastUpdatedYaw)/relTime;
+        mLastUpdatedYaw = mYaw;
+
+        // handle state transitions that might happen during update
+        switch(mState)
+        {
+        case State::Idling:
+        case State::TurningLeft:
+        case State::TurningRight:
+            if(yawSpeed >= turnAnimThreshold)
+            {
+                _playAnim(mTurnLeft, true);
+                mState = State::TurningLeft;
+
+            }else if(yawSpeed <= -turnAnimThreshold)
+            {
+                _playAnim(mTurnRight, true);
+                mState = State::TurningRight;
+
+            }else if(mState != State::Idling)
+            {
+                _playAnim(mReadyAnim, true);
+                mState = State::Idling;
+            }
+            break;
+
+        default:
+            break;
+        }
     }
 
     void HumanControl::onMoved(od::LevelObject &obj)
@@ -150,11 +185,39 @@ namespace dragonRfl
 
     void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
-        if(mAnimPlayer == nullptr)
+        if(event.type == odInput::InputEvent::Type::Down)
         {
-            return;
-        }
+            switch(action->getAction())
+            {
+            case Action::Forward:
+                _playAnim(mRunAnim, false);
+                mState = State::RunningForward;
+                break;
 
+            case Action::Backward:
+                _playAnim(mRunBackwards, false);
+                mState = State::RunningBackward;
+                break;
+
+            default:
+                break;
+            }
+
+        }else
+        {
+            _playAnim(mReadyAnim, true);
+            mState = State::Idling;
+        }
+    }
+
+    void HumanControl::_handleCursorMovement(const glm::vec2 &posNdc)
+    {
+        mPitch = ( M_PI/2) * posNdc.y;
+        mYaw   = (-M_PI) * posNdc.x;
+    }
+
+    void HumanControl::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly)
+    {
         static const odAnim::AxesModes walkAccum{  odAnim::AccumulationMode::Accumulate,
                                                    odAnim::AccumulationMode::Bone,
                                                    odAnim::AccumulationMode::Accumulate
@@ -165,36 +228,13 @@ namespace dragonRfl
                                                    odAnim::AccumulationMode::Bone
                                                  };
 
-        if(event.type == odInput::InputEvent::Type::Down)
+        if(mAnimPlayer != nullptr)
         {
-            switch(action->getAction())
-            {
-            case Action::Forward:
-                mAnimPlayer->playAnimation(mRunAnim.getAsset());
-                break;
-
-            case Action::Backward:
-                mAnimPlayer->playAnimation(mRunBackwards.getAsset());
-                break;
-
-            default:
-                break;
-            }
-
-            mAnimPlayer->setRootNodeAccumulationModes(walkAccum);
-
-        }else
-        {
-            mAnimPlayer->playAnimation(mReadyAnim.getAsset());
-            mAnimPlayer->setRootNodeAccumulationModes(fixedAccum);
+            mAnimPlayer->playAnimation(animRef.getAsset());
+            mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
         }
     }
 
-    void HumanControl::_handleCursorMovement(const glm::vec2 &posNdc)
-    {
-        mPitch = ( M_PI/2) * posNdc.y;
-        mYaw   = (-M_PI) * posNdc.x;
-    }
 
     OD_REGISTER_RFLCLASS(DragonRfl, HumanControl);
 

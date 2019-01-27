@@ -47,17 +47,30 @@ namespace dragonRfl
 
 	 private:
 
+		enum class State
+		{
+		    Idling,
+		    TurningLeft,
+		    TurningRight,
+		    RunningForward,
+		    RunningBackward
+		};
+
 		// implement odAnim::MotionAccumulator
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
 
 		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
 		void _handleCursorMovement(const glm::vec2 &posNdc);
+		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly);
 
 		DragonRfl &mRfl;
 
 		float mYaw;
 		float mPitch;
 		od::LevelObject *mPlayerObject;
+
+		State mState;
+		float mLastUpdatedYaw;
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
