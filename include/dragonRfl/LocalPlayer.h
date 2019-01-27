@@ -21,8 +21,6 @@ namespace dragonRfl
         virtual void setYaw(float f) = 0;
         virtual float getPitch() const = 0;
         virtual void setPitch(float f) = 0;
-        virtual void moveForward(float speed) = 0;
-        virtual void moveRight(float speed) = 0;
         virtual glm::vec3 getPosition() = 0;
         virtual od::LevelObject &getLevelObject() = 0;
 

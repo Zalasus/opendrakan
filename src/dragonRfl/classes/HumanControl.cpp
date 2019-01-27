@@ -28,9 +28,6 @@ namespace dragonRfl
     : mRfl(rfl)
     , mYaw(0)
 	, mPitch(0)
-    , mPrevYaw(0)
-	, mForwardSpeed(0)
-	, mRightSpeed(0)
     , mPlayerObject(nullptr)
     {
     }
@@ -70,6 +67,9 @@ namespace dragonRfl
         mBackwardAction->setRepeatable(false);
         mBackwardAction->addCallback(actionHandler);
         mBackwardAction->bindToKey(odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
+
+        mCursorListener = im.createCursorListener();
+        mCursorListener->setCallback(std::bind(&HumanControl::_handleCursorMovement, this, std::placeholders::_1));
     }
 
     void HumanControl::onSpawned(od::LevelObject &obj)
@@ -123,16 +123,6 @@ namespace dragonRfl
             soundSystem->setListenerPosition(pos);
             soundSystem->setListenerOrientation(at, up);
         }
-    }
-
-    void HumanControl::moveForward(float speed)
-    {
-    	mForwardSpeed = speed;
-    }
-
-	void HumanControl::moveRight(float speed)
-    {
-    	mRightSpeed = speed;
     }
 
 	glm::vec3 HumanControl::getPosition()
@@ -198,6 +188,12 @@ namespace dragonRfl
             mAnimPlayer->playAnimation(mReadyAnim.getAsset());
             mAnimPlayer->setRootNodeAccumulationModes(fixedAccum);
         }
+    }
+
+    void HumanControl::_handleCursorMovement(const glm::vec2 &posNdc)
+    {
+        mPitch = ( M_PI/2) * posNdc.y;
+        mYaw   = (-M_PI) * posNdc.x;
     }
 
     OD_REGISTER_RFLCLASS(DragonRfl, HumanControl);

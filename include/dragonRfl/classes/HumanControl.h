@@ -13,6 +13,7 @@
 #include <odCore/physics/CharacterController.h>
 
 #include <odCore/input/Action.h>
+#include <odCore/input/CursorListener.h>
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
@@ -40,8 +41,6 @@ namespace dragonRfl
 		virtual void setYaw(float f) override { mYaw = f; }
 		virtual float getPitch() const override { return mPitch; }
 		virtual void setPitch(float f) override { mPitch = f; }
-		virtual void moveForward(float speed) override;
-		virtual void moveRight(float speed) override;
 		virtual glm::vec3 getPosition() override;
 		virtual od::LevelObject &getLevelObject() override;
 
@@ -52,20 +51,19 @@ namespace dragonRfl
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
 
 		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
+		void _handleCursorMovement(const glm::vec2 &posNdc);
 
 		DragonRfl &mRfl;
 
 		float mYaw;
 		float mPitch;
-		float mPrevYaw;
-		float mForwardSpeed;
-		float mRightSpeed;
 		od::LevelObject *mPlayerObject;
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
 		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
 		od::RefPtr<odInput::ActionHandle<Action>> mBackwardAction;
+		od::RefPtr<odInput::CursorListener> mCursorListener;
 
 	};
 

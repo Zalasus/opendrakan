@@ -12,6 +12,8 @@
 #include <vector>
 #include <functional>
 
+#include <glm/vec2.hpp>
+
 #include <odCore/RefCounted.h>
 #include <odCore/WeakRefPtr.h>
 #include <odCore/Exception.h>
@@ -27,11 +29,14 @@ namespace odGui
 namespace odInput
 {
 
+    class CursorListener;
+
     class InputManager
     {
     public:
 
         InputManager();
+        ~InputManager();
 
         /// @brief Sets GUI to which to report cursor updates. May be nullptr.
         inline void setGui(odGui::Gui *gui) { mGui = gui; }
@@ -75,6 +80,8 @@ namespace odInput
         void bindActionToKey(IAction *action, Key key);
         void unbindActionFromKey(IAction *action, Key key);
 
+        od::RefPtr<CursorListener> createCursorListener();
+
 
     private:
 
@@ -102,6 +109,8 @@ namespace odInput
         std::map<Key, Binding> mBindings;
 
         std::map<int, od::WeakRefPtr<IAction>> mActions;
+
+        std::vector<od::WeakRefPtr<CursorListener>> mCursorListeners;
     };
 
 }

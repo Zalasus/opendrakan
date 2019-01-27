@@ -9,6 +9,8 @@
 
 #include <odCore/gui/Gui.h>
 
+#include <odCore/input/CursorListener.h>
+
 namespace odInput
 {
 
@@ -17,11 +19,25 @@ namespace odInput
     {
     }
 
+    InputManager::~InputManager()
+    {
+    }
+
     void InputManager::mouseMoved(float absX, float absY)
     {
+        glm::vec2 ndc(absX, absY);
+
         if(mGui != nullptr)
         {
-            mGui->setCursorPosition(glm::vec2(absX, absY));
+            mGui->setCursorPosition(ndc);
+        }
+
+        for(auto &cl : mCursorListeners)
+        {
+            if(cl != nullptr)
+            {
+                cl->triggerCallback(ndc);
+            }
         }
     }
 
@@ -114,6 +130,15 @@ namespace odInput
                 a = 0;
             }
         }
+    }
+
+    od::RefPtr<CursorListener> InputManager::createCursorListener()
+    {
+        auto listener = od::make_refd<CursorListener>();
+
+        mCursorListeners.push_back(listener.get());
+
+        return listener;
     }
 
     void InputManager::_triggerCallbackOnAction(int action, InputEvent event)

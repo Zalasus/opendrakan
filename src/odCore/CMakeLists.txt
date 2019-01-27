@@ -24,6 +24,7 @@ set(SOURCES
         "gui/Gui.cpp"
         "gui/Widget.cpp"
         "input/Action.cpp"
+        "input/CursorListener.cpp"
         "input/InputManager.cpp"
         "physics/BulletCallbacks.cpp"
         "physics/CharacterController.cpp"
