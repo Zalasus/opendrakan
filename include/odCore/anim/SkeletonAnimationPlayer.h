@@ -34,11 +34,10 @@ namespace odAnim
 
         inline Skeleton::Bone *getBone() { return mBone; }
         inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
-        inline void setForceLooping(bool b) { mForceLooping = b; }
         inline bool isPlaying() const { return mPlaying; }
 
         void setAnimation(odDb::Animation *animation);
-        void play();
+        void play(bool looping);
 
         /**
          * Advanced animation and performs necessary updates to the skeleton.
@@ -56,7 +55,7 @@ namespace odAnim
         odDb::Animation::AnimStartEndPair mKeyframesStartEnd;
 
         bool mPlaying;
-        bool mForceLooping;
+        bool mLooping;
         float mCurrentTime;
         odDb::Animation::AnimKfIterator mCurrentKeyframe;
         glm::dualquat mLeftTransform;
@@ -80,7 +79,7 @@ namespace odAnim
         inline bool isPlaying() const { return mPlaying; }
 
         /// @brief Plays animation on whole skeleton.
-        void playAnimation(odDb::Animation *anim);
+        void playAnimation(odDb::Animation *anim, bool looping);
 
         /**
          * @brief Plays animation on skeleton subtree, starting at \c jointIndex.
@@ -89,7 +88,7 @@ namespace odAnim
          * animations this way, e.g. playing walking animation on whole skeleton, then playing
          * talking animation on neck joint to make the character talk while walking.
          */
-        void playAnimation(odDb::Animation *anim, int32_t jointIndex);
+        void playAnimation(odDb::Animation *anim, int32_t jointIndex, bool looping);
 
         /**
          * @brief Sets accumulator for a root node.

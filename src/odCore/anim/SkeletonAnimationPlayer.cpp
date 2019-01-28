@@ -26,7 +26,7 @@ namespace odAnim
     BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
     : mBone(bone)
     , mPlaying(false)
-    , mForceLooping(false)
+    , mLooping(false)
     , mCurrentTime(0)
     , mAccumulator(nullptr)
     , mBoneAccumulationFactors(0.0)
@@ -49,7 +49,7 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::play()
+    void BoneAnimator::play(bool looping)
     {
         if(mCurrentAnimation == nullptr)
         {
@@ -71,6 +71,7 @@ namespace odAnim
             mPreviousTransform = mLeftTransform;
             mCurrentTime = 0;
             mPlaying = true;
+            mLooping = looping;
         }
     }
 
@@ -127,7 +128,7 @@ namespace odAnim
             // did we advance past the last frame? if yes, stop animation or loop
             if(mCurrentKeyframe+1 >= mKeyframesStartEnd.second)
             {
-                if(mCurrentAnimation->isLooping() || mForceLooping)
+                if(mLooping) // TODO: is there any point in honoring the looping flag in the animation?
                 {
                     mCurrentTime = mCurrentTime - mCurrentKeyframe->time;
                     mCurrentKeyframe = mKeyframesStartEnd.first;
@@ -227,20 +228,20 @@ namespace odAnim
         mObjectNode->removeFrameListener(this);
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim)
+    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, bool looping)
     {
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
             it->setAnimation(anim);
-            it->play();
+            it->play(looping);
         }
 
         mPlaying = true;
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex)
+    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex, bool looping)
     {
-        throw od::UnsupportedException("Partial skeleton animation not implmented yet");
+        throw od::UnsupportedException("Partial skeleton animation not implemented yet");
     }
 
     void SkeletonAnimationPlayer::setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex)

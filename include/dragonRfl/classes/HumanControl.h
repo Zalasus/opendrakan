@@ -61,7 +61,7 @@ namespace dragonRfl
 
 		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
 		void _handleCursorMovement(const glm::vec2 &posNdc);
-		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly);
+		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
 
 		DragonRfl &mRfl;
 

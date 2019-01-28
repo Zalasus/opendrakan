@@ -97,7 +97,7 @@ namespace dragonRfl
                                                                          odAnim::AccumulationMode::Bone
                                                                        });
 
-            mAnimPlayer->playAnimation(mReadyAnim.getAsset());
+            mAnimPlayer->playAnimation(mReadyAnim.getAsset(), true);
 
         }else
         {
@@ -124,17 +124,22 @@ namespace dragonRfl
         case State::TurningRight:
             if(yawSpeed >= turnAnimThreshold)
             {
-                _playAnim(mTurnLeft, true);
+                _playAnim(mTurnLeft, true, false);
                 mState = State::TurningLeft;
 
             }else if(yawSpeed <= -turnAnimThreshold)
             {
-                _playAnim(mTurnRight, true);
+                _playAnim(mTurnRight, true, false);
                 mState = State::TurningRight;
 
             }else if(mState != State::Idling)
             {
-                _playAnim(mReadyAnim, true);
+                if(mAnimPlayer != nullptr && mAnimPlayer->isPlaying())
+                {
+                    break; // wait till turn anim is done
+                }
+
+                _playAnim(mReadyAnim, true, false);
                 mState = State::Idling;
             }
             break;
@@ -190,12 +195,12 @@ namespace dragonRfl
             switch(action->getAction())
             {
             case Action::Forward:
-                _playAnim(mRunAnim, false);
+                _playAnim(mRunAnim, false, true);
                 mState = State::RunningForward;
                 break;
 
             case Action::Backward:
-                _playAnim(mRunBackwards, false);
+                _playAnim(mRunBackwards, false, true);
                 mState = State::RunningBackward;
                 break;
 
@@ -205,7 +210,7 @@ namespace dragonRfl
 
         }else
         {
-            _playAnim(mReadyAnim, true);
+            _playAnim(mReadyAnim, true, true);
             mState = State::Idling;
         }
     }
@@ -216,7 +221,7 @@ namespace dragonRfl
         mYaw   = (-M_PI) * posNdc.x;
     }
 
-    void HumanControl::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly)
+    void HumanControl::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping)
     {
         static const odAnim::AxesModes walkAccum{  odAnim::AccumulationMode::Accumulate,
                                                    odAnim::AccumulationMode::Bone,
@@ -230,7 +235,7 @@ namespace dragonRfl
 
         if(mAnimPlayer != nullptr)
         {
-            mAnimPlayer->playAnimation(animRef.getAsset());
+            mAnimPlayer->playAnimation(animRef.getAsset(), looping);
             mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
         }
     }

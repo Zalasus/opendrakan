@@ -82,7 +82,7 @@ namespace dragonRfl
                 return;
             }
 
-            mPlayer->playAnimation(currentAnimation);
+            mPlayer->playAnimation(currentAnimation, currentAnimation->isLooping());
 
             Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }
