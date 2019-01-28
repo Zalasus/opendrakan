@@ -99,11 +99,11 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::update(float relTime)
+    bool BoneAnimator::update(float relTime)
     {
         if(!mPlaying || mCurrentAnimation == nullptr || mCurrentKeyframe+1 >= mKeyframesStartEnd.second)
         {
-            return;
+            return false;
         }
 
         mCurrentTime += relTime;
@@ -138,7 +138,8 @@ namespace odAnim
                 }else
                 {
                     mPlaying = false;
-                    return;
+                    // FIXME: we should apply the last frame of the animation to the bone/accumulator here, then change that return to true
+                    return false;
                 }
             }
 
@@ -183,6 +184,8 @@ namespace odAnim
         }
 
         mPreviousTransform = interpolatedTransform;
+
+        return true;
     }
 
 
@@ -190,6 +193,7 @@ namespace odAnim
     : mObjectNode(objectNode)
     , mSkeleton(skeleton)
     , mRig(nullptr)
+    , mPlaying(false)
     {
         if(mSkeleton == nullptr)
         {
@@ -230,6 +234,8 @@ namespace odAnim
             it->setAnimation(anim);
             it->play();
         }
+
+        mPlaying = true;
     }
 
     void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex)
@@ -271,14 +277,25 @@ namespace odAnim
 
     void SkeletonAnimationPlayer::onFrameUpdate(double simTime, double relTime, uint32_t frameNumber)
     {
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        if(!mPlaying)
         {
-            it->update((float)relTime);
+            return;
         }
 
-        if(mRig != nullptr)
+        bool stillPlaying = true;
+        bool needsFlattening = false;
+        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
-            // TODO: only flatten if any updates to the skeleton's pose happened
+            needsFlattening |= it->update((float)relTime);
+            stillPlaying |= it->isPlaying();
+        }
+
+        mPlaying = stillPlaying; // TODO: invoke callback when finished?
+
+        // note: even if we are no longer playing by now, we still might need to flatten the last frame.
+        //   thus, we don't check for the playing flag here
+        if(mRig != nullptr && needsFlattening)
+        {
             mSkeleton->flatten(mRig);
         }
     }

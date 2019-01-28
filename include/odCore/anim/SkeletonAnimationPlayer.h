@@ -35,10 +35,16 @@ namespace odAnim
         inline Skeleton::Bone *getBone() { return mBone; }
         inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
         inline void setForceLooping(bool b) { mForceLooping = b; }
+        inline bool isPlaying() const { return mPlaying; }
 
         void setAnimation(odDb::Animation *animation);
         void play();
-        void update(float relTime);
+
+        /**
+         * Advanced animation and performs necessary updates to the skeleton.
+         * @return true if skeleton has been moved and needs to be flattened.
+         */
+        bool update(float relTime);
 
         void setAccumulationModes(const AxesModes &modes);
 
@@ -70,6 +76,8 @@ namespace odAnim
 
         explicit SkeletonAnimationPlayer(odRender::ObjectNode *objectNode, Skeleton *skeleton);
         ~SkeletonAnimationPlayer();
+
+        inline bool isPlaying() const { return mPlaying; }
 
         /// @brief Plays animation on whole skeleton.
         void playAnimation(odDb::Animation *anim);
@@ -108,6 +116,7 @@ namespace odAnim
         Skeleton *mSkeleton;
         odRender::Rig *mRig;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!
+        bool mPlaying;
     };
 
 }
