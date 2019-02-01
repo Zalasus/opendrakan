@@ -36,19 +36,20 @@ namespace odAnim
         inline Skeleton::Bone *getBone() { return mBone; }
         inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
         inline bool isPlaying() const { return mPlaying; }
+        inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
 
         void setAnimation(odDb::Animation *animation);
         void play();
 
+        void skip(float time);
+
         /**
          * Advanced animation and performs necessary updates to the skeleton.
          *
-         * @param  relTime   Relative time since the last update (realtime, will always be >= 0)
-         * @param  animTime  Absolute time on the animation timeline (might increase or decrease, run slow or fast in reference to relTime)
-         *
-         * @return true if skeleton has been moved and needs to be flattened.
+         * @param  relTime      Relative time since the last update (realtime, will always be >= 0. required for accumulator)
+         * @param  absAnimTime  Absolute time on the animation timeline (might run slow, fast or backwards in reference to relTime)
          */
-        bool update(float relTime, float animTime, bool nonContinous);
+        void update(float relTime, float absAnimTime);
 
         void setAccumulationModes(const AxesModes &modes);
 
@@ -63,9 +64,7 @@ namespace odAnim
         odDb::Animation::KfIteratorPair mLastKeyframes;
         glm::dualquat mLeftTransform;
         glm::dualquat mRightTransform;
-
         glm::dualquat mLastAppliedTransform;
-        bool mNonContinous; // whether the animation changed/looped since the last update
 
         MotionAccumulator *mAccumulator;
         glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
