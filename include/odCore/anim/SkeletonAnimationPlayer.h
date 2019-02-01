@@ -10,6 +10,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include <queue>
 
 #include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
 #include <glm/gtx/dual_quaternion.hpp>
@@ -37,13 +38,17 @@ namespace odAnim
         inline bool isPlaying() const { return mPlaying; }
 
         void setAnimation(odDb::Animation *animation);
-        void play(bool looping);
+        void play();
 
         /**
          * Advanced animation and performs necessary updates to the skeleton.
+         *
+         * @param  relTime   Relative time since the last update (realtime, will always be >= 0)
+         * @param  animTime  Absolute time on the animation timeline (might increase or decrease, run slow or fast in reference to relTime)
+         *
          * @return true if skeleton has been moved and needs to be flattened.
          */
-        bool update(float relTime);
+        bool update(float relTime, float animTime, bool nonContinous);
 
         void setAccumulationModes(const AxesModes &modes);
 
@@ -52,16 +57,15 @@ namespace odAnim
 
         Skeleton::Bone *mBone;
         od::RefPtr<odDb::Animation> mCurrentAnimation;
-        odDb::Animation::AnimStartEndPair mKeyframesStartEnd;
+        odDb::Animation::KfIteratorPair mAnimStartEnd;
 
         bool mPlaying;
-        bool mLooping;
-        float mCurrentTime;
-        odDb::Animation::AnimKfIterator mCurrentKeyframe;
+        odDb::Animation::KfIteratorPair mLastKeyframes;
         glm::dualquat mLeftTransform;
         glm::dualquat mRightTransform;
 
-        glm::dualquat mPreviousTransform; // last applied transform
+        glm::dualquat mLastAppliedTransform;
+        bool mNonContinous; // whether the animation changed/looped since the last update
 
         MotionAccumulator *mAccumulator;
         glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
@@ -74,7 +78,7 @@ namespace odAnim
     public:
 
         explicit SkeletonAnimationPlayer(odRender::ObjectNode *objectNode, Skeleton *skeleton);
-        ~SkeletonAnimationPlayer();
+        virtual ~SkeletonAnimationPlayer();
 
         inline bool isPlaying() const { return mPlaying; }
 
@@ -116,6 +120,7 @@ namespace odAnim
         odRender::Rig *mRig;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!
         bool mPlaying;
+        float mAnimTime;
     };
 
 }

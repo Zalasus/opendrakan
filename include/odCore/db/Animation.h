@@ -10,18 +10,13 @@
 
 #include <vector>
 #include <utility>
+
 #include <glm/mat3x4.hpp>
 
 #include <odCore/db/Asset.h>
 
 namespace odDb
 {
-
-	struct AnimationKeyframe
-	{
-		float time;
-		glm::mat3x4 xform;
-	};
 
 	/**
 	 * An animation for a rigged character, as found in *.adb containers.
@@ -30,20 +25,40 @@ namespace odDb
 	{
 	public:
 
-	    typedef std::vector<AnimationKeyframe>::const_iterator AnimKfIterator;
-		typedef std::pair<AnimKfIterator, AnimKfIterator> AnimStartEndPair;
+	    struct Keyframe
+        {
+            float time;
+            glm::mat3x4 xform;
+        };
+
+	    typedef std::vector<Keyframe>::const_iterator KfIterator;
+	    typedef std::pair<KfIterator, KfIterator> KfIteratorPair;
 
 		Animation(AssetProvider &ap, od::RecordId id);
 
 		inline std::string getName() const { return mAnimationName; }
 		inline uint32_t getModelNodeCount() const { return mModelNodeCount; }
 		inline bool isLooping() const { return mIsLooping; }
+		inline float getDuration() const { return mDuration; } ///< As stored in the record
+		inline float getMinTime() const { return mMinTime; } ///< As calculated from the keyframes
+		inline float getMaxTime() const { return mMaxTime; } ///< As calculated from the keyframes
 
 		void loadInfo(od::DataReader &&dr);
 		void loadFrames(od::DataReader &&dr);
 		void loadFrameLookup(od::DataReader &&dr);
 
-		AnimStartEndPair getKeyframesForNode(int32_t nodeId);
+		std::pair<KfIterator, KfIterator> getKeyframesForNode(int32_t nodeId);
+
+		/**
+		 * @brief Fetches iterators for the two keyframes left and right of a timepoint in a single node's timeline.
+		 *
+		 * If the passed timepoint lies before or after all keyframes in the node's timeline, or if the node
+		 * only specifies a single keyframe, both entries in the returned pair will be identical to the first,
+		 * last, or only keyframe in the timeline, respectively.
+		 *
+		 * If the passed node does not exist in this animation, the method will throw.
+		 */
+		std::pair<KfIterator, KfIterator> getLeftAndRightKeyframe(int32_t nodeId, float time);
 
 
 	private:
@@ -63,8 +78,11 @@ namespace odDb
 
         bool mIsLooping;
 
-        std::vector<AnimationKeyframe> mKeyframes;
+        std::vector<Keyframe> mKeyframes;
         std::vector<FrameLookupEntry> mFrameLookup;
+
+        float mMinTime;
+        float mMaxTime;
 	};
 
 	template <>

@@ -26,11 +26,10 @@ namespace odAnim
     BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
     : mBone(bone)
     , mPlaying(false)
-    , mLooping(false)
-    , mCurrentTime(0)
     , mAccumulator(nullptr)
     , mBoneAccumulationFactors(0.0)
     , mObjectAccumulationFactors(0.0)
+    , mNonContinous(false)
     {
         if(mBone == nullptr)
         {
@@ -40,39 +39,21 @@ namespace odAnim
 
     void BoneAnimator::setAnimation(odDb::Animation *animation)
     {
-        mPlaying = false;
-
         mCurrentAnimation = animation;
         if(mCurrentAnimation != nullptr)
         {
-            mKeyframesStartEnd = mCurrentAnimation->getKeyframesForNode(mBone->getJointIndex());
+            mAnimStartEnd = mCurrentAnimation->getKeyframesForNode(mBone->getJointIndex());
         }
     }
 
-    void BoneAnimator::play(bool looping)
+    void BoneAnimator::play()
     {
         if(mCurrentAnimation == nullptr)
         {
             return;
         }
 
-        mBone->move(glm::mat4(mKeyframesStartEnd.first->xform));
-
-        if(mKeyframesStartEnd.first+1 == mKeyframesStartEnd.second)
-        {
-            // single KF animation. we are done here
-            mPlaying = false;
-
-        }else
-        {
-            mCurrentKeyframe = mKeyframesStartEnd.first;
-            mLeftTransform = glm::dualquat(mCurrentKeyframe->xform);
-            mRightTransform = glm::dualquat((mCurrentKeyframe+1)->xform);
-            mPreviousTransform = mLeftTransform;
-            mCurrentTime = 0;
-            mPlaying = true;
-            mLooping = looping;
-        }
+        mPlaying = true;
     }
 
     void BoneAnimator::setAccumulationModes(const AxesModes &modes)
@@ -100,59 +81,27 @@ namespace odAnim
         }
     }
 
-    bool BoneAnimator::update(float relTime)
+    bool BoneAnimator::update(float relTime, float animTime, bool nonContinous)
     {
-        if(!mPlaying || mCurrentAnimation == nullptr || mCurrentKeyframe+1 >= mKeyframesStartEnd.second)
+        if(!mPlaying || mCurrentAnimation == nullptr)
         {
             return false;
         }
 
-        mCurrentTime += relTime;
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), animTime);
 
-        bool continous = true;
-        glm::dualquat prevRightXform;
-
-        if(mCurrentTime >= (mCurrentKeyframe+1)->time)
+        // only update decompositions when necessary
+        if(mLastKeyframes != currentKeyframes)
         {
-            // advance until we are at valid position again
-            while((mCurrentKeyframe+1) < mKeyframesStartEnd.second)
-            {
-                if(mCurrentKeyframe->time <= mCurrentTime && (mCurrentKeyframe+1)->time > mCurrentTime)
-                {
-                    break;
-                }
-
-                ++mCurrentKeyframe;
-            }
-
-            // did we advance past the last frame? if yes, stop animation or loop
-            if(mCurrentKeyframe+1 >= mKeyframesStartEnd.second)
-            {
-                if(mLooping) // TODO: is there any point in honoring the looping flag in the animation?
-                {
-                    mCurrentTime = mCurrentTime - mCurrentKeyframe->time;
-                    mCurrentKeyframe = mKeyframesStartEnd.first;
-
-                    continous = false;
-                    prevRightXform = mRightTransform;
-
-                }else
-                {
-                    mPlaying = false;
-                    // FIXME: we should apply the last frame of the animation to the bone/accumulator here, then change that return to true
-                    return false;
-                }
-            }
-
-            mLeftTransform = glm::dualquat(mCurrentKeyframe->xform);
-            mRightTransform = glm::dualquat((mCurrentKeyframe+1)->xform);
+            mLeftTransform = glm::dualquat(currentKeyframes.first->xform);
+            mRightTransform = glm::dualquat(currentKeyframes.second->xform);
+            mLastKeyframes = currentKeyframes;
         }
 
         // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
-        float delta = (mCurrentTime - mCurrentKeyframe->time)/((mCurrentKeyframe+1)->time - mCurrentKeyframe->time);
-        delta = glm::clamp(delta, 0.0f, 1.0f);
+        float delta = (animTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
 
-        glm::dualquat interpolatedTransform = glm::lerp(mLeftTransform, mRightTransform, delta);
+        glm::dualquat interpolatedTransform = glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
 
         if(mAccumulator == nullptr)
         {
@@ -161,14 +110,14 @@ namespace odAnim
 
         }else
         {
-            glm::vec3 prevOffset = _translationFromDquat(mPreviousTransform);
+            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
             glm::vec3 currentOffset = _translationFromDquat(interpolatedTransform);
 
             glm::vec3 relativeOffset = currentOffset - prevOffset;
 
             // if the current animation step looped back in time, we need to factor out the offset
             //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
-            if(!continous)
+            if(mNonContinous)
             {
                 glm::vec3 leftKfOffset = _translationFromDquat(mLeftTransform);
                 glm::vec3 rightKfOffset = _translationFromDquat(prevRightXform);
@@ -184,7 +133,7 @@ namespace odAnim
             mBone->move(glm::transpose(boneMatrix));
         }
 
-        mPreviousTransform = interpolatedTransform;
+        mLastAppliedTransform = interpolatedTransform;
 
         return true;
     }
@@ -195,6 +144,7 @@ namespace odAnim
     , mSkeleton(skeleton)
     , mRig(nullptr)
     , mPlaying(false)
+    , mAnimTime(0.0)
     {
         if(mSkeleton == nullptr)
         {
@@ -283,11 +233,13 @@ namespace odAnim
             return;
         }
 
+        mAnimTime += relTime;
+
         bool stillPlaying = true;
         bool needsFlattening = false;
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
-            needsFlattening |= it->update((float)relTime);
+            needsFlattening |= it->update((float)relTime, mAnimTime);
             stillPlaying |= it->isPlaying();
         }
 
