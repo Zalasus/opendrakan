@@ -69,7 +69,6 @@ namespace odAnim
 
         bool mPlaying;
         float mAnimTime;
-        bool mIsInPongPhase;
         odDb::Animation::KfIteratorPair mLastKeyframes;
         glm::dualquat mLeftTransform;
         glm::dualquat mRightTransform;

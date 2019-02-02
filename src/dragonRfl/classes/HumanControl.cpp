@@ -237,7 +237,7 @@ namespace dragonRfl
 
         if(mAnimPlayer != nullptr)
         {
-            mAnimPlayer->playAnimation(animRef.getAsset(), playbackType, 0.5f);
+            mAnimPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
             mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
         }
     }

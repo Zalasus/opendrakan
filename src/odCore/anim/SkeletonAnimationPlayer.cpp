@@ -34,7 +34,6 @@ namespace odAnim
     , mSpeedMultiplier(1.0f)
     , mPlaying(false)
     , mAnimTime(0.0f)
-    , mIsInPongPhase(false)
     , mMadeNonContinousJump(false)
     , mAccumulator(nullptr)
     , mBoneAccumulationFactors(0.0)
@@ -69,7 +68,6 @@ namespace odAnim
         mCurrentAnimation = animation;
         mPlaybackType = type;
         mSpeedMultiplier = speedMultiplier;
-        mIsInPongPhase = false;
         mPlaying = true;
 
         odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone->getJointIndex());
@@ -112,7 +110,7 @@ namespace odAnim
             return;
         }
 
-        mAnimTime += relTime * mSpeedMultiplier * (mIsInPongPhase ? -1.0f : 1.0f);
+        mAnimTime += relTime * mSpeedMultiplier;
 
         odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
 
@@ -121,7 +119,7 @@ namespace odAnim
             // we are outside of the defined animation timeline. depending on playback type and position, we need
             //  to loop or stop playback.
 
-            bool movingBackInTime = (mSpeedMultiplier < 0) ^ mIsInPongPhase;
+            bool movingBackInTime = (mSpeedMultiplier < 0.0f);
 
             float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
             float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
@@ -153,7 +151,7 @@ namespace odAnim
                 break;
 
             case PlaybackType::PingPong:
-                mIsInPongPhase = !mIsInPongPhase;
+                mSpeedMultiplier = -mSpeedMultiplier;
                 mAnimTime = endTime - residualTime;
                 currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
                 break;
