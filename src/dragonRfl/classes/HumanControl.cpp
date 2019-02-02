@@ -97,7 +97,7 @@ namespace dragonRfl
                                                                          odAnim::AccumulationMode::Bone
                                                                        });
 
-            mAnimPlayer->playAnimation(mReadyAnim.getAsset(), true);
+            mAnimPlayer->playAnimation(mReadyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
 
         }else
         {
@@ -233,9 +233,11 @@ namespace dragonRfl
                                                    odAnim::AccumulationMode::Bone
                                                  };
 
+        auto playbackType = looping ? odAnim::PlaybackType::Looping : odAnim::PlaybackType::Normal;
+
         if(mAnimPlayer != nullptr)
         {
-            mAnimPlayer->playAnimation(animRef.getAsset(), looping);
+            mAnimPlayer->playAnimation(animRef.getAsset(), playbackType, 0.5f);
             mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
         }
     }

@@ -82,7 +82,9 @@ namespace dragonRfl
                 return;
             }
 
-            mPlayer->playAnimation(currentAnimation, currentAnimation->isLooping());
+            auto playbackType = currentAnimation->isLooping() ? odAnim::PlaybackType::Looping : odAnim::PlaybackType::Normal;
+
+            mPlayer->playAnimation(currentAnimation, playbackType, 1.0f);
 
             Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }

@@ -27,6 +27,14 @@
 namespace odAnim
 {
 
+    enum class PlaybackType
+    {
+        Normal,
+        Looping,
+        PingPong
+    };
+
+
     class BoneAnimator
     {
     public:
@@ -38,18 +46,14 @@ namespace odAnim
         inline bool isPlaying() const { return mPlaying; }
         inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
 
-        void setAnimation(odDb::Animation *animation);
-        void play();
-
-        void skip(float time);
+        void playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
 
         /**
-         * Advanced animation and performs necessary updates to the skeleton.
+         * Advances animation and performs necessary updates to the skeleton.
          *
-         * @param  relTime      Relative time since the last update (realtime, will always be >= 0. required for accumulator)
-         * @param  absAnimTime  Absolute time on the animation timeline (might run slow, fast or backwards in reference to relTime)
+         * @param  relTime      Relative time since the last update (realtime, will always be >= 0)
          */
-        void update(float relTime, float absAnimTime);
+        void update(float relTime);
 
         void setAccumulationModes(const AxesModes &modes);
 
@@ -58,13 +62,22 @@ namespace odAnim
 
         Skeleton::Bone *mBone;
         od::RefPtr<odDb::Animation> mCurrentAnimation;
-        odDb::Animation::KfIteratorPair mAnimStartEnd;
+        PlaybackType mPlaybackType;
+        float mSpeedMultiplier;
+        odDb::Animation::KfIterator mFirstFrame;
+        odDb::Animation::KfIterator mLastFrame;
 
         bool mPlaying;
+        float mAnimTime;
+        bool mIsInPongPhase;
         odDb::Animation::KfIteratorPair mLastKeyframes;
         glm::dualquat mLeftTransform;
         glm::dualquat mRightTransform;
+
         glm::dualquat mLastAppliedTransform;
+
+        bool mMadeNonContinousJump;
+        glm::vec3 mNonContinousOffset;
 
         MotionAccumulator *mAccumulator;
         glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
@@ -82,7 +95,7 @@ namespace odAnim
         inline bool isPlaying() const { return mPlaying; }
 
         /// @brief Plays animation on whole skeleton.
-        void playAnimation(odDb::Animation *anim, bool looping);
+        void playAnimation(odDb::Animation *anim, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Plays animation on skeleton subtree, starting at \c jointIndex.
@@ -91,7 +104,7 @@ namespace odAnim
          * animations this way, e.g. playing walking animation on whole skeleton, then playing
          * talking animation on neck joint to make the character talk while walking.
          */
-        void playAnimation(odDb::Animation *anim, int32_t jointIndex, bool looping);
+        void playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Sets accumulator for a root node.
@@ -119,7 +132,6 @@ namespace odAnim
         odRender::Rig *mRig;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!
         bool mPlaying;
-        float mAnimTime;
     };
 
 }

@@ -22,10 +22,20 @@ namespace odAnim
         return 2.0f * glm::vec3(transQuat.x, transQuat.y, transQuat.z);
     }
 
+    static glm::vec3 _translationFrom3x4(const glm::mat3x4 &mat)
+    {
+        return glm::vec3(mat[0].w, mat[1].w, mat[2].w);
+    }
+
 
     BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
     : mBone(bone)
+    , mPlaybackType(PlaybackType::Normal)
+    , mSpeedMultiplier(1.0f)
     , mPlaying(false)
+    , mAnimTime(0.0f)
+    , mIsInPongPhase(false)
+    , mMadeNonContinousJump(false)
     , mAccumulator(nullptr)
     , mBoneAccumulationFactors(0.0)
     , mObjectAccumulationFactors(0.0)
@@ -36,35 +46,38 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::setAnimation(odDb::Animation *animation)
+    void BoneAnimator::playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier)
     {
-        mCurrentAnimation = animation;
-        if(mCurrentAnimation != nullptr)
+        if(animation == nullptr)
         {
-            mAnimStartEnd = mCurrentAnimation->getKeyframesForNode(mBone->getJointIndex());
-        }
-    }
-
-    void BoneAnimator::play()
-    {
-        if(mCurrentAnimation == nullptr)
-        {
+            mPlaying = false;
+            mCurrentAnimation = nullptr;
             return;
         }
 
-        mPlaying = true;
-    }
+        /*odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone->getJointIndex());
+        odDb::Animation::KfIterator firstKfOfNewAnim = speedMultiplier < 0.0f ? newStartEnd.second : newStartEnd.first;
 
-    void BoneAnimator::skip(float time)
-    {
         if(mCurrentAnimation != nullptr)
         {
-            mLastKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), time);
-            mLeftTransform = glm::dualquat(mLastKeyframes.first->xform);
-            mRightTransform = glm::dualquat(mLastKeyframes.second->xform);
-            float delta = (time - mLastKeyframes.first->time)/(mLastKeyframes.second->time - mLastKeyframes.first->time);
-            mLastAppliedTransform = glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
-        }
+            odDb::Animation::KfIterator lastKfOfOldAnim = (((mSpeedMultiplier < 0.0f) ^ mIsInPongPhase)) ? mAnimStartEnd.first : mAnimStartEnd.second;
+
+            mNonContinousOffset = _translationFrom3x4(firstKfOfNewAnim->xform) - _translationFrom3x4(lastKfOfOldAnim->xform);
+            mMadeNonContinousJump = true;
+        }*/
+
+        mCurrentAnimation = animation;
+        mPlaybackType = type;
+        mSpeedMultiplier = speedMultiplier;
+        mIsInPongPhase = false;
+        mPlaying = true;
+
+        odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone->getJointIndex());
+        size_t frameCount = newStartEnd.second - newStartEnd.first;
+        mFirstFrame = newStartEnd.first;
+        mLastFrame = mFirstFrame + (frameCount - 1);
+
+        mAnimTime = mSpeedMultiplier < 0.0f ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
     }
 
     void BoneAnimator::setAccumulationModes(const AxesModes &modes)
@@ -92,22 +105,71 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::update(float relTime, float absAnimTime)
+    void BoneAnimator::update(float relTime)
     {
         if(!mPlaying || mCurrentAnimation == nullptr)
         {
             return;
         }
 
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), absAnimTime);
+        mAnimTime += relTime * mSpeedMultiplier * (mIsInPongPhase ? -1.0f : 1.0f);
+
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
-            // we've moved beyond the defined animation timeline -> no need to interpolate. just apply transform and stop playing
+            // we are outside of the defined animation timeline. depending on playback type and position, we need
+            //  to loop or stop playback.
+
+            bool movingBackInTime = (mSpeedMultiplier < 0) ^ mIsInPongPhase;
+
+            float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
+            float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
+
+            // although this timeline might have ended, we might not yet be at the end of the animation (other bones might
+            //  still need to finish). if we are still within the animation limits, ...
+            if(    (!movingBackInTime && mAnimTime < mCurrentAnimation->getMaxTime())
+                || ( movingBackInTime && mAnimTime > mCurrentAnimation->getMinTime()))
+            {
+                return;
+            }
+
+            // when looping or playing ping-pong, we want to add any time we have moved beyond the end of the animation
+            //  back to the start/end of the timeline so we don't skip any frames.
+            float residualTime = mAnimTime - endTime;
+
+            switch(mPlaybackType)
+            {
+            case PlaybackType::Normal:
+            default:
+                mPlaying = false;
+                break;
+
+            case PlaybackType::Looping:
+                mAnimTime = startTime + residualTime;
+                currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
+                mNonContinousOffset = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
+                mMadeNonContinousJump = true;
+                break;
+
+            case PlaybackType::PingPong:
+                mIsInPongPhase = !mIsInPongPhase;
+                mAnimTime = endTime - residualTime;
+                currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
+                break;
+            }
+        }
+
+        // the above processing of a beyond-timeline state could either have left us there, or moved us back into
+        //  a defined state. depending on that we might have to take different approaches to moving the bone
+        if(currentKeyframes.first == currentKeyframes.second)
+        {
+            // we are still in a clamped state. simply apply the transform without interpolating
             mBone->move(glm::mat4(currentKeyframes.first->xform));
-            mPlaying = false;
             return;
         }
+
+        // we are are somewhere between keyframes, and have to interpolate
 
         if(mLastKeyframes != currentKeyframes) // only update decompositions when necessary
         {
@@ -116,10 +178,8 @@ namespace odAnim
             mLastKeyframes = currentKeyframes;
         }
 
-        // we are are somewhere between keyframes, and have to interpolate
-
         // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
-        float delta = (absAnimTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
+        float delta = (mAnimTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
         glm::dualquat interpolatedTransform = glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
 
         if(mAccumulator == nullptr)
@@ -133,6 +193,14 @@ namespace odAnim
             glm::vec3 currentOffset = _translationFromDquat(interpolatedTransform);
 
             glm::vec3 relativeOffset = currentOffset - prevOffset;
+
+            // if the current animation step jumped in time, we need to factor out the offset
+            //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
+            if(mMadeNonContinousJump)
+            {
+                relativeOffset -= mNonContinousOffset;
+                mMadeNonContinousJump = false;
+            }
 
             mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
 
@@ -151,7 +219,6 @@ namespace odAnim
     , mSkeleton(skeleton)
     , mRig(nullptr)
     , mPlaying(false)
-    , mAnimTime(0.0)
     {
         if(mSkeleton == nullptr)
         {
@@ -185,19 +252,17 @@ namespace odAnim
         mObjectNode->removeFrameListener(this);
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, bool looping)
+    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim,  PlaybackType type, float speedMultiplier)
     {
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
-            it->setAnimation(anim);
-            it->play();
+            it->playAnimation(anim, type, speedMultiplier);
         }
 
         mPlaying = true;
-        mAnimTime = 0.0;
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex, bool looping)
+    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
     {
         throw od::UnsupportedException("Partial skeleton animation not implemented yet");
     }
@@ -241,34 +306,16 @@ namespace odAnim
             return;
         }
 
-        mAnimTime += relTime;
-
         bool stillPlaying = true;
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
-            it->update((float)relTime, mAnimTime);
+            it->update((float)relTime);
             stillPlaying |= it->isPlaying();
         }
 
         if(mPlaying && !stillPlaying)
         {
             // stopped. might want to loop
-            bool needToLoop = false;
-            for(auto &animator : mBoneAnimators)
-            {
-                if(animator.getCurrentAnimation()->isLooping())
-                {
-                    animator.play();
-                    needToLoop = true;
-                }
-            }
-
-            if(needToLoop)
-            {
-                mAnimTime = 0.0f;
-                mPlaying = true;
-            }
-
             // TODO: invoke callback?
         }
         mPlaying = stillPlaying;
