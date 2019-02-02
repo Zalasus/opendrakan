@@ -75,9 +75,6 @@ namespace odAnim
 
         glm::dualquat mLastAppliedTransform;
 
-        bool mMadeNonContinousJump;
-        glm::vec3 mNonContinousOffset;
-
         MotionAccumulator *mAccumulator;
         glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
         glm::vec3 mObjectAccumulationFactors; // tells what part of translation is pushed to accumulator

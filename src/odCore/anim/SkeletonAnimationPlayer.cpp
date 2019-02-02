@@ -34,7 +34,6 @@ namespace odAnim
     , mSpeedMultiplier(1.0f)
     , mPlaying(false)
     , mAnimTime(0.0f)
-    , mMadeNonContinousJump(false)
     , mAccumulator(nullptr)
     , mBoneAccumulationFactors(0.0)
     , mObjectAccumulationFactors(0.0)
@@ -54,17 +53,6 @@ namespace odAnim
             return;
         }
 
-        /*odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone->getJointIndex());
-        odDb::Animation::KfIterator firstKfOfNewAnim = speedMultiplier < 0.0f ? newStartEnd.second : newStartEnd.first;
-
-        if(mCurrentAnimation != nullptr)
-        {
-            odDb::Animation::KfIterator lastKfOfOldAnim = (((mSpeedMultiplier < 0.0f) ^ mIsInPongPhase)) ? mAnimStartEnd.first : mAnimStartEnd.second;
-
-            mNonContinousOffset = _translationFrom3x4(firstKfOfNewAnim->xform) - _translationFrom3x4(lastKfOfOldAnim->xform);
-            mMadeNonContinousJump = true;
-        }*/
-
         mCurrentAnimation = animation;
         mPlaybackType = type;
         mSpeedMultiplier = speedMultiplier;
@@ -75,7 +63,11 @@ namespace odAnim
         mFirstFrame = newStartEnd.first;
         mLastFrame = mFirstFrame + (frameCount - 1);
 
-        mAnimTime = mSpeedMultiplier < 0.0f ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
+        bool reverse = (mSpeedMultiplier < 0.0f);
+
+        mAnimTime = reverse ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
+
+        mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
     }
 
     void BoneAnimator::setAccumulationModes(const AxesModes &modes)
@@ -112,28 +104,19 @@ namespace odAnim
 
         mAnimTime += relTime * mSpeedMultiplier;
 
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
+        bool loopedBack = false; // for correcting relative movement in case of a loop (unneeded when no accumulator used)
+        glm::vec3 loopJump(0.0f);
 
-        if(currentKeyframes.first == currentKeyframes.second)
+        bool movingBackInTime = (mSpeedMultiplier < 0.0f);
+
+        // have we moved beyond start/end of the current animation? if yes, we need to take appropriate actions before
+        //  deciding how and where to move the bones, depending on whether we are looping, playing ping-pong etc.
+        if((!movingBackInTime && mAnimTime > mCurrentAnimation->getMaxTime()) || (movingBackInTime && mAnimTime < mCurrentAnimation->getMinTime()))
         {
-            // we are outside of the defined animation timeline. depending on playback type and position, we need
-            //  to loop or stop playback.
-
-            bool movingBackInTime = (mSpeedMultiplier < 0.0f);
-
-            float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
-            float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
-
-            // although this timeline might have ended, we might not yet be at the end of the animation (other bones might
-            //  still need to finish). if we are still within the animation limits, ...
-            if(    (!movingBackInTime && mAnimTime < mCurrentAnimation->getMaxTime())
-                || ( movingBackInTime && mAnimTime > mCurrentAnimation->getMinTime()))
-            {
-                return;
-            }
-
             // when looping or playing ping-pong, we want to add any time we have moved beyond the end of the animation
             //  back to the start/end of the timeline so we don't skip any frames.
+            float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
+            float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
             float residualTime = mAnimTime - endTime;
 
             switch(mPlaybackType)
@@ -145,24 +128,25 @@ namespace odAnim
 
             case PlaybackType::Looping:
                 mAnimTime = startTime + residualTime;
-                currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
-                mNonContinousOffset = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
-                mMadeNonContinousJump = true;
+                loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
+                loopJump *= movingBackInTime ? -1.0f : 1.0f;
+                loopedBack = true;
                 break;
 
             case PlaybackType::PingPong:
                 mSpeedMultiplier = -mSpeedMultiplier;
                 mAnimTime = endTime - residualTime;
-                currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
                 break;
             }
         }
 
-        // the above processing of a beyond-timeline state could either have left us there, or moved us back into
-        //  a defined state. depending on that we might have to take different approaches to moving the bone
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
+
         if(currentKeyframes.first == currentKeyframes.second)
         {
-            // we are still in a clamped state. simply apply the transform without interpolating
+            // we are in a clamped state. no need to interpolate. simply apply the transform without interpolating
+            //  this of course does not need any decompositions
+            // FIXME: how does this work with a potential accumulator?
             mBone->move(glm::mat4(currentKeyframes.first->xform));
             return;
         }
@@ -194,10 +178,9 @@ namespace odAnim
 
             // if the current animation step jumped in time, we need to factor out the offset
             //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
-            if(mMadeNonContinousJump)
+            if(loopedBack)
             {
-                relativeOffset -= mNonContinousOffset;
-                mMadeNonContinousJump = false;
+                relativeOffset -= loopJump;
             }
 
             mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
