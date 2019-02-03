@@ -9,6 +9,11 @@
 #define INCLUDE_PHYSICS_PHYSICSMANAGER_H_
 
 #include <memory>
+#include <map>
+#include <vector>
+
+#include <glm/vec3.hpp>
+
 #include <BulletDynamics/Dynamics/btRigidBody.h>
 #include <BulletDynamics/Dynamics/btDynamicsWorld.h>
 #include <BulletDynamics/ConstraintSolver/btConstraintSolver.h>
@@ -16,10 +21,6 @@
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
-#include <osg/Group>
-#include <osg/NodeCallback>
-
-#include <odCore/physics/DebugDrawer.h>
 
 namespace od
 {
@@ -50,8 +51,8 @@ namespace odPhysics
     {
         const btCollisionObject *hitBulletObject;
 
-        osg::Vec3f hitPoint;
-        osg::Vec3f hitNormal;
+        glm::vec3 hitPoint;
+        glm::vec3 hitNormal;
 
         // convenience pointers. if a layer or an object is hit, this will be non-null
         od::Layer *hitLayer;
@@ -66,26 +67,24 @@ namespace odPhysics
 
 		friend class CharacterController;
 
-		PhysicsManager(od::Level &level, osg::Group *levelRoot);
+		PhysicsManager(od::Level &level);
 		~PhysicsManager();
 
-		void stepSimulation(double dt);
-
-		bool toggleDebugDraw();
+		void update(float relTime);
 
 		/**
 		 * Casts a ray into the scene, returning all hit objects sorted by distance from start point.
 		 *
 		 * @returns Number of hit objects.
 		 */
-		size_t raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results);
+		size_t raycast(const glm::vec3 &start, const glm::vec3 &end, RaycastResultArray &results);
 
-		bool raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude = nullptr, int mask = CollisionGroups::ALL);
-		bool raycastClosestLayer(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude = nullptr)
+		bool raycastClosest(const glm::vec3 &start, const glm::vec3 &end, RaycastResult &result, od::LevelObject *exclude = nullptr, int mask = CollisionGroups::ALL);
+		bool raycastClosestLayer(const glm::vec3 &start, const glm::vec3 &end, RaycastResult &result, od::LevelObject *exclude = nullptr)
 		{
 		    return raycastClosest(start, end, result, exclude, CollisionGroups::LAYER);
 		}
-		bool raycastClosestObject(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude = nullptr)
+		bool raycastClosestObject(const glm::vec3 &start, const glm::vec3 &end, RaycastResult &result, od::LevelObject *exclude = nullptr)
 		{
             return raycastClosest(start, end, result, exclude, CollisionGroups::OBJECT);
         }
@@ -104,12 +103,10 @@ namespace odPhysics
 		{
 		    od::LevelObject *object;
 		    std::unique_ptr<btRigidBody> rigidBody;
-		    osg::ref_ptr<ModelCollisionShape> shape;
+		    std::shared_ptr<ModelCollisionShape> shape;
 		};
 
 		od::Level &mLevel;
-		osg::ref_ptr<osg::Group> mLevelRoot;
-		osg::ref_ptr<osg::NodeCallback> mTickCallback;
 
 		// order is important! mDynamicsWorld needs to be initialized last and destroyed first
 		std::unique_ptr<btBroadphaseInterface> mBroadphase;
@@ -118,8 +115,6 @@ namespace odPhysics
         std::unique_ptr<btConstraintSolver> mConstraintSolver;
         std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btDynamicsWorld> mDynamicsWorld;
-
-        std::unique_ptr<DebugDrawer> mDebugDrawer;
 
         typedef std::pair<od::Layer*, std::unique_ptr<btRigidBody>> LayerBodyPair;
         std::map<uint32_t, ObjectRegistration> mLevelObjectMap;

@@ -8,35 +8,64 @@
 
 #include <odCore/Engine.h>
 
+#include <chrono>
+#include <thread>
+
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
-#include <odCore/Player.h>
-#include <odCore/Camera.h>
-#include <odCore/InputManager.h>
-#include <odCore/render/RenderManager.h>
-#include <odCore/render/ShaderFactory.h>
-#include <odCore/gui/GuiManager.h>
+
+#include <odCore/input/InputManager.h>
+
 #include <odCore/rfl/RflManager.h>
-#include <odCore/audio/SoundManager.h>
+
+#include <odCore/render/Renderer.h>
+
+#include <odCore/audio/SoundSystem.h>
 
 namespace od
 {
 
 	Engine::Engine()
-	: mHasInitialLevelOverride(false)
+	: mRenderer(nullptr)
+	, mSoundSystem(nullptr)
+    , mHasInitialLevelOverride(false)
 	, mInitialLevelOverride("")
 	, mEngineRootDir("")
-	, mCamera(nullptr)
-	, mPlayer(nullptr)
-	, mMaxFrameRate(60)
 	, mSetUp(false)
+	, mIsDone(false)
 	{
+        mInputManager = std::make_unique<odInput::InputManager>();
 	}
 
 	Engine::~Engine()
 	{
+	}
+
+	void Engine::setRenderer(odRender::Renderer *renderer)
+	{
+	    if(mRenderer != nullptr)
+	    {
+	        Logger::warn() << "Hotswapping renderer. This might have undesired side-effects";
+	    }
+
+	    mRenderer = renderer;
+
+	    if(mRenderer != nullptr)
+	    {
+	        mRenderer->setRendererEventListener(this);
+	    }
+	}
+
+	void Engine::setSoundSystem(odAudio::SoundSystem *soundSystem)
+	{
+	    if(mSoundSystem != nullptr)
+	    {
+	        Logger::warn() << "Hotswapping sound system. Prepare for chaos";
+	    }
+
+	    mSoundSystem = soundSystem;
 	}
 
 	void Engine::setUp()
@@ -48,55 +77,8 @@ namespace od
 
 	    _findEngineRoot("Dragon.rrc");
 
-	    mViewer = new osgViewer::Viewer;
-        mViewer->realize();
-        mViewer->setName("OpenDrakan");
-        mViewer->getCamera()->setClearColor(osg::Vec4(0.2,0.2,0.2,1));
-        mViewer->setKeyEventSetsDone(0); // we handle the escape key ourselves
-
-        // set window title
-        osgViewer::Viewer::Windows windows;
-        mViewer->getWindows(windows);
-        if(!windows.empty())
-        {
-            windows.back()->setWindowName(mViewer->getName());
-        }
-
-        osg::ref_ptr<osgViewer::ScreenCaptureHandler::CaptureOperation> captureOp =
-                new osgViewer::ScreenCaptureHandler::WriteToFile("screenshot", "png", osgViewer::ScreenCaptureHandler::WriteToFile::SEQUENTIAL_NUMBER);
-        mScreenshotHandler = new osgViewer::ScreenCaptureHandler(captureOp, 1);
-        mScreenshotHandler->setKeyEventTakeScreenShot(osgGA::GUIEventAdapter::KEY_F12);
-        mViewer->addEventHandler(mScreenshotHandler);
-
-        osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
-        statsHandler->setKeyEventPrintsOutStats(osgGA::GUIEventAdapter::KEY_F2);
-        statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
-        mViewer->addEventHandler(statsHandler);
-
-        mRootNode = new osg::Group();
-        mViewer->setSceneData(mRootNode);
-
-        mRenderManager.reset(new odRender::RenderManager(*this, mRootNode));
-
-        mGammaUniform = new osg::Uniform("fullScreenGamma", OD_DEFAULT_GAMMA);
-        osg::StateSet *rootStateSet = mRootNode->getOrCreateStateSet();
-        rootStateSet->addUniform(mGammaUniform, osg::StateAttribute::ON);
-        rootStateSet->setMode(GL_FRAMEBUFFER_SRGB, osg::StateAttribute::OFF | osg::StateAttribute::OVERRIDE);
-
-        mInputManager = new InputManager(*this, mViewer);
-
-	    mGuiManager.reset(new odGui::GuiManager(*this, mViewer));
-
-	    std::vector<std::string> devs;
-	    odAudio::SoundManager::listDeviceNames(devs);
-	    for(std::string s : devs)
-	    {
-	        Logger::info() << "Sound device: '" << s << "'";
-	    }
-	    mSoundManager.reset(new odAudio::SoundManager(nullptr));
-
-	    mDbManager.reset(new odDb::DbManager(*this));
-        mRflManager.reset(new odRfl::RflManager(*this));
+	    mDbManager = std::make_unique<odDb::DbManager>(*this);
+        mRflManager = std::make_unique<odRfl::RflManager>(*this);
 
 	    mRflManager->onStartup();
 
@@ -120,36 +102,39 @@ namespace od
 
 		Logger::verbose() << "Everything set up. Starting main loop";
 
-		// need to provide our own loop as mViewer->run() installs camera manipulator we don't need
-		double simTime = 0;
-		double frameTime = 0;
-		while(!mViewer->done())
+		if(mRenderer != nullptr)
 		{
-			double minFrameTime = (mMaxFrameRate > 0.0) ? (1.0/mMaxFrameRate) : 0.0;
-			osg::Timer_t startFrameTick = osg::Timer::instance()->tick();
+		    mRenderer->onStart();
+		}
 
-			mViewer->advance(simTime);
-			mViewer->eventTraversal();
+		auto targetUpdateInterval = std::chrono::microseconds((int64_t)(1e6/60.0));
+		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
+		while(!mIsDone)
+		{
+		    auto loopStart = std::chrono::high_resolution_clock::now();
 
-			if(mLevel != nullptr)
-			{
-			    mLevel->update(); // TODO: put in update callback
-			}
+		    if(mLevel != nullptr)
+		    {
+		        double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
+		        lastUpdateStartTime = loopStart;
 
-			mViewer->updateTraversal();
-			mViewer->renderingTraversals();
+		        mLevel->update(relTime);
+		    }
 
-			osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
-			frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
-			simTime += frameTime;
-			if(frameTime < minFrameTime)
-			{
-				simTime += (minFrameTime-frameTime);
-				OpenThreads::Thread::microSleep(static_cast<unsigned int>(1000000.0*(minFrameTime-frameTime)));
-			}
+		    auto loopEnd = std::chrono::high_resolution_clock::now();
+		    auto loopTime = loopEnd - loopStart;
+		    if(loopTime < targetUpdateInterval)
+		    {
+		        std::this_thread::sleep_for(targetUpdateInterval - loopTime);
+		    }
 		}
 
 		Logger::info() << "Shutting down gracefully";
+
+		if(mRenderer != nullptr)
+        {
+            mRenderer->onEnd();
+        }
 	}
 
 	void Engine::loadLevel(const FilePath &levelFile)
@@ -159,25 +144,20 @@ namespace od
 	        mLevel = nullptr;
 	    }
 
-	    mLevel.reset(new od::Level(levelFile, *this, mRootNode));
+	    mLevel = std::make_unique<od::Level>(levelFile, *this);
         mLevel->loadLevel();
-
-        if(mCamera != nullptr)
-        {
-            mCamera->setOsgCamera(mViewer->getCamera());
-        }
 
         mLevel->spawnAllObjects();
 	}
 
-	void Engine::setFullScreenGamma(float gamma)
+	void Engine::onRenderWindowClosed()
 	{
-	    if(mGammaUniform == nullptr)
+	    if(mRenderer == nullptr)
 	    {
 	        return;
 	    }
 
-	    mGammaUniform->set(gamma);
+	    setDone(true);
 	}
 
 	void Engine::_findEngineRoot(const std::string &rrcFileName)

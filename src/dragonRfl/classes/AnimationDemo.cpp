@@ -8,8 +8,10 @@
 #include <dragonRfl/classes/AnimationDemo.h>
 
 #include <dragonRfl/RflDragon.h>
+
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
+
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 
@@ -32,16 +34,29 @@ namespace dragonRfl
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onLoaded(od::LevelObject &obj)
+    void AnimationDemo::onSpawned(od::LevelObject &obj)
     {
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        mAnimationPlayer = new odAnim::SkeletonAnimationPlayer(&obj, obj.getSkeletonRoot(), nullptr);
+        odRender::ObjectNode *objNode = obj.getRenderNode();
+        if(objNode == nullptr)
+        {
+            return; // no need to warn. we are probably running on a server
+        }
+
+        odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
+        if(skeleton == nullptr)
+        {
+            Logger::warn() << "Animation Demo class used on object without skeleton";
+            return;
+        }
+
+        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objNode, skeleton);
 
         obj.setEnableRflUpdateHook(true);
     }
 
-    void AnimationDemo::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+    void AnimationDemo::onUpdate(od::LevelObject &obj, float relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {
@@ -61,9 +76,17 @@ namespace dragonRfl
                 mCurrentAnimIndex = 0;
             }
 
-            mAnimationPlayer->stop();
-            mAnimationPlayer->setAnimation(mAnimations.getAsset(mCurrentAnimIndex), 0.0);
-            mAnimationPlayer->play(true);
+            odDb::Animation *currentAnimation = mAnimations.getAsset(mCurrentAnimIndex);
+            if(currentAnimation == nullptr || mPlayer == nullptr)
+            {
+                return;
+            }
+
+            auto playbackType = currentAnimation->isLooping() ? odAnim::PlaybackType::Looping : odAnim::PlaybackType::Normal;
+
+            mPlayer->playAnimation(currentAnimation, playbackType, 1.0f);
+
+            Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }
     }
 

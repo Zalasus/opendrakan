@@ -10,41 +10,20 @@
 
 #include <memory>
 #include <vector>
-#include <osg/Matrixf>
-#include <osg/BoundingSphere>
+
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include <BulletCollision/CollisionShapes/btCompoundShape.h>
 
 #include <odCore/DataStream.h>
+#include <odCore/BoundingBox.h>
+#include <odCore/BoundingSphere.h>
 
 namespace odPhysics
 {
 
-	class OrientedBoundingBox
-	{
-	public:
-
-		OrientedBoundingBox();
-		OrientedBoundingBox(const OrientedBoundingBox &obb);
-
-		inline osg::Vec3f getBottomLeft() const { return mBottomLeft; }
-		inline osg::Vec3f getMidPoint() const { return mBottomLeft + mExtends * 0.5; }
-		inline osg::Vec3f getExtends() const { return mExtends; }
-		inline osg::Quat  getOrientation() const { return mOrientation; }
-		inline void setBottomLeft(const osg::Vec3f &v) { mBottomLeft = v; }
-		inline void setExtends(const osg::Vec3f &v) { mExtends = v;}
-		inline void setOrientation(const osg::Quat &q) { mOrientation = q; }
-
-		OrientedBoundingBox &operator=(const OrientedBoundingBox &obb);
-
-
-	private:
-
-		osg::Vec3f mBottomLeft;
-		osg::Vec3f mExtends;
-		osg::Quat  mOrientation;
-	};
-
-	class ModelCollisionShape : public osg::Referenced, public btCompoundShape
+	class ModelCollisionShape : public btCompoundShape
     {
     public:
 
@@ -72,20 +51,23 @@ namespace odPhysics
 
 		ModelBounds(ShapeType type, size_t shapeCount);
 
-		void setMainBounds(const osg::BoundingSpheref &sphere, const OrientedBoundingBox &box);
+		inline const od::BoundingSphere &getMainSphere() const { return mMainSphere; }
+		inline const od::OrientedBoundingBox &getMainBox() const { return mMainBox; }
+
+		void setMainBounds(const od::BoundingSphere &sphere, const od::OrientedBoundingBox &box);
 		void addHierarchyEntry(uint16_t firstChildIndex, uint16_t nextSiblingIndex);
-		void addSphere(const osg::BoundingSpheref &sphere);
-		void addBox(const OrientedBoundingBox &box);
+		void addSphere(const od::BoundingSphere &sphere);
+		void addBox(const od::OrientedBoundingBox &box);
 
 		/**
 		 * Builds or returns a shape that can be shared among all non-scaled uses of the model.
 		 */
-		ModelCollisionShape *getSharedCollisionShape();
+		std::shared_ptr<ModelCollisionShape> getSharedCollisionShape();
 
 		/**
 		 * Allocates and builds a new shape, even if one is already cached in this bounds object.
 		 *
-		 * @note This transfers ownership. The returned pointer must be stored in an osg::ref_ptr
+		 * @note This transfers ownership. The returned pointer must be managed by the caller.
 		 */
 		ModelCollisionShape *buildNewShape();
 
@@ -95,16 +77,16 @@ namespace odPhysics
 	private:
 
 		void _recursivePrint(size_t index, size_t depth);
-		void _recursiveBuild(osg::Vec3f parentTranslation, osg::Quat parentRotation, size_t index, size_t depth);
+		void _recursiveBuild(glm::vec3 parentTranslation, glm::quat parentRotation, size_t index, size_t depth);
 
 		ShapeType mType;
 		size_t mShapeCount;
-		osg::BoundingSpheref mMainSphere;
-		OrientedBoundingBox mMainBox;
+		od::BoundingSphere mMainSphere;
+		od::OrientedBoundingBox mMainBox;
 		std::vector<std::pair<uint16_t, uint16_t>> mHierarchy;
-		std::vector<osg::BoundingSpheref> mSpheres;
-		std::vector<OrientedBoundingBox> mBoxes;
-		osg::ref_ptr<ModelCollisionShape> mSharedShape;
+		std::vector<od::BoundingSphere> mSpheres;
+		std::vector<od::OrientedBoundingBox> mBoxes;
+		std::shared_ptr<ModelCollisionShape> mSharedShape;
 	};
 
 }

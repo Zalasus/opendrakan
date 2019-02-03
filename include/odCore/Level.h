@@ -12,12 +12,8 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <deque>
-
-#include <osg/Group>
-#include <osg/Geode>
-#include <osg/Geometry>
-#include <osg/Light>
+#include <list>
+#include <glm/vec3.hpp>
 
 #include <odCore/FilePath.h>
 #include <odCore/Layer.h>
@@ -34,7 +30,7 @@ namespace od
     {
     public:
 
-        Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode);
+        Level(const FilePath &levelPath, Engine &engine);
         ~Level();
 
         inline FilePath getFilePath() const { return mLevelPath; }
@@ -46,12 +42,12 @@ namespace od
         void requestLevelObjectDestruction(LevelObject *obj);
         Layer *getLayerById(uint32_t id);
         Layer *getLayerByIndex(uint16_t index);
-        Layer *getFirstLayerBelowPoint(const osg::Vec3 &v);
+        Layer *getFirstLayerBelowPoint(const glm::vec3 &v);
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
 
-        void update();
+        void update(float relTime);
 
-        LevelObject &getLevelObjectByIndex(uint16_t index);
+        LevelObject *getLevelObjectByIndex(uint16_t index);
 
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;
@@ -73,15 +69,11 @@ namespace od
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
         std::map<uint16_t, odDb::DbRefWrapper> mDependencyMap;
-        std::vector<osg::ref_ptr<Layer>> mLayers;
-        std::vector<osg::ref_ptr<LevelObject>> mLevelObjects;
-        osg::ref_ptr<osg::Group> mLevelRootNode;
-        osg::ref_ptr<osg::Group> mLayerGroup;
-        osg::ref_ptr<osg::Group> mObjectGroup;
-        osg::ref_ptr<osg::Light> mSunLight;
+        std::vector<std::unique_ptr<Layer>> mLayers;
+        std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
 		odPhysics::PhysicsManager mPhysicsManager;
 
-		std::deque<osg::ref_ptr<LevelObject>> mDestructionQueue;
+		std::list<LevelObject*> mDestructionQueue;
 
 		std::vector<Layer*> mLayerLookupCache;
     };

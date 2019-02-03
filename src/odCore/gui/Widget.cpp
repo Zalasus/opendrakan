@@ -7,90 +7,130 @@
 
 #include <odCore/gui/Widget.h>
 
-#include <osg/Geometry>
-#include <osgGA/EventVisitor>
+#include <algorithm>
 
-#include <odCore/NodeMasks.h>
-#include <odCore/UpdateCallback.h>
-#include <odCore/gui/GuiManager.h>
+#include <glm/matrix.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <odCore/Exception.h>
+
+#include <odCore/gui/Gui.h>
+
+#include <odCore/render/Renderer.h>
+#include <odCore/render/GuiNode.h>
 
 namespace odGui
 {
 
-    class WidgetUpdateCallback : public od::UpdateCallback
+    Widget::Widget(Gui &gui)
+    : Widget(gui, nullptr)
     {
-    public:
+        // don't put this in the initializer list, especially not as an argument
+        //  to the other constructor. undefined evalutation order may fuck up the
+        //  weak reference created by the GuiNode
+        mRenderNode = mGui.getRenderer().createGuiNode(this);
+    }
 
-        WidgetUpdateCallback(Widget *widget)
-        : mWidget(widget)
-        {
-        }
-
-        virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
-        {
-            tick(nv->getFrameStamp());
-
-            mWidget->onUpdate(mSimTime, mRelTime);
-
-            if(mWidget->isMatrixDirty())
-            {
-                mWidget->updateMatrix();
-            }
-
-            traverse(node, nv);
-        }
-
-    private:
-
-        Widget *mWidget;
-
-    };
-
-    Widget::Widget(GuiManager &gm)
-    : mGuiManager(gm)
+    Widget::Widget(Gui &gui, odRender::GuiNode *node)
+    : mGui(gui)
     , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
     , mDimensions(1.0, 1.0)
     , mPositionInParentSpace(0.0, 0.0)
-    , mZIndexInParentSpace(0)
+    , mZIndex(0)
     , mParentWidget(nullptr)
-    , mMatrixDirty(false)
-    , mUpdateCallback(new WidgetUpdateCallback(this))
+    , mMatrixDirty(true)
     , mMouseOver(false)
+    , mChildOrderDirty(false)
+    , mRenderNode(node)
     {
-        this->setNodeMask(od::NodeMasks::Gui);
-        this->setMatrix(osg::Matrix::identity());
-
-        this->addUpdateCallback(mUpdateCallback);
     }
 
     Widget::~Widget()
     {
-        this->removeUpdateCallback(mUpdateCallback);
     }
 
-    bool Widget::liesWithinLogicalArea(const osg::Vec2 &pos)
+    bool Widget::liesWithinLogicalArea(const glm::vec2 &pos)
     {
-        return pos.x() >= 0.0 && pos.x() <= 1.0 && pos.y() >= 0.0 && pos.y() <= 1.0;
+        return pos.x >= 0.0 && pos.x <= 1.0 && pos.y >= 0.0 && pos.y <= 1.0;
     }
 
-    void Widget::onMouseDown(const osg::Vec2 &pos, int button)
-    {
-    }
-
-    void Widget::onMouseEnter(const osg::Vec2 &pos)
+    void Widget::onMouseDown(const glm::vec2 &pos, int button)
     {
     }
 
-    void Widget::onMouseLeave(const osg::Vec2 &pos)
+    void Widget::onMouseEnter(const glm::vec2 &pos)
     {
     }
 
-    void Widget::onUpdate(double simTime, double relTime)
+    void Widget::onMouseLeave(const glm::vec2 &pos)
     {
     }
 
-    osg::Vec2 Widget::getDimensionsInPixels()
+    void Widget::onUpdate(float relTime)
+    {
+    }
+
+    void Widget::addChild(Widget *w)
+    {
+        if(w == nullptr || w == this)
+        {
+            return;
+        }
+
+        mChildWidgets.push_back(od::RefPtr<Widget>(w));
+
+        w->setParent(this);
+
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->addChild(w->getRenderNode());
+        }
+    }
+
+    void Widget::removeChild(Widget *w)
+    {
+        if(w == nullptr || w == this)
+        {
+            return;
+        }
+
+        auto it = std::find(mChildWidgets.begin(), mChildWidgets.end(), w);
+        if(it != mChildWidgets.end())
+        {
+            mChildWidgets.erase(it);
+
+            if(mRenderNode != nullptr)
+            {
+                mRenderNode->removeChild(w->getRenderNode());
+            }
+        }
+
+        w->setParent(nullptr);
+    }
+
+    void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets)
+    {
+        glm::mat4 currentMatrix = mParentSpaceToWidgetSpace * parentMatrix;
+
+        glm::vec4 pointInWidget = currentMatrix * glm::vec4(pointNdc, 0.0, 1.0);
+
+        if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
+        {
+            HitWidgetInfo info;
+            info.hitPointInWidget.x = pointInWidget.x;
+            info.hitPointInWidget.y = pointInWidget.y;
+            info.widget = this;
+            hitWidgets.push_back(info);
+
+            for(auto &&child : mChildWidgets)
+            {
+                child->intersect(pointNdc, currentMatrix, hitWidgets);
+            }
+        }
+    }
+
+    glm::vec2 Widget::getDimensionsInPixels()
     {
         if(this->getDimensionType() == WidgetDimensionType::Pixels)
         {
@@ -98,76 +138,113 @@ namespace odGui
 
         }else
         {
-            return osg::componentMultiply(this->getParentDimensionsInPixels(), this->getDimensions());
-        }
-    }
+            if(mParentWidget == nullptr)
+            {
+                throw od::Exception("Widget without parent asked to translate parent-relative dimensions to pixels. Is the GuiManager's root widget configured properly?");
+            }
 
-    osg::Vec2 Widget::getParentDimensionsInPixels()
-    {
-        return (mParentWidget != nullptr) ? mParentWidget->getDimensionsInPixels() : mGuiManager.getScreenResolution();
+            return mParentWidget->getDimensionsInPixels() * this->getDimensions();
+        }
     }
 
     void Widget::setVisible(bool b)
     {
-        this->setNodeMask(b ? od::NodeMasks::Gui : od::NodeMasks::Hidden);
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setVisible(b);
+        }
+    }
+
+    void Widget::setZIndex(int32_t zIndex)
+    {
+        mZIndex = zIndex;
+
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setZIndex(zIndex);
+        }
+
+        if(mParentWidget != nullptr)
+        {
+            mParentWidget->mChildOrderDirty = true;
+        }
+    }
+
+    void Widget::reorderChildren()
+    {
+        auto pred = [](od::RefPtr<Widget> &left, od::RefPtr<Widget> &right) { return left->getZIndex() < right->getZIndex(); };
+        std::sort(mChildWidgets.begin(), mChildWidgets.end(), pred);
+
+        mChildOrderDirty = false;
     }
 
     void Widget::updateMatrix()
     {
-        if(!mMatrixDirty)
+        if(mParentWidget == nullptr)
         {
-            return;
+            mParentSpaceToWidgetSpace = mGui.getNdcToWidgetSpaceTransform();
+            mWidgetSpaceToParentSpace = mGui.getWidgetSpaceToNdcTransform();
+
+        }else
+        {
+            mWidgetSpaceToParentSpace = glm::mat4(1.0);
+            mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(mPositionInParentSpace, 0.0));
+            glm::vec2 widgetSizeInParentSpace =
+                    (mDimensionType == WidgetDimensionType::ParentRelative) ?
+                      mDimensions : (getDimensionsInPixels() / mParentWidget->getDimensionsInPixels());
+            mWidgetSpaceToParentSpace = glm::scale(mWidgetSpaceToParentSpace, glm::vec3(widgetSizeInParentSpace, 1.0));
+            mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(-_getOriginVector(), 0.0));
+
+            mParentSpaceToWidgetSpace = glm::inverse(mWidgetSpaceToParentSpace);
         }
 
-        osg::Matrix matrix = osg::Matrix::identity();
-
-        matrix.postMultTranslate(osg::Vec3(-_getOriginVector(), 0.0));
-
-        osg::Vec2 widgetSizeInParentSpace = osg::componentDivide(this->getDimensionsInPixels(), this->getParentDimensionsInPixels());
-        matrix.postMultScale(osg::Vec3(widgetSizeInParentSpace, 1.0)); // remove z component
-
-        matrix.postMultTranslate(osg::Vec3(mPositionInParentSpace, 0.0));
-
-        this->setMatrix(matrix);
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->setMatrix(glm::transpose(mWidgetSpaceToParentSpace));
+        }
 
         mMatrixDirty = false;
     }
 
-    void Widget::addDrawable(osg::Drawable *drawable)
+    void Widget::update(float relTime)
     {
-        if(mGeode == nullptr)
+        if(mMatrixDirty)
         {
-            mGeode = new osg::Geode;
-            this->addChild(mGeode);
+            updateMatrix();
         }
 
-        mGeode->addDrawable(drawable);
+        this->onUpdate(relTime);
     }
 
-    osg::Vec2 Widget::_getOriginVector()
+    odRender::GuiNode *Widget::getRenderNode()
     {
-        osg::Vec2 origin;
+        return mRenderNode;
+    }
+
+    glm::vec2 Widget::_getOriginVector()
+    {
+        glm::vec2 origin;
         switch(mOrigin)
         {
         case WidgetOrigin::TopRight:
-            origin = osg::Vec2(1.0, 0.0);
+            origin = glm::vec2(1.0, 0.0);
             break;
 
         case WidgetOrigin::BottomRight:
-            origin = osg::Vec2(1.0, 1.0);
+            origin = glm::vec2(1.0, 1.0);
             break;
 
         case WidgetOrigin::BottomLeft:
-            origin = osg::Vec2(0.0, 1.0);
+            origin = glm::vec2(0.0, 1.0);
             break;
 
         case WidgetOrigin::Center:
-            origin = osg::Vec2(0.5, 0.5);
+            origin = glm::vec2(0.5, 0.5);
             break;
 
         case WidgetOrigin::TopLeft:
         default:
-            origin = osg::Vec2(0.0, 0.0);
+            origin = glm::vec2(0.0, 0.0);
             break;
         }
 

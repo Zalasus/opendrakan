@@ -1,5 +1,7 @@
 language: cpp
 
+dist: xenial
+
 env:
   - EVAL="CXX=g++-6"
   - EVAL="CXX=clang++-3.8"
@@ -16,8 +18,9 @@ addons:
       - cmake
       - zlib1g-dev
       - libbullet-dev
-      - libopenscenegraph-3.4-dev
       - libopenal-dev
+      - libglm-dev
+      - libopenscenegraph-3.4-dev
 
 before_install:
   - eval "${EVAL}"

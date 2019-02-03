@@ -7,10 +7,18 @@
 
 #include <dragonRfl/gui/CrystalRingButton.h>
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
-#include <odCore/gui/GuiManager.h>
-#include <odCore/audio/SoundManager.h>
+
+#include <odCore/render/GuiNode.h>
+#include <odCore/render/ModelNode.h>
+
+#include <odCore/audio/SoundSystem.h>
+#include <odCore/audio/Source.h>
+
+#include <dragonRfl/gui/DragonGui.h>
 
 // max crystal speed in rad/s
 #define OD_CRYSTAL_SPEED_MAX       (3.0*M_PI)
@@ -27,83 +35,81 @@
 namespace dragonRfl
 {
 
-    CrystalRingButton::CrystalRingButton(odGui::GuiManager &gm, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel,
+    CrystalRingButton::CrystalRingButton(DragonGui &gui, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel,
             odDb::Sound *hoverSound, float noteOffset)
-    : odGui::Widget(gm)
-    , mSoundSource(nullptr)
-    , mCrystalModel(crystalModel)
-    , mInnerRingModel(innerRingModel)
-    , mOuterRingModel(outerRingModel)
+    : odGui::Widget(gui)
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
-    , mCrystalColor(mCrystalColorInactive)
-    , mTransform(new osg::MatrixTransform)
     , mCallbackUserData(-1)
     , mCrystalSpeedPercent(0.0)
     , mClicked(false)
     , mRingAnimPercent(0.0)
+    , mCrystalColor(mCrystalColorInactive)
     {
         // select whatever model is not null for bounds calculation, starting with outer ring
-        osg::ref_ptr<odDb::Model> modelForBounds =
-                (mOuterRingModel != nullptr) ? mOuterRingModel : ((mInnerRingModel != nullptr) ? mInnerRingModel : mCrystalModel);
+        od::RefPtr<odDb::Model> modelForBounds =
+                (outerRingModel != nullptr) ? outerRingModel : ((innerRingModel != nullptr) ? innerRingModel : crystalModel);
 
         if(modelForBounds == nullptr)
         {
             throw od::Exception("Passed no non-null models to CrystalRingButton");
         }
 
-        osg::BoundingBox box = modelForBounds->getCalculatedBoundingBox();
-        float diameter = box.yMax() - box.yMin(); // ring's "hole" is parallel to y axis, so this should be the best way to get the diameter
+        od::AxisAlignedBoundingBox aabb = modelForBounds->getCalculatedBoundingBox();
+        float diameter = aabb.max().x - aabb.min().x;
 
-        osg::Matrix matrix = osg::Matrix::identity();
-        matrix.postMultTranslate(-box.center());
-        matrix.postMultScale(osg::Vec3(1/diameter, 1/diameter, 1/diameter));
-        matrix.postMultTranslate(osg::Vec3(0.5, 0.5, 0.0));
-        mTransform->setMatrix(matrix);
+        glm::vec3 extends = aabb.max() - aabb.min();
+        float aspectRatio = extends.x/extends.y;
 
-        mTransform->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::ON);
-        mTransform->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
+        float fovDegrees = 70;
+        getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
 
-        if(mCrystalModel != nullptr)
+        glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
+        glm::vec3 lightAmbient(0.4, 0.4, 0.4);
+        glm::vec3 lightDirection(glm::normalize(glm::vec3(0.0, 1.0, 1.0)));
+
+        if(crystalModel != nullptr)
         {
-            mCrystalModel->buildGeometry(gm.getEngine().getRenderManager());
-            mCrystalTransform = new osg::PositionAttitudeTransform;
-            mCrystalTransform->addChild(mCrystalModel);
+            od::RefPtr<odRender::ModelNode> mn = crystalModel->getOrCreateRenderNode(&getGui().getRenderer());
 
-            osg::StateSet *ss = mCrystalTransform->getOrCreateStateSet();
-            ss->setDefine("COLOR_MODIFIER");
+            mCrystalNode = getRenderNode()->createObjectNode();
+            mCrystalNode->setModel(mn);
 
-            mColorModifierUniform = new osg::Uniform("colorModifier", mCrystalColorInactive);
-            ss->addUniform(mColorModifierUniform);
-
-            mCrystalTransform->setScale(osg::Vec3(0.58, 0.58, 0.58));
-            mCrystalTransform->setAttitude(osg::Quat(M_PI, osg::Vec3(0, 1, 0)));
-
-            mTransform->addChild(mCrystalTransform);
+            mCrystalNode->setScale(glm::vec3(0.58/diameter));
+            mCrystalNode->setPosition(glm::vec3(0.5, 0.5, 0));
+            mCrystalNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mCrystalNode->setEnableColorModifier(true);
+            mCrystalNode->setColorModifier(mCrystalColor);
         }
 
-        if(mInnerRingModel != nullptr)
+        if(innerRingModel != nullptr)
         {
-            mInnerRingModel->buildGeometry(gm.getEngine().getRenderManager());
-            mInnerRingTransform = new osg::PositionAttitudeTransform;
-            mInnerRingTransform->addChild(mInnerRingModel);
-            mTransform->addChild(mInnerRingTransform);
+            od::RefPtr<odRender::ModelNode> mn = innerRingModel->getOrCreateRenderNode(&getGui().getRenderer());
+
+            mInnerRingNode = getRenderNode()->createObjectNode();
+            mInnerRingNode->setModel(mn);
+
+            mInnerRingNode->setScale(glm::vec3(1/diameter));
+            mInnerRingNode->setPosition(glm::vec3(0.5, 0.5, 0));
+            mInnerRingNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
         }
 
-        if(mOuterRingModel != nullptr)
+        if(outerRingModel != nullptr)
         {
-            mOuterRingModel->buildGeometry(gm.getEngine().getRenderManager());
-            mOuterRingTransform = new osg::PositionAttitudeTransform;
-            mOuterRingTransform->addChild(mOuterRingModel);
-            mTransform->addChild(mOuterRingTransform);
+            od::RefPtr<odRender::ModelNode> mn = outerRingModel->getOrCreateRenderNode(&getGui().getRenderer());
+
+            mOuterRingNode = getRenderNode()->createObjectNode();
+            mOuterRingNode->setModel(mn);
+
+            mOuterRingNode->setScale(glm::vec3(1/diameter));
+            mOuterRingNode->setPosition(glm::vec3(0.5, 0.5, 0));
+            mOuterRingNode->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
         }
 
-        this->addChild(mTransform);
-
-        if(hoverSound != nullptr)
+        if(hoverSound != nullptr && gui.getEngine().getSoundSystem() != nullptr)
         {
-            mSoundSource = gm.getEngine().getSoundManager().createSource();
-            mSoundSource->setPosition(0.0, 0.0, 0.0);
+            mSoundSource = gui.getEngine().getSoundSystem()->createSource();
+            mSoundSource->setPosition(glm::vec3(0.0));
             mSoundSource->setRelative(true);
             mSoundSource->setLooping(true);
             mSoundSource->setSound(hoverSound);
@@ -118,19 +124,23 @@ namespace dragonRfl
         }
     }
 
-    bool CrystalRingButton::liesWithinLogicalArea(const osg::Vec2 &pos)
+    CrystalRingButton::~CrystalRingButton()
     {
-        // logical area is circle around (0.5 0.5) TODO: implement non-circular buttons here
-        osg::Vec2 p = pos - osg::Vec2(0.5, 0.5);
-        return p.length2() <= 0.25;
     }
 
-    void CrystalRingButton::onMouseDown(const osg::Vec2 &pos, int button)
+    bool CrystalRingButton::liesWithinLogicalArea(const glm::vec2 &pos)
+    {
+        // logical area is circle around (0.5 0.5) TODO: implement non-circular buttons here
+        glm::vec2 p = pos - glm::vec2(0.5, 0.5);
+        return glm::length(p) <= 0.5;
+    }
+
+    void CrystalRingButton::onMouseDown(const glm::vec2 &pos, int button)
     {
         mClicked = true;
     }
 
-    void CrystalRingButton::onMouseEnter(const osg::Vec2 &pos)
+    void CrystalRingButton::onMouseEnter(const glm::vec2 &pos)
     {
         if(mSoundSource != nullptr)
         {
@@ -140,7 +150,7 @@ namespace dragonRfl
         mCrystalColor.move(mCrystalColorActive, 0.5);
     }
 
-    void CrystalRingButton::onMouseLeave(const osg::Vec2 &pos)
+    void CrystalRingButton::onMouseLeave(const glm::vec2 &pos)
     {
         if(mSoundSource != nullptr)
         {
@@ -150,7 +160,7 @@ namespace dragonRfl
         mCrystalColor.move(mCrystalColorInactive, 1.0);
     }
 
-    void CrystalRingButton::onUpdate(double simTime, double relTime)
+    void CrystalRingButton::onUpdate(float relTime)
     {
         if(isMouseOver())
         {
@@ -186,7 +196,7 @@ namespace dragonRfl
             }
         }
 
-        if(mCrystalTransform != nullptr)
+        if(mCrystalNode != nullptr)
         {
             // apply scaling function to speed percentage
             float crystalSpeed = isMouseOver() ?
@@ -194,36 +204,26 @@ namespace dragonRfl
                                   : (std::sin((mCrystalSpeedPercent - 1)*M_PI/2)+1) * OD_CRYSTAL_SPEED_MAX;
 
             // apply rotation to crystal
-            osg::Quat q = mCrystalTransform->getAttitude();
-            q *= osg::Quat(crystalSpeed * relTime, osg::Vec3(0, -1, 0));
-            mCrystalTransform->setAttitude(q);
+            glm::quat q = mCrystalNode->getOrientation();
+            q *= glm::quat(glm::vec3(0, -crystalSpeed*relTime, 0));
+            mCrystalNode->setOrientation(q);
 
-            _updateCrystalColor(relTime);
+            if(mCrystalColor.update(relTime))
+            {
+                mCrystalNode->setColorModifier(mCrystalColor);
+            }
         }
 
-        if(mOuterRingTransform != nullptr)
+        if(mOuterRingNode != nullptr)
         {
-            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(1, 0, 0));
-            mOuterRingTransform->setAttitude(q);
+            glm::quat q(glm::vec3(-mRingAnimPercent*M_PI, 0, 0));
+            mOuterRingNode->setOrientation(q);
         }
 
-        if(mInnerRingTransform != nullptr)
+        if(mInnerRingNode != nullptr)
         {
-            osg::Quat q(mRingAnimPercent * M_PI, osg::Vec3(0, 1, 0));
-            mInnerRingTransform->setAttitude(q);
-        }
-    }
-
-    void CrystalRingButton::_updateCrystalColor(double relTime)
-    {
-        if(mColorModifierUniform == nullptr)
-        {
-            return;
-        }
-
-        if(mCrystalColor.update(relTime))
-        {
-            mColorModifierUniform->set(mCrystalColor);
+            glm::quat q(glm::vec3(0, -mRingAnimPercent*M_PI, 0));
+            mInnerRingNode->setOrientation(q);
         }
     }
 

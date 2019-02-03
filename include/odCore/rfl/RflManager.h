@@ -33,7 +33,6 @@ namespace odRfl
         Rfl *getRfl(const std::string &name);
 
         virtual void onStartup() override;
-        virtual void onMenuToggle(bool newMode) override;
 
 
     private:

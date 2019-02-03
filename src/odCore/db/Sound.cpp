@@ -12,6 +12,8 @@
 
 #include <odCore/Exception.h>
 #include <odCore/ZStream.h>
+
+#include <odCore/audio/SoundSystem.h>
 #include <odCore/audio/Buffer.h>
 
 namespace odDb
@@ -31,6 +33,10 @@ namespace odDb
 	, mCompressionLevel(0)
     {
     }
+
+	Sound::~Sound()
+	{
+	}
 
     void Sound::loadFromRecord(od::DataReader &dr)
     {
@@ -66,38 +72,36 @@ namespace odDb
         if(mCompressionLevel != 0)
         {
             size_t outputBufferSize = std::min(od::ZStreamBuffer::DefaultBufferSize, (size_t)mDecompressedSize);
-            zstr.reset(new od::ZStream(dr.getStream(), compressedSize, outputBufferSize));
+            zstr = std::make_unique<od::ZStream>(dr.getStream(), compressedSize, outputBufferSize);
             sampleReader.setStream(*zstr);
         }
 
-        mTempSampleBuffer.resize(mDecompressedSize);
-        sampleReader.read(reinterpret_cast<char*>(mTempSampleBuffer.data()), mDecompressedSize);
-    }
-
-    std::shared_ptr<odAudio::Buffer> Sound::getOrCreateBuffer(odAudio::SoundManager &soundManager)
-    {
-        if(mSoundBuffer != nullptr)
-        {
-            return mSoundBuffer;
-        }
-
-        mSoundBuffer.reset(new odAudio::Buffer(soundManager));
-
-        odAudio::Buffer::Format format = mSoundBuffer->getFormatFor(mBits, mChannels);
-
-        mSoundBuffer->setData(mTempSampleBuffer.data(), mTempSampleBuffer.size(), format, mFrequency);
-
-        // FIXME: this request is non-binding and may leave us with a huge block of unused but still allocated memory
-        //  (still better than just leaving it, though)
-        mTempSampleBuffer.clear();
-        mTempSampleBuffer.shrink_to_fit();
-
-        return mSoundBuffer;
+        mDataBuffer.resize(mDecompressedSize);
+        sampleReader.read(reinterpret_cast<char*>(mDataBuffer.data()), mDecompressedSize);
     }
 
     float Sound::getLinearGain() const
     {
         return std::pow(10.0f, mVolume/2000.0f);
+    }
+
+    od::RefPtr<odAudio::Buffer> Sound::getOrCreateAudioBuffer(odAudio::SoundSystem *soundSystem)
+    {
+        if(mSoundBuffer != nullptr)
+        {
+            return mSoundBuffer.get();
+        }
+
+        if(soundSystem == nullptr)
+        {
+            throw od::Exception("Passed nullptr as soundSystem to Sound");
+        }
+
+        auto buffer = soundSystem->createBuffer(this);
+
+        mSoundBuffer = buffer.get();
+
+        return buffer;
     }
 
 }

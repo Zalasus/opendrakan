@@ -9,29 +9,20 @@
 #define INCLUDE_ENGINE_H_
 
 #include <memory>
-#include <osgViewer/Viewer>
-#include <osgViewer/ViewerEventHandlers>
+#include <atomic>
 
 #include <odCore/FilePath.h>
 
-namespace odAudio
-{
-    class SoundManager;
-}
+#include <odCore/render/RendererEventListener.h>
 
 namespace odDb
 {
     class DbManager;
 }
 
-namespace odGui
+namespace odInput
 {
-    class GuiManager;
-}
-
-namespace odRender
-{
-    class RenderManager;
+    class InputManager;
 }
 
 namespace odRfl
@@ -39,15 +30,22 @@ namespace odRfl
     class RflManager;
 }
 
+namespace odRender
+{
+    class Renderer;
+}
+
+namespace odAudio
+{
+    class SoundSystem;
+}
+
 namespace od
 {
 
-    class Player;
-    class Camera;
     class Level;
-    class InputManager;
 
-	class Engine
+	class Engine : public odRender::RendererEventListener
 	{
 	public:
 
@@ -62,23 +60,22 @@ namespace od
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
 		inline odDb::DbManager &getDbManager() { return *mDbManager; }
 		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
-		inline odGui::GuiManager &getGuiManager() { return *mGuiManager; }
-		inline odRender::RenderManager &getRenderManager() { return *mRenderManager; }
-		inline odAudio::SoundManager &getSoundManager() { return *mSoundManager; }
+		inline odInput::InputManager &getInputManager() { return *mInputManager; }
+		inline odRender::Renderer *getRenderer() { return mRenderer; }
+		inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
-		inline Player *getPlayer() { return mPlayer; }
-        inline void setPlayer(Player *p) { mPlayer = p; }
-		inline void setCamera(Camera *cam) { mCamera = cam; }
-		inline Camera *getCamera() { return mCamera; }
-		inline double getMaxFrameRate() const { return mMaxFrameRate; }
-		inline void setMaxFrameRate(double fps) { mMaxFrameRate = fps; } // 0 for no cap
+		inline bool isDone() { return mIsDone; }
+		inline void setDone(bool done) { mIsDone = done; }
+
+		void setRenderer(odRender::Renderer *renderer);
+		void setSoundSystem(odAudio::SoundSystem *soundSystem);
 
 		void setUp();
 		void run();
 
 		void loadLevel(const FilePath &levelFile);
 
-		void setFullScreenGamma(float gamma);
+		virtual void onRenderWindowClosed() override;
 
 
 	private:
@@ -86,23 +83,16 @@ namespace od
 		void _findEngineRoot(const std::string &rrcFileName);
 
 		std::unique_ptr<odDb::DbManager> mDbManager;
+		std::unique_ptr<odInput::InputManager> mInputManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
-		osg::ref_ptr<InputManager> mInputManager;
-		std::unique_ptr<odGui::GuiManager> mGuiManager;
-		std::unique_ptr<odRender::RenderManager> mRenderManager;
-		std::unique_ptr<odAudio::SoundManager> mSoundManager;
+		odRender::Renderer *mRenderer;
+		odAudio::SoundSystem *mSoundSystem;
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;
 		std::unique_ptr<Level> mLevel;
-		osg::ref_ptr<osg::Group> mRootNode;
-		osg::ref_ptr<osgViewer::Viewer> mViewer;
-		osg::ref_ptr<osgViewer::ScreenCaptureHandler> mScreenshotHandler;
-		osg::ref_ptr<osg::Uniform> mGammaUniform;
-		Camera *mCamera;
-		Player *mPlayer;
-		double mMaxFrameRate;
 		bool mSetUp;
+		std::atomic_bool mIsDone;
 	};
 
 }

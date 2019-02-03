@@ -28,7 +28,7 @@ namespace odRfl
 	{
 	}
 
-	void RflClass::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+	void RflClass::onUpdate(od::LevelObject &obj, float relTime)
 	{
 	}
 

@@ -8,9 +8,12 @@
 #ifndef INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_
 #define INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_
 
+#include <memory>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
+
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
 namespace dragonRfl
@@ -26,8 +29,8 @@ namespace dragonRfl
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
 
 
     protected:
@@ -39,9 +42,10 @@ namespace dragonRfl
     private:
 
         bool mFirstUpdate;
-        double mRunningTime;
+        float mRunningTime;
         size_t mCurrentAnimIndex;
-        osg::ref_ptr<odAnim::SkeletonAnimationPlayer> mAnimationPlayer;
+
+        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mPlayer;
 
     };
 

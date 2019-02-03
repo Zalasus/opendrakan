@@ -7,45 +7,27 @@
 
 #include <dragonRfl/classes/TrackingCamera.h>
 
-#include <osg/NodeCallback>
 #include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
+#include <dragonRfl/LocalPlayer.h>
+
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Engine.h>
-#include <odCore/Player.h>
+
+#include <odCore/rfl/Rfl.h>
+
+#include <odCore/render/Renderer.h>
 
 namespace dragonRfl
 {
-
-
-    class CamUpdateCallback : public osg::NodeCallback
-    {
-    public:
-
-        CamUpdateCallback(TrackingCamera *cam)
-        : mCam(cam)
-        {
-        }
-
-        virtual void operator()(osg::Node* node, osg::NodeVisitor* nv)
-        {
-            traverse(node, nv);
-
-            mCam->updateCamera();
-        }
-
-    private:
-
-        TrackingCamera *mCam;
-    };
-
 
 	TrackingCamera::TrackingCamera(DragonRfl &rfl)
 	: mTrackingMode(1)
 	, mRubberBandStrength(2)
 	, mSpinSpeed(20)
 	, mCrosshairDistance(8)
+	, mRfl(rfl)
+	, mCameraObject(nullptr)
 	{
 	}
 
@@ -60,98 +42,56 @@ namespace dragonRfl
 
 	void TrackingCamera::onLoaded(od::LevelObject &obj)
 	{
-	    od::Engine &engine = obj.getLevel().getEngine();
+	    mCameraObject = &obj;
 
-	    if(engine.getCamera() != nullptr)
-	    {
-	        Logger::warn() << "Multiple camera objects found in level. Destroying duplicate";
-	        obj.requestDestruction();
-	        return;
-	    }
-
-	    mCameraLevelObject = &obj;
-	    engine.setCamera(this);
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
+
+	    odRender::Renderer *renderer = mRfl.getEngine().getRenderer();
+	    if(renderer != nullptr)
+	    {
+	        mRenderCamera = renderer->getCamera();
+	    }
 	}
 
 	void TrackingCamera::onSpawned(od::LevelObject &obj)
 	{
-	    od::Engine &engine = obj.getLevel().getEngine();
-
-	    if(mOsgCamera == nullptr)
-	    {
-	        Logger::error() << "Camera object spawned with no OSG camera assigned. Prepare for chaos";
-	        return;
-	    }
-
 	    // set initial view matrix
 	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
 
-	    if(engine.getPlayer() == nullptr)
+	    if(mRfl.getLocalPlayer() == nullptr)
 	    {
 	        // no player to track~ however, the camera object is tracked by the sky, so it still should be present
 	        return;
 	    }
 
-	    // attach update callback to player so we always get updated after player
-	    mCamUpdateCallback = new CamUpdateCallback(this);
-	    engine.getPlayer()->getLevelObject().addUpdateCallback(mCamUpdateCallback);
+	    obj.setEnableRflUpdateHook(true);
 	}
 
 	void TrackingCamera::onDespawned(od::LevelObject &obj)
 	{
-	    od::Engine &engine = obj.getLevel().getEngine();
-
-	    if(mCamUpdateCallback != nullptr && engine.getPlayer() != nullptr)
-	    {
-	        engine.getPlayer()->getLevelObject().removeUpdateCallback(mCamUpdateCallback);
-	    }
 	}
 
-	osg::Vec3f TrackingCamera::getEyePoint() const
+	void TrackingCamera::onUpdate(od::LevelObject &obj, float relTime)
 	{
-	    return mCameraLevelObject->getPosition();
+	    updateCamera();
 	}
-
-    void TrackingCamera::setOsgCamera(osg::Camera *osgCam)
-    {
-        if(mOsgCamera != nullptr)
-        {
-            Logger::warn() << "Double assigned OSG camera to RFL TrackingCamera. Ignoring";
-            return;
-        }
-
-        mOsgCamera = osgCam;
-    }
-
-    od::LevelObject &TrackingCamera::getLevelObject()
-    {
-        if(mCameraLevelObject == nullptr)
-        {
-            throw od::Exception("No level object assigned to RFL camera");
-        }
-
-        return *mCameraLevelObject;
-    }
 
     void TrackingCamera::updateCamera()
     {
-        od::Engine &engine = mCameraLevelObject->getLevel().getEngine();
-
-        od::Player *player = engine.getPlayer();
+        LocalPlayer *player = mRfl.getLocalPlayer();
         if(player == nullptr)
         {
             return;
         }
 
-        osg::Vec3f eye = player->getPosition();
-        osg::Quat lookDirection = osg::Quat(player->getPitch(), osg::Vec3f(0, 0, 1)) * osg::Quat(player->getYaw() + M_PI/2, osg::Vec3f(0, 1, 0));
+        glm::vec3 eye = player->getPosition();
+        glm::quat lookDirection(glm::vec3(player->getPitch(), player->getYaw(), 0));
 
         // perform raycast to find obstacle closest point with unobstructed view of player
-        osg::Vec3f from = player->getPosition();
-        osg::Vec3f to = from + lookDirection * osg::Vec3f(-3, 0, 0);
+        glm::vec3 from = player->getPosition();
+        glm::vec3 to = from + lookDirection * glm::vec3(0, 0, 3);
         odPhysics::RaycastResult result;
-        bool hit = engine.getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
+        bool hit = player->getLevelObject().getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
         if(!hit)
         {
             eye = to;
@@ -164,15 +104,18 @@ namespace dragonRfl
         _setObjectPositionAndViewMatrix(eye, lookDirection);
     }
 
-    void TrackingCamera::_setObjectPositionAndViewMatrix(const osg::Vec3f &eyepoint, const osg::Quat &lookDirection)
+    void TrackingCamera::_setObjectPositionAndViewMatrix(const glm::vec3 &eyepoint, const glm::quat &lookDirection)
     {
-        osg::Vec3f front = lookDirection * osg::Vec3f(1, 0, 0);
-        osg::Vec3f up = lookDirection * osg::Vec3f(0, 1, 0);
+        glm::vec3 front = lookDirection * glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
+        glm::vec3 up = lookDirection * glm::vec3(0, 1, 0);
 
-        mCameraLevelObject->setPosition(eyepoint);
-        mCameraLevelObject->setRotation(lookDirection);
+        mCameraObject->setPosition(eyepoint);
+        mCameraObject->setRotation(lookDirection);
 
-        mOsgCamera->setViewMatrixAsLookAt(eyepoint, eyepoint + front, up);
+        if(mRenderCamera != nullptr)
+        {
+            mRenderCamera->lookAt(eyepoint, eyepoint + front, up);
+        }
     }
 
 

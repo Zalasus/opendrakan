@@ -8,15 +8,18 @@
 #include <odCore/db/Texture.h>
 
 #include <functional>
-#include <osgDB/WriteFile>
-#include <osgDB/ReadFile>
 
 #include <odCore/ZStream.h>
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
+
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 #include <odCore/db/DbManager.h>
+
+#include <odCore/render/Renderer.h>
+#include <odCore/render/Image.h>
+#include <odCore/render/Texture.h>
 
 #define OD_TEX_FLAG_HIGHQUALITY         0x0080
 #define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040
@@ -47,7 +50,10 @@ namespace odDb
     , mCompressedSize(0)
     , mHasAlphaChannel(false)
     {
+    }
 
+    Texture::~Texture()
+    {
     }
 
     void Texture::loadFromRecord(TextureFactory &factory, od::DataReader dr)
@@ -112,7 +118,7 @@ namespace odDb
             size_t uncompressedSize = mWidth*mHeight*(mBitsPerPixel/8) + mHeight*trailingBytes;
             size_t outputBufferSize = std::min(od::ZStreamBuffer::DefaultBufferSize, uncompressedSize);
 
-            zstr.reset(new od::ZStream(dr.getStream(), mCompressedSize, outputBufferSize));
+            zstr = std::make_unique<od::ZStream>(dr.getStream(), mCompressedSize, outputBufferSize);
             zdr.setStream(*zstr);
         }
 
@@ -228,7 +234,7 @@ namespace odDb
         }
 
         // translate whatever is stored in texture into 8-bit RGBA format
-        unsigned char *pixBuffer = new unsigned char[mWidth*mHeight*4]; // no need for RAII, osg takes ownership
+        mRgba8888Data.reserve(mWidth*mHeight*4);
         for(size_t i = 0; i < mWidth*mHeight*4; i += 4)
         {
         	uint8_t red;
@@ -243,19 +249,16 @@ namespace odDb
             	alpha = 0;
             }
 
-            pixBuffer[i]   = red;
-            pixBuffer[i+1] = green;
-            pixBuffer[i+2] = blue;
-            pixBuffer[i+3] = alpha;
+            mRgba8888Data[i]   = red;
+            mRgba8888Data[i+1] = green;
+            mRgba8888Data[i+2] = blue;
+            mRgba8888Data[i+3] = alpha;
         }
+
         if(zstr != nullptr)
         {
             zstr->seekToEndOfZlib();
         }
-
-
-
-        this->setImage(mWidth, mHeight, 1, 4, GL_RGBA, GL_UNSIGNED_BYTE, pixBuffer, osg::Image::USE_NEW_DELETE);
 
         if(!mMaterialClassRef.isNull())
         {
@@ -276,7 +279,24 @@ namespace odDb
                 << " with dimensions " << mWidth << "x" << mHeight
                 << " to file '" << path.str() << "'";
 
-		osgDB::writeImageFile(*this, path.str());
+		throw od::UnsupportedException("PNG export is unsupported as of now");
+    }
+
+    od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
+    {
+        if(renderer == nullptr)
+        {
+            throw od::Exception("Passed nullptr as renderer to getRenderImage");
+        }
+
+        if(mRenderImage == nullptr)
+        {
+            od::RefPtr<odRender::Image> image = renderer->createImage(this);
+            mRenderImage = image.get();
+            return image;
+        }
+
+        return od::RefPtr<odRender::Image>(mRenderImage.get());
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)

@@ -8,7 +8,7 @@
 #ifndef INCLUDE_GUI_MAINMENU_H_
 #define INCLUDE_GUI_MAINMENU_H_
 
-#include <odCore/gui/ContainerWidget.h>
+#include <odCore/gui/Widget.h>
 
 namespace odDb
 {
@@ -18,13 +18,14 @@ namespace odDb
 namespace dragonRfl
 {
 
+    class DragonGui;
     class UserInterfaceProperties;
 
-    class MainMenu : public odGui::ContainerWidget
+    class MainMenu : public odGui::Widget
     {
     public:
 
-        MainMenu(odGui::GuiManager &gm, UserInterfaceProperties *uiProps);
+        MainMenu(DragonGui &gui, UserInterfaceProperties *uiProps);
 
 
     private:
@@ -40,10 +41,12 @@ namespace dragonRfl
             BC_QUIT
         };
 
-        void _addCrystal(odGui::GuiManager &gm, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
-                UserInterfaceProperties *uiProps, odGui::ContainerWidget *cont, int buttonCode);
+        void _addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
+            UserInterfaceProperties *uiProps, odGui::Widget *cont, int buttonCode);
 
         void _buttonClicked(int buttonCode);
+
+        DragonGui &mDragonGui;
 
     };
 

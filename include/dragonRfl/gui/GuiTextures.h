@@ -17,6 +17,8 @@ namespace dragonRfl
     {
     public:
 
+        // TODO: these inline definitions seem to be C++17. move definition into a source file
+
         static const od::RecordId Cursor                = 0x0016;
         static const od::RecordId Map_Icon              = 0x0017;
 

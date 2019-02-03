@@ -1,20 +1,17 @@
 /*
  * Light.h
  *
- *  Created on: Aug 15, 2018
+ *  Created on: 27 Nov 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_LIGHT_LIGHT_H_
-#define INCLUDE_LIGHT_LIGHT_H_
+#ifndef INCLUDE_ODCORE_RENDER_LIGHT_H_
+#define INCLUDE_ODCORE_RENDER_LIGHT_H_
 
-#include <stdint.h>
-#include <stdlib.h>
-#include <osg/Referenced>
-#include <osg/ref_ptr>
-#include <osg/Vec3>
-#include <osg/Vec4>
-#include <osg/BoundingSphere>
+#include <glm/vec3.hpp>
+
+#include <odCore/RefCounted.h>
+#include <odCore/BoundingSphere.h>
 
 namespace od
 {
@@ -24,37 +21,47 @@ namespace od
 namespace odRender
 {
 
-    class Light : public osg::Referenced
+    class Light : public od::RefCounted
     {
     public:
+
+        struct DefaultLightGroups
+        {
+            static const uint32_t All = -1;
+            static const uint32_t LevelObjects = 1;
+            static const uint32_t Gui = 2;
+        };
 
         Light(od::LevelObject *obj);
 
         inline od::LevelObject *getLevelObject() { return mLevelObject; }
-        inline osg::Vec3 getColor() const { return mColor; }
+        inline glm::vec3 getColor() const { return mColor; }
         inline float getIntensityScaling() const { return mIntensityScaling; }
         inline float getRadius() const { return mRadius; }
         inline uint32_t getRequiredQualityLevel() const { return mRequiredQualityLevel; }
-        inline void setColor(const osg::Vec3 &color) { mColor = color; }
+        inline void setColor(const glm::vec3 &color) { mColor = color; }
         inline void setIntensityScaling(float f) { mIntensityScaling = f; }
         inline void setRadius(float f) { mRadius = f; }
         inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
+        inline uint32_t getLightGroup() const { return mLightGroup; }
+        inline void setLightGroup(uint32_t lightGroup) { mLightGroup = lightGroup; }
 
-        bool affects(const osg::Vec3 &point);
-        bool affects(const osg::BoundingSphere &sphere);
-        float distanceToPoint(const osg::Vec3 &point);
+        bool affects(const glm::vec3 &point);
+        bool affects(const od::BoundingSphere &sphere);
+        float distanceToPoint(const glm::vec3 &point);
 
 
     private:
 
-        osg::ref_ptr<od::LevelObject> mLevelObject;
-        osg::Vec3 mColor;
+        od::LevelObject *mLevelObject;
+        glm::vec3 mColor;
         float mIntensityScaling;
         float mRadius;
         uint32_t mRequiredQualityLevel;
+
+        uint32_t mLightGroup;
     };
 
 }
 
-
-#endif /* INCLUDE_LIGHT_LIGHT_H_ */
+#endif /* INCLUDE_ODCORE_RENDER_LIGHT_H_ */

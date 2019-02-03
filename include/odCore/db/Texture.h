@@ -8,31 +8,44 @@
 #ifndef TEXTURE_H_
 #define TEXTURE_H_
 
-#include <osg/Image>
-
 #include <odCore/SrscFile.h>
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
+
+namespace odRender
+{
+    class Image;
+    class Texture;
+}
 
 namespace odDb
 {
 
 	class TextureFactory;
 
-    class Texture : public Asset, public osg::Image
+    class Texture : public Asset
     {
     public:
 
         Texture(AssetProvider &ap, od::RecordId id);
+        ~Texture();
 
+        inline uint32_t getWidth() const { return mWidth; }
+        inline uint32_t getHeight() const { return mHeight; }
+        inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.data(); }
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
         void exportToPng(const od::FilePath &path);
 
-        // override osg::Image
-        virtual const char *libraryName() const override { return "od";    }
-        virtual const char *className()   const override { return "Texture"; }
+        /**
+         * Provides an odRender::Image object that can be used to create Texture objects.
+         *
+         * An Image encapsulates pixel data storage, so pixel data may be shared between multiple textures.
+         */
+        od::RefPtr<odRender::Image> getRenderImage(odRender::Renderer *renderer);
 
 
     private:
@@ -54,8 +67,12 @@ namespace odDb
         uint32_t mCompressedSize;
 
         bool mHasAlphaChannel;
-        osg::ref_ptr<Class> mMaterialClass;
+        od::RefPtr<Class> mMaterialClass;
         std::unique_ptr<odRfl::RflClass> mMaterialInstance;
+
+        std::vector<uint8_t> mRgba8888Data;
+
+        od::WeakRefPtr<odRender::Image> mRenderImage;
     };
 
     template <>

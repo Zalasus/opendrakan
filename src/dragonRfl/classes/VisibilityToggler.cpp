@@ -37,7 +37,7 @@ namespace dragonRfl
 
     void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
     {
-        const std::vector<osg::ref_ptr<od::LevelObject>> &linkedObjects = obj.getLinkedObjects();
+        const std::vector<od::LevelObject*> &linkedObjects = obj.getLinkedObjects();
 
         if(mTriggerMode == TriggerMode::ToggleVisibility)
         {

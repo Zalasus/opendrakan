@@ -10,10 +10,6 @@
 
 #include <type_traits>
 
-#include <osg/Matrix>
-#include <osg/Vec3>
-#include <osg/Quat>
-
 #include <odCore/Logger.h>
 
 namespace odAnim

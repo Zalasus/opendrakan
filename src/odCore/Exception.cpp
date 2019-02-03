@@ -21,10 +21,8 @@ namespace od
 	}
 
 
-	NotFoundException::NotFoundException(const std::string &msg, RecordType type, RecordId id)
+	NotFoundException::NotFoundException(const std::string &msg)
 	: Exception(msg)
-	, mType(type)
-	, mId(id)
 	{
 	}
 
@@ -34,10 +32,12 @@ namespace od
 	{
 	}
 
+
 	UnsupportedException::UnsupportedException(const std::string &msg)
 	: Exception(msg)
 	{
 	}
+
 
 	IoException::IoException(const std::string &msg)
 	: Exception(msg)

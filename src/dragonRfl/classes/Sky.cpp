@@ -8,14 +8,17 @@
 
 #include <dragonRfl/classes/Sky.h>
 
-#include <osg/Depth>
 #include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
+
 #include <odCore/Level.h>
 #include <odCore/OdDefines.h>
 #include <odCore/Engine.h>
-#include <odCore/Camera.h>
 #include <odCore/LevelObject.h>
+
+#include <odCore/rfl/Rfl.h>
+
+#include <odCore/render/ObjectNode.h>
+
 
 namespace dragonRfl
 {
@@ -58,17 +61,11 @@ namespace dragonRfl
 
     void DomedSky::onSpawned(od::LevelObject &obj)
 	{
-    	osg::StateSet *ss = obj.getOrCreateStateSet();
-    	ss->setRenderBinDetails(-1, "RenderBin");
-    	osg::ref_ptr<osg::Depth> depth = new osg::Depth;
-		depth->setWriteMask(false);
-		ss->setAttributeAndModes(depth, osg::StateAttribute::ON);
-
-		od::LevelObject &camObject = obj.getLevel().getEngine().getCamera()->getLevelObject();
-		osg::Vec3 newSkyPos = camObject.getPosition();
-        newSkyPos.y() -= mOffsetDown * OD_WORLD_SCALE;
-        obj.setPosition(newSkyPos);
-		obj.attachTo(&camObject, false, true, false);
+        odRender::ObjectNode *skyNode = obj.getRenderNode();
+        if(skyNode != nullptr)
+        {
+            skyNode->setRenderMode(odRender::ObjectNode::RenderMode::Sky);
+        }
 	}
 
 

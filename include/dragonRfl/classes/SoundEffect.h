@@ -50,7 +50,7 @@ namespace dragonRfl
         virtual void onLoaded(od::LevelObject &obj) override;
         virtual void onSpawned(od::LevelObject &obj) override;
         virtual void onDespawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, double simTime, double relTime) override;
+        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
         virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
         virtual void onMoved(od::LevelObject &obj) override;
 
@@ -65,8 +65,9 @@ namespace dragonRfl
         odRfl::Float                    mPeriodRandomDeviation;
         odRfl::EnumImpl<Location, 0, 3> mLocation;
 
-        odAudio::Source *mSoundSource;
-        double mTimeUntilNextPlay;
+        od::RefPtr<odAudio::Source> mSoundSource;
+
+        float mTimeUntilNextPlay;
 
         std::minstd_rand mRandomNumberGenerator;
     };

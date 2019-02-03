@@ -1,43 +1,38 @@
 /*
  * Light.cpp
  *
- *  Created on: Aug 15, 2018
+ *  Created on: 27 Nov 2018
  *      Author: zal
  */
 
 #include <odCore/render/Light.h>
 
-#include <osg/BoundingSphere>
-
 #include <odCore/LevelObject.h>
-#include <odCore/render/RenderManager.h>
 
 namespace odRender
 {
 
     Light::Light(od::LevelObject *obj)
     : mLevelObject(obj)
-    , mColor(osg::Vec3(1.0, 1.0, 1.0))
-    , mIntensityScaling(1.0)
-    , mRadius(1.0)
+    , mIntensityScaling(1)
+    , mRadius(1)
     , mRequiredQualityLevel(0)
+    , mLightGroup(DefaultLightGroups::LevelObjects)
     {
     }
 
-    bool Light::affects(const osg::Vec3 &point)
+    bool Light::affects(const glm::vec3 &point)
     {
         return distanceToPoint(point) <= mRadius;
     }
 
-    bool Light::affects(const osg::BoundingSphere &sphere)
+    bool Light::affects(const od::BoundingSphere &sphere)
     {
         return distanceToPoint(sphere.center()) <= (mRadius + sphere.radius());
     }
 
-    float Light::distanceToPoint(const osg::Vec3 &point)
+    float Light::distanceToPoint(const glm::vec3 &point)
     {
-        return (mLevelObject->getPosition() - point).length();
+        return glm::length(mLevelObject->getPosition() - point);
     }
-
 }
-

@@ -8,20 +8,30 @@
 #include <dragonRfl/RflDragon.h>
 
 #include <odCore/Engine.h>
-#include <odCore/gui/GuiManager.h>
+
+#include <odCore/input/InputManager.h>
+
 #include <odCore/rfl/PrefetchProbe.h>
+
 #include <odCore/db/DbManager.h>
-#include <dragonRfl/gui/Cursor.h>
+
+#include <dragonRfl/Actions.h>
+
+#include <dragonRfl/gui/DragonGui.h>
+
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
-#define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 
 namespace dragonRfl
 {
 
     DragonRfl::DragonRfl(od::Engine &engine)
     : AutoRegisteringRfl<DragonRfl>(engine)
-    , mInterfaceDb(nullptr)
+    , mLocalPlayer(nullptr)
+    {
+    }
+
+    DragonRfl::~DragonRfl()
     {
     }
 
@@ -29,55 +39,40 @@ namespace dragonRfl
     {
         od::Engine &engine = getEngine();
 
-        mInterfaceDb = &engine.getDbManager().loadDb(od::FilePath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir()).adjustCase());
-
-        // retrieve UserInterfaceProperties object
-        if(mInterfaceDb->getClassFactory() == nullptr)
+        if(engine.getRenderer() != nullptr)
         {
-            throw od::Exception("Can not initialize user interface. Interface.db has no class container");
+            mGui = std::make_unique<DragonGui>(engine);
+            engine.getInputManager().setGui(mGui.get());
         }
-
-        odRfl::RflClassId uiPropsClassId = odRfl::RflClassTraits<UserInterfaceProperties>::classId();
-        od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
-        if(id == odDb::AssetRef::NULL_REF.assetId)
-        {
-            throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
-        }
-
-        osg::ref_ptr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
-        mUserInterfacePropertiesInstance.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
-        if(mUserInterfacePropertiesInstance == nullptr)
-        {
-            throw od::Exception("Could not cast or instantiate User Interface Properties instance");
-        }
-        mUserInterfacePropertiesInstance->onLoaded(engine);
-
-        odRfl::PrefetchProbe probe(*mInterfaceDb);
-        mUserInterfacePropertiesInstance->probeFields(probe);
-
 
         if(!engine.hasInitialLevelOverride())
         {
-            od::FilePath initialLevel(mUserInterfacePropertiesInstance->mIntroLevelFilename);
+            od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
             engine.loadLevel(initialLevel.adjustCase());
         }
 
+        odInput::InputManager &im = engine.getInputManager();
 
-        odGui::GuiManager &gm = engine.getGuiManager();
-
-        mMainMenu = new MainMenu(gm, mUserInterfacePropertiesInstance.get());
-        mMainMenu->setVisible(gm.isMenuMode());
-        gm.addWidget(mMainMenu);
-
-        osg::ref_ptr<Cursor> cursor = new Cursor(gm);
-        cursor->setPosition(0.5, 0.5);
-        engine.getGuiManager().setCursorWidget(cursor);
+        auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
+        auto mmAction = im.getOrCreateAction(Action::Main_Menu);
+        mmAction->setRepeatable(false);
+        mmAction->setIgnoreUpEvents(true);
+        mmAction->addCallback(actionHandler);
+        mmAction->bindToKey(odInput::Key::Return);
+        mMenuAction = mmAction;
     }
 
-    void DragonRfl::onMenuToggle(bool newMode)
+    void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
-        mMainMenu->setVisible(newMode);
+        switch(action->getAction())
+        {
+        case Action::Main_Menu:
+            mGui->setMenuMode(!mGui->isMenuMode());
+            break;
+
+        default:
+            break;
+        }
     }
 
 

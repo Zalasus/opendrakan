@@ -9,13 +9,14 @@
 #define INCLUDE_PHYSICS_CHARACTERCONTROLLER_H_
 
 #include <memory>
+
 #include <BulletCollision/CollisionShapes/btCapsuleShape.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
-#include <osg/Vec3f>
+
+#include <odCore/anim/MotionAccumulator.h>
 
 #include <odCore/physics/BulletAdapter.h>
-#include <odCore/anim/TransformAccumulator.h>
 
 namespace od
 {
@@ -25,35 +26,23 @@ namespace od
 namespace odPhysics
 {
 
-
 	class PhysicsManager;
 
-	enum class CharacterState
-	{
-		Ok,
-		Penetrated_Object,
-		Falling
-	};
-
-	class CharacterController : public odAnim::TransformAccumulator
+	class CharacterController : public odAnim::MotionAccumulator
 	{
 	public:
 
 		CharacterController(od::LevelObject &charObject, float radius, float height);
 
-		inline CharacterState getCharacterState() const { return mCharacterState; }
-		inline void setVelocity(const osg::Vec3f &v) { mVelocity = BulletAdapter::toBullet(v); }
+		// implement odAnim::MotionAccumulator
+        virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
 
-		// implement od::TransformAccumulator
-        virtual void moveRelative(const osg::Vec3f &v);
-
-		void update(double dt);
+		void update(float relTime);
 
 
 	private:
 
-		bool _step(bool up); // returns true if object was hit during stepping
-		bool _hasInvalidPenetrations();
+		bool _step(float stepHeight); // returns true if object was hit during stepping
 		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
 		od::LevelObject &mCharObject;
@@ -63,8 +52,6 @@ namespace odPhysics
 		std::unique_ptr<btCapsuleShape> mCharShape;
 		std::unique_ptr<btPairCachingGhostObject> mGhostObject;
 		btVector3 mCurrentPosition;
-		CharacterState mCharacterState;
-		btScalar mStepHeight;
 		btVector3 mUp;
 		btVector3 mRelativeLowPoint;
 		btVector3 mRelativeHighPoint;
@@ -74,6 +61,8 @@ namespace odPhysics
 
 		btManifoldArray mManifoldArray;
 
+		bool mIsFalling;
+		float mFallingVelocity;
 	};
 
 }

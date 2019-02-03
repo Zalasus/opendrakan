@@ -54,7 +54,7 @@ namespace dragonRfl
 	    mTimerRunning = (mStartMode == TimerStartMode::RunInstantly);
 	}
 
-	void Timer::onUpdate(od::LevelObject &obj, double simTime, double relTime)
+	void Timer::onUpdate(od::LevelObject &obj, float relTime)
 	{
 	    if(!mTimerRunning)
 	    {
@@ -65,7 +65,7 @@ namespace dragonRfl
 
 	    if(mTimeElapsed >= mTimeUntilTrigger)
 	    {
-	        Logger::verbose() << "Timer " << obj.getObjectId() << " triggered at simTime=" << simTime << "s";
+	        Logger::verbose() << "Timer " << obj.getObjectId() << " triggered after " << mTimeElapsed << "s";
 
 	        obj.messageAllLinkedObjects(mTriggerMessage);
 

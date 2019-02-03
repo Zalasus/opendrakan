@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_RFL_OBJECTBUILDERPROBE_H_
 
 #include <vector>
+
 #include <odCore/rfl/FieldProbe.h>
 
 namespace od

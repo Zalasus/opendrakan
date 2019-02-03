@@ -9,7 +9,6 @@
 #include <odCore/Level.h>
 
 #include <algorithm>
-#include <osg/Depth>
 
 #include <odCore/OdDefines.h>
 #include <odCore/SrscRecordTypes.h>
@@ -19,25 +18,19 @@
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
+#include <odCore/BoundingBox.h>
 
 namespace od
 {
 
-    Level::Level(const FilePath &levelPath, Engine &engine, osg::ref_ptr<osg::Group> levelRootNode)
+    Level::Level(const FilePath &levelPath, Engine &engine)
     : mLevelPath(levelPath)
     , mEngine(engine)
     , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
-    , mLevelRootNode(levelRootNode)
-    , mLayerGroup(new osg::Group)
-    , mObjectGroup(new osg::Group)
-    , mPhysicsManager(*this, levelRootNode)
+    , mPhysicsManager(*this)
     {
-    	mLevelRootNode->addChild(mLayerGroup);
-    	mLevelRootNode->addChild(mObjectGroup);
-
-		mLevelRootNode->getOrCreateStateSet()->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
     }
 
     Level::~Level()
@@ -53,9 +46,6 @@ namespace od
     	{
     		mPhysicsManager.removeLayer(*it->get());
     	}
-
-    	mLevelRootNode->removeChild(mLayerGroup);
-        mLevelRootNode->removeChild(mObjectGroup);
     }
 
     void Level::loadLevel()
@@ -77,19 +67,23 @@ namespace od
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
-            mObjectGroup->addChild(*it);
             (*it)->spawned();
+        }
+
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            (*it)->spawn();
         }
     }
 
     void Level::requestLevelObjectDestruction(LevelObject *obj)
     {
-        mDestructionQueue.push_back(osg::ref_ptr<LevelObject>(obj));
+        mDestructionQueue.push_back(obj);
     }
 
     Layer *Level::getLayerById(uint32_t id)
     {
-        auto pred = [id](osg::ref_ptr<Layer> &l){ return l->getId() == id; };
+        auto pred = [id](std::unique_ptr<Layer> &l){ return l->getId() == id; };
 
         auto it = std::find_if(mLayers.begin(), mLayers.end(), pred);
         if(it == mLayers.end())
@@ -110,12 +104,12 @@ namespace od
         return mLayers[index].get();
     }
 
-    Layer *Level::getFirstLayerBelowPoint(const osg::Vec3 &v)
+    Layer *Level::getFirstLayerBelowPoint(const glm::vec3 &v)
     {
         // TODO: use an efficient spatial search here
         //  using brute force for now
 
-        osg::Vec2 xz(v.x(), v.z());
+        glm::vec2 xz(v.x, v.z);
 
         // first, find all candidate layers that overlap the given point in the xz plane
         mLayerLookupCache.clear();
@@ -123,7 +117,7 @@ namespace od
         {
             if((*it)->contains(xz))
             {
-                mLayerLookupCache.push_back(*it);
+                mLayerLookupCache.push_back(it->get());
             }
         }
 
@@ -137,7 +131,7 @@ namespace od
                 continue;
             }
 
-            float heightDifferenceDown = v.y() - (*it)->getAbsoluteHeightAt(xz);
+            float heightDifferenceDown = v.y - (*it)->getAbsoluteHeightAt(xz);
             if(heightDifferenceDown < 0)
             {
                 continue; // don't care about layers above us
@@ -160,27 +154,23 @@ namespace od
 
         results.clear();
 
-        osg::Vec3 epsilon(0.25, 0.25, 0.25);
+        float epsilon = 0.25;
 
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
-            if(*it == checkLayer)
+            if(it->get() == checkLayer)
             {
                 continue;
             }
 
-            osg::Vec3 min = (*it)->getBoundingBox()._min - epsilon;
-            osg::Vec3 max = (*it)->getBoundingBox()._max + epsilon;
-            osg::BoundingBox newBox(min, max);
-
-            if(newBox.intersects(checkLayer->getBoundingBox()))
+            if((*it)->getBoundingBox().intersects(checkLayer->getBoundingBox(), epsilon))
             {
-                results.push_back(*it);
+                results.push_back(it->get());
             }
         }
     }
 
-    void Level::update()
+    void Level::update(float relTime)
     {
         if(!mDestructionQueue.empty())
         {
@@ -189,21 +179,27 @@ namespace od
             {
                 (*it)->despawned();
                 (*it)->destroyed();
-                mObjectGroup->removeChild(*it);
 
                 it = mDestructionQueue.erase(it);
             }
         }
+
+        mPhysicsManager.update(relTime);
+
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            (*it)->update(relTime);
+        }
     }
 
-    LevelObject &Level::getLevelObjectByIndex(uint16_t index)
+    LevelObject *Level::getLevelObjectByIndex(uint16_t index)
     {
         if(index >= mLevelObjects.size())
         {
-            throw NotFoundException("Level object with given index not found");
+            return nullptr;
         }
 
-        return *mLevelObjects[index];
+        return mLevelObjects[index].get();
     }
 
     odDb::AssetProvider &Level::getDependency(uint16_t index)
@@ -262,10 +258,10 @@ namespace od
 
     	for(size_t i = 0; i < layerCount; ++i)
     	{
-    		osg::ref_ptr<Layer> layer(new Layer(*this));
+    		std::unique_ptr<Layer> layer = std::make_unique<Layer>(*this);
     		layer->loadDefinition(dr);
 
-    		mLayers.push_back(layer);
+    		mLayers.push_back(std::move(layer));
     	}
 
     	dr >> DataReader::Expect<uint32_t>(1);
@@ -280,18 +276,10 @@ namespace od
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
 
-			mLayers[i]->buildGeometry();
-			mLayerGroup->addChild(mLayers[i]);
-
 			if(mLayers[i]->getCollisionShape() != nullptr)
 			{
 				mPhysicsManager.addLayer(*mLayers[i]);
 			}
-    	}
-
-    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-    	{
-    	    (*it)->bakeOverlappingLayerLighting();
     	}
     }
 
@@ -339,13 +327,13 @@ namespace od
 
     	Logger::verbose() << "Level has " << objectCount << " objects";
 
-    	mLevelObjects.resize(objectCount);
+    	mLevelObjects.reserve(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)
     	{
-    		osg::ref_ptr<od::LevelObject> object(new od::LevelObject(*this));
+    		std::unique_ptr<od::LevelObject> object = std::make_unique<od::LevelObject>(*this);
     		object->loadFromRecord(dr);
 
-    		mLevelObjects[i] = object;
+    		mLevelObjects.push_back(std::move(object));
     	}
     }
 }

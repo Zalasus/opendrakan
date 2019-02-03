@@ -9,10 +9,8 @@
 #define INCLUDE_DB_SEQUENCE_H_
 
 #include <memory>
-#include <osg/Quat>
-#include <osg/Vec3f>
-#include <osg/Referenced>
-#include <osg/ref_ptr>
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <odCore/db/Asset.h>
 
@@ -57,9 +55,6 @@ namespace odDb
     };
 
 
-    typedef std::shared_ptr<Action> ActionPtr;
-
-
     class ActionTransform : public Action
     {
     public:
@@ -71,8 +66,8 @@ namespace odDb
 
     private:
 
-        osg::Quat  mRotation;
-        osg::Vec3f mPosition;
+        glm::quat mRotation;
+        glm::vec3 mPosition;
         InterpolationType mInterpolationType;
     };
 
@@ -117,12 +112,11 @@ namespace odDb
         std::string mName;
         uint32_t mActorId;
         uint32_t mLevelObjectId;
-        std::vector<ActionPtr> mActions;
+        std::vector<std::unique_ptr<Action>> mActions;
     };
 
-    typedef std::shared_ptr<Actor> ActorPtr;
 
-	class Sequence : public Asset, public osg::Referenced
+	class Sequence : public Asset
 	{
 	public:
 
@@ -134,7 +128,7 @@ namespace odDb
 	private:
 
 		std::string mSequenceName;
-		std::vector<ActorPtr> mActors;
+		std::vector<std::unique_ptr<Actor>> mActors;
 	};
 
 

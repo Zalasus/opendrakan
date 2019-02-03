@@ -2,13 +2,8 @@
 # config for odCore
 
 set(SOURCES
-        "anim/Animator.cpp"
-        "anim/MotionAnimator.cpp"
+        "anim/Skeleton.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
-        "audio/Buffer.cpp"
-        "audio/SoundContext.cpp"
-        "audio/SoundManager.cpp"
-        "audio/Source.cpp"
         "db/Animation.cpp"
         "db/AnimationFactory.cpp"
         "db/Asset.cpp"
@@ -21,28 +16,23 @@ set(SOURCES
         "db/ModelFactory.cpp"
         "db/Sequence.cpp"
         "db/SequenceFactory.cpp"
-        "db/Skeleton.cpp"
+        "db/SkeletonBuilder.cpp"
         "db/Sound.cpp"
         "db/SoundFactory.cpp"
         "db/Texture.cpp"
         "db/TextureFactory.cpp"
-        "gui/ContainerWidget.cpp"
-        "gui/GuiManager.cpp"
-        "gui/TexturedQuad.cpp"
+        "gui/Gui.cpp"
         "gui/Widget.cpp"
-        "gui/WidgetGroup.cpp"
-        "gui/WidgetIntersectVisitor.cpp"
-        "render/GeodeBuilder.cpp"
-        "render/Light.cpp"
-        "render/LightState.cpp"
-        "render/RenderManager.cpp"
-        "render/ShaderFactory.cpp"
+        "input/Action.cpp"
+        "input/CursorListener.cpp"
+        "input/InputManager.cpp"
         "physics/BulletCallbacks.cpp"
         "physics/CharacterController.cpp"
-        "physics/DebugDrawer.cpp"
         "physics/Detector.cpp"
         "physics/ModelBounds.cpp"
         "physics/PhysicsManager.cpp"
+        "render/GuiQuad.cpp"
+        "render/Light.cpp"
         "rfl/ClassBuilderProbe.cpp"
         "rfl/Field.cpp"
         "rfl/FieldProbe.cpp"
@@ -52,32 +42,36 @@ set(SOURCES
         "rfl/RflClass.cpp"
         "rfl/RflManager.cpp"
         "rfl/RflMessage.cpp"
+        "BoundingBox.cpp"
+        "BoundingSphere.cpp"
+        "ConfigFile.cpp"
         "DataStream.cpp"
         "Engine.cpp"
         "Exception.cpp"
         "FilePath.cpp"
-        "InputManager.cpp"
         "Layer.cpp"
         "Level.cpp"
         "LevelObject.cpp"
-        "Logger.cpp"
-        "OsgSerializers.cpp"
+        "NuLogger.cpp"
+        "RefCounted.cpp"
+        "GlmSerializers.cpp"
         "SrscFile.cpp"
         "StringUtils.cpp"
-        "UpdateCallback.cpp"
         "ZStream.cpp")
     
 find_package(Threads REQUIRED)
+#find_package(glm REQUIRED) FIXME: this breaks the travis build on ubuntu xenial. skip for now. build works without it
+find_package(ZLIB REQUIRED)
+find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
     
 add_library(odCore STATIC ${SOURCES})
 
-target_link_libraries(odCore 
+target_link_libraries(odCore
                         ${CMAKE_THREAD_LIBS_INIT}
-                        ${OPENSCENEGRAPH_LIBRARIES} 
                         ${ZLIB_LIBRARIES} 
-                        ${BULLET_LIBRARIES} 
-                        ${OPENAL_LIBRARY})
+                        ${BULLET_LIBRARIES})
                     
-target_include_directories(odCore PRIVATE ${OPENSCENEGRAPH_INCLUDE_DIRS} ${ZLIB_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS} ${OPENAL_INCLUDE_DIR})
+target_include_directories(odCore PRIVATE ${ZLIB_INCLUDE_DIRS})
+target_include_directories(odCore PUBLIC ${GLM_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
     
     

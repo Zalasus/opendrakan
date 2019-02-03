@@ -47,7 +47,7 @@ void main(void)
     textureAndLightColor *= colorModifier;
 #endif
 
-#ifdef SPECULAR
+#if defined(SPECULAR) && defined(LIGHTING)
     textureAndLightColor += vec4(specularColor, 0.0);    
 #endif
     

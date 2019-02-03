@@ -62,7 +62,7 @@ namespace odDb
 
     	Logger::info() << "Loading database " << dbFilePath.str();
 
-        std::shared_ptr<Database> db(new Database(actualFilePath, *this));
+        auto db = std::make_shared<Database>(actualFilePath, *this);
 
         mRiotDbs.push_back(db);
 

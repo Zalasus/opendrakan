@@ -8,17 +8,20 @@
 #ifndef INCLUDE_GUI_CURSOR_H_
 #define INCLUDE_GUI_CURSOR_H_
 
-#include <odCore/gui/TexturedQuad.h>
 #include <odCore/gui/Widget.h>
 
 namespace dragonRfl
 {
 
+    class DragonGui;
+
     class Cursor : public odGui::Widget
     {
     public:
 
-        Cursor(odGui::GuiManager &gm);
+        Cursor(DragonGui &gui);
+
+        virtual bool liesWithinLogicalArea(const glm::vec2 &pos) override;
 
     };
 

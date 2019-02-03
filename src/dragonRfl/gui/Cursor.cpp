@@ -7,29 +7,42 @@
 
 #include <dragonRfl/gui/Cursor.h>
 
-#include <odCore/gui/GuiManager.h>
+#include <odCore/render/Renderer.h>
+#include <odCore/render/GuiNode.h>
+#include <odCore/render/GuiQuad.h>
+#include <odCore/render/Image.h>
+#include <odCore/render/Texture.h>
+
 #include <dragonRfl/gui/GuiTextures.h>
+#include <dragonRfl/gui/DragonGui.h>
 
 namespace dragonRfl
 {
 
-    Cursor::Cursor(odGui::GuiManager &gm)
-    : odGui::Widget(gm)
+    Cursor::Cursor(DragonGui &gui)
+    : Widget(gui)
     {
-        osg::ref_ptr<odGui::TexturedQuad> cursorQuad = new odGui::TexturedQuad;
-        cursorQuad->setTextureImage(gm.getAsset<odDb::Texture>(GuiTextures::Cursor));
+        od::RefPtr<odRender::GuiQuad> cursorQuad = this->getRenderNode()->createGuiQuad();
+        od::RefPtr<odDb::Texture> cursorDbTexture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor);
+        od::RefPtr<odRender::Texture> texture = cursorDbTexture->getRenderImage(&gui.getRenderer())->createTexture();
+        cursorQuad->setTexture(texture);
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping
         //  over to the right. maybe this is due to some strange way in which they implemented the
         //  cursor anchor? we fix this by using repeat mode for the U coordinate.
-        cursorQuad->getTexture()->setWrap(osg::Texture::WRAP_S, osg::Texture::REPEAT);
-        cursorQuad->setTextureCoordsFromPixels(osg::Vec2(-2.5, 0), osg::Vec2(29.5, 32));
+        texture->setEnableWrapping(odRender::Texture::Dimension::U, true);
+        cursorQuad->setTextureCoordsFromPixels(glm::vec2(-2.5, 0), glm::vec2(29.5, 32));
 
-        cursorQuad->setVertexCoords(osg::Vec2(0.0, 0.0), osg::Vec2(1, 1));
-        this->addDrawable(cursorQuad);
+        cursorQuad->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1, 1));
 
         this->setOrigin(odGui::WidgetOrigin::TopLeft);
         this->setDimensions(32.0, 32.0, odGui::WidgetDimensionType::Pixels);
+    }
+
+    bool Cursor::liesWithinLogicalArea(const glm::vec2 &pos)
+    {
+        // this causes the cursor widget to be excluded from any mouse events
+        return false;
     }
 
 }

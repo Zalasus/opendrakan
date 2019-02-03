@@ -15,18 +15,21 @@
 namespace odPhysics
 {
 
+    static const float STEP_HEIGHT = 0.07f;
+
+
 	CharacterController::CharacterController(od::LevelObject &charObject, float radius, float height)
 	: mCharObject(charObject)
 	, mRadius(radius)
 	, mHeight(height)
 	, mPhysicsManager(charObject.getLevel().getPhysicsManager())
-	, mCharacterState(CharacterState::Ok)
-	, mStepHeight(0.07)
 	, mUp(0, 1, 0)
 	, mVelocity(0, -1, 0)
+	, mIsFalling(false)
+	, mFallingVelocity(0.0f)
 	{
-		mCharShape.reset(new btCapsuleShape(radius, height));
-		mGhostObject.reset(new btPairCachingGhostObject());
+		mCharShape = std::make_unique<btCapsuleShape>(radius, height);
+		mGhostObject = std::make_unique<btPairCachingGhostObject>();
 		mGhostObject->setCollisionShape(mCharShape.get());
 		mGhostObject->setCollisionFlags(mGhostObject->getCollisionFlags() | btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_CHARACTER_OBJECT);
 		mGhostObject->setWorldTransform(BulletAdapter::makeBulletTransform(charObject.getPosition(), charObject.getRotation()));
@@ -41,121 +44,89 @@ namespace odPhysics
 		mRelativeHighPoint = mUp * (radius+height*0.5);
 	}
 
-    void CharacterController::moveRelative(const osg::Vec3f &v)
+    void CharacterController::moveRelative(const glm::vec3 &relTranslation, float relTime)
     {
-        osg::Vec3f moveDirection = mCharObject.getRotation()*v;
-        osg::Vec3f moveTarget = moveDirection + mCharObject.getPosition();
+        glm::vec3 moveDirection = mCharObject.getRotation()*relTranslation;
+        glm::vec3 moveTarget = moveDirection + mCharObject.getPosition();
 
-        mDesiredDirection = BulletAdapter::toBullet(moveDirection/moveDirection.length());
+        mDesiredDirection = BulletAdapter::toBullet(glm::normalize(moveDirection));
         mDesiredPosition = BulletAdapter::toBullet(moveTarget);
     }
 
-	void CharacterController::update(double dt)
+	void CharacterController::update(float relTime)
 	{
-		// simulate slide, ignoring collisions
-	    btTransform from;
-	    from.setIdentity();
-	    from.setOrigin(mCurrentPosition);
+	    //if(!mIsFalling)
+	    //{
 
-	    btTransform to;
-	    to.setIdentity();
-	    to.setOrigin(mDesiredPosition);
 
-        ClosestNotMeConvexResultCallback callback(mGhostObject.get());
-        mGhostObject->convexSweepTest(mCharShape.get(), from, to, callback, mPhysicsManager.mDynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
-        if(callback.hasHit() && _needsCollision(callback.m_hitCollisionObject, mGhostObject.get()))
-        {
-            //mCurrentPosition += (callback.m_closestHitFraction - mRadius) * mDesiredDirection;
+            // slide as far as possible
+            btTransform from;
+            from.setIdentity();
+            from.setOrigin(mCurrentPosition);
 
-        }else
-        {
-            mCurrentPosition = mDesiredPosition;
-        }
+            btTransform to;
+            to.setIdentity();
+            to.setOrigin(mDesiredPosition);
 
-		_step(true); // step up
-		bool onGround = _step(false); // step down
+            ClosestNotMeConvexResultCallback callback(mGhostObject.get());
+            mGhostObject->convexSweepTest(mCharShape.get(), from, to, callback, mPhysicsManager.mDynamicsWorld->getDispatchInfo().m_allowedCcdPenetration);
+            if(callback.hasHit() && _needsCollision(callback.m_hitCollisionObject, mGhostObject.get()))
+            {
+                //mCurrentPosition += (callback.m_closestHitFraction - mRadius) * mDesiredDirection;
 
-		//bool penetration = _hasInvalidPenetrations();
-		//mCharacterState = penetration ? CharacterState::Penetrated_Object : CharacterState::Ok;
+            }else
+            {
+                mCurrentPosition = mDesiredPosition;
+            }
 
-		mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
-		mCharObject.setPosition(BulletAdapter::toOsg(mCurrentPosition));
+            _step(STEP_HEIGHT); // step up
+            bool onGround = _step(-STEP_HEIGHT); // step down
+            mIsFalling = !onGround;
+            mFallingVelocity = 0.0f;
+
+	    /*}else
+	    {
+	        // last step had us falling. ignore desired position and simply apply gravity until we hit the ground.
+	        //  no stepping is necessary, as we are not moving forward
+
+	        mFallingVelocity = glm::clamp(0.2*relTime + mFallingVelocity, 0.0, 5.0);
+
+	        btVector3 gravityStart  = mCurrentPosition;
+	        btVector3 gravityTarget = (mCurrentPosition - mUp*mFallingVelocity*relTime);
+
+            ClosestNotMeRayResultCallback callback(gravityStart, gravityTarget, CollisionGroups::ALL, mGhostObject.get());
+            mPhysicsManager.mDynamicsWorld->rayTest(gravityStart, gravityTarget, callback);
+            if(callback.hasHit() && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
+            {
+                _step(false);
+                mIsFalling = false;
+
+            }else
+            {
+                mCurrentPosition = gravityTarget;
+            }
+	    }*/
+
+	    mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
+        mCharObject.setPosition(BulletAdapter::toGlm(mCurrentPosition));
 	}
 
-	bool CharacterController::_step(bool up)
+	bool CharacterController::_step(float stepHeight)
 	{
-		btVector3 rayStart = mCurrentPosition + (up ? mRelativeHighPoint : mRelativeLowPoint);
-		btVector3 rayEnd = rayStart + mUp*(up ? mStepHeight : -mStepHeight);
+		btVector3 rayStart = mCurrentPosition + (stepHeight > 0 ? mRelativeHighPoint : mRelativeLowPoint);
+		btVector3 rayEnd = rayStart + mUp*stepHeight;
 		ClosestNotMeRayResultCallback callback(rayStart, rayEnd, CollisionGroups::ALL, mGhostObject.get());
 		mPhysicsManager.mDynamicsWorld->rayTest(rayStart, rayEnd, callback);
 		if(callback.hasHit() && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
 		{
-			mCurrentPosition += mUp*callback.m_closestHitFraction*mStepHeight*(up ? 1 : -1);
+			mCurrentPosition += mUp*callback.m_closestHitFraction*stepHeight;
 			return true;
 
 		}else
 		{
-			mCurrentPosition += mUp*mStepHeight*(up ? 1 : -1);
+			mCurrentPosition += mUp*stepHeight;
 			return false;
 		}
-	}
-
-	bool CharacterController::_hasInvalidPenetrations()
-	{
-		btVector3 minAabb;
-		btVector3 maxAabb;
-		mCharShape->getAabb(mGhostObject->getWorldTransform(), minAabb, maxAabb);
-		mPhysicsManager.mDynamicsWorld->getBroadphase()->setAabb(mGhostObject->getBroadphaseHandle(), minAabb, maxAabb, mPhysicsManager.mDynamicsWorld->getDispatcher());
-		mPhysicsManager.mDynamicsWorld->getDispatcher()->dispatchAllCollisionPairs(mGhostObject->getOverlappingPairCache(), mPhysicsManager.mDynamicsWorld->getDispatchInfo(), mPhysicsManager.mDynamicsWorld->getDispatcher());
-
-		btBroadphasePairArray &pairArray = mGhostObject->getOverlappingPairCache()->getOverlappingPairArray();
-
-		for(size_t pairIndex = 0; pairIndex < pairArray.size(); ++pairIndex)
-		{
-			btBroadphasePair *collisionPair = &pairArray[pairIndex];
-
-			btCollisionObject *obj0 = static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject);
-			btCollisionObject *obj1 = static_cast<btCollisionObject*>(collisionPair->m_pProxy1->m_clientObject);
-
-			if((obj0 && !obj0->hasContactResponse()) || (obj1 && !obj1->hasContactResponse()))
-			{
-				continue;
-			}
-
-			if(!_needsCollision(obj0, obj1))
-			{
-				continue;
-			}
-
-			if(collisionPair->m_algorithm)
-			{
-				collisionPair->m_algorithm->getAllContactManifolds(mManifoldArray);
-
-				for(size_t manifoldIndex = 0; manifoldIndex < mManifoldArray.size(); ++manifoldIndex)
-				{
-					btPersistentManifold* manifold = mManifoldArray[manifoldIndex];
-
-					btScalar directionSign = (manifold->getBody0() == mGhostObject.get() ? btScalar(-1.0) : btScalar(1.0));
-					for(size_t pointIndex = 0; pointIndex < manifold->getNumContacts(); ++pointIndex)
-					{
-						const btManifoldPoint &pt = manifold->getContactPoint(pointIndex);
-
-						btScalar dist = pt.getDistance();
-						if(dist < -0.1/*m_maxPenetrationDepth*/)
-						{
-							return true;
-
-						}else
-						{
-							// just touched
-						}
-					}
-
-				}
-			}
-		}
-
-		return false;
 	}
 
 	bool CharacterController::_needsCollision(const btCollisionObject *body0, const btCollisionObject *body1)
@@ -164,10 +135,6 @@ namespace odPhysics
 		collides = collides && (body1->getBroadphaseHandle()->m_collisionFilterGroup & body0->getBroadphaseHandle()->m_collisionFilterMask);
 		return collides;
 	}
-
-
-
-
 
 }
 

@@ -9,13 +9,14 @@
 #define INCLUDE_ASSET_H_
 
 #include <odCore/SrscFile.h>
+#include <odCore/RefCounted.h>
 
 namespace odDb
 {
 
 	class AssetProvider;
 
-	class Asset
+	class Asset : public od::RefCounted
 	{
 	public:
 
@@ -38,10 +39,7 @@ namespace odDb
 	template <typename T>
 	struct AssetTraits
 	{
-	    static const char *name()
-	    {
-	        return "<N/A>";
-	    }
+	    static const char *name();
 	};
 
 	/**

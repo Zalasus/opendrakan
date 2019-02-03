@@ -7,6 +7,8 @@
 
 #include <odCore/db/Asset.h>
 
+#include <odCore/Exception.h>
+
 namespace odDb
 {
 
@@ -19,7 +21,6 @@ namespace odDb
 	Asset::~Asset()
 	{
 	}
-
 
 
     bool AssetRef::operator<(const AssetRef &right) const

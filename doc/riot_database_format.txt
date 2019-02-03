@@ -244,7 +244,7 @@ Record types
 
     struct vect2f { float x, y; };
     struct vect3f { float x, y, z; };
-    struct mat3f { vect3f axes[3]; };
+    struct mat3f { float f[9]; }; // matrix in row-major order. (f[0] f[1] f[2]) is the first row vector and so on 
     struct mat3x4f { mat3f linear; vect3f translation; };
     struct sphere { vect3f center; float radius; };
     struct obb { vect3f center; mat3f xform; };

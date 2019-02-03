@@ -18,7 +18,6 @@
 #include <odCore/Level.h>
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
-#include <odCore/Player.h>
 #include <odCore/rfl/RflClass.h>
 #include <odCore/physics/BulletAdapter.h>
 #include <odCore/physics/BulletCallbacks.h>
@@ -27,109 +26,35 @@
 namespace odPhysics
 {
 
-	class PhysicsTickCallback : public osg::NodeCallback
-	{
-	public:
 
-		PhysicsTickCallback(PhysicsManager &pm)
-		: mPhysicsManager(pm)
-		, mFirstUpdate(true)
-		, mPrevTime(0)
-		{
-		}
-
-		virtual void operator()(osg::Node *node, osg::NodeVisitor *nv)
-		{
-			traverse(node, nv);
-
-			if(nv->getFrameStamp() != nullptr)
-			{
-				double simTime = nv->getFrameStamp()->getSimulationTime();
-
-				if(mFirstUpdate)
-				{
-					mPrevTime = simTime; // so we avoid massive jumps at first update
-					mFirstUpdate = false;
-				}
-
-				mPhysicsManager.stepSimulation(simTime - mPrevTime);
-
-				mPrevTime = simTime;
-			}
-		}
-
-
-	private:
-
-		PhysicsManager &mPhysicsManager;
-		bool mFirstUpdate;
-		double mPrevTime;
-
-	};
-
-
-
-
-	PhysicsManager::PhysicsManager(od::Level &level, osg::Group *levelRoot)
+	PhysicsManager::PhysicsManager(od::Level &level)
 	: mLevel(level)
-	, mLevelRoot(levelRoot)
-	, mTickCallback(new PhysicsTickCallback(*this))
 	{
-		mBroadphase.reset(new btDbvtBroadphase());
-		mCollisionConfiguration.reset(new btDefaultCollisionConfiguration());
-		mDispatcher.reset(new btCollisionDispatcher(mCollisionConfiguration.get()));
-		mConstraintSolver.reset(new btSequentialImpulseConstraintSolver());
+		mBroadphase = std::make_unique<btDbvtBroadphase>();
+		mCollisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
+		mDispatcher = std::make_unique<btCollisionDispatcher>(mCollisionConfiguration.get());
+		mConstraintSolver = std::make_unique<btSequentialImpulseConstraintSolver>();
 
-		mDynamicsWorld.reset(new btDiscreteDynamicsWorld(mDispatcher.get(), mBroadphase.get(), mConstraintSolver.get(), mCollisionConfiguration.get()));
+		mDynamicsWorld = std::make_unique<btDiscreteDynamicsWorld>(mDispatcher.get(), mBroadphase.get(), mConstraintSolver.get(), mCollisionConfiguration.get());
 
 		mDynamicsWorld->setGravity(btVector3(0, -1, 0));
 
-		// for now, hook physics simulation into update traversal. we might want to put this somewhere else once we do threading
-		mLevelRoot->addUpdateCallback(mTickCallback);
-
-		mDebugDrawer.reset(new DebugDrawer(mLevelRoot, mDynamicsWorld.get()));
-		mDynamicsWorld->setDebugDrawer(mDebugDrawer.get());
-		//mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-
 		// so we get ghost object interaction
-		mGhostPairCallback.reset(new btGhostPairCallback);
+		mGhostPairCallback = std::make_unique<btGhostPairCallback>();
 		mDynamicsWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
 	}
 
 	PhysicsManager::~PhysicsManager()
 	{
-		mLevelRoot->removeUpdateCallback(mTickCallback);
-		mDynamicsWorld->setDebugDrawer(nullptr);
-
 		Logger::debug() << "Physics Manager destroyed with " << mLevelObjectMap.size() + mLayerMap.size() << " rigid bodies left";
 	}
 
-	void PhysicsManager::stepSimulation(double dt)
+	void PhysicsManager::update(float relTime)
 	{
-		mDynamicsWorld->stepSimulation(dt, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
-
-		if(mLevel.getEngine().getPlayer() != nullptr)
-		{
-			mDebugDrawer->setCullingSphere(16, mLevel.getEngine().getPlayer()->getPosition());
-		}
-
-		mDebugDrawer->step();
+		mDynamicsWorld->stepSimulation(relTime, 5); // FIXME: 5 seems good enough, right? no, define this somewhere
 	}
 
-	bool PhysicsManager::toggleDebugDraw()
-	{
-		if(mDebugDrawer == nullptr)
-		{
-			return false;
-		}
-
-		bool prevState = mDebugDrawer->getDebugMode();
-		mDebugDrawer->setDebugMode(!prevState);
-
-		return prevState;
-	}
-
-	size_t PhysicsManager::raycast(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResultArray &results)
+	size_t PhysicsManager::raycast(const glm::vec3 &start, const glm::vec3 &end, RaycastResultArray &results)
 	{
 	    results.clear();
 
@@ -151,8 +76,8 @@ namespace odPhysics
 
 	        RaycastResult result;
 	        result.hitBulletObject = hitObject;
-	        result.hitPoint = BulletAdapter::toOsg(callback.m_hitPointWorld[i]);
-	        result.hitNormal = BulletAdapter::toOsg(callback.m_hitNormalWorld[i]);
+	        result.hitPoint = BulletAdapter::toGlm(callback.m_hitPointWorld[i]);
+	        result.hitNormal = BulletAdapter::toGlm(callback.m_hitNormalWorld[i]);
 
 	        // determine hit object
 	        result.hitLayer = nullptr;
@@ -182,7 +107,7 @@ namespace odPhysics
 	    return hitObjectCount;
 	}
 
-	bool PhysicsManager::raycastClosest(const osg::Vec3f &start, const osg::Vec3f &end, RaycastResult &result, od::LevelObject *exclude, int mask)
+	bool PhysicsManager::raycastClosest(const glm::vec3 &start, const glm::vec3 &end, RaycastResult &result, od::LevelObject *exclude, int mask)
 	{
 	    btCollisionObject *me = nullptr;
 	    if(exclude != nullptr)
@@ -208,8 +133,8 @@ namespace odPhysics
 
 	    const btCollisionObject *hitObject = callback.m_collisionObject;
         result.hitBulletObject = hitObject;
-        result.hitPoint = BulletAdapter::toOsg(callback.m_hitPointWorld);
-        result.hitNormal = BulletAdapter::toOsg(callback.m_hitNormalWorld);
+        result.hitPoint = BulletAdapter::toGlm(callback.m_hitPointWorld);
+        result.hitNormal = BulletAdapter::toGlm(callback.m_hitNormalWorld);
 
         // if hit object is a layer or an object, set pointers to allow caller quick access
         if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::LAYER)
@@ -247,7 +172,7 @@ namespace odPhysics
 
 		LayerBodyPair layerBodyPair;
 		layerBodyPair.first = &l;
-		layerBodyPair.second.reset(new btRigidBody(info));
+		layerBodyPair.second = std::make_unique<btRigidBody>(info);
 
 		btRigidBody *bodyPtr = layerBodyPair.second.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
 		bodyPtr->setUserIndex(l.getId());
@@ -285,14 +210,14 @@ namespace odPhysics
 
 		}else
 		{
-		    reg.shape = obj.getClass()->getModel()->getModelBounds()->buildNewShape();
+		    reg.shape.reset(obj.getClass()->getModel()->getModelBounds()->buildNewShape());
 		    reg.shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
 		}
 
-		btRigidBody::btRigidBodyConstructionInfo info(mass, &obj, reg.shape);
+		btRigidBody::btRigidBodyConstructionInfo info(mass, &obj, reg.shape.get());
         reg.shape->calculateLocalInertia(mass, info.m_localInertia);
 
-		reg.rigidBody.reset(new btRigidBody(info));
+		reg.rigidBody = std::make_unique<btRigidBody>(info);
 
 		btRigidBody *bodyPtr = reg.rigidBody.get(); // since we are moving the pointer into the map, we need to get a non-managed copy before inserting
 		bodyPtr->setUserIndex(obj.getObjectId());
@@ -323,18 +248,18 @@ namespace odPhysics
             throw od::Exception("Tried to make detector from object without model or collision shape to PhysicsManager");
         }
 
-	    osg::ref_ptr<ModelCollisionShape> shape;
+	    std::shared_ptr<ModelCollisionShape> shape;
 	    if(!obj.isScaled())
         {
 	        shape = obj.getClass()->getModel()->getModelBounds()->getSharedCollisionShape();
 
         }else
         {
-            shape = obj.getClass()->getModel()->getModelBounds()->buildNewShape();
+            shape.reset(obj.getClass()->getModel()->getModelBounds()->buildNewShape());
             shape->setLocalScaling(BulletAdapter::toBullet(obj.getScale()));
         }
 
-	    mDetectors.push_back(std::unique_ptr<Detector>(new Detector(mDynamicsWorld.get(), shape, obj)));
+	    mDetectors.push_back(std::make_unique<Detector>(mDynamicsWorld.get(), shape, obj));
 	    return mDetectors.back().get();
 	}
 

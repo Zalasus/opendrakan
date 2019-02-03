@@ -9,18 +9,17 @@
 
 #include <algorithm>
 #include <limits>
-#include <osg/Geometry>
-#include <osg/LOD>
-#include <osg/FrontFace>
 
 #include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
+
 #include <odCore/db/Asset.h>
+#include <odCore/db/AssetProvider.h>
 #include <odCore/db/ModelFactory.h>
+#include <odCore/db/SkeletonBuilder.h>
 #include <odCore/db/Texture.h>
-#include <odCore/db/Skeleton.h>
-#include <odCore/render/RenderManager.h>
-#include <odCore/render/ShaderFactory.h>
+#include <odCore/render/Renderer.h>
+#include <odCore/render/ModelNode.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -30,7 +29,7 @@ namespace odDb
 	Model::Model(AssetProvider &ap, od::RecordId modelId)
 	: Asset(ap, modelId)
 	, mModelName("")
-	, mShadingType(ModelShadingType::None)
+	, mShadingType(ShadingType::None)
 	, mBlendWithLandscape(false)
 	, mShiny(false)
 	, mUseAdditiveBlending(false)
@@ -38,29 +37,32 @@ namespace odDb
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
-	, mGeometryBuilt(false)
+	, mRenderNode(nullptr)
+	{
+	}
+
+	Model::~Model()
 	{
 	}
 
 	void Model::loadNameAndShading(ModelFactory &factory, od::DataReader &&dr)
 	{
 		dr >> mModelName;
-		this->setName(mModelName);
 
 		uint32_t shadingType;
 		dr >> shadingType;
 		if((shadingType & 0x02) && !(shadingType & 0x01))
 		{
-		    mShadingType = ModelShadingType::Smooth;
+		    mShadingType = ShadingType::Smooth;
 
 		}else if((shadingType & 0x01) && !(shadingType & 0x02))
 		{
-		    mShadingType = ModelShadingType::Flat;
+		    mShadingType = ShadingType::Flat;
 
 		}else
 		{
 		    // if none or both flags are set, disable shading (the latter case as a failsafe)
-		    mShadingType = ModelShadingType::None;
+		    mShadingType = ShadingType::None;
 		}
 
 		mEnvironmentMapped = shadingType & 0x20;
@@ -74,14 +76,13 @@ namespace odDb
 		uint16_t vertexCount;
 		dr >> vertexCount;
 
-		mVertices.reserve(vertexCount);
+		mVertices.resize(vertexCount);
 		for(size_t i = 0; i < vertexCount; ++i)
 		{
-			osg::Vec3f vertex;
+			dr >> mVertices[i];
 
-			dr >> vertex;
-
-			mVertices.push_back(vertex);
+			mCalculatedBoundingBox.expandBy(mVertices[i]);
+			mCalculatedBoundingSphere.expandBy(mVertices[i]);
 		}
 
 		mVerticesLoaded = true;
@@ -128,7 +129,7 @@ namespace odDb
 			   >> vertexCount
 			   >> textureIndex;
 
-			odRender::Polygon poly;
+			Polygon poly;
 			poly.doubleSided = flags & OD_POLYGON_FLAG_DOUBLESIDED;
 			poly.texture = mTextureRefs[textureIndex];
 			poly.vertexCount = vertexCount;
@@ -156,13 +157,8 @@ namespace odDb
 
 	void Model::loadBoundingData(ModelFactory &factory, od::DataReader &&dr)
 	{
-		if(isCharacter())
-		{
-			throw od::Exception("Character models can't have bounds info");
-		}
-
-		osg::BoundingSpheref mainBs;
-		odPhysics::OrientedBoundingBox mainObb;
+		od::BoundingSphere mainBs;
+		od::OrientedBoundingBox mainObb;
 		uint16_t shapeCount;
 		uint16_t shapeType; // 0 = spheres, 1 = boxes
 
@@ -172,7 +168,7 @@ namespace odDb
 		   >> shapeType;
 
 		odPhysics::ModelBounds::ShapeType type = (shapeType == 0) ? odPhysics::ModelBounds::SPHERES : odPhysics::ModelBounds::BOXES;
-		mModelBounds.reset(new odPhysics::ModelBounds(type, shapeCount));
+		mModelBounds = std::make_unique<odPhysics::ModelBounds>(type, shapeCount);
 		mModelBounds->setMainBounds(mainBs, mainObb);
 
 		for(size_t i = 0; i < shapeCount; ++i)
@@ -189,13 +185,13 @@ namespace odDb
 		{
 			if(shapeType == 0)
 			{
-				osg::BoundingSpheref bs;
+				od::BoundingSphere bs;
 				dr >> bs;
 				mModelBounds->addSphere(bs);
 
 			}else
 			{
-				odPhysics::OrientedBoundingBox obb;
+				od::OrientedBoundingBox obb;
 				dr >> obb;
 				mModelBounds->addBox(obb);
 
@@ -214,11 +210,6 @@ namespace odDb
 
 	void Model::loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr)
 	{
-		if(hasBounds())
-		{
-			throw od::Exception("Character models can't have bounds info");
-		}
-
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
@@ -238,7 +229,7 @@ namespace odDb
 		}
 
 
-		mSkeletonBuilder.reset(new SkeletonBuilder);
+        mSkeletonBuilder = std::make_unique<SkeletonBuilder>();
 
 		// node info
 		uint16_t nodeInfoCount;
@@ -251,7 +242,7 @@ namespace odDb
 			dr.read(nodeName, 32);
 			dr >> jointInfoIndex;
 
-			mSkeletonBuilder->addBoneNode(std::string(nodeName), jointInfoIndex);
+			mSkeletonBuilder->addJointNameInfo(std::string(nodeName), jointInfoIndex);
 		}
 
 		// joint info
@@ -259,7 +250,7 @@ namespace odDb
 		dr >> jointInfoCount;
 		for(size_t jointIndex = 0; jointIndex < jointInfoCount; ++jointIndex)
 		{
-			osg::Matrixf inverseBoneTransform;
+			glm::mat3x4 inverseBoneTransform;
 			int32_t meshIndex;
             int32_t firstChildIndex;
             int32_t nextSiblingIndex;
@@ -269,12 +260,12 @@ namespace odDb
 			   >> firstChildIndex
 			   >> nextSiblingIndex;
 
-            mSkeletonBuilder->addJointInfo(inverseBoneTransform, meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeletonBuilder->addJointInfo(glm::mat4(inverseBoneTransform), meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
-            	std::vector<odRender::BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
+            	std::vector<BoneAffection> &boneAffections = mLodMeshInfos[lodIndex].boneAffections;
 
 				uint16_t affectedVertexCount;
 				dr >> affectedVertexCount;
@@ -286,16 +277,11 @@ namespace odDb
 					dr >> affectedVertexIndex
 					   >> weight;
 
-					odRender::BoneAffection bAff;
+					BoneAffection bAff;
 					bAff.jointIndex = jointIndex;
 					bAff.vertexIndex = affectedVertexIndex;
 					bAff.vertexWeight = weight;
 					boneAffections.push_back(bAff);
-				}
-
-				if(lodIndex == 0)
-				{
-					mSkeletonBuilder->pfffSetWeightCount(affectedVertexCount);
 				}
             }
 
@@ -347,8 +333,8 @@ namespace odDb
 		for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
 		{
 			uint32_t jointIndex;
-			osg::Matrixf xformA;
-			osg::Matrixf xformB;
+			glm::mat3x4 xformA;
+			glm::mat3x4 xformB;
             uint16_t capCount;
 
             dr >> jointIndex
@@ -356,7 +342,7 @@ namespace odDb
 			   >> xformB
 			   >> capCount;
 
-            mSkeletonBuilder->makeChannel(jointIndex);
+            mSkeletonBuilder->markJointAsChannel(jointIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {
@@ -390,133 +376,48 @@ namespace odDb
 		dr >> od::DataReader::Expect<uint16_t>(lodCount);
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
-		    uint16_t shapeCount;
-		    dr >> shapeCount;
+		    uint16_t sphereCount;
+		    dr >> sphereCount;
 
-		    for(size_t shapeIndex = 0; shapeIndex < shapeCount; ++shapeIndex)
+		    for(size_t sphereIndex = 0; sphereIndex < sphereCount; ++sphereIndex)
 		    {
 		        uint16_t firstChild;
 		        uint16_t nextSibling;
+		        uint32_t positionVertexIndex;
 		        float radius;
 		        uint16_t channelIndex;
 
 		        dr >> firstChild
 		           >> nextSibling
-		           >> od::DataReader::Ignore(4)
+		           >> positionVertexIndex
 		           >> radius
 		           >> channelIndex
 		           >> od::DataReader::Ignore(2);
 
-		        // where do the spheres go? there is no field in the structure for that. are they placed exactly at their joint?
+		        if(positionVertexIndex >= mVertices.size())
+		        {
+		            Logger::warn() << "Character bounding sphere center vertex index out of bounds. PC LOAD LETTER";
 
-		        /*Logger::info() << "Model '" << mModelName << "' lod=" << lodIndex
-		                       << " ch=" << channelIndex
-		                       << " fc="
-		                       << firstChild
-		                       << " ns="
-		                       << nextSibling
-		                       << " r=" << radius;*/
+		        }else
+		        {
+		            //glm::vec3 sphereCenter = mVertices[positionVertexIndex];
+		            //od::BoundingSphere sphere(sphereCenter, radius);
+		        }
 		    }
 		}
  	}
 
-	void Model::buildGeometry(odRender::RenderManager &renderManager)
+	od::RefPtr<odRender::ModelNode> Model::getOrCreateRenderNode(odRender::Renderer *renderer)
 	{
-	    if(mGeometryBuilt)
+	    if(mRenderNode == nullptr)
 	    {
-	        return;
+	        od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(this);
+	        mRenderNode = node.get();
+	        return node;
 	    }
 
-		if(!mTexturesLoaded || !mVerticesLoaded || !mPolygonsLoaded)
-		{
-			throw od::Exception("Must load at least vertices, textures and polygons before building geometry");
-		}
-
-		if(mLodMeshInfos.size() > 0)
-		{
-			osg::ref_ptr<osg::LOD> lodNode(new osg::LOD);
-			lodNode->setRangeMode(osg::LOD::DISTANCE_FROM_EYE_POINT);
-			lodNode->setCenterMode(osg::LOD::USE_BOUNDING_SPHERE_CENTER);
-
-			for(auto it = mLodMeshInfos.begin(); it != mLodMeshInfos.end(); ++it)
-			{
-				odRender::GeodeBuilder gb(it->lodName, this->getAssetProvider());
-				gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
-				gb.setClampTextures(false);
-
-				// the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
-				//  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
-				size_t actualVertexCount = ((it+1 == mLodMeshInfos.end()) ? mVertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
-				size_t actualPolyCount = ((it+1 == mLodMeshInfos.end()) ? mPolygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
-
-				auto verticesBegin = mVertices.begin() + it->firstVertexIndex;
-				auto verticesEnd = mVertices.begin() + actualVertexCount + it->firstVertexIndex;
-				gb.setVertexVector(verticesBegin, verticesEnd);
-
-				auto polygonsBegin = mPolygons.begin() + it->firstPolygonIndex;
-				auto polygonsEnd = mPolygons.begin() + actualPolyCount + it->firstPolygonIndex;
-				gb.setPolygonVector(polygonsBegin, polygonsEnd);
-
-				auto bonesBegin = it->boneAffections.begin();
-				auto bonesEnd = it->boneAffections.end();
-				gb.setBoneAffectionVector(bonesBegin, bonesEnd);
-
-				osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
-				gb.build(newGeode);
-
-				mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
-
-				float minDistance = it->distanceThreshold;
-				float maxDistance = ((it+1) == mLodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold;
-				lodNode->addChild(newGeode, minDistance, maxDistance);
-			}
-
-			this->addChild(lodNode);
-
-		}else
-		{
-			odRender::GeodeBuilder gb(mModelName, this->getAssetProvider());
-			gb.setBuildSmoothNormals(mShadingType != ModelShadingType::Flat);
-			gb.setClampTextures(false);
-			gb.setVertexVector(mVertices.begin(), mVertices.end());
-			gb.setPolygonVector(mPolygons.begin(), mPolygons.end());
-
-			osg::ref_ptr<osg::Geode> newGeode(new osg::Geode);
-			gb.build(newGeode);
-
-			mCalculatedBoundingBox.expandBy(newGeode->getBoundingBox());
-
-			this->addChild(newGeode);
-		}
-
-		osg::StateSet *ss = this->getOrCreateStateSet();
-
-        // model faces are oriented CW for some reason
-        ss->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE), osg::StateAttribute::ON);
-
-        osg::ref_ptr<osg::Program> modelProgram = renderManager.getShaderFactory().getProgram("model");
-        ss->setAttribute(modelProgram, osg::StateAttribute::ON);
-
-        if(mShadingType != ModelShadingType::None)
-        {
-            ss->setDefine("LIGHTING", osg::StateAttribute::ON);
-
-            if(mShiny)
-            {
-                ss->setDefine("SPECULAR", osg::StateAttribute::ON);
-            }
-        }
-
-        // if model is a character, bind the vertex attribute locations, but don't yet activate the RIGGING define.
-        //  doing so would cause characters without an attached SkeletonAnimationPlayer to glitch because
-        //  the shader would expect bone data to be uploaded but only receive all-zero-matrices.
-        if(isCharacter())
-        {
-            modelProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
-            modelProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
-        }
-
-        mGeometryBuilt = true;
+	    return od::RefPtr<odRender::ModelNode>(mRenderNode.get());
 	}
+
 }
 

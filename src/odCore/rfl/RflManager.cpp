@@ -55,14 +55,6 @@ namespace odRfl
         }
     }
 
-    void RflManager::onMenuToggle(bool newMode)
-    {
-        for(auto it = mLoadedRfls.begin(); it != mLoadedRfls.end(); ++it)
-        {
-            (*it)->onMenuToggle(newMode);
-        }
-    }
-
 }
 
 

@@ -24,7 +24,7 @@ namespace odDb
     protected:
 
         // implement AssetFactory<Sequence>
-        virtual osg::ref_ptr<Sequence> loadAsset(od::RecordId textureId) override;
+        virtual od::RefPtr<Sequence> loadAsset(od::RecordId textureId) override;
 
     };
 

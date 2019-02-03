@@ -21,23 +21,27 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 endif()
 
+# determine the flag we have to use to link a whole archive (used for linking RFLs)
+if((CMAKE_CXX_COMPILER_ID STREQUAL "GNU") OR (CMAKE_CXX_COMPILER_ID STREQUAL "Clang"))
+    set(WHOLE_ARCHIVE_START "-Wl,--whole-archive")
+    set(WHOLE_ARCHIVE_END   "-Wl,--no-whole-archive")
+endif()
+if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    set(WHOLE_ARCHIVE_START "/WHOLEARCHIVE")
+    set(WHOLE_ARCHIVE_END   "")
+endif()
+
 # make sure we get all binaries in the top level binary directory
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# dependencies
-find_package(ZLIB REQUIRED)
-find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
-find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
-find_package(OpenAL REQUIRED)
-
 include_directories("include")
 
 add_subdirectory("src/odCore")
 add_subdirectory("src/dragonRfl")
-add_subdirectory("src/odApp")
-
+add_subdirectory("src/odOsg")
+add_subdirectory("src/srscEd")
 
 # copy shader sources
 set(SHADER_SOURCES

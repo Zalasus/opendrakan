@@ -8,8 +8,6 @@
 #ifndef INCLUDE_ODCORE_RFL_ASSETREFFIELD_H_
 #define INCLUDE_ODCORE_RFL_ASSETREFFIELD_H_
 
-#include <osg/ref_ptr>
-
 #include <odCore/rfl/Field.h>
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/Asset.h>
@@ -85,7 +83,7 @@ namespace odRfl
             return mReferencedAsset;
         }
 
-        _AssetType *getAsset()
+        _AssetType *getAsset() const
         {
             return mReferencedAsset;
         }
@@ -95,7 +93,7 @@ namespace odRfl
     protected:
 
         odDb::AssetRef mReference;
-        osg::ref_ptr<_AssetType> mReferencedAsset;
+        od::RefPtr<_AssetType> mReferencedAsset;
 
     };
 
@@ -145,7 +143,7 @@ namespace odRfl
             {
                 for(auto it = mReferences.begin(); it != mReferences.end(); ++it)
                 {
-                    osg::ref_ptr<_AssetType> asset = ap.getAssetByRef<_AssetType>(*it);
+                    od::RefPtr<_AssetType> asset = ap.getAssetByRef<_AssetType>(*it);
                     mReferencedAssets.push_back(asset);
                 }
 
@@ -186,7 +184,7 @@ namespace odRfl
     protected:
 
         std::vector<odDb::AssetRef> mReferences;
-        std::vector<osg::ref_ptr<_AssetType>> mReferencedAssets;
+        std::vector<od::RefPtr<_AssetType>> mReferencedAssets;
 
     };
 

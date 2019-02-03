@@ -10,59 +10,86 @@
 
 #include <memory>
 #include <string>
-#include <osg/Vec3>
-#include <osg/Texture2D>
-#include <osg/Group>
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
 
-#include <odCore/render/GeodeBuilder.h>
+#include <odCore/BoundingSphere.h>
+#include <odCore/BoundingBox.h>
+#include <odCore/WeakRefPtr.h>
+
 #include <odCore/physics/ModelBounds.h>
+
 #include <odCore/db/Asset.h>
-#include <odCore/db/Skeleton.h>
+#include <odCore/db/SkeletonBuilder.h>
 
 namespace odRender
 {
-    class RenderManager;
+    class ModelNode;
+    class Renderer;
 }
 
 namespace odDb
 {
     class ModelFactory;
 
-	struct LodMeshInfo
-	{
-		std::string lodName;
-		float distanceThreshold;
-		uint32_t usage;
-		uint32_t nodeIndex;
-		uint32_t firstVertexIndex;
-		uint32_t vertexCount;
-		uint32_t firstPolygonIndex;
-		uint32_t polygonCount;
-
-		std::vector<odRender::BoneAffection> boneAffections;
-	};
-
-	enum class ModelShadingType
-	{
-	    None,
-	    Flat,
-	    Smooth
-	};
-
-	class Model : public Asset, public osg::Group
+	class Model : public Asset
 	{
 	public:
 
+	    struct BoneAffection
+        {
+            size_t jointIndex;
+            size_t vertexIndex;
+            float vertexWeight;
+        };
+
+        struct Polygon
+        {
+            size_t vertexCount;
+            size_t vertexIndices[4];
+            glm::vec2 uvCoords[4];
+            bool doubleSided;
+            odDb::AssetRef texture;
+        };
+
+        struct LodMeshInfo
+        {
+            std::string lodName;
+            float distanceThreshold;
+            uint32_t usage;
+            uint32_t nodeIndex;
+            uint32_t firstVertexIndex;
+            uint32_t vertexCount;
+            uint32_t firstPolygonIndex;
+            uint32_t polygonCount;
+
+            std::vector<BoneAffection> boneAffections;
+        };
+
+        enum class ShadingType
+        {
+            None,
+            Flat,
+            Smooth
+        };
+
 		Model(AssetProvider &ap, od::RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
+        ~Model();
 
-		/// Returns SkeletonBuilder that can be used to construct a skeleton for an Object. May return nullptr if no skeleton present.
-		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); }
+        inline const std::string &getName() const { return mModelName; }
+		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); } ///< May return nullptr if no skeleton present.
 		inline odPhysics::ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
-		inline bool isCharacter() const { return mSkeletonBuilder != nullptr; }
+		inline bool hasSkeleton() const { return mSkeletonBuilder != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
-		inline ModelShadingType getShadingType() const { return mShadingType; }
+		inline ShadingType getShadingType() const { return mShadingType; }
+		inline bool isShiny() const { return mShiny; }
+		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
+		inline const std::vector<Polygon> &getPolygonVector() { return mPolygons; }
+		inline const std::vector<LodMeshInfo> &getLodInfoVector() { return mLodMeshInfos; }
+		inline const od::BoundingSphere &getCalculatedBoundingSphere() const { return mCalculatedBoundingSphere; }
+		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() const { return mCalculatedBoundingBox; }
 
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
@@ -70,27 +97,22 @@ namespace odDb
 		void loadPolygons(ModelFactory &factory, od::DataReader &&dr);
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
-		void buildGeometry(odRender::RenderManager &renderManager);
 
-		/**
-		 * @brief Returns an axis-aligned bounding box that encapsulates all of this model's meshes and LODs.
-		 *
-		 * This ignores any bounding info stored in the model. The box's expands are directly calculated from the vertex data.
-		 */
-		inline osg::BoundingBox getCalculatedBoundingBox() { return mCalculatedBoundingBox; }
+		// returns a refptr since this class only takes weak ownership of potentially created objects
+		od::RefPtr<odRender::ModelNode> getOrCreateRenderNode(odRender::Renderer *renderer);
 
 
 	private:
 
 		std::string mModelName;
-		ModelShadingType mShadingType;
+		ShadingType mShadingType;
 		bool mBlendWithLandscape;
 		bool mShiny;
 		bool mUseAdditiveBlending;
 		bool mEnvironmentMapped;
-		std::vector<osg::Vec3f> mVertices;
+		std::vector<glm::vec3> mVertices;
 		std::vector<AssetRef> mTextureRefs;
-		std::vector<odRender::Polygon> mPolygons;
+		std::vector<Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::unique_ptr<odPhysics::ModelBounds> mModelBounds;
@@ -98,8 +120,10 @@ namespace odDb
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
-		bool mGeometryBuilt;
-		osg::BoundingBox mCalculatedBoundingBox;
+		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
+		od::BoundingSphere mCalculatedBoundingSphere;
+
+		od::WeakRefPtr<odRender::ModelNode> mRenderNode;
 	};
 
 	template <>

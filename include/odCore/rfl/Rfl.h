@@ -63,7 +63,6 @@ namespace odRfl
         virtual RflClass *createInstanceOfClass(RflClassId id) = 0;
 
 		virtual void onStartup() override;
-		virtual void onMenuToggle(bool newMode) override;
 
 
 	private:
