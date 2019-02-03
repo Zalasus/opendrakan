@@ -70,6 +70,18 @@ namespace odAnim
         mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
     }
 
+    void BoneAnimator::pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier)
+    {
+        if(mCurrentAnimation == nullptr)
+        {
+            playAnimation(animation, type, speedMultiplier);
+
+        }else
+        {
+            mAnimationQueue.emplace(animation, type, speedMultiplier);
+        }
+    }
+
     void BoneAnimator::setAccumulationModes(const AxesModes &modes)
     {
         for(size_t i = 0; i < 3; ++i)
@@ -117,38 +129,81 @@ namespace odAnim
             //  back to the start/end of the timeline so we don't skip any frames.
             float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
             float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
-            float residualTime = mAnimTime - endTime;
+            float residualTime = mAnimTime - endTime; // negative for reverse playback!
 
-            switch(mPlaybackType)
+            if(!mAnimationQueue.empty())
             {
-            case PlaybackType::Normal:
-            default:
-                mPlaying = false;
-                break;
+                AnimationQueueEntry &queueEntry = mAnimationQueue.back();
+                mAnimationQueue.pop();
 
-            case PlaybackType::Looping:
-                mAnimTime = startTime + residualTime;
-                loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
-                loopJump *= movingBackInTime ? -1.0f : 1.0f;
-                loopedBack = true;
-                break;
+                playAnimation(queueEntry.animation, queueEntry.type, queueEntry.speedMultiplier);
 
-            case PlaybackType::PingPong:
-                mSpeedMultiplier = -mSpeedMultiplier;
-                mAnimTime = endTime - residualTime;
-                break;
+                mAnimTime += residualTime;
+
+            }else
+            {
+                switch(mPlaybackType)
+                {
+                case PlaybackType::Normal:
+                default:
+                    mPlaying = false;
+                    break;
+
+                case PlaybackType::Looping:
+                    mAnimTime = startTime + residualTime;
+                    loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
+                    loopJump *= movingBackInTime ? -1.0f : 1.0f;
+                    loopedBack = true;
+                    break;
+
+                case PlaybackType::PingPong:
+                    mSpeedMultiplier = -mSpeedMultiplier;
+                    mAnimTime = endTime - residualTime;
+                    break;
+                }
             }
         }
 
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), mAnimTime);
+        glm::dualquat sampledTransform = _sampleLinear(mAnimTime);
+
+        if(mAccumulator == nullptr)
+        {
+            glm::mat4 asMat(glm::mat3x4_cast(sampledTransform));
+            mBone->move(asMat);
+
+        }else
+        {
+            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
+            glm::vec3 currentOffset = _translationFromDquat(sampledTransform);
+
+            glm::vec3 relativeOffset = currentOffset - prevOffset;
+
+            // if the current animation step jumped in time, we need to factor out the offset
+            //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
+            if(loopedBack)
+            {
+                relativeOffset -= loopJump;
+            }
+
+            mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
+
+            glm::mat4 boneMatrix = glm::mat4_cast(sampledTransform.real); // real part represents rotation
+            glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
+            boneMatrix[3] = glm::vec4(boneTranslation, 1.0);
+            mBone->move(glm::transpose(boneMatrix));
+        }
+
+        mLastAppliedTransform = sampledTransform;
+    }
+
+    glm::dualquat BoneAnimator::_sampleLinear(float time)
+    {
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), time);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
-            // we are in a clamped state. no need to interpolate. simply apply the transform without interpolating
-            //  this of course does not need any decompositions
-            // FIXME: how does this work with a potential accumulator?
-            mBone->move(glm::mat4(currentKeyframes.first->xform));
-            return;
+            // clamped state. no need to interpolate
+            return glm::dualquat(currentKeyframes.first->xform);
         }
 
         // we are are somewhere between keyframes, and have to interpolate
@@ -162,36 +217,8 @@ namespace odAnim
 
         // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
         float delta = (mAnimTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
-        glm::dualquat interpolatedTransform = glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
 
-        if(mAccumulator == nullptr)
-        {
-            glm::mat4 asMat(glm::mat3x4_cast(interpolatedTransform));
-            mBone->move(asMat);
-
-        }else
-        {
-            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
-            glm::vec3 currentOffset = _translationFromDquat(interpolatedTransform);
-
-            glm::vec3 relativeOffset = currentOffset - prevOffset;
-
-            // if the current animation step jumped in time, we need to factor out the offset
-            //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
-            if(loopedBack)
-            {
-                relativeOffset -= loopJump;
-            }
-
-            mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
-
-            glm::mat4 boneMatrix = glm::mat4_cast(interpolatedTransform.real); // real part represents rotation
-            glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
-            boneMatrix[3] = glm::vec4(boneTranslation, 1.0);
-            mBone->move(glm::transpose(boneMatrix));
-        }
-
-        mLastAppliedTransform = interpolatedTransform;
+        return glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
     }
 
 
@@ -246,6 +273,16 @@ namespace odAnim
     void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
     {
         throw od::UnsupportedException("Partial skeleton animation not implemented yet");
+    }
+
+    void SkeletonAnimationPlayer::pushAnimationToQueue(odDb::Animation *anim, PlaybackType type, float speedMultiplier)
+    {
+        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        {
+            it->pushAnimationToQueue(anim, type, speedMultiplier);
+        }
+
+        mPlaying = true;
     }
 
     void SkeletonAnimationPlayer::setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex)

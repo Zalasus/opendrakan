@@ -46,10 +46,30 @@ namespace odAnim
         inline bool isPlaying() const { return mPlaying; }
         inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
 
+        /**
+         * @brief Instantly plays animation.
+         *
+         * This will set up the animator to play the passed animation as if the animation has been
+         * started exactly after the last update.
+         *
+         * The speedModifier argument may be negative for reverse playback. In that case, the animation
+         * will start at it's last frame.
+         *
+         * Only the current animation will be replaced; any animations in the queue will remain
+         * untouched.
+         *
+         * @param type             The type of playback to use (normal, looping, pingpong)
+         * @param speedMultiplier  Speed factor. 1.0 is normal playback speed. May be negative for reverse playback.
+         */
         void playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
 
         /**
-         * Advances animation and performs necessary updates to the skeleton.
+         * Pushes to queue, animation will start after loop point yada yada documentation is fun!
+         */
+        void pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+
+        /**
+         * @brief Advances animation and performs necessary updates to the skeleton.
          *
          * @param  relTime      Relative time since the last update (realtime, will always be >= 0)
          */
@@ -60,12 +80,30 @@ namespace odAnim
 
     private:
 
+        glm::dualquat _sampleLinear(float time);
+
         Skeleton::Bone *mBone;
+
         od::RefPtr<odDb::Animation> mCurrentAnimation;
         PlaybackType mPlaybackType;
         float mSpeedMultiplier;
         odDb::Animation::KfIterator mFirstFrame;
         odDb::Animation::KfIterator mLastFrame;
+
+        struct AnimationQueueEntry
+        {
+            AnimationQueueEntry(odDb::Animation *pAnim, PlaybackType pType, float pSpeed)
+            : animation(pAnim)
+            , type(pType)
+            , speedMultiplier(pSpeed)
+            {
+            }
+
+            od::RefPtr<odDb::Animation> animation;
+            PlaybackType type;
+            float speedMultiplier;
+        };
+        std::queue<AnimationQueueEntry> mAnimationQueue;
 
         bool mPlaying;
         float mAnimTime;
@@ -101,6 +139,8 @@ namespace odAnim
          * talking animation on neck joint to make the character talk while walking.
          */
         void playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
+
+        void pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Sets accumulator for a root node.
