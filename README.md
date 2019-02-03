@@ -8,10 +8,17 @@ A project to reverse-engineer and recreate Surreal Software's Riot Engine with t
 able to run the game *Drakan: Order of the Flame* on a modern GNU/Linux system.
 
 __This project is still in an early stage__. Most things are still work-in-progress and the current state of
-the engine differs from the original game in a significant way. OpenDrakan is definetly not a worthy replacement 
-for the original engine yet. Until that is the case, I'd recommend to check out the AiO patch, found among other
-downloads on [Arokh's Lair](http://www.arokhslair.net/wp/downloads/). It fixes some issues with the original
-game that might prevent you from playing otherwise.
+the engine differs from the original game in a significant way. That means that you can't use this replacement 
+to play the game yet. Until that is the case, I'd recommend to check out the AiO patch or Community Patch, found 
+among other downloads on [Arokh's Lair](http://www.arokhslair.net/wp/downloads/). They fix some of the issues with the 
+original engine that might otherwise prevent you from playing on Wine.
+
+Contributions to the project are very welcome! Since I am mostly coding alone on OpenDrakan right now, I don't really
+have a collaborative workflow set up yet. But should more people be interested in contributing, I'd gladly change that.
+Feel free to open or comment on a ticket for anything you want to work on.
+
+For discussions regarding OpenDrakan or contacting me, the safest option is the Arokh's Lair forum thread for this project, found 
+[here](https://arokhslair.net/forum/viewtopic.php?f=4&t=4244). 
 
 My documentation on the Riot Engine's SRSC file format can be found 
 [here](https://github.com/Zalasus/opendrakan/blob/master/doc/riot_database_format.txt).
@@ -33,11 +40,14 @@ non-copyright-infringing means.
 Compiling
 ---------
 
-You'll need [zlib](https://www.zlib.net/), an OpenAL implmentation like [OpenAL Soft](http://kcat.strangesoft.net/openal.html),
-[Bullet](http://bulletphysics.org/wordpress/) and [OpenSceneGraph](http://www.openscenegraph.org/) 
-along with their respective dependencies, as well as [CMake](https://cmake.org/) to generate the Makefiles.
-On Linux, these should be provided by your distro, so simply installing the appropriate packages
-should suffice to compile OpenDrakan. This was tested successfully on Debian and Arch Linux.
+The engine base requires [zlib](https://www.zlib.net/), [GLM](https://glm.g-truc.net/) and [Bullet Physics](http://bulletphysics.org/wordpress/), as well as [CMake](https://cmake.org/) to generate the Makefiles.
+
+For the OSG renderer (the only one available at the moment) you will additionally need 
+[OpenSceneGraph](http://www.openscenegraph.org/) and an OpenAL implementation like 
+[OpenAL Soft](http://kcat.strangesoft.net/openal.html), along with their respective dependencies.
+
+On Linux, all of these dependencies should be provided by your distro, so simply installing the appropriate packages
+should suffice to be able to compile OpenDrakan. This was tested successfully on Debian and Arch Linux.
 
 Once you have all dependencies, fire up a terminal in the project root and do your usual CMake building routine:
 ```bash
@@ -50,14 +60,18 @@ $ make
 Running
 -------
 
-Run the opendrakan executable in the root directory of the game (same directory that contains the Drakan.exe) to
+__This is only useful for developers at the moment. You can't use OpenDrakan to play the game yet!__
+
+Run the *odOsg* executable in the root directory of the game (same directory that contains the Drakan.exe) to
 load the intro level. To load a specific level, run OpenDrakan with the path to the *.lvl file as an argument.
 
-Right now, OpenDrakan has a few command line options to inspect Drakan resource files and extract data from them to aid
-in reverse-engineering. You can get an overview of these using the -h option.
+*Depending on the current state of the project, your results may vary*. Since not all levels have been tried, some may yet
+crash the engine. Most testing has been done on the "Ruined Village" level, so that's the one you probably want to use when
+testing your contributions.
 
-*Depending on the current state of the project, your results may vary*. Right now, some levels load while others don't.
-Most testing has been done on the "Ruined Village" level, so that's the one you probably want to try out OpenDrakan with.
+OpenDrakan comes with the *srsced* tool, which can extract raw data from Drakan's SRSC files to aid in reverse-engineering.
+You can get an overview of it's functions using the -h option. While this utility is limited to inspection and extraction at
+the moment, editing functions will be added later.
 
 
 License
