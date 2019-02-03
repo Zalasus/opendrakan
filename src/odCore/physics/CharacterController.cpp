@@ -15,12 +15,14 @@
 namespace odPhysics
 {
 
+    static const float STEP_HEIGHT = 0.07f;
+
+
 	CharacterController::CharacterController(od::LevelObject &charObject, float radius, float height)
 	: mCharObject(charObject)
 	, mRadius(radius)
 	, mHeight(height)
 	, mPhysicsManager(charObject.getLevel().getPhysicsManager())
-	, mStepHeight(0.07)
 	, mUp(0, 1, 0)
 	, mVelocity(0, -1, 0)
 	, mIsFalling(false)
@@ -53,9 +55,9 @@ namespace odPhysics
 
 	void CharacterController::update(float relTime)
 	{
-	    if(!mIsFalling)
-	    {
-            _step(true); // step up
+	    //if(!mIsFalling)
+	    //{
+
 
             // slide as far as possible
             btTransform from;
@@ -77,11 +79,12 @@ namespace odPhysics
                 mCurrentPosition = mDesiredPosition;
             }
 
-            bool onGround = _step(false); // step down
+            _step(STEP_HEIGHT); // step up
+            bool onGround = _step(-STEP_HEIGHT); // step down
             mIsFalling = !onGround;
             mFallingVelocity = 0.0f;
 
-	    }else
+	    /*}else
 	    {
 	        // last step had us falling. ignore desired position and simply apply gravity until we hit the ground.
 	        //  no stepping is necessary, as we are not moving forward
@@ -102,26 +105,26 @@ namespace odPhysics
             {
                 mCurrentPosition = gravityTarget;
             }
-	    }
+	    }*/
 
 	    mGhostObject->setWorldTransform(btTransform(btQuaternion(0,0,0,1), mCurrentPosition));
         mCharObject.setPosition(BulletAdapter::toGlm(mCurrentPosition));
 	}
 
-	bool CharacterController::_step(bool up)
+	bool CharacterController::_step(float stepHeight)
 	{
-		btVector3 rayStart = mCurrentPosition + (up ? mRelativeHighPoint : mRelativeLowPoint);
-		btVector3 rayEnd = rayStart + mUp*(up ? mStepHeight : (-mStepHeight - 0.1));
+		btVector3 rayStart = mCurrentPosition + (stepHeight > 0 ? mRelativeHighPoint : mRelativeLowPoint);
+		btVector3 rayEnd = rayStart + mUp*stepHeight;
 		ClosestNotMeRayResultCallback callback(rayStart, rayEnd, CollisionGroups::ALL, mGhostObject.get());
 		mPhysicsManager.mDynamicsWorld->rayTest(rayStart, rayEnd, callback);
 		if(callback.hasHit() && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
 		{
-			mCurrentPosition += mUp*callback.m_closestHitFraction*mStepHeight*(up ? 1 : -1);
+			mCurrentPosition += mUp*callback.m_closestHitFraction*stepHeight;
 			return true;
 
 		}else
 		{
-			mCurrentPosition += mUp*mStepHeight*(up ? 1 : -1);
+			mCurrentPosition += mUp*stepHeight;
 			return false;
 		}
 	}

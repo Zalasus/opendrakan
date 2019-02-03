@@ -42,7 +42,7 @@ namespace odPhysics
 
 	private:
 
-		bool _step(bool up); // returns true if object was hit during stepping
+		bool _step(float stepHeight); // returns true if object was hit during stepping
 		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
 		od::LevelObject &mCharObject;
@@ -52,7 +52,6 @@ namespace odPhysics
 		std::unique_ptr<btCapsuleShape> mCharShape;
 		std::unique_ptr<btPairCachingGhostObject> mGhostObject;
 		btVector3 mCurrentPosition;
-		btScalar mStepHeight;
 		btVector3 mUp;
 		btVector3 mRelativeLowPoint;
 		btVector3 mRelativeHighPoint;
