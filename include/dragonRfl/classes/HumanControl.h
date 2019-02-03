@@ -25,7 +25,7 @@ namespace dragonRfl
 {
     class DragonRfl;
 
-	class HumanControl : public HumanControlFields, public LocalPlayer, private odAnim::MotionAccumulator
+	class HumanControl : public HumanControlFields, public LocalPlayer
 	{
 	public:
 
@@ -56,9 +56,6 @@ namespace dragonRfl
 		    RunningBackward
 		};
 
-		// implement odAnim::MotionAccumulator
-        virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
-
 		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
 		void _handleCursorMovement(const glm::vec2 &posNdc);
 		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
@@ -73,6 +70,7 @@ namespace dragonRfl
 		float mLastUpdatedYaw;
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
+		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
 		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
 		od::RefPtr<odInput::ActionHandle<Action>> mBackwardAction;

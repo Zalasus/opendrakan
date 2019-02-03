@@ -9,9 +9,12 @@
 #define INCLUDE_PHYSICS_CHARACTERCONTROLLER_H_
 
 #include <memory>
+
 #include <BulletCollision/CollisionShapes/btCapsuleShape.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletDynamics/Character/btKinematicCharacterController.h>
+
+#include <odCore/anim/MotionAccumulator.h>
 
 #include <odCore/physics/BulletAdapter.h>
 
@@ -25,31 +28,21 @@ namespace odPhysics
 
 	class PhysicsManager;
 
-	enum class CharacterState
-	{
-		Ok,
-		Penetrated_Object,
-		Falling
-	};
-
-	class CharacterController
+	class CharacterController : public odAnim::MotionAccumulator
 	{
 	public:
 
 		CharacterController(od::LevelObject &charObject, float radius, float height);
 
-		inline CharacterState getCharacterState() const { return mCharacterState; }
+		// implement odAnim::MotionAccumulator
+        virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
 
-		// implement od::TransformAccumulator
-        virtual void moveRelative(const glm::vec3 &v);
-
-		void update(double dt);
+		void update(float relTime);
 
 
 	private:
 
 		bool _step(bool up); // returns true if object was hit during stepping
-		bool _hasInvalidPenetrations();
 		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
 		od::LevelObject &mCharObject;
@@ -59,7 +52,6 @@ namespace odPhysics
 		std::unique_ptr<btCapsuleShape> mCharShape;
 		std::unique_ptr<btPairCachingGhostObject> mGhostObject;
 		btVector3 mCurrentPosition;
-		CharacterState mCharacterState;
 		btScalar mStepHeight;
 		btVector3 mUp;
 		btVector3 mRelativeLowPoint;
@@ -70,6 +62,8 @@ namespace odPhysics
 
 		btManifoldArray mManifoldArray;
 
+		bool mIsFalling;
+		float mFallingVelocity;
 	};
 
 }

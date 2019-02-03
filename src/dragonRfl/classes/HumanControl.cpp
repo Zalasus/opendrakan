@@ -19,6 +19,8 @@
 
 #include <odCore/audio/SoundSystem.h>
 
+#include <odCore/physics/CharacterController.h>
+
 #include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
@@ -89,8 +91,10 @@ namespace dragonRfl
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton != nullptr)
         {
+            mCharacterController = std::make_unique<odPhysics::CharacterController>(obj, 0.05, 0.3);
+
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objectNode, skeleton);
-            mAnimPlayer->setRootNodeAccumulator(this);
+            mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
                                                                          odAnim::AccumulationMode::Bone,
@@ -147,6 +151,11 @@ namespace dragonRfl
         default:
             break;
         }
+
+        if(mCharacterController != nullptr)
+        {
+            mCharacterController->update(relTime);
+        }
     }
 
     void HumanControl::onMoved(od::LevelObject &obj)
@@ -178,14 +187,6 @@ namespace dragonRfl
 	od::LevelObject &HumanControl::getLevelObject()
 	{
 	    return *mPlayerObject;
-	}
-
-	void HumanControl::moveRelative(const glm::vec3 &relTranslation, float relTime)
-	{
-	    if(mPlayerObject != nullptr)
-	    {
-	        mPlayerObject->setPosition(mPlayerObject->getPosition() + mPlayerObject->getRotation()*relTranslation);
-	    }
 	}
 
     void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
