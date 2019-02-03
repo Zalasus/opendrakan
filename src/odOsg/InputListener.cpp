@@ -41,6 +41,7 @@ namespace odOsg
     InputListener::InputListener(Renderer &renderer, odInput::InputManager &inputManager)
     : mRenderer(renderer)
     , mInputManager(inputManager)
+    , mMouseWarped(false)
     {
         assert(mRenderer.getViewer() != nullptr);
 
@@ -78,7 +79,7 @@ namespace odOsg
 
         case osgGA::GUIEventAdapter::MOVE:
         case osgGA::GUIEventAdapter::DRAG:
-            mInputManager.mouseMoved(ea.getXnormalized(), ea.getYnormalized());
+            _handleMouseMove(ea, aa);
             return true;
 
         default:
@@ -87,6 +88,26 @@ namespace odOsg
         }
 
         return false;
+    }
+
+    void InputListener::_handleMouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa)
+    {
+        float x = ea.getXnormalized();
+        float y = ea.getYnormalized();
+
+        mInputManager.mouseMoved(x, y);
+
+        // wrap cursor when hitting left or right border
+        float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel
+        if(x <= -1 + epsilon || x >= 1 - epsilon)
+        {
+            float newX = (x <= -1 + epsilon) ? (1 - 2*epsilon) : (-1 + 2*epsilon);
+
+            float denormX = ea.getXmin() + (ea.getXmax() - ea.getXmin())*(newX+1.0)/2.0;
+
+            mMouseWarped = true;
+            aa.requestWarpPointer(denormX, ea.getY());
+        }
     }
 
     odInput::Key InputListener::_osgKeyToOdKey(int key)

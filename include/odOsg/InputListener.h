@@ -33,10 +33,14 @@ namespace odOsg
 
     private:
 
+        void _handleMouseMove(const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa);
+
         odInput::Key _osgKeyToOdKey(int key);
 
         Renderer &mRenderer;
         odInput::InputManager &mInputManager;
+
+        bool mMouseWarped;
 
         osg::ref_ptr<osgGA::GUIEventHandler> mEventHandler;
 
