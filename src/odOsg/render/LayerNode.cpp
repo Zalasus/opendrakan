@@ -21,7 +21,7 @@ namespace odOsg
     : mRenderer(renderer)
     , mLayerGroup(layerGroup)
     , mLayerTransform(new osg::PositionAttitudeTransform)
-    , mLightStateCallback(new LightStateCallback(renderer, mLayerTransform, false))
+    , mLightStateCallback(new LightStateCallback(renderer, mLayerTransform, true))
     , mGeometry(od::make_refd<Geometry>())
     {
         _buildLayerGeometry(layer);

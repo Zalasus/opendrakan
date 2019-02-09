@@ -82,7 +82,7 @@ namespace odOsg
 
         mObjectGroup->addChild(mTransform);
 
-        mLightStateCallback = new LightStateCallback(renderer, mTransform, false);
+        mLightStateCallback = new LightStateCallback(renderer, mTransform, true);
         mTransform->addCullCallback(mLightStateCallback);
     }
 

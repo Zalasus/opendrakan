@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odCore/physics/PhysicsManager.h>
+#include <odCore/physics/bullet/PhysicsManager.h>
 
 #include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
@@ -19,9 +19,9 @@
 #include <odCore/Exception.h>
 #include <odCore/Engine.h>
 #include <odCore/rfl/RflClass.h>
-#include <odCore/physics/BulletAdapter.h>
-#include <odCore/physics/BulletCallbacks.h>
-#include <odCore/physics/Detector.h>
+#include <odCore/physics/bullet/BulletAdapter.h>
+#include <odCore/physics/bullet/BulletCallbacks.h>
+#include <odCore/physics/bullet/Detector.h>
 
 namespace odPhysics
 {

@@ -22,6 +22,12 @@
 #include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 
+/*!!!!!!!!!!!!!!!!!!!!
+ *  Warning, obsolete code! This will be replaced by the
+ *  soon to be completed PhysicsSystem interface!
+ *!!!!!!!!!!!!!!!!!!!!*/
+
+
 namespace od
 {
     class Layer;

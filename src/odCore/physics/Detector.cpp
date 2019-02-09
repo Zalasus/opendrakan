@@ -5,10 +5,10 @@
  *      Author: zal
  */
 
-#include <odCore/physics/Detector.h>
+#include <odCore/physics/bullet/Detector.h>
 
-#include <odCore/physics/PhysicsManager.h>
-#include <odCore/physics/BulletAdapter.h>
+#include <odCore/physics/bullet/PhysicsManager.h>
+#include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/ModelBounds.h>
 #include <odCore/Exception.h>
 #include <odCore/LevelObject.h>
