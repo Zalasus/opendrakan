@@ -40,6 +40,11 @@ namespace odAudio
     class SoundSystem;
 }
 
+namespace odPhysics
+{
+    class PhysicsSystem;
+}
+
 namespace od
 {
 
@@ -63,6 +68,7 @@ namespace od
 		inline odInput::InputManager &getInputManager() { return *mInputManager; }
 		inline odRender::Renderer *getRenderer() { return mRenderer; }
 		inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
+		inline odPhysics::PhysicsSystem *getPhysicsSystem() { return mPhysicsSystem; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline bool isDone() { return mIsDone; }
 		inline void setDone(bool done) { mIsDone = done; }
@@ -85,6 +91,7 @@ namespace od
 		std::unique_ptr<odDb::DbManager> mDbManager;
 		std::unique_ptr<odInput::InputManager> mInputManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
+		std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
 		odRender::Renderer *mRenderer;
 		odAudio::SoundSystem *mSoundSystem;
 		bool mHasInitialLevelOverride;

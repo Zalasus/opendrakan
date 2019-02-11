@@ -19,7 +19,6 @@
 #include <odCore/Layer.h>
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
-#include <odCore/physics/PhysicsManager.h>
 
 namespace od
 {
@@ -35,7 +34,6 @@ namespace od
 
         inline FilePath getFilePath() const { return mLevelPath; }
         inline Engine &getEngine() { return mEngine; }
-        inline odPhysics::PhysicsManager &getPhysicsManager() { return mPhysicsManager; }
 
         void loadLevel();
         void spawnAllObjects();
@@ -71,7 +69,6 @@ namespace od
         std::map<uint16_t, odDb::DbRefWrapper> mDependencyMap;
         std::vector<std::unique_ptr<Layer>> mLayers;
         std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
-		odPhysics::PhysicsManager mPhysicsManager;
 
 		std::list<LevelObject*> mDestructionQueue;
 

@@ -5,11 +5,9 @@
  *      Author: zal
  */
 
-#include <odCore/physics/BulletCallbacks.h>
+#include <odCore/physics/bullet/BulletCallbacks.h>
 
-#include <odCore/physics/PhysicsManager.h>
-
-namespace odPhysics
+namespace odBulletPhysics
 {
 
     ClosestNotMeRayResultCallback::ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, int mask, btCollisionObject *me)

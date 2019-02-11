@@ -24,6 +24,8 @@
 
 #include <odCore/audio/SoundSystem.h>
 
+#include <odCore/physics/bullet/BulletPhysicsSystem.h>
+
 namespace od
 {
 
@@ -79,6 +81,7 @@ namespace od
 
 	    mDbManager = std::make_unique<odDb::DbManager>(*this);
         mRflManager = std::make_unique<odRfl::RflManager>(*this);
+        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>();
 
 	    mRflManager->onStartup();
 

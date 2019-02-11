@@ -29,7 +29,6 @@ namespace od
     , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
-    , mPhysicsManager(*this)
     {
     }
 
@@ -39,12 +38,6 @@ namespace od
     	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
     	{
     		(*it)->despawned();
-    	}
-
-    	// TODO: this needs a proper mechanism and a map~ we will be doing this on the fly later
-    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-    	{
-    		mPhysicsManager.removeLayer(*it->get());
     	}
     }
 
@@ -184,8 +177,6 @@ namespace od
             }
         }
 
-        mPhysicsManager.update(relTime);
-
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
             (*it)->update(relTime);
@@ -275,11 +266,6 @@ namespace od
 			DataReader zdr(zstr);
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
-
-			if(mLayers[i]->getCollisionShape() != nullptr)
-			{
-				mPhysicsManager.addLayer(*mLayers[i]);
-			}
     	}
     }
 
