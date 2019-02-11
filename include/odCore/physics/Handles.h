@@ -26,6 +26,10 @@ namespace odPhysics
     {
     public:
 
+        /**
+         * @brief Enables or disables collision detection. Detection is enabled by default.
+         */
+        virtual void setEnableCollision(bool b);
 
     };
 
@@ -36,6 +40,7 @@ namespace odPhysics
 
 
     };
+
 
     class LightHandle : public Handle
     {

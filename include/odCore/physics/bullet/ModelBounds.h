@@ -40,7 +40,8 @@ namespace odPhysics
     };
 
 	/**
-	 * Abstract interface for a model's bounding shape. Implementation is provided by the physics system.
+	 * Builder and container for bounds information of a Model. This manages the bullet objects it creates
+	 * (collision shape, child shapes etc.)
 	 */
 	class ModelBounds
 	{

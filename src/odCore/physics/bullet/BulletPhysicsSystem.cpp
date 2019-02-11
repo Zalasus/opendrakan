@@ -14,7 +14,7 @@
 #include <odCore/Layer.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
-#include <odCore/physics/bullet/BulletHandles.h>
+#include <odCore/physics/bullet/LayerHandleImpl.h>
 
 namespace odBulletPhysics
 {

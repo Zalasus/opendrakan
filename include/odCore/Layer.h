@@ -11,8 +11,6 @@
 #include <memory>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
-#include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
@@ -90,11 +88,12 @@ namespace od
         inline const std::vector<Vertex> &getVertexVector() { return mVertices; }
         inline const std::vector<Cell> &getCellVector() { return mCells; }
         inline size_t getVisibleTriangleCount() const { return mVisibleTriangles; }
+        inline size_t getCollidingTriangleCount() const { return mCollidingTriangles; }
         inline LayerType getLayerType() const { return mType; }
+        inline glm::vec3 getOrigin() const { return glm::vec3(mOriginX, getWorldHeightLu(), mOriginZ); }
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
-        btCollisionShape *getCollisionShape();
 
         void spawn();
         void despawn();
@@ -138,9 +137,8 @@ namespace od
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
+        size_t mCollidingTriangles;
 
-        std::unique_ptr<btTriangleMesh> mBulletMesh;
-        std::unique_ptr<btCollisionShape> mCollisionShape;
         AxisAlignedBoundingBox mBoundingBox;
 
         od::RefPtr<odRender::LayerNode> mLayerNode;
