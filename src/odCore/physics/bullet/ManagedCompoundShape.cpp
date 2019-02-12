@@ -16,10 +16,10 @@ namespace odBulletPhysics
         mChildShapes.reserve(initialChildShapeCapacity);
     }
 
-    void ManagedCompoundShape::addManagedChildShape(btTransform xform, std::unique_ptr<btCollisionShape> &&shape)
+    void ManagedCompoundShape::addManagedChildShape(btTransform xform, std::unique_ptr<btCollisionShape> shape)
     {
         btCollisionShape *shapePtr = shape.get();
-        mChildShapes.emplace_back(shape);
+        mChildShapes.push_back(std::move(shape));
 
         this->addChildShape(xform, shapePtr);
     }

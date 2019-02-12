@@ -34,6 +34,10 @@ namespace odBulletPhysics
 
         virtual void setEnableCollision(bool b) override;
 
+        virtual void setPosition(const glm::vec3 &p) override;
+        virtual void setOrientation(const glm::quat &q) override;
+        virtual void setScale(const glm::vec3 &s) override;
+
 
     private:
 
@@ -41,6 +45,7 @@ namespace odBulletPhysics
         btCollisionWorld *mCollisionWorld;
 
         std::unique_ptr<btCollisionObject> mCollisionObject;
+        std::unique_ptr<btCollisionShape> mUniqueShape;
     };
 
 }

@@ -27,6 +27,7 @@ namespace odBulletPhysics
             mCollisionObject = std::make_unique<btCollisionObject>();
             mCollisionObject->setCollisionShape(mShape.get());
             mCollisionObject->setUserIndex(mLayer.getId());
+            mCollisionObject->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
 
             glm::vec3 worldOffset = mLayer.getOrigin();
             btTransform worldTransform(btQuaternion(0, 0, 0, 1), BulletAdapter::toBullet(worldOffset));
@@ -51,8 +52,8 @@ namespace odBulletPhysics
             return;
         }
 
-        std::vector<od::Layer::Vertex> &vertices = mLayer.getVertexVector();
-        std::vector<od::Layer::Cell> &cells = mLayer.getCellVector();
+        const std::vector<od::Layer::Vertex> &vertices = mLayer.getVertexVector();
+        const std::vector<od::Layer::Cell> &cells = mLayer.getCellVector();
         uint32_t width = mLayer.getWidth();
         uint32_t height = mLayer.getHeight();
 
@@ -64,8 +65,8 @@ namespace odBulletPhysics
         mesh->preallocateVertices(vertices.size() * 3); // bullet seems to be buggy here. it actually needs 3 times the space it reserves
         for(size_t i = 0; i < vertices.size(); ++i)
         {
-            size_t aXRel = i%(width()+1);
-            size_t aZRel = i/(width()+1); // has to be an integer operation to floor it
+            size_t aXRel = i%(width+1);
+            size_t aZRel = i/(width+1); // has to be an integer operation to floor it
             float aX = aXRel; // ignore origin so shape is relative to layer origin. we place it in world coords via the collision object
             float aZ = aZRel;
 

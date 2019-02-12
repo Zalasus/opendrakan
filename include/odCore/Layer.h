@@ -22,6 +22,11 @@
 
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
 
+namespace odPhysics
+{
+    class LayerHandle;
+}
+
 namespace od
 {
     class Level;

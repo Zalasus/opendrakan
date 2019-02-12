@@ -10,13 +10,7 @@
 
 #include <memory>
 
-#include <BulletCollision/CollisionShapes/btCapsuleShape.h>
-#include <BulletCollision/CollisionDispatch/btGhostObject.h>
-#include <BulletDynamics/Character/btKinematicCharacterController.h>
-
 #include <odCore/anim/MotionAccumulator.h>
-
-#include <odCore/physics/BulletAdapter.h>
 
 namespace od
 {
@@ -26,7 +20,7 @@ namespace od
 namespace odPhysics
 {
 
-	class PhysicsManager;
+	class PhysicsSystem;
 
 	class CharacterController : public odAnim::MotionAccumulator
 	{
@@ -43,23 +37,16 @@ namespace odPhysics
 	private:
 
 		bool _step(float stepHeight); // returns true if object was hit during stepping
-		bool _needsCollision(const btCollisionObject *body0, const btCollisionObject *body1);
 
 		od::LevelObject &mCharObject;
-		btScalar mRadius;
-		btScalar mHeight;
-		PhysicsManager &mPhysicsManager;
-		std::unique_ptr<btCapsuleShape> mCharShape;
-		std::unique_ptr<btPairCachingGhostObject> mGhostObject;
-		btVector3 mCurrentPosition;
-		btVector3 mUp;
-		btVector3 mRelativeLowPoint;
-		btVector3 mRelativeHighPoint;
-		btVector3 mVelocity;
-		btVector3 mDesiredDirection;
-		btVector3 mDesiredPosition;
-
-		btManifoldArray mManifoldArray;
+		PhysicsSystem &mPhysicsManager;
+		glm::vec3 mCurrentPosition;
+		glm::vec3 mUp;
+		glm::vec3 mRelativeLowPoint;
+		glm::vec3 mRelativeHighPoint;
+		glm::vec3 mVelocity;
+		glm::vec3 mDesiredDirection;
+		glm::vec3 mDesiredPosition;
 
 		bool mIsFalling;
 		float mFallingVelocity;

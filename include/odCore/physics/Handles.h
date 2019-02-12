@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 
 #include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <odCore/RefCounted.h>
 
@@ -31,7 +32,11 @@ namespace odPhysics
         /**
          * @brief Enables or disables collision detection. Detection is enabled by default.
          */
-        virtual void setEnableCollision(bool b);
+        virtual void setEnableCollision(bool b) = 0;
+
+        virtual void setPosition(const glm::vec3 &p) = 0;
+        virtual void setOrientation(const glm::quat &q) = 0;
+        virtual void setScale(const glm::vec3 &s) = 0;
 
     };
 

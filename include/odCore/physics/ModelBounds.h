@@ -36,24 +36,10 @@ namespace odPhysics
 		inline const od::BoundingSphere &getMainSphere() const { return mMainSphere; }
 		inline const od::OrientedBoundingBox &getMainBox() const { return mMainBox; }
 
-		virtual
-
 		void setMainBounds(const od::BoundingSphere &sphere, const od::OrientedBoundingBox &box);
 		void addHierarchyEntry(uint16_t firstChildIndex, uint16_t nextSiblingIndex);
 		void addSphere(const od::BoundingSphere &sphere);
 		void addBox(const od::OrientedBoundingBox &box);
-
-		/**
-		 * Builds or returns a shape that can be shared among all non-scaled uses of the model.
-		 */
-		std::shared_ptr<ModelCollisionShape> getSharedCollisionShape();
-
-		/**
-		 * Allocates and builds a new shape, even if one is already cached in this bounds object.
-		 *
-		 * @note This transfers ownership. The returned pointer must be managed by the caller.
-		 */
-		ModelCollisionShape *buildNewShape();
 
 		void printInfo();
 
@@ -70,7 +56,6 @@ namespace odPhysics
 		std::vector<std::pair<uint16_t, uint16_t>> mHierarchy;
 		std::vector<od::BoundingSphere> mSpheres;
 		std::vector<od::OrientedBoundingBox> mBoxes;
-		std::shared_ptr<ModelCollisionShape> mSharedShape;
 	};
 
 }

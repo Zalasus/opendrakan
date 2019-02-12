@@ -25,7 +25,7 @@ namespace odBulletPhysics
 
         ManagedCompoundShape(size_t initialChildShapeCapacity);
 
-        void addManagedChildShape(btTransform xform, std::unique_ptr<btCollisionShape> &&shape);
+        void addManagedChildShape(btTransform xform, std::unique_ptr<btCollisionShape> shape);
 
 
     private:

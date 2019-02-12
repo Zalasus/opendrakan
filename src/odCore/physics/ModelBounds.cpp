@@ -13,7 +13,6 @@
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 
 #include <odCore/Exception.h>
-#include <odCore/physics/BulletAdapter.h>
 
 namespace odPhysics
 {
@@ -63,57 +62,6 @@ namespace odPhysics
 		}
 
 		mBoxes.push_back(box);
-	}
-
-	std::shared_ptr<ModelCollisionShape> ModelBounds::getSharedCollisionShape()
-	{
-	    if(mSharedShape == nullptr)
-	    {
-	        mSharedShape.reset(buildNewShape());
-	    }
-
-	    return mSharedShape;
-	}
-
-	ModelCollisionShape *ModelBounds::buildNewShape()
-	{
-	    auto shape = std::make_unique<ModelCollisionShape>(mShapeCount);
-
-        for(size_t index = 0; index < mShapeCount; ++index)
-        {
-            size_t firstChild = mHierarchy[index].first;
-            size_t nextSibling = mHierarchy[index].second;
-            glm::vec3 myTranslation;
-            glm::quat myRotation;
-
-            // Bullet does not seem to support a manual hierarchical bounds structure. Therefore, we only care about
-            //  leafs in the bounding hierarchy here and ignore all shapes that have children
-            if(firstChild == 0)
-            {
-                std::unique_ptr<btCollisionShape> newShape;
-
-                if(mType == SPHERES)
-                {
-                    myTranslation = mSpheres[index].center();
-                    myRotation = glm::quat(0,0,0,1);
-
-                    newShape = std::make_unique<btSphereShape>(mSpheres[index].radius());
-
-                }else
-                {
-                    myTranslation = mBoxes[index].center();
-                    myRotation = mBoxes[index].orientation();
-
-                    btVector3 halfExtends = BulletAdapter::toBullet(mBoxes[index].extends() * 0.5f); // btBoxShape wants half extends, so we multiply by 0.5
-                    newShape = std::make_unique<btBoxShape>(halfExtends);
-                }
-
-                btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);
-                shape->addManagedChildShape(t, newShape.release());
-            }
-        }
-
-        return shape.release();
 	}
 
 	void ModelBounds::printInfo()
