@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 #define INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 
+#include <glm/vec3.hpp>
+
 #include <odCore/RefCounted.h>
 
 namespace odPhysics

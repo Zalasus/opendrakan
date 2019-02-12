@@ -45,6 +45,16 @@ namespace od
 	{
 	}
 
+	odPhysics::PhysicsSystem &Engine::getPhysicsSystem()
+	{
+	    if(mPhysicsSystem == nullptr)
+	    {
+	        throw Exception("Engine has no physics system");
+	    }
+
+	    return *mPhysicsSystem;
+	}
+
 	void Engine::setRenderer(odRender::Renderer *renderer)
 	{
 	    if(mRenderer != nullptr)

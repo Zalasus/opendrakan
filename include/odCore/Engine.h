@@ -68,10 +68,11 @@ namespace od
 		inline odInput::InputManager &getInputManager() { return *mInputManager; }
 		inline odRender::Renderer *getRenderer() { return mRenderer; }
 		inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
-		inline odPhysics::PhysicsSystem *getPhysicsSystem() { return mPhysicsSystem; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline bool isDone() { return mIsDone; }
 		inline void setDone(bool done) { mIsDone = done; }
+
+        odPhysics::PhysicsSystem &getPhysicsSystem();
 
 		void setRenderer(odRender::Renderer *renderer);
 		void setSoundSystem(odAudio::SoundSystem *soundSystem);

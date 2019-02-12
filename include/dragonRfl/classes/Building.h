@@ -12,6 +12,8 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
+#include <odCore/physics/Handles.h>
+
 namespace dragonRfl
 {
 
@@ -50,6 +52,11 @@ namespace dragonRfl
 		odRfl::EnumMessage		mMessageToSendWhenPushed;
 		odRfl::EnumYesNo		mSendMessageAfterPushed;
 		odRfl::EnumMessage		mMessageToSendAfterPushed;
+
+	private:
+
+		DragonRfl &mRfl;
+		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 	};
 
 }

@@ -17,6 +17,8 @@
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Geometry.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+
 namespace od
 {
 
@@ -182,12 +184,15 @@ namespace od
             mLayerNode = renderer->createLayerNode(this);
         }
 
+        mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
+
         _bakeLocalLayerLight();
     }
 
     void Layer::despawn()
     {
         mLayerNode = nullptr;
+        mPhysicsHandle = nullptr;
     }
 
     bool Layer::hasHoleAt(const glm::vec2 &absolutePos)

@@ -18,20 +18,6 @@
 namespace odPhysics
 {
 
-	ModelCollisionShape::ModelCollisionShape(size_t initialChildShapeCapacity)
-	: btCompoundShape(true, initialChildShapeCapacity)
-	{
-	    mChildShapes.reserve(initialChildShapeCapacity);
-	}
-
-	void ModelCollisionShape::addManagedChildShape(btTransform xform, btCollisionShape *shape)
-	{
-	    mChildShapes.push_back(std::unique_ptr<btCollisionShape>(shape));
-
-	    this->addChildShape(xform, shape);
-	}
-
-
 	ModelBounds::ModelBounds(ModelBounds::ShapeType type, size_t shapeCount)
 	: mType(type)
 	, mShapeCount(shapeCount)

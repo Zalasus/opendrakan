@@ -11,14 +11,15 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
-#include <odCore/physics/PhysicsManager.h>
+#include <odCore/physics/PhysicsSystem.h>
 #include <odCore/LevelObject.h>
 
 namespace dragonRfl
 {
 
 	Building::Building(DragonRfl &rfl)
-	: mInitialHealth(0)
+	: mRfl(rfl)
+    , mInitialHealth(0)
 	, mSnapMode(0)
 	, mSoundEffectObject(odDb::AssetRef::NULL_REF)
 	, mIsDoorWay(false)
@@ -72,13 +73,14 @@ namespace dragonRfl
 	{
     	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
 		{
-    		obj.getLevel().getPhysicsManager().addObject(obj, 0);
+    		mPhysicsHandle = mRfl.getEngine().getPhysicsSystem().createObjectHandle(obj);
     	}
 	}
 
     void Building::onDespawned(od::LevelObject &obj)
     {
-    	obj.getLevel().getPhysicsManager().removeObject(obj);
+        // might it be more efficient to just disable collision here?
+    	mPhysicsHandle = nullptr;
     }
 
 

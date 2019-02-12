@@ -142,6 +142,7 @@ namespace od
         AxisAlignedBoundingBox mBoundingBox;
 
         od::RefPtr<odRender::LayerNode> mLayerNode;
+        od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
     };
 
 }

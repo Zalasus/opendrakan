@@ -14,30 +14,12 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <BulletCollision/CollisionShapes/btCompoundShape.h>
-
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/BoundingSphere.h>
 
 namespace odPhysics
 {
-
-	class ModelCollisionShape : public btCompoundShape
-    {
-    public:
-
-	    ModelCollisionShape(size_t initialChildShapeCapacity);
-
-	    void addManagedChildShape(btTransform xform, btCollisionShape *shape);
-
-
-    private:
-
-	    using btCompoundShape::addChildShape;
-
-	    std::vector<std::unique_ptr<btCollisionShape>> mChildShapes;
-    };
 
 	/**
 	 * Abstract interface for a model's bounding shape. Implementation is provided by the physics system.
@@ -49,9 +31,12 @@ namespace odPhysics
 		enum ShapeType { SPHERES, BOXES };
 
 		ModelBounds(ShapeType type, size_t shapeCount);
+		virtual ~ModelBounds() = default;
 
 		inline const od::BoundingSphere &getMainSphere() const { return mMainSphere; }
 		inline const od::OrientedBoundingBox &getMainBox() const { return mMainBox; }
+
+		virtual
 
 		void setMainBounds(const od::BoundingSphere &sphere, const od::OrientedBoundingBox &box);
 		void addHierarchyEntry(uint16_t firstChildIndex, uint16_t nextSiblingIndex);
