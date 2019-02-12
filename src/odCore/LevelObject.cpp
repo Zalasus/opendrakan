@@ -23,7 +23,8 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 
-#include <odCore/physics/BulletAdapter.h>
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 #include <odCore/render/Renderer.h>
 #include <odCore/render/ObjectNode.h>
@@ -166,6 +167,8 @@ namespace od
             }
         }
 
+        mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createObjectHandle(*this);
+
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr && mClass->hasModel())
         {
@@ -207,6 +210,9 @@ namespace od
         }
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
+
+        mPhysicsHandle = nullptr;
+        mRenderNode = nullptr;
 
         // TODO: how to ensure no unnecessary updates/cullings happen on our subgraph if present?
 
@@ -393,17 +399,6 @@ namespace od
     void LevelObject::requestDestruction()
     {
         mLevel.requestLevelObjectDestruction(this);
-    }
-
-    void LevelObject::getWorldTransform(btTransform& worldTrans) const
-    {
-        worldTrans = odPhysics::BulletAdapter::makeBulletTransform(getPosition(), getRotation());
-    }
-
-    void LevelObject::setWorldTransform(const btTransform& worldTrans)
-    {
-        setPosition(odPhysics::BulletAdapter::toGlm(worldTrans.getOrigin()));
-        setRotation(odPhysics::BulletAdapter::toGlm(worldTrans.getRotation()));
     }
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)

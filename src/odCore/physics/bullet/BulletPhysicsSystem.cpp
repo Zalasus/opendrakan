@@ -15,6 +15,7 @@
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>
+#include <odCore/physics/bullet/ObjectHandleImpl.h>
 
 namespace odBulletPhysics
 {
@@ -90,7 +91,7 @@ namespace odBulletPhysics
 
         mObjectHandles[obj.getObjectId()] = objectHandle;
 
-        return objectHandle;
+        return objectHandle.get();
     }
 
     od::RefPtr<odPhysics::LayerHandle> BulletPhysicsSystem::createLayerHandle(od::Layer &layer)
@@ -99,7 +100,7 @@ namespace odBulletPhysics
 
         mLayerHandles[layer.getId()] = layerHandle;
 
-        return layerHandle;
+        return layerHandle.get();
     }
 
 }

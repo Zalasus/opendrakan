@@ -31,6 +31,11 @@ namespace odPhysics
 
         /**
          * @brief Enables or disables collision detection. Detection is enabled by default.
+         *
+         * When disabled, all allocated resources will be kept. Only interaction with other collision objects
+         * will be disabled. Thus, this method if good for short-term collision deactivation. If an object
+         * should be removed from collision detection for longer (like when it despawns), it might be more
+         * efficient to just drop the Handle and create a new one later.
          */
         virtual void setEnableCollision(bool b) = 0;
 

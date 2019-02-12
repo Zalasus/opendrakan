@@ -14,8 +14,6 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <LinearMath/btMotionState.h>
-
 #include <odCore/db/Class.h>
 #include <odCore/rfl/RflMessage.h>
 
@@ -27,6 +25,11 @@ namespace odAnim
 namespace odRender
 {
     class ObjectNode;
+}
+
+namespace odPhysics
+{
+    class ObjectHandle;
 }
 
 namespace od
@@ -59,12 +62,12 @@ namespace od
         Always
     };
 
-    class LevelObject : public btMotionState
+    class LevelObject
     {
     public:
 
         LevelObject(Level &level);
-        ~LevelObject();
+        virtual ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline odDb::Class *getClass() { return mClass; }
@@ -152,10 +155,6 @@ namespace od
         void messageAllLinkedObjects(odRfl::RflMessage message);
         void requestDestruction();
 
-        // implement btMotionState
-        virtual void getWorldTransform(btTransform& worldTrans) const override;
-        virtual void setWorldTransform(const btTransform& worldTrans) override;
-
 
     private:
 
@@ -170,6 +169,7 @@ namespace od
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
         od::RefPtr<odDb::Class> mClass;
+        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
         od::RefPtr<odRender::ObjectNode> mRenderNode;
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;

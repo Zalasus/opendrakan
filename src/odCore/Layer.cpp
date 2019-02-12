@@ -18,6 +18,7 @@
 #include <odCore/render/Geometry.h>
 
 #include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 namespace od
 {

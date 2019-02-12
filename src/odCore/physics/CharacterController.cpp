@@ -58,9 +58,9 @@ namespace odPhysics
 
 	bool CharacterController::_step(float stepHeight)
 	{
-		glm::vec3 rayStart = mCurrentPosition + (stepHeight > 0 ? mRelativeHighPoint : mRelativeLowPoint);
+		/*glm::vec3 rayStart = mCurrentPosition + (stepHeight > 0 ? mRelativeHighPoint : mRelativeLowPoint);
 		glm::vec3 rayEnd = rayStart + mUp*stepHeight;
-		/*ClosestNotMeRayResultCallback callback(rayStart, rayEnd, CollisionGroups::ALL, mGhostObject.get());
+		ClosestNotMeRayResultCallback callback(rayStart, rayEnd, CollisionGroups::ALL, mGhostObject.get());
 		mPhysicsManager.mDynamicsWorld->rayTest(rayStart, rayEnd, callback);
 		if(callback.hasHit() && _needsCollision(callback.m_collisionObject, mGhostObject.get()))
 		{
