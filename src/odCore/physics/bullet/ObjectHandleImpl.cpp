@@ -8,13 +8,19 @@
 #include <odCore/physics/bullet/ObjectHandleImpl.h>
 
 #include <odCore/LevelObject.h>
+#include <odCore/Upcast.h>
+
+#include <odCore/db/Class.h>
+#include <odCore/db/Model.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
+#include <odCore/physics/bullet/BulletPhysicsSystem.h>
+#include <odCore/physics/bullet/ModelShapeImpl.h>
 
 namespace odBulletPhysics
 {
 
-    ObjectHandle::ObjectHandle(od::LevelObject &obj, btCollisionWorld *collisionWorld)
+    ObjectHandle::ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld)
     : mLevelObject(obj)
     , mCollisionWorld(collisionWorld)
     {
@@ -22,17 +28,25 @@ namespace odBulletPhysics
         mCollisionObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
         // TODO: decide on static/kinematic object depending on user choice/ object type
 
-        btCollisionShape *shape;
+        odDb::Model *model = obj.getClass()->getModel();
+        if(model == nullptr)
+        {
+            throw od::Exception("Created physics handle for object without model");
+        }
+        od::RefPtr<odPhysics::ModelShape> shapeIface = model->getOrCreateModelShape(ps);
+        mModelShape = od::upcast<ModelShape>(shapeIface.get());
+
+        btCollisionShape *bulletShape;
         if(mLevelObject.isScaled())
         {
-            mUniqueShape = bounds.createUniqueShape();
-            shape = mUniqueShape.get();
+            mUniqueShape = mModelShape->createNewUniqueShape();
+            bulletShape = mUniqueShape.get();
 
         }else
         {
-            shape = bounds.getSharedShape();
+            bulletShape = mModelShape->getSharedShape();
         }
-        mCollisionObject->setCollisionShape(shape);
+        mCollisionObject->setCollisionShape(bulletShape);
 
         btTransform transform = BulletAdapter::makeBulletTransform(obj.getPosition(), obj.getRotation());
         mCollisionObject->setWorldTransform(transform);
@@ -79,7 +93,7 @@ namespace odBulletPhysics
         //  so if we are still using the shared shape, make it unique before applying scaling
         if(mUniqueShape == nullptr)
         {
-            mUniqueShape = bounds.createUniqueShape();
+            mUniqueShape = mModelShape->createNewUniqueShape();
             mCollisionObject->setCollisionShape(mUniqueShape.get());
         }
         mUniqueShape->setLocalScaling(BulletAdapter::toBullet(s));

@@ -189,6 +189,11 @@ namespace dragonRfl
 	    return *mPlayerObject;
 	}
 
+	odPhysics::Handle *HumanControl::getPhysicsHandle()
+	{
+	    return nullptr;
+	}
+
     void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
         if(event.type == odInput::InputEvent::Type::Down)

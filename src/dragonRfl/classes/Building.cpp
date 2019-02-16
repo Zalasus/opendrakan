@@ -18,8 +18,7 @@ namespace dragonRfl
 {
 
 	Building::Building(DragonRfl &rfl)
-	: mRfl(rfl)
-    , mInitialHealth(0)
+	: mInitialHealth(0)
 	, mSnapMode(0)
 	, mSoundEffectObject(odDb::AssetRef::NULL_REF)
 	, mIsDoorWay(false)
@@ -39,6 +38,7 @@ namespace dragonRfl
 	, mMessageToSendWhenPushed(odRfl::RflMessage::Off)
 	, mSendMessageAfterPushed(true)
 	, mMessageToSendAfterPushed(odRfl::RflMessage::Off)
+	, mRfl(rfl)
 	{
 	}
 
@@ -71,7 +71,7 @@ namespace dragonRfl
 
     void Building::onSpawned(od::LevelObject &obj)
 	{
-    	if(obj.getClass()->getModel() != nullptr && obj.getClass()->getModel()->getModelBounds() != nullptr)
+    	if(obj.getClass()->getModel() != nullptr)
 		{
     		mPhysicsHandle = mRfl.getEngine().getPhysicsSystem().createObjectHandle(obj);
     	}

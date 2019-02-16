@@ -32,7 +32,7 @@ namespace dragonRfl
     , mDoesCaveEntranceTeleport(true)
     , mDragonTakesOffUponTeleport(true)
     , mRfl(rfl)
-    , mDetector(nullptr)
+    //, mDetector(nullptr)
     , mPlayerWasIn(false)
     {
     }
@@ -62,12 +62,12 @@ namespace dragonRfl
     void Detector::onSpawned(od::LevelObject &obj)
     {
         obj.setEnableRflUpdateHook(true);
-        mDetector = obj.getLevel().getPhysicsManager().makeDetector(obj);
+        //mDetector = obj.getLevel().getPhysicsManager().makeDetector(obj);
     }
 
     void Detector::onUpdate(od::LevelObject &obj, float relTime)
     {
-        if(mTask != Task::TriggerOnly || mDetector == nullptr)
+        /*if(mTask != Task::TriggerOnly || mDetector == nullptr)
         {
             return;
         }
@@ -109,7 +109,7 @@ namespace dragonRfl
             obj.messageAllLinkedObjects(mTriggerMessage);
         }
 
-        mPlayerWasIn = playerIsIn;
+        mPlayerWasIn = playerIsIn;*/
     }
 
 

@@ -17,8 +17,6 @@
 #include <odCore/BoundingBox.h>
 #include <odCore/WeakRefPtr.h>
 
-#include <odCore/physics/ModelBounds.h>
-
 #include <odCore/db/Asset.h>
 #include <odCore/db/SkeletonBuilder.h>
 
@@ -28,9 +26,16 @@ namespace odRender
     class Renderer;
 }
 
+namespace odPhysics
+{
+    class PhysicsSystem;
+    class ModelShape;
+}
+
 namespace odDb
 {
     class ModelFactory;
+    class ModelBounds;
 
 	class Model : public Asset
 	{
@@ -79,7 +84,6 @@ namespace odDb
 
         inline const std::string &getName() const { return mModelName; }
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); } ///< May return nullptr if no skeleton present.
-		inline odPhysics::ModelBounds *getModelBounds() { return mModelBounds.get(); }
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 		inline bool hasSkeleton() const { return mSkeletonBuilder != nullptr; }
 		inline bool hasBounds() const { return mModelBounds != nullptr; }
@@ -91,6 +95,8 @@ namespace odDb
 		inline const od::BoundingSphere &getCalculatedBoundingSphere() const { return mCalculatedBoundingSphere; }
 		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() const { return mCalculatedBoundingBox; }
 
+		ModelBounds &getModelBounds();
+
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
 		void loadTextures(ModelFactory &factory, od::DataReader &&dr);
@@ -100,6 +106,8 @@ namespace odDb
 
 		// returns a refptr since this class only takes weak ownership of potentially created objects
 		od::RefPtr<odRender::ModelNode> getOrCreateRenderNode(odRender::Renderer *renderer);
+
+		od::RefPtr<odPhysics::ModelShape> getOrCreateModelShape(odPhysics::PhysicsSystem &ps);
 
 
 	private:
@@ -115,15 +123,18 @@ namespace odDb
 		std::vector<Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
-		std::unique_ptr<odPhysics::ModelBounds> mModelBounds;
+		std::unique_ptr<ModelBounds> mModelBounds;
 		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
+
 		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
 		od::BoundingSphere mCalculatedBoundingSphere;
 
 		od::WeakRefPtr<odRender::ModelNode> mRenderNode;
+
+		od::WeakRefPtr<odPhysics::ModelShape> mPhysicsShape;
 	};
 
 	template <>

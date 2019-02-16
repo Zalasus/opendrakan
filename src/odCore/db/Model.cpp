@@ -18,8 +18,13 @@
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/SkeletonBuilder.h>
 #include <odCore/db/Texture.h>
+#include <odCore/db/ModelBounds.h>
+
 #include <odCore/render/Renderer.h>
 #include <odCore/render/ModelNode.h>
+
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/ModelShape.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -43,6 +48,16 @@ namespace odDb
 
 	Model::~Model()
 	{
+	}
+
+	ModelBounds &Model::getModelBounds()
+	{
+	    if(mModelBounds == nullptr)
+	    {
+	        throw od::Exception("Model bounds have not yet been loaded");
+	    }
+
+	    return *mModelBounds;
 	}
 
 	void Model::loadNameAndShading(ModelFactory &factory, od::DataReader &&dr)
@@ -167,8 +182,8 @@ namespace odDb
 		   >> shapeCount
 		   >> shapeType;
 
-		odPhysics::ModelBounds::ShapeType type = (shapeType == 0) ? odPhysics::ModelBounds::SPHERES : odPhysics::ModelBounds::BOXES;
-		mModelBounds = std::make_unique<odPhysics::ModelBounds>(type, shapeCount);
+		ModelBounds::ShapeType type = (shapeType == 0) ? ModelBounds::SPHERES : ModelBounds::BOXES;
+		mModelBounds = std::make_unique<ModelBounds>(type, shapeCount);
 		mModelBounds->setMainBounds(mainBs, mainObb);
 
 		for(size_t i = 0; i < shapeCount; ++i)
@@ -417,5 +432,16 @@ namespace odDb
 	    return od::RefPtr<odRender::ModelNode>(mRenderNode.get());
 	}
 
+	od::RefPtr<odPhysics::ModelShape> Model::getOrCreateModelShape(odPhysics::PhysicsSystem &ps)
+    {
+	    if(mPhysicsShape == nullptr)
+	    {
+	        od::RefPtr<odPhysics::ModelShape> shape = ps.createModelShape(*this);
+	        mPhysicsShape = shape.get();
+	        return shape;
+	    }
+
+	    return od::RefPtr<odPhysics::ModelShape>(mPhysicsShape.get());
+    }
 }
 

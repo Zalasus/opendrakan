@@ -11,7 +11,6 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
-#include <odCore/physics/Detector.h>
 
 namespace dragonRfl
 {
@@ -86,7 +85,7 @@ namespace dragonRfl
     private:
 
         DragonRfl &mRfl;
-        odPhysics::Detector *mDetector;
+        //odPhysics::Detector *mDetector;
         bool mPlayerWasIn;
     };
 

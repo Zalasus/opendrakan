@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_PHYSICS_PHYSICSSYSTEM_H_
 
 #include <vector>
+#include <memory>
 
 #include <glm/vec3.hpp>
 
@@ -20,11 +21,17 @@ namespace od
     class Layer;
 }
 
+namespace odDb
+{
+    class Model;
+}
+
 namespace odPhysics
 {
     class Handle;
     class ObjectHandle;
     class LayerHandle;
+    class ModelShape;
 
     struct PhysicsTypeMasks
     {
@@ -78,6 +85,8 @@ namespace odPhysics
 
         virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj) = 0;
         virtual od::RefPtr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;
+
+        virtual od::RefPtr<ModelShape> createModelShape(odDb::Model &model) = 0;
     };
 
 }

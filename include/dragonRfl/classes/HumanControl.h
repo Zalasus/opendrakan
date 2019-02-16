@@ -43,6 +43,7 @@ namespace dragonRfl
 		virtual void setPitch(float f) override { mPitch = f; }
 		virtual glm::vec3 getPosition() override;
 		virtual od::LevelObject &getLevelObject() override;
+		virtual odPhysics::Handle *getPhysicsHandle() override;
 
 
 	 private:

@@ -18,6 +18,8 @@
 
 #include <odCore/render/Renderer.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+
 namespace dragonRfl
 {
 
@@ -84,21 +86,23 @@ namespace dragonRfl
             return;
         }
 
+        odPhysics::Handle *playerHandle = player->getPhysicsHandle();
+
         glm::vec3 eye = player->getPosition();
         glm::quat lookDirection(glm::vec3(player->getPitch(), player->getYaw(), 0));
 
         // perform raycast to find obstacle closest point with unobstructed view of player
         glm::vec3 from = player->getPosition();
         glm::vec3 to = from + lookDirection * glm::vec3(0, 0, 3);
-        odPhysics::RaycastResult result;
-        bool hit = player->getLevelObject().getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
+        odPhysics::RayTestResult result;
+        bool hit = mRfl.getEngine().getPhysicsSystem().raycastClosest(from, to, odPhysics::PhysicsTypeMasks::All, playerHandle, result);
         if(!hit)
         {
             eye = to;
 
         }else
         {
-            eye = result.hitPoint;
+            eye = result.getHitPoint();
         }
 
         _setObjectPositionAndViewMatrix(eye, lookDirection);

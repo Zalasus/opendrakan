@@ -5,16 +5,13 @@
  *      Author: zal
  */
 
-#include <odCore/physics/ModelBounds.h>
+#include <odCore/db/ModelBounds.h>
 
 #include <iostream>
 
-#include <BulletCollision/CollisionShapes/btSphereShape.h>
-#include <BulletCollision/CollisionShapes/btBoxShape.h>
-
 #include <odCore/Exception.h>
 
-namespace odPhysics
+namespace odDb
 {
 
 	ModelBounds::ModelBounds(ModelBounds::ShapeType type, size_t shapeCount)

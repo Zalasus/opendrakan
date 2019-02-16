@@ -8,6 +8,16 @@
 #ifndef INCLUDE_DRAGONRFL_LOCALPLAYER_H_
 #define INCLUDE_DRAGONRFL_LOCALPLAYER_H_
 
+namespace od
+{
+    class LevelObject;
+}
+
+namespace odPhysics
+{
+    class Handle;
+}
+
 namespace dragonRfl
 {
 
@@ -23,6 +33,7 @@ namespace dragonRfl
         virtual void setPitch(float f) = 0;
         virtual glm::vec3 getPosition() = 0;
         virtual od::LevelObject &getLevelObject() = 0;
+        virtual odPhysics::Handle *getPhysicsHandle() = 0;
 
     };
 

@@ -16,6 +16,7 @@
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>
 #include <odCore/physics/bullet/ObjectHandleImpl.h>
+#include <odCore/physics/bullet/ModelShapeImpl.h>
 
 namespace odBulletPhysics
 {
@@ -87,7 +88,7 @@ namespace odBulletPhysics
 
     od::RefPtr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj)
     {
-        auto objectHandle = od::make_refd<ObjectHandle>(obj, mCollisionWorld.get());
+        auto objectHandle = od::make_refd<ObjectHandle>(*this, obj, mCollisionWorld.get());
 
         mObjectHandles[obj.getObjectId()] = objectHandle;
 
@@ -101,6 +102,13 @@ namespace odBulletPhysics
         mLayerHandles[layer.getId()] = layerHandle;
 
         return layerHandle.get();
+    }
+
+    od::RefPtr<odPhysics::ModelShape> BulletPhysicsSystem::createModelShape(odDb::Model &model)
+    {
+        auto mb = od::make_refd<ModelShape>(model.getModelBounds());
+
+        return mb.get();
     }
 
 }

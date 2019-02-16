@@ -24,12 +24,14 @@ namespace od
 
 namespace odBulletPhysics
 {
+    class BulletPhysicsSystem;
+    class ModelShape;
 
     class ObjectHandle : public odPhysics::ObjectHandle
     {
     public:
 
-        ObjectHandle(od::LevelObject &obj, btCollisionWorld *collisionWorld);
+        ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld);
         virtual ~ObjectHandle();
 
         virtual void setEnableCollision(bool b) override;
@@ -43,6 +45,8 @@ namespace odBulletPhysics
 
         od::LevelObject &mLevelObject;
         btCollisionWorld *mCollisionWorld;
+
+        od::RefPtr<ModelShape> mModelShape;
 
         std::unique_ptr<btCollisionObject> mCollisionObject;
         std::unique_ptr<btCollisionShape> mUniqueShape;

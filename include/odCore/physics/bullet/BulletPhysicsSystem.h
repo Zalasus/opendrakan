@@ -57,6 +57,8 @@ namespace odBulletPhysics
         virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj) override;
         virtual od::RefPtr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
 
+        virtual od::RefPtr<odPhysics::ModelShape> createModelShape(odDb::Model &model) override;
+
 
     private:
 
@@ -68,6 +70,7 @@ namespace odBulletPhysics
         std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btCollisionWorld> mCollisionWorld;
 
+        // These are used for typesafe lookup of hit objects during raytests
         std::map<uint32_t, od::WeakRefPtr<ObjectHandle>> mObjectHandles;
         std::map<uint32_t, od::WeakRefPtr<LayerHandle>> mLayerHandles;
     };
