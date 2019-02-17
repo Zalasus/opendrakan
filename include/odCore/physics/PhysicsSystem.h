@@ -49,12 +49,19 @@ namespace odPhysics
     {
     public:
 
+        RayTestResult();
         RayTestResult(const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, ObjectHandle *hitObject);
         RayTestResult(const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LayerHandle *hitLayer);
+        RayTestResult(const RayTestResult &r);
+        ~RayTestResult();
 
         inline glm::vec3 getHitPoint() const { return mHitPoint; }
         inline glm::vec3 getHitNormal() const { return mHitNormal; }
+        inline uint32_t getType() const { return mTypeMask; }
 
+        RayTestResult &operator=(const RayTestResult &r);
+
+        // will throw if type does not match
         ObjectHandle *getObjectHandle();
         LayerHandle *getLayerHandle();
 

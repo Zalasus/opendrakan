@@ -34,6 +34,10 @@ namespace odBulletPhysics
         mCollisionWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
     }
 
+    BulletPhysicsSystem::~BulletPhysicsSystem()
+    {
+    }
+
     size_t BulletPhysicsSystem::raycast(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, odPhysics::RayTestResultVector &resultsOut)
     {
         btVector3 bStart = BulletAdapter::toBullet(from);

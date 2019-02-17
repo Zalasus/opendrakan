@@ -34,6 +34,8 @@ set(SOURCES
         "physics/bullet/ModelShapeImpl.cpp"
         "physics/bullet/ObjectHandleImpl.cpp"
         "physics/CharacterController.cpp"
+        "physics/Handles.cpp"
+        "physics/PhysicsSystem.cpp"
         "render/GuiQuad.cpp"
         "render/Light.cpp"
         "rfl/ClassBuilderProbe.cpp"

@@ -16,11 +16,17 @@
 namespace odPhysics
 {
 
+    class ObjectHandle;
+    class LayerHandle;
+
     class Handle : public od::RefCounted
     {
     public:
 
         virtual ~Handle() = default;
+
+        virtual LayerHandle *asLayerHandle();
+        virtual ObjectHandle *asObjectHandle();
 
     };
 
@@ -43,6 +49,8 @@ namespace odPhysics
         virtual void setOrientation(const glm::quat &q) = 0;
         virtual void setScale(const glm::vec3 &s) = 0;
 
+        virtual ObjectHandle *asObjectHandle() override;
+
     };
 
 
@@ -50,6 +58,7 @@ namespace odPhysics
     {
     public:
 
+        virtual LayerHandle *asLayerHandle() override;
 
     };
 
