@@ -50,6 +50,11 @@ namespace odBulletPhysics
         }
     }
 
+    od::Layer &LayerHandle::getLayer()
+    {
+        return mLayer;
+    }
+
     void LayerHandle::_buildCollisionShape()
     {
         if(mLayer.getCollidingTriangleCount() == 0)

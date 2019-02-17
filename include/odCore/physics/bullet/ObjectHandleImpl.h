@@ -40,6 +40,8 @@ namespace odBulletPhysics
         virtual void setOrientation(const glm::quat &q) override;
         virtual void setScale(const glm::vec3 &s) override;
 
+        virtual od::LevelObject &getLevelObject() override;
+
 
     private:
 

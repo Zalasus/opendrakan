@@ -32,6 +32,8 @@ namespace odBulletPhysics
         LayerHandle(od::Layer &layer, btCollisionWorld *collisionWorld);
         virtual ~LayerHandle();
 
+        virtual od::Layer &getLayer() override;
+
 
     private:
 

@@ -13,6 +13,12 @@
 
 #include <odCore/RefCounted.h>
 
+namespace od
+{
+    class LevelObject;
+    class Layer;
+}
+
 namespace odPhysics
 {
 
@@ -25,7 +31,14 @@ namespace odPhysics
 
         virtual ~Handle() = default;
 
+        /**
+         * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not a layer handle.
+         */
         virtual LayerHandle *asLayerHandle();
+
+        /**
+         * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not an object handle.
+         */
         virtual ObjectHandle *asObjectHandle();
 
     };
@@ -34,6 +47,8 @@ namespace odPhysics
     class ObjectHandle : public Handle
     {
     public:
+
+        virtual ObjectHandle *asObjectHandle() override;
 
         /**
          * @brief Enables or disables collision detection. Detection is enabled by default.
@@ -49,7 +64,7 @@ namespace odPhysics
         virtual void setOrientation(const glm::quat &q) = 0;
         virtual void setScale(const glm::vec3 &s) = 0;
 
-        virtual ObjectHandle *asObjectHandle() override;
+        virtual od::LevelObject &getLevelObject() = 0;
 
     };
 
@@ -59,6 +74,8 @@ namespace odPhysics
     public:
 
         virtual LayerHandle *asLayerHandle() override;
+
+        virtual od::Layer &getLayer() = 0;
 
     };
 

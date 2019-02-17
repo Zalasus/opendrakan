@@ -17,6 +17,7 @@
 
 #include <odCore/FilePath.h>
 #include <odCore/Layer.h>
+
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
 
@@ -71,8 +72,6 @@ namespace od
         std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
 
 		std::list<LevelObject*> mDestructionQueue;
-
-		std::vector<Layer*> mLayerLookupCache;
     };
 
 

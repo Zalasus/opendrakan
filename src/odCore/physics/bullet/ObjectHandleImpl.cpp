@@ -106,6 +106,11 @@ namespace odBulletPhysics
         mUniqueShape->setLocalScaling(BulletAdapter::toBullet(s));
     }
 
+    od::LevelObject &ObjectHandle::getLevelObject()
+    {
+        return mLevelObject;
+    }
+
 }
 
 
