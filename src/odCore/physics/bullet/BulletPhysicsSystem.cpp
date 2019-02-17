@@ -43,8 +43,12 @@ namespace odBulletPhysics
     {
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
+
+        // TODO: we might want to write a custom callback that handles the mask internally and directly converts to RayTestResult
         btCollisionWorld::AllHitsRayResultCallback callback(bStart, bEnd);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
+
+        int bulletMask = _toBulletMask(typeMask);
 
         size_t hitObjectCount = callback.m_collisionObjects.size();
         resultsOut.reserve(hitObjectCount);
@@ -53,6 +57,11 @@ namespace odBulletPhysics
             const btCollisionObject *hitObject = callback.m_collisionObjects[i];
             glm::vec3 hitPoint = BulletAdapter::toGlm(callback.m_hitPointWorld[i]);
             glm::vec3 hitNormal = BulletAdapter::toGlm(callback.m_hitNormalWorld[i]);
+
+            if(!(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & bulletMask))
+            {
+                continue;
+            }
 
             // determine hit object
             if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::LAYER)

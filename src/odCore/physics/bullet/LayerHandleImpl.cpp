@@ -44,6 +44,8 @@ namespace odBulletPhysics
     {
         if(mCollisionObject != nullptr)
         {
+            mCollisionObject->setUserIndex(-1);
+            mCollisionObject->setUserPointer(nullptr);
             mCollisionWorld->removeCollisionObject(mCollisionObject.get());
         }
     }
