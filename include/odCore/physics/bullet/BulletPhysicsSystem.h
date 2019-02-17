@@ -9,7 +9,6 @@
 #define INCLUDE_ODCORE_PHYSICS_BULLET_BULLETPHYSICSSYSTEM_H_
 
 #include <memory>
-#include <map>
 
 #include <BulletCollision/BroadphaseCollision/btBroadphaseInterface.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
@@ -71,10 +70,6 @@ namespace odBulletPhysics
         std::unique_ptr<btCollisionDispatcher> mDispatcher; // depends on mCollisionConfiguration. init after that
         std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btCollisionWorld> mCollisionWorld;
-
-        // These are used for typesafe lookup of hit objects during raytests
-        std::map<uint32_t, od::WeakRefPtr<ObjectHandle>> mObjectHandles;
-        std::map<uint32_t, od::WeakRefPtr<LayerHandle>> mLayerHandles;
     };
 
 }

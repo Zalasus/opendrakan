@@ -142,16 +142,12 @@ namespace odBulletPhysics
     {
         auto objectHandle = od::make_refd<ObjectHandle>(*this, obj, mCollisionWorld.get());
 
-        mObjectHandles[obj.getObjectId()] = objectHandle;
-
         return objectHandle.get();
     }
 
     od::RefPtr<odPhysics::LayerHandle> BulletPhysicsSystem::createLayerHandle(od::Layer &layer)
     {
         auto layerHandle = od::make_refd<LayerHandle>(layer, mCollisionWorld.get());
-
-        mLayerHandles[layer.getId()] = layerHandle;
 
         return layerHandle.get();
     }
