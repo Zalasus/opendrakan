@@ -37,12 +37,14 @@ namespace odPhysics
     {
         PhysicsTypeMasks() = delete;
 
-        static const uint32_t LevelObject = 1;
-        static const uint32_t Layer = 2;
-        static const uint32_t Light = 4;
-        static const uint32_t Detector = 8;
+        typedef uint32_t Mask;
 
-        static const uint32_t All = -1;
+        static const Mask LevelObject = 1;
+        static const Mask Layer = 2;
+        static const Mask Light = 4;
+        static const Mask Detector = 8;
+
+        static const Mask All = -1;
     };
 
     class RayTestResult
@@ -57,7 +59,7 @@ namespace odPhysics
 
         inline glm::vec3 getHitPoint() const { return mHitPoint; }
         inline glm::vec3 getHitNormal() const { return mHitNormal; }
-        inline uint32_t getType() const { return mTypeMask; }
+        inline PhysicsTypeMasks::Mask getType() const { return mTypeMask; }
 
         RayTestResult &operator=(const RayTestResult &r);
 
@@ -71,7 +73,7 @@ namespace odPhysics
         glm::vec3 mHitPoint;
         glm::vec3 mHitNormal;
 
-        uint32_t mTypeMask;
+        PhysicsTypeMasks::Mask mTypeMask;
 
         od::RefPtr<Handle> mHandle;
     };
@@ -87,8 +89,8 @@ namespace odPhysics
 
         virtual ~PhysicsSystem() = default;
 
-        virtual size_t raycast(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, RayTestResultVector &resultsOut) = 0;
-        virtual bool raycastClosest(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, Handle *exclude, RayTestResult &resultOut) = 0;
+        virtual size_t raycast(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, RayTestResultVector &resultsOut) = 0;
+        virtual bool raycastClosest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, Handle *exclude, RayTestResult &resultOut) = 0;
 
         virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj) = 0;
         virtual od::RefPtr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;

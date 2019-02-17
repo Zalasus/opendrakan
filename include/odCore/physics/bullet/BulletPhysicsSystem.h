@@ -26,7 +26,7 @@ namespace odBulletPhysics
     struct ObjectHandle;
     struct LayerHandle;
 
-    struct CollisionGroups
+    struct BulletCollisionGroups
     {
         enum Masks
         {
@@ -51,8 +51,8 @@ namespace odBulletPhysics
         BulletPhysicsSystem();
         virtual ~BulletPhysicsSystem();
 
-        virtual size_t raycast(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, odPhysics::RayTestResultVector &resultsOut) override;
-        virtual bool raycastClosest(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut) override;
+        virtual size_t raycast(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::RayTestResultVector &resultsOut) override;
+        virtual bool raycastClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut) override;
 
         virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj) override;
         virtual od::RefPtr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
@@ -61,6 +61,8 @@ namespace odBulletPhysics
 
 
     private:
+
+        BulletCollisionGroups::Masks _toBulletMask(odPhysics::PhysicsTypeMasks::Mask mask);
 
         // order is important since bullet never takes ownership!
         //  mCollisionWorld needs to be initialized last and destroyed first

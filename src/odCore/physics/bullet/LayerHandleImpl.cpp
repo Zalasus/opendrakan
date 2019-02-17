@@ -12,6 +12,7 @@
 #include <odCore/Layer.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
+#include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
 namespace odBulletPhysics
 {
@@ -26,14 +27,16 @@ namespace odBulletPhysics
         {
             mCollisionObject = std::make_unique<btCollisionObject>();
             mCollisionObject->setCollisionShape(mShape.get());
-            mCollisionObject->setUserIndex(mLayer.getId());
             mCollisionObject->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+
+            mCollisionObject->setUserIndex(mLayer.getId());
+            mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
 
             glm::vec3 worldOffset = mLayer.getOrigin();
             btTransform worldTransform(btQuaternion(0, 0, 0, 1), BulletAdapter::toBullet(worldOffset));
             mCollisionObject->setWorldTransform(worldTransform);
 
-            mCollisionWorld->addCollisionObject(mCollisionObject.get(), -1, -1);
+            mCollisionWorld->addCollisionObject(mCollisionObject.get(), BulletCollisionGroups::LAYER, BulletCollisionGroups::ALL);
         }
     }
 

@@ -27,11 +27,6 @@ namespace odRender
     class ObjectNode;
 }
 
-namespace odPhysics
-{
-    class ObjectHandle;
-}
-
 namespace od
 {
 
@@ -169,7 +164,6 @@ namespace od
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
         od::RefPtr<odDb::Class> mClass;
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
         od::RefPtr<odRender::ObjectNode> mRenderNode;
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;

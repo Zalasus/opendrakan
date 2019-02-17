@@ -50,6 +50,11 @@ namespace odBulletPhysics
 
         btTransform transform = BulletAdapter::makeBulletTransform(obj.getPosition(), obj.getRotation());
         mCollisionObject->setWorldTransform(transform);
+
+        mCollisionObject->setUserPointer(static_cast<Handle*>(this));
+        mCollisionObject->setUserIndex(obj.getObjectId());
+
+        mCollisionWorld->addCollisionObject(mCollisionObject.get(), BulletCollisionGroups::OBJECT, BulletCollisionGroups::ALL);
     }
 
     ObjectHandle::~ObjectHandle()

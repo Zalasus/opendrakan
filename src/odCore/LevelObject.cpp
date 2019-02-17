@@ -23,9 +23,6 @@
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 
-#include <odCore/physics/PhysicsSystem.h>
-#include <odCore/physics/Handles.h>
-
 #include <odCore/render/Renderer.h>
 #include <odCore/render/ObjectNode.h>
 #include <odCore/render/ModelNode.h>
@@ -167,8 +164,6 @@ namespace od
             }
         }
 
-        mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createObjectHandle(*this);
-
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr && mClass->hasModel())
         {
@@ -211,7 +206,6 @@ namespace od
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
 
-        mPhysicsHandle = nullptr;
         mRenderNode = nullptr;
 
         // TODO: how to ensure no unnecessary updates/cullings happen on our subgraph if present?

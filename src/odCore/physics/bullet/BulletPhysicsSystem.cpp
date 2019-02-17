@@ -38,7 +38,7 @@ namespace odBulletPhysics
     {
     }
 
-    size_t BulletPhysicsSystem::raycast(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, odPhysics::RayTestResultVector &resultsOut)
+    size_t BulletPhysicsSystem::raycast(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::RayTestResultVector &resultsOut)
     {
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
@@ -54,7 +54,7 @@ namespace odBulletPhysics
             glm::vec3 hitNormal = BulletAdapter::toGlm(callback.m_hitNormalWorld[i]);
 
             // determine hit object
-            if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::LAYER)
+            if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::LAYER)
             {
                 auto it = mLayerHandles.find(hitObject->getUserIndex());
                 if(it == mLayerHandles.end() || it->second == nullptr)
@@ -62,10 +62,12 @@ namespace odBulletPhysics
                     continue;
                 }
 
+                // TODO: for efficiency, we might use the user pointer here instead (won't be typesafe, though)
+
                 od::RefPtr<odPhysics::LayerHandle> layerHandle(it->second.get());
                 resultsOut.emplace_back(hitPoint, hitNormal, layerHandle);
 
-            }else if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & CollisionGroups::OBJECT)
+            }else if(hitObject->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::OBJECT)
             {
                 auto it = mObjectHandles.find(hitObject->getUserIndex());
                 if(it == mObjectHandles.end() || it->second == nullptr)
@@ -85,7 +87,7 @@ namespace odBulletPhysics
         return hitObjectCount;
     }
 
-    bool BulletPhysicsSystem::raycastClosest(const glm::vec3 &from, const glm::vec3 &to, uint32_t typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut)
+    bool BulletPhysicsSystem::raycastClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut)
     {
         return false; // TODO: implement
     }
@@ -115,4 +117,21 @@ namespace odBulletPhysics
         return mb.get();
     }
 
+    BulletCollisionGroups::Masks BulletPhysicsSystem::_toBulletMask(odPhysics::PhysicsTypeMasks::Mask mask)
+    {
+        switch(mask)
+        {
+        case odPhysics::PhysicsTypeMasks::Layer:
+            return BulletCollisionGroups::LAYER;
+
+        case odPhysics::PhysicsTypeMasks::LevelObject:
+            return BulletCollisionGroups::OBJECT;
+
+        case odPhysics::PhysicsTypeMasks::Detector:
+            return BulletCollisionGroups::DETECTOR;
+
+        default:
+            throw od::Exception("Unknown physics type mask");
+        }
+    }
 }
