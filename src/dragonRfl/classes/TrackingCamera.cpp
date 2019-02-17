@@ -95,7 +95,7 @@ namespace dragonRfl
         glm::vec3 from = player->getPosition();
         glm::vec3 to = from + lookDirection * glm::vec3(0, 0, 3);
         odPhysics::RayTestResult result;
-        bool hit = mRfl.getEngine().getPhysicsSystem().raycastClosest(from, to, odPhysics::PhysicsTypeMasks::All, playerHandle, result);
+        bool hit = mRfl.getEngine().getPhysicsSystem().rayTestClosest(from, to, odPhysics::PhysicsTypeMasks::All, playerHandle, result);
         if(!hit)
         {
             eye = to;
