@@ -71,8 +71,17 @@ namespace dragonRfl
 
     void Building::onSpawned(od::LevelObject &obj)
 	{
-    	if(obj.getClass()->getModel() != nullptr)
+        odDb::Model *model = obj.getClass()->getModel();
+    	if(model == nullptr || !model->hasBounds())
 		{
+    	    Logger::warn() << "Building class used on object without model. Disabling collision for this object";
+
+		}else if(!model->hasBounds())
+		{
+		    Logger::warn() << "Building class used on object whose model has no valid bounds. Disabling collision for this object";
+
+		}else
+        {
     		mPhysicsHandle = mRfl.getEngine().getPhysicsSystem().createObjectHandle(obj);
     	}
 	}
