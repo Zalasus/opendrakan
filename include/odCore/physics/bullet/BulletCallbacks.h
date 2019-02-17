@@ -10,21 +10,24 @@
 
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 
+#include <odCore/physics/Handles.h>
+
 namespace odBulletPhysics
 {
 
-    class ClosestNotMeRayResultCallback : public btCollisionWorld::ClosestRayResultCallback
+    class ClosestRayCallback : public btCollisionWorld::ClosestRayResultCallback
     {
     public:
 
-        ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, int mask, btCollisionObject *me);
+        ClosestRayCallback(const btVector3 &from, const btVector3 &to, int mask, odPhysics::Handle *exclude);
 
         virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace);
 
 
     protected:
 
-        btCollisionObject *mMe;
+        int mMask;
+        od::RefPtr<odPhysics::Handle> mExclude;
     };
 
 

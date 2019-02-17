@@ -10,16 +10,19 @@
 namespace odBulletPhysics
 {
 
-    ClosestNotMeRayResultCallback::ClosestNotMeRayResultCallback(const btVector3 &from, const btVector3 &to, int mask, btCollisionObject *me)
+    ClosestRayCallback::ClosestRayCallback(const btVector3 &from, const btVector3 &to, int mask, odPhysics::Handle *exclude)
     : btCollisionWorld::ClosestRayResultCallback(from, to)
-    , mMe(me)
+    , mMask(mask)
+    , mExclude(exclude)
     {
         m_collisionFilterMask = mask;
     }
 
-    btScalar ClosestNotMeRayResultCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
+    btScalar ClosestRayCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
     {
-        if(rayResult.m_collisionObject == mMe)
+        if(   rayResult.m_collisionObject == nullptr
+           || rayResult.m_collisionObject->getUserPointer() == mExclude
+           || !(rayResult.m_collisionObject->getBroadphaseHandle()->m_collisionFilterGroup & mMask))
         {
             return 1.0;
         }
