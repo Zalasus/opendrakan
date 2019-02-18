@@ -101,7 +101,9 @@ Layer data block format
         
         third and fourth byte seems to be height offset divided by two (can't change height in smaller units)
         value is biased, so 0x8000 means an offset of 0, 0x7FFF means -2 and 0x8002 means +4 etc.
-        
+        As the .lvl terrain uses a uniform grid, we might want to calculate the scale for the height values.
+        If we assume that each grid cell is 1 x 1 in dimension, the height values have a scale of 1/2048.
+        true_vertex_position = (layer_world_height + (vertex_entry_height_offset - 0x8000) * 2) / 2048
         
     Second block is face data
     26 bytes per face, top left face first, then filled left to right, top to bottom
