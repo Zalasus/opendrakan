@@ -45,46 +45,23 @@ namespace odBulletPhysics
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
 
-        // TODO: we might want to write a custom callback that handles the mask internally and directly converts to RayTestResult
-        btCollisionWorld::AllHitsRayResultCallback callback(bStart, bEnd);
+        int32_t bulletMask = _toBulletMask(typeMask);
+
+        AllRayCallback callback(bStart, bEnd, bulletMask, resultsOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
-        int bulletMask = _toBulletMask(typeMask);
-
-        size_t hitObjectCount = callback.m_collisionObjects.size();
-        resultsOut.reserve(hitObjectCount);
-        for(size_t i = 0; i < hitObjectCount; ++i)
-        {
-            const btCollisionObject *hitObject = callback.m_collisionObjects[i];
-
-            if(!(hitObject->getBroadphaseHandle()->m_collisionFilterGroup & bulletMask))
-            {
-                continue;
-            }
-
-            resultsOut.emplace_back();
-
-            _objectToResult(callback.m_hitFractions[i], callback.m_hitPointWorld[i], callback.m_hitNormalWorld[i], hitObject, resultsOut.back());
-        }
-
-        return hitObjectCount;
+        return callback.getHitCount();
     }
 
     bool BulletPhysicsSystem::rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut)
     {
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
-        ClosestRayCallback callback(bStart, bEnd, _toBulletMask(typeMask), exclude);
+
+        ClosestRayCallback callback(bStart, bEnd, _toBulletMask(typeMask), exclude, resultOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
-        if(callback.hasHit())
-        {
-            _objectToResult(callback.m_closestHitFraction, callback.m_hitPointWorld, callback.m_hitNormalWorld, callback.m_collisionObject, resultOut);
-
-            return true;
-        }
-
-        return false;
+        return callback.hasHit();
     }
 
     size_t BulletPhysicsSystem::contactTest(const glm::vec3 &v)

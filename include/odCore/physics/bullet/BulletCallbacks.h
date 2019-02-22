@@ -11,26 +11,10 @@
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 
 #include <odCore/physics/Handles.h>
+#include <odCore/physics/PhysicsSystem.h>
 
 namespace odBulletPhysics
 {
-
-    class ClosestRayCallback : public btCollisionWorld::ClosestRayResultCallback
-    {
-    public:
-
-        ClosestRayCallback(const btVector3 &from, const btVector3 &to, int mask, odPhysics::Handle *exclude);
-
-        virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace);
-
-
-    protected:
-
-        int mMask;
-        od::RefPtr<odPhysics::Handle> mExclude;
-    };
-
-
     class ClosestNotMeConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback
     {
     public:
@@ -43,6 +27,44 @@ namespace odBulletPhysics
     protected:
 
         btCollisionObject *mMe;
+    };
+
+
+    class ClosestRayCallback : public btCollisionWorld::RayResultCallback
+    {
+    public:
+
+        ClosestRayCallback(const btVector3 &start, const btVector3 &end, int32_t mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result);
+
+        virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) override;
+
+
+    private:
+
+        odPhysics::RayTestResult &mResult;
+        btVector3 mStart;
+        btVector3 mEnd;
+        od::RefPtr<odPhysics::Handle> mExclude;
+    };
+
+
+    class AllRayCallback : public btCollisionWorld::RayResultCallback
+    {
+    public:
+
+        AllRayCallback(const btVector3 &start, const btVector3 &end, int32_t mask, odPhysics::RayTestResultVector &results);
+
+        inline size_t getHitCount() const { return mHitCount; }
+
+        virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) override;
+
+
+    private:
+
+        odPhysics::RayTestResultVector &mResults;
+        btVector3 mStart;
+        btVector3 mEnd;
+        size_t mHitCount;
     };
 
 }
