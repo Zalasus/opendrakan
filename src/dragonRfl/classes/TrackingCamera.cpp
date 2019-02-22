@@ -94,8 +94,11 @@ namespace dragonRfl
         // perform raycast to find obstacle closest point with unobstructed view of player
         glm::vec3 from = player->getPosition();
         glm::vec3 to = from + lookDirection * glm::vec3(0, 0, 3);
+
+        static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
+
         odPhysics::RayTestResult result;
-        bool hit = mRfl.getEngine().getPhysicsSystem().rayTestClosest(from, to, odPhysics::PhysicsTypeMasks::All, playerHandle, result);
+        bool hit = mRfl.getEngine().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
         if(!hit)
         {
             eye = to;
