@@ -23,9 +23,13 @@
 
 #include <odOsg/render/ShaderFactory.h>
 
+namespace od
+{
+    class Light;
+}
+
 namespace odOsg
 {
-
     class ModelNode;
     class Texture;
     class Camera;
@@ -47,7 +51,6 @@ namespace odOsg
 
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
-        virtual od::RefPtr<odRender::Light> createLight(od::LevelObject *obj) override;
 
         virtual od::RefPtr<odRender::ObjectNode> createObjectNode(od::LevelObject &obj) override;
         virtual od::RefPtr<odRender::ModelNode> createModelNode(odDb::Model *model) override;
@@ -60,9 +63,8 @@ namespace odOsg
         virtual odRender::Camera *getCamera() override;
 
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
-        void applyToLightUniform(const osg::Matrix &viewMatrix, odRender::Light *light, size_t index);
+        void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index);
         void applyNullLight(size_t index);
-        void getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights, uint32_t lightMask);
 
         void setFreeLook(bool f);
 
@@ -93,7 +95,6 @@ namespace odOsg
         od::RefPtr<GuiNode> mGuiRootNode;
 
         bool mLightingEnabled;
-        std::vector<od::RefPtr<odRender::Light>> mLights;
         osg::ref_ptr<osg::Uniform> mGlobalLightDiffuse;
         osg::ref_ptr<osg::Uniform> mGlobalLightAmbient;
         osg::ref_ptr<osg::Uniform> mGlobalLightDirection;

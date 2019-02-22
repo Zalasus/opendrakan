@@ -12,7 +12,7 @@
 #include <osg/StateAttribute>
 #include <osg/NodeCallback>
 
-#include <odCore/render/Light.h>
+#include <odCore/Light.h>
 
 namespace odOsg
 {
@@ -57,13 +57,13 @@ namespace odOsg
          *
          * If more lights than the maximum possible number of lights are added, the additional calls are ignored.
          */
-        void addLight(odRender::Light *light);
+        void addLight(od::Light *light);
 
 
     private:
 
         Renderer *mRenderer;
-        std::vector<od::RefPtr<odRender::Light>> mLights;
+        std::vector<od::RefPtr<od::Light>> mLights;
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;
         osg::Vec3 mLayerLightDirection;
@@ -104,7 +104,6 @@ namespace odOsg
         LightStateCallback(Renderer *renderer, osg::Node *node, bool ignoreCulledState = false);
 
         inline void lightingDirty() { mLightingDirty = true; }
-        inline void setLightMask(uint32_t lightMask) { mLightMask = lightMask; }
         inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
         {
             mLightStateAttribute->setLayerLight(color, ambient, direction);
@@ -120,9 +119,8 @@ namespace odOsg
         Renderer *mRenderer;
         bool mIgnoreCulledState;
         bool mLightingDirty;
-        uint32_t mLightMask;
         LightStateAttribute *mLightStateAttribute;
-        std::vector<odRender::Light*> mTmpAffectingLightsList;
+        std::vector<od::Light*> mTmpAffectingLightsList;
     };
 
 }

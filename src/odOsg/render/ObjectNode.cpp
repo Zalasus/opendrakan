@@ -141,7 +141,7 @@ namespace odOsg
 
     void ObjectNode::setLocalLightMask(uint32_t localLightMask)
     {
-        mLightStateCallback->setLightMask(localLightMask);
+        //mLightStateCallback->setLightMask(localLightMask);
     }
 
     odRender::ModelNode *ObjectNode::getModel()

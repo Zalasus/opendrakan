@@ -36,7 +36,6 @@ namespace odRender
     class LayerNode;
     class Texture;
     class Image;
-    class Light;
     class RendererEventListener;
     class GuiNode;
 
@@ -57,7 +56,6 @@ namespace odRender
 
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
-        virtual od::RefPtr<odRender::Light> createLight(od::LevelObject *obj) = 0;
 
         virtual od::RefPtr<ObjectNode> createObjectNode(od::LevelObject &obj) = 0;
         virtual od::RefPtr<ModelNode> createModelNode(odDb::Model *model) = 0;

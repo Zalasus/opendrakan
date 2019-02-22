@@ -17,8 +17,8 @@
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 #include <odCore/OdDefines.h>
+#include <odCore/Light.h>
 
-#include <odCore/render/Light.h>
 #include <odCore/render/RendererEventListener.h>
 
 #include <odOsg/GlmAdapter.h>
@@ -136,15 +136,6 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    od::RefPtr<odRender::Light> Renderer::createLight(od::LevelObject *obj)
-    {
-        auto light = od::make_refd<odRender::Light>(obj);
-
-        mLights.push_back(light);
-
-        return light;
-    }
-
     od::RefPtr<odRender::ObjectNode> Renderer::createObjectNode(od::LevelObject &obj)
     {
         auto on = od::make_refd<ObjectNode>(this, mObjects);
@@ -206,7 +197,7 @@ namespace odOsg
         mGlobalLightDirection->set(osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
-    void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, odRender::Light *light, size_t index)
+    void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index)
     {
         if(index >= OD_MAX_LIGHTS)
         {
@@ -222,7 +213,7 @@ namespace odOsg
         mLocalLightsIntensity->setElement(index, light->getIntensityScaling());
         mLocalLightsRadius->setElement(index, light->getRadius());
 
-        osg::Vec3 posWs = GlmAdapter::toOsg(light->getLevelObject()->getPosition());
+        osg::Vec3 posWs = GlmAdapter::toOsg(light->getLevelObject().getPosition());
         osg::Vec4 dirCs = osg::Vec4(posWs, 1.0) * viewMatrix;
         mLocalLightsPosition->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
@@ -241,22 +232,6 @@ namespace odOsg
 
         mLocalLightsColor->setElement(index, osg::Vec3(0.0, 0.0, 0.0));
         mLocalLightsIntensity->setElement(index, 0.0f);
-    }
-
-    void Renderer::getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights, uint32_t lightMask)
-    {
-        // TODO: organize lights in a structure with efficient spatial search
-        //  for now, just use a brute force technique by iterating over all registered lights.
-
-        for(auto it = mLights.begin(); it != mLights.end(); ++it)
-        {
-            odRender::Light *l = *it;
-
-            if(l->affects(sphere) && (l->getLightGroup() & lightMask))
-            {
-                lights.push_back(l);
-            }
-        }
     }
 
     void Renderer::setFreeLook(bool f)

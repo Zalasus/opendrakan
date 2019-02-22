@@ -15,7 +15,7 @@
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 
-#include <odCore/render/Renderer.h>
+#include <odCore/physics/PhysicsSystem.h>
 
 namespace dragonRfl
 {
@@ -49,31 +49,24 @@ namespace dragonRfl
 
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
-        if(renderer != nullptr)
-        {
-            mLight = renderer->createLight(&obj);
-            mLight->setColor(mLightColorVector);
-            mLight->setRadius(mRadius);
-            mLight->setIntensityScaling(mIntensityScaling);
-            mLight->setRequiredQualityLevel(mQualityLevelRequired);
-        }
+        mLight = od::make_refd<od::Light>(obj);
+        mLight->setColor(mLightColorVector);
+        mLight->setRadius(mRadius);
+        mLight->setIntensityScaling(mIntensityScaling);
+        mLight->setRequiredQualityLevel(mQualityLevelRequired);
+
+        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createLightHandle(*mLight);
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
     {
-        static bool warned = false;
-        if(!warned)
-        {
-            Logger::warn() << "Moved light! This is currently unsupported";
-            Logger::warn() << "  If light moved into new objects, those will not receive new light until they move themselves";
-            warned = true;
-        }
+        // TODO: is it okay to ignore this? i think static lights shouldn't move
     }
 
     void StaticLight::onDespawned(od::LevelObject &obj)
     {
         mLight = nullptr;
+        mPhysicsHandle = nullptr;
     }
 
 

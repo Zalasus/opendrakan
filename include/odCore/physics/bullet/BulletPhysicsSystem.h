@@ -33,6 +33,7 @@ namespace odBulletPhysics
             LAYER    = 0x0002,
             OBJECT   = 0x0004,
             DETECTOR = 0x0008,
+            LIGHT    = 0x0010,
             ALL      = 0xffff
         };
     };
@@ -53,8 +54,11 @@ namespace odBulletPhysics
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::RayTestResultVector &resultsOut) override;
         virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut) override;
 
+        virtual size_t contactTest(const glm::vec3 &v) override;
+
         virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj) override;
         virtual od::RefPtr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
+        virtual od::RefPtr<odPhysics::LightHandle>  createLightHandle(od::Light &light) override;
 
         virtual od::RefPtr<odPhysics::ModelShape> createModelShape(odDb::Model &model) override;
 
@@ -62,6 +66,7 @@ namespace odBulletPhysics
     private:
 
         BulletCollisionGroups::Masks _toBulletMask(odPhysics::PhysicsTypeMasks::Mask mask);
+        void _objectToResult(float fraction, const btVector3 &hitPoint, const btVector3 &hitNormal, const btCollisionObject *object, odPhysics::RayTestResult &result);
 
         // order is important since bullet never takes ownership!
         //  mCollisionWorld needs to be initialized last and destroyed first

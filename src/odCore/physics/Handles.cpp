@@ -20,6 +20,11 @@ namespace odPhysics
         return nullptr;
     }
 
+    LightHandle *Handle::asLightHandle()
+    {
+        return nullptr;
+    }
+
 
     LayerHandle *LayerHandle::asLayerHandle()
     {
@@ -28,6 +33,12 @@ namespace odPhysics
 
 
     ObjectHandle *ObjectHandle::asObjectHandle()
+    {
+        return this;
+    }
+
+
+    LightHandle *LightHandle::asLightHandle()
     {
         return this;
     }

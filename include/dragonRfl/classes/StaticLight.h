@@ -14,7 +14,9 @@
 
 #include <glm/vec3.hpp>
 
-#include <odCore/render/Light.h>
+#include <odCore/Light.h>
+
+#include <odCore/physics/Handles.h>
 
 namespace dragonRfl
 {
@@ -43,7 +45,8 @@ namespace dragonRfl
         odRfl::Enum         mQualityLevelRequired;
 
         glm::vec3 mLightColorVector;
-        od::RefPtr<odRender::Light> mLight;
+        od::RefPtr<od::Light> mLight;
+        od::RefPtr<odPhysics::LightHandle> mPhysicsHandle;
     };
 
 }

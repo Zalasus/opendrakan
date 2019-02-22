@@ -5,19 +5,18 @@
  *      Author: zal
  */
 
-#include <odCore/render/Light.h>
+#include <odCore/Light.h>
 
 #include <odCore/LevelObject.h>
 
-namespace odRender
+namespace od
 {
 
-    Light::Light(od::LevelObject *obj)
+    Light::Light(od::LevelObject &obj)
     : mLevelObject(obj)
     , mIntensityScaling(1)
     , mRadius(1)
     , mRequiredQualityLevel(0)
-    , mLightGroup(DefaultLightGroups::LevelObjects)
     {
     }
 
@@ -33,6 +32,6 @@ namespace odRender
 
     float Light::distanceToPoint(const glm::vec3 &point)
     {
-        return glm::length(mLevelObject->getPosition() - point);
+        return glm::length(mLevelObject.getPosition() - point);
     }
 }

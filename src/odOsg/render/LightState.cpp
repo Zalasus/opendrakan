@@ -15,8 +15,6 @@
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
 
-#include <odCore/render/Light.h>
-
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/Renderer.h>
 
@@ -66,11 +64,11 @@ namespace odOsg
         mLights.clear();
     }
 
-    void LightStateAttribute::addLight(odRender::Light *light)
+    void LightStateAttribute::addLight(od::Light *light)
     {
         if(mLights.size() < OD_MAX_LIGHTS)
         {
-            mLights.push_back(od::RefPtr<odRender::Light>(light));
+            mLights.emplace_back(light);
         }
     }
 
@@ -101,7 +99,6 @@ namespace odOsg
     : mRenderer(renderer)
     , mIgnoreCulledState(ignoreCulledState)
     , mLightingDirty(true)
-    , mLightMask(odRender::Light::DefaultLightGroups::All)
     {
         if(node == nullptr)
         {
@@ -152,10 +149,10 @@ namespace odOsg
 
         mTmpAffectingLightsList.clear();
         od::BoundingSphere bound(GlmAdapter::toGlm(node->getBound()._center), node->getBound()._radius);
-        mRenderer->getLightsIntersectingSphere(bound, mTmpAffectingLightsList, mLightMask);
+        //mRenderer->getLightsIntersectingSphere(bound, mTmpAffectingLightsList, mLightMask);
 
         glm::vec3 nodeCenter = GlmAdapter::toGlm(node->getBound().center());
-        auto pred = [&nodeCenter](odRender::Light *l, odRender::Light *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };
+        auto pred = [&nodeCenter](od::Light *l, od::Light *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };
         std::sort(mTmpAffectingLightsList.begin(), mTmpAffectingLightsList.end(), pred);
 
         for(auto it = mTmpAffectingLightsList.begin(); it != mTmpAffectingLightsList.end(); ++it)

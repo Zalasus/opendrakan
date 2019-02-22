@@ -15,31 +15,44 @@ namespace odPhysics
 {
 
     RayTestResult::RayTestResult()
-    : mHitPoint(0, 0, 0)
-    , mHitNormal(0, 0, 0)
-    , mTypeMask(0)
+    : mHitFraction(0.0f)
+    , mHitPoint(0.0f, 0.0f, 0.0f)
+    , mHitNormal(0.0f, 0.0f, 0.0f)
+    , mTypeMask(0.0f)
     , mHandle(nullptr)
     {
     }
 
-    RayTestResult::RayTestResult(const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, ObjectHandle *hitObject)
-    : mHitPoint(hitPoint)
+    RayTestResult::RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, ObjectHandle *hitObject)
+    : mHitFraction(fraction)
+    , mHitPoint(hitPoint)
     , mHitNormal(hitNormal)
     , mTypeMask(PhysicsTypeMasks::LevelObject)
     , mHandle(hitObject)
     {
     }
 
-    RayTestResult::RayTestResult(const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LayerHandle *hitLayer)
-    : mHitPoint(hitPoint)
+    RayTestResult::RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LayerHandle *hitLayer)
+    : mHitFraction(fraction)
+    , mHitPoint(hitPoint)
     , mHitNormal(hitNormal)
     , mTypeMask(PhysicsTypeMasks::Layer)
     , mHandle(hitLayer)
     {
     }
 
+    RayTestResult::RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LightHandle *hitLight)
+    : mHitFraction(fraction)
+    , mHitPoint(hitPoint)
+    , mHitNormal(hitNormal)
+    , mTypeMask(PhysicsTypeMasks::Light)
+    , mHandle(hitLight)
+    {
+    }
+
     RayTestResult::RayTestResult(const RayTestResult &r)
-    : mHitPoint(r.mHitPoint)
+    : mHitFraction(r.mHitFraction)
+    , mHitPoint(r.mHitPoint)
     , mHitNormal(r.mHitNormal)
     , mTypeMask(r.mTypeMask)
     , mHandle(r.mHandle)

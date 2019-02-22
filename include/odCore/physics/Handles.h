@@ -17,6 +17,7 @@ namespace od
 {
     class LevelObject;
     class Layer;
+    class Light;
 }
 
 namespace odPhysics
@@ -24,12 +25,11 @@ namespace odPhysics
 
     class ObjectHandle;
     class LayerHandle;
+    class LightHandle;
 
     class Handle : public od::RefCounted
     {
     public:
-
-        virtual ~Handle() = default;
 
         /**
          * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not a layer handle.
@@ -40,6 +40,11 @@ namespace odPhysics
          * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not an object handle.
          */
         virtual ObjectHandle *asObjectHandle();
+
+        /**
+         * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not a light handle.
+         */
+        virtual LightHandle *asLightHandle();
 
     };
 
@@ -84,8 +89,12 @@ namespace odPhysics
     {
     public:
 
+        virtual LightHandle *asLightHandle() override;
+
         virtual void setRadius(float radius) = 0;
-        virtual void setPosition(glm::vec3 &pos) = 0;
+        virtual void setPosition(const glm::vec3 &pos) = 0;
+
+        virtual od::Light *getLight() = 0;
 
     };
 

@@ -19,6 +19,7 @@ namespace od
 {
     class LevelObject;
     class Layer;
+    class Light;
 }
 
 namespace odDb
@@ -31,6 +32,7 @@ namespace odPhysics
     class Handle;
     class ObjectHandle;
     class LayerHandle;
+    class LightHandle;
     class ModelShape;
 
     struct PhysicsTypeMasks
@@ -52,11 +54,13 @@ namespace odPhysics
     public:
 
         RayTestResult();
-        RayTestResult(const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, ObjectHandle *hitObject);
-        RayTestResult(const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LayerHandle *hitLayer);
+        RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, ObjectHandle *hitObject);
+        RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LayerHandle *hitLayer);
+        RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LightHandle *hitLight);
         RayTestResult(const RayTestResult &r);
         ~RayTestResult();
 
+        inline float getHitFraction() const { return mHitFraction; }
         inline glm::vec3 getHitPoint() const { return mHitPoint; }
         inline glm::vec3 getHitNormal() const { return mHitNormal; }
         inline PhysicsTypeMasks::Mask getType() const { return mTypeMask; }
@@ -70,6 +74,7 @@ namespace odPhysics
 
     private:
 
+        float mHitFraction;
         glm::vec3 mHitPoint;
         glm::vec3 mHitNormal;
 
@@ -92,8 +97,11 @@ namespace odPhysics
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, RayTestResultVector &resultsOut) = 0;
         virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, Handle *exclude, RayTestResult &resultOut) = 0;
 
+        virtual size_t contactTest(const glm::vec3 &v) = 0;
+
         virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj) = 0;
         virtual od::RefPtr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;
+        virtual od::RefPtr<LightHandle>  createLightHandle(od::Light &light) = 0;
 
         virtual od::RefPtr<ModelShape> createModelShape(odDb::Model &model) = 0;
     };
