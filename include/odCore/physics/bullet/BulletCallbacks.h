@@ -34,7 +34,7 @@ namespace odBulletPhysics
     {
     public:
 
-        ClosestRayCallback(const btVector3 &start, const btVector3 &end, int32_t mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result);
+        ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result);
 
         virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) override;
 
@@ -52,7 +52,7 @@ namespace odBulletPhysics
     {
     public:
 
-        AllRayCallback(const btVector3 &start, const btVector3 &end, int32_t mask, odPhysics::RayTestResultVector &results);
+        AllRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::RayTestResultVector &results);
 
         inline size_t getHitCount() const { return mHitCount; }
 

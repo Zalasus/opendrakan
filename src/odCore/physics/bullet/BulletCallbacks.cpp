@@ -22,7 +22,7 @@ namespace odBulletPhysics
         glm::vec3 hitNormal = BulletAdapter::toGlm(bHitNormal);
 
         // determine hit object
-        if(object->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::LAYER)
+        if(object->getBroadphaseHandle()->m_collisionFilterGroup == odPhysics::PhysicsTypeMasks::Layer)
         {
             od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
             if(handle == nullptr || handle->asLayerHandle() == nullptr)
@@ -32,7 +32,7 @@ namespace odBulletPhysics
 
             result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asLayerHandle());
 
-        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::OBJECT)
+        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == odPhysics::PhysicsTypeMasks::LevelObject)
         {
             od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
             if(handle == nullptr || handle->asObjectHandle() == nullptr)
@@ -42,7 +42,7 @@ namespace odBulletPhysics
 
             result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asObjectHandle());
 
-        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::LIGHT)
+        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == odPhysics::PhysicsTypeMasks::Light)
         {
             od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
             if(handle == nullptr || handle->asLightHandle() == nullptr)
@@ -86,13 +86,13 @@ namespace odBulletPhysics
     }
 
 
-    ClosestRayCallback::ClosestRayCallback(const btVector3 &start, const btVector3 &end, int32_t mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result)
+    ClosestRayCallback::ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result)
     : mResult(result)
     , mStart(start)
     , mEnd(end)
     , mExclude(exclude)
     {
-        m_collisionFilterGroup = BulletCollisionGroups::RAYCAST;
+        m_collisionFilterGroup = odPhysics::PhysicsTypeMasks::Ray;
         m_collisionFilterMask = mask;
     }
 
@@ -140,13 +140,13 @@ namespace odBulletPhysics
     }
 
 
-    AllRayCallback::AllRayCallback(const btVector3 &start, const btVector3 &end, int32_t mask, odPhysics::RayTestResultVector &results)
+    AllRayCallback::AllRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::RayTestResultVector &results)
     : mResults(results)
     , mStart(start)
     , mEnd(end)
     , mHitCount(0)
     {
-        m_collisionFilterGroup = BulletCollisionGroups::RAYCAST;
+        m_collisionFilterGroup = odPhysics::PhysicsTypeMasks::Ray;
         m_collisionFilterMask = mask;
     }
 

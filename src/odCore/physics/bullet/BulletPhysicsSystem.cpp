@@ -45,9 +45,7 @@ namespace odBulletPhysics
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
 
-        int32_t bulletMask = _toBulletMask(typeMask);
-
-        AllRayCallback callback(bStart, bEnd, bulletMask, resultsOut);
+        AllRayCallback callback(bStart, bEnd, typeMask, resultsOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
         return callback.getHitCount();
@@ -58,7 +56,7 @@ namespace odBulletPhysics
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
 
-        ClosestRayCallback callback(bStart, bEnd, _toBulletMask(typeMask), exclude, resultOut);
+        ClosestRayCallback callback(bStart, bEnd, typeMask, exclude, resultOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
         return callback.hasHit();
@@ -97,69 +95,5 @@ namespace odBulletPhysics
         return mb.get();
     }
 
-    BulletCollisionGroups::Masks BulletPhysicsSystem::_toBulletMask(odPhysics::PhysicsTypeMasks::Mask mask)
-    {
-        switch(mask)
-        {
-        case odPhysics::PhysicsTypeMasks::Layer:
-            return BulletCollisionGroups::LAYER;
 
-        case odPhysics::PhysicsTypeMasks::LevelObject:
-            return BulletCollisionGroups::OBJECT;
-
-        case odPhysics::PhysicsTypeMasks::Detector:
-            return BulletCollisionGroups::DETECTOR;
-
-        case odPhysics::PhysicsTypeMasks::Light:
-            return BulletCollisionGroups::LIGHT;
-
-        case odPhysics::PhysicsTypeMasks::All:
-            return BulletCollisionGroups::ALL;
-
-        default:
-            throw od::Exception("Unknown physics type mask");
-        }
-    }
-
-    void BulletPhysicsSystem::_objectToResult(float fraction, const btVector3 &bHitPoint, const btVector3 &bHitNormal, const btCollisionObject *object, odPhysics::RayTestResult &result)
-    {
-        glm::vec3 hitPoint = BulletAdapter::toGlm(bHitPoint);
-        glm::vec3 hitNormal = BulletAdapter::toGlm(bHitNormal);
-
-        // determine hit object
-        if(object->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::LAYER)
-        {
-            od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
-            if(handle == nullptr || handle->asLayerHandle() == nullptr)
-            {
-                throw od::Exception("Hit collision object with layer group which had no layer handle assigned");
-            }
-
-            result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asLayerHandle());
-
-        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::OBJECT)
-        {
-            od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
-            if(handle == nullptr || handle->asObjectHandle() == nullptr)
-            {
-                throw od::Exception("Hit collision object with object group which had no object handle assigned");
-            }
-
-            result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asObjectHandle());
-
-        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == BulletCollisionGroups::LIGHT)
-        {
-            od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
-            if(handle == nullptr || handle->asLightHandle() == nullptr)
-            {
-                throw od::Exception("Hit collision object with light group which had no light handle assigned");
-            }
-
-            result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asLightHandle());
-
-        }else
-        {
-            throw od::Exception("Unexpected collision object type found during ray test");
-        }
-    }
 }

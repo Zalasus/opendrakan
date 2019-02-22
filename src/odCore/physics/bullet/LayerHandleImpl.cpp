@@ -36,7 +36,7 @@ namespace odBulletPhysics
             btTransform worldTransform(btQuaternion(0, 0, 0, 1), BulletAdapter::toBullet(worldOffset));
             mCollisionObject->setWorldTransform(worldTransform);
 
-            mCollisionWorld->addCollisionObject(mCollisionObject.get(), BulletCollisionGroups::LAYER, BulletCollisionGroups::ALL);
+            mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Layer, odPhysics::PhysicsTypeMasks::All);
         }
     }
 

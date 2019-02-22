@@ -41,10 +41,11 @@ namespace odPhysics
 
         typedef uint32_t Mask;
 
-        static const Mask LevelObject = 1;
-        static const Mask Layer = 2;
-        static const Mask Light = 4;
-        static const Mask Detector = 8;
+        static const Mask Ray = 1;
+        static const Mask LevelObject = 2;
+        static const Mask Layer = 4;
+        static const Mask Light = 8;
+        static const Mask Detector = 16;
 
         static const Mask All = -1;
     };

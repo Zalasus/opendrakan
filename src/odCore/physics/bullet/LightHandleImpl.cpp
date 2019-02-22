@@ -30,7 +30,7 @@ namespace odBulletPhysics
 
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
 
-        mCollisionWorld->addCollisionObject(mCollisionObject.get(), BulletCollisionGroups::LIGHT, BulletCollisionGroups::ALL);
+        mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Light, odPhysics::PhysicsTypeMasks::All);
     }
 
     LightHandle::~LightHandle()

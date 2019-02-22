@@ -25,19 +25,6 @@ namespace odBulletPhysics
     struct ObjectHandle;
     struct LayerHandle;
 
-    struct BulletCollisionGroups
-    {
-        enum Masks
-        {
-            RAYCAST  = 0x0001, // bit 0 reserved by bullet for raytests
-            LAYER    = 0x0002,
-            OBJECT   = 0x0004,
-            DETECTOR = 0x0008,
-            LIGHT    = 0x0010,
-            ALL      = 0xffff
-        };
-    };
-
     /**
      * @brief PhysicsSystem implementation using the Bullet physics engine.
      *
@@ -64,9 +51,6 @@ namespace odBulletPhysics
 
 
     private:
-
-        BulletCollisionGroups::Masks _toBulletMask(odPhysics::PhysicsTypeMasks::Mask mask);
-        void _objectToResult(float fraction, const btVector3 &hitPoint, const btVector3 &hitNormal, const btCollisionObject *object, odPhysics::RayTestResult &result);
 
         // order is important since bullet never takes ownership!
         //  mCollisionWorld needs to be initialized last and destroyed first

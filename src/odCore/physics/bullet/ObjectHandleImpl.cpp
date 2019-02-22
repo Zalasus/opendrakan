@@ -54,7 +54,7 @@ namespace odBulletPhysics
         mCollisionObject->setUserPointer(static_cast<Handle*>(this));
         mCollisionObject->setUserIndex(obj.getObjectId());
 
-        mCollisionWorld->addCollisionObject(mCollisionObject.get(), BulletCollisionGroups::OBJECT, BulletCollisionGroups::ALL);
+        mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::LevelObject, odPhysics::PhysicsTypeMasks::All);
     }
 
     ObjectHandle::~ObjectHandle()
