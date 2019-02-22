@@ -34,6 +34,8 @@ namespace odBulletPhysics
         ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld);
         virtual ~ObjectHandle();
 
+        inline btCollisionObject *getBulletObject() { return mCollisionObject.get(); }
+
         virtual void setEnableCollision(bool b) override;
 
         virtual void setPosition(const glm::vec3 &p) override;
@@ -50,8 +52,8 @@ namespace odBulletPhysics
 
         od::RefPtr<ModelShape> mModelShape;
 
-        std::unique_ptr<btCollisionObject> mCollisionObject;
         std::unique_ptr<btCollisionShape> mUniqueShape;
+        std::unique_ptr<btCollisionObject> mCollisionObject;
     };
 
 }

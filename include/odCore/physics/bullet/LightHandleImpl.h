@@ -31,6 +31,8 @@ namespace odBulletPhysics
         LightHandle(od::Light *light, btCollisionWorld *collisionWorld);
         virtual ~LightHandle();
 
+        inline btCollisionObject *getBulletObject() { return mCollisionObject.get(); }
+
         virtual void setRadius(float radius) override;
         virtual void setPosition(const glm::vec3 &pos) override;
 

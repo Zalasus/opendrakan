@@ -12,6 +12,7 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
+#include <odCore/Upcast.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>
@@ -62,9 +63,37 @@ namespace odBulletPhysics
         return callback.hasHit();
     }
 
-    size_t BulletPhysicsSystem::contactTest(const glm::vec3 &v)
+    size_t BulletPhysicsSystem::contactTest(odPhysics::ObjectHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
     {
-        return 0;
+        ObjectHandle *objectHandle = od::upcast<ObjectHandle>(handle);
+        btCollisionObject *bulletObject = objectHandle->getBulletObject();
+
+        ContactResultCallback callback(typeMask, resultsOut);
+        mCollisionWorld->contactTest(bulletObject, callback);
+
+        return callback.getContactCount();
+    }
+
+    size_t BulletPhysicsSystem::contactTest(odPhysics::LayerHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
+    {
+        LayerHandle *layerHandle = od::upcast<LayerHandle>(handle);
+        btCollisionObject *bulletObject = layerHandle->getBulletObject();
+
+        ContactResultCallback callback(typeMask, resultsOut);
+        mCollisionWorld->contactTest(bulletObject, callback);
+
+        return callback.getContactCount();
+    }
+
+    size_t BulletPhysicsSystem::contactTest(odPhysics::LightHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
+    {
+        LightHandle *lightHandle = od::upcast<LightHandle>(handle);
+        btCollisionObject *bulletObject = lightHandle->getBulletObject();
+
+        ContactResultCallback callback(typeMask, resultsOut);
+        mCollisionWorld->contactTest(bulletObject, callback);
+
+        return callback.getContactCount();
     }
 
     od::RefPtr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj)

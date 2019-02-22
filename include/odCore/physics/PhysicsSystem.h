@@ -45,7 +45,6 @@ namespace odPhysics
         static const Mask LevelObject = 2;
         static const Mask Layer = 4;
         static const Mask Light = 8;
-        static const Mask Detector = 16;
 
         static const Mask All = -1;
     };
@@ -86,6 +85,18 @@ namespace odPhysics
 
     typedef std::vector<RayTestResult> RayTestResultVector;
 
+
+    class ContactTestResult
+    {
+    public:
+
+
+
+    };
+
+    typedef std::vector<ContactTestResult> ContactTestResultVector;
+
+
     /**
      * @brief Abstract interface for a physics system implementation.
      */
@@ -98,7 +109,9 @@ namespace odPhysics
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, RayTestResultVector &resultsOut) = 0;
         virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, Handle *exclude, RayTestResult &resultOut) = 0;
 
-        virtual size_t contactTest(const glm::vec3 &v) = 0;
+        virtual size_t contactTest(ObjectHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
+        virtual size_t contactTest(LayerHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
+        virtual size_t contactTest(LightHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
 
         virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj) = 0;
         virtual od::RefPtr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;

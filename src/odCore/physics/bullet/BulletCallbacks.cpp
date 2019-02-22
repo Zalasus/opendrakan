@@ -182,6 +182,20 @@ namespace odBulletPhysics
         return rayResult.m_hitFraction;
     }
 
+
+    ContactResultCallback::ContactResultCallback(odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
+    : mResults(results)
+    , mContactCount(0)
+    {
+        m_collisionFilterGroup = odPhysics::PhysicsTypeMasks::Ray; // this can't be right, right?
+        m_collisionFilterMask = mask;
+    }
+
+    btScalar ContactResultCallback::addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
+    {
+        return 0.0;
+    }
+
 }
 
 

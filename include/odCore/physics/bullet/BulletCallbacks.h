@@ -67,6 +67,24 @@ namespace odBulletPhysics
         size_t mHitCount;
     };
 
+
+    class ContactResultCallback : public btCollisionWorld::ContactResultCallback
+    {
+    public:
+
+        ContactResultCallback(odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
+
+        inline size_t getContactCount() const { return mContactCount; }
+
+        virtual btScalar addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1) override;
+
+
+    private:
+
+        odPhysics::ContactTestResultVector &mResults;
+        size_t mContactCount;
+    };
+
 }
 
 
