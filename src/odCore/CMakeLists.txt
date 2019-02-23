@@ -68,7 +68,7 @@ set(SOURCES
 find_package(Threads REQUIRED)
 #find_package(glm REQUIRED) FIXME: this breaks the travis build on ubuntu xenial. skip for now. build works without it
 find_package(ZLIB REQUIRED)
-find_package(Bullet 2.8.3 REQUIRED Collision Dynamics LinearMath)
+find_package(Bullet 2.8.3 REQUIRED Collision LinearMath)
     
 add_library(odCore STATIC ${SOURCES})
 
