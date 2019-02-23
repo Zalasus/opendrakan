@@ -19,7 +19,7 @@
 
 #include <odCore/audio/SoundSystem.h>
 
-#include <odCore/physics/CharacterController.h>
+#include <odCore/physics/PhysicsSystem.h>
 
 #include <dragonRfl/RflDragon.h>
 
@@ -91,7 +91,8 @@ namespace dragonRfl
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton != nullptr)
         {
-            mCharacterController = std::make_unique<odPhysics::CharacterController>(obj, 0.05, 0.3);
+            //mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
+            mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
 
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objectNode, skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());

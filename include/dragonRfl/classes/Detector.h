@@ -12,9 +12,11 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
+#include <odCore/physics/Handles.h>
+#include <odCore/physics/PhysicsSystem.h>
+
 namespace dragonRfl
 {
-
     class DragonRfl;
 
     class Detector : public odRfl::RflClass
@@ -85,7 +87,8 @@ namespace dragonRfl
     private:
 
         DragonRfl &mRfl;
-        //odPhysics::Detector *mDetector;
+        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        odPhysics::ContactTestResultVector mResultCache;
         bool mPlayerWasIn;
     };
 

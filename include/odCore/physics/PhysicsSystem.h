@@ -86,12 +86,10 @@ namespace odPhysics
     typedef std::vector<RayTestResult> RayTestResultVector;
 
 
-    class ContactTestResult
+    struct ContactTestResult
     {
-    public:
-
-
-
+        od::RefPtr<Handle> handleA;
+        od::RefPtr<Handle> handleB;
     };
 
     typedef std::vector<ContactTestResult> ContactTestResultVector;

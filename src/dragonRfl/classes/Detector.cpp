@@ -11,6 +11,7 @@
 #include <dragonRfl/LocalPlayer.h>
 
 #include <odCore/rfl/Rfl.h>
+
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
@@ -62,30 +63,33 @@ namespace dragonRfl
     void Detector::onSpawned(od::LevelObject &obj)
     {
         obj.setEnableRflUpdateHook(true);
-        //mDetector = obj.getLevel().getPhysicsManager().makeDetector(obj);
+
+        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
+        mPhysicsHandle->setEnableCollision(false);
     }
 
     void Detector::onUpdate(od::LevelObject &obj, float relTime)
     {
-        /*if(mTask != Task::TriggerOnly || mDetector == nullptr)
+        if(mTask != Task::TriggerOnly || mPhysicsHandle == nullptr)
         {
             return;
         }
 
         od::LevelObject *playerObject = (mRfl.getLocalPlayer() != nullptr) ? &mRfl.getLocalPlayer()->getLevelObject() : nullptr;
 
-        mDetector->update();
+        mResultCache.clear();
+        obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::All, mResultCache);
 
         bool playerIsIn = false;
-        const std::vector<od::LevelObject*> &objects = mDetector->getIntersectingObjects();
-        for(auto it = objects.begin(); it != objects.end(); ++it)
+        for(auto &result : mResultCache)
         {
-            if(*it == nullptr)
+            odPhysics::ObjectHandle *objectHandle = result.handleB->asObjectHandle();
+            if(objectHandle == nullptr)
             {
                 continue;
             }
 
-            if(playerObject != nullptr && *it == playerObject)
+            if(&objectHandle->getLevelObject() == playerObject)
             {
                 playerIsIn = true;
                 break;
@@ -109,7 +113,7 @@ namespace dragonRfl
             obj.messageAllLinkedObjects(mTriggerMessage);
         }
 
-        mPlayerWasIn = playerIsIn;*/
+        mPlayerWasIn = playerIsIn;
     }
 
 

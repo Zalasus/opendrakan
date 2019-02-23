@@ -12,6 +12,7 @@
 #include <odCore/Engine.h>
 
 #include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 namespace odPhysics
 {
@@ -19,9 +20,10 @@ namespace odPhysics
     static const float STEP_HEIGHT = 0.07f;
 
 
-	CharacterController::CharacterController(od::LevelObject &charObject, float radius, float height)
+	CharacterController::CharacterController(odPhysics::ObjectHandle *handle, od::LevelObject &charObject, float radius, float height)
 	: mCharObject(charObject)
-	, mPhysicsManager(charObject.getLevel().getEngine().getPhysicsSystem())
+	, mObjectHandle(handle)
+	, mPhysicsSystem(charObject.getLevel().getEngine().getPhysicsSystem())
 	, mUp(0, 1, 0)
 	, mVelocity(0, -1, 0)
 	, mIsFalling(false)
@@ -52,6 +54,9 @@ namespace odPhysics
         bool onGround = _step(-STEP_HEIGHT); // step down
         mIsFalling = !onGround;
         mFallingVelocity = 0.0f;
+
+        //ContactTestResultVector results;
+        //mPhysicsSystem.contactTest(mObjectHandle, PhysicsTypeMasks::LevelObject | PhysicsTypeMasks::Layer, results);
 
         mCharObject.setPosition(mCurrentPosition);
 	}

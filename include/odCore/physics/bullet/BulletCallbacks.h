@@ -83,6 +83,8 @@ namespace odBulletPhysics
 
         odPhysics::ContactTestResultVector &mResults;
         size_t mContactCount;
+
+        const btCollisionObject* mLastObject;
     };
 
 }

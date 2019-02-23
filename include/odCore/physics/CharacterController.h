@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include <odCore/RefCounted.h>
+
 #include <odCore/anim/MotionAccumulator.h>
 
 namespace od
@@ -21,12 +23,13 @@ namespace odPhysics
 {
 
 	class PhysicsSystem;
+	class ObjectHandle;
 
 	class CharacterController : public odAnim::MotionAccumulator
 	{
 	public:
 
-		CharacterController(od::LevelObject &charObject, float radius, float height);
+		CharacterController(odPhysics::ObjectHandle *handle, od::LevelObject &charObject, float radius, float height);
 
 		// implement odAnim::MotionAccumulator
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
@@ -39,7 +42,8 @@ namespace odPhysics
 		bool _step(float stepHeight); // returns true if object was hit during stepping
 
 		od::LevelObject &mCharObject;
-		PhysicsSystem &mPhysicsManager;
+		od::RefPtr<ObjectHandle> mObjectHandle;
+		PhysicsSystem &mPhysicsSystem;
 		glm::vec3 mCurrentPosition;
 		glm::vec3 mUp;
 		glm::vec3 mRelativeLowPoint;

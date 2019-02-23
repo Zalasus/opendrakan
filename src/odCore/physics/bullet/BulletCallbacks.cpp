@@ -186,6 +186,7 @@ namespace odBulletPhysics
     ContactResultCallback::ContactResultCallback(odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
     : mResults(results)
     , mContactCount(0)
+    , mLastObject(nullptr)
     {
         m_collisionFilterGroup = odPhysics::PhysicsTypeMasks::Ray; // this can't be right, right?
         m_collisionFilterMask = mask;
@@ -193,6 +194,26 @@ namespace odBulletPhysics
 
     btScalar ContactResultCallback::addSingleResult(btManifoldPoint& cp, const btCollisionObjectWrapper* colObj0Wrap, int partId0, int index0, const btCollisionObjectWrapper* colObj1Wrap, int partId1, int index1)
     {
+        // for the time being, we don't care about manifolds. only store object pairs
+
+        // colObj0Wrap seems to always be the object used to start the contact test
+
+        if(mLastObject == colObj1Wrap->m_collisionObject)
+        {
+            return 0.0;
+
+        }else
+        {
+            mLastObject = colObj1Wrap->m_collisionObject;
+        }
+
+        odPhysics::ContactTestResult result;
+        result.handleA = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
+        result.handleB = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
+        mResults.push_back(result);
+
+        ++mContactCount;
+
         return 0.0;
     }
 

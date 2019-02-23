@@ -10,6 +10,7 @@
 
 #include <odCore/db/Animation.h>
 
+#include <odCore/physics/Handles.h>
 #include <odCore/physics/CharacterController.h>
 
 #include <odCore/input/Action.h>
@@ -71,6 +72,8 @@ namespace dragonRfl
 		float mLastUpdatedYaw;
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
+
+		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
 		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
