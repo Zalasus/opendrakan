@@ -65,10 +65,7 @@ namespace odBulletPhysics
 
     btScalar ClosestRayCallback::addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace)
     {
-        if(m_collisionObject != nullptr)
-        {
-            return 1.0;
-        }
+        m_closestHitFraction = rayResult.m_hitFraction;
 
         if(rayResult.m_collisionObject == nullptr)
         {
@@ -80,7 +77,7 @@ namespace odBulletPhysics
             odPhysics::Handle *userPointerAsHandle = static_cast<odPhysics::Handle*>(rayResult.m_collisionObject->getUserPointer());
             if(mExclude == userPointerAsHandle)
             {
-                return rayResult.m_hitFraction;
+                return 1.0;
             }
         }
 
@@ -124,7 +121,6 @@ namespace odBulletPhysics
             throw od::Exception("Got nullptr as collision object");
         }
 
-        m_closestHitFraction = rayResult.m_hitFraction;
         m_collisionObject = rayResult.m_collisionObject;
 
         btVector3 hitNormal;
@@ -146,7 +142,7 @@ namespace odBulletPhysics
 
         ++mHitCount;
 
-        return rayResult.m_hitFraction;
+        return m_closestHitFraction;
     }
 
 
