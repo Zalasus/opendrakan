@@ -18,11 +18,11 @@
 #include <odCore/LevelObject.h>
 #include <odCore/OdDefines.h>
 #include <odCore/Light.h>
+#include <odCore/Upcast.h>
 
 #include <odCore/render/RendererEventListener.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Utils.h>
 
 #include <odOsg/render/ObjectNode.h>
 #include <odOsg/render/ModelNode.h>
@@ -162,7 +162,7 @@ namespace odOsg
 
     od::RefPtr<odRender::Texture> Renderer::createTexture(odRender::Image *image)
     {
-        Image *odOsgImage = upcast<Image>(image);
+        Image *odOsgImage = od::confident_upcast<Image>(image);
         auto texture = od::make_refd<Texture>(odOsgImage);
         return od::RefPtr<odRender::Texture>(texture);
     }

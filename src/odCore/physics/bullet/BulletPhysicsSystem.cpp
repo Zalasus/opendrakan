@@ -68,22 +68,22 @@ namespace odBulletPhysics
         btCollisionObject *bulletObject;
         if(handle->asObjectHandle() != nullptr)
         {
-            ObjectHandle *objectHandle = od::upcast<ObjectHandle>(handle->asObjectHandle());
+            ObjectHandle *objectHandle = od::confident_upcast<ObjectHandle>(handle->asObjectHandle());
             bulletObject = objectHandle->getBulletObject();
 
         }else if(handle->asLayerHandle() != nullptr)
         {
-            LayerHandle *layerHandle = od::upcast<LayerHandle>(handle->asLayerHandle());
+            LayerHandle *layerHandle = od::confident_upcast<LayerHandle>(handle->asLayerHandle());
             bulletObject = layerHandle->getBulletObject();
 
         }else if(handle->asLightHandle() != nullptr)
         {
-            LightHandle *lightHandle = od::upcast<LightHandle>(handle->asLightHandle());
+            LightHandle *lightHandle = od::confident_upcast<LightHandle>(handle->asLightHandle());
             bulletObject = lightHandle->getBulletObject();
 
         }else
         {
-            throw od::Exception("Got phyiscs handle of unknown type");
+            throw od::Exception("Got physics handle of unknown type");
         }
 
         ContactResultCallback callback(typeMask, resultsOut);

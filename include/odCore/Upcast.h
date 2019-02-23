@@ -13,11 +13,14 @@
 namespace od
 {
 
+    /**
+     * An upcast which must succeed, and will throw otherwise.
+     *
+     * In contrast to od::confident_upcast(), this will always perform a dynamic_cast.
+     */
     template <typename _To, typename _From>
     _To *upcast(_From *f)
     {
-        // TODO: might replace with static cast. for render objects, this should be safe.
-        //   we'll never mix different renderers, anyway
        _To *t = dynamic_cast<_To*>(f);
        if(t == nullptr)
        {
@@ -25,6 +28,30 @@ namespace od
        }
 
        return t;
+    }
+
+    /**
+     * A style of upcast for when the caller is confident that it will always succeed,
+     * such as when casting to implementations of interfaces of which only one should
+     * exist in the application (e.g. renderer, physics system...).
+     *
+     * In contrast to od::upcast(), this might actually do a static_cast for efficiency,
+     * while using a dynamic_cast only for debug purposes.
+     */
+    template <typename _To, typename _From>
+    _To *confident_upcast(_From *f)
+    {
+#ifdef NDEBUG
+        return static_cast<_To*>(f);
+#else
+       _To *t = dynamic_cast<_To*>(f);
+       if(t == nullptr)
+       {
+           throw od::Exception("Bad confident_upcast");
+       }
+
+       return t;
+#endif
     }
 
 }

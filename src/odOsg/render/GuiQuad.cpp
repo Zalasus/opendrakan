@@ -8,9 +8,9 @@
 #include <odOsg/render/GuiQuad.h>
 
 #include <odCore/Exception.h>
+#include <odCore/Upcast.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Utils.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Image.h>
 
@@ -51,7 +51,7 @@ namespace odOsg
             return;
         }
 
-        mTexture = upcast<Texture>(texture);
+        mTexture = od::confident_upcast<Texture>(texture);
 
         mGeometry->getOrCreateStateSet()->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
     }
