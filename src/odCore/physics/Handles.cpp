@@ -31,10 +31,20 @@ namespace odPhysics
         return this;
     }
 
+    Handle::Type LayerHandle::getHandleType()
+    {
+        return Type::Layer;
+    }
+
 
     ObjectHandle *ObjectHandle::asObjectHandle()
     {
         return this;
+    }
+
+    Handle::Type ObjectHandle::getHandleType()
+    {
+        return Type::Object;
     }
 
 
@@ -43,5 +53,9 @@ namespace odPhysics
         return this;
     }
 
+    Handle::Type LightHandle::getHandleType()
+    {
+        return Type::Light;
+    }
 }
 

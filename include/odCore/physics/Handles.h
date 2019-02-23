@@ -31,6 +31,13 @@ namespace odPhysics
     {
     public:
 
+        enum class Type
+        {
+            Layer,
+            Object,
+            Light
+        };
+
         /**
          * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not a layer handle.
          */
@@ -46,6 +53,11 @@ namespace odPhysics
          */
         virtual LightHandle *asLightHandle();
 
+        /**
+         * @brief Returns the type of this handle.
+         */
+        virtual Type getHandleType() = 0;
+
     };
 
 
@@ -54,6 +66,8 @@ namespace odPhysics
     public:
 
         virtual ObjectHandle *asObjectHandle() override;
+
+        virtual Type getHandleType() override;
 
         /**
          * @brief Enables or disables collision detection. Detection is enabled by default.
@@ -80,6 +94,8 @@ namespace odPhysics
 
         virtual LayerHandle *asLayerHandle() override;
 
+        virtual Type getHandleType() override;
+
         virtual od::Layer &getLayer() = 0;
 
     };
@@ -90,6 +106,8 @@ namespace odPhysics
     public:
 
         virtual LightHandle *asLightHandle() override;
+
+        virtual Type getHandleType() override;
 
         virtual void setRadius(float radius) = 0;
         virtual void setPosition(const glm::vec3 &pos) = 0;
