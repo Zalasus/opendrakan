@@ -15,6 +15,8 @@
 
 #include <odCore/RefCounted.h>
 
+#include <odCore/physics/Handles.h>
+
 namespace od
 {
     class LevelObject;
@@ -29,10 +31,6 @@ namespace odDb
 
 namespace odPhysics
 {
-    class Handle;
-    class ObjectHandle;
-    class LayerHandle;
-    class LightHandle;
     class ModelShape;
 
     struct PhysicsTypeMasks
@@ -49,38 +47,12 @@ namespace odPhysics
         static const Mask All = -1;
     };
 
-    class RayTestResult
+    struct RayTestResult
     {
-    public:
-
-        RayTestResult();
-        RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, ObjectHandle *hitObject);
-        RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LayerHandle *hitLayer);
-        RayTestResult(float fraction, const glm::vec3 &hitPoint, const glm::vec3 &hitNormal, LightHandle *hitLight);
-        RayTestResult(const RayTestResult &r);
-        ~RayTestResult();
-
-        inline float getHitFraction() const { return mHitFraction; }
-        inline glm::vec3 getHitPoint() const { return mHitPoint; }
-        inline glm::vec3 getHitNormal() const { return mHitNormal; }
-        inline PhysicsTypeMasks::Mask getType() const { return mTypeMask; }
-
-        RayTestResult &operator=(const RayTestResult &r);
-
-        // will throw if type does not match
-        ObjectHandle *getObjectHandle();
-        LayerHandle *getLayerHandle();
-
-
-    private:
-
-        float mHitFraction;
-        glm::vec3 mHitPoint;
-        glm::vec3 mHitNormal;
-
-        PhysicsTypeMasks::Mask mTypeMask;
-
-        od::RefPtr<Handle> mHandle;
+        float hitFraction;
+        glm::vec3 hitPoint;
+        glm::vec3 hitNormal;
+        od::RefPtr<Handle> handle;
     };
 
     typedef std::vector<RayTestResult> RayTestResultVector;

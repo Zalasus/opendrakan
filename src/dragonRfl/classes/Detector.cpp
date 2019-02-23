@@ -33,7 +33,6 @@ namespace dragonRfl
     , mDoesCaveEntranceTeleport(true)
     , mDragonTakesOffUponTeleport(true)
     , mRfl(rfl)
-    //, mDetector(nullptr)
     , mPlayerWasIn(false)
     {
     }

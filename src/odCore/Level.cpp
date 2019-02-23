@@ -112,7 +112,13 @@ namespace od
 
         if(hasHit)
         {
-            return &result.getLayerHandle()->getLayer();
+            odPhysics::LayerHandle *handle = result.handle->asLayerHandle();
+            if(handle == nullptr)
+            {
+                throw od::Exception("Unexpected non-layer handle found during layer-below-object-search");
+            }
+
+            return &handle->getLayer();
         }
 
         return nullptr;

@@ -105,7 +105,7 @@ namespace dragonRfl
 
         }else
         {
-            eye = result.getHitPoint();
+            eye = result.hitPoint;
         }
 
         _setObjectPositionAndViewMatrix(eye, lookDirection);

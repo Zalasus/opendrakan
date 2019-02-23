@@ -8,6 +8,7 @@
 #include <odCore/physics/bullet/BulletCallbacks.h>
 
 #include <odCore/Exception.h>
+#include <odCore/Upcast.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
@@ -18,44 +19,10 @@ namespace odBulletPhysics
 
     static void _objectToResult(float fraction, const btVector3 &bHitPoint, const btVector3 &bHitNormal, const btCollisionObject *object, odPhysics::RayTestResult &result)
     {
-        glm::vec3 hitPoint = BulletAdapter::toGlm(bHitPoint);
-        glm::vec3 hitNormal = BulletAdapter::toGlm(bHitNormal);
-
-        // determine hit object
-        if(object->getBroadphaseHandle()->m_collisionFilterGroup == odPhysics::PhysicsTypeMasks::Layer)
-        {
-            od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
-            if(handle == nullptr || handle->asLayerHandle() == nullptr)
-            {
-                throw od::Exception("Hit collision object with layer group which had no layer handle assigned");
-            }
-
-            result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asLayerHandle());
-
-        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == odPhysics::PhysicsTypeMasks::LevelObject)
-        {
-            od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
-            if(handle == nullptr || handle->asObjectHandle() == nullptr)
-            {
-                throw od::Exception("Hit collision object with object group which had no object handle assigned");
-            }
-
-            result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asObjectHandle());
-
-        }else if(object->getBroadphaseHandle()->m_collisionFilterGroup == odPhysics::PhysicsTypeMasks::Light)
-        {
-            od::RefPtr<odPhysics::Handle> handle = static_cast<odPhysics::Handle*>(object->getUserPointer());
-            if(handle == nullptr || handle->asLightHandle() == nullptr)
-            {
-                throw od::Exception("Hit collision object with light group which had no light handle assigned");
-            }
-
-            result = odPhysics::RayTestResult(fraction, hitPoint, hitNormal, handle->asLightHandle());
-
-        }else
-        {
-            throw od::Exception("Unexpected collision object type found during ray test");
-        }
+        result.hitFraction = fraction;
+        result.hitPoint = BulletAdapter::toGlm(bHitPoint);
+        result.hitNormal = BulletAdapter::toGlm(bHitNormal);
+        result.handle = static_cast<odPhysics::Handle*>(object->getUserPointer()); // user pointer is a void*, so we can't use upcast here :/
     }
 
 
