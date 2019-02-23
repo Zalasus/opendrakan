@@ -64,7 +64,7 @@ namespace od
     {
         return    v.x >= mMin.x && v.x <= mMax.x
                && v.y >= mMin.x && v.y <= mMax.y
-               && v.z >= mMin.x && v.z <= mMax.z; // 15:55
+               && v.z >= mMin.x && v.z <= mMax.z;
     }
 
     void AxisAlignedBoundingBox::expandBy(const glm::vec3 &v)
@@ -82,7 +82,7 @@ namespace od
     OrientedBoundingBox::OrientedBoundingBox()
     : mExtends(0, 0, 0)
     , mCenter(0, 0, 0)
-    , mOrientation(0, 0, 0, 1)
+    , mOrientation(1, 0, 0, 0)
     {
     }
 

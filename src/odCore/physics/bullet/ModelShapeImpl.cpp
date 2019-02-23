@@ -35,6 +35,8 @@ namespace odBulletPhysics
 
     std::unique_ptr<btCollisionShape> ModelShape::createNewUniqueShape()
     {
+        // TODO: possible optimization: multiple compound shapes can share their child shapes. we could thus save memory when creating scaled shapes
+
         auto shape = std::make_unique<ManagedCompoundShape>(mBounds.getShapeCount());
 
         auto hierarchy = mBounds.getHierarchy();
@@ -56,7 +58,7 @@ namespace odBulletPhysics
                 if(mBounds.getShapeType() == odDb::ModelBounds::SPHERES)
                 {
                     myTranslation = spheres[index].center();
-                    myRotation = glm::quat(0,0,0,1);
+                    myRotation = glm::quat(1,0,0,0);
 
                     newChildShape = std::make_unique<btSphereShape>(spheres[index].radius());
 

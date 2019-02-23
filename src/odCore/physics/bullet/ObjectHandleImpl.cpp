@@ -34,7 +34,7 @@ namespace odBulletPhysics
             throw od::Exception("Created physics handle for object without model");
         }
         od::RefPtr<odPhysics::ModelShape> shapeIface = model->getOrCreateModelShape(ps);
-        mModelShape = od::upcast<ModelShape>(shapeIface.get());
+        mModelShape = od::confident_upcast<ModelShape>(shapeIface.get());
 
         btCollisionShape *bulletShape;
         if(mLevelObject.isScaled())
