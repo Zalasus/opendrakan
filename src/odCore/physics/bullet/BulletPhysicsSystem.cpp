@@ -92,9 +92,9 @@ namespace odBulletPhysics
         return callback.getContactCount();
     }
 
-    od::RefPtr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj)
+    od::RefPtr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj, bool isDetector)
     {
-        auto objectHandle = od::make_refd<ObjectHandle>(*this, obj, mCollisionWorld.get());
+        auto objectHandle = od::make_refd<ObjectHandle>(*this, obj, mCollisionWorld.get(), isDetector);
 
         return objectHandle.get();
     }

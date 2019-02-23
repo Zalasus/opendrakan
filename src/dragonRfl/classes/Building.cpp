@@ -82,7 +82,7 @@ namespace dragonRfl
 
 		}else
         {
-    		mPhysicsHandle = mRfl.getEngine().getPhysicsSystem().createObjectHandle(obj);
+    		mPhysicsHandle = mRfl.getEngine().getPhysicsSystem().createObjectHandle(obj, false);
     	}
 	}
 

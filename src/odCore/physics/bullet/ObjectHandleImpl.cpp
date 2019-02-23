@@ -20,7 +20,7 @@
 namespace odBulletPhysics
 {
 
-    ObjectHandle::ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld)
+    ObjectHandle::ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld, bool isDetector)
     : mLevelObject(obj)
     , mCollisionWorld(collisionWorld)
     {
@@ -54,7 +54,8 @@ namespace odBulletPhysics
         mCollisionObject->setUserPointer(static_cast<Handle*>(this));
         mCollisionObject->setUserIndex(obj.getObjectId());
 
-        mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::LevelObject, odPhysics::PhysicsTypeMasks::All);
+        odPhysics::PhysicsTypeMasks::Mask group = isDetector ? odPhysics::PhysicsTypeMasks::Detector : odPhysics::PhysicsTypeMasks::LevelObject;
+        mCollisionWorld->addCollisionObject(mCollisionObject.get(), group, odPhysics::PhysicsTypeMasks::All);
     }
 
     ObjectHandle::~ObjectHandle()

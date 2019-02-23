@@ -43,6 +43,7 @@ namespace odPhysics
         static const Mask LevelObject = 2;
         static const Mask Layer = 4;
         static const Mask Light = 8;
+        static const Mask Detector = 16;
 
         static const Mask All = -1;
     };
@@ -81,7 +82,7 @@ namespace odPhysics
 
         virtual size_t contactTest(Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
 
-        virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj) = 0;
+        virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) = 0;
         virtual od::RefPtr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;
         virtual od::RefPtr<LightHandle>  createLightHandle(od::Light &light) = 0;
 

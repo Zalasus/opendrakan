@@ -36,7 +36,10 @@ namespace odBulletPhysics
             btTransform worldTransform(btQuaternion(0, 0, 0, 1), BulletAdapter::toBullet(worldOffset));
             mCollisionObject->setWorldTransform(worldTransform);
 
-            mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Layer, odPhysics::PhysicsTypeMasks::All);
+            // layers don't need to collide with other layers. this saves us a lot of effort in the broadphase
+            odPhysics::PhysicsTypeMasks::Mask mask = (odPhysics::PhysicsTypeMasks::All & ~odPhysics::PhysicsTypeMasks::Layer);
+
+            mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Layer, mask);
         }
     }
 

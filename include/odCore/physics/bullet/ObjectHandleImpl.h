@@ -12,7 +12,6 @@
 
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 #include <odCore/physics/Handles.h>
@@ -31,7 +30,7 @@ namespace odBulletPhysics
     {
     public:
 
-        ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld);
+        ObjectHandle(BulletPhysicsSystem &ps, od::LevelObject &obj, btCollisionWorld *collisionWorld, bool isDetector);
         virtual ~ObjectHandle();
 
         inline btCollisionObject *getBulletObject() { return mCollisionObject.get(); }

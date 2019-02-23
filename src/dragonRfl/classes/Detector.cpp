@@ -63,7 +63,7 @@ namespace dragonRfl
     {
         obj.setEnableRflUpdateHook(true);
 
-        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
+        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj, true);
         mPhysicsHandle->setEnableCollision(false);
     }
 

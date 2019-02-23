@@ -43,7 +43,7 @@ namespace odBulletPhysics
 
         virtual size_t contactTest(odPhysics::Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
 
-        virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj) override;
+        virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
         virtual od::RefPtr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
         virtual od::RefPtr<odPhysics::LightHandle>  createLightHandle(od::Light &light) override;
 
