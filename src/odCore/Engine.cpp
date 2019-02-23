@@ -120,7 +120,8 @@ namespace od
 		    mRenderer->onStart();
 		}
 
-		auto targetUpdateInterval = std::chrono::microseconds((int64_t)(1e6/60.0));
+		float targetUpdateIntervalUs = (1e6/60.0);
+		auto targetUpdateInterval = std::chrono::microseconds((int64_t)targetUpdateIntervalUs);
 		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
 		while(!mIsDone)
 		{
@@ -139,6 +140,11 @@ namespace od
 		    if(loopTime < targetUpdateInterval)
 		    {
 		        std::this_thread::sleep_for(targetUpdateInterval - loopTime);
+
+		    }else
+		    {
+		        float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
+		        Logger::warn() << "Update took too long. Took " << loopTimeMs << "ms, target update interval was " << (targetUpdateIntervalUs*1e-3) << "ms";
 		    }
 		}
 
