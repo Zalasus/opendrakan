@@ -109,9 +109,7 @@ namespace odPhysics
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, RayTestResultVector &resultsOut) = 0;
         virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, Handle *exclude, RayTestResult &resultOut) = 0;
 
-        virtual size_t contactTest(ObjectHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
-        virtual size_t contactTest(LayerHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
-        virtual size_t contactTest(LightHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
+        virtual size_t contactTest(Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
 
         virtual od::RefPtr<ObjectHandle> createObjectHandle(od::LevelObject &obj) = 0;
         virtual od::RefPtr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;

@@ -63,32 +63,28 @@ namespace odBulletPhysics
         return callback.hasHit();
     }
 
-    size_t BulletPhysicsSystem::contactTest(odPhysics::ObjectHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
+    size_t BulletPhysicsSystem::contactTest(odPhysics::Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
     {
-        ObjectHandle *objectHandle = od::upcast<ObjectHandle>(handle);
-        btCollisionObject *bulletObject = objectHandle->getBulletObject();
+        btCollisionObject *bulletObject;
+        if(handle->asObjectHandle() != nullptr)
+        {
+            ObjectHandle *objectHandle = od::upcast<ObjectHandle>(handle->asObjectHandle());
+            bulletObject = objectHandle->getBulletObject();
 
-        ContactResultCallback callback(typeMask, resultsOut);
-        mCollisionWorld->contactTest(bulletObject, callback);
+        }else if(handle->asLayerHandle() != nullptr)
+        {
+            LayerHandle *layerHandle = od::upcast<LayerHandle>(handle->asLayerHandle());
+            bulletObject = layerHandle->getBulletObject();
 
-        return callback.getContactCount();
-    }
+        }else if(handle->asLightHandle() != nullptr)
+        {
+            LightHandle *lightHandle = od::upcast<LightHandle>(handle->asLightHandle());
+            bulletObject = lightHandle->getBulletObject();
 
-    size_t BulletPhysicsSystem::contactTest(odPhysics::LayerHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
-    {
-        LayerHandle *layerHandle = od::upcast<LayerHandle>(handle);
-        btCollisionObject *bulletObject = layerHandle->getBulletObject();
-
-        ContactResultCallback callback(typeMask, resultsOut);
-        mCollisionWorld->contactTest(bulletObject, callback);
-
-        return callback.getContactCount();
-    }
-
-    size_t BulletPhysicsSystem::contactTest(odPhysics::LightHandle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
-    {
-        LightHandle *lightHandle = od::upcast<LightHandle>(handle);
-        btCollisionObject *bulletObject = lightHandle->getBulletObject();
+        }else
+        {
+            throw od::Exception("Got phyiscs handle of unknown type");
+        }
 
         ContactResultCallback callback(typeMask, resultsOut);
         mCollisionWorld->contactTest(bulletObject, callback);
