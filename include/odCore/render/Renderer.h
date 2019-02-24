@@ -38,6 +38,7 @@ namespace odRender
     class Image;
     class RendererEventListener;
     class GuiNode;
+    class PhysicsDebugDrawer;
 
     /**
      * Interface for a renderer implementation.
@@ -66,6 +67,8 @@ namespace odRender
         virtual GuiNode *getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;
+
+        virtual PhysicsDebugDrawer *getPhysicsDebugDrawer() = 0;
 
     };
 

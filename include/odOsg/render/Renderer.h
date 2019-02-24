@@ -13,6 +13,7 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <memory>
 
 #include <osg/Group>
 #include <osg/Uniform>
@@ -34,6 +35,7 @@ namespace odOsg
     class Texture;
     class Camera;
     class GuiNode;
+    class PhysicsDebugDrawer;
 
     class Renderer : public odRender::Renderer
     {
@@ -61,6 +63,8 @@ namespace odOsg
         virtual odRender::GuiNode *getGuiRootNode() override;
 
         virtual odRender::Camera *getCamera() override;
+
+        virtual odRender::PhysicsDebugDrawer *getPhysicsDebugDrawer() override;
 
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
         void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index);
@@ -102,6 +106,8 @@ namespace odOsg
         osg::ref_ptr<osg::Uniform> mLocalLightsRadius;
         osg::ref_ptr<osg::Uniform> mLocalLightsIntensity;
         osg::ref_ptr<osg::Uniform> mLocalLightsPosition;
+
+        std::unique_ptr<PhysicsDebugDrawer> mPhysicsDebugDrawer;
     };
 
 }

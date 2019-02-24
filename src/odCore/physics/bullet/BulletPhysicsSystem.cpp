@@ -20,6 +20,7 @@
 #include <odCore/physics/bullet/LightHandleImpl.h>
 #include <odCore/physics/bullet/ModelShapeImpl.h>
 #include <odCore/physics/bullet/BulletCallbacks.h>
+#include <odCore/physics/bullet/DebugDrawer.h>
 
 namespace odBulletPhysics
 {
@@ -120,5 +121,27 @@ namespace odBulletPhysics
         return mb.get();
     }
 
+    void BulletPhysicsSystem::setDebugDrawer(odRender::PhysicsDebugDrawer *debugDrawer)
+    {
+        if(debugDrawer == nullptr)
+        {
+            mCollisionWorld->setDebugDrawer(nullptr);
+            mDebugDrawer = nullptr;
+
+        }else
+        {
+            mDebugDrawer = std::make_unique<DebugDrawer>(mCollisionWorld.get(), debugDrawer);
+            mCollisionWorld->setDebugDrawer(mDebugDrawer.get());
+            mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+        }
+    }
+
+    void BulletPhysicsSystem::update(float relTime)
+    {
+        if(mDebugDrawer != nullptr)
+        {
+            mDebugDrawer->update(relTime);
+        }
+    }
 
 }

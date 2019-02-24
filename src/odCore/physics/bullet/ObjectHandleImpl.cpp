@@ -54,6 +54,15 @@ namespace odBulletPhysics
         mCollisionObject->setUserPointer(static_cast<Handle*>(this));
         mCollisionObject->setUserIndex(obj.getObjectId());
 
+        if(isDetector)
+        {
+            mCollisionObject->setCustomDebugColor(btVector3(86.0/256, 86.0/256, 211.0/256));
+
+        }else
+        {
+            mCollisionObject->setCustomDebugColor(btVector3(99.0/256, 99.0/256, 99.0/256));
+        }
+
         odPhysics::PhysicsTypeMasks::Mask group = isDetector ? odPhysics::PhysicsTypeMasks::Detector : odPhysics::PhysicsTypeMasks::LevelObject;
         mCollisionWorld->addCollisionObject(mCollisionObject.get(), group, odPhysics::PhysicsTypeMasks::All);
     }

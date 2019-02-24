@@ -29,6 +29,7 @@ set(SOURCES
         "input/InputManager.cpp"
         "physics/bullet/BulletCallbacks.cpp"
         "physics/bullet/BulletPhysicsSystem.cpp"        
+        "physics/bullet/DebugDrawer.cpp"
         "physics/bullet/LayerHandleImpl.cpp"
         "physics/bullet/LightHandleImpl.cpp"
         "physics/bullet/ManagedCompoundShape.cpp"

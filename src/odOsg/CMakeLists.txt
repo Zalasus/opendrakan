@@ -14,6 +14,7 @@ set(SOURCES
         "render/LightState.cpp"
         "render/ModelNode.cpp"
         "render/ObjectNode.cpp"
+        "render/PhysicsDebugDrawer.cpp"
         "render/Renderer.cpp"
         "render/Rig.cpp"
         "render/ShaderFactory.cpp"

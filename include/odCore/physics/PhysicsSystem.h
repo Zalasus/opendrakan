@@ -29,6 +29,11 @@ namespace odDb
     class Model;
 }
 
+namespace odRender
+{
+    class PhysicsDebugDrawer;
+}
+
 namespace odPhysics
 {
     class ModelShape;
@@ -87,6 +92,10 @@ namespace odPhysics
         virtual od::RefPtr<LightHandle>  createLightHandle(od::Light &light) = 0;
 
         virtual od::RefPtr<ModelShape> createModelShape(odDb::Model &model) = 0;
+
+        virtual void setDebugDrawer(odRender::PhysicsDebugDrawer *debugDrawer) = 0;
+
+        virtual void update(float relTime) = 0;
     };
 
 }

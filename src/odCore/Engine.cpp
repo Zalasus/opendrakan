@@ -127,13 +127,15 @@ namespace od
 		{
 		    auto loopStart = std::chrono::high_resolution_clock::now();
 
+		    double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
+            lastUpdateStartTime = loopStart;
+
 		    if(mLevel != nullptr)
 		    {
-		        double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
-		        lastUpdateStartTime = loopStart;
-
 		        mLevel->update(relTime);
 		    }
+
+		    mPhysicsSystem->update(relTime);
 
 		    auto loopEnd = std::chrono::high_resolution_clock::now();
 		    auto loopTime = loopEnd - loopStart;

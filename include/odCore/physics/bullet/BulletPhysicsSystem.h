@@ -22,8 +22,9 @@
 
 namespace odBulletPhysics
 {
-    struct ObjectHandle;
-    struct LayerHandle;
+    class ObjectHandle;
+    class LayerHandle;
+    class DebugDrawer;
 
     /**
      * @brief PhysicsSystem implementation using the Bullet physics engine.
@@ -49,6 +50,10 @@ namespace odBulletPhysics
 
         virtual od::RefPtr<odPhysics::ModelShape> createModelShape(odDb::Model &model) override;
 
+        virtual void setDebugDrawer(odRender::PhysicsDebugDrawer *debugDrawer) override;
+
+        virtual void update(float relTime) override;
+
 
     private:
 
@@ -59,6 +64,8 @@ namespace odBulletPhysics
         std::unique_ptr<btCollisionDispatcher> mDispatcher; // depends on mCollisionConfiguration. init after that
         std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btCollisionWorld> mCollisionWorld;
+
+        std::unique_ptr<DebugDrawer> mDebugDrawer;
     };
 
 }
