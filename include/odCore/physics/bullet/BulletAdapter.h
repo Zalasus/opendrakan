@@ -37,7 +37,7 @@ namespace odBulletPhysics
 
         inline static glm::quat toGlm(const btQuaternion &q)
         {
-            return glm::quat(q.getX(), q.getY(), q.getZ(), q.getW());
+            return glm::quat(q.getW(), q.getX(), q.getY(), q.getZ());
         }
 
         inline static btTransform makeBulletTransform(const glm::vec3 &translation, const glm::quat &rotation)

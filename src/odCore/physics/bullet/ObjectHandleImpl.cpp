@@ -40,6 +40,7 @@ namespace odBulletPhysics
         if(mLevelObject.isScaled())
         {
             mUniqueShape = mModelShape->createNewUniqueShape();
+            mUniqueShape->setLocalScaling(BulletAdapter::toBullet(mLevelObject.getScale()));
             bulletShape = mUniqueShape.get();
 
         }else
