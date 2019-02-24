@@ -36,10 +36,18 @@ namespace odOsg
         osg::ref_ptr<osg::Group> mSceneRoot;
 
         osg::ref_ptr<osg::Geode> mGeode;
-        osg::ref_ptr<osg::Geometry> mGeometry;
-        osg::ref_ptr<osg::DrawArrays> mDrawArrays;
-        osg::ref_ptr<osg::Vec3Array> mVertexArray;
-        osg::ref_ptr<osg::Vec4Array> mColorArray;
+
+        // we maintain two geometries, each with their own arrays, so we can update one while the other one is drawn,
+        //  then simply swap the two once the update is finished
+        osg::ref_ptr<osg::Geometry> mGeometry[2];
+        osg::ref_ptr<osg::DrawArrays> mDrawArrays[2];
+        osg::ref_ptr<osg::Vec3Array> mVertexArray[2];
+        osg::ref_ptr<osg::Vec4Array> mColorArray[2];
+
+        size_t mFrontIndex;
+        size_t mBackIndex;
+
+        bool mDrawing;
     };
 
 }
