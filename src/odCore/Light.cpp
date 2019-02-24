@@ -10,17 +10,23 @@
 #include <odCore/LevelObject.h>
 
 #include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 namespace od
 {
 
     Light::Light(odPhysics::PhysicsSystem &physicsSystem)
     : mPhysicsSystem(physicsSystem)
-    , mIntensityScaling(1)
     , mRadius(1)
+    , mIntensityScaling(1)
     , mRequiredQualityLevel(0)
     {
         mLightHandle = mPhysicsSystem.createLightHandle(*this);
+        mLightHandle->setRadius(mRadius);
+    }
+
+    Light::~Light()
+    {
     }
 
     void Light::setPosition(const glm::vec3 &p)

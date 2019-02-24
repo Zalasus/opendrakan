@@ -28,6 +28,7 @@ namespace od
     public:
 
         Light(odPhysics::PhysicsSystem &physicsSystem);
+        ~Light();
 
         inline glm::vec3 getColor() const { return mColor; }
         inline float getIntensityScaling() const { return mIntensityScaling; }

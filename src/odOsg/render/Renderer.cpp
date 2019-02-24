@@ -211,7 +211,7 @@ namespace odOsg
         mLocalLightsIntensity->setElement(index, light->getIntensityScaling());
         mLocalLightsRadius->setElement(index, light->getRadius());
 
-        osg::Vec3 posWs = GlmAdapter::toOsg(light->getLevelObject().getPosition());
+        osg::Vec3 posWs = GlmAdapter::toOsg(light->getPosition());
         osg::Vec4 dirCs = osg::Vec4(posWs, 1.0) * viewMatrix;
         mLocalLightsPosition->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
