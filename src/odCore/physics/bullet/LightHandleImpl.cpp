@@ -30,7 +30,7 @@ namespace odBulletPhysics
 
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
 
-        mCollisionObject->setCustomDebugColor(btVector3(215.0/256, 221.0/256, 86.0/256));
+        //mCollisionObject->setCustomDebugColor(btVector3(215.0/256, 221.0/256, 86.0/256));
 
         mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Light, odPhysics::PhysicsTypeMasks::All);
     }
