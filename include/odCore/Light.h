@@ -46,6 +46,7 @@ namespace od
         bool affects(const od::BoundingSphere &sphere);
         float distanceToPoint(const glm::vec3 &point);
 
+        void updateAffectedList();
 
     private:
 

@@ -55,4 +55,26 @@ namespace od
     {
         return glm::length(mPosition - point);
     }
+
+    void Light::updateAffectedList()
+    {
+        odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::LevelObject | odPhysics::PhysicsTypeMasks::Layer;
+
+        odPhysics::ContactTestResultVector results;
+        mPhysicsSystem.contactTest(mLightHandle, mask, results);
+
+        for(auto &result : results)
+        {
+            odPhysics::Handle *handle = result.handleB;
+
+            if(handle->asLayerHandle() != nullptr)
+            {
+                handle->asLayerHandle()->getLayer().addAffectingLight(*this);
+            }
+        }
+    }
+
 }
+
+
+

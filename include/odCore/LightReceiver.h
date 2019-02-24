@@ -19,6 +19,12 @@ namespace od
     {
     public:
 
+
+        /**
+         * Called by a light that had to update it's affection
+         */
+        void addAffectingLight(od::Light &light);
+
         void update(odPhysics::Handle *handle, odPhysics::PhysicsSystem &physicsSystem);
 
 

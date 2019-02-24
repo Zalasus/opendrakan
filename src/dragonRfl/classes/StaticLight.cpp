@@ -55,6 +55,8 @@ namespace dragonRfl
         mLight->setIntensityScaling(mIntensityScaling);
         mLight->setRequiredQualityLevel(mQualityLevelRequired);
         mLight->setPosition(obj.getPosition());
+
+        mLight->updateAffectedList();
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
