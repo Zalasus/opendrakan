@@ -10,6 +10,7 @@
 #include <limits>
 
 #include <glm/mat3x3.hpp>
+#include <glm/matrix.hpp>
 
 #include <odCore/DataStream.h>
 
