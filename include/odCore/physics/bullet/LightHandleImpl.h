@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include <glm/vec3.hpp>
+
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
@@ -28,7 +30,7 @@ namespace odBulletPhysics
     {
     public:
 
-        LightHandle(od::Light *light, btCollisionWorld *collisionWorld);
+        LightHandle(od::Light &light, btCollisionWorld *collisionWorld);
         virtual ~LightHandle();
 
         inline btCollisionObject *getBulletObject() { return mCollisionObject.get(); }
@@ -36,12 +38,12 @@ namespace odBulletPhysics
         virtual void setRadius(float radius) override;
         virtual void setPosition(const glm::vec3 &pos) override;
 
-        virtual od::Light *getLight() override;
+        virtual od::Light &getLight() override;
 
 
     private:
 
-        od::RefPtr<od::Light> mLight;
+        od::Light &mLight;
         btCollisionWorld *mCollisionWorld;
 
         std::unique_ptr<btSphereShape> mShape;

@@ -46,7 +46,6 @@ namespace dragonRfl
 
         glm::vec3 mLightColorVector;
         od::RefPtr<od::Light> mLight;
-        od::RefPtr<odPhysics::LightHandle> mPhysicsHandle;
     };
 
 }

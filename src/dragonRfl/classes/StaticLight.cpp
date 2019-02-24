@@ -49,13 +49,12 @@ namespace dragonRfl
 
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
-        mLight = od::make_refd<od::Light>(obj);
+        mLight = od::make_refd<od::Light>(obj.getLevel().getEngine().getPhysicsSystem());
         mLight->setColor(mLightColorVector);
         mLight->setRadius(mRadius);
         mLight->setIntensityScaling(mIntensityScaling);
         mLight->setRequiredQualityLevel(mQualityLevelRequired);
-
-        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createLightHandle(*mLight);
+        mLight->setPosition(obj.getPosition());
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
@@ -66,7 +65,6 @@ namespace dragonRfl
     void StaticLight::onDespawned(od::LevelObject &obj)
     {
         mLight = nullptr;
-        mPhysicsHandle = nullptr;
     }
 
 

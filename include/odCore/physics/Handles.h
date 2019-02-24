@@ -112,7 +112,7 @@ namespace odPhysics
         virtual void setRadius(float radius) = 0;
         virtual void setPosition(const glm::vec3 &pos) = 0;
 
-        virtual od::Light *getLight() = 0;
+        virtual od::Light &getLight() = 0;
 
     };
 

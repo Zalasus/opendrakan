@@ -16,16 +16,16 @@
 namespace odBulletPhysics
 {
 
-    LightHandle::LightHandle(od::Light *light, btCollisionWorld *collisionWorld)
+    LightHandle::LightHandle(od::Light &light, btCollisionWorld *collisionWorld)
     : mLight(light)
     , mCollisionWorld(collisionWorld)
     {
-        mShape = std::make_unique<btSphereShape>(mLight->getRadius());
+        mShape = std::make_unique<btSphereShape>(mLight.getRadius());
 
         mCollisionObject = std::make_unique<btCollisionObject>();
         mCollisionObject->setCollisionShape(mShape.get());
 
-        btTransform worldTransform = BulletAdapter::makeBulletTransform(light->getLevelObject().getPosition(), glm::quat(1, 0, 0, 0));
+        btTransform worldTransform = BulletAdapter::makeBulletTransform(light.getPosition(), glm::quat(1, 0, 0, 0));
         mCollisionObject->setWorldTransform(worldTransform);
 
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
@@ -52,7 +52,7 @@ namespace odBulletPhysics
         mCollisionObject->setWorldTransform(worldTransform);
     }
 
-    od::Light *LightHandle::getLight()
+    od::Light &LightHandle::getLight()
     {
         return mLight;
     }

@@ -111,7 +111,7 @@ namespace odBulletPhysics
 
     od::RefPtr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(od::Light &light)
     {
-        auto lightHandle = od::make_refd<LightHandle>(&light, mCollisionWorld.get());
+        auto lightHandle = od::make_refd<LightHandle>(light, mCollisionWorld.get());
 
         return lightHandle.get();
     }

@@ -9,15 +9,30 @@
 
 #include <odCore/LevelObject.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+
 namespace od
 {
 
-    Light::Light(od::LevelObject &obj)
-    : mLevelObject(obj)
+    Light::Light(odPhysics::PhysicsSystem &physicsSystem)
+    : mPhysicsSystem(physicsSystem)
     , mIntensityScaling(1)
     , mRadius(1)
     , mRequiredQualityLevel(0)
     {
+        mLightHandle = mPhysicsSystem.createLightHandle(*this);
+    }
+
+    void Light::setPosition(const glm::vec3 &p)
+    {
+        mPosition = p;
+        mLightHandle->setPosition(p);
+    }
+
+    void Light::setRadius(float f)
+    {
+        mRadius = f;
+        mLightHandle->setRadius(f);
     }
 
     bool Light::affects(const glm::vec3 &point)
@@ -32,6 +47,6 @@ namespace od
 
     float Light::distanceToPoint(const glm::vec3 &point)
     {
-        return glm::length(mLevelObject.getPosition() - point);
+        return glm::length(mPosition - point);
     }
 }
