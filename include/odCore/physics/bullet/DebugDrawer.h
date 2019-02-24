@@ -8,13 +8,12 @@
 #ifndef INCLUDE_ODCORE_PHYSICS_BULLET_DEBUGDRAWER_H_
 #define INCLUDE_ODCORE_PHYSICS_BULLET_DEBUGDRAWER_H_
 
+#include <vector>
+
+#include <glm/vec3.hpp>
+
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <LinearMath/btIDebugDraw.h>
-
-namespace odRender
-{
-    class PhysicsDebugDrawer;
-}
 
 namespace odBulletPhysics
 {
@@ -23,7 +22,8 @@ namespace odBulletPhysics
     {
     public:
 
-        DebugDrawer(btCollisionWorld *collisionWorld, odRender::PhysicsDebugDrawer *rendererInterface);
+        DebugDrawer(btCollisionWorld *collisionWorld);
+        virtual ~DebugDrawer();
 
         virtual void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) override;
 
@@ -42,8 +42,12 @@ namespace odBulletPhysics
     private:
 
         btCollisionWorld *mCollisionWorld;
-        odRender::PhysicsDebugDrawer *mRendererInterface;
         int mDebugMode;
+
+        std::vector<glm::vec3> mLineVertices;
+        std::vector<glm::vec3> mLineColors; // contains only one vector per line!
+
+        size_t mLastMaximumLineCount;
 
     };
 

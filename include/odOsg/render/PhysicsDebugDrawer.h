@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODOSG_RENDER_PHYSICSDEBUGDRAWER_H_
 #define INCLUDE_ODOSG_RENDER_PHYSICSDEBUGDRAWER_H_
 
+#include <atomic>
+
 #include <osg/Group>
 #include <osg/Geode>
 #include <osg/Geometry>
@@ -30,6 +32,8 @@ namespace odOsg
         virtual void drawLine(const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &color) override;
         virtual void endDrawing() override;
 
+        void swapGeometries();
+
 
     private:
 
@@ -47,7 +51,7 @@ namespace odOsg
         size_t mFrontIndex;
         size_t mBackIndex;
 
-        bool mDrawing;
+        std::atomic_bool mDrawing;
     };
 
 }

@@ -50,7 +50,8 @@ namespace odBulletPhysics
 
         virtual od::RefPtr<odPhysics::ModelShape> createModelShape(odDb::Model &model) override;
 
-        virtual void setDebugDrawer(odRender::PhysicsDebugDrawer *debugDrawer) override;
+        virtual void setEnableDebugDrawing(bool enable) override;
+        virtual bool isDebugDrawingEnabled() override;
 
         virtual void update(float relTime) override;
 

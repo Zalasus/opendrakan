@@ -28,6 +28,7 @@ namespace odRender
         virtual void startDrawing() = 0;
         virtual void drawLine(const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &color) = 0;
         virtual void endDrawing() = 0;
+
     };
 
 }

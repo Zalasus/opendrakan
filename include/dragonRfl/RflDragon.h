@@ -44,8 +44,6 @@ namespace dragonRfl
 
         od::RefPtr<odInput::IAction> mMenuAction;
         od::RefPtr<odInput::IAction> mPhysicsDebugAction;
-
-        bool mPhysicsDebugDrawingActive;
     };
 
 }

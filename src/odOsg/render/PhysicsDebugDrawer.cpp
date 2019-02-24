@@ -12,6 +12,28 @@
 namespace odOsg
 {
 
+    class UpdateCallback : public osg::NodeCallback
+    {
+    public:
+
+        UpdateCallback(PhysicsDebugDrawer &pdd)
+        : mPdd(pdd)
+        {
+        }
+
+        virtual void operator()(osg::Node *node, osg::NodeVisitor *nv) override
+        {
+            mPdd.swapGeometries();
+        }
+
+
+    private:
+
+        PhysicsDebugDrawer &mPdd;
+
+    };
+
+
     PhysicsDebugDrawer::PhysicsDebugDrawer(osg::Group *sceneRoot)
     : mSceneRoot(sceneRoot)
     , mFrontIndex(0)
@@ -19,6 +41,7 @@ namespace odOsg
     , mDrawing(false)
     {
         mGeode = new osg::Geode();
+        mGeode->addUpdateCallback(new UpdateCallback(*this));
 
         for(size_t i = 0; i < 2; ++i)
         {
@@ -48,10 +71,10 @@ namespace odOsg
 
     void PhysicsDebugDrawer::startDrawing()
     {
+        mDrawing = true;
+
         mVertexArray[mBackIndex]->clear();
         mColorArray[mBackIndex]->clear();
-
-        mDrawing = true;
     }
 
     void PhysicsDebugDrawer::drawLine(const glm::vec3 &start, const glm::vec3 &end, const glm::vec3 &color)
@@ -71,19 +94,28 @@ namespace odOsg
 
     void PhysicsDebugDrawer::endDrawing()
     {
-        mDrawing = false;
-
         mDrawArrays[mBackIndex]->setCount(mVertexArray[mBackIndex]->size());
         mVertexArray[mBackIndex]->dirty();
         mColorArray[mBackIndex]->dirty();
         mGeometry[mBackIndex]->dirtyBound();
+
+        mDrawing = false;
+    }
+
+    void PhysicsDebugDrawer::swapGeometries()
+    {
+        // don't swap buffers while drawing. while this causes us to miss an update, it's probably better
+        //  to skip a frame than to wait for the costly draw process to complete
+        if(mDrawing)
+        {
+            return;
+        }
 
         mGeode->addDrawable(mGeometry[mBackIndex]);
         mGeode->removeDrawable(mGeometry[mFrontIndex]);
 
         std::swap(mBackIndex, mFrontIndex);
     }
-
 }
 
 

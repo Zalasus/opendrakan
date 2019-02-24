@@ -30,7 +30,6 @@
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Camera.h>
 #include <odOsg/render/GuiNode.h>
-#include <odOsg/render/PhysicsDebugDrawer.h>
 
 namespace odOsg
 {
@@ -180,16 +179,6 @@ namespace odOsg
     odRender::Camera *Renderer::getCamera()
     {
         return mCamera;
-    }
-
-    odRender::PhysicsDebugDrawer *Renderer::getPhysicsDebugDrawer()
-    {
-        if(mPhysicsDebugDrawer == nullptr)
-        {
-            mPhysicsDebugDrawer = std::make_unique<PhysicsDebugDrawer>(mSceneRoot);
-        }
-
-        return mPhysicsDebugDrawer.get();
     }
 
     void Renderer::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction)

@@ -68,8 +68,6 @@ namespace odRender
 
         virtual Camera *getCamera() = 0;
 
-        virtual PhysicsDebugDrawer *getPhysicsDebugDrawer() = 0;
-
     };
 
 }

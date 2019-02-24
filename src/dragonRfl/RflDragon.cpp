@@ -32,7 +32,6 @@ namespace dragonRfl
     DragonRfl::DragonRfl(od::Engine &engine)
     : AutoRegisteringRfl<DragonRfl>(engine)
     , mLocalPlayer(nullptr)
-    , mPhysicsDebugDrawingActive(false)
     {
     }
 
@@ -85,16 +84,7 @@ namespace dragonRfl
         case Action::PhysicsDebug_Toggle:
             if(getEngine().getRenderer() != nullptr)
             {
-                if(mPhysicsDebugDrawingActive)
-                {
-                    getEngine().getPhysicsSystem().setDebugDrawer(nullptr);
-                    mPhysicsDebugDrawingActive = false;
-
-                }else
-                {
-                    getEngine().getPhysicsSystem().setDebugDrawer(getEngine().getRenderer()->getPhysicsDebugDrawer());
-                    mPhysicsDebugDrawingActive = true;
-                }
+                getEngine().getPhysicsSystem().toggleDebugDrawing();
             }
             break;
 

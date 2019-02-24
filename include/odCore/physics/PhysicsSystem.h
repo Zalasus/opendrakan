@@ -93,7 +93,9 @@ namespace odPhysics
 
         virtual od::RefPtr<ModelShape> createModelShape(odDb::Model &model) = 0;
 
-        virtual void setDebugDrawer(odRender::PhysicsDebugDrawer *debugDrawer) = 0;
+        virtual void setEnableDebugDrawing(bool enable) = 0;
+        virtual bool isDebugDrawingEnabled() = 0;
+        inline void toggleDebugDrawing() { setEnableDebugDrawing(!isDebugDrawingEnabled()); }
 
         virtual void update(float relTime) = 0;
     };

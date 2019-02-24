@@ -36,6 +36,8 @@ namespace odBulletPhysics
         // so we get ghost object interaction
         mGhostPairCallback = std::make_unique<btGhostPairCallback>();
         mCollisionWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
+
+        mDebugDrawer = std::make_unique<DebugDrawer>(mCollisionWorld.get());
     }
 
     BulletPhysicsSystem::~BulletPhysicsSystem()
@@ -121,19 +123,16 @@ namespace odBulletPhysics
         return mb.get();
     }
 
-    void BulletPhysicsSystem::setDebugDrawer(odRender::PhysicsDebugDrawer *debugDrawer)
+    void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)
     {
-        if(debugDrawer == nullptr)
-        {
-            mCollisionWorld->setDebugDrawer(nullptr);
-            mDebugDrawer = nullptr;
+        int debugDrawMode = enable ? btIDebugDraw::DBG_DrawWireframe : btIDebugDraw::DBG_NoDebug;
 
-        }else
-        {
-            mDebugDrawer = std::make_unique<DebugDrawer>(mCollisionWorld.get(), debugDrawer);
-            mCollisionWorld->setDebugDrawer(mDebugDrawer.get());
-            mDebugDrawer->setDebugMode(btIDebugDraw::DBG_DrawWireframe);
-        }
+        mDebugDrawer->setDebugMode(debugDrawMode);
+    }
+
+    bool BulletPhysicsSystem::isDebugDrawingEnabled()
+    {
+        return mDebugDrawer->getDebugMode() != btIDebugDraw::DBG_NoDebug;
     }
 
     void BulletPhysicsSystem::update(float relTime)
