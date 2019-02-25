@@ -14,6 +14,7 @@
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
 #include <odCore/OdDefines.h>
+#include <odCore/LightReceiver.h>
 
 #include <odCore/anim/Skeleton.h>
 
@@ -393,6 +394,16 @@ namespace od
     void LevelObject::requestDestruction()
     {
         mLevel.requestLevelObjectDestruction(this);
+    }
+
+    void LevelObject::removeAffectingLight(od::Light *light)
+    {
+
+    }
+
+    void LevelObject::addAffectingLight(od::Light *light)
+    {
+
     }
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)

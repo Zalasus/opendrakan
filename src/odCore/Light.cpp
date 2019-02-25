@@ -7,7 +7,9 @@
 
 #include <odCore/Light.h>
 
+#include <odCore/Layer.h>
 #include <odCore/LevelObject.h>
+#include <odCore/LightReceiver.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -58,7 +60,19 @@ namespace od
 
     void Light::updateAffectedList()
     {
-        odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::LevelObject | odPhysics::PhysicsTypeMasks::Layer;
+        for(auto &l : mAffectedLayers)
+        {
+            l->removeAffectingLight(this);
+        }
+        mAffectedLayers.clear();
+
+        for(auto &o : mAffectedObjects)
+        {
+            o->removeAffectingLight(this);
+        }
+        mAffectedObjects.clear();
+
+        static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::LevelObject | odPhysics::PhysicsTypeMasks::Layer;
 
         odPhysics::ContactTestResultVector results;
         mPhysicsSystem.contactTest(mLightHandle, mask, results);
@@ -67,9 +81,17 @@ namespace od
         {
             odPhysics::Handle *handle = result.handleB;
 
-            if(handle->asLayerHandle() != nullptr)
+            if(handle->asObjectHandle() != nullptr)
             {
-                handle->asLayerHandle()->getLayer().addAffectingLight(*this);
+                LevelObject &obj = handle->asObjectHandle()->getLevelObject();
+                obj.addAffectingLight(this);
+                mAffectedObjects.push_back(&obj);
+
+            }else if(handle->asLayerHandle() != nullptr)
+            {
+                Layer &layer = handle->asLayerHandle()->getLayer();
+                layer.addAffectingLight(this);
+                mAffectedLayers.push_back(&layer);
             }
         }
     }

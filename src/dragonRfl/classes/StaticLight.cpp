@@ -56,7 +56,7 @@ namespace dragonRfl
         mLight->setRequiredQualityLevel(mQualityLevelRequired);
         mLight->setPosition(obj.getPosition());
 
-        mLight->updateAffectedList();
+        mLight->updateAffectedList(); // FIXME: doing that here will cause us to miss all the objects that haven't spawned yet
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)

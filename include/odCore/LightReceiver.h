@@ -19,14 +19,11 @@ namespace od
     {
     public:
 
+        virtual ~LightReceiver() = default;
 
-        /**
-         * Called by a light that had to update it's affection
-         */
-        void addAffectingLight(od::Light &light);
+        virtual void removeAffectingLight(od::Light *light) = 0;
 
-        void update(odPhysics::Handle *handle, odPhysics::PhysicsSystem &physicsSystem);
-
+        virtual void addAffectingLight(od::Light *light) = 0;
 
 
     };

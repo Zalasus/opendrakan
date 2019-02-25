@@ -14,6 +14,8 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/LightReceiver.h>
+
 #include <odCore/db/Class.h>
 #include <odCore/rfl/RflMessage.h>
 
@@ -57,7 +59,7 @@ namespace od
         Always
     };
 
-    class LevelObject
+    class LevelObject : public LightReceiver
     {
     public:
 
@@ -149,6 +151,9 @@ namespace od
         void setEnableRflUpdateHook(bool enableHook);
         void messageAllLinkedObjects(odRfl::RflMessage message);
         void requestDestruction();
+
+        virtual void removeAffectingLight(od::Light *light) override;
+        virtual void addAffectingLight(od::Light *light) override;
 
 
     private:

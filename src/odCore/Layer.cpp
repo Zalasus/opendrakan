@@ -378,6 +378,16 @@ namespace od
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
+    void Layer::removeAffectingLight(od::Light *light)
+    {
+
+    }
+
+    void Layer::addAffectingLight(od::Light *light)
+    {
+
+    }
+
     void Layer::_bakeLocalLayerLight()
     {
         if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)

@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_RENDER_LIGHT_H_
 #define INCLUDE_ODCORE_RENDER_LIGHT_H_
 
+#include <vector>
+
 #include <glm/vec3.hpp>
 
 #include <odCore/RefCounted.h>
@@ -22,6 +24,7 @@ namespace odPhysics
 namespace od
 {
     class LevelObject;
+    class Layer;
 
     class Light : public od::RefCounted
     {
@@ -38,6 +41,8 @@ namespace od
         inline void setColor(const glm::vec3 &color) { mColor = color; }
         inline void setIntensityScaling(float f) { mIntensityScaling = f; }
         inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
+        inline const std::vector<Layer*> &getAffectedLayers() const { return mAffectedLayers; }
+        inline const std::vector<LevelObject*> &getAffectedObjects() const { return mAffectedObjects; }
 
         void setPosition(const glm::vec3 &p);
         void setRadius(float f);
@@ -47,6 +52,7 @@ namespace od
         float distanceToPoint(const glm::vec3 &point);
 
         void updateAffectedList();
+
 
     private:
 
@@ -58,6 +64,9 @@ namespace od
         glm::vec3 mColor;
         float mIntensityScaling;
         uint32_t mRequiredQualityLevel;
+
+        std::vector<Layer*> mAffectedLayers;
+        std::vector<LevelObject*> mAffectedObjects;
     };
 
 }

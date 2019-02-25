@@ -15,6 +15,7 @@
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
+#include <odCore/LightReceiver.h>
 
 #include <odCore/db/Asset.h>
 
@@ -31,7 +32,7 @@ namespace od
 {
     class Level;
 
-    class Layer
+    class Layer : public LightReceiver
     {
     public:
 
@@ -74,7 +75,7 @@ namespace od
         static const odDb::AssetRef InvisibleTextureRef;
 
         Layer(Level &level);
-        ~Layer();
+        virtual ~Layer();
 
         inline Level &getLevel() { return mLevel; }
         inline uint32_t getId() const { return mId; };
@@ -115,6 +116,9 @@ namespace od
         bool contains(const glm::vec2 &xzCoord, float epsilon);
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
+
+        virtual void removeAffectingLight(od::Light *light) override;
+        virtual void addAffectingLight(od::Light *light) override;
 
 
     private:
