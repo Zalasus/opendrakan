@@ -22,6 +22,7 @@ namespace od
     , mRadius(1)
     , mIntensityScaling(1)
     , mRequiredQualityLevel(0)
+    , mIsDynamic(false)
     {
         mLightHandle = mPhysicsSystem.createLightHandle(*this);
         mLightHandle->setRadius(mRadius);
@@ -60,7 +61,23 @@ namespace od
 
     void Light::addAffected(odPhysics::Handle *handle)
     {
+        if(handle == nullptr)
+        {
+            return;
+        }
 
+        if(handle->asObjectHandle() != nullptr)
+        {
+            LevelObject &obj = handle->asObjectHandle()->getLevelObject();
+            obj.addAffectingLight(this);
+            mAffectedObjects.push_back(&obj);
+
+        }else if(handle->asLayerHandle() != nullptr)
+        {
+            Layer &layer = handle->asLayerHandle()->getLayer();
+            layer.addAffectingLight(this);
+            mAffectedLayers.push_back(&layer);
+        }
     }
 
     void Light::updateAffectedList()
@@ -84,20 +101,7 @@ namespace od
 
         for(auto &result : results)
         {
-            odPhysics::Handle *handle = result.handleB;
-
-            if(handle->asObjectHandle() != nullptr)
-            {
-                LevelObject &obj = handle->asObjectHandle()->getLevelObject();
-                obj.addAffectingLight(this);
-                mAffectedObjects.push_back(&obj);
-
-            }else if(handle->asLayerHandle() != nullptr)
-            {
-                Layer &layer = handle->asLayerHandle()->getLayer();
-                layer.addAffectingLight(this);
-                mAffectedLayers.push_back(&layer);
-            }
+            addAffected(result.handleB);
         }
     }
 

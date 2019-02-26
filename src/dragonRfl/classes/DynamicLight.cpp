@@ -47,6 +47,8 @@ namespace dragonRfl
     {
         StaticLight::onSpawned(obj);
 
+        mLight->setDynamic(true);
+
         obj.setEnableRflUpdateHook(true);
 
         mStarted = (mStartEffect == EffectStartType::WhenCreated);

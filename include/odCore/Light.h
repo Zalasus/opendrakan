@@ -39,9 +39,11 @@ namespace od
         inline float getRadius() const { return mRadius; }
         inline glm::vec3 getPosition() const { return mPosition; }
         inline uint32_t getRequiredQualityLevel() const { return mRequiredQualityLevel; }
+        inline bool isDynamic() const { return mIsDynamic; }
         inline void setColor(const glm::vec3 &color) { mColor = color; }
         inline void setIntensityScaling(float f) { mIntensityScaling = f; }
         inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
+        inline void setDynamic(bool b) { mIsDynamic = b; }
         inline const std::vector<Layer*> &getAffectedLayers() const { return mAffectedLayers; }
         inline const std::vector<LevelObject*> &getAffectedObjects() const { return mAffectedObjects; }
 
@@ -67,6 +69,7 @@ namespace od
         glm::vec3 mColor;
         float mIntensityScaling;
         uint32_t mRequiredQualityLevel;
+        bool mIsDynamic;
 
         std::vector<Layer*> mAffectedLayers;
         std::vector<LevelObject*> mAffectedObjects;
