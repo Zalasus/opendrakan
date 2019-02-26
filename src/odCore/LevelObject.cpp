@@ -406,6 +406,11 @@ namespace od
 
     }
 
+    void LevelObject::clearLightList()
+    {
+
+    }
+
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
         mLayerBelowObjectDirty = true;

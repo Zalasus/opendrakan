@@ -61,14 +61,15 @@ namespace od
     void Level::spawnAllObjects()
     {
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
-        {
-            (*it)->spawned();
-        }
 
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
             (*it)->spawn();
+        }
+
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            (*it)->spawned();
         }
     }
 

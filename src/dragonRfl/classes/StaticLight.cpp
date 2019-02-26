@@ -26,6 +26,7 @@ namespace dragonRfl
     , mRadius(1.0)
     , mLightMap(odDb::AssetRef::NULL_REF)
     , mQualityLevelRequired(0)
+    , mNeedsUpdate(true)
     {
     }
 
@@ -56,12 +57,24 @@ namespace dragonRfl
         mLight->setRequiredQualityLevel(mQualityLevelRequired);
         mLight->setPosition(obj.getPosition());
 
-        mLight->updateAffectedList(); // FIXME: doing that here will cause us to miss all the objects that haven't spawned yet
+        obj.setEnableRflUpdateHook(true);
+        mNeedsUpdate = true;
     }
 
     void StaticLight::onMoved(od::LevelObject &obj)
     {
         // TODO: is it okay to ignore this? i think static lights shouldn't move
+    }
+
+    void StaticLight::onUpdate(od::LevelObject &obj, float relTime)
+    {
+        if(!mNeedsUpdate || mLight == nullptr)
+        {
+            return;
+        }
+
+        mLight->updateAffectedList();
+        mNeedsUpdate = false;
     }
 
     void StaticLight::onDespawned(od::LevelObject &obj)

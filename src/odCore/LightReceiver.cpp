@@ -15,21 +15,6 @@
 namespace od
 {
 
-    void LightReceiver::removeAffectingLight(od::Light *light)
-    {
-
-    }
-
-    void LightReceiver::addAffectingLight(od::Light *light)
-    {
-
-    }
-
-    void LightReceiver::clearLightList()
-    {
-
-    }
-
     void LightReceiver::updateAffectingLights(odPhysics::PhysicsSystem &ps, odPhysics::Handle *handle)
     {
         this->clearLightList();

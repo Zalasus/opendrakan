@@ -380,10 +380,13 @@ namespace od
 
     void Layer::removeAffectingLight(od::Light *light)
     {
-
     }
 
     void Layer::addAffectingLight(od::Light *light)
+    {
+    }
+
+    void Layer::clearLightList()
     {
 
     }

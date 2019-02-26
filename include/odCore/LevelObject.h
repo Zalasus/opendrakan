@@ -154,6 +154,7 @@ namespace od
 
         virtual void removeAffectingLight(od::Light *light) override;
         virtual void addAffectingLight(od::Light *light) override;
+        virtual void clearLightList() override;
 
 
     private:

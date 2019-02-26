@@ -25,11 +25,11 @@ namespace od
 
         virtual ~LightReceiver() = default;
 
-        virtual void removeAffectingLight(od::Light *light);
+        virtual void removeAffectingLight(od::Light *light) = 0;
 
-        virtual void addAffectingLight(od::Light *light);
+        virtual void addAffectingLight(od::Light *light) = 0;
 
-        virtual void clearLightList();
+        virtual void clearLightList() = 0;
 
         void updateAffectingLights(odPhysics::PhysicsSystem &ps, odPhysics::Handle *handle);
 
