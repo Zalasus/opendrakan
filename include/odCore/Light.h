@@ -18,6 +18,7 @@
 namespace odPhysics
 {
     class PhysicsSystem;
+    class Handle;
     class LightHandle;
 }
 
@@ -50,6 +51,8 @@ namespace od
         bool affects(const glm::vec3 &point);
         bool affects(const od::BoundingSphere &sphere);
         float distanceToPoint(const glm::vec3 &point);
+
+        void addAffected(odPhysics::Handle *handle);
 
         void updateAffectedList();
 

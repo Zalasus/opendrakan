@@ -8,7 +8,11 @@
 #ifndef INCLUDE_ODCORE_LIGHTRECEIVER_H_
 #define INCLUDE_ODCORE_LIGHTRECEIVER_H_
 
-#include <vector>
+namespace odPhysics
+{
+    class PhysicsSystem;
+    class Handle;
+}
 
 namespace od
 {
@@ -21,10 +25,13 @@ namespace od
 
         virtual ~LightReceiver() = default;
 
-        virtual void removeAffectingLight(od::Light *light) = 0;
+        virtual void removeAffectingLight(od::Light *light);
 
-        virtual void addAffectingLight(od::Light *light) = 0;
+        virtual void addAffectingLight(od::Light *light);
 
+        virtual void clearLightList();
+
+        void updateAffectingLights(odPhysics::PhysicsSystem &ps, odPhysics::Handle *handle);
 
     };
 

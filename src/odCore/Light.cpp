@@ -58,6 +58,11 @@ namespace od
         return glm::length(mPosition - point);
     }
 
+    void Light::addAffected(odPhysics::Handle *handle)
+    {
+
+    }
+
     void Light::updateAffectedList()
     {
         for(auto &l : mAffectedLayers)

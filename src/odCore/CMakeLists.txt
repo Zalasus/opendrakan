@@ -58,6 +58,7 @@ set(SOURCES
         "Level.cpp"
         "LevelObject.cpp"
         "Light.cpp"
+        "LightReceiver.cpp"
         "NuLogger.cpp"
         "RefCounted.cpp"
         "GlmSerializers.cpp"
