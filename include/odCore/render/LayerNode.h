@@ -10,6 +10,11 @@
 
 #include <odCore/RefCounted.h>
 
+namespace od
+{
+    class Light;
+}
+
 namespace odRender
 {
 
@@ -22,6 +27,10 @@ namespace odRender
         virtual ~LayerNode() = default;
 
         virtual Geometry *getGeometry() = 0;
+
+        virtual void addLight(od::Light *light) = 0;
+        virtual void removeLight(od::Light *light) = 0;
+        virtual void clearLightList() = 0;
 
     };
 

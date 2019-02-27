@@ -82,14 +82,12 @@ namespace odOsg
 
         mObjectGroup->addChild(mTransform);
 
-        mLightStateCallback = new LightStateCallback(renderer, mTransform, true);
-        mTransform->addCullCallback(mLightStateCallback);
+        mLightStateAttribute = new LightStateAttribute(renderer);
+        mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
     }
 
     ObjectNode::~ObjectNode()
     {
-        mTransform->removeCullCallback(mLightStateCallback);
-
         if(mUpdateCallback != nullptr)
         {
             mTransform->removeUpdateCallback(mUpdateCallback);
@@ -116,19 +114,16 @@ namespace odOsg
     void ObjectNode::setPosition(const glm::vec3 &pos)
     {
         mTransform->setPosition(GlmAdapter::toOsg(pos));
-        mLightStateCallback->lightingDirty();
     }
 
     void ObjectNode::setOrientation(const glm::quat &orientation)
     {
         mTransform->setAttitude(GlmAdapter::toOsg(orientation));
-        mLightStateCallback->lightingDirty();
     }
 
     void ObjectNode::setScale(const glm::vec3 &scale)
     {
         mTransform->setScale(GlmAdapter::toOsg(scale));
-        mLightStateCallback->lightingDirty();
     }
 
     void ObjectNode::setGlobalLight(const glm::vec3 &diffuse, const glm::vec3 &ambient, const glm::vec3 &direction)
@@ -136,7 +131,7 @@ namespace odOsg
         osg::Vec3 diff = GlmAdapter::toOsg(diffuse);
         osg::Vec3 amb = GlmAdapter::toOsg(ambient);
         osg::Vec3 dir = GlmAdapter::toOsg(direction);
-        mLightStateCallback->setLayerLight(diff, amb, dir);
+        mLightStateAttribute->setLayerLight(diff, amb, dir);
     }
 
     void ObjectNode::setLocalLightMask(uint32_t localLightMask)

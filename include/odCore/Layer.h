@@ -98,6 +98,12 @@ namespace od
         inline LayerType getLayerType() const { return mType; }
         inline glm::vec3 getOrigin() const { return glm::vec3(mOriginX, getWorldHeightLu(), mOriginZ); }
 
+        /// Returns vertex at (x, z) in world space. Caller is responsible to check that x and z are within bounds
+        inline glm::vec3 getVertexAt(int32_t x, int32_t z)
+        {
+            return glm::vec3(mOriginX + x, getWorldHeightLu() + mVertices[x + mWidth*z].heightOffsetLu, mOriginZ + z);
+        }
+
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
 
@@ -124,6 +130,7 @@ namespace od
 
     private:
 
+        void _bakeStaticLight(od::Light *light);
         void _bakeLocalLayerLight();
 
         Level              	   &mLevel;

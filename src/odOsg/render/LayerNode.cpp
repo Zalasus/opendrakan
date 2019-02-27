@@ -21,26 +21,39 @@ namespace odOsg
     : mRenderer(renderer)
     , mLayerGroup(layerGroup)
     , mLayerTransform(new osg::PositionAttitudeTransform)
-    , mLightStateCallback(new LightStateCallback(renderer, mLayerTransform, true))
+    , mLightStateAttribute(new LightStateAttribute(renderer))
     , mGeometry(od::make_refd<Geometry>())
     {
         _buildLayerGeometry(layer);
 
-        mLayerTransform->addCullCallback(mLightStateCallback);
+        mLayerTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
 
         mLayerGroup->addChild(mLayerTransform);
     }
 
     LayerNode::~LayerNode()
     {
-        mLayerTransform->removeCullCallback(mLightStateCallback);
-
         mLayerGroup->removeChild(mLayerTransform);
     }
 
     odRender::Geometry *LayerNode::getGeometry()
     {
         return mGeometry;
+    }
+
+    void LayerNode::addLight(od::Light *light)
+    {
+        mLightStateAttribute->addLight(light);
+    }
+
+    void LayerNode::removeLight(od::Light *light)
+    {
+        mLightStateAttribute->removeLight(light);
+    }
+
+    void LayerNode::clearLightList()
+    {
+        mLightStateAttribute->clearLightList();
     }
 
     void LayerNode::_buildLayerGeometry(od::Layer *layer)

@@ -74,7 +74,7 @@ namespace odOsg
         osg::ref_ptr<osg::Group> mObjectGroup;
         od::RefPtr<ModelNode> mModelNode;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
-        osg::ref_ptr<LightStateCallback> mLightStateCallback;
+        osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
         osg::ref_ptr<osg::Depth> mDepth;
         odRender::FrameListener *mFrameListener;
         osg::ref_ptr<osg::Callback> mUpdateCallback;

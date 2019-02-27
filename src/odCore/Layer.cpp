@@ -13,6 +13,7 @@
 
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
+#include <odCore/Light.h>
 
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Geometry.h>
@@ -380,15 +381,90 @@ namespace od
 
     void Layer::removeAffectingLight(od::Light *light)
     {
+        if(light == nullptr)
+        {
+            return;
+        }
+
+        if(mLayerNode != nullptr)
+        {
+            mLayerNode->removeLight(light);
+        }
     }
 
     void Layer::addAffectingLight(od::Light *light)
     {
+        if(light == nullptr)
+        {
+            return;
+        }
+
+        if(mLayerNode != nullptr)
+        {
+            mLayerNode->addLight(light);
+        }
+
+        // static lights can be baked into the vertex colors. all others need to be passed to the renderer
+        /*if(!light->isDynamic())
+        {
+
+        }else
+        {
+            if(mLayerNode != nullptr)
+            {
+
+            }
+        }*/
     }
 
     void Layer::clearLightList()
     {
+        mLayerNode->clearLightList();
+    }
 
+    void Layer::_bakeStaticLight(od::Light *light)
+    {
+        if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
+        {
+            return;
+        }
+
+        glm::vec3 lightPosition = light->getPosition();
+        float lightRadius = light->getRadius();
+
+        // find maximum rectangular area that can possibly be intersected by the light
+        int32_t xMin = std::max(lightPosition.x-mOriginX-lightRadius, 0.0f);
+        int32_t xMax = std::min(lightPosition.x-mOriginX+lightRadius, (float)mWidth);
+        int32_t zMin = std::max(lightPosition.z-mOriginZ-lightRadius, 0.0f);
+        int32_t zMax = std::max(lightPosition.z-mOriginZ+lightRadius, (float)mHeight);
+
+        for(int32_t z = zMin; z <= zMax; ++z)
+        {
+            for(int32_t x = xMin; x <= xMax; ++x)
+            {
+                // FIXME: light calculation with vertices in world space causes precision issues.
+                //  should at least do this relative to layer origin or something
+                glm::vec3 vertexPosition = getVertexAt(x, z);
+
+                if(!light->affects(vertexPosition))
+                {
+                    continue;
+                }
+
+                glm::vec3 lightDir = lightPosition - vertexPosition;
+                float distance = glm::length(lightDir);
+                lightDir = glm::normalize(lightDir);
+
+                float normDistance = distance/lightRadius;
+                float attenuation = -0.82824*normDistance*normDistance - 0.13095*normDistance + 1.01358;
+                attenuation = glm::clamp(attenuation, 0.0f, 1.0f);
+
+                // !!!!!! oh noez! we need normals, but only the renderer has them, possibly in a format we can't use anymore due to decompositions
+                //float cosTheta = glm::max(glm::dot(normal, lightDir), 0.0f);
+
+                //resultLightColor += objectLightIntensity[i] * objectLightDiffuse[i] * cosTheta * attenuation;
+            }
+        }
     }
 
     void Layer::_bakeLocalLayerLight()

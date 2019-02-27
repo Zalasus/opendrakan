@@ -72,6 +72,15 @@ namespace odOsg
         }
     }
 
+    void LightStateAttribute::removeLight(od::Light *light)
+    {
+        auto it = std::find(mLights.begin(), mLights.end(), light);
+        if(it != mLights.end())
+        {
+            mLights.erase(it);
+        }
+    }
+
     void LightStateAttribute::apply(osg::State &state) const
     {
         const osg::Matrix &viewMatrix = state.getInitialViewMatrix();
@@ -91,76 +100,6 @@ namespace odOsg
                 mRenderer->applyNullLight(i);
             }
         }
-    }
-
-
-
-    LightStateCallback::LightStateCallback(Renderer *renderer, osg::Node *node, bool ignoreCulledState)
-    : mRenderer(renderer)
-    , mIgnoreCulledState(ignoreCulledState)
-    , mLightingDirty(true)
-    {
-        if(node == nullptr)
-        {
-            throw od::InvalidArgumentException("Passed null node to LightStateCallback()");
-        }
-
-        osg::StateSet *ss = node->getOrCreateStateSet();
-        // TODO: perhaps remove all light-type attributes from state set here?
-
-        osg::ref_ptr<LightStateAttribute> lightState(new LightStateAttribute(mRenderer));
-        mLightStateAttribute = lightState.get();
-        ss->setAttribute(lightState, osg::StateAttribute::ON);
-
-        mTmpAffectingLightsList.reserve(OD_MAX_LIGHTS);
-    }
-
-    void LightStateCallback::operator()(osg::Node *node, osg::NodeVisitor *nv)
-    {
-        traverse(node, nv);
-
-        if(!mLightingDirty)
-        {
-            return;
-        }
-
-        if(node == nullptr || nv == nullptr || nv->getVisitorType() != osg::NodeVisitor::CULL_VISITOR)
-        {
-            return;
-        }
-
-        osgUtil::CullVisitor *cv = dynamic_cast<osgUtil::CullVisitor*>(nv);
-        if(cv == nullptr)
-        {
-            return; // was no cull visitor after all. ignore
-        }
-
-        if(!mIgnoreCulledState && cv->isCulled(*node))
-        {
-            return; // no need to update light state on a node that is not visible
-        }
-
-        _updateLightState(node);
-    }
-
-    void LightStateCallback::_updateLightState(osg::Node *node)
-    {
-        mLightStateAttribute->clearLightList();
-
-        mTmpAffectingLightsList.clear();
-        od::BoundingSphere bound(GlmAdapter::toGlm(node->getBound()._center), node->getBound()._radius);
-        //mRenderer->getLightsIntersectingSphere(bound, mTmpAffectingLightsList, mLightMask);
-
-        glm::vec3 nodeCenter = GlmAdapter::toGlm(node->getBound().center());
-        auto pred = [&nodeCenter](od::Light *l, od::Light *r){ return l->distanceToPoint(nodeCenter) < r->distanceToPoint(nodeCenter); };
-        std::sort(mTmpAffectingLightsList.begin(), mTmpAffectingLightsList.end(), pred);
-
-        for(auto it = mTmpAffectingLightsList.begin(); it != mTmpAffectingLightsList.end(); ++it)
-        {
-            mLightStateAttribute->addLight(*it); // will ignore all calls past maximum number of lights
-        }
-
-        mLightingDirty = false;
     }
 
 }

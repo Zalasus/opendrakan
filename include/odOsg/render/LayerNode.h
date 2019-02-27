@@ -34,6 +34,10 @@ namespace odOsg
 
         virtual odRender::Geometry *getGeometry() override;
 
+        virtual void addLight(od::Light *light) override;
+        virtual void removeLight(od::Light *light) override;
+        virtual void clearLightList() override;
+
 
     private:
 
@@ -43,7 +47,7 @@ namespace odOsg
         osg::ref_ptr<osg::Group> mLayerGroup;
 
         osg::ref_ptr<osg::PositionAttitudeTransform> mLayerTransform;
-        osg::ref_ptr<LightStateCallback> mLightStateCallback;
+        osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
         od::RefPtr<Geometry> mGeometry;
     };
 
