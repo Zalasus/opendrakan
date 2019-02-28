@@ -178,12 +178,7 @@ namespace od
         od::RefPtr<odRender::LayerNode> mLayerNode;
         od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
 
-        struct LightBakeInfo
-        {
-            glm::vec3 normal;
-            glm::vec3 color;
-        };
-        std::vector<LightBakeInfo> mLightBakeInfo; // temporary array, only used until light has been baked
+        std::vector<glm::vec3> mLocalNormals; // temporary array, unused right now
     };
 
 }

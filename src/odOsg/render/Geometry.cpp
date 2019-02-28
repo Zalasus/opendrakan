@@ -76,7 +76,7 @@ namespace odOsg
                 (*mOsgColorArray)[i] = GlmAdapter::toOsg(mColorArray[i]);
             }
 
-            if(mOsgColorArray->size() != mOsgVertexArray->size())
+            if(mOsgColorArray->size() == 1)
             {
                 mOsgColorArray->setBinding(osg::Array::BIND_OVERALL);
 
@@ -85,6 +85,8 @@ namespace odOsg
                 mOsgColorArray->setBinding(osg::Array::BIND_PER_VERTEX);
             }
         }
+
+        mOsgColorArray->dirty();
     }
 
     void Geometry::addTexture(Texture *texture)

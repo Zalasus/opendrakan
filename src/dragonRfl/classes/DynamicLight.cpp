@@ -56,6 +56,8 @@ namespace dragonRfl
 
     void DynamicLight::onUpdate(od::LevelObject &obj, float relTime)
     {
+        StaticLight::onUpdate(obj, relTime);
+
         if(mLight == nullptr || !mStarted)
         {
             return;
@@ -101,6 +103,11 @@ namespace dragonRfl
         {
             mLight->setColor(glm::vec3(0.0, 0.0, 0.0));
         }
+    }
+
+    void DynamicLight::onMoved(od::LevelObject &obj)
+    {
+        mNeedsUpdate = true;
     }
 
     void DynamicLight::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)

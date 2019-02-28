@@ -132,8 +132,6 @@ namespace od
             mVertices.push_back(v);
         }
 
-        mLightBakeInfo.resize((mWidth+1)*(mHeight+1));
-
         glm::vec3 min(mOriginX, getWorldHeightLu()+lowestHeightOffset, mOriginZ);
         glm::vec3 max(mOriginX+mWidth, getWorldHeightLu()+maxHeightOffset, mOriginZ+mHeight);
         mBoundingBox = AxisAlignedBoundingBox(min, max);
@@ -424,7 +422,7 @@ namespace od
 
     void Layer::_bakeStaticLight(od::Light *light)
     {
-        if(mLightBakeInfo.empty())
+        if(light == nullptr || mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
         {
             return;
         }
@@ -434,38 +432,48 @@ namespace od
         float lightIntensity = light->getIntensityScaling();
         glm::vec3 lightColor = light->getColor();
 
-        // find maximum rectangular area that can possibly be intersected by the light
+        // find maximum rectangular area that can possibly be intersected by the light so we can early-reject vertices
+        //  without having to calculate the distance to the light everytime
         int32_t xMin = std::max(relLightPosition.x-lightRadius, 0.0f);
         int32_t xMax = std::min(relLightPosition.x+lightRadius, (float)mWidth);
         int32_t zMin = std::max(relLightPosition.z-lightRadius, 0.0f);
         int32_t zMax = std::max(relLightPosition.z+lightRadius, (float)mHeight);
 
-        for(int32_t z = zMin; z <= zMax; ++z)
+        odRender::Geometry *geometry = mLayerNode->getGeometry();
+        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
+        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
+        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+
+        for(size_t i = 0; i < vertexArray.size(); ++i)
         {
-            for(int32_t x = xMin; x <= xMax; ++x)
+            glm::vec3 vertexPosition = vertexArray[i];
+
+            if(vertexPosition.x < xMin || vertexPosition.x > xMax ||
+               vertexPosition.z < zMin || vertexPosition.z > zMax)
             {
-                auto &lightInfo = mLightBakeInfo[x + (mWidth+1)*z];
-
-                glm::vec3 vertexPosition = getVertexAt(x, z);
-
-                if(glm::length(vertexPosition - relLightPosition) > lightRadius)
-                {
-                    continue;
-                }
-
-                glm::vec3 lightDir = relLightPosition - vertexPosition;
-                float distance = glm::length(lightDir);
-                lightDir = glm::normalize(lightDir);
-
-                float normDistance = distance/lightRadius;
-                float attenuation = -0.82824*normDistance*normDistance - 0.13095*normDistance + 1.01358;
-                attenuation = glm::clamp(attenuation, 0.0f, 1.0f);
-
-                float cosTheta = glm::max(glm::dot(lightInfo.normal, lightDir), 0.0f);
-
-                lightInfo.color += lightIntensity * lightColor * cosTheta * attenuation;
+                continue;
             }
+
+            if(glm::length(vertexPosition - relLightPosition) > lightRadius)
+            {
+                continue;
+            }
+
+            glm::vec3 lightDir = relLightPosition - vertexPosition;
+            float distance = glm::length(lightDir);
+            lightDir /= distance;
+
+            float normDistance = distance/lightRadius;
+            float attenuation = -0.82824*normDistance*normDistance - 0.13095*normDistance + 1.01358;
+            attenuation = glm::clamp(attenuation, 0.0f, 1.0f);
+
+            float cosTheta = glm::max(glm::dot(normalArray[i], lightDir), 0.0f);
+
+            glm::vec3 newVertexColor = lightIntensity * lightColor * cosTheta * attenuation;
+            colorArray[i] += glm::vec4(newVertexColor, 0.0f);
         }
+
+        geometry->notifyColorDirty();
     }
 
     void Layer::_bakeLocalLayerLight()
@@ -575,6 +583,8 @@ namespace od
 
     void Layer::_calculateNormalsInternal()
     {
+        mLocalNormals.resize(mVertices.size(), glm::vec3(0.0));
+
         for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
         {
             size_t cellIndex = triIndex/2;
@@ -629,14 +639,14 @@ namespace od
             glm::vec3 right = getVertexAt(rightIndex) - center;
             glm::vec3 normal = glm::cross(left, right);
 
-            mLightBakeInfo[centerIndex].normal += normal;
-            mLightBakeInfo[leftIndex].normal += normal;
-            mLightBakeInfo[rightIndex].normal += normal;
+            mLocalNormals[centerIndex] += normal;
+            mLocalNormals[leftIndex] += normal;
+            mLocalNormals[rightIndex] += normal;
         }
 
-        for(size_t i = 0; i < mLightBakeInfo.size(); ++i)
+        for(size_t i = 0; i < mLocalNormals.size(); ++i)
         {
-            mLightBakeInfo[i].normal = glm::normalize(mLightBakeInfo[i].normal);
+            mLocalNormals[i] = glm::normalize(mLocalNormals[i]);
         }
     }
 }

@@ -61,11 +61,6 @@ namespace dragonRfl
         mNeedsUpdate = true;
     }
 
-    void StaticLight::onMoved(od::LevelObject &obj)
-    {
-        // TODO: is it okay to ignore this? i think static lights shouldn't move
-    }
-
     void StaticLight::onUpdate(od::LevelObject &obj, float relTime)
     {
         if(!mNeedsUpdate || mLight == nullptr)

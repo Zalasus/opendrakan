@@ -32,7 +32,6 @@ namespace dragonRfl
         virtual void probeFields(odRfl::FieldProbe &probe) override;
         virtual void onLoaded(od::LevelObject &obj) override;
         virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMoved(od::LevelObject &obj) override;
         virtual void onUpdate(od::LevelObject &obj, float relTime) override;
         virtual void onDespawned(od::LevelObject &obj) override;
 
@@ -47,10 +46,8 @@ namespace dragonRfl
 
         glm::vec3 mLightColorVector;
         od::RefPtr<od::Light> mLight;
-
-    private:
-
         bool mNeedsUpdate;
+
     };
 
 }
