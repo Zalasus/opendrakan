@@ -66,8 +66,7 @@ namespace odPhysics
 
     struct ContactTestResult
     {
-        od::RefPtr<Handle> handleA;
-        od::RefPtr<Handle> handleB;
+        od::RefPtr<Handle> handle;
     };
 
     typedef std::vector<ContactTestResult> ContactTestResultVector;

@@ -67,6 +67,10 @@ namespace odOsg
 
         virtual odRender::Rig *getRig() override;
 
+        virtual void addLight(od::Light *light) override;
+        virtual void removeLight(od::Light *light) override;
+        virtual void clearLightList() override;
+
 
     private:
 

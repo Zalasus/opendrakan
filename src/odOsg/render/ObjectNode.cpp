@@ -274,6 +274,21 @@ namespace odOsg
 
         return mRig.get();
     }
+
+    void ObjectNode::addLight(od::Light *light)
+    {
+        mLightStateAttribute->addLight(light);
+    }
+
+    void ObjectNode::removeLight(od::Light *light)
+    {
+        mLightStateAttribute->removeLight(light);
+    }
+
+    void ObjectNode::clearLightList()
+    {
+        mLightStateAttribute->clearLightList();
+    }
 }
 
 

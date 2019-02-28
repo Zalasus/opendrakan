@@ -89,7 +89,7 @@ namespace odBulletPhysics
             throw od::Exception("Got physics handle of unknown type");
         }
 
-        ContactResultCallback callback(typeMask, resultsOut);
+        ContactResultCallback callback(handle, typeMask, resultsOut);
         mCollisionWorld->contactTest(bulletObject, callback);
 
         return callback.getContactCount();

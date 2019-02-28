@@ -146,8 +146,9 @@ namespace odBulletPhysics
     }
 
 
-    ContactResultCallback::ContactResultCallback(odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
-    : mResults(results)
+    ContactResultCallback::ContactResultCallback(odPhysics::Handle *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
+    : mMe(me)
+    , mResults(results)
     , mContactCount(0)
     , mLastObject(nullptr)
     {
@@ -171,8 +172,21 @@ namespace odBulletPhysics
         }
 
         odPhysics::ContactTestResult result;
-        result.handleA = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
-        result.handleB = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
+        odPhysics::Handle *handleA = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
+        odPhysics::Handle *handleB = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
+        if(handleA == mMe)
+        {
+            result.handle = handleB;
+
+        }else if(handleB == mMe)
+        {
+            result.handle = handleA;
+
+        }else
+        {
+            throw od::Exception("Contact test yielded manifold where neither of the two pair objects was the initiator");
+        }
+
         mResults.push_back(result);
 
         ++mContactCount;

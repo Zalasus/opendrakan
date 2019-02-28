@@ -13,9 +13,13 @@
 
 #include <odCore/RefCounted.h>
 
+namespace od
+{
+    class Light;
+}
+
 namespace odRender
 {
-
     class ModelNode;
     class Rig;
 
@@ -68,6 +72,10 @@ namespace odRender
         virtual void setColorModifier(const glm::vec4 &cm) = 0;
 
         virtual Rig *getRig() = 0;
+
+        virtual void addLight(od::Light *light) = 0;
+        virtual void removeLight(od::Light *light) = 0;
+        virtual void clearLightList() = 0;
     };
 
 }

@@ -27,7 +27,7 @@ namespace od
 
         for(auto &r : results)
         {
-            odPhysics::LightHandle *handle = r.handleB->asLightHandle();
+            odPhysics::LightHandle *handle = r.handle->asLightHandle();
             if(handle != nullptr)
             {
                 Light &light = handle->getLight();

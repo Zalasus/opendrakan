@@ -82,7 +82,7 @@ namespace dragonRfl
         bool playerIsIn = false;
         for(auto &result : mResultCache)
         {
-            odPhysics::ObjectHandle *objectHandle = result.handleB->asObjectHandle();
+            odPhysics::ObjectHandle *objectHandle = result.handle->asObjectHandle();
             if(objectHandle == nullptr)
             {
                 continue;

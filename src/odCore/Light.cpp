@@ -101,7 +101,7 @@ namespace od
 
         for(auto &result : results)
         {
-            addAffected(result.handleB);
+            addAffected(result.handle);
         }
     }
 

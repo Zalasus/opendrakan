@@ -72,7 +72,7 @@ namespace odBulletPhysics
     {
     public:
 
-        ContactResultCallback(odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
+        ContactResultCallback(odPhysics::Handle *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
 
         inline size_t getContactCount() const { return mContactCount; }
 
@@ -81,6 +81,7 @@ namespace odBulletPhysics
 
     private:
 
+        odPhysics::Handle *mMe;
         odPhysics::ContactTestResultVector &mResults;
         size_t mContactCount;
 

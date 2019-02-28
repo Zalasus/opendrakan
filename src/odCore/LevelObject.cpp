@@ -398,17 +398,26 @@ namespace od
 
     void LevelObject::removeAffectingLight(od::Light *light)
     {
-
+        if(light != nullptr && mRenderNode != nullptr)
+        {
+            mRenderNode->removeLight(light);
+        }
     }
 
     void LevelObject::addAffectingLight(od::Light *light)
     {
-
+        if(light != nullptr && mRenderNode != nullptr)
+        {
+            mRenderNode->addLight(light);
+        }
     }
 
     void LevelObject::clearLightList()
     {
-
+        if(mRenderNode != nullptr)
+        {
+            mRenderNode->clearLightList();
+        }
     }
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
