@@ -96,12 +96,27 @@ namespace od
         inline size_t getVisibleTriangleCount() const { return mVisibleTriangles; }
         inline size_t getCollidingTriangleCount() const { return mCollidingTriangles; }
         inline LayerType getLayerType() const { return mType; }
+
         inline glm::vec3 getOrigin() const { return glm::vec3(mOriginX, getWorldHeightLu(), mOriginZ); }
 
         /// Returns vertex at (x, z) in world space. Caller is responsible to check that x and z are within bounds
-        inline glm::vec3 getVertexAt(int32_t x, int32_t z)
+        inline glm::vec3 getWorldVertexAt(int32_t x, int32_t z) const
         {
-            return glm::vec3(mOriginX + x, getWorldHeightLu() + mVertices[x + mWidth*z].heightOffsetLu, mOriginZ + z);
+            return getVertexAt(x, z) + getOrigin();
+        }
+
+        /// Returns vertex at (x, z) in model space. Caller is responsible to check that x and z are within bounds
+        inline glm::vec3 getVertexAt(int32_t x, int32_t z) const
+        {
+            return glm::vec3(x, mVertices[x + (mWidth+1)*z].heightOffsetLu, z);
+        }
+
+        // Returns vertex at vertex index i in model space. Caller is responsible to check that i is within bounds
+        inline glm::vec3 getVertexAt(int32_t i) const
+        {
+            int32_t x = i%(mWidth+1);
+            int32_t z = i/(mWidth+1);
+            return glm::vec3(x, mVertices[i].heightOffsetLu, z);
         }
 
         void loadDefinition(DataReader &dr);
@@ -133,6 +148,8 @@ namespace od
         void _bakeStaticLight(od::Light *light);
         void _bakeLocalLayerLight();
 
+        void _calculateNormalsInternal();
+
         Level              	   &mLevel;
         uint32_t                mId;
         uint32_t                mWidth;
@@ -160,6 +177,13 @@ namespace od
 
         od::RefPtr<odRender::LayerNode> mLayerNode;
         od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
+
+        struct LightBakeInfo
+        {
+            glm::vec3 normal;
+            glm::vec3 color;
+        };
+        std::vector<LightBakeInfo> mLightBakeInfo; // temporary array, only used until light has been baked
     };
 
 }
