@@ -7,11 +7,12 @@
 
 #include <odOsg/render/ModelNode.h>
 
-#include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
+#include <odCore/OdDefines.h>
 
 #include <odCore/db/Model.h>
 
+#include <odOsg/Constants.h>
 #include <odOsg/render/Renderer.h>
 #include <odOsg/render/Geometry.h>
 #include <odOsg/render/GeometryBuilder.h>
@@ -47,8 +48,8 @@ namespace odOsg
         }
 
         osg::ref_ptr<osg::Program> modelProgram = mRenderer->getShaderFactory().getProgram("model");
-        modelProgram->addBindAttribLocation("influencingBones", OD_ATTRIB_INFLUENCE_LOCATION);
-        modelProgram->addBindAttribLocation("vertexWeights", OD_ATTRIB_WEIGHT_LOCATION);
+        modelProgram->addBindAttribLocation("influencingBones", Constants::ATTRIB_INFLUENCE_LOCATION);
+        modelProgram->addBindAttribLocation("vertexWeights", Constants::ATTRIB_WEIGHT_LOCATION);
         mGeometryGroup->getOrCreateStateSet()->setAttribute(modelProgram);
     }
 

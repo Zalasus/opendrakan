@@ -14,7 +14,6 @@
 #include <osg/Texture2D>
 
 #include <odCore/Exception.h>
-#include <odCore/OdDefines.h>
 
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/Texture.h>
@@ -23,6 +22,7 @@
 #include <odCore/render/Image.h>
 
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Constants.h>
 #include <odOsg/render/Geometry.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Renderer.h>
@@ -250,8 +250,8 @@ namespace odOsg
 			    osgGeometry->setColorArray(osgColorArray, osg::Array::BIND_OVERALL);
 			    if(mGeometry.hasBoneInfo())
 			    {
-                    osgGeometry->setVertexAttribArray(OD_ATTRIB_INFLUENCE_LOCATION, osgBoneIndexArray, osg::Array::BIND_PER_VERTEX);
-                    osgGeometry->setVertexAttribArray(OD_ATTRIB_WEIGHT_LOCATION, osgBoneWeightArray, osg::Array::BIND_PER_VERTEX);
+                    osgGeometry->setVertexAttribArray(Constants::ATTRIB_INFLUENCE_LOCATION, osgBoneIndexArray, osg::Array::BIND_PER_VERTEX);
+                    osgGeometry->setVertexAttribArray(Constants::ATTRIB_WEIGHT_LOCATION, osgBoneWeightArray, osg::Array::BIND_PER_VERTEX);
 			    }
 			    geode->addDrawable(osgGeometry);
 

@@ -14,13 +14,13 @@
 
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
-#include <odCore/OdDefines.h>
 #include <odCore/Light.h>
 #include <odCore/Upcast.h>
 
 #include <odCore/render/RendererEventListener.h>
 
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Constants.h>
 
 #include <odOsg/render/ObjectNode.h>
 #include <odOsg/render/ModelNode.h>
@@ -54,17 +54,13 @@ namespace odOsg
         mSceneRoot = new osg::Group;
         mViewer->setSceneData(mSceneRoot);
 
-        mObjects = new osg::Group;
-        mObjects->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE));
-        mSceneRoot->addChild(mObjects);
-
-        mLayers = new osg::Group;
-        mSceneRoot->addChild(mLayers);
-
         // set up root state
         osg::StateSet *ss = mSceneRoot->getOrCreateStateSet();
         ss->setAttribute(mShaderFactory.getProgram("default"));
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
+
+        ss->setDefine("MAX_LIGHTS", std::to_string(Constants::MAX_LIGHTS));
+        ss->setDefine("MAX_BONES", std::to_string(Constants::MAX_BONES));
 
         mGlobalLightDiffuse   = new osg::Uniform("layerLightDiffuse",   osg::Vec3(0.0, 0.0, 0.0));
         mGlobalLightAmbient   = new osg::Uniform("layerLightAmbient",   osg::Vec3(0.0, 0.0, 0.0));
@@ -73,14 +69,21 @@ namespace odOsg
         ss->addUniform(mGlobalLightAmbient);
         ss->addUniform(mGlobalLightDirection);
 
-        mLocalLightsColor     = new osg::Uniform(osg::Uniform::FLOAT_VEC3, "objectLightDiffuse", OD_MAX_LIGHTS);
-        mLocalLightsIntensity = new osg::Uniform(osg::Uniform::FLOAT, "objectLightIntensity", OD_MAX_LIGHTS);
-        mLocalLightsRadius    = new osg::Uniform(osg::Uniform::FLOAT, "objectLightRadius", OD_MAX_LIGHTS);
-        mLocalLightsPosition  = new osg::Uniform(osg::Uniform::FLOAT_VEC3, "objectLightPosition", OD_MAX_LIGHTS);
+        mLocalLightsColor     = new osg::Uniform(osg::Uniform::FLOAT_VEC3, "objectLightDiffuse", Constants::MAX_LIGHTS);
+        mLocalLightsIntensity = new osg::Uniform(osg::Uniform::FLOAT, "objectLightIntensity", Constants::MAX_LIGHTS);
+        mLocalLightsRadius    = new osg::Uniform(osg::Uniform::FLOAT, "objectLightRadius", Constants::MAX_LIGHTS);
+        mLocalLightsPosition  = new osg::Uniform(osg::Uniform::FLOAT_VEC3, "objectLightPosition", Constants::MAX_LIGHTS);
         ss->addUniform(mLocalLightsColor);
         ss->addUniform(mLocalLightsIntensity);
         ss->addUniform(mLocalLightsRadius);
         ss->addUniform(mLocalLightsPosition);
+
+        mObjects = new osg::Group;
+        mObjects->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE));
+        mSceneRoot->addChild(mObjects);
+
+        mLayers = new osg::Group;
+        mSceneRoot->addChild(mLayers);
 
         _setupGuiStuff();
     }
@@ -197,7 +200,7 @@ namespace odOsg
 
     void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index)
     {
-        if(index >= OD_MAX_LIGHTS)
+        if(index >= mLocalLightsColor->getNumElements())
         {
             throw od::InvalidArgumentException("Tried to apply light at out-of-bounds index");
         }
@@ -218,7 +221,7 @@ namespace odOsg
 
     void Renderer::applyNullLight(size_t index)
     {
-        if(index >= OD_MAX_LIGHTS)
+        if(index >= mLocalLightsColor->getNumElements())
         {
             throw od::InvalidArgumentException("Tried to apply null light at out-of-bounds index");
         }

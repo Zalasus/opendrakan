@@ -12,6 +12,7 @@
 #include <odCore/Exception.h>
 #include <odCore/Layer.h>
 
+#include <odOsg/Constants.h>
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/ModelNode.h>
 #include <odOsg/render/Rig.h>
@@ -82,7 +83,7 @@ namespace odOsg
 
         mObjectGroup->addChild(mTransform);
 
-        mLightStateAttribute = new LightStateAttribute(renderer);
+        mLightStateAttribute = new LightStateAttribute(renderer, Constants::MAX_LIGHTS);
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
     }
 

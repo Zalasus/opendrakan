@@ -10,6 +10,7 @@
 #include <odCore/Layer.h>
 #include <odCore/Level.h>
 
+#include <odOsg/Constants.h>
 #include <odOsg/render/GeometryBuilder.h>
 #include <odOsg/render/Renderer.h>
 #include <odOsg/render/ShaderFactory.h>
@@ -21,7 +22,7 @@ namespace odOsg
     : mRenderer(renderer)
     , mLayerGroup(layerGroup)
     , mLayerTransform(new osg::PositionAttitudeTransform)
-    , mLightStateAttribute(new LightStateAttribute(renderer))
+    , mLightStateAttribute(new LightStateAttribute(renderer, Constants::MAX_LIGHTS))
     , mGeometry(od::make_refd<Geometry>())
     {
         _buildLayerGeometry(layer);

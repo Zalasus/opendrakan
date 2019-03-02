@@ -13,7 +13,6 @@
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
-#include <odCore/OdDefines.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/Renderer.h>
@@ -21,17 +20,19 @@
 namespace odOsg
 {
 
-    LightStateAttribute::LightStateAttribute(Renderer *renderer)
+    LightStateAttribute::LightStateAttribute(Renderer *renderer, size_t maxLightCount)
     : mRenderer(renderer)
+    , mMaxLightCount(maxLightCount)
     {
-        mLights.reserve(OD_MAX_LIGHTS);
+        mLights.reserve(mMaxLightCount);
     }
 
     LightStateAttribute::LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp)
     : StateAttribute(l, copyOp)
     , mRenderer(l.mRenderer)
+    , mMaxLightCount(l.mMaxLightCount)
     {
-        mLights.reserve(OD_MAX_LIGHTS);
+        mLights.reserve(mMaxLightCount);
     }
 
     osg::Object *LightStateAttribute::cloneType() const
@@ -66,7 +67,7 @@ namespace odOsg
 
     void LightStateAttribute::addLight(od::Light *light)
     {
-        if(mLights.size() < OD_MAX_LIGHTS)
+        if(mLights.size() < mMaxLightCount)
         {
             mLights.emplace_back(light);
         }
@@ -87,13 +88,11 @@ namespace odOsg
 
         mRenderer->applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
 
-        auto it = mLights.begin();
-        for(size_t i = 0; i < OD_MAX_LIGHTS; ++i)
+        for(size_t i = 0; i < mMaxLightCount; ++i)
         {
-            if(it != mLights.end())
+            if(i < mLights.size())
             {
-                mRenderer->applyToLightUniform(viewMatrix, *it, i);
-                ++it;
+                mRenderer->applyToLightUniform(viewMatrix, mLights[i], i);
 
             }else
             {

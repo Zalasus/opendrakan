@@ -28,7 +28,7 @@ namespace odOsg
     {
     public:
 
-        LightStateAttribute(Renderer *renderer);
+        LightStateAttribute(Renderer *renderer, size_t maxLightCount);
         LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp = osg::CopyOp::SHALLOW_COPY);
 
         // implement pure virtual stuff from osg::StateAttribute
@@ -65,6 +65,7 @@ namespace odOsg
     private:
 
         Renderer *mRenderer;
+        size_t mMaxLightCount;
         std::vector<od::RefPtr<od::Light>> mLights;
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;

@@ -18,36 +18,37 @@ namespace odOsg
     public:
 
         /**
-         * @brief Maximum number of dynamic lights to allow to be rendered on layers.
+         * @brief Maximum number of lights to allow to be rendered on objects and layers.
          *
-         * Static lights are not included in this count as they are baked into the vertex colors by
-         * the engine core, and thus have no limit that the renderer would have to handle.
+         * For layers, this does not include static lights, as they are baked into the vertex
+         * colors by the engine core, and thus have no limit that the renderer would have to handle.
          */
-        static const uint32_t MAX_DYNAMIC_LIGHTS_LAYER = 16;
-
-        /**
-         * @brief Maximum number of lights to allow to be rendered on objects.
-         *
-         * This includes both static and dynamic lights as we do not bake static lighting into the
-         * vertices of objects, because this is only possible on models that are only used once and are
-         * itself static. Thus, the performance gain from doing so would be neglectable.
-         */
-        static const uint32_t MAX_LIGHTS_OBJECT = 16;
+        static constexpr uint32_t MAX_LIGHTS = 8;
 
         /**
          * @brief Maximum number of bones to account for in the rigging shader.
          */
-        static const uint32_t MAX_BONES = 64;
+        static constexpr uint32_t MAX_BONES = 64;
+
+        /**
+         * @brief  Location of the bone influence attribute for the rigging shader.
+         */
+        static constexpr uint32_t ATTRIB_INFLUENCE_LOCATION = 4;
+
+        /**
+         * @brief Location of the bone weight attribute for the rigging shader.
+         */
+        static constexpr uint32_t ATTRIB_WEIGHT_LOCATION = 5;
 
         /**
          * @brief Default fullscreen gamma. This probably should be a config default instead.
          */
-        static const float DEFAULT_GAMMA = 1.5f;
+        static constexpr float DEFAULT_GAMMA = 1.5f;
 
         /**
          * @brief Path relative to engine executable where shader sources are to be found.
          */
-        static const char *SHADER_SOURCE_PATH = "resources/shader_src";
+        static constexpr const char *SHADER_SOURCE_PATH = "resources/shader_src";
 
     };
 

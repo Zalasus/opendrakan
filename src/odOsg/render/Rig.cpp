@@ -7,17 +7,17 @@
 
 #include <odOsg/render/Rig.h>
 
-#include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
 
 #include <odOsg/GlmAdapter.h>
+#include <odOsg/Constants.h>
 
 namespace odOsg
 {
 
     Rig::Rig(osg::Node *riggedModelRoot)
     : mRiggedModelRoot(riggedModelRoot)
-    , mBoneMatrixUniform(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", OD_MAX_BONE_COUNT))
+    , mBoneMatrixUniform(new osg::Uniform(osg::Uniform::FLOAT_MAT4, "bones", Constants::MAX_BONES))
     {
         osg::StateSet *ss = mRiggedModelRoot->getOrCreateStateSet();
 
