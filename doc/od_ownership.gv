@@ -1,0 +1,123 @@
+
+/*
+ * A DOT graph representing shared ownership relations in OpenDrakan.
+ *
+ * Strong references are marked by solid, black arrows.
+ * Weak references are marked by dashed, blue arrows.
+ * Non-owning references are marked by dotted, gray arrows.
+ */
+
+digraph od_ownership
+{
+    subgraph cluster_core
+    {
+        graph [label="Engine Core"];
+
+        DB [style=filled, fillcolor=LightYellow];
+        Class;
+        Texture;
+        Model;
+        Level;
+        LevelObject;
+        Layer;
+        Widget;
+        Light;
+    }
+
+    subgraph cluster_renderer
+    {
+        graph [label="Renderer", style=filled, fillcolor=PaleTurquoise];
+        node [style=filled, fillcolor=white];
+
+        R_ObjectNode [label="ObjectNode"];
+        R_ModelNode [label="ModelNode"];
+        R_Geometry [label="Geometry"];
+        R_Texture [label="Texture"];
+        R_Image [label="Image"];
+        R_GuiQuad [label="GuiQuad"];
+        R_GuiNode [label="GuiNode"];
+        R_LayerNode [label="LayerNode"];
+        R_LightState [label="LightState"];        
+    }
+
+    subgraph cluster_physics
+    {
+        graph [label="Physics System", style=filled, fillcolor=PaleTurquoise];
+        node [style=filled, fillcolor=white];
+
+        P_ObjectHandle [label="ObjectHandle"];
+        P_LayerHandle [label="LayerHandle"];
+        P_LightHandle [label="LightHandle"];        
+    }
+
+
+    // non-owning references
+    edge [style=dotted, color=gray]
+    {
+        P_ObjectHandle -> LevelObject;
+
+        P_LightHandle -> Light;
+
+        P_LayerHandle -> Layer;
+    }
+
+    // weak references
+    edge [style = dashed, color=MidnightBlue]
+    {
+        DB -> Class;
+        DB -> Texture;
+        DB -> Model;
+
+        Texture -> R_Image;
+
+        Model -> R_ModelNode;
+
+        R_Image -> R_Texture;
+
+        R_GuiQuad -> Widget;
+    }
+
+    // strong references
+    edge [style = solid, color=black]
+    {
+        Class -> Model;
+
+        Level -> LevelObject;
+        Level -> Layer;
+
+        LevelObject -> Class;
+        LevelObject -> R_ObjectNode;
+        LevelObject -> P_ObjectHandle;
+        
+        Layer -> R_LayerNode;
+        Layer -> P_LayerHandle;
+        
+        Light -> P_LightHandle;
+
+        R_ObjectNode -> R_ModelNode;
+        R_ObjectNode -> R_LightState;
+
+        R_LayerNode -> R_Geometry;
+        R_LayerNode -> R_LightState;
+
+        R_ModelNode -> R_Geometry [label=a];
+        R_ModelNode -> Model;
+
+        R_Geometry -> R_Texture;
+
+        R_Texture -> R_Image;
+
+        R_Image -> Texture;
+
+        R_GuiQuad -> R_Texture;
+
+        R_GuiNode -> R_GuiNode [label=a];
+        R_GuiNode -> R_GuiQuad [label=a];
+        R_GuiNode -> R_ObjectNode [label=a];
+
+        R_LightState -> Light [label=a];
+    }
+
+}
+
+
