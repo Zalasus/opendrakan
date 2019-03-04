@@ -51,10 +51,10 @@ int main(int argc, char **argv)
 
     odOsg::SoundSystem soundSystem;
 
-    odOsg::Renderer osgRenderer;
-
     od::Engine engine;
     sEngine = &engine;
+
+    odOsg::Renderer osgRenderer;
 
     engine.setRenderer(&osgRenderer);
     engine.setSoundSystem(&soundSystem);
