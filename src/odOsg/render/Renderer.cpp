@@ -78,12 +78,14 @@ namespace odOsg
         ss->addUniform(mLocalLightsRadius);
         ss->addUniform(mLocalLightsPosition);
 
+        mLayers = new osg::Group;
+        osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
+        mLayers->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
+        mSceneRoot->addChild(mLayers);
+
         mObjects = new osg::Group;
         mObjects->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE));
         mSceneRoot->addChild(mObjects);
-
-        mLayers = new osg::Group;
-        mSceneRoot->addChild(mLayers);
 
         _setupGuiStuff();
     }

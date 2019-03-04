@@ -170,9 +170,6 @@ namespace odOsg
         gb.build();
         mLayerTransform->addChild(mGeometry->getOsgGeode());
 
-        osg::ref_ptr<osg::Program> layerProg = mRenderer->getShaderFactory().getProgram("layer");
-        mLayerTransform->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
-
         mLayerTransform->setPosition(osg::Vec3(layer->getOriginX(), layer->getWorldHeightLu(), layer->getOriginZ()));
     }
 
