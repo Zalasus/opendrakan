@@ -17,6 +17,7 @@ digraph od_ownership
         Class;
         Texture;
         Model;
+        Sound;
         Level;
         LevelObject;
         Layer;
@@ -50,6 +51,15 @@ digraph od_ownership
         P_LightHandle [label="LightHandle"];        
     }
 
+    subgraph cluster_sound
+    {
+        graph [label="Sound System", style=filled, fillcolor=PaleTurquoise];
+        node [style=filled, fillcolor=white];
+        
+        S_Buffer;
+        S_Source;
+    }
+    
 
     // non-owning references
     edge [style=dotted, color=gray]
@@ -67,6 +77,7 @@ digraph od_ownership
         DB -> Class;
         DB -> Texture;
         DB -> Model;
+        DB -> Sound;
 
         Texture -> R_Image;
 
@@ -75,6 +86,8 @@ digraph od_ownership
         R_Image -> R_Texture;
 
         R_GuiQuad -> Widget;
+        
+        Sound -> S_Buffer;
     }
 
     // strong references
@@ -116,6 +129,11 @@ digraph od_ownership
         R_GuiNode -> R_ObjectNode [label=a];
 
         R_LightState -> Light [label=a];
+        
+        S_Buffer -> Sound;
+        
+        S_Source -> S_Buffer;
+        S_Source -> Sound;
     }
 
 }
