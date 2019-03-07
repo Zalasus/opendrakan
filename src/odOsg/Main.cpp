@@ -50,11 +50,10 @@ int main(int argc, char **argv)
     od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
 
     odOsg::SoundSystem soundSystem;
+    odOsg::Renderer osgRenderer;
 
     od::Engine engine;
     sEngine = &engine;
-
-    odOsg::Renderer osgRenderer;
 
     engine.setRenderer(&osgRenderer);
     engine.setSoundSystem(&soundSystem);
