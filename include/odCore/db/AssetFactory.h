@@ -85,10 +85,10 @@ namespace odDb
 	    //  doing it this way will save us one traversal of the map, as we don't have to use insert() to add a newly loaded
 	    //  asset to the cache. for the rare case that we can not find an asset in the file, just erase the unnecessary entry.
 	    od::WeakRefPtr<_AssetType> &asset = mAssetCache[assetId];
-        if(asset != nullptr)
+        if(!asset.isNull())
         {
             Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
-            return od::RefPtr<_AssetType>(asset.get());
+            return asset.aquire();
         }
 
         // asset was not cached or got deleted. let implementation handle loading

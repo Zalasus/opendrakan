@@ -77,7 +77,7 @@ namespace odOsg
     , mWidget(w)
     , mTransform(new osg::MatrixTransform)
     {
-        if(mWidget != nullptr)
+        if(w != nullptr)
         {
             mUpdateCallback = new UpdateCallback(this);
             mTransform->addUpdateCallback(mUpdateCallback);
@@ -217,9 +217,9 @@ namespace odOsg
 
     void GuiNode::update(float relTime)
     {
-        if(mWidget != nullptr)
+        if(mWidget.isNonNull())
         {
-            mWidget->update(relTime);
+            mWidget.aquire()->update(relTime);
         }
     }
 

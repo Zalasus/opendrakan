@@ -44,22 +44,24 @@ namespace odOsg
         switch(usage)
         {
         case odRender::TextureUsage::Model:
-            if(mModelRenderTexture == nullptr)
+            if(mModelRenderTexture.isNull())
             {
                 od::RefPtr<odRender::Texture> texture = createTexture();
                 texture->setEnableWrapping(true);
-                mModelRenderTexture = texture.release();
+                mModelRenderTexture = texture.get();
+                return texture;
             }
-            return mModelRenderTexture.get();
+            return mModelRenderTexture.aquire();
 
         case odRender::TextureUsage::Layer:
-            if(mLayerRenderTexture == nullptr)
+            if(mLayerRenderTexture.isNull())
             {
                 od::RefPtr<odRender::Texture> texture = createTexture();
                 texture->setEnableWrapping(false);
-                mLayerRenderTexture = texture.release();
+                mLayerRenderTexture = texture.get();
+                return texture;
             }
-            return mLayerRenderTexture.get();
+            return mLayerRenderTexture.aquire();
 
         default:
             return createTexture();

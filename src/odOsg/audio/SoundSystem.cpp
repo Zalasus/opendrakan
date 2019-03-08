@@ -63,7 +63,7 @@ namespace odOsg
     {
         auto source = od::make_refd<Source>(*this);
 
-        mSources.push_back(source.get());
+        mSources.emplace_back(source.get());
 
         return source.get();
     }
@@ -129,10 +129,11 @@ namespace odOsg
 
             try
             {
-                for(auto &source : mSources)
+                for(auto &weakSource : mSources)
                 {
-                    if(source != nullptr)
+                    if(weakSource.isNonNull())
                     {
+                        auto source = weakSource.aquire();
                         source->update(relTime);
                     }
 

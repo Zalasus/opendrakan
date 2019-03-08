@@ -422,26 +422,26 @@ namespace odDb
 
 	od::RefPtr<odRender::ModelNode> Model::getOrCreateRenderNode(odRender::Renderer *renderer)
 	{
-	    if(mRenderNode == nullptr)
+	    if(!mRenderNode.isNull())
 	    {
-	        od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(this);
-	        mRenderNode = node.get();
-	        return node;
+	        return mRenderNode.aquire();
 	    }
 
-	    return od::RefPtr<odRender::ModelNode>(mRenderNode.get());
+        od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(this);
+        mRenderNode = node.get();
+        return node;
 	}
 
 	od::RefPtr<odPhysics::ModelShape> Model::getOrCreateModelShape(odPhysics::PhysicsSystem &ps)
     {
-	    if(mPhysicsShape == nullptr)
+	    if(!mPhysicsShape.isNull())
 	    {
-	        od::RefPtr<odPhysics::ModelShape> shape = ps.createModelShape(*this);
-	        mPhysicsShape = shape.get();
-	        return shape;
+	        return mPhysicsShape.aquire();
 	    }
 
-	    return od::RefPtr<odPhysics::ModelShape>(mPhysicsShape.get());
+	    od::RefPtr<odPhysics::ModelShape> shape = ps.createModelShape(*this);
+        mPhysicsShape = shape.get();
+        return shape;
     }
 }
 
