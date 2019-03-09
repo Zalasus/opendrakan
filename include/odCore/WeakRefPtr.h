@@ -49,6 +49,7 @@ namespace od
 
         ~WeakRefPtr()
         {
+            _removeRef();
         }
 
         WeakRefPtr<T> &operator=(T *p)
@@ -159,7 +160,7 @@ namespace od
         {
         }
 
-        WeakObserverRefPtr(T *ptr)
+        explicit WeakObserverRefPtr(T *ptr)
         : mPtr(ptr)
         {
             if(mPtr != nullptr)
@@ -207,19 +208,19 @@ namespace od
             return this->operator=(weakPtr.mPtr);
         }
 
-        operator T*() const
+        bool isNull()
         {
-            return mPtr;
+            return mPtr == nullptr;
         }
 
-        T *operator->() const
+        bool isNonNull()
         {
-            return mPtr;
+            return !isNull();
         }
 
-        T *get()
+        RefPtr<T> aquire()
         {
-            return mPtr;
+            return RefPtr<T>(mPtr);
         }
 
 

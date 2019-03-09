@@ -42,8 +42,8 @@ namespace odOsg
     private:
 
         od::RefPtr<odDb::Texture> mDbTexture;
-        od::WeakRefPtr<odRender::Texture> mModelRenderTexture;
-        od::WeakRefPtr<odRender::Texture> mLayerRenderTexture;
+        od::WeakObserverRefPtr<odRender::Texture> mModelRenderTexture;
+        od::WeakObserverRefPtr<odRender::Texture> mLayerRenderTexture;
 
         osg::ref_ptr<osg::Image> mOsgImage;
 

@@ -58,7 +58,7 @@ namespace odOsg
         std::mutex  mWorkerMutex;
         std::atomic_bool mTerminateFlag;
 
-        std::vector<od::WeakRefPtr<Source>> mSources;
+        std::vector<od::WeakObserverRefPtr<Source>> mSources;
     };
 
 }

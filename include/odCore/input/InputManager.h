@@ -111,9 +111,9 @@ namespace odInput
         odGui::Gui *mGui;
         std::map<Key, Binding> mBindings;
 
-        std::map<int, od::WeakRefPtr<IAction>> mActions;
+        std::map<int, od::WeakObserverRefPtr<IAction>> mActions;
 
-        std::vector<od::WeakRefPtr<CursorListener>> mCursorListeners;
+        std::vector<od::WeakObserverRefPtr<CursorListener>> mCursorListeners;
     };
 
 }

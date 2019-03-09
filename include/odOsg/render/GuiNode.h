@@ -62,7 +62,7 @@ namespace odOsg
     private:
 
         Renderer *mRenderer;
-        od::WeakRefPtr<odGui::Widget> mWidget;
+        od::WeakObserverRefPtr<odGui::Widget> mWidget;
 
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;

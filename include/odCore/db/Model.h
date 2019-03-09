@@ -132,9 +132,9 @@ namespace odDb
 		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
 		od::BoundingSphere mCalculatedBoundingSphere;
 
-		od::WeakRefPtr<odRender::ModelNode> mRenderNode;
+		od::WeakObserverRefPtr<odRender::ModelNode> mRenderNode;
 
-		od::WeakRefPtr<odPhysics::ModelShape> mPhysicsShape;
+		od::WeakObserverRefPtr<odPhysics::ModelShape> mPhysicsShape;
 	};
 
 	template <>

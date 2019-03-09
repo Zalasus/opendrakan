@@ -61,7 +61,7 @@ namespace odDb
 		AssetProvider &mAssetProvider;
 		od::SrscFile &mSrscFile;
 
-		std::map<od::RecordId, od::WeakRefPtr<_AssetType>> mAssetCache;
+		std::map<od::RecordId, od::WeakObserverRefPtr<_AssetType>> mAssetCache;
 	};
 
 
@@ -84,7 +84,7 @@ namespace odDb
         //  since most of the time the assets we are looking for are either cached or can be loaded from the container,
 	    //  doing it this way will save us one traversal of the map, as we don't have to use insert() to add a newly loaded
 	    //  asset to the cache. for the rare case that we can not find an asset in the file, just erase the unnecessary entry.
-	    od::WeakRefPtr<_AssetType> &asset = mAssetCache[assetId];
+	    od::WeakObserverRefPtr<_AssetType> &asset = mAssetCache[assetId];
         if(!asset.isNull())
         {
             Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
