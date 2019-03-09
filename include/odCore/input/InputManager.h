@@ -70,10 +70,6 @@ namespace odInput
             {
                 auto ref = weakRef.aquire();
                 actionHandle = od::upcast<ActionHandle<_ActionEnum>>(ref.get());
-                if(actionHandle == nullptr)
-                {
-                    throw od::Exception("Upcast during retrieval of action failed. Are you mixing action implementations?");
-                }
             }
 
             return actionHandle;

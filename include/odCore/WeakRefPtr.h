@@ -169,7 +169,7 @@ namespace od
             }
         }
 
-        WeakObserverRefPtr(const WeakRefPtr<T> &refPtr)
+        WeakObserverRefPtr(const WeakObserverRefPtr<T> &refPtr)
         : mPtr(refPtr.mPtr)
         {
             if(mPtr != nullptr)
@@ -203,7 +203,7 @@ namespace od
             return *this;
         }
 
-        WeakObserverRefPtr<T> &operator=(const WeakRefPtr<T> &weakPtr)
+        WeakObserverRefPtr<T> &operator=(const WeakObserverRefPtr<T> &weakPtr)
         {
             return this->operator=(weakPtr.mPtr);
         }
