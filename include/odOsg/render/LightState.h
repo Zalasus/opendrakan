@@ -15,6 +15,7 @@
 #include <osg/NodeCallback>
 
 #include <odCore/Light.h>
+#include <odCore/WeakRefPtr.h>
 
 namespace odOsg
 {
@@ -66,7 +67,7 @@ namespace odOsg
 
         Renderer *mRenderer;
         size_t mMaxLightCount;
-        std::vector<od::RefPtr<od::Light>> mLights;
+        std::vector<od::WeakRefPtr<od::Light>> mLights;
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;
         osg::Vec3 mLayerLightDirection;

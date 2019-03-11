@@ -90,9 +90,10 @@ namespace odOsg
 
         for(size_t i = 0; i < mMaxLightCount; ++i)
         {
-            if(i < mLights.size())
+            if(i < mLights.size() && mLights[i].isNonNull())
             {
-                mRenderer->applyToLightUniform(viewMatrix, mLights[i], i);
+                auto light = mLights[i].aquire();
+                mRenderer->applyToLightUniform(viewMatrix, light, i);
 
             }else
             {

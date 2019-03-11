@@ -85,7 +85,26 @@ namespace od
             return *this;
         }
 
-        bool isNull()
+        bool operator==(T* p) const
+        {
+            if(p == nullptr)
+            {
+                return isNull();
+
+            }else
+            {
+                if(mControlBlock == nullptr || mControlBlock->refExpired)
+                {
+                    return false;
+
+                }else
+                {
+                    return mPtr == p;
+                }
+            }
+        }
+
+        bool isNull() const
         {
             if(mControlBlock != nullptr && !mControlBlock->refExpired)
             {
@@ -98,12 +117,12 @@ namespace od
             }
         }
 
-        bool isNonNull()
+        bool isNonNull() const
         {
             return !isNull();
         }
 
-        RefPtr<T> aquire()
+        RefPtr<T> aquire() const
         {
             if(mControlBlock != nullptr && !mControlBlock->refExpired)
             {
@@ -144,8 +163,8 @@ namespace od
             mPtr = nullptr;
         }
 
-        T *mPtr;
-        RefControlBlock *mControlBlock;
+        mutable T *mPtr;
+        mutable RefControlBlock *mControlBlock;
 
     };
 
@@ -208,17 +227,17 @@ namespace od
             return this->operator=(weakPtr.mPtr);
         }
 
-        bool isNull()
+        bool isNull() const
         {
             return mPtr == nullptr;
         }
 
-        bool isNonNull()
+        bool isNonNull() const
         {
             return !isNull();
         }
 
-        RefPtr<T> aquire()
+        RefPtr<T> aquire() const
         {
             return RefPtr<T>(mPtr);
         }
