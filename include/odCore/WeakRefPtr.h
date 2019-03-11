@@ -106,15 +106,7 @@ namespace od
 
         bool isNull() const
         {
-            if(mControlBlock != nullptr && !mControlBlock->refExpired)
-            {
-                assert(mPtr != nullptr);
-                return true;
-
-            }else
-            {
-                return false;
-            }
+            return !_ptrValidAndNonNull();
         }
 
         bool isNonNull() const
@@ -124,10 +116,8 @@ namespace od
 
         RefPtr<T> aquire() const
         {
-            if(mControlBlock != nullptr && !(mControlBlock->refExpired))
+            if(_ptrValidAndNonNull())
             {
-                assert(mPtr != nullptr);
-
                 return RefPtr<T>(mPtr);
 
             }else
@@ -141,6 +131,19 @@ namespace od
 
 
     private:
+
+        bool _ptrValidAndNonNull() const
+        {
+            if(mControlBlock != nullptr && !(mControlBlock->refExpired))
+            {
+                assert(mPtr != nullptr);
+                return true;
+
+            }else
+            {
+                return false;
+            }
+        }
 
         void _removeRef() const
         {

@@ -56,7 +56,6 @@ namespace odOsg
 
         // set up root state
         osg::StateSet *ss = mSceneRoot->getOrCreateStateSet();
-        ss->setAttribute(mShaderFactory.getProgram("default"));
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::ON);
 
         ss->setDefine("MAX_LIGHTS", std::to_string(Constants::MAX_LIGHTS));
@@ -77,6 +76,8 @@ namespace odOsg
         ss->addUniform(mLocalLightsIntensity);
         ss->addUniform(mLocalLightsRadius);
         ss->addUniform(mLocalLightsPosition);
+
+        ss->setAttribute(mShaderFactory.getProgram("default"), osg::StateAttribute::ON);
 
         mLayers = new osg::Group;
         osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
@@ -205,6 +206,11 @@ namespace odOsg
         if(index >= mLocalLightsColor->getNumElements())
         {
             throw od::InvalidArgumentException("Tried to apply light at out-of-bounds index");
+        }
+
+        if(light == nullptr)
+        {
+            throw od::InvalidArgumentException("Passed nullptr light to renderer");
         }
 
         if(!mLightingEnabled)
