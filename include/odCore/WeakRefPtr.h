@@ -124,7 +124,7 @@ namespace od
 
         RefPtr<T> aquire() const
         {
-            if(mControlBlock != nullptr && !mControlBlock->refExpired)
+            if(mControlBlock != nullptr && !(mControlBlock->refExpired))
             {
                 assert(mPtr != nullptr);
 
@@ -132,14 +132,8 @@ namespace od
 
             }else
             {
-                // if object does no longer exist, and we are the only weak reference, we might as well
-                //  deallocate the control block since no one will be using it, anyway
-                if(mControlBlock != nullptr && mControlBlock->weakRefCount == 1)
-                {
-                    delete mControlBlock;
-                    mControlBlock = nullptr;
-                    mPtr = nullptr;
-                }
+                // if object does no longer exist, there is no point in keeping a ref to the control block here
+                _removeRef();
 
                 return RefPtr<T>(nullptr);
             }
@@ -148,18 +142,19 @@ namespace od
 
     private:
 
-        void _removeRef()
+        void _removeRef() const
         {
             if(mControlBlock != nullptr)
             {
+                assert(mControlBlock->weakRefCount > 0);
                 mControlBlock->weakRefCount--;
                 if(mControlBlock->weakRefCount == 0 && mControlBlock->refExpired)
                 {
                     delete mControlBlock;
-                    mControlBlock = nullptr;
                 }
             }
 
+            mControlBlock = nullptr;
             mPtr = nullptr;
         }
 
