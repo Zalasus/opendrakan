@@ -10,13 +10,23 @@
 namespace odBulletPhysics
 {
 
-    ManagedCompoundShape::ManagedCompoundShape(size_t initialChildShapeCapacity)
-    : btCompoundShape(true, initialChildShapeCapacity)
+    ManagedCompoundShape::ManagedCompoundShape(size_t initialChildShapeCapacity, bool useAabbTree)
+    : btCompoundShape(useAabbTree, initialChildShapeCapacity)
     {
         mChildShapes.reserve(initialChildShapeCapacity);
     }
 
-    void ManagedCompoundShape::addManagedChildShape(btTransform xform, std::unique_ptr<btCollisionShape> shape)
+    ManagedCompoundShape::ManagedCompoundShape(ManagedCompoundShape &shape)
+    : btCompoundShape(shape.getDynamicAabbTree() != nullptr, shape.getNumChildShapes())
+    , mChildShapes(shape.mChildShapes)
+    {
+        for(size_t i = 0; i < shape.getNumChildShapes(); ++i)
+        {
+            this->addChildShape(shape.getChildTransform(i), shape.getChildShape(i));
+        }
+    }
+
+    void ManagedCompoundShape::addManagedChildShape(btTransform xform, std::shared_ptr<btCollisionShape> shape)
     {
         btCollisionShape *shapePtr = shape.get();
         mChildShapes.push_back(std::move(shape));

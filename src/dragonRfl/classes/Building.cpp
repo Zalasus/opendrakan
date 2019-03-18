@@ -38,7 +38,6 @@ namespace dragonRfl
 	, mMessageToSendWhenPushed(odRfl::RflMessage::Off)
 	, mSendMessageAfterPushed(true)
 	, mMessageToSendAfterPushed(odRfl::RflMessage::Off)
-	, mRfl(rfl)
 	{
 	}
 
@@ -71,25 +70,10 @@ namespace dragonRfl
 
     void Building::onSpawned(od::LevelObject &obj)
 	{
-        odDb::Model *model = obj.getClass()->getModel();
-    	if(model == nullptr || !model->hasBounds())
-		{
-    	    Logger::warn() << "Building class used on object without model. Disabling collision for this object";
-
-		}else if(!model->hasBounds())
-		{
-		    Logger::warn() << "Building class used on object whose model has no valid bounds. Disabling collision for this object";
-
-		}else
-        {
-    		mPhysicsHandle = mRfl.getEngine().getPhysicsSystem().createObjectHandle(obj, false);
-    	}
 	}
 
     void Building::onDespawned(od::LevelObject &obj)
     {
-        // might it be more efficient to just disable collision here?
-    	mPhysicsHandle = nullptr;
     }
 
 

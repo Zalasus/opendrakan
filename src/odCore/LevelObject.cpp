@@ -28,6 +28,8 @@
 #include <odCore/render/ObjectNode.h>
 #include <odCore/render/ModelNode.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -165,6 +167,7 @@ namespace od
             }
         }
 
+        // create render node if applicable
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr && mClass->hasModel())
         {
@@ -183,6 +186,16 @@ namespace od
                     mRenderNode->setGlobalLight(mLightingLayer->getLightColor(), mLightingLayer->getAmbientColor(), mLightingLayer->getLightDirection());
                 }
             }
+        }
+
+        // create physics handle if applicable
+        if(mClass->hasModel())
+        {
+            // if the model does define bounds, create a regular collision handle. otherwise,
+            //  create one without contact response so lighting still works
+            odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
+            // FIXME: breaks framerate
+            //mPhysicsHandle = ps.createObjectHandle(*this, !mClass->getModel()->hasBounds());
         }
 
         _setRenderNodeVisible(mIsVisible);

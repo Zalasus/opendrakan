@@ -52,11 +52,6 @@ namespace dragonRfl
 		odRfl::EnumMessage		mMessageToSendWhenPushed;
 		odRfl::EnumYesNo		mSendMessageAfterPushed;
 		odRfl::EnumMessage		mMessageToSendAfterPushed;
-
-	private:
-
-		DragonRfl &mRfl;
-		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 	};
 
 }

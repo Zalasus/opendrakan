@@ -19,31 +19,49 @@ namespace odBulletPhysics
 {
 
     ModelShape::ModelShape(const odDb::ModelBounds &bounds)
-    : mBounds(bounds)
+    : mSharedShape(_buildFromBounds(bounds))
     {
+    }
+
+    ModelShape::ModelShape(const od::BoundingSphere &bs)
+    {
+        mSharedShape = std::make_unique<ManagedCompoundShape>(1, false);
+
+        btTransform xform = BulletAdapter::makeBulletTransform(bs.center(), glm::quat(1,0,0,0));
+        auto shape = std::make_shared<btSphereShape>(bs.radius());
+
+        mSharedShape->addManagedChildShape(xform, shape);
+    }
+
+    ModelShape::ModelShape(const od::OrientedBoundingBox &obb)
+    {
+        mSharedShape = std::make_unique<ManagedCompoundShape>(1, false);
+
+        btTransform xform = BulletAdapter::makeBulletTransform(obb.center(), obb.orientation());
+        auto shape = std::make_shared<btBoxShape>(BulletAdapter::toBullet(obb.extends()));
+
+        mSharedShape->addManagedChildShape(xform, shape);
     }
 
     btCollisionShape *ModelShape::getSharedShape()
     {
-        if(mSharedShape == nullptr)
-        {
-            mSharedShape = createNewUniqueShape();
-        }
-
         return mSharedShape.get();
     }
 
     std::unique_ptr<btCollisionShape> ModelShape::createNewUniqueShape()
     {
-        // TODO: possible optimization: multiple compound shapes can share their child shapes. we could thus save memory when creating scaled shapes
+        return std::make_unique<ManagedCompoundShape>(*mSharedShape);
+    }
 
-        auto shape = std::make_unique<ManagedCompoundShape>(mBounds.getShapeCount());
+    std::unique_ptr<ManagedCompoundShape> ModelShape::_buildFromBounds(const odDb::ModelBounds &bounds) const
+    {
+        auto shape = std::make_unique<ManagedCompoundShape>(bounds.getShapeCount(), true);
 
-        auto hierarchy = mBounds.getHierarchy();
-        auto boxes = mBounds.getBoxes();
-        auto spheres = mBounds.getSpheres();
+        auto hierarchy = bounds.getHierarchy();
+        auto boxes = bounds.getBoxes();
+        auto spheres = bounds.getSpheres();
 
-        for(size_t index = 0; index < mBounds.getShapeCount(); ++index)
+        for(size_t index = 0; index < bounds.getShapeCount(); ++index)
         {
             size_t firstChild = hierarchy[index].first;
             glm::vec3 myTranslation;
@@ -53,14 +71,14 @@ namespace odBulletPhysics
             //  leafs in the bounding hierarchy here and ignore all shapes that have children
             if(firstChild == 0)
             {
-                std::unique_ptr<btCollisionShape> newChildShape;
+                std::shared_ptr<btCollisionShape> newChildShape;
 
-                if(mBounds.getShapeType() == odDb::ModelBounds::SPHERES)
+                if(bounds.getShapeType() == odDb::ModelBounds::SPHERES)
                 {
                     myTranslation = spheres[index].center();
                     myRotation = glm::quat(1,0,0,0);
 
-                    newChildShape = std::make_unique<btSphereShape>(spheres[index].radius());
+                    newChildShape = std::make_shared<btSphereShape>(spheres[index].radius());
 
                 }else
                 {
@@ -68,7 +86,7 @@ namespace odBulletPhysics
                     myRotation = boxes[index].orientation();
 
                     btVector3 halfExtends = BulletAdapter::toBullet(boxes[index].extends() * 0.5f); // btBoxShape wants half extends, so we multiply by 0.5
-                    newChildShape = std::make_unique<btBoxShape>(halfExtends);
+                    newChildShape = std::make_shared<btBoxShape>(halfExtends);
                 }
 
                 btTransform t = BulletAdapter::makeBulletTransform(myTranslation, myRotation);
@@ -78,5 +96,7 @@ namespace odBulletPhysics
 
         return std::move(shape);
     }
+
+
 
 }

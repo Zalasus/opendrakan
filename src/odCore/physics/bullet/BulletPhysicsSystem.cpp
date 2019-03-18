@@ -118,9 +118,16 @@ namespace odBulletPhysics
 
     od::RefPtr<odPhysics::ModelShape> BulletPhysicsSystem::createModelShape(odDb::Model &model)
     {
-        auto mb = od::make_refd<ModelShape>(model.getModelBounds());
+        if(model.hasBounds())
+        {
+            auto mb = od::make_refd<ModelShape>(model.getModelBounds());
+            return mb.get();
 
-        return mb.get();
+        }else
+        {
+            auto mb = od::make_refd<ModelShape>(model.getCalculatedBoundingSphere());
+            return mb.get();
+        }
     }
 
     void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)

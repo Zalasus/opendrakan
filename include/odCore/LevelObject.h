@@ -29,6 +29,11 @@ namespace odRender
     class ObjectNode;
 }
 
+namespace odPhysics
+{
+    class ObjectHandle;
+}
+
 namespace od
 {
 
@@ -171,6 +176,7 @@ namespace od
         odDb::AssetRef mClassRef;
         od::RefPtr<odDb::Class> mClass;
         od::RefPtr<odRender::ObjectNode> mRenderNode;
+        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;

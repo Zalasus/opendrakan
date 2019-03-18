@@ -12,7 +12,12 @@
 
 #include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
+#include <odCore/BoundingBox.h>
+#include <odCore/BoundingSphere.h>
+
 #include <odCore/physics/ModelShape.h>
+
+#include <odCore/physics/bullet/ManagedCompoundShape.h>
 
 namespace odDb
 {
@@ -27,6 +32,8 @@ namespace odBulletPhysics
     public:
 
         explicit ModelShape(const odDb::ModelBounds &bounds);
+        explicit ModelShape(const od::BoundingSphere &bs);
+        explicit ModelShape(const od::OrientedBoundingBox &obb);
 
         btCollisionShape *getSharedShape();
         std::unique_ptr<btCollisionShape> createNewUniqueShape();
@@ -34,9 +41,9 @@ namespace odBulletPhysics
 
     private:
 
-        const odDb::ModelBounds &mBounds;
+        std::unique_ptr<ManagedCompoundShape> _buildFromBounds(const odDb::ModelBounds &bounds) const;
 
-        std::unique_ptr<btCollisionShape> mSharedShape;
+        std::unique_ptr<ManagedCompoundShape> mSharedShape;
 
     };
 

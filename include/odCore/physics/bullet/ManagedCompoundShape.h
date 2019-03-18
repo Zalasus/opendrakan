@@ -23,16 +23,23 @@ namespace odBulletPhysics
     {
     public:
 
-        ManagedCompoundShape(size_t initialChildShapeCapacity);
+        explicit ManagedCompoundShape(size_t initialChildShapeCapacity, bool useAabbTree);
 
-        void addManagedChildShape(btTransform xform, std::unique_ptr<btCollisionShape> shape);
+        /**
+         * Creates a shallow copy of shape. Child shapes are shared between shape and the copy.
+         */
+        explicit ManagedCompoundShape(ManagedCompoundShape &shape);
+
+        void addManagedChildShape(btTransform xform, std::shared_ptr<btCollisionShape> shape);
 
 
     private:
 
         using btCompoundShape::addChildShape;
+        using btCompoundShape::removeChildShape;
+        using btCompoundShape::removeChildShapeByIndex;
 
-        std::vector<std::unique_ptr<btCollisionShape>> mChildShapes;
+        std::vector<std::shared_ptr<btCollisionShape>> mChildShapes;
     };
 
 }
