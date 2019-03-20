@@ -19,6 +19,7 @@
 #include <odCore/anim/Skeleton.h>
 
 #include <odCore/db/Model.h>
+#include <odCore/db/ModelBounds.h>
 #include <odCore/db/SkeletonBuilder.h>
 
 #include <odCore/rfl/RflClass.h>
@@ -194,7 +195,8 @@ namespace od
             // if the model does define bounds, create a regular collision handle. otherwise,
             //  create one without contact response so lighting still works
             odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
-            mPhysicsHandle = ps.createObjectHandle(*this, !mClass->getModel()->hasBounds());
+            bool hasPhysics = mClass->getModel()->getModelBounds().getShapeCount() != 0;
+            mPhysicsHandle = ps.createObjectHandle(*this, !hasPhysics); // FIXME: redundant for detectors and stuff
         }
 
         _setRenderNodeVisible(mIsVisible);

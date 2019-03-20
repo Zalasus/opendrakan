@@ -50,14 +50,14 @@ namespace odDb
 	{
 	}
 
-	ModelBounds &Model::getModelBounds()
+	ModelBounds &Model::getModelBounds(size_t lodIndex)
 	{
-	    if(mModelBounds == nullptr)
+	    if(lodIndex >= mModelBounds.size())
 	    {
-	        throw od::Exception("Model bounds have not yet been loaded");
+	        throw od::Exception("LOD index for getting model bounds out of bounds. Lol");
 	    }
 
-	    return *mModelBounds;
+	    return mModelBounds[lodIndex];
 	}
 
 	void Model::loadNameAndShading(ModelFactory &factory, od::DataReader &&dr)
@@ -183,8 +183,10 @@ namespace odDb
 		   >> shapeType;
 
 		ModelBounds::ShapeType type = (shapeType == 0) ? ModelBounds::SPHERES : ModelBounds::BOXES;
-		mModelBounds = std::make_unique<ModelBounds>(type, shapeCount);
-		mModelBounds->setMainBounds(mainBs, mainObb);
+		mModelBounds.emplace_back(type, shapeCount);
+
+		ModelBounds &bounds = mModelBounds.back();
+		bounds.setMainBounds(mainBs, mainObb);
 
 		for(size_t i = 0; i < shapeCount; ++i)
 		{
@@ -193,7 +195,7 @@ namespace odDb
 			dr >> firstChildIndex
 			   >> nextSiblingIndex;
 
-			mModelBounds->addHierarchyEntry(firstChildIndex, nextSiblingIndex);
+			bounds.addHierarchyEntry(firstChildIndex, nextSiblingIndex);
 		}
 
 		for(size_t i = 0; i < shapeCount; ++i)
@@ -202,13 +204,13 @@ namespace odDb
 			{
 				od::BoundingSphere bs;
 				dr >> bs;
-				mModelBounds->addSphere(bs);
+				bounds.addSphere(bs);
 
 			}else
 			{
 				od::OrientedBoundingBox obb;
 				dr >> obb;
-				mModelBounds->addBox(obb);
+				bounds.addBox(obb);
 
 				// ignore the field of words after each box
 				uint16_t unkPolyCount;
@@ -223,11 +225,15 @@ namespace odDb
 
 	void Model::loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr)
 	{
+	    // main bounds/culling bounds. actual collision bounds follow later
+	    od::BoundingSphere mainSphere;
+	    od::OrientedBoundingBox mainObb;
+	    dr >> mainSphere >> mainObb;
+
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
-		dr >> od::DataReader::Ignore(16*4) // bounding info (16 floats)
-		   >> lodCount;
+		dr >> lodCount;
 
 		if(lodCount == 0)
 		{
@@ -297,8 +303,6 @@ namespace odDb
 					boneAffections.push_back(bAff);
 				}
             }
-
-
 		}
 
 		// lod info
@@ -387,10 +391,17 @@ namespace odDb
 		//mSkeletonBuilder->printInfo(std::cout);
 
 		dr >> od::DataReader::Expect<uint16_t>(lodCount);
+
+        mModelBounds.reserve(lodCount);
+
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
 		    uint16_t sphereCount;
 		    dr >> sphereCount;
+
+		    mModelBounds.emplace_back(ModelBounds::SPHERES, sphereCount);
+		    ModelBounds &bounds = mModelBounds.back();
+		    bounds.setMainBounds(mainSphere, mainObb);
 
 		    for(size_t sphereIndex = 0; sphereIndex < sphereCount; ++sphereIndex)
 		    {
@@ -413,8 +424,11 @@ namespace odDb
 
 		        }else
 		        {
-		            //glm::vec3 sphereCenter = mVertices[positionVertexIndex];
-		            //od::BoundingSphere sphere(sphereCenter, radius);
+                    bounds.addHierarchyEntry(firstChild, nextSibling);
+
+		            glm::vec3 sphereCenter = mVertices[positionVertexIndex];
+		            od::BoundingSphere sphere(sphereCenter, radius);
+		            bounds.addSphere(sphere);
 		        }
 		    }
 		}

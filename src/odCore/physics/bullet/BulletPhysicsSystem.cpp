@@ -118,16 +118,8 @@ namespace odBulletPhysics
 
     od::RefPtr<odPhysics::ModelShape> BulletPhysicsSystem::createModelShape(odDb::Model &model)
     {
-        if(model.hasBounds())
-        {
-            auto mb = od::make_refd<ModelShape>(model.getModelBounds());
-            return mb.get();
-
-        }else
-        {
-            auto mb = od::make_refd<ModelShape>(model.getCalculatedBoundingSphere());
-            return mb.get();
-        }
+        auto mb = od::make_refd<ModelShape>(model.getModelBounds()); // TODO: do we really have to consider LODs here?
+        return mb.get();
     }
 
     void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)

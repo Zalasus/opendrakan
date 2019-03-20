@@ -19,28 +19,9 @@ namespace odBulletPhysics
 {
 
     ModelShape::ModelShape(const odDb::ModelBounds &bounds)
-    : mSharedShape(_buildFromBounds(bounds))
+    : mBounds(bounds)
+    , mSharedShape(_buildFromBounds(bounds))
     {
-    }
-
-    ModelShape::ModelShape(const od::BoundingSphere &bs)
-    {
-        mSharedShape = std::make_unique<ManagedCompoundShape>(1, false);
-
-        btTransform xform = BulletAdapter::makeBulletTransform(bs.center(), glm::quat(1,0,0,0));
-        auto shape = std::make_shared<btSphereShape>(bs.radius());
-
-        mSharedShape->addManagedChildShape(xform, shape);
-    }
-
-    ModelShape::ModelShape(const od::OrientedBoundingBox &obb)
-    {
-        mSharedShape = std::make_unique<ManagedCompoundShape>(1, false);
-
-        btTransform xform = BulletAdapter::makeBulletTransform(obb.center(), obb.orientation());
-        auto shape = std::make_shared<btBoxShape>(BulletAdapter::toBullet(obb.extends()));
-
-        mSharedShape->addManagedChildShape(xform, shape);
     }
 
     btCollisionShape *ModelShape::getSharedShape()
@@ -50,7 +31,7 @@ namespace odBulletPhysics
 
     std::unique_ptr<btCollisionShape> ModelShape::createNewUniqueShape()
     {
-        return std::make_unique<ManagedCompoundShape>(*mSharedShape);
+        return _buildFromBounds(mBounds);
     }
 
     std::unique_ptr<ManagedCompoundShape> ModelShape::_buildFromBounds(const odDb::ModelBounds &bounds) const

@@ -86,7 +86,6 @@ namespace odDb
 		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); } ///< May return nullptr if no skeleton present.
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
 		inline bool hasSkeleton() const { return mSkeletonBuilder != nullptr; }
-		inline bool hasBounds() const { return mModelBounds != nullptr; }
 		inline ShadingType getShadingType() const { return mShadingType; }
 		inline bool isShiny() const { return mShiny; }
 		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
@@ -95,7 +94,7 @@ namespace odDb
 		inline const od::BoundingSphere &getCalculatedBoundingSphere() const { return mCalculatedBoundingSphere; }
 		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() const { return mCalculatedBoundingBox; }
 
-		ModelBounds &getModelBounds();
+		ModelBounds &getModelBounds(size_t lodIndex = 0);
 
 		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
 		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
@@ -123,7 +122,7 @@ namespace odDb
 		std::vector<Polygon> mPolygons;
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
-		std::unique_ptr<ModelBounds> mModelBounds;
+		std::vector<ModelBounds> mModelBounds; // one for each LOD
 		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
