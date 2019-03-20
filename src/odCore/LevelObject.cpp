@@ -194,8 +194,7 @@ namespace od
             // if the model does define bounds, create a regular collision handle. otherwise,
             //  create one without contact response so lighting still works
             odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
-            // FIXME: breaks framerate
-            //mPhysicsHandle = ps.createObjectHandle(*this, !mClass->getModel()->hasBounds());
+            mPhysicsHandle = ps.createObjectHandle(*this, !mClass->getModel()->hasBounds());
         }
 
         _setRenderNodeVisible(mIsVisible);

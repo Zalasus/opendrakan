@@ -27,6 +27,11 @@ namespace odBulletPhysics
 
         /**
          * Creates a shallow copy of shape. Child shapes are shared between shape and the copy.
+         *
+         * @note: In theory, this could be used to reduce Bullet's memory footprint, since often we
+         * use multiple collision shapes with identical children and locally scaled parents. However,
+         * this causes Bullet to slow down massively as of now. So until that is solved, sharing child
+         * shapes should be avoided for sake of performance.
          */
         explicit ManagedCompoundShape(ManagedCompoundShape &shape);
 

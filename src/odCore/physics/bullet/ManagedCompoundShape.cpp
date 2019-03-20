@@ -20,7 +20,7 @@ namespace odBulletPhysics
     : btCompoundShape(shape.getDynamicAabbTree() != nullptr, shape.getNumChildShapes())
     , mChildShapes(shape.mChildShapes)
     {
-        for(size_t i = 0; i < shape.getNumChildShapes(); ++i)
+        for(int i = 0; i < shape.getNumChildShapes(); ++i)
         {
             this->addChildShape(shape.getChildTransform(i), shape.getChildShape(i));
         }
