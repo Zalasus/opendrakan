@@ -115,6 +115,11 @@ namespace dragonRfl
         mPlayerWasIn = playerIsIn;
     }
 
+    bool Detector::onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps)
+    {
+        return false;
+    }
+
 
     OD_REGISTER_RFLCLASS(DragonRfl, Detector);
 

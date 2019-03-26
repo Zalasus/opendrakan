@@ -51,6 +51,12 @@ namespace od
 	class Engine;
 }
 
+namespace odPhysics
+{
+    class Handle;
+    class PhysicsSystem;
+}
+
 namespace odRfl
 {
 	class Rfl;
@@ -87,6 +93,16 @@ namespace odRfl
 		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);
+
+		/**
+		 * @brief Called before physics handles are created.
+		 *
+		 * Default implementation does nothing except returning true, causing the engine to decide what kind of
+		 * physics handle would be appropriate and creating it automatically.
+		 *
+		 * @return False if automatic creation of physics handles should be inhibited.
+		 */
+		virtual bool onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps);
 
 	};
 

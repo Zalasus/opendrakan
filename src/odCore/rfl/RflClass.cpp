@@ -44,6 +44,11 @@ namespace odRfl
 	{
 	}
 
+	bool RflClass::onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps)
+	{
+	    return true;
+	}
+
 }
 
 

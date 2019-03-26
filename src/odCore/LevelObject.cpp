@@ -190,13 +190,19 @@ namespace od
         }
 
         // create physics handle if applicable
-        if(mClass->hasModel())
+        odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
+        bool shouldAutoCreatePhysics = true;
+        if(mRflClassInstance != nullptr)
+        {
+            shouldAutoCreatePhysics = mRflClassInstance->onCreatePhysicsHandles(*this, ps);
+        }
+
+        if(shouldAutoCreatePhysics && mClass->hasModel())
         {
             // if the model does define bounds, create a regular collision handle. otherwise,
             //  create one without contact response so lighting still works
-            odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
             bool hasPhysics = mClass->getModel()->getModelBounds().getShapeCount() != 0;
-            mPhysicsHandle = ps.createObjectHandle(*this, !hasPhysics); // FIXME: redundant for detectors and stuff
+            mPhysicsHandle = ps.createObjectHandle(*this, !hasPhysics);
         }
 
         _setRenderNodeVisible(mIsVisible);
