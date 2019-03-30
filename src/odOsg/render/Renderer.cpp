@@ -6,6 +6,7 @@
  */
 
 
+#include <odCore/Downcast.h>
 #include <odOsg/render/Renderer.h>
 
 #include <osg/FrontFace>
@@ -15,8 +16,6 @@
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Light.h>
-#include <odCore/Upcast.h>
-
 #include <odCore/render/RendererEventListener.h>
 
 #include <odOsg/GlmAdapter.h>
@@ -166,7 +165,7 @@ namespace odOsg
 
     od::RefPtr<odRender::Texture> Renderer::createTexture(odRender::Image *image)
     {
-        Image *odOsgImage = od::confident_upcast<Image>(image);
+        Image *odOsgImage = od::confident_downcast<Image>(image);
         auto texture = od::make_refd<Texture>(odOsgImage);
         return od::RefPtr<odRender::Texture>(texture);
     }

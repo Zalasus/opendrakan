@@ -13,12 +13,11 @@
 #include <functional>
 
 #include <glm/vec2.hpp>
+#include <odCore/Downcast.h>
 
 #include <odCore/RefCounted.h>
 #include <odCore/WeakRefPtr.h>
 #include <odCore/Exception.h>
-#include <odCore/Upcast.h>
-
 #include <odCore/input/Action.h>
 #include <odCore/input/Keys.h>
 
@@ -69,7 +68,7 @@ namespace odInput
             }else
             {
                 auto ref = weakRef.aquire();
-                actionHandle = od::upcast<ActionHandle<_ActionEnum>>(ref.get());
+                actionHandle = od::downcast<ActionHandle<_ActionEnum>>(ref.get());
             }
 
             return actionHandle;

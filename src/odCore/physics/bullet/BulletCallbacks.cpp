@@ -8,8 +8,6 @@
 #include <odCore/physics/bullet/BulletCallbacks.h>
 
 #include <odCore/Exception.h>
-#include <odCore/Upcast.h>
-
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 

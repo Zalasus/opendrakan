@@ -9,11 +9,10 @@
 
 #include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
+#include <odCore/Downcast.h>
 
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
-#include <odCore/Upcast.h>
-
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>
 #include <odCore/physics/bullet/ObjectHandleImpl.h>
@@ -71,17 +70,17 @@ namespace odBulletPhysics
         btCollisionObject *bulletObject;
         if(handle->asObjectHandle() != nullptr)
         {
-            ObjectHandle *objectHandle = od::confident_upcast<ObjectHandle>(handle->asObjectHandle());
+            ObjectHandle *objectHandle = od::confident_downcast<ObjectHandle>(handle->asObjectHandle());
             bulletObject = objectHandle->getBulletObject();
 
         }else if(handle->asLayerHandle() != nullptr)
         {
-            LayerHandle *layerHandle = od::confident_upcast<LayerHandle>(handle->asLayerHandle());
+            LayerHandle *layerHandle = od::confident_downcast<LayerHandle>(handle->asLayerHandle());
             bulletObject = layerHandle->getBulletObject();
 
         }else if(handle->asLightHandle() != nullptr)
         {
-            LightHandle *lightHandle = od::confident_upcast<LightHandle>(handle->asLightHandle());
+            LightHandle *lightHandle = od::confident_downcast<LightHandle>(handle->asLightHandle());
             bulletObject = lightHandle->getBulletObject();
 
         }else

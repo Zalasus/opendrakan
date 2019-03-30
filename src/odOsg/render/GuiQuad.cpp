@@ -5,11 +5,10 @@
  *      Author: zal
  */
 
+#include <odCore/Downcast.h>
 #include <odOsg/render/GuiQuad.h>
 
 #include <odCore/Exception.h>
-#include <odCore/Upcast.h>
-
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Image.h>
@@ -51,7 +50,7 @@ namespace odOsg
             return;
         }
 
-        mTexture = od::confident_upcast<Texture>(texture);
+        mTexture = od::confident_downcast<Texture>(texture);
 
         mGeometry->getOrCreateStateSet()->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
     }

@@ -8,10 +8,9 @@
 #include <odCore/physics/bullet/ObjectHandleImpl.h>
 
 #include <odCore/LevelObject.h>
-#include <odCore/Upcast.h>
-
 #include <odCore/db/Class.h>
 #include <odCore/db/Model.h>
+#include <odCore/Downcast.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
@@ -34,7 +33,7 @@ namespace odBulletPhysics
             throw od::Exception("Created physics handle for object without model");
         }
         od::RefPtr<odPhysics::ModelShape> shapeIface = model->getOrCreateModelShape(ps);
-        mModelShape = od::confident_upcast<ModelShape>(shapeIface.get());
+        mModelShape = od::confident_downcast<ModelShape>(shapeIface.get());
 
         btCollisionShape *bulletShape;
         if(mLevelObject.isScaled())

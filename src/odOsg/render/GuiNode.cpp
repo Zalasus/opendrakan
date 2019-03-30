@@ -5,11 +5,10 @@
  *      Author: zal
  */
 
+#include <odCore/Downcast.h>
 #include <odOsg/render/GuiNode.h>
 
 #include <algorithm>
-
-#include <odCore/Upcast.h>
 
 #include <odCore/gui/Widget.h>
 
@@ -101,7 +100,7 @@ namespace odOsg
             return;
         }
 
-        od::RefPtr<GuiNode> guiNode = od::confident_upcast<GuiNode>(node);
+        od::RefPtr<GuiNode> guiNode = od::confident_downcast<GuiNode>(node);
         mChildren.push_back(guiNode);
 
         mTransform->addChild(guiNode->getOsgNode());
