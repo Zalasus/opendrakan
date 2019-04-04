@@ -142,6 +142,11 @@ namespace odOsg
     od::RefPtr<odRender::ObjectNode> Renderer::createObjectNode(od::LevelObject &obj)
     {
         auto on = od::make_refd<ObjectNode>(this, mObjects);
+
+        on->setPosition(obj.getPosition());
+        on->setOrientation(obj.getRotation());
+        on->setScale(obj.getScale());
+
         return od::RefPtr<odRender::ObjectNode>(on);
     }
 

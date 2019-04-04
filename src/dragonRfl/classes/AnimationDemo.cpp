@@ -12,6 +12,10 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
 
+#include <odCore/render/Renderer.h>
+#include <odCore/render/ModelNode.h>
+
+#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 
@@ -36,13 +40,20 @@ namespace dragonRfl
 
     void AnimationDemo::onSpawned(od::LevelObject &obj)
     {
+        if(!obj.getClass()->hasModel())
+        {
+            return;
+        }
+
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        odRender::ObjectNode *objNode = obj.getRenderNode();
-        if(objNode == nullptr)
+        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        if(renderer == nullptr)
         {
-            return; // no need to warn. we are probably running on a server
+            return;
         }
+        mRenderNode = renderer->createObjectNode(obj);
+        mRenderNode->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(renderer));
 
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton == nullptr)
@@ -51,7 +62,7 @@ namespace dragonRfl
             return;
         }
 
-        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objNode, skeleton);
+        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderNode, skeleton);
 
         obj.setEnableRflUpdateHook(true);
     }

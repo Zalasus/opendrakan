@@ -67,7 +67,6 @@ namespace dragonRfl
         virtual void onLoaded(od::LevelObject &obj) override;
         virtual void onSpawned(od::LevelObject &obj) override;
         virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-        virtual bool onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps) override;
 
 
     protected:

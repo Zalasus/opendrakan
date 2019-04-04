@@ -12,6 +12,10 @@
 namespace odRfl
 {
 
+    RflClass::~RflClass()
+    {
+    }
+
     void RflClass::onLoaded(od::LevelObject &obj)
     {
     }
@@ -44,9 +48,8 @@ namespace odRfl
 	{
 	}
 
-	bool RflClass::onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps)
+	void RflClass::onVisibilityChanged()
 	{
-	    return true;
 	}
 
 }

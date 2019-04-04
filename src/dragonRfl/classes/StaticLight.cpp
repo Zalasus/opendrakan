@@ -77,12 +77,6 @@ namespace dragonRfl
         mLight = nullptr;
     }
 
-    bool StaticLight::onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps)
-    {
-        return false;
-    }
-
-
     OD_REGISTER_RFLCLASS(DragonRfl, StaticLight);
 
 }

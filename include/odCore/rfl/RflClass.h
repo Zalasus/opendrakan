@@ -67,7 +67,7 @@ namespace odRfl
 	{
 	public:
 
-		virtual ~RflClass() = default;
+		virtual ~RflClass();
 
 		virtual void probeFields(FieldProbe &probe) = 0;
 
@@ -93,17 +93,7 @@ namespace odRfl
 		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);
-
-		/**
-		 * @brief Called before physics handles are created.
-		 *
-		 * Default implementation does nothing except returning true, causing the engine to decide what kind of
-		 * physics handle would be appropriate and creating it automatically.
-		 *
-		 * @return False if automatic creation of physics handles should be inhibited.
-		 */
-		virtual bool onCreatePhysicsHandles(od::LevelObject &obj, odPhysics::PhysicsSystem &ps);
-
+		virtual void onVisibilityChanged();
 	};
 
 

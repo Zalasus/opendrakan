@@ -11,7 +11,9 @@
 #include <odCore/Exception.h>
 #include <odCore/db/ClassFactory.h>
 #include <odCore/db/AssetProvider.h>
+
 #include <odCore/rfl/Rfl.h>
+#include <odCore/rfl/DefaultObjectClass.h>
 
 namespace odDb
 {
@@ -80,5 +82,21 @@ namespace odDb
 
         return newInstance;
 	}
+
+    std::unique_ptr<odRfl::RflClass> Class::makeInstanceForLevelObject(od::LevelObject &obj)
+    {
+        if(mRflClassRegistrar == nullptr)
+        {
+            return std::make_unique<odRfl::DefaultObjectClass>();
+        }
+
+        Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
+
+        std::unique_ptr<odRfl::RflClass> newInstance(mRflClassRegistrar->createInstance(mRfl));
+        mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
+        newInstance->probeFields(mClassBuilder);
+
+        return newInstance;
+    }
 
 }
