@@ -53,7 +53,6 @@ namespace dragonRfl
             return;
         }
         mRenderNode = renderer->createObjectNode(obj);
-        mRenderNode->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(renderer));
 
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton == nullptr)

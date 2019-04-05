@@ -8,11 +8,17 @@
 #include <dragonRfl/classes/Building.h>
 
 #include <dragonRfl/RflDragon.h>
+
 #include <odCore/rfl/Rfl.h>
+
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
-#include <odCore/physics/PhysicsSystem.h>
 #include <odCore/LevelObject.h>
+
+#include <odCore/physics/PhysicsSystem.h>
+
+#include <odCore/render/Renderer.h>
+#include <odCore/render/ObjectNode.h>
 
 namespace dragonRfl
 {
@@ -70,10 +76,20 @@ namespace dragonRfl
 
     void Building::onSpawned(od::LevelObject &obj)
 	{
+        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        if(renderer != nullptr)
+        {
+            mRenderNode = renderer->createObjectNode(obj);
+        }
+
+        odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
+        mPhysicsHandle = ps.createObjectHandle(obj, false);
 	}
 
     void Building::onDespawned(od::LevelObject &obj)
     {
+        mRenderNode = nullptr;
+        mPhysicsHandle = nullptr;
     }
 
 

@@ -12,7 +12,15 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
-#include <odCore/physics/Handles.h>
+namespace odRender
+{
+    class ObjectNode;
+}
+
+namespace odPhysics
+{
+    class ObjectHandle;
+}
 
 namespace dragonRfl
 {
@@ -52,6 +60,12 @@ namespace dragonRfl
 		odRfl::EnumMessage		mMessageToSendWhenPushed;
 		odRfl::EnumYesNo		mSendMessageAfterPushed;
 		odRfl::EnumMessage		mMessageToSendAfterPushed;
+
+
+	private:
+
+		od::RefPtr<odRender::ObjectNode> mRenderNode;
+		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 	};
 
 }

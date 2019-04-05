@@ -147,6 +147,11 @@ namespace odOsg
         on->setOrientation(obj.getRotation());
         on->setScale(obj.getScale());
 
+        if(obj.getClass()->hasModel())
+        {
+            on->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(this));
+        }
+
         return od::RefPtr<odRender::ObjectNode>(on);
     }
 
