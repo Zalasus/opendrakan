@@ -80,6 +80,13 @@ namespace dragonRfl
         if(renderer != nullptr)
         {
             mRenderNode = renderer->createObjectNode(obj);
+
+            od::Layer *lightingLayer = (obj.getLightSourceLayer()!= nullptr) ?
+                        obj.getLightSourceLayer() : obj.getLevel().getFirstLayerBelowPoint(obj.getPosition());
+            if(lightingLayer != nullptr)
+            {
+                mRenderNode->setGlobalLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
+            }
         }
 
         odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();

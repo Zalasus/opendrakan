@@ -14,6 +14,7 @@
 
 #include <odCore/RefCounted.h>
 #include <odCore/BoundingSphere.h>
+#include <odCore/LightCallback.h>
 
 namespace odPhysics
 {
@@ -45,7 +46,6 @@ namespace od
         inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
         inline void setDynamic(bool b) { mIsDynamic = b; }
         inline const std::vector<Layer*> &getAffectedLayers() const { return mAffectedLayers; }
-        inline const std::vector<LevelObject*> &getAffectedObjects() const { return mAffectedObjects; }
 
         void setPosition(const glm::vec3 &p);
         void setRadius(float f);
@@ -72,7 +72,7 @@ namespace od
         bool mIsDynamic;
 
         std::vector<Layer*> mAffectedLayers;
-        std::vector<LevelObject*> mAffectedObjects;
+        std::vector<LightCallback*> mAffectedCallbacks;
     };
 
 }

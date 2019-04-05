@@ -147,6 +147,8 @@ namespace odOsg
         on->setOrientation(obj.getRotation());
         on->setScale(obj.getScale());
 
+        on->setVisible(obj.isVisible());
+
         if(obj.getClass()->hasModel())
         {
             on->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(this));

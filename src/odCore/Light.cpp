@@ -9,7 +9,7 @@
 
 #include <odCore/Layer.h>
 #include <odCore/LevelObject.h>
-#include <odCore/LightReceiver.h>
+#include <odCore/LightCallback.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -68,9 +68,12 @@ namespace od
 
         if(handle->asObjectHandle() != nullptr)
         {
-            LevelObject &obj = handle->asObjectHandle()->getLevelObject();
-            obj.addAffectingLight(this);
-            mAffectedObjects.push_back(&obj);
+            LightCallback *callback = handle->asObjectHandle()->getLightCallback();
+            if(callback != nullptr)
+            {
+                callback->addAffectingLight(this);
+                mAffectedCallbacks.push_back(callback);
+            }
 
         }else if(handle->asLayerHandle() != nullptr)
         {
@@ -88,11 +91,11 @@ namespace od
         }
         mAffectedLayers.clear();
 
-        for(auto &o : mAffectedObjects)
+        for(auto &o : mAffectedCallbacks)
         {
             o->removeAffectingLight(this);
         }
-        mAffectedObjects.clear();
+        mAffectedCallbacks.clear();
 
         static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::LevelObject | odPhysics::PhysicsTypeMasks::Layer;
 

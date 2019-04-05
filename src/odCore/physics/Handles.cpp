@@ -37,6 +37,11 @@ namespace odPhysics
     }
 
 
+    ObjectHandle::ObjectHandle()
+    : mLightCallback(nullptr)
+    {
+    }
+
     ObjectHandle *ObjectHandle::asObjectHandle()
     {
         return this;

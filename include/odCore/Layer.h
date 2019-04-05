@@ -15,7 +15,6 @@
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
-#include <odCore/LightReceiver.h>
 
 #include <odCore/db/Asset.h>
 
@@ -32,7 +31,7 @@ namespace od
 {
     class Level;
 
-    class Layer : public LightReceiver
+    class Layer
     {
     public:
 
@@ -138,9 +137,9 @@ namespace od
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
-        virtual void removeAffectingLight(od::Light *light) override;
-        virtual void addAffectingLight(od::Light *light) override;
-        virtual void clearLightList() override;
+        void removeAffectingLight(od::Light *light);
+        void addAffectingLight(od::Light *light);
+        void clearLightList();
 
 
     private:

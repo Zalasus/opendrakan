@@ -40,23 +40,8 @@ namespace odRfl
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
             mRenderNode = renderer->createObjectNode(obj);
-            if(mRenderNode != nullptr)
-            {
-                od::RefPtr<odRender::ModelNode> model = obj.getClass()->getModel()->getOrCreateRenderNode(renderer);
-                mRenderNode->setModel(model);
 
-                mRenderNode->setPosition(obj.getPosition());
-                mRenderNode->setOrientation(obj.getRotation());
-                mRenderNode->setScale(obj.getScale());
-
-                mRenderNode->setVisible(obj.isVisible());
-
-                od::Layer *lightingLayer = obj.getLightSourceLayer();
-                if(lightingLayer != nullptr)
-                {
-                    mRenderNode->setGlobalLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
-                }
-            }
+            _updateLighting(obj);
         }
 
         // if we created a rendering handle, create collisionless physics handle, too. this way, lighting will still work on those models.
@@ -65,12 +50,38 @@ namespace odRfl
         {
             mPhysicsHandle = ps.createObjectHandle(obj, true);
         }
+
+        mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderNode);
     }
 
     void DefaultObjectClass::onDespawned(od::LevelObject &obj)
     {
         mRenderNode = nullptr;
         mPhysicsHandle = nullptr;
+        mLightReceiver = nullptr;
+    }
+
+    void DefaultObjectClass::onMoved(od::LevelObject &obj)
+    {
+        _updateLighting(obj);
+    }
+
+    void DefaultObjectClass::_updateLighting(od::LevelObject &obj)
+    {
+        if(mRenderNode != nullptr)
+        {
+            od::Layer *lightingLayer = (obj.getLightSourceLayer()!= nullptr) ?
+                    obj.getLightSourceLayer() : obj.getLevel().getFirstLayerBelowPoint(obj.getPosition());
+            if(lightingLayer != nullptr)
+            {
+                mRenderNode->setGlobalLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
+            }
+        }
+
+        if(mLightReceiver != nullptr)
+        {
+            mLightReceiver->updateAffectingLights();
+        }
     }
 
 }
