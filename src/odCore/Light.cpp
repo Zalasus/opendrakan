@@ -66,31 +66,16 @@ namespace od
             return;
         }
 
-        if(handle->asObjectHandle() != nullptr)
+        LightCallback *callback = handle->getLightCallback();
+        if(callback != nullptr)
         {
-            LightCallback *callback = handle->asObjectHandle()->getLightCallback();
-            if(callback != nullptr)
-            {
-                callback->addAffectingLight(this);
-                mAffectedCallbacks.push_back(callback);
-            }
-
-        }else if(handle->asLayerHandle() != nullptr)
-        {
-            Layer &layer = handle->asLayerHandle()->getLayer();
-            layer.addAffectingLight(this);
-            mAffectedLayers.push_back(&layer);
+            callback->addAffectingLight(this);
+            mAffectedCallbacks.push_back(callback);
         }
     }
 
     void Light::updateAffectedList()
     {
-        for(auto &l : mAffectedLayers)
-        {
-            l->removeAffectingLight(this);
-        }
-        mAffectedLayers.clear();
-
         for(auto &o : mAffectedCallbacks)
         {
             o->removeAffectingLight(this);

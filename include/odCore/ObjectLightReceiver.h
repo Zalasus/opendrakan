@@ -36,6 +36,7 @@ namespace od
     public:
 
         ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::ObjectNode *on);
+        virtual ~ObjectLightReceiver();
 
         virtual void removeAffectingLight(od::Light *light) override;
         virtual void addAffectingLight(od::Light *light) override;

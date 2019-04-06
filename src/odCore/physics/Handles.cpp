@@ -10,6 +10,11 @@
 namespace odPhysics
 {
 
+    Handle::Handle()
+    : mLightCallback(nullptr)
+    {
+    }
+
     LayerHandle *Handle::asLayerHandle()
     {
         return nullptr;
@@ -36,11 +41,6 @@ namespace odPhysics
         return Type::Layer;
     }
 
-
-    ObjectHandle::ObjectHandle()
-    : mLightCallback(nullptr)
-    {
-    }
 
     ObjectHandle *ObjectHandle::asObjectHandle()
     {

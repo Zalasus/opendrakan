@@ -45,7 +45,6 @@ namespace od
         inline void setIntensityScaling(float f) { mIntensityScaling = f; }
         inline void setRequiredQualityLevel(uint32_t ql) { mRequiredQualityLevel = ql; }
         inline void setDynamic(bool b) { mIsDynamic = b; }
-        inline const std::vector<Layer*> &getAffectedLayers() const { return mAffectedLayers; }
 
         void setPosition(const glm::vec3 &p);
         void setRadius(float f);
@@ -71,7 +70,6 @@ namespace od
         uint32_t mRequiredQualityLevel;
         bool mIsDynamic;
 
-        std::vector<Layer*> mAffectedLayers;
         std::vector<LightCallback*> mAffectedCallbacks;
     };
 

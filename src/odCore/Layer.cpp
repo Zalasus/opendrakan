@@ -187,6 +187,7 @@ namespace od
         }
 
         mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
+        mPhysicsHandle->setLightCallback(this);
 
         _bakeLocalLayerLight();
     }

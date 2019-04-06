@@ -76,27 +76,12 @@ namespace dragonRfl
 
     void Building::onSpawned(od::LevelObject &obj)
 	{
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
-        if(renderer != nullptr)
-        {
-            mRenderNode = renderer->createObjectNode(obj);
-
-            od::Layer *lightingLayer = (obj.getLightSourceLayer()!= nullptr) ?
-                        obj.getLightSourceLayer() : obj.getLevel().getFirstLayerBelowPoint(obj.getPosition());
-            if(lightingLayer != nullptr)
-            {
-                mRenderNode->setGlobalLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
-            }
-        }
-
-        odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
-        mPhysicsHandle = ps.createObjectHandle(obj, false);
+        DefaultObjectClass::onSpawned(obj);
 	}
 
     void Building::onDespawned(od::LevelObject &obj)
     {
-        mRenderNode = nullptr;
-        mPhysicsHandle = nullptr;
+        DefaultObjectClass::onDespawned(obj);
     }
 
 

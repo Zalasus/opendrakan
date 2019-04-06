@@ -8,6 +8,8 @@
 #ifndef INCLUDE_RFL_DRAGON_BUILDING_H_
 #define INCLUDE_RFL_DRAGON_BUILDING_H_
 
+#include <odCore/rfl/DefaultObjectClass.h>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
@@ -27,7 +29,7 @@ namespace dragonRfl
 
     class DragonRfl;
 
-	class Building : public odRfl::RflClass
+	class Building : public odRfl::DefaultObjectClass
 	{
 	public:
 
@@ -61,11 +63,6 @@ namespace dragonRfl
 		odRfl::EnumYesNo		mSendMessageAfterPushed;
 		odRfl::EnumMessage		mMessageToSendAfterPushed;
 
-
-	private:
-
-		od::RefPtr<odRender::ObjectNode> mRenderNode;
-		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 	};
 
 }

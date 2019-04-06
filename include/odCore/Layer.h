@@ -15,6 +15,7 @@
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
+#include <odCore/LightCallback.h>
 
 #include <odCore/db/Asset.h>
 
@@ -31,7 +32,7 @@ namespace od
 {
     class Level;
 
-    class Layer
+    class Layer : public LightCallback
     {
     public:
 
@@ -137,9 +138,9 @@ namespace od
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
-        void removeAffectingLight(od::Light *light);
-        void addAffectingLight(od::Light *light);
-        void clearLightList();
+        virtual void removeAffectingLight(od::Light *light) override;
+        virtual void addAffectingLight(od::Light *light) override;
+        virtual void clearLightList() override;
 
 
     private:

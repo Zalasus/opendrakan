@@ -52,7 +52,7 @@ namespace odRfl
         virtual void onMoved(od::LevelObject &obj) override;
 
 
-    private:
+    protected:
 
         void _updateLighting(od::LevelObject &obj);
 

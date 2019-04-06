@@ -39,6 +39,11 @@ namespace odPhysics
             Light
         };
 
+        Handle();
+
+        inline void setLightCallback(od::LightCallback *c) { mLightCallback = c; }
+        inline od::LightCallback *getLightCallback() const { return mLightCallback; }
+
         /**
          * @brief Fast upcast. This avoids a dynamic_cast. Will return nullptr if not a layer handle.
          */
@@ -59,17 +64,17 @@ namespace odPhysics
          */
         virtual Type getHandleType() = 0;
 
+
+    protected:
+
+        od::LightCallback *mLightCallback;
+
     };
 
 
     class ObjectHandle : public Handle
     {
     public:
-
-        ObjectHandle();
-
-        inline void setLightCallback(od::LightCallback *c) { mLightCallback = c; }
-        inline od::LightCallback *getLightCallback() const { return mLightCallback; }
 
         virtual ObjectHandle *asObjectHandle() override;
 
@@ -90,12 +95,6 @@ namespace odPhysics
         virtual void setScale(const glm::vec3 &s) = 0;
 
         virtual od::LevelObject &getLevelObject() = 0;
-
-
-    protected:
-
-        od::LightCallback *mLightCallback;
-
     };
 
 

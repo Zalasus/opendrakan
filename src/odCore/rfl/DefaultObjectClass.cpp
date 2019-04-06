@@ -44,11 +44,12 @@ namespace odRfl
             _updateLighting(obj);
         }
 
-        // if we created a rendering handle, create collisionless physics handle, too. this way, lighting will still work on those models.
+        // if we created a rendering handle, create physics handle, too
         odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
-        if(mRenderNode != nullptr)
+        if(obj.getClass()->hasModel())
         {
-            mPhysicsHandle = ps.createObjectHandle(obj, true);
+            bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;
+            mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
         }
 
         mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderNode);

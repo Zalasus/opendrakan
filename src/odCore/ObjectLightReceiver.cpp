@@ -14,6 +14,8 @@
 
 #include <odCore/render/ObjectNode.h>
 
+#include <odCore/Logger.h>
+
 namespace od
 {
     ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::ObjectNode *on)
@@ -21,6 +23,18 @@ namespace od
     , mPhysicsHandle(oh)
     , mRenderNode(on)
     {
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setLightCallback(this);
+        }
+    }
+
+    ObjectLightReceiver::~ObjectLightReceiver()
+    {
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setLightCallback(nullptr);
+        }
     }
 
     void ObjectLightReceiver::removeAffectingLight(od::Light *light)
@@ -33,6 +47,8 @@ namespace od
 
     void ObjectLightReceiver::addAffectingLight(od::Light *light)
     {
+        Logger::info() << "aaa";
+
         if(mRenderNode != nullptr)
         {
             mRenderNode->addLight(light);
