@@ -52,8 +52,8 @@ Once CMake ran successfully, we can start the actual compilation process like th
 ```
 $ make
 ```
-Optionally, to speed things up by compiling on multiple threads, use `make -j<number of threads>`, where <number of threads>
-usually is your CPU core count.
+Optionally, to speed things up by compiling on multiple threads, use `make -j<number of threads>`, where `<number of threads>`
+usually is equal to your CPU core count.
 
 Wait for the compilation to finish. This might take a minute or two. This should leave you with a set of executables, among them *odOsg*, which contains both the engine and the renderer.
 
