@@ -11,7 +11,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <odCore/RefCounted.h>
+#include <odCore/render/RenderNode.h>
 
 namespace od
 {
@@ -34,7 +34,10 @@ namespace odRender
     };
 
 
-    class ObjectNode : public od::RefCounted
+    /**
+     * A render node for rendering a ModelNode.
+     */
+    class ObjectNode : public odRender::RenderNode
     {
     public:
 
@@ -43,16 +46,6 @@ namespace odRender
             Normal,
             Sky
         };
-
-        virtual ~ObjectNode() = default;
-
-        virtual glm::vec3 getPosition() = 0;
-        virtual glm::quat getOrientation() = 0;
-        virtual glm::vec3 getScale() = 0;
-
-        virtual void setPosition(const glm::vec3 &pos) = 0;
-        virtual void setOrientation(const glm::quat &orientation) = 0;
-        virtual void setScale(const glm::vec3 &scale) = 0;
 
         virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) = 0;
         virtual void setLocalLightMask(uint32_t localLightMask) = 0;

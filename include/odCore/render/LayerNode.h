@@ -20,6 +20,9 @@ namespace odRender
 
     class Geometry;
 
+    /**
+     * A simple render node for layers, rendering a single geometry with lighting.
+     */
     class LayerNode : public od::RefCounted
     {
     public:
