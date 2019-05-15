@@ -40,6 +40,10 @@ namespace odRender
     class GuiNode;
     class PhysicsDebugDrawer;
 
+    class Handle;
+    class Model;
+    class Geometry;
+
     /**
      * Interface for a renderer implementation.
      */
@@ -57,6 +61,10 @@ namespace odRender
 
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
+
+        virtual od::RefPtr<Handle> createHandle() = 0;
+        virtual od::RefPtr<Model> createModel() = 0;
+        virtual od::RefPtr<Geometry> createGeometry() = 0;
 
         virtual od::RefPtr<ObjectNode> createObjectNode(od::LevelObject &obj) = 0;
         virtual od::RefPtr<ModelNode> createModelNode(odDb::Model *model) = 0;

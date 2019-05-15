@@ -29,6 +29,8 @@
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Camera.h>
 #include <odOsg/render/GuiNode.h>
+#include <odOsg/render/Handle.h>
+#include <odOsg/render/Model.h>
 
 namespace odOsg
 {
@@ -137,6 +139,21 @@ namespace odOsg
     bool Renderer::isLightingEnabled() const
     {
         return mLightingEnabled;
+    }
+
+    od::RefPtr<odRender::Handle> Renderer::createHandle()
+    {
+        return nullptr;
+    }
+
+    od::RefPtr<odRender::Model> Renderer::createModel()
+    {
+        return nullptr;
+    }
+
+    od::RefPtr<odRender::Geometry> Renderer::createGeometry()
+    {
+        return nullptr;
     }
 
     od::RefPtr<odRender::ObjectNode> Renderer::createObjectNode(od::LevelObject &obj)
