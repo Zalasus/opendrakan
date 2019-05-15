@@ -11,6 +11,7 @@
 #include <mutex>
 
 #include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <odCore/RefCounted.h>
 
@@ -41,6 +42,14 @@ namespace odRender
          * callbacks. Trying trying to lock it again inside a callback will cause a deadlock.
          */
         virtual std::mutex &getMutex() = 0;
+
+        virtual glm::vec3 getPosition() = 0;
+        virtual glm::quat getOrientation() = 0;
+        virtual glm::vec3 getScale() = 0;
+
+        virtual void setPosition(const glm::vec3 &pos) = 0;
+        virtual void setOrientation(const glm::quat &orientation) = 0;
+        virtual void setScale(const glm::vec3 &scale) = 0;
 
         virtual Model *getModel() = 0;
         virtual void setModel(Model *model) = 0;
