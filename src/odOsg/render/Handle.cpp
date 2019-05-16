@@ -33,11 +33,11 @@ namespace odOsg
     }
 
 
-    class FrameListenerCallback : public osg::Callback
+    class HandleFrameListenerCallback : public osg::Callback
     {
     public:
 
-        FrameListenerCallback(Handle *handle, odRender::FrameListener *fl)
+        HandleFrameListenerCallback(Handle *handle, odRender::FrameListener *fl)
         : mHandle(handle)
         , mFrameListener(fl)
         , mLastSimTime(0.0)
@@ -235,7 +235,7 @@ namespace odOsg
 
         if(mFrameListener != nullptr && mUpdateCallback == nullptr)
         {
-            mUpdateCallback = new FrameListenerCallback(this, mFrameListener);
+            mUpdateCallback = new HandleFrameListenerCallback(this, mFrameListener);
             mTransform->addUpdateCallback(mUpdateCallback);
 
         }else if(mFrameListener == nullptr && mUpdateCallback != nullptr)
