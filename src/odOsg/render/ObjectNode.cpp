@@ -12,6 +12,8 @@
 #include <odCore/Exception.h>
 #include <odCore/Layer.h>
 
+#include <odCore/render/FrameListener.h>
+
 #include <odOsg/Constants.h>
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/ModelNode.h>

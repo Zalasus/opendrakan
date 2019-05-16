@@ -22,17 +22,7 @@ namespace odRender
 {
     class ModelNode;
     class Rig;
-
-    class FrameListener
-    {
-    public:
-
-        virtual ~FrameListener() = default;
-
-        virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) = 0;
-
-    };
-
+    class FrameListener;
 
     /**
      * A render node for rendering a ModelNode.

@@ -23,6 +23,7 @@
 #include <odCore/anim/MotionAccumulator.h>
 
 #include <odCore/render/ObjectNode.h>
+#include <odCore/render/FrameListener.h>
 
 namespace odAnim
 {

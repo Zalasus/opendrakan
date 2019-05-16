@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODOSG_RENDER_HANDLE_H_
 #define INCLUDE_ODOSG_RENDER_HANDLE_H_
 
+#include <memory>
+
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
 #include <osg/Uniform>
@@ -20,6 +22,7 @@ namespace odOsg
 {
     class Renderer;
     class Model;
+    class Rig;
 
     class Handle : public odRender::Handle
     {
@@ -73,10 +76,13 @@ namespace odOsg
 
         std::mutex mMutex;
         Model *mModel;
+        odRender::FrameListener *mFrameListener;
+        osg::ref_ptr<osg::Callback> mUpdateCallback;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<osg::Depth> mDepth;
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
         osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
+        std::unique_ptr<Rig> mRig;
     };
 
 }

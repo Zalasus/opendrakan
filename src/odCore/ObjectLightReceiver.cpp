@@ -47,8 +47,6 @@ namespace od
 
     void ObjectLightReceiver::addAffectingLight(od::Light *light)
     {
-        Logger::info() << "aaa";
-
         if(mRenderNode != nullptr)
         {
             mRenderNode->addLight(light);
