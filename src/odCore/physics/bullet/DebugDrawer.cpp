@@ -12,18 +12,24 @@
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 
+#include <odCore/render/Renderer.h>
+#include <odCore/render/Handle.h>
+#include <odCore/render/Geometry.h>
+
 namespace odBulletPhysics
 {
 
-    DebugDrawer::DebugDrawer(btCollisionWorld *collisionWorld)
-    : mCollisionWorld(collisionWorld)
+    DebugDrawer::DebugDrawer(odRender::Renderer *renderer, btCollisionWorld *collisionWorld)
+    : mRenderer(renderer)
+    , mCollisionWorld(collisionWorld)
     , mDebugMode(0)
-    , mLastMaximumLineCount(0)
     {
         if(mCollisionWorld == nullptr)
         {
             throw od::Exception("Created Bullet debug drawer without a collision world");
         }
+
+        mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
 
         mCollisionWorld->setDebugDrawer(this);
     }
@@ -35,9 +41,6 @@ namespace odBulletPhysics
 
     void DebugDrawer::drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color)
     {
-        mLineVertices.push_back(BulletAdapter::toGlm(from));
-        mLineVertices.push_back(BulletAdapter::toGlm(to));
-        mLineColors.push_back(BulletAdapter::toGlm(color));
     }
 
     void DebugDrawer::drawContactPoint(const btVector3 &pointOnB, const btVector3 &normalOnB, btScalar distance, int lifeTime, const btVector3 &color)
@@ -59,16 +62,9 @@ namespace odBulletPhysics
 
         if(mDebugMode == btIDebugDraw::DBG_NoDebug)
         {
-            mLineVertices.clear();
-            mLineVertices.shrink_to_fit();
-
-            mLineColors.clear();
-            mLineVertices.shrink_to_fit();
 
         }else
         {
-            mLineVertices.reserve(mLastMaximumLineCount*2);
-            mLineColors.reserve(mLastMaximumLineCount);
         }
     }
 
@@ -79,15 +75,7 @@ namespace odBulletPhysics
 
     void DebugDrawer::update(float relTime)
     {
-        mLineVertices.clear();
-        mLineColors.clear();
-
         mCollisionWorld->debugDrawWorld();
-
-        if(mLastMaximumLineCount < mLineColors.size())
-        {
-            mLastMaximumLineCount = mLineColors.size();
-        }
     }
 
 }

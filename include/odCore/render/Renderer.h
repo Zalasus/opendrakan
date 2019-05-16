@@ -44,6 +44,12 @@ namespace odRender
     class Model;
     class Geometry;
 
+    enum class RenderSpace
+    {
+        LEVEL,
+        GUI
+    };
+
     /**
      * Interface for a renderer implementation.
      */
@@ -62,7 +68,7 @@ namespace odRender
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
 
-        virtual od::RefPtr<Handle> createHandle() = 0;
+        virtual od::RefPtr<Handle> createHandle(RenderSpace space) = 0;
         virtual od::RefPtr<Model> createModel() = 0;
         virtual od::RefPtr<Geometry> createGeometry() = 0;
 

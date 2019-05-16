@@ -53,7 +53,7 @@ namespace odOsg
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
 
-        virtual od::RefPtr<odRender::Handle> createHandle() override;
+        virtual od::RefPtr<odRender::Handle> createHandle(odRender::RenderSpace space) override;
         virtual od::RefPtr<odRender::Model> createModel() override;
         virtual od::RefPtr<odRender::Geometry> createGeometry() override;
 

@@ -91,7 +91,7 @@ namespace od
 
 	    mDbManager = std::make_unique<odDb::DbManager>(*this);
         mRflManager = std::make_unique<odRfl::RflManager>(*this);
-        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>();
+        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(*this);
 
 	    mRflManager->onStartup();
 

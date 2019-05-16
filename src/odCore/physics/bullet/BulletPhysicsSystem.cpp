@@ -13,6 +13,8 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
+#include <odCore/Engine.h>
+
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>
 #include <odCore/physics/bullet/ObjectHandleImpl.h>
@@ -24,7 +26,7 @@
 namespace odBulletPhysics
 {
 
-    BulletPhysicsSystem::BulletPhysicsSystem()
+    BulletPhysicsSystem::BulletPhysicsSystem(od::Engine &engine)
     {
         mBroadphase = std::make_unique<btDbvtBroadphase>();
         mCollisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
@@ -36,7 +38,11 @@ namespace odBulletPhysics
         mGhostPairCallback = std::make_unique<btGhostPairCallback>();
         mCollisionWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
 
-        mDebugDrawer = std::make_unique<DebugDrawer>(mCollisionWorld.get());
+        odRender::Renderer *renderer = engine.getRenderer();
+        if(renderer != nullptr)
+        {
+            mDebugDrawer = std::make_unique<DebugDrawer>(renderer, mCollisionWorld.get());
+        }
     }
 
     BulletPhysicsSystem::~BulletPhysicsSystem()
@@ -123,6 +129,11 @@ namespace odBulletPhysics
 
     void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)
     {
+        if(mDebugDrawer == nullptr)
+        {
+            return;
+        }
+
         int debugDrawMode = enable ? btIDebugDraw::DBG_DrawWireframe : btIDebugDraw::DBG_NoDebug;
 
         mDebugDrawer->setDebugMode(debugDrawMode);
@@ -130,6 +141,11 @@ namespace odBulletPhysics
 
     bool BulletPhysicsSystem::isDebugDrawingEnabled()
     {
+        if(mDebugDrawer == nullptr)
+        {
+            return false;
+        }
+
         return mDebugDrawer->getDebugMode() != btIDebugDraw::DBG_NoDebug;
     }
 

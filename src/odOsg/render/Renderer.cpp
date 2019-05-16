@@ -141,9 +141,25 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    od::RefPtr<odRender::Handle> Renderer::createHandle()
+    od::RefPtr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
     {
-        return nullptr;
+        od::RefPtr<Handle> handle;
+
+        switch(space)
+        {
+        case odRender::RenderSpace::LEVEL:
+            handle = od::make_refd<Handle>(this, mObjects);
+            break;
+
+        case odRender::RenderSpace::GUI:
+            handle = od::make_refd<Handle>(this, mGuiRoot);
+            break;
+
+        default:
+            throw od::Exception("Unknown render space");
+        }
+
+        return handle.get();
     }
 
     od::RefPtr<odRender::Model> Renderer::createModel()
