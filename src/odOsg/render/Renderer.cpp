@@ -172,6 +172,17 @@ namespace odOsg
         return nullptr;
     }
 
+    od::RefPtr<odRender::Model> Renderer::createModelFromDb(odDb::Model *model)
+    {
+        if(model == nullptr)
+        {
+            throw od::InvalidArgumentException("Got null model");
+        }
+
+        return nullptr;
+    }
+
+
     od::RefPtr<odRender::ObjectNode> Renderer::createObjectNode(od::LevelObject &obj)
     {
         auto on = od::make_refd<ObjectNode>(this, mObjects);

@@ -24,6 +24,8 @@ namespace odRender
         virtual size_t getGeometryCount() = 0;
         virtual Geometry *getGeometry(size_t index) = 0;
 
+        virtual bool geometriesShareVertexData() = 0;
+
         virtual Geometry *createNewGeometry() = 0;
 
     };

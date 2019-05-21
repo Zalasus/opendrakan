@@ -17,6 +17,8 @@
 
 #include <odCore/RefCounted.h>
 
+#include <odCore/render/Array.h>
+
 namespace odRender
 {
     class Renderer;
@@ -57,6 +59,8 @@ namespace odBulletPhysics
         od::RefPtr<odRender::Handle> mRenderHandle;
         od::RefPtr<odRender::Geometry> mGeometry;
 
+        std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> mVertexArray;
+        std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> mColorArray;
     };
 
 
