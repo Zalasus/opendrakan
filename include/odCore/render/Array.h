@@ -40,8 +40,14 @@ namespace odRender
      * This allows the renderer to copy array data to a buffer upon acquisition, and copy it back once
      * the user releases the handler.
      *
+     * If the renderer can directly work with the data contained in an odRender::Array, it's implementations
+     * of this interface can simply ignore the acquire() and release() calls, or use them for synchronization
+     * only.
+     *
      * The renderer must implement this for each array element type used. Whether it uses a template for this,
      * too, or implements each one manually is up to the renderer.
+     *
+     * TODO: read-only access without write-back
      */
     template <typename T>
     class ArrayAccessHandler
@@ -50,7 +56,10 @@ namespace odRender
 
         typedef T _ElementType;
 
-        virtual ~ArrayAccessHandler() = default;
+        virtual ~ArrayAccessHandler()
+        {
+            release();
+        }
 
         virtual Array<_ElementType> &getArray() = 0;
 
@@ -78,7 +87,7 @@ namespace odRender
     public:
 
         explicit ArrayAccessor(std::unique_ptr<ArrayAccessHandler<T>> &&handler)
-        : mHandler(std::forward(handler))
+        : mHandler(std::move(handler))
         {
             if(mHandler == nullptr)
             {
@@ -100,6 +109,16 @@ namespace odRender
         T &operator[](int index)
         {
             return (*mArray)[index];
+        }
+
+        size_t size() const
+        {
+            return mArray->size();
+        }
+
+        void resize(size_t s)
+        {
+            mArray->resize(s);
         }
 
 

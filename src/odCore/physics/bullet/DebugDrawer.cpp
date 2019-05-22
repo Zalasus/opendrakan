@@ -51,13 +51,13 @@ namespace odBulletPhysics
         assert(mVertexArray != nullptr);
         assert(mColorArray != nullptr);
 
-        odRender::Array<glm::vec3> vertices = mVertexArray->getArray();
-        odRender::Array<glm::vec4> colors = mColorArray->getArray();
+        odRender::Array<glm::vec3> &vertices = mVertexArray->getArray();
+        odRender::Array<glm::vec4> &colors = mColorArray->getArray();
 
         vertices.push_back(BulletAdapter::toGlm(from));
         vertices.push_back(BulletAdapter::toGlm(to));
 
-        auto glmColor = BulletAdapter::toGlm(color);
+        auto glmColor = glm::vec4(BulletAdapter::toGlm(color), 1.0);
         colors.push_back(glmColor);
         colors.push_back(glmColor);
     }

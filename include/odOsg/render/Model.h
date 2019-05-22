@@ -10,6 +10,8 @@
 
 #include <vector>
 
+#include <osg/Geode>
+
 #include <odCore/render/Model.h>
 
 #include <odOsg/render/Geometry.h>

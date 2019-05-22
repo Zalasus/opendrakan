@@ -47,15 +47,15 @@ namespace odRender
 
         virtual void setHasBoneInfo(bool b) = 0;
         virtual bool hasBoneInfo() const = 0;
-        virtual Array<glm::vec4> &getBoneIndexArray() = 0;
-        virtual Array<glm::vec4> &getBoneWeightArray() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getBoneIndexArrayAccessHandler() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getBoneWeightArrayAccessHandler() = 0;
 
         virtual std::unique_ptr<ArrayAccessHandler<glm::vec3>> getVertexArrayAccessHandler() = 0;
         virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getColorArrayAccessHandler() = 0;
         virtual std::unique_ptr<ArrayAccessHandler<glm::vec3>> getNormalArrayAccessHandler() = 0;
         virtual std::unique_ptr<ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() = 0;
 
-        virtual std::unique_ptr<ArrayAccessHandler<>> getIndexArrayAccessHandler() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() = 0;
 
         virtual bool isIndexed() = 0;
         virtual PrimitiveType getPrimitiveType() = 0;

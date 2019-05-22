@@ -17,6 +17,7 @@
 
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Geometry.h>
+#include <odCore/render/Array.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -441,9 +442,9 @@ namespace od
         int32_t zMax = std::max(relLightPosition.z+lightRadius, (float)mHeight);
 
         odRender::Geometry *geometry = mLayerNode->getGeometry();
-        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
-        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
-        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+        odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());
 
         for(size_t i = 0; i < vertexArray.size(); ++i)
         {
@@ -473,8 +474,6 @@ namespace od
             glm::vec3 newVertexColor = lightIntensity * lightColor * cosTheta * attenuation;
             colorArray[i] += glm::vec4(newVertexColor, 0.0f);
         }
-
-        geometry->notifyColorDirty();
     }
 
     void Layer::_bakeLocalLayerLight()
@@ -485,9 +484,9 @@ namespace od
         }
 
         odRender::Geometry *geometry = mLayerNode->getGeometry();
-        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
-        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
-        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+        odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());
 
         if(normalArray.size() != vertexArray.size())
         {
@@ -578,8 +577,6 @@ namespace od
 
             colorArray[i] = glm::vec4(lightColor, 1.0);
         }
-
-        geometry->notifyColorDirty();
     }
 
     void Layer::_calculateNormalsInternal()

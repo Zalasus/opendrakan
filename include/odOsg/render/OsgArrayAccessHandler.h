@@ -5,8 +5,8 @@
  *      Author: zal
  */
 
-#ifndef INCLUDE_ODOSG_RENDER_OSGARRAY_H_
-#define INCLUDE_ODOSG_RENDER_OSGARRAY_H_
+#ifndef INCLUDE_ODOSG_RENDER_OSGARRAYACCESSHANDLER_H_
+#define INCLUDE_ODOSG_RENDER_OSGARRAYACCESSHANDLER_H_
 
 #include <osg/Array>
 
@@ -20,22 +20,22 @@ namespace odOsg
 {
 
     template <typename _OdType, typename _OsgArrayType>
-    class OsgTVecArrayAccessor : public odRender::TVecArrayAccessor<_OdType>
+    class OsgTVecArrayAccessHandler : public odRender::ArrayAccessHandler<_OdType>
     {
     public:
 
-        OsgTVecArrayAccessor(_OsgArrayType *osgArray)
+        OsgTVecArrayAccessHandler(_OsgArrayType *osgArray)
         : mOsgArray(osgArray)
         , mAcquired(false)
         {
         }
 
-        virtual ~OsgTVecArrayAccessor()
+        virtual ~OsgTVecArrayAccessHandler()
         {
             release();
         }
 
-        virtual odRender::Array<_ElementType> &getArray() override
+        virtual odRender::Array<_OdType> &getArray() override
         {
             if(!mAcquired)
             {
@@ -54,7 +54,7 @@ namespace odOsg
 
             mArray.resize(mOsgArray->size());
 
-            for(size_t i = 0; i < mOsgArray->size(); ++i)
+            for(size_t i = 0; i < mOsgArray.size(); ++i)
             {
                 mArray[i] = GlmAdapter::toGlm((*mOsgArray)[i]);
             }
@@ -71,7 +71,7 @@ namespace odOsg
 
             mOsgArray->resize(mArray.size());
 
-            for(size_t i = 0; i < mArray->size(); ++i)
+            for(size_t i = 0; i < mArray.size(); ++i)
             {
                 (*mOsgArray)[i] = GlmAdapter::toOsg(mArray[i]);
             }
@@ -79,24 +79,26 @@ namespace odOsg
             mArray.clear();
             mArray.shrink_to_fit();
 
+            mOsgArray->dirty();
+
             mAcquired = false;
         }
 
 
-    private:
+    protected:
 
-        odRender::Array<_ElementType> mArray;
+        odRender::Array<_OdType> mArray;
         osg::ref_ptr<_OsgArrayType> mOsgArray;
 
         bool mAcquired;
 
     };
 
-    typedef OsgTVecArrayAccessor<glm::vec2, osg::Vec2Array> OsgVec2ArrayAccessor;
-    typedef OsgTVecArrayAccessor<glm::vec3, osg::Vec3Array> OsgVec3ArrayAccessor;
-    typedef OsgTVecArrayAccessor<glm::vec4, osg::Vec4Array> OsgVec4ArrayAccessor;
-
+    // TODO: only forward specialize these and put explicit instantiation into source file
+    typedef OsgTVecArrayAccessHandler<glm::vec2, osg::Vec2Array> OsgVec2ArrayAccessHandler;
+    typedef OsgTVecArrayAccessHandler<glm::vec3, osg::Vec3Array> OsgVec3ArrayAccessHandler;
+    typedef OsgTVecArrayAccessHandler<glm::vec4, osg::Vec4Array> OsgVec4ArrayAccessHandler;
 }
 
 
-#endif /* INCLUDE_ODOSG_RENDER_OSGARRAY_H_ */
+#endif /* INCLUDE_ODOSG_RENDER_OSGARRAYACCESSHANDLER_H_ */
