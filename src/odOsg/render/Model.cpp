@@ -7,12 +7,16 @@
 
 #include <odOsg/render/Model.h>
 
+#include <algorithm>
+
 #include <odCore/Exception.h>
+#include <odCore/Downcast.h>
 
 namespace odOsg
 {
 
     Model::Model()
+    : mGeode(new osg::Geode)
     {
     }
 
@@ -29,6 +33,31 @@ namespace odOsg
         }
 
         return mGeometries[index];
+    }
+
+    void Model::addGeometry(odRender::Geometry *g)
+    {
+        if(g == nullptr)
+        {
+            return;
+        }
+
+        auto geo = od::confident_downcast<Geometry>(g);
+
+        mGeometries.emplace_back(g);
+
+        mGeode->addDrawable(geo->getOsgGeometry());
+    }
+
+    void Model::removeGeometry(odRender::Geometry *g)
+    {
+        auto it = std::find(mGeometries.begin(), mGeometries.end(), g);
+        if(it != mGeometries.end())
+        {
+            mGeode->removeDrawable((*it)->getOsgGeometry());
+
+            mGeometries.erase(it);
+        }
     }
 
     odRender::Geometry *Model::createNewGeometry()

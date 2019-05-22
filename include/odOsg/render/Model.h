@@ -29,6 +29,8 @@ namespace odOsg
 
         virtual size_t getGeometryCount() override;
         virtual odRender::Geometry *getGeometry(size_t index) override;
+        virtual void addGeometry(odRender::Geometry *g) override;
+        virtual void removeGeometry(odRender::Geometry *g) override;
 
         virtual odRender::Geometry *createNewGeometry() override;
 

@@ -32,7 +32,7 @@ namespace odOsg
          */
         Geometry(osg::Geometry *geode);
 
-        inline osg::Geometry *getOsgGeode() { return mGeometry; }
+        inline osg::Geometry *getOsgGeometry() { return mGeometry; }
 
         virtual void setHasBoneInfo(bool b) override;
         virtual bool hasBoneInfo() const override;
@@ -45,8 +45,6 @@ namespace odOsg
         virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() override;
 
         virtual std::unique_ptr<odRender::ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() override;
-
-        void addTexture(Texture *texture);
 
 
     private:

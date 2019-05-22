@@ -22,6 +22,8 @@
 namespace odRender
 {
 
+    class Texture;
+
     enum class PrimitiveType
     {
         LINES,
@@ -56,6 +58,8 @@ namespace odRender
         virtual std::unique_ptr<ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() = 0;
 
         virtual std::unique_ptr<ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() = 0;
+
+        virtual void setTexture(Texture *texture) = 0;
 
         virtual bool isIndexed() = 0;
         virtual PrimitiveType getPrimitiveType() = 0;
