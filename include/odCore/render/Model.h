@@ -17,6 +17,13 @@ namespace odRender
 
     class Geometry;
 
+    enum class LightingMode
+    {
+        OFF,
+        AMBIENT_DIFFUSE,
+        AMBIENT_DIFFUSE_SPECULAR
+    };
+
     class Model : public od::RefCounted
     {
     public:
@@ -28,7 +35,7 @@ namespace odRender
 
         virtual bool geometriesShareVertexData() = 0;
 
-        virtual Geometry *createNewGeometry() = 0;
+        virtual void setLightingMode(LightingMode lm) = 0;
 
     };
 

@@ -50,7 +50,9 @@ namespace odOsg
 		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
 		inline void setUseClampedTextures(bool b) { mUseClampedTextures = b; }
 
-		void setVertexVector(VertexIterator begin, VertexIterator end);
+		void setVertexVector(VertexIterator begin, VertexIterator end); /// < @brief Copied the passed range to the internal vertex vector
+		void setVertexVector(std::vector<glm::vec3> &&v); ///< @brief Moves the passed vertex vector to the internal one without copying.
+
 		void setPolygonVector(PolygonIterator begin, PolygonIterator end);
 		void setBoneAffectionVector(BoneAffectionIterator begin, BoneAffectionIterator end);
 

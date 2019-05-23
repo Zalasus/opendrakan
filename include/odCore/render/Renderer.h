@@ -33,15 +33,10 @@ namespace odRender
 {
 
     class Camera;
-    class ObjectNode;
-    class ModelNode;
-    class LayerNode;
     class Texture;
     class Image;
     class RendererEventListener;
     class GuiNode;
-    class PhysicsDebugDrawer;
-
     class Handle;
     class Model;
 
@@ -76,9 +71,6 @@ namespace odRender
         virtual od::RefPtr<Model> createModelFromDb(odDb::Model *model) = 0;
         virtual od::RefPtr<Model> createModelFromLayer(od::Layer *layer) = 0;
 
-        virtual od::RefPtr<ObjectNode> createObjectNode(od::LevelObject &obj) = 0;
-        virtual od::RefPtr<ModelNode> createModelNode(odDb::Model *model) = 0;
-        virtual od::RefPtr<LayerNode> createLayerNode(od::Layer *layer) = 0;
         virtual od::RefPtr<Image> createImage(odDb::Texture *dbTexture) = 0;
         virtual od::RefPtr<Texture> createTexture(Image *image) = 0;
         virtual od::RefPtr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;

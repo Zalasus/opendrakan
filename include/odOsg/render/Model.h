@@ -32,7 +32,9 @@ namespace odOsg
         virtual void addGeometry(odRender::Geometry *g) override;
         virtual void removeGeometry(odRender::Geometry *g) override;
 
-        virtual odRender::Geometry *createNewGeometry() override;
+        virtual bool geometriesShareVertexData() override;
+
+        virtual void setLightingMode(odRender::LightingMode lm) override;
 
 
     private:

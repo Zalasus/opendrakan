@@ -31,10 +31,10 @@ namespace od
 
 namespace odOsg
 {
-    class ModelNode;
     class Texture;
     class Camera;
     class GuiNode;
+    class Model;
 
     class Renderer : public odRender::Renderer
     {
@@ -58,10 +58,8 @@ namespace odOsg
         virtual od::RefPtr<odRender::Geometry> createGeometry() override;
 
         virtual od::RefPtr<odRender::Model> createModelFromDb(odDb::Model *model) override;
+        virtual od::RefPtr<odRender::Model> createModelFromLayer(od::Layer *layer) override;
 
-        virtual od::RefPtr<odRender::ObjectNode> createObjectNode(od::LevelObject &obj) override;
-        virtual od::RefPtr<odRender::ModelNode> createModelNode(odDb::Model *model) override;
-        virtual od::RefPtr<odRender::LayerNode> createLayerNode(od::Layer *layer) override;
         virtual od::RefPtr<odRender::Image> createImage(odDb::Texture *dbTexture) override;
         virtual od::RefPtr<odRender::Texture> createTexture(odRender::Image *image) override;
         virtual od::RefPtr<odRender::GuiNode> createGuiNode(odGui::Widget *widget) override;
@@ -81,6 +79,9 @@ namespace odOsg
         void _setupGuiStuff();
 
         void _threadedRender();
+
+        od::RefPtr<Model> _buildSingleLodModelNode(odDb::Model *model);
+        od::RefPtr<Model> _buildMultiLodModelNode(odDb::Model *model);
 
         ShaderFactory mShaderFactory;
         std::thread mRenderThread;

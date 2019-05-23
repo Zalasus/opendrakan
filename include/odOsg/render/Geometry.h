@@ -46,6 +46,8 @@ namespace odOsg
 
         virtual std::unique_ptr<odRender::ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() override;
 
+        virtual void setTexture(odRender::Texture *texture) override;
+
 
     private:
 

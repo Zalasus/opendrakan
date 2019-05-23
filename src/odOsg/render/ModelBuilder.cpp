@@ -49,6 +49,11 @@ namespace odOsg
         mVertices.assign(begin, end);
     }
 
+    void ModelBuilder::setVertexVector(std::vector<glm::vec3> &&v)
+    {
+        mVertices = v;
+    }
+
     void ModelBuilder::setPolygonVector(PolygonIterator begin, PolygonIterator end)
     {
         // need to iterate over polygons and convert quads to triangles and duplicate polygon if it is double-sided
@@ -276,9 +281,9 @@ namespace odOsg
                 od::RefPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
                 odRender::TextureUsage textureUsage = mUseClampedTextures ? odRender::TextureUsage::Layer : odRender::TextureUsage::Model; // FIXME: rename property
                 od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderImage(mRenderer)->getTextureForUsage(textureUsage);
-                auto odOsgTexture = od::confident_downcast<Texture>(renderTexture.get());
                 geometry->setTexture(renderTexture);
 
+                auto odOsgTexture = od::confident_downcast<Texture>(renderTexture.get());
                 osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
                 geomSs->setTextureAttribute(0, odOsgTexture->getOsgTexture());
 
@@ -296,6 +301,8 @@ namespace odOsg
                 drawElements->addElement(it->vertexIndices[vn]);
             }
         }
+
+        return model;
     }
 
     void ModelBuilder::_buildNormals()
@@ -328,7 +335,7 @@ namespace odOsg
 
     void ModelBuilder::_makeIndicesUniqueAndGenerateUvs()
     {
-        // for flat shading, we can't use shared vertices. this method will duplicate all shared vertices
+        // for flat shading, we can't use shared vertices. this method will duplicate all shared vertices.
         //  since that makes disambiguating UVs unnecessary, we create the UV array here, too.
 
         std::vector<bool> visited(mVertices.size(), false);
@@ -349,7 +356,7 @@ namespace odOsg
                     mVertices.push_back(mVertices.at(vertIndex));
 
                     // if there is bone affection info, duplicate that too
-                    if(mGeometry.hasBoneInfo())
+                    if(mHasBoneInfo)
                     {
                         mBoneIndices.push_back(mBoneIndices[vertIndex]);
                         mBoneWeights.push_back(mBoneWeights[vertIndex]);
@@ -378,7 +385,7 @@ namespace odOsg
     {
         // iterate over triangles and duplicate shared vertices when their uv coordinates are incompatible.
         //  NOTE: we share VBOs between all geometries. only IBOs are unique per texture. thus, we only need to
-        //         make sure UVs are unique per vertex, not textures.
+        //        make sure UVs are unique per vertex, not textures as those are not a vertex attribute.
 
         mUvCoords.resize(mVertices.size(), glm::vec2(0.0));
 
@@ -404,7 +411,7 @@ namespace odOsg
                     mNormals.push_back(mNormals[vertIndex]);
 
                     // if there is bone affection info, duplicate that too
-                    if(mGeometry.hasBoneInfo())
+                    if(mHasBoneInfo)
                     {
                         mBoneIndices.push_back(mBoneIndices[vertIndex]);
                         mBoneWeights.push_back(mBoneWeights[vertIndex]);

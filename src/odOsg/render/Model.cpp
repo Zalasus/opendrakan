@@ -60,9 +60,32 @@ namespace odOsg
         }
     }
 
-    odRender::Geometry *Model::createNewGeometry()
+    bool Model::geometriesShareVertexData()
     {
-        return nullptr;
+        return false;
+    }
+
+    void Model::setLightingMode(odRender::LightingMode lm)
+    {
+        osg::StateSet *ss = mGeode->getOrCreateStateSet();
+
+        switch(lm)
+        {
+        case odRender::LightingMode::OFF:
+            ss->removeDefine("LIGHTING");
+            ss->removeDefine("SPECULAR");
+            break;
+
+        case odRender::LightingMode::AMBIENT_DIFFUSE:
+            ss->setDefine("LIGHTING");
+            ss->removeDefine("SPECULAR");
+            break;
+
+        case odRender::LightingMode::AMBIENT_DIFFUSE_SPECULAR:
+            ss->setDefine("LIGHTING");
+            ss->setDefine("SPECULAR");
+            break;
+        }
     }
 
 }
