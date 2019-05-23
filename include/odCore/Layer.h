@@ -19,7 +19,7 @@
 
 #include <odCore/db/Asset.h>
 
-#include <odCore/render/LayerNode.h>
+#include <odCore/render/Handle.h>
 
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
 
@@ -175,7 +175,8 @@ namespace od
 
         AxisAlignedBoundingBox mBoundingBox;
 
-        od::RefPtr<odRender::LayerNode> mLayerNode;
+        od::RefPtr<odRender::Handle> mRenderHandle;
+        od::RefPtr<odRender::Model> mRenderModel;
         od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
 
         std::vector<glm::vec3> mLocalNormals; // temporary array, unused right now

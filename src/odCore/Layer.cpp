@@ -18,6 +18,7 @@
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Geometry.h>
 #include <odCore/render/Array.h>
+#include <odCore/render/Model.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -184,7 +185,12 @@ namespace od
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr)
         {
-            mLayerNode = renderer->createLayerNode(this);
+            mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
+            mRenderModel = renderer->createModelFromLayer(this);
+
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setModel(mRenderModel);
+            mRenderHandle->setPosition(getOrigin());
         }
 
         mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
@@ -195,7 +201,8 @@ namespace od
 
     void Layer::despawn()
     {
-        mLayerNode = nullptr;
+        mRenderHandle = nullptr;
+        mRenderModel = nullptr;
         mPhysicsHandle = nullptr;
     }
 
@@ -390,9 +397,9 @@ namespace od
 
         // let's hope the light is dynamic, cause otherwise we have no way of easily removing the baked light from the vertices
 
-        if(light->isDynamic() && mLayerNode != nullptr)
+        if(light->isDynamic() && mRenderHandle != nullptr)
         {
-            mLayerNode->removeLight(light);
+            mRenderHandle->removeLight(light);
         }
     }
 
@@ -410,24 +417,31 @@ namespace od
 
         }else
         {
-            if(mLayerNode != nullptr)
+            if(mRenderHandle != nullptr)
             {
-                mLayerNode->addLight(light);
+                mRenderHandle->addLight(light);
             }
         }
     }
 
     void Layer::clearLightList()
     {
-        mLayerNode->clearLightList();
+        mRenderHandle->clearLightList();
     }
 
     void Layer::_bakeStaticLight(od::Light *light)
     {
-        if(light == nullptr || mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
+        if(light == nullptr || mRenderModel == nullptr)
         {
             return;
         }
+
+        if(!mRenderModel->hasSharedVertexArrays())
+        {
+            throw od::Exception("Baking layer lighting only works with shared vertex arrays");
+        }
+
+        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
 
         glm::vec3 relLightPosition = light->getPosition() - getOrigin(); // relative to layer origin
         float lightRadius = light->getRadius();
@@ -441,7 +455,6 @@ namespace od
         int32_t zMin = std::max(relLightPosition.z-lightRadius, 0.0f);
         int32_t zMax = std::max(relLightPosition.z+lightRadius, (float)mHeight);
 
-        odRender::Geometry *geometry = mLayerNode->getGeometry();
         odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());
@@ -478,12 +491,17 @@ namespace od
 
     void Layer::_bakeLocalLayerLight()
     {
-        if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
+        if(mRenderModel == nullptr)
         {
             return;
         }
 
-        odRender::Geometry *geometry = mLayerNode->getGeometry();
+        if(!mRenderModel->hasSharedVertexArrays())
+        {
+            throw od::Exception("Baking layer lighting only works with shared vertex arrays");
+        }
+
+        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
         odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());

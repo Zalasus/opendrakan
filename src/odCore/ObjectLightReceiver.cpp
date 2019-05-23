@@ -12,16 +12,16 @@
 #include <odCore/physics/Handles.h>
 #include <odCore/physics/PhysicsSystem.h>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
 
 #include <odCore/Logger.h>
 
 namespace od
 {
-    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::ObjectNode *on)
+    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::Handle *renderHandle)
     : mPhysicsSystem(ps)
     , mPhysicsHandle(oh)
-    , mRenderNode(on)
+    , mRenderHandle(renderHandle)
     {
         if(mPhysicsHandle != nullptr)
         {
@@ -39,25 +39,25 @@ namespace od
 
     void ObjectLightReceiver::removeAffectingLight(od::Light *light)
     {
-        if(mRenderNode != nullptr)
+        if(mRenderHandle != nullptr)
         {
-            mRenderNode->removeLight(light);
+            mRenderHandle->removeLight(light);
         }
     }
 
     void ObjectLightReceiver::addAffectingLight(od::Light *light)
     {
-        if(mRenderNode != nullptr)
+        if(mRenderHandle != nullptr)
         {
-            mRenderNode->addLight(light);
+            mRenderHandle->addLight(light);
         }
     }
 
     void ObjectLightReceiver::clearLightList()
     {
-        if(mRenderNode != nullptr)
+        if(mRenderHandle != nullptr)
         {
-            mRenderNode->clearLightList();
+            mRenderHandle->clearLightList();
         }
     }
 

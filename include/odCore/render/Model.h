@@ -33,7 +33,7 @@ namespace odRender
         virtual void addGeometry(Geometry *g) = 0;
         virtual void removeGeometry(Geometry *g) = 0;
 
-        virtual bool geometriesShareVertexData() = 0;
+        virtual bool hasSharedVertexArrays() = 0;
 
         virtual void setLightingMode(LightingMode lm) = 0;
 
