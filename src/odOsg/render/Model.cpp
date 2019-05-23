@@ -60,9 +60,9 @@ namespace odOsg
         }
     }
 
-    bool Model::geometriesShareVertexData()
+    bool Model::hasSharedVertexArrays()
     {
-        return false;
+        return mHasSharedVertexArrays;
     }
 
     void Model::setLightingMode(odRender::LightingMode lm)

@@ -186,6 +186,7 @@ namespace odOsg
 
         // TODO: if textureCount is 1, use a more lightweight Model implementation
         auto model = od::make_refd<Model>();
+        model->setHasSharedVertexArrays(true);
 
         // count number of triangles per texture.
         //  this will allow us to preallocate the IBO array as well as pick between int/short/byte arrays
