@@ -67,7 +67,7 @@ namespace odRender
 
         virtual od::RefPtr<Handle> createHandle(RenderSpace space) = 0;
         virtual od::RefPtr<Model> createModel() = 0;
-        virtual od::RefPtr<Geometry> createGeometry() = 0;
+        virtual od::RefPtr<Geometry> createGeometry(PrimitiveType primitiveType, bool indexed) = 0;
 
         virtual od::RefPtr<Model> createModelFromDb(odDb::Model *model) = 0;
         virtual od::RefPtr<Model> createModelFromLayer(od::Layer *layer) = 0;

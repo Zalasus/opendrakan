@@ -262,8 +262,6 @@ namespace odOsg
                     osgGeometry->setVertexAttribArray(Constants::ATTRIB_WEIGHT_LOCATION, osgBoneWeightArray, osg::Array::BIND_PER_VERTEX);
                 }
 
-                auto geometry = od::make_refd<Geometry>(osgGeometry);
-                model->addGeometry(geometry);
 
                 size_t vertsForThisTexture = triangleCountsPerTexture[textureIndex] * 3;
                 if(mVertices.size() <= 0xff)
@@ -290,7 +288,6 @@ namespace odOsg
                 od::RefPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
                 odRender::TextureUsage textureUsage = mUseClampedTextures ? odRender::TextureUsage::Layer : odRender::TextureUsage::Model; // FIXME: rename property
                 od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderImage(mRenderer)->getTextureForUsage(textureUsage);
-                geometry->setTexture(renderTexture);
 
                 auto odOsgTexture = od::confident_downcast<Texture>(renderTexture.get());
                 osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
@@ -301,6 +298,10 @@ namespace odOsg
                     geomSs->setRenderBinDetails(1, "DepthSortedBin");
                     geomSs->setMode(GL_BLEND, osg::StateAttribute::ON);
                 }
+
+                auto geometry = od::make_refd<Geometry>(osgGeometry);
+                geometry->setTexture(renderTexture);
+                model->addGeometry(geometry);
 
                 lastTexture = it->texture;
             }

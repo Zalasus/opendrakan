@@ -55,7 +55,7 @@ namespace odOsg
 
         virtual od::RefPtr<odRender::Handle> createHandle(odRender::RenderSpace space) override;
         virtual od::RefPtr<odRender::Model> createModel() override;
-        virtual od::RefPtr<odRender::Geometry> createGeometry() override;
+        virtual od::RefPtr<odRender::Geometry> createGeometry(odRender::PrimitiveType primitiveType, bool indexed) override;
 
         virtual od::RefPtr<odRender::Model> createModelFromDb(odDb::Model *model) override;
         virtual od::RefPtr<odRender::Model> createModelFromLayer(od::Layer *layer) override;

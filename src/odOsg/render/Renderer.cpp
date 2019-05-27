@@ -173,12 +173,14 @@ namespace odOsg
 
     od::RefPtr<odRender::Model> Renderer::createModel()
     {
-        return nullptr;
+        auto model = od::make_refd<Model>();
+
+        return model.get();
     }
 
-    od::RefPtr<odRender::Geometry> Renderer::createGeometry()
+    od::RefPtr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
     {
-        auto newGeometry = od::make_refd<Geometry>();
+        auto newGeometry = od::make_refd<Geometry>(primitiveType, indexed);
 
         return newGeometry.get();
     }
@@ -536,8 +538,6 @@ namespace odOsg
 
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
-            auto geometry = od::make_refd<Geometry>();
-
             ModelBuilder mb(this, model->getName() + " (LOD '" + it->lodName + "')", model->getAssetProvider());
             mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
 

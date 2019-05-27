@@ -74,9 +74,38 @@ namespace odOsg
 
     };
 
+    /**
+     * @brief Custom access handler for the vertex array. Will update element count if not using indexed rendering.
+     */
+    class DAVertexArrayAccessHandler : public OsgVec3ArrayAccessHandler
+    {
+    public:
 
-    Geometry::Geometry()
-    : mGeometry(new osg::Geometry)
+        DAVertexArrayAccessHandler(osg::Vec3Array *array, osg::DrawArrays *drawArrays)
+        : OsgVec3ArrayAccessHandler(array)
+        , mDrawArrays(drawArrays)
+        {
+        }
+
+        virtual void release() override
+        {
+            OsgVec3ArrayAccessHandler::release();
+
+            mDrawArrays->setCount(mOsgArray->size());
+        }
+
+
+    private:
+
+        osg::ref_ptr<osg::DrawArrays> mDrawArrays;
+
+    };
+
+
+    Geometry::Geometry(odRender::PrimitiveType primitiveType, bool indexed)
+    : mPrimitiveType(primitiveType)
+    , mIndexed(indexed)
+    , mGeometry(new osg::Geometry)
     , mOsgVertexArray(new osg::Vec3Array)
     , mOsgColorArray(new osg::Vec4Array)
     , mOsgNormalArray(new osg::Vec3Array)
@@ -89,6 +118,32 @@ namespace odOsg
         mGeometry->setColorArray(mOsgColorArray);
         mGeometry->setNormalArray(mOsgNormalArray);
         mGeometry->setTexCoordArray(0, mOsgTextureCoordArray);
+
+        GLenum glPrimitiveType;
+        switch(primitiveType)
+        {
+        case odRender::PrimitiveType::LINES:
+            glPrimitiveType = GL_LINES;
+            break;
+
+        case odRender::PrimitiveType::TRIANGLES:
+            glPrimitiveType = GL_TRIANGLES;
+            break;
+
+        default:
+            throw od::UnsupportedException("Unsupported or unknown primitive type");
+        }
+
+        if(indexed)
+        {
+            mPrimitiveSet = new osg::DrawElementsUInt(glPrimitiveType);
+
+        }else
+        {
+            mPrimitiveSet = new osg::DrawArrays(glPrimitiveType);
+        }
+        mGeometry->addPrimitiveSet(mPrimitiveSet);
+
     }
 
     Geometry::Geometry(osg::Geometry *geometry)
@@ -129,6 +184,28 @@ namespace odOsg
         {
             throw od::Exception("Passed geometry had one of weight/index array, but not the other. Must have either none or both");
         }
+
+        if(mGeometry->getNumPrimitiveSets() == 0)
+        {
+            throw od::Exception("Passed geometry had no primitive set");
+        }
+        mPrimitiveSet = mGeometry->getPrimitiveSet(0);
+
+        switch(mPrimitiveSet->getMode())
+        {
+        case GL_LINES:
+            mPrimitiveType = odRender::PrimitiveType::LINES;
+            break;
+
+        case GL_TRIANGLES:
+            mPrimitiveType = odRender::PrimitiveType::TRIANGLES;
+            break;
+
+        default:
+            throw od::UnsupportedException("Unsupported or unknown primitive type");
+        }
+
+        mIndexed = (dynamic_cast<osg::DrawArrays*>(mPrimitiveSet.get()) != nullptr); // ugh...
     }
 
     void Geometry::setHasBoneInfo(bool b)
@@ -160,7 +237,16 @@ namespace odOsg
 
     std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> Geometry::getVertexArrayAccessHandler()
     {
-        return std::make_unique<OsgVec3ArrayAccessHandler>(mOsgVertexArray);
+        if(mIndexed)
+        {
+            osg::DrawArrays *drawArrays = od::confident_downcast<osg::DrawArrays>(mPrimitiveSet.get());
+
+            return std::make_unique<DAVertexArrayAccessHandler>(mOsgVertexArray, drawArrays);
+
+        }else
+        {
+            return std::make_unique<OsgVec3ArrayAccessHandler>(mOsgVertexArray);
+        }
     }
 
     std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> Geometry::getColorArrayAccessHandler()
@@ -210,11 +296,11 @@ namespace odOsg
 
     bool Geometry::usesIndexedRendering()
     {
-        return true;
+        return mIndexed;
     }
 
     odRender::PrimitiveType Geometry::getPrimitiveType()
     {
-        return odRender::PrimitiveType::TRIANGLES;
+        return mPrimitiveType;
     }
 }

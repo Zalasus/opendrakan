@@ -17,6 +17,7 @@
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Handle.h>
 #include <odCore/render/Geometry.h>
+#include <odCore/render/Model.h>
 
 namespace odBulletPhysics
 {
@@ -33,10 +34,19 @@ namespace odBulletPhysics
             throw od::Exception("Created Bullet debug drawer without a collision world");
         }
 
-        mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
-
+        mGeometry = renderer->createGeometry(odRender::PrimitiveType::LINES, false);
         mVertexArray = mGeometry->getVertexArrayAccessHandler();
         mColorArray = mGeometry->getColorArrayAccessHandler();
+
+        mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
+
+        auto model = renderer->createModel();
+        model->addGeometry(mGeometry);
+
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setModel(model);
+        }
 
         mCollisionWorld->setDebugDrawer(this);
     }

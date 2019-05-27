@@ -25,7 +25,7 @@ namespace odOsg
         /**
          * @brief Constructs a Geometry which will create it's own osg::Geometry and arrays.
          */
-        Geometry();
+        Geometry(odRender::PrimitiveType primitiveType, bool indexed);
 
         /**
          * @brief Constructs a Geometry using a provided osg::Geometry and it's arrays.
@@ -56,6 +56,9 @@ namespace odOsg
 
         void _buildOsgObjects();
 
+        odRender::PrimitiveType mPrimitiveType;
+        bool mIndexed;
+
         osg::ref_ptr<osg::Geometry> mGeometry;
         osg::ref_ptr<osg::Vec3Array> mOsgVertexArray;
         osg::ref_ptr<osg::Vec4Array> mOsgColorArray;
@@ -64,6 +67,8 @@ namespace odOsg
 
         osg::ref_ptr<osg::Vec4Array> mOsgBoneIndexArray;
         osg::ref_ptr<osg::Vec4Array> mOsgBoneWeightArray;
+
+        osg::ref_ptr<osg::PrimitiveSet> mPrimitiveSet;
 
         od::RefPtr<Texture> mTexture;
     };
