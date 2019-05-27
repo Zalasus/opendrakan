@@ -12,6 +12,7 @@
 
 #include <osg/Geometry>
 #include <osg/Texture2D>
+#include <osg/FrontFace>
 
 #include <odCore/Exception.h>
 #include <odCore/Downcast.h>
@@ -38,7 +39,7 @@ namespace odOsg
     , mGeometryName(geometryName)
     , mAssetProvider(assetProvider)
     , mSmoothNormals(true)
-    , mNormalsFromCcw(false)
+    , mCWPolys(false)
     , mUseClampedTextures(false)
     , mHasBoneInfo(false)
     {
@@ -79,13 +80,17 @@ namespace odOsg
             tri.vertexIndices[0] = it->vertexIndices[0];
             tri.vertexIndices[1] = it->vertexIndices[1];
             tri.vertexIndices[2] = it->vertexIndices[2];
+
+            if(mCWPolys)
+            {
+                tri.flip();
+            }
+
             mTriangles.push_back(tri);
 
             if(it->doubleSided)
             {
-                // swapping verts 0 and 2 reverses winding order, thus flipping the triangle
-                std::swap(tri.vertexIndices[0], tri.vertexIndices[2]);
-                std::swap(tri.uvCoords[0], tri.uvCoords[2]);
+                tri.flip();
                 mTriangles.push_back(tri);
             }
 
@@ -98,12 +103,17 @@ namespace odOsg
                 tri.vertexIndices[0] = it->vertexIndices[0];
                 tri.vertexIndices[1] = it->vertexIndices[2];
                 tri.vertexIndices[2] = it->vertexIndices[3];
+
+                if(mCWPolys)
+                {
+                    tri.flip();
+                }
+
                 mTriangles.push_back(tri);
 
                 if(it->doubleSided)
                 {
-                    std::swap(tri.vertexIndices[0], tri.vertexIndices[2]);
-                    std::swap(tri.uvCoords[0], tri.uvCoords[2]);
+                    tri.flip();
                     mTriangles.push_back(tri);
                 }
             }
@@ -316,17 +326,19 @@ namespace odOsg
     void ModelBuilder::_buildNormals()
     {
         // calculate normals per triangle, sum them up for each vertex and normalize them in the end
-        //  TODO: perhaps consider maximum crease here?
 
         mNormals.resize(mVertices.size(), glm::vec3(0.0));
 
         for(auto it = mTriangles.begin(); it != mTriangles.end(); ++it)
         {
-            // note: Drakan uses CW orientation by default
-            glm::vec3 normal = glm::cross((mVertices[it->vertexIndices[2]] - mVertices[it->vertexIndices[0]])
-                               , (mVertices[it->vertexIndices[1]] - mVertices[it->vertexIndices[0]]));
+            // normal for a triangle in CCW orientation
+            glm::vec3 normal = glm::cross(  (mVertices[it->vertexIndices[1]] - mVertices[it->vertexIndices[0]])
+                                          , (mVertices[it->vertexIndices[2]] - mVertices[it->vertexIndices[0]]));
 
-            if(mNormalsFromCcw) normal *= -1;
+            if(mCWPolys)
+            {
+                normal *= -1;
+            }
 
             for(size_t i = 0; i < 3; ++i)
             {

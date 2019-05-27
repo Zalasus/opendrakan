@@ -47,7 +47,7 @@ namespace odOsg
 		ModelBuilder(Renderer *renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
-		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
+		inline void setCWPolygonFlag(bool b) { mCWPolys = b; }
 		inline void setUseClampedTextures(bool b) { mUseClampedTextures = b; }
 
 		void setVertexVector(VertexIterator begin, VertexIterator end); /// < @brief Copied the passed range to the internal vertex vector
@@ -67,6 +67,13 @@ namespace odOsg
 			size_t vertexIndices[3];
 			glm::vec2 uvCoords[3];
 			odDb::AssetRef texture;
+
+			void flip()
+			{
+			    // swapping verts 0 and 2 reverses winding order, thus flipping the triangle
+			    std::swap(vertexIndices[0], vertexIndices[2]);
+			    std::swap(uvCoords[0], uvCoords[2]);
+			}
 		};
 
 		void _buildNormals();
@@ -79,7 +86,7 @@ namespace odOsg
 		odDb::AssetProvider &mAssetProvider;
 
 		bool mSmoothNormals;
-		bool mNormalsFromCcw;
+		bool mCWPolys;
 		bool mUseClampedTextures;
 
 		std::vector<Triangle> mTriangles;

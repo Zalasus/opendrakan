@@ -95,8 +95,7 @@ namespace odOsg
 
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         osg::ref_ptr<osg::Group> mSceneRoot;
-        osg::ref_ptr<osg::Group> mObjects;
-        osg::ref_ptr<osg::Group> mLayers;
+        osg::ref_ptr<osg::Group> mLevelRoot;
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group> mGuiRoot;

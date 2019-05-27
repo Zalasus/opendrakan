@@ -8,7 +8,6 @@
 
 #include <odOsg/render/Renderer.h>
 
-#include <osg/FrontFace>
 #include <osgGA/TrackballManipulator>
 #include <osgViewer/ViewerEventHandlers>
 
@@ -85,14 +84,8 @@ namespace odOsg
 
         ss->setAttribute(mShaderFactory.getProgram("default"), osg::StateAttribute::ON);
 
-        mLayers = new osg::Group;
-        osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
-        mLayers->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
-        mSceneRoot->addChild(mLayers);
-
-        mObjects = new osg::Group;
-        mObjects->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE));
-        mSceneRoot->addChild(mObjects);
+        mLevelRoot = new osg::Group;
+        mSceneRoot->addChild(mLevelRoot);
 
         _setupGuiStuff();
     }
@@ -157,7 +150,7 @@ namespace odOsg
             break;
 
         case odRender::RenderSpace::LEVEL:
-            handle = od::make_refd<Handle>(this, mObjects);
+            handle = od::make_refd<Handle>(this, mLevelRoot);
             break;
 
         case odRender::RenderSpace::GUI:
@@ -227,7 +220,7 @@ namespace odOsg
     od::RefPtr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
     {
         ModelBuilder mb(this, "layer " + layer->getName(), layer->getLevel());
-        mb.setNormalsFromCcw(true);
+        mb.setCWPolygonFlag(false);
         mb.setUseClampedTextures(true);
 
         uint32_t width = layer->getWidth();
@@ -336,7 +329,8 @@ namespace odOsg
 
         od::RefPtr<Model> builtModel = mb.build();
 
-        // TODO: assign shader
+        osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
+        builtModel->getGeode()->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
 
         return builtModel.get();
     }
@@ -523,6 +517,7 @@ namespace odOsg
     {
         ModelBuilder mb(this, model->getName(), model->getAssetProvider());
 
+        mb.setCWPolygonFlag(true);
         mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
         mb.setVertexVector(model->getVertexVector().begin(), model->getVertexVector().end());
         mb.setPolygonVector(model->getPolygonVector().begin(), model->getPolygonVector().end());
@@ -539,6 +534,8 @@ namespace odOsg
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
             ModelBuilder mb(this, model->getName() + " (LOD '" + it->lodName + "')", model->getAssetProvider());
+
+            mb.setCWPolygonFlag(true);
             mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
 
             // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"

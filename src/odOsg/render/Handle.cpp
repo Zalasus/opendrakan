@@ -24,11 +24,12 @@ namespace odOsg
     static void _assert_mutex_locked(std::mutex &mutex)
     {
 #ifndef NDEBUG
+        /* FIXME: this synchronization concept is flawed. think of a better one
         if(mutex.try_lock())
         {
             mutex.unlock();
             throw od::Exception("Accessed Handle without locking it's mutex");
-        }
+        }*/
 #endif
     }
 

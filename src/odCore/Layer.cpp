@@ -431,14 +431,14 @@ namespace od
 
     void Layer::_bakeStaticLight(od::Light *light)
     {
-        if(light == nullptr || mRenderModel == nullptr)
+        if(light == nullptr || mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
         {
             return;
         }
 
-        if(!mRenderModel->hasSharedVertexArrays())
+        if(mRenderModel->getGeometryCount() > 1 && !mRenderModel->hasSharedVertexArrays())
         {
-            throw od::Exception("Baking layer lighting only works with shared vertex arrays");
+            throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
         }
 
         odRender::Geometry *geometry = mRenderModel->getGeometry(0);
@@ -491,14 +491,14 @@ namespace od
 
     void Layer::_bakeLocalLayerLight()
     {
-        if(mRenderModel == nullptr)
+        if(mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
         {
             return;
         }
 
-        if(!mRenderModel->hasSharedVertexArrays())
+        if(mRenderModel->getGeometryCount() > 1 && !mRenderModel->hasSharedVertexArrays())
         {
-            throw od::Exception("Baking layer lighting only works with shared vertex arrays");
+            throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
         }
 
         odRender::Geometry *geometry = mRenderModel->getGeometry(0);
