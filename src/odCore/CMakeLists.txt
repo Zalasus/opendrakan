@@ -38,6 +38,7 @@ set(SOURCES
         "physics/CharacterController.cpp"
         "physics/Handles.cpp"
         "render/GuiQuad.cpp"
+        "render/Renderer.cpp"
         "rfl/ClassBuilderProbe.cpp"
         "rfl/DefaultObjectClass.cpp"
         "rfl/Field.cpp"

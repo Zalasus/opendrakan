@@ -42,6 +42,7 @@ namespace odRender
 
     enum class RenderSpace
     {
+        NONE,
         LEVEL,
         GUI
     };
@@ -77,6 +78,8 @@ namespace odRender
         virtual GuiNode *getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;
+
+        od::RefPtr<Handle> createHandleFromObject(od::LevelObject &obj);
 
     };
 

@@ -31,6 +31,8 @@ namespace odOsg
         Handle(Renderer *renderer, osg::Group *parent);
         virtual ~Handle();
 
+        inline osg::Group *getOsgNode() { return mTransform; }
+
         virtual std::mutex &getMutex() override;
 
         virtual glm::vec3 getPosition() override;
@@ -46,7 +48,7 @@ namespace odOsg
         virtual void setVisible(bool visible) override;
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
 
-        virtual void setRenderMode(odRender::RenderMode rm) override;
+        virtual void setRenderBin(odRender::RenderBin rm) override;
 
         virtual void addFrameListener(odRender::FrameListener *listener) override;
         virtual void removeFrameListener(odRender::FrameListener *listener) override;

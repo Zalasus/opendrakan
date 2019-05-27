@@ -48,6 +48,9 @@ namespace odOsg
 
         virtual void setTexture(odRender::Texture *texture) override;
 
+        virtual bool usesIndexedRendering() override;
+        virtual odRender::PrimitiveType getPrimitiveType() override;
+
 
     private:
 
@@ -62,7 +65,7 @@ namespace odOsg
         osg::ref_ptr<osg::Vec4Array> mOsgBoneIndexArray;
         osg::ref_ptr<osg::Vec4Array> mOsgBoneWeightArray;
 
-        std::vector<od::RefPtr<Texture>> mTextures;
+        od::RefPtr<Texture> mTexture;
     };
 
 }

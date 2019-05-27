@@ -8,6 +8,7 @@
 #include <odOsg/render/Geometry.h>
 
 #include <odCore/Exception.h>
+#include <odCore/Downcast.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Constants.h>
@@ -202,9 +203,18 @@ namespace odOsg
         return std::make_unique<OsgVec4ArrayAccessHandler>(mOsgBoneWeightArray);
     }
 
-    void Geometry::addTexture(Texture *texture)
+    void Geometry::setTexture(odRender::Texture *texture)
     {
-        mTextures.push_back(texture);
+        mTexture = od::confident_downcast<Texture>(texture);
     }
 
+    bool Geometry::usesIndexedRendering()
+    {
+        return true;
+    }
+
+    odRender::PrimitiveType Geometry::getPrimitiveType()
+    {
+        return odRender::PrimitiveType::TRIANGLES;
+    }
 }

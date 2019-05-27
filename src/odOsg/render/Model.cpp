@@ -17,6 +17,7 @@ namespace odOsg
 
     Model::Model()
     : mGeode(new osg::Geode)
+    , mHasSharedVertexArrays(false)
     {
     }
 
@@ -44,7 +45,7 @@ namespace odOsg
 
         auto geo = od::confident_downcast<Geometry>(g);
 
-        mGeometries.emplace_back(g);
+        mGeometries.emplace_back(geo);
 
         mGeode->addDrawable(geo->getOsgGeometry());
     }

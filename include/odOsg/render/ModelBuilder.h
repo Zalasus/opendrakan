@@ -57,6 +57,7 @@ namespace odOsg
 		void setBoneAffectionVector(BoneAffectionIterator begin, BoneAffectionIterator end);
 
 		od::RefPtr<Model> build();
+		void buildAndAppend(Model *model);
 
 
 	private:

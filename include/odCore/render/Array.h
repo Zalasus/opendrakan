@@ -56,7 +56,7 @@ namespace odRender
 
         typedef T _ElementType;
 
-        virtual ~ArrayAccessHandler() = 0;
+        virtual ~ArrayAccessHandler() = default;
 
         virtual Array<_ElementType> &getArray() = 0;
 

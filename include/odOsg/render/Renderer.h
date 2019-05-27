@@ -8,8 +8,6 @@
 #ifndef INCLUDE_ODOSG_RENDERER_H_
 #define INCLUDE_ODOSG_RENDERER_H_
 
-#include <odCore/render/Renderer.h>
-
 #include <thread>
 #include <mutex>
 #include <vector>
@@ -21,6 +19,8 @@
 
 #include <odCore/RefCounted.h>
 #include <odCore/BoundingSphere.h>
+
+#include <odCore/render/Renderer.h>
 
 #include <odOsg/render/ShaderFactory.h>
 

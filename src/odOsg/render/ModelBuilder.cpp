@@ -157,6 +157,16 @@ namespace odOsg
 
     od::RefPtr<Model> ModelBuilder::build()
     {
+        // TODO: if textureCount is 1, use a more lightweight Model implementation
+        auto model = od::make_refd<Model>();
+
+        buildAndAppend(model);
+
+        return model;
+    }
+
+    void ModelBuilder::buildAndAppend(Model *model)
+    {
         if(mSmoothNormals)
         {
             _buildNormals();
@@ -184,9 +194,7 @@ namespace odOsg
             }
         }
 
-        // TODO: if textureCount is 1, use a more lightweight Model implementation
-        auto model = od::make_refd<Model>();
-        model->setHasSharedVertexArrays(true);
+        model->setHasSharedVertexArrays(textureCount > 1);
 
         // count number of triangles per texture.
         //  this will allow us to preallocate the IBO array as well as pick between int/short/byte arrays
@@ -302,8 +310,6 @@ namespace odOsg
                 drawElements->addElement(it->vertexIndices[vn]);
             }
         }
-
-        return model;
     }
 
     void ModelBuilder::_buildNormals()

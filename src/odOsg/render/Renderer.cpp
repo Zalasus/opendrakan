@@ -6,7 +6,6 @@
  */
 
 
-#include <odCore/Downcast.h>
 #include <odOsg/render/Renderer.h>
 
 #include <osg/FrontFace>
@@ -17,7 +16,9 @@
 #include <odCore/LevelObject.h>
 #include <odCore/Light.h>
 #include <odCore/Layer.h>
+#include <odCore/Level.h>
 #include <odCore/OdDefines.h>
+#include <odCore/Downcast.h>
 
 #include <odCore/render/RendererEventListener.h>
 
@@ -151,6 +152,10 @@ namespace odOsg
 
         switch(space)
         {
+        case odRender::RenderSpace::NONE:
+            handle = od::make_refd<Handle>(this, nullptr);
+            break;
+
         case odRender::RenderSpace::LEVEL:
             handle = od::make_refd<Handle>(this, mObjects);
             break;

@@ -61,7 +61,7 @@ namespace odRender
 
         virtual void setTexture(Texture *texture) = 0;
 
-        virtual bool isIndexed() = 0;
+        virtual bool usesIndexedRendering() = 0;
         virtual PrimitiveType getPrimitiveType() = 0;
 
     };

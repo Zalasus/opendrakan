@@ -38,16 +38,7 @@ namespace odRfl
         odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
-            mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
-
-            odRender::Model *model = obj.getClass()->getModel()->getOrCreateRenderModel(renderer);
-
-            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
-            mRenderHandle->setPosition(obj.getPosition());
-            mRenderHandle->setOrientation(obj.getRotation());
-            mRenderHandle->setScale(mRenderHandle->getScale());
-
-            mRenderHandle->setModel(model);
+            mRenderHandle = renderer->createHandleFromObject(obj);
 
             _updateLighting(obj);
         }

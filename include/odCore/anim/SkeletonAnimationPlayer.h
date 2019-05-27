@@ -22,7 +22,7 @@
 #include <odCore/anim/Skeleton.h>
 #include <odCore/anim/MotionAccumulator.h>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
 #include <odCore/render/FrameListener.h>
 
 namespace odAnim
@@ -124,7 +124,7 @@ namespace odAnim
     {
     public:
 
-        explicit SkeletonAnimationPlayer(odRender::ObjectNode *objectNode, Skeleton *skeleton);
+        explicit SkeletonAnimationPlayer(odRender::Handle *renderHandle, Skeleton *skeleton);
         virtual ~SkeletonAnimationPlayer();
 
         inline bool isPlaying() const { return mPlaying; }
@@ -164,7 +164,7 @@ namespace odAnim
 
     private:
 
-        od::RefPtr<odRender::ObjectNode> mObjectNode;
+        od::RefPtr<odRender::Handle> mRenderHandle;
         Skeleton *mSkeleton;
         odRender::Rig *mRig;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!

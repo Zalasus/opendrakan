@@ -98,7 +98,10 @@ namespace odOsg
     {
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
 
-        mParentGroup->addChild(mTransform);
+        if(mParentGroup != nullptr)
+        {
+            mParentGroup->addChild(mTransform);
+        }
     }
 
     Handle::~Handle()
@@ -109,7 +112,10 @@ namespace odOsg
             mUpdateCallback = nullptr;
         }
 
-        mParentGroup->removeChild(mTransform);
+        if(mParentGroup != nullptr)
+        {
+            mParentGroup->removeChild(mTransform);
+        }
     }
 
     std::mutex &Handle::getMutex()
@@ -192,15 +198,15 @@ namespace odOsg
         throw od::UnsupportedException("setModelPartVisible is unsupported");
     }
 
-    void Handle::setRenderMode(odRender::RenderMode rm)
+    void Handle::setRenderBin(odRender::RenderBin rb)
     {
         _assert_mutex_locked(mMutex);
 
         osg::StateSet *ss = mTransform->getOrCreateStateSet();
 
-        switch(rm)
+        switch(rb)
         {
-        case odRender::RenderMode::Normal:
+        case odRender::RenderBin::NORMAL:
             if(mDepth != nullptr)
             {
                 ss->removeAttribute(mDepth);
@@ -209,16 +215,27 @@ namespace odOsg
             ss->setRenderBinDetails(0, "RenderBin");
             break;
 
-        case odRender::RenderMode::Sky:
+        case odRender::RenderBin::SKY:
+            if(mDepth == nullptr)
             {
-                if(mDepth == nullptr)
-                {
-                    mDepth = new osg::Depth;
-                    mDepth->setWriteMask(false);
-                }
-                ss->setAttribute(mDepth, osg::StateAttribute::ON);
-                ss->setRenderBinDetails(-1, "RenderBin");
+                mDepth = new osg::Depth;
+                mDepth->setWriteMask(false);
             }
+            ss->setAttribute(mDepth, osg::StateAttribute::ON);
+            ss->setRenderBinDetails(-1, "RenderBin");
+            break;
+
+        case odRender::RenderBin::TRANSPARENT:
+            if(mDepth != nullptr)
+            {
+                ss->removeAttribute(mDepth);
+                mDepth = nullptr;
+            }
+            ss->setRenderBinDetails(1, "DepthSortedBin");
+            break;
+
+        default:
+            break;
         }
     }
 

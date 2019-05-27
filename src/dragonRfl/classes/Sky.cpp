@@ -18,7 +18,6 @@
 #include <odCore/rfl/Rfl.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/ModelNode.h>
 
 namespace dragonRfl
 {
@@ -67,9 +66,10 @@ namespace dragonRfl
             return;
         }
 
-        mRenderNode = renderer->createObjectNode(obj);
-        mRenderNode->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(renderer));
-        mRenderNode->setRenderMode(odRender::ObjectNode::RenderMode::Sky);
+        mRenderNode = renderer->createHandleFromObject(obj);
+
+        std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
+        mRenderNode->setRenderBin(odRender::RenderBin::SKY);
 	}
 
 

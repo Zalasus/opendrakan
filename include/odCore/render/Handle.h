@@ -26,10 +26,11 @@ namespace odRender
     class Rig;
     class FrameListener;
 
-    enum class RenderMode
+    enum class RenderBin
     {
-        Normal,
-        Sky
+        TRANSPARENT,
+        NORMAL,
+        SKY
     };
 
     class Handle : public od::RefCounted
@@ -57,7 +58,7 @@ namespace odRender
         virtual void setVisible(bool visible) = 0;
         virtual void setModelPartVisible(size_t partIndex, bool visible) = 0;
 
-        virtual void setRenderMode(RenderMode rm) = 0;
+        virtual void setRenderBin(RenderBin rm) = 0;
 
         virtual void addFrameListener(FrameListener *listener) = 0;
         virtual void removeFrameListener(FrameListener *listener) = 0;

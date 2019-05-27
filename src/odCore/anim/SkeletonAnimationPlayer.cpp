@@ -222,8 +222,8 @@ namespace odAnim
     }
 
 
-    SkeletonAnimationPlayer::SkeletonAnimationPlayer(odRender::ObjectNode *objectNode, Skeleton *skeleton)
-    : mObjectNode(objectNode)
+    SkeletonAnimationPlayer::SkeletonAnimationPlayer(odRender::Handle *renderHandle, Skeleton *skeleton)
+    : mRenderHandle(renderHandle)
     , mSkeleton(skeleton)
     , mRig(nullptr)
     , mPlaying(false)
@@ -239,11 +239,11 @@ namespace odAnim
             mBoneAnimators.push_back(BoneAnimator(mSkeleton->getBoneByJointIndex(i)));
         }
 
-        if(mObjectNode != nullptr)
+        if(mRenderHandle != nullptr)
         {
-            mObjectNode->addFrameListener(this);
+            mRenderHandle->addFrameListener(this);
 
-            mRig = mObjectNode->getRig();
+            mRig = mRenderHandle->getRig();
             if(mRig == nullptr)
             {
                 throw od::Exception("Failed to get Rig from object node");
@@ -257,7 +257,10 @@ namespace odAnim
 
     SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
     {
-        mObjectNode->removeFrameListener(this);
+        if(mRenderHandle != nullptr)
+        {
+            mRenderHandle->removeFrameListener(this);
+        }
     }
 
     void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim,  PlaybackType type, float speedMultiplier)

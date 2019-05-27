@@ -22,7 +22,6 @@
 #include <odCore/physics/PhysicsSystem.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/ModelNode.h>
 
 #include <dragonRfl/RflDragon.h>
 
@@ -95,8 +94,7 @@ namespace dragonRfl
     	{
     	    return;
     	}
-    	mRenderNode = renderer->createObjectNode(obj);
-    	mRenderNode->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(renderer));
+    	mRenderHandle = renderer->createHandleFromObject(obj);
 
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton != nullptr)
@@ -104,7 +102,7 @@ namespace dragonRfl
             //mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
             mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
 
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderNode, skeleton);
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderHandle, skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
@@ -184,11 +182,13 @@ namespace dragonRfl
             soundSystem->setListenerOrientation(at, up);
         }
 
-        if(mRenderNode != nullptr)
+        if(mRenderHandle != nullptr)
         {
-            mRenderNode->setPosition(obj.getPosition());
-            mRenderNode->setOrientation(obj.getRotation());
-            mRenderNode->setScale(obj.getScale());
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+
+            mRenderHandle->setPosition(obj.getPosition());
+            mRenderHandle->setOrientation(obj.getRotation());
+            mRenderHandle->setScale(obj.getScale());
         }
     }
 

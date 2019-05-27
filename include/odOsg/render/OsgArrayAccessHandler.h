@@ -54,7 +54,7 @@ namespace odOsg
 
             mArray.resize(mOsgArray->size());
 
-            for(size_t i = 0; i < mOsgArray.size(); ++i)
+            for(size_t i = 0; i < mOsgArray->size(); ++i)
             {
                 mArray[i] = GlmAdapter::toGlm((*mOsgArray)[i]);
             }
