@@ -72,7 +72,7 @@ namespace dragonRfl
         {
             od::RefPtr<odRender::Model> mn = crystalModel->getOrCreateRenderModel(&getGui().getRenderer());
 
-            mCrystalHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::GUI);
+            mCrystalHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
             mCrystalHandle->setModel(mn);
             mCrystalHandle->setScale(glm::vec3(0.58/diameter));
@@ -88,7 +88,7 @@ namespace dragonRfl
         {
             od::RefPtr<odRender::Model> mn = innerRingModel->getOrCreateRenderModel(&getGui().getRenderer());
 
-            mInnerRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::GUI);
+            mInnerRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
             mInnerRingHandle->setModel(mn);
             mInnerRingHandle->setScale(glm::vec3(1/diameter));
@@ -102,7 +102,7 @@ namespace dragonRfl
         {
             od::RefPtr<odRender::Model> mn = outerRingModel->getOrCreateRenderModel(&getGui().getRenderer());
 
-            mOuterRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::GUI);
+            mOuterRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
             mOuterRingHandle->setModel(mn);
             mOuterRingHandle->setScale(glm::vec3(1/diameter));
