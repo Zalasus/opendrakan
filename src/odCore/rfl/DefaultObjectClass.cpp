@@ -74,7 +74,7 @@ namespace odRfl
                     obj.getLightSourceLayer() : obj.getLevel().getFirstLayerBelowPoint(obj.getPosition());
             if(lightingLayer != nullptr)
             {
-                mRenderHandle->setGlobalLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
+                mRenderHandle->setGlobalLight(lightingLayer->getLightDirection(), lightingLayer->getLightColor(), lightingLayer->getAmbientColor());
             }
         }
 

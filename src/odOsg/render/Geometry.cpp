@@ -205,7 +205,7 @@ namespace odOsg
             throw od::UnsupportedException("Unsupported or unknown primitive type");
         }
 
-        mIndexed = (dynamic_cast<osg::DrawArrays*>(mPrimitiveSet.get()) != nullptr); // ugh...
+        mIndexed = (dynamic_cast<osg::DrawElements*>(mPrimitiveSet.get()) != nullptr); // ugh...
     }
 
     void Geometry::setHasBoneInfo(bool b)
@@ -237,7 +237,7 @@ namespace odOsg
 
     std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> Geometry::getVertexArrayAccessHandler()
     {
-        if(mIndexed)
+        if(!mIndexed)
         {
             osg::DrawArrays *drawArrays = od::confident_downcast<osg::DrawArrays>(mPrimitiveSet.get());
 
