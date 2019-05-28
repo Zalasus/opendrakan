@@ -335,10 +335,8 @@ namespace odOsg
             glm::vec3 normal = glm::cross(  (mVertices[it->vertexIndices[1]] - mVertices[it->vertexIndices[0]])
                                           , (mVertices[it->vertexIndices[2]] - mVertices[it->vertexIndices[0]]));
 
-            if(mCWPolys)
-            {
-                normal *= -1;
-            }
+            // no need to flip normal based on poly orientation!! we already ensure all triangles have CCW orientation
+            // in setPolygonVector()
 
             for(size_t i = 0; i < 3; ++i)
             {
