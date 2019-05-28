@@ -14,6 +14,8 @@
 #include <odCore/Engine.h>
 #include <odCore/Exception.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+
 #include <odOsg/render/Renderer.h>
 #include <odOsg/audio/SoundSystem.h>
 #include <odOsg/InputListener.h>
@@ -40,6 +42,7 @@ static void printUsage()
         << "    -v  Increase verbosity of logger" << std::endl
         << "    -h  Display this message and exit" << std::endl
         << "    -c  Use free look trackball view and ignore in-game camera controllers" << std::endl
+        << "    -p  Force enable physics debug drawing" << std::endl
         << "If no level file and no options are given, the default intro level is loaded." << std::endl
         << "The latter assumes the current directory to be the game root." << std::endl
         << std::endl;
@@ -62,7 +65,8 @@ int main(int argc, char **argv)
 
     int c;
     bool freeLook = false;
-    while((c = getopt(argc, argv, "vhc")) != -1)
+    bool physicsDebug = false;
+    while((c = getopt(argc, argv, "vhcp")) != -1)
     {
         switch(c)
         {
@@ -76,6 +80,10 @@ int main(int argc, char **argv)
 
         case 'c':
             freeLook = true;
+            break;
+
+        case 'p':
+            physicsDebug = true;
             break;
 
         case '?':
@@ -98,6 +106,13 @@ int main(int argc, char **argv)
     {
         // only create listener if freelook mode is not forced. else we might catch input events the manipulator needs
         inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, engine.getInputManager());
+    }
+
+    engine.setUp();
+
+    if(physicsDebug)
+    {
+        engine.getPhysicsSystem().setEnableDebugDrawing(true);
     }
 
     try
