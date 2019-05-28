@@ -144,6 +144,7 @@ namespace odOsg
         }
         mGeometry->addPrimitiveSet(mPrimitiveSet);
 
+        setTexture(nullptr);
     }
 
     Geometry::Geometry(osg::Geometry *geometry)
@@ -292,6 +293,18 @@ namespace odOsg
     void Geometry::setTexture(odRender::Texture *texture)
     {
         mTexture = od::confident_downcast<Texture>(texture);
+
+        osg::StateSet *ss = mGeometry->getOrCreateStateSet();
+        if(mTexture != nullptr)
+        {
+            ss->setDefine("TEXTURE");
+            ss->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
+
+        }else
+        {
+            ss->removeDefine("TEXTURE");
+            ss->setTextureAttribute(0, nullptr, osg::StateAttribute::OFF);
+        }
     }
 
     bool Geometry::usesIndexedRendering()

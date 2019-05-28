@@ -1,11 +1,14 @@
 #version 120
 
+// Layers are very rigid in their shading, so this is basically a non-parametric version of the model shader.
 
 #pragma import_defines(MAX_LIGHTS)
 
-
-// Layers are very rigid in their shading, so this is basically a non-parametric version of the model shader.
-
+// FIXME: for some reason, OSG doesn't get this when first compiling the shader. to suppress the misleading
+//        warnings, we define a default value for now
+#ifndef MAX_LIGHTS
+    #define MAX_LIGHTS 8 
+#endif
 
 varying vec2 texCoord;
 varying vec4 vertexColor;

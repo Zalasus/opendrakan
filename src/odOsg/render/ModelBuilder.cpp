@@ -299,12 +299,10 @@ namespace odOsg
                 odRender::TextureUsage textureUsage = mUseClampedTextures ? odRender::TextureUsage::Layer : odRender::TextureUsage::Model; // FIXME: rename property
                 od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderImage(mRenderer)->getTextureForUsage(textureUsage);
 
-                auto odOsgTexture = od::confident_downcast<Texture>(renderTexture.get());
-                osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
-                geomSs->setTextureAttribute(0, odOsgTexture->getOsgTexture());
-
                 if(dbTexture->hasAlpha())
                 {
+                    // TODO: handle this via the engine-level render bins?
+                    osg::StateSet *geomSs = osgGeometry->getOrCreateStateSet();
                     geomSs->setRenderBinDetails(1, "DepthSortedBin");
                     geomSs->setMode(GL_BLEND, osg::StateAttribute::ON);
                 }
