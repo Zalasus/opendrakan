@@ -61,6 +61,9 @@ namespace odBulletPhysics
 
         std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> mVertexArray;
         std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> mColorArray;
+
+        bool mSingleShotUpdate;
+        size_t mLastMaxVertexCount;
     };
 
 

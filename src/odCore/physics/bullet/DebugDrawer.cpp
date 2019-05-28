@@ -28,6 +28,8 @@ namespace odBulletPhysics
     , mDebugMode(0)
     , mVertexArray(nullptr)
     , mColorArray(nullptr)
+    , mSingleShotUpdate(false)
+    , mLastMaxVertexCount(0)
     {
         if(mCollisionWorld == nullptr)
         {
@@ -91,6 +93,16 @@ namespace odBulletPhysics
 
         if(mDebugMode == btIDebugDraw::DBG_NoDebug)
         {
+            mSingleShotUpdate = false;
+
+            mVertexArray->acquire();
+            mColorArray->acquire();
+
+            mVertexArray->getArray().clear();
+            mColorArray->getArray().clear();
+
+            mVertexArray->release();
+            mColorArray->release();
 
         }else
         {
@@ -104,13 +116,28 @@ namespace odBulletPhysics
 
     void DebugDrawer::update(float relTime)
     {
-        mVertexArray->acquire();
-        mColorArray->acquire();
+        if(mDebugMode != btIDebugDraw::DBG_NoDebug)
+        {
+            if(mSingleShotUpdate)
+            {
+                return;
+            }
+            mSingleShotUpdate = true;
 
-        mCollisionWorld->debugDrawWorld();
+            mVertexArray->acquire();
+            mColorArray->acquire();
 
-        mVertexArray->release();
-        mColorArray->release();
+            mVertexArray->getArray().reserve(mLastMaxVertexCount);
+            mColorArray->getArray().reserve(mLastMaxVertexCount);
+
+            mCollisionWorld->debugDrawWorld();
+
+            size_t vertCount = mVertexArray->getArray().size();
+            mLastMaxVertexCount = std::max(vertCount, mLastMaxVertexCount);
+
+            mVertexArray->release();
+            mColorArray->release();
+        }
     }
 
 }

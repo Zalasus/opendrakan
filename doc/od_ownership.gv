@@ -55,8 +55,8 @@ digraph od_ownership
         graph [label="Sound System", style=filled, fillcolor=PaleTurquoise];
         node [style=filled, fillcolor=white];
         
-        S_Buffer;
-        S_Source;
+        S_Buffer [label="Buffer"];
+        S_Source [label="Source"];
     }
     
 
@@ -119,7 +119,7 @@ digraph od_ownership
 
         R_GuiNode -> R_GuiNode [label=a];
         R_GuiNode -> R_GuiQuad [label=a];
-        R_GuiNode -> R_ObjectNode [label=a];
+        R_GuiNode -> R_Handle [label=a];
 
         R_LightState -> Light [label=a];
         
