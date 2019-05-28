@@ -20,7 +20,7 @@ namespace odBulletPhysics
         result.hitFraction = fraction;
         result.hitPoint = BulletAdapter::toGlm(bHitPoint);
         result.hitNormal = BulletAdapter::toGlm(bHitNormal);
-        result.handle = static_cast<odPhysics::Handle*>(object->getUserPointer()); // user pointer is a void*, so we can't use upcast here :/
+        result.handle = static_cast<odPhysics::Handle*>(object->getUserPointer()); // user pointer is a void*, so we can't use od::downcast here :/
     }
 
 
@@ -150,7 +150,7 @@ namespace odBulletPhysics
     , mContactCount(0)
     , mLastObject(nullptr)
     {
-        m_collisionFilterGroup = odPhysics::PhysicsTypeMasks::Ray; // this can't be right, right?
+        m_collisionFilterGroup = odPhysics::PhysicsTypeMasks::All; // this can't be right, right?
         m_collisionFilterMask = mask;
     }
 
@@ -158,27 +158,23 @@ namespace odBulletPhysics
     {
         // for the time being, we don't care about manifolds. only store object pairs
 
-        // colObj0Wrap seems to always be the object used to start the contact test
-
-        if(mLastObject == colObj1Wrap->m_collisionObject)
+        if(mLastObject == colObj0Wrap->m_collisionObject || mLastObject == colObj1Wrap->m_collisionObject)
         {
             return 0.0;
-
-        }else
-        {
-            mLastObject = colObj1Wrap->m_collisionObject;
         }
 
         odPhysics::ContactTestResult result;
-        odPhysics::Handle *handleA = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
-        odPhysics::Handle *handleB = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
-        if(handleA == mMe)
+        odPhysics::Handle *handle0 = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
+        odPhysics::Handle *handle1 = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
+        if(handle0 == mMe)
         {
-            result.handle = handleB;
+            result.handle = handle1;
+            mLastObject = colObj1Wrap->m_collisionObject;
 
-        }else if(handleB == mMe)
+        }else if(handle1 == mMe)
         {
-            result.handle = handleA;
+            result.handle = handle0;
+            mLastObject = colObj0Wrap->m_collisionObject;
 
         }else
         {

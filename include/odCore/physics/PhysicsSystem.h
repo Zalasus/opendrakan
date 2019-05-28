@@ -50,7 +50,7 @@ namespace odPhysics
         static const Mask Light = 8;
         static const Mask Detector = 16;
 
-        static const Mask All = -1;
+        static const Mask All = Ray | LevelObject | Layer | Light | Detector;
     };
 
     struct RayTestResult

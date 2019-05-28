@@ -54,6 +54,8 @@ namespace odBulletPhysics
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
 
+        mCollisionWorld->updateAabbs(); // FIXME: doesn't seem very efficient doing this everytime
+
         AllRayCallback callback(bStart, bEnd, typeMask, resultsOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
@@ -65,6 +67,8 @@ namespace odBulletPhysics
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
 
+        mCollisionWorld->updateAabbs(); // FIXME: doesn't seem very efficient doing this everytime
+
         ClosestRayCallback callback(bStart, bEnd, typeMask, exclude, resultOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
@@ -74,25 +78,30 @@ namespace odBulletPhysics
     size_t BulletPhysicsSystem::contactTest(odPhysics::Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
     {
         btCollisionObject *bulletObject;
-        if(handle->asObjectHandle() != nullptr)
+        switch(handle->getHandleType())
         {
-            ObjectHandle *objectHandle = od::confident_downcast<ObjectHandle>(handle->asObjectHandle());
-            bulletObject = objectHandle->getBulletObject();
+        case odPhysics::Handle::Type::Object:
+            bulletObject = od::confident_downcast<ObjectHandle>(handle)->getBulletObject();
+            break;
 
-        }else if(handle->asLayerHandle() != nullptr)
-        {
-            LayerHandle *layerHandle = od::confident_downcast<LayerHandle>(handle->asLayerHandle());
-            bulletObject = layerHandle->getBulletObject();
+        case odPhysics::Handle::Type::Layer:
+            bulletObject = od::confident_downcast<LayerHandle>(handle)->getBulletObject();
+            break;
 
-        }else if(handle->asLightHandle() != nullptr)
-        {
-            LightHandle *lightHandle = od::confident_downcast<LightHandle>(handle->asLightHandle());
-            bulletObject = lightHandle->getBulletObject();
+        case odPhysics::Handle::Type::Light:
+            bulletObject = od::confident_downcast<LightHandle>(handle)->getBulletObject();
+            break;
 
-        }else
-        {
-            throw od::Exception("Got physics handle of unknown type");
+        default:
+             throw od::Exception("Got physics handle of unknown type");
         }
+
+        if(bulletObject == nullptr)
+        {
+            throw od::Exception("Handle for contact test contained nullptr bullet object");
+        }
+
+        mCollisionWorld->updateAabbs(); // FIXME: doesn't seem very efficient doing this everytime
 
         ContactResultCallback callback(handle, typeMask, resultsOut);
         mCollisionWorld->contactTest(bulletObject, callback);

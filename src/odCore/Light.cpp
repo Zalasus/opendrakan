@@ -69,7 +69,6 @@ namespace od
         LightCallback *callback = handle->getLightCallback();
         if(callback != nullptr)
         {
-            callback->addAffectingLight(this);
             mAffectedCallbacks.push_back(callback);
         }
     }
@@ -89,7 +88,12 @@ namespace od
 
         for(auto &result : results)
         {
-            addAffected(result.handle);
+            LightCallback *callback = result.handle->getLightCallback();
+            if(callback != nullptr)
+            {
+                callback->addAffectingLight(this);
+                mAffectedCallbacks.push_back(callback);
+            }
         }
     }
 

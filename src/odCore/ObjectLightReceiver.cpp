@@ -7,34 +7,35 @@
 
 #include <odCore/ObjectLightReceiver.h>
 
+#include <algorithm>
+
 #include <odCore/Light.h>
+#include <odCore/Exception.h>
+#include <odCore/Logger.h>
 
 #include <odCore/physics/Handles.h>
 #include <odCore/physics/PhysicsSystem.h>
 
 #include <odCore/render/Handle.h>
 
-#include <odCore/Logger.h>
-
 namespace od
 {
-    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::Handle *renderHandle)
+    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *physicsHandle, odRender::Handle *renderHandle)
     : mPhysicsSystem(ps)
-    , mPhysicsHandle(oh)
+    , mPhysicsHandle(physicsHandle)
     , mRenderHandle(renderHandle)
     {
-        if(mPhysicsHandle != nullptr)
+        if(mPhysicsHandle == nullptr)
         {
-            mPhysicsHandle->setLightCallback(this);
+            throw od::InvalidArgumentException("Created ObjectLightReceiver with physics handle = nullptr");
         }
+
+        mPhysicsHandle->setLightCallback(this);
     }
 
     ObjectLightReceiver::~ObjectLightReceiver()
     {
-        if(mPhysicsHandle != nullptr)
-        {
-            mPhysicsHandle->setLightCallback(nullptr);
-        }
+        mPhysicsHandle->setLightCallback(nullptr);
     }
 
     void ObjectLightReceiver::removeAffectingLight(od::Light *light)
@@ -42,6 +43,12 @@ namespace od
         if(mRenderHandle != nullptr)
         {
             mRenderHandle->removeLight(light);
+        }
+
+        auto it = std::find(mAffectingLights.begin(), mAffectingLights.end(), light);
+        if(it != mAffectingLights.end())
+        {
+            mAffectingLights.erase(it);
         }
     }
 
@@ -51,6 +58,8 @@ namespace od
         {
             mRenderHandle->addLight(light);
         }
+
+        mAffectingLights.push_back(light);
     }
 
     void ObjectLightReceiver::clearLightList()
@@ -59,15 +68,17 @@ namespace od
         {
             mRenderHandle->clearLightList();
         }
+
+        // TODO: tell lights to remove us from their list of affected objects
+        //for(auto &light : mAffectingLights)
+        //{
+        //}
+
+        mAffectingLights.clear();
     }
 
     void ObjectLightReceiver::updateAffectingLights()
     {
-        if(mPhysicsHandle == nullptr)
-        {
-            return;
-        }
-
         this->clearLightList();
 
         odPhysics::ContactTestResultVector results;

@@ -24,13 +24,10 @@ namespace odBulletPhysics
 
         mCollisionObject = std::make_unique<btCollisionObject>();
         mCollisionObject->setCollisionShape(mShape.get());
-
-        btTransform worldTransform = BulletAdapter::makeBulletTransform(light.getPosition(), glm::quat(1, 0, 0, 0));
-        mCollisionObject->setWorldTransform(worldTransform);
-
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
-
         mCollisionObject->setCustomDebugColor(btVector3(215.0/256, 221.0/256, 86.0/256));
+
+        setPosition(light.getPosition());
 
         mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Light, odPhysics::PhysicsTypeMasks::All);
     }
