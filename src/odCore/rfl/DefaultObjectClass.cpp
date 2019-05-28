@@ -39,8 +39,6 @@ namespace odRfl
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
             mRenderHandle = renderer->createHandleFromObject(obj);
-
-            _updateLighting(obj);
         }
 
         // if we created a rendering handle, create physics handle, too
@@ -49,9 +47,11 @@ namespace odRfl
         {
             bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;
             mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
+
+            mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
         }
 
-        mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
+        _updateLighting(obj);
     }
 
     void DefaultObjectClass::onDespawned(od::LevelObject &obj)
@@ -70,11 +70,26 @@ namespace odRfl
     {
         if(mRenderHandle != nullptr)
         {
-            od::Layer *lightingLayer = (obj.getLightSourceLayer()!= nullptr) ?
-                    obj.getLightSourceLayer() : obj.getLevel().getFirstLayerBelowPoint(obj.getPosition());
+            od::Layer *lightingLayer;
+            if(obj.getLightSourceLayer() != nullptr)
+            {
+                lightingLayer = obj.getLightSourceLayer();
+
+            }else
+            {
+                // a slight upwards offset fixes many lighting issues with objects whose origin is exactly on the ground
+                glm::vec3 probePoint = obj.getPosition() + glm::vec3(0, 0.1, 0);
+                lightingLayer = obj.getLevel().getFirstLayerBelowPoint(probePoint);
+            }
+
             if(lightingLayer != nullptr)
             {
                 mRenderHandle->setGlobalLight(lightingLayer->getLightDirection(), lightingLayer->getLightColor(), lightingLayer->getAmbientColor());
+
+            }else
+            {
+                // for debugging, add red tint to objects witout a lighting layer
+                mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(1,0,0));
             }
         }
 
