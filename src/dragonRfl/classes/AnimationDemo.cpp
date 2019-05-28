@@ -13,7 +13,6 @@
 #include <odCore/rfl/PrefetchProbe.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/ModelNode.h>
 
 #include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
@@ -52,7 +51,7 @@ namespace dragonRfl
         {
             return;
         }
-        mRenderNode = renderer->createObjectNode(obj);
+        mRenderHandle = renderer->createHandleFromObject(obj);
 
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton == nullptr)
@@ -61,7 +60,7 @@ namespace dragonRfl
             return;
         }
 
-        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderNode, skeleton);
+        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderHandle, skeleton);
 
         obj.setEnableRflUpdateHook(true);
     }

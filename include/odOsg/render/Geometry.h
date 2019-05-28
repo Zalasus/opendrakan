@@ -11,7 +11,7 @@
 #include <odCore/render/Geometry.h>
 
 #include <osg/Node>
-#include <osg/Geode>
+#include <osg/Geometry>
 
 #include <odOsg/render/Texture.h>
 
@@ -22,51 +22,55 @@ namespace odOsg
     {
     public:
 
-        Geometry();
+        /**
+         * @brief Constructs a Geometry which will create it's own osg::Geometry and arrays.
+         */
+        Geometry(odRender::PrimitiveType primitiveType, bool indexed);
 
-        inline osg::Geode *getOsgGeode() { return mGeode; }
-        inline void setOsgVertexArray(osg::Vec3Array *a) { mOsgVertexArray = a; }
-        inline void setOsgColorArray(osg::Vec4Array *a) { mOsgColorArray = a; }
-        inline void setOsgNormalArray(osg::Vec3Array *a) { mOsgNormalArray = a; }
-        inline void setOsgTextureCoordArray(osg::Vec2Array *a) { mOsgTextureCoordArray = a; }
+        /**
+         * @brief Constructs a Geometry using a provided osg::Geometry and it's arrays.
+         */
+        Geometry(osg::Geometry *geode);
 
-        virtual std::vector<glm::vec3> &getVertexArray() override;
-        virtual std::vector<glm::vec4> &getColorArray() override;
-        virtual std::vector<glm::vec3> &getNormalArray() override;
-        virtual std::vector<glm::vec2> &getTextureCoordArray() override;
+        inline osg::Geometry *getOsgGeometry() { return mGeometry; }
+
         virtual void setHasBoneInfo(bool b) override;
         virtual bool hasBoneInfo() const override;
-        virtual std::vector<glm::vec4> &getBoneIndexArray() override;
-        virtual std::vector<glm::vec4> &getBoneWeightArray() override;
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> getBoneIndexArrayAccessHandler() override;
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> getBoneWeightArrayAccessHandler() override;
 
-        virtual void notifyColorDirty() override;
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> getVertexArrayAccessHandler() override;
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> getColorArrayAccessHandler() override;
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> getNormalArrayAccessHandler() override;
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() override;
 
-        void addTexture(Texture *texture);
+        virtual std::unique_ptr<odRender::ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() override;
+
+        virtual void setTexture(odRender::Texture *texture) override;
+
+        virtual bool usesIndexedRendering() override;
+        virtual odRender::PrimitiveType getPrimitiveType() override;
 
 
     private:
 
         void _buildOsgObjects();
 
-        osg::ref_ptr<osg::Geode> mGeode;
+        odRender::PrimitiveType mPrimitiveType;
+        bool mIndexed;
+
+        osg::ref_ptr<osg::Geometry> mGeometry;
         osg::ref_ptr<osg::Vec3Array> mOsgVertexArray;
         osg::ref_ptr<osg::Vec4Array> mOsgColorArray;
         osg::ref_ptr<osg::Vec3Array> mOsgNormalArray;
         osg::ref_ptr<osg::Vec2Array> mOsgTextureCoordArray;
+
         osg::ref_ptr<osg::Vec4Array> mOsgBoneIndexArray;
         osg::ref_ptr<osg::Vec4Array> mOsgBoneWeightArray;
 
-        bool mArrayDataValid;
-        std::vector<glm::vec3> mVertexArray;
-        std::vector<glm::vec4> mColorArray;
-        std::vector<glm::vec3> mNormalArray;
-        std::vector<glm::vec2> mTextureCoordArray;
+        osg::ref_ptr<osg::PrimitiveSet> mPrimitiveSet;
 
-        bool mHasBoneInfo;
-        std::vector<glm::vec4> mBoneIndexArray;
-        std::vector<glm::vec4> mBoneWeightArray;
-
-        std::vector<od::RefPtr<Texture>> mTextures;
+        od::RefPtr<Texture> mTexture;
     };
 
 }

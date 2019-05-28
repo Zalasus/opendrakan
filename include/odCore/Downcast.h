@@ -21,6 +21,11 @@ namespace od
     template <typename _To, typename _From>
     _To *downcast(_From *f)
     {
+        if(f == nullptr)
+        {
+            return nullptr;
+        }
+
        _To *t = dynamic_cast<_To*>(f);
        if(t == nullptr)
        {
@@ -41,6 +46,11 @@ namespace od
     template <typename _To, typename _From>
     _To *confident_downcast(_From *f)
     {
+        if(f == nullptr)
+        {
+            return nullptr;
+        }
+
 #ifdef NDEBUG
         return static_cast<_To*>(f);
 #else

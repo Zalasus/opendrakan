@@ -6,32 +6,38 @@
  */
 
 
-#include <odCore/Downcast.h>
 #include <odOsg/render/Renderer.h>
 
-#include <osg/FrontFace>
 #include <osgGA/TrackballManipulator>
 #include <osgViewer/ViewerEventHandlers>
 
 #include <odCore/Logger.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Light.h>
+#include <odCore/Layer.h>
+#include <odCore/Level.h>
+#include <odCore/OdDefines.h>
+#include <odCore/Downcast.h>
+
 #include <odCore/render/RendererEventListener.h>
+
+#include <odCore/db/Model.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Constants.h>
 
-#include <odOsg/render/ObjectNode.h>
-#include <odOsg/render/ModelNode.h>
-#include <odOsg/render/LayerNode.h>
 #include <odOsg/render/Geometry.h>
 #include <odOsg/render/Image.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Camera.h>
 #include <odOsg/render/GuiNode.h>
+#include <odOsg/render/Handle.h>
+#include <odOsg/render/Model.h>
+#include <odOsg/render/ModelBuilder.h>
 
 namespace odOsg
 {
+
 
     Renderer::Renderer()
     : mShaderFactory("resources/shader_src")
@@ -78,14 +84,8 @@ namespace odOsg
 
         ss->setAttribute(mShaderFactory.getProgram("default"), osg::StateAttribute::ON);
 
-        mLayers = new osg::Group;
-        osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
-        mLayers->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
-        mSceneRoot->addChild(mLayers);
-
-        mObjects = new osg::Group;
-        mObjects->getOrCreateStateSet()->setAttribute(new osg::FrontFace(osg::FrontFace::CLOCKWISE));
-        mSceneRoot->addChild(mObjects);
+        mLevelRoot = new osg::Group;
+        mSceneRoot->addChild(mLevelRoot);
 
         _setupGuiStuff();
     }
@@ -139,34 +139,200 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    od::RefPtr<odRender::ObjectNode> Renderer::createObjectNode(od::LevelObject &obj)
+    od::RefPtr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
     {
-        auto on = od::make_refd<ObjectNode>(this, mObjects);
+        od::RefPtr<Handle> handle;
 
-        on->setPosition(obj.getPosition());
-        on->setOrientation(obj.getRotation());
-        on->setScale(obj.getScale());
-
-        on->setVisible(obj.isVisible());
-
-        if(obj.getClass()->hasModel())
+        switch(space)
         {
-            on->setModel(obj.getClass()->getModel()->getOrCreateRenderNode(this));
+        case odRender::RenderSpace::NONE:
+            handle = od::make_refd<Handle>(this, nullptr);
+            break;
+
+        case odRender::RenderSpace::LEVEL:
+            handle = od::make_refd<Handle>(this, mLevelRoot);
+            break;
+
+        case odRender::RenderSpace::GUI:
+            handle = od::make_refd<Handle>(this, mGuiRoot);
+            break;
+
+        default:
+            throw od::Exception("Unknown render space");
         }
 
-        return od::RefPtr<odRender::ObjectNode>(on);
+        return handle.get();
     }
 
-    od::RefPtr<odRender::ModelNode> Renderer::createModelNode(odDb::Model *model)
+    od::RefPtr<odRender::Model> Renderer::createModel()
     {
-        auto mn = od::make_refd<ModelNode>(this, model);
-        return od::RefPtr<odRender::ModelNode>(mn);
+        auto model = od::make_refd<Model>();
+
+        return model.get();
     }
 
-    od::RefPtr<odRender::LayerNode> Renderer::createLayerNode(od::Layer *layer)
+    od::RefPtr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
     {
-        auto ln = od::make_refd<LayerNode>(this, layer, mLayers);
-        return od::RefPtr<odRender::LayerNode>(ln);
+        auto newGeometry = od::make_refd<Geometry>(primitiveType, indexed);
+
+        return newGeometry.get();
+    }
+
+    od::RefPtr<odRender::Model> Renderer::createModelFromDb(odDb::Model *model)
+    {
+        if(model == nullptr)
+        {
+            throw od::InvalidArgumentException("Got null model");
+        }
+
+        od::RefPtr<Model> renderModel;
+        if(model->getLodInfoVector().empty())
+        {
+            renderModel = _buildSingleLodModelNode(model);
+
+        }else
+        {
+            renderModel = _buildMultiLodModelNode(model);
+        }
+
+        // assign correct lighting modes. note that some of the shading types are baked into the geometry (flat shading)
+        if(model->getShadingType() == odDb::Model::ShadingType::None)
+        {
+            renderModel->setLightingMode(odRender::LightingMode::OFF);
+
+        }else if(!model->isShiny())
+        {
+            renderModel->setLightingMode(odRender::LightingMode::AMBIENT_DIFFUSE);
+
+        }else
+        {
+            renderModel->setLightingMode(odRender::LightingMode::AMBIENT_DIFFUSE_SPECULAR);
+        }
+
+        osg::ref_ptr<osg::Program> modelProgram = getShaderFactory().getProgram("model");
+        modelProgram->addBindAttribLocation("influencingBones", Constants::ATTRIB_INFLUENCE_LOCATION);
+        modelProgram->addBindAttribLocation("vertexWeights", Constants::ATTRIB_WEIGHT_LOCATION);
+        renderModel->getGeode()->getOrCreateStateSet()->setAttribute(modelProgram, osg::StateAttribute::ON);
+
+        return renderModel.get();
+    }
+
+    od::RefPtr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
+    {
+        ModelBuilder mb(this, "layer " + layer->getName(), layer->getLevel());
+        mb.setCWPolygonFlag(false);
+        mb.setUseClampedTextures(true);
+
+        uint32_t width = layer->getWidth();
+        uint32_t height = layer->getHeight();
+        const std::vector<od::Layer::Vertex> &layerVertices = layer->getVertexVector();
+        const std::vector<od::Layer::Cell> &layerCells = layer->getCellVector();
+
+        std::vector<glm::vec3> vertices;
+        vertices.reserve(layerVertices.size());
+        for(size_t i = 0; i < layerVertices.size(); ++i)
+        {
+            size_t aXRel = i%(width+1);
+            size_t aZRel = i/(width+1); // has to be an integer operation to floor it
+
+            vertices.push_back(glm::vec3(aXRel, layerVertices[i].heightOffsetLu, aZRel));
+        }
+        mb.setVertexVector(std::move(vertices));
+
+        std::vector<odDb::Model::Polygon> polygons; // TODO: move the Polygon struct somewhere where it belongs
+        polygons.reserve(layer->getVisibleTriangleCount());
+        for(size_t triIndex = 0; triIndex < width*height*2; ++triIndex)
+        {
+            size_t cellIndex = triIndex/2;
+            bool isLeft = (triIndex%2 == 0);
+            od::Layer::Cell cell = layerCells[cellIndex];
+            odDb::Model::Polygon poly;
+            poly.vertexCount = 3;
+            poly.texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
+            poly.doubleSided = (layer->getLayerType() == od::Layer::TYPE_BETWEEN);
+
+            if(poly.texture == od::Layer::HoleTextureRef || poly.texture == od::Layer::InvisibleTextureRef)
+            {
+                continue;
+            }
+
+            int aZRel = cellIndex/width; // has to be an integer operation to floor it
+
+            // calculate indices of corner vertices
+            // z x> --a------b---
+            // V      | cell | cell
+            //        |  #n  | #n+1
+            //      --c------d---
+            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
+            size_t b = a + 1;
+            size_t c = a + (width+1); // one row below a, one row contains width+1 vertices
+            size_t d = c + 1;
+
+            glm::vec2 uvA(cell.texCoords[3]/0xffff, cell.texCoords[7]/0xffff);
+            glm::vec2 uvB(cell.texCoords[2]/0xffff, cell.texCoords[6]/0xffff);
+            glm::vec2 uvC(cell.texCoords[0]/0xffff, cell.texCoords[4]/0xffff);
+            glm::vec2 uvD(cell.texCoords[1]/0xffff, cell.texCoords[5]/0xffff);
+
+            if(!(cell.isBackslashCell()))
+            {
+                if(isLeft)
+                {
+                    poly.vertexIndices[0] = c;
+                    poly.vertexIndices[1] = b;
+                    poly.vertexIndices[2] = a;
+                    poly.uvCoords[0] = uvC;
+                    poly.uvCoords[1] = uvB;
+                    poly.uvCoords[2] = uvA;
+
+                }else
+                {
+                    poly.vertexIndices[0] = c;
+                    poly.vertexIndices[1] = d;
+                    poly.vertexIndices[2] = b;
+                    poly.uvCoords[0] = uvC;
+                    poly.uvCoords[1] = uvD;
+                    poly.uvCoords[2] = uvB;
+                }
+
+            }else // division = BACKSLASH
+            {
+                if(isLeft)
+                {
+                    poly.vertexIndices[0] = a;
+                    poly.vertexIndices[1] = c;
+                    poly.vertexIndices[2] = d;
+                    poly.uvCoords[0] = uvA;
+                    poly.uvCoords[1] = uvC;
+                    poly.uvCoords[2] = uvD;
+
+                }else
+                {
+                    poly.vertexIndices[0] = a;
+                    poly.vertexIndices[1] = d;
+                    poly.vertexIndices[2] = b;
+                    poly.uvCoords[0] = uvA;
+                    poly.uvCoords[1] = uvD;
+                    poly.uvCoords[2] = uvB;
+                }
+            }
+
+            if(layer->getLayerType() == od::Layer::TYPE_CEILING)
+            {
+                // swap two vertices, thus reversing the winding order
+                std::swap(poly.vertexIndices[0], poly.vertexIndices[1]);
+                std::swap(poly.uvCoords[0], poly.uvCoords[1]);
+            }
+
+            polygons.push_back(poly);
+        }
+        mb.setPolygonVector(polygons.begin(), polygons.end());
+
+        od::RefPtr<Model> builtModel = mb.build();
+
+        osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
+        builtModel->getGeode()->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
+
+        return builtModel.get();
     }
 
     od::RefPtr<odRender::Image> Renderer::createImage(odDb::Texture *dbTexture)
@@ -345,6 +511,60 @@ namespace odOsg
         }
 
         Logger::verbose() << "Render thread terminated";
+    }
+
+    od::RefPtr<Model> Renderer::_buildSingleLodModelNode(odDb::Model *model)
+    {
+        ModelBuilder mb(this, model->getName(), model->getAssetProvider());
+
+        mb.setCWPolygonFlag(true);
+        mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
+        mb.setVertexVector(model->getVertexVector().begin(), model->getVertexVector().end());
+        mb.setPolygonVector(model->getPolygonVector().begin(), model->getPolygonVector().end());
+
+        return mb.build();
+    }
+
+    od::RefPtr<Model> Renderer::_buildMultiLodModelNode(odDb::Model *model)
+    {
+        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model->getLodInfoVector();
+        const std::vector<glm::vec3> &vertices = model->getVertexVector();
+        const std::vector<odDb::Model::Polygon> &polygons = model->getPolygonVector();
+
+        for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
+        {
+            ModelBuilder mb(this, model->getName() + " (LOD '" + it->lodName + "')", model->getAssetProvider());
+
+            mb.setCWPolygonFlag(true);
+            mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
+
+            // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
+            //  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
+            size_t actualVertexCount = ((it+1 == lodMeshInfos.end()) ? vertices.size() : (it+1)->firstVertexIndex) - it->firstVertexIndex;
+            size_t actualPolyCount = ((it+1 == lodMeshInfos.end()) ? polygons.size() : (it+1)->firstPolygonIndex) - it->firstPolygonIndex;
+
+            auto verticesBegin = vertices.begin() + it->firstVertexIndex;
+            auto verticesEnd = vertices.begin() + actualVertexCount + it->firstVertexIndex;
+            mb.setVertexVector(verticesBegin, verticesEnd);
+
+            auto polygonsBegin = polygons.begin() + it->firstPolygonIndex;
+            auto polygonsEnd = polygons.begin() + actualPolyCount + it->firstPolygonIndex;
+            mb.setPolygonVector(polygonsBegin, polygonsEnd);
+
+            auto bonesBegin = it->boneAffections.begin();
+            auto bonesEnd = it->boneAffections.end();
+            mb.setBoneAffectionVector(bonesBegin, bonesEnd);
+
+            return mb.build(); // FIXME: ignoring LODs past the first for now, as our unified concept does not support this ATM
+
+            /*float minDistance = it->distanceThreshold*OD_WORLD_SCALE;
+            float maxDistance = ((it+1) == lodMeshInfos.end()) ? std::numeric_limits<float>::max() : (it+1)->distanceThreshold*OD_WORLD_SCALE;
+            size_t lodIndex = addLod(minDistance*0, maxDistance*10000);
+
+            addGeometry(geometry, lodIndex);*/
+        }
+
+        return nullptr;
     }
 
 }

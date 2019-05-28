@@ -15,6 +15,17 @@
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <LinearMath/btIDebugDraw.h>
 
+#include <odCore/RefCounted.h>
+
+#include <odCore/render/Array.h>
+
+namespace odRender
+{
+    class Renderer;
+    class Handle;
+    class Geometry;
+}
+
 namespace odBulletPhysics
 {
 
@@ -22,7 +33,7 @@ namespace odBulletPhysics
     {
     public:
 
-        DebugDrawer(btCollisionWorld *collisionWorld);
+        DebugDrawer(odRender::Renderer *renderer, btCollisionWorld *collisionWorld);
         virtual ~DebugDrawer();
 
         virtual void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) override;
@@ -41,14 +52,18 @@ namespace odBulletPhysics
 
     private:
 
+        odRender::Renderer *mRenderer;
         btCollisionWorld *mCollisionWorld;
         int mDebugMode;
 
-        std::vector<glm::vec3> mLineVertices;
-        std::vector<glm::vec3> mLineColors; // contains only one vector per line!
+        od::RefPtr<odRender::Handle> mRenderHandle;
+        od::RefPtr<odRender::Geometry> mGeometry;
 
-        size_t mLastMaximumLineCount;
+        std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> mVertexArray;
+        std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> mColorArray;
 
+        bool mSingleShotUpdate;
+        size_t mLastMaxVertexCount;
     };
 
 

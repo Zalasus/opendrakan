@@ -21,7 +21,7 @@
 #include <odCore/db/ModelBounds.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/ModelNode.h>
+#include <odCore/render/Model.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/ModelShape.h>
@@ -42,7 +42,7 @@ namespace odDb
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
-	, mRenderNode(nullptr)
+	, mRenderModel(nullptr)
 	{
 	}
 
@@ -434,16 +434,19 @@ namespace odDb
 		}
  	}
 
-	od::RefPtr<odRender::ModelNode> Model::getOrCreateRenderNode(odRender::Renderer *renderer)
+	odRender::Model *Model::getOrCreateRenderModel(odRender::Renderer *renderer)
 	{
-	    if(!mRenderNode.isNull())
+	    if(renderer == nullptr)
 	    {
-	        return mRenderNode.aquire();
+	        throw od::InvalidArgumentException("Got null renderer");
 	    }
 
-        od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(this);
-        mRenderNode = node.get();
-        return node;
+	    if(mRenderModel == nullptr)
+	    {
+	        mRenderModel = renderer->createModelFromDb(this);
+	    }
+
+        return mRenderModel;
 	}
 
 	od::RefPtr<odPhysics::ModelShape> Model::getOrCreateModelShape(odPhysics::PhysicsSystem &ps)

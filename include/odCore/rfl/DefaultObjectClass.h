@@ -13,21 +13,11 @@
 #include <odCore/RefCounted.h>
 #include <odCore/ObjectLightReceiver.h>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
 
 #include <odCore/physics/Handles.h>
 
 #include <odCore/rfl/RflClass.h>
-
-namespace odRender
-{
-    class ObjectNode;
-}
-
-namespace odPhysics
-{
-    class ObjectHandle;
-}
 
 namespace odRfl
 {
@@ -56,7 +46,7 @@ namespace odRfl
 
         void _updateLighting(od::LevelObject &obj);
 
-        od::RefPtr<odRender::ObjectNode> mRenderNode;
+        od::RefPtr<odRender::Handle> mRenderHandle;
         od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 
         std::unique_ptr<od::ObjectLightReceiver> mLightReceiver;

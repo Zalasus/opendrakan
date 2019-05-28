@@ -16,7 +16,7 @@
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
 
 namespace dragonRfl
 {
@@ -49,7 +49,7 @@ namespace dragonRfl
 
         std::unique_ptr<odAnim::SkeletonAnimationPlayer> mPlayer;
 
-        od::RefPtr<odRender::ObjectNode> mRenderNode;
+        od::RefPtr<odRender::Handle> mRenderHandle;
 
     };
 

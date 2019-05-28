@@ -30,14 +30,13 @@ digraph od_ownership
         graph [label="Renderer", style=filled, fillcolor=PaleTurquoise];
         node [style=filled, fillcolor=white];
 
-        R_ObjectNode [label="ObjectNode"];
-        R_ModelNode [label="ModelNode"];
+        R_Handle [label="Handle"];
+        R_Model [label="Model"];
         R_Geometry [label="Geometry"];
         R_Texture [label="Texture"];
         R_Image [label="Image"];
         R_GuiQuad [label="GuiQuad"];
         R_GuiNode [label="GuiNode"];
-        R_LayerNode [label="LayerNode"];
         R_LightState [label="LightState"];        
     }
 
@@ -56,8 +55,8 @@ digraph od_ownership
         graph [label="Sound System", style=filled, fillcolor=PaleTurquoise];
         node [style=filled, fillcolor=white];
         
-        S_Buffer;
-        S_Source;
+        S_Buffer [label="Buffer"];
+        S_Source [label="Source"];
     }
     
 
@@ -81,8 +80,6 @@ digraph od_ownership
 
         Texture -> R_Image;
 
-        Model -> R_ModelNode;
-
         R_Image -> R_Texture;
 
         R_GuiQuad -> Widget;
@@ -99,22 +96,18 @@ digraph od_ownership
         Level -> Layer;
 
         LevelObject -> Class;
-        LevelObject -> R_ObjectNode;
+        LevelObject -> R_Handle;
         LevelObject -> P_ObjectHandle;
         
-        Layer -> R_LayerNode;
+        Layer -> R_Handle;
         Layer -> P_LayerHandle;
         
         Light -> P_LightHandle;
 
-        R_ObjectNode -> R_ModelNode;
-        R_ObjectNode -> R_LightState;
+        R_Handle -> R_Model;
+        R_Handle -> R_LightState;
 
-        R_LayerNode -> R_Geometry;
-        R_LayerNode -> R_LightState;
-
-        R_ModelNode -> R_Geometry [label=a];
-        R_ModelNode -> Model;
+        R_Model -> R_Geometry [label=a];
 
         R_Geometry -> R_Texture;
 
@@ -126,7 +119,7 @@ digraph od_ownership
 
         R_GuiNode -> R_GuiNode [label=a];
         R_GuiNode -> R_GuiQuad [label=a];
-        R_GuiNode -> R_ObjectNode [label=a];
+        R_GuiNode -> R_Handle [label=a];
 
         R_LightState -> Light [label=a];
         

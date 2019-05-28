@@ -5,16 +5,17 @@
  *      Author: zal
  */
 
-#include <odCore/Downcast.h>
 #include <odOsg/render/GuiNode.h>
 
 #include <algorithm>
+
+#include <odCore/Downcast.h>
 
 #include <odCore/gui/Widget.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/GuiQuad.h>
-#include <odOsg/render/ObjectNode.h>
+#include <odOsg/render/Handle.h>
 
 namespace odOsg
 {
@@ -90,6 +91,11 @@ namespace odOsg
         if(mUpdateCallback != nullptr)
         {
             mTransform->removeUpdateCallback(mUpdateCallback);
+        }
+
+        for(auto &c : mChildHandles)
+        {
+            mObjectGroup->removeChild(c->getOsgNode());
         }
     }
 
@@ -184,8 +190,13 @@ namespace odOsg
         }
     }
 
-    odRender::ObjectNode *GuiNode::createObjectNode()
+    void GuiNode::addChildHandle(odRender::Handle *handle)
     {
+        if(handle == nullptr)
+        {
+            return;
+        }
+
         if(mObjectGroup == nullptr)
         {
             mObjectGroup = new osg::Group;
@@ -195,22 +206,28 @@ namespace odOsg
             mTransform->addChild(mObjectGroup);
         }
 
-        auto node = od::make_refd<ObjectNode>(mRenderer, mObjectGroup);
+        auto osgHandle = od::confident_downcast<Handle>(handle);
 
-        node->setLocalLightMask(0); // usually, we don't want local lights to illuminate the GUI
+        mObjectGroup->addChild(osgHandle->getOsgNode());
 
-        mObjectNodes.push_back(node);
-
-        return node.get();
+        mChildHandles.push_back(osgHandle);
     }
 
-    void GuiNode::removeObjectNode(odRender::ObjectNode *node)
+    void GuiNode::removeChildHandle(odRender::Handle *handle)
     {
-        ObjectNode *on = static_cast<ObjectNode*>(node);
-        auto it = std::find(mObjectNodes.begin(), mObjectNodes.end(), on);
-        if(it != mObjectNodes.end())
+        if(handle == nullptr)
         {
-            mObjectNodes.erase(it);
+            return;
+        }
+
+        auto osgHandle = od::confident_downcast<Handle>(handle);
+
+        auto it = std::find(mChildHandles.begin(), mChildHandles.end(), osgHandle);
+        if(it != mChildHandles.end())
+        {
+            mObjectGroup->removeChild(osgHandle->getOsgNode());
+
+            mChildHandles.erase(it);
         }
     }
 

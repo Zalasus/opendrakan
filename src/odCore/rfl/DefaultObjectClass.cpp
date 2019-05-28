@@ -16,8 +16,7 @@
 #include <odCore/db/ModelBounds.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/ObjectNode.h>
-#include <odCore/render/ModelNode.h>
+#include <odCore/render/Model.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -39,7 +38,7 @@ namespace odRfl
         odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
-            mRenderNode = renderer->createObjectNode(obj);
+            mRenderHandle = renderer->createHandleFromObject(obj);
 
             _updateLighting(obj);
         }
@@ -52,12 +51,12 @@ namespace odRfl
             mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
         }
 
-        mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderNode);
+        mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
     }
 
     void DefaultObjectClass::onDespawned(od::LevelObject &obj)
     {
-        mRenderNode = nullptr;
+        mRenderHandle = nullptr;
         mPhysicsHandle = nullptr;
         mLightReceiver = nullptr;
     }
@@ -69,13 +68,13 @@ namespace odRfl
 
     void DefaultObjectClass::_updateLighting(od::LevelObject &obj)
     {
-        if(mRenderNode != nullptr)
+        if(mRenderHandle != nullptr)
         {
             od::Layer *lightingLayer = (obj.getLightSourceLayer()!= nullptr) ?
                     obj.getLightSourceLayer() : obj.getLevel().getFirstLayerBelowPoint(obj.getPosition());
             if(lightingLayer != nullptr)
             {
-                mRenderNode->setGlobalLight(lightingLayer->getLightColor(), lightingLayer->getAmbientColor(), lightingLayer->getLightDirection());
+                mRenderHandle->setGlobalLight(lightingLayer->getLightDirection(), lightingLayer->getLightColor(), lightingLayer->getAmbientColor());
             }
         }
 

@@ -24,19 +24,19 @@ namespace odDb
 namespace odOsg
 {
 
-    class Geometry;
     class Renderer;
+    class Model;
 
 	/**
-	 * TODO: this can potentially be integrated into out Geometry implementation
+	 * Builder for constructing Models from Riot engine model data. It splits models into multiple segments
+	 * with only one texture per segment, which can then be turned into a Geometry. VBOs are shared among all
+	 * segments and vertices are reused where possible.
 	 *
-	 * Class for constructing geodes from Riot engine model data. It splits models into multiple segments
-	 * with only one texture per segment. VBOs are shared among all segments and vertices are reused where possible.
 	 * Automatically generates normals and duplicates vertices if neccessary.
 	 *
 	 * Construction is O(n*log(n)).
 	 */
-	class GeometryBuilder
+	class ModelBuilder
 	{
 	public:
 
@@ -44,17 +44,20 @@ namespace odOsg
         typedef std::vector<odDb::Model::Polygon>::const_iterator PolygonIterator;
         typedef std::vector<odDb::Model::BoneAffection>::const_iterator BoneAffectionIterator;
 
-		GeometryBuilder(Renderer *renderer, Geometry &geometry, const std::string &geometryName, odDb::AssetProvider &assetProvider);
+		ModelBuilder(Renderer *renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
-		inline void setNormalsFromCcw(bool b) { mNormalsFromCcw = b; }
+		inline void setCWPolygonFlag(bool b) { mCWPolys = b; }
 		inline void setUseClampedTextures(bool b) { mUseClampedTextures = b; }
 
-		void setVertexVector(VertexIterator begin, VertexIterator end);
+		void setVertexVector(VertexIterator begin, VertexIterator end); /// < @brief Copied the passed range to the internal vertex vector
+		void setVertexVector(std::vector<glm::vec3> &&v); ///< @brief Moves the passed vertex vector to the internal one without copying.
+
 		void setPolygonVector(PolygonIterator begin, PolygonIterator end);
 		void setBoneAffectionVector(BoneAffectionIterator begin, BoneAffectionIterator end);
 
-		void build();
+		od::RefPtr<Model> build();
+		void buildAndAppend(Model *model);
 
 
 	private:
@@ -64,6 +67,13 @@ namespace odOsg
 			size_t vertexIndices[3];
 			glm::vec2 uvCoords[3];
 			odDb::AssetRef texture;
+
+			void flip()
+			{
+			    // swapping verts 0 and 2 reverses winding order, thus flipping the triangle
+			    std::swap(vertexIndices[0], vertexIndices[2]);
+			    std::swap(uvCoords[0], uvCoords[2]);
+			}
 		};
 
 		void _buildNormals();
@@ -76,17 +86,17 @@ namespace odOsg
 		odDb::AssetProvider &mAssetProvider;
 
 		bool mSmoothNormals;
-		bool mNormalsFromCcw;
+		bool mCWPolys;
 		bool mUseClampedTextures;
 
 		std::vector<Triangle> mTriangles;
 
-		Geometry &mGeometry;
-		std::vector<glm::vec3> &mVertices;
-		std::vector<glm::vec3> &mNormals;
-		std::vector<glm::vec2> &mUvCoords;
-		std::vector<glm::vec4> &mBoneIndices;
-		std::vector<glm::vec4> &mBoneWeights;
+		std::vector<glm::vec3> mVertices;
+		std::vector<glm::vec3> mNormals;
+		std::vector<glm::vec2> mUvCoords;
+		std::vector<glm::vec4> mBoneIndices;
+		std::vector<glm::vec4> mBoneWeights;
+		bool mHasBoneInfo;
 	};
 
 }

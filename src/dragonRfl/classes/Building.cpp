@@ -17,9 +17,6 @@
 
 #include <odCore/physics/PhysicsSystem.h>
 
-#include <odCore/render/Renderer.h>
-#include <odCore/render/ObjectNode.h>
-
 namespace dragonRfl
 {
 

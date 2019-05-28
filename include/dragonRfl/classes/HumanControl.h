@@ -18,7 +18,7 @@
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
 #include <dragonRfl/LocalPlayer.h>
@@ -75,7 +75,7 @@ namespace dragonRfl
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
-		od::RefPtr<odRender::ObjectNode> mRenderNode;
+		od::RefPtr<odRender::Handle> mRenderHandle;
 		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 

@@ -19,7 +19,7 @@ namespace odPhysics
 
 namespace odRender
 {
-    class ObjectNode;
+    class Handle;
 }
 
 namespace od
@@ -35,7 +35,7 @@ namespace od
     {
     public:
 
-        ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::ObjectNode *on);
+        ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *oh, odRender::Handle *renderHandle);
         virtual ~ObjectLightReceiver();
 
         virtual void removeAffectingLight(od::Light *light) override;
@@ -49,7 +49,7 @@ namespace od
 
         odPhysics::PhysicsSystem &mPhysicsSystem;
         od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
-        od::RefPtr<odRender::ObjectNode> mRenderNode;
+        od::RefPtr<odRender::Handle> mRenderHandle;
 
     };
 

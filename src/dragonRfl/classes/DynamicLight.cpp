@@ -101,7 +101,7 @@ namespace dragonRfl
 
         }else
         {
-            mLight->setColor(glm::vec3(0.0, 0.0, 0.0));
+            mLight->setColor(glm::vec3(0.0, 0.0, 0.0)); // TODO: lights need an off-flag. an off-state light could free up one light slot
         }
     }
 

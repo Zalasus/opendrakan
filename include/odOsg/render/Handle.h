@@ -1,63 +1,54 @@
 /*
- * ObjectNode.h
+ * Handle.h
  *
- *  Created on: Nov 22, 2018
+ *  Created on: May 15, 2019
  *      Author: zal
  */
 
-#ifndef INCLUDE_ODOSG_OBJECTNODE_H_
-#define INCLUDE_ODOSG_OBJECTNODE_H_
+#ifndef INCLUDE_ODOSG_RENDER_HANDLE_H_
+#define INCLUDE_ODOSG_RENDER_HANDLE_H_
 
 #include <memory>
 
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
-#include <osg/NodeCallback>
 #include <osg/Uniform>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
 
 #include <odOsg/render/LightState.h>
 
 namespace odOsg
 {
-
     class Renderer;
-    class ModelNode;
+    class Model;
     class Rig;
 
-    class ObjectNode : public odRender::ObjectNode
+    class Handle : public odRender::Handle
     {
     public:
 
-        ObjectNode(Renderer *renderer, osg::Group *objectGroup);
-        ~ObjectNode();
+        Handle(Renderer *renderer, osg::Group *parent);
+        virtual ~Handle();
+
+        inline osg::Group *getOsgNode() { return mTransform; }
+
+        virtual std::mutex &getMutex() override;
 
         virtual glm::vec3 getPosition() override;
         virtual glm::quat getOrientation() override;
         virtual glm::vec3 getScale() override;
-
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;
 
-        /**
-         * @brief Sets the global directional light that is always applied to the object if it is shaded.
-         *
-         * @param diffuse    Diffuse component of the light
-         * @param ambient    Ambient component of the light
-         * @param direction  Direction vector pointing towards the light source
-         */
-        virtual void setGlobalLight(const glm::vec3 &diffuse, const glm::vec3 &ambient, const glm::vec3 &direction) override;
-        virtual void setLocalLightMask(uint32_t localLightMask) override;
-
-        virtual odRender::ModelNode *getModel() override;
-        virtual void setModel(odRender::ModelNode *node) override;
+        virtual odRender::Model *getModel() override;
+        virtual void setModel(odRender::Model *model) override;
 
         virtual void setVisible(bool visible) override;
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
 
-        virtual void setRenderMode(RenderMode rm) override;
+        virtual void setRenderBin(odRender::RenderBin rm) override;
 
         virtual void addFrameListener(odRender::FrameListener *listener) override;
         virtual void removeFrameListener(odRender::FrameListener *listener) override;
@@ -71,22 +62,32 @@ namespace odOsg
         virtual void removeLight(od::Light *light) override;
         virtual void clearLightList() override;
 
+        /**
+         * @brief Sets the global directional light that is always applied to the object if it is shaded.
+         *
+         * @param diffuse    Diffuse component of the light
+         * @param ambient    Ambient component of the light
+         * @param direction  Direction vector pointing towards the light source
+         */
+        virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) override;
+
 
     private:
 
-        Renderer *mRenderer;
-        osg::ref_ptr<osg::Group> mObjectGroup;
-        od::RefPtr<ModelNode> mModelNode;
-        osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
-        osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
-        osg::ref_ptr<osg::Depth> mDepth;
+        osg::ref_ptr<osg::Group> mParentGroup;
+
+        std::mutex mMutex;
+        Model *mModel;
         odRender::FrameListener *mFrameListener;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
-        std::unique_ptr<Rig> mRig;
+        osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
+        osg::ref_ptr<osg::Depth> mDepth;
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
+        osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
+        std::unique_ptr<Rig> mRig;
     };
 
 }
 
 
-#endif /* INCLUDE_ODOSG_OBJECTNODE_H_ */
+#endif /* INCLUDE_ODOSG_RENDER_HANDLE_H_ */

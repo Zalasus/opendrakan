@@ -22,7 +22,7 @@
 
 namespace odRender
 {
-    class ModelNode;
+    class Model;
     class Renderer;
 }
 
@@ -103,8 +103,7 @@ namespace odDb
 		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
 		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
 
-		// returns a refptr since this class only takes weak ownership of potentially created objects
-		od::RefPtr<odRender::ModelNode> getOrCreateRenderNode(odRender::Renderer *renderer);
+		odRender::Model *getOrCreateRenderModel(odRender::Renderer *renderer);
 
 		od::RefPtr<odPhysics::ModelShape> getOrCreateModelShape(odPhysics::PhysicsSystem &ps);
 
@@ -131,7 +130,7 @@ namespace odDb
 		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
 		od::BoundingSphere mCalculatedBoundingSphere;
 
-		od::WeakObserverRefPtr<odRender::ModelNode> mRenderNode;
+		od::RefPtr<odRender::Model> mRenderModel;
 
 		od::WeakObserverRefPtr<odPhysics::ModelShape> mPhysicsShape;
 	};
