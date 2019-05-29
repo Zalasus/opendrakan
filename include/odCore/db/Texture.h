@@ -72,7 +72,7 @@ namespace odDb
 
         std::vector<uint8_t> mRgba8888Data;
 
-        od::WeakRefPtr<odRender::Image> mRenderImage;
+        od::WeakObserverRefPtr<odRender::Image> mRenderImage;
     };
 
     template <>

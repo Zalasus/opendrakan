@@ -51,6 +51,12 @@ namespace od
 	class Engine;
 }
 
+namespace odPhysics
+{
+    class Handle;
+    class PhysicsSystem;
+}
+
 namespace odRfl
 {
 	class Rfl;
@@ -61,7 +67,7 @@ namespace odRfl
 	{
 	public:
 
-		virtual ~RflClass() = default;
+		virtual ~RflClass();
 
 		virtual void probeFields(FieldProbe &probe) = 0;
 
@@ -87,7 +93,7 @@ namespace odRfl
 		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);
-
+		virtual void onVisibilityChanged();
 	};
 
 

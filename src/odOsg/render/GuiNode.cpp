@@ -9,12 +9,13 @@
 
 #include <algorithm>
 
+#include <odCore/Downcast.h>
+
 #include <odCore/gui/Widget.h>
 
 #include <odOsg/GlmAdapter.h>
-#include <odOsg/Utils.h>
 #include <odOsg/render/GuiQuad.h>
-#include <odOsg/render/ObjectNode.h>
+#include <odOsg/render/Handle.h>
 
 namespace odOsg
 {
@@ -76,7 +77,7 @@ namespace odOsg
     , mWidget(w)
     , mTransform(new osg::MatrixTransform)
     {
-        if(mWidget != nullptr)
+        if(w != nullptr)
         {
             mUpdateCallback = new UpdateCallback(this);
             mTransform->addUpdateCallback(mUpdateCallback);
@@ -91,6 +92,11 @@ namespace odOsg
         {
             mTransform->removeUpdateCallback(mUpdateCallback);
         }
+
+        for(auto &c : mChildHandles)
+        {
+            mObjectGroup->removeChild(c->getOsgNode());
+        }
     }
 
     void GuiNode::addChild(odRender::GuiNode *node)
@@ -100,7 +106,7 @@ namespace odOsg
             return;
         }
 
-        od::RefPtr<GuiNode> guiNode = upcast<GuiNode>(node);
+        od::RefPtr<GuiNode> guiNode = od::confident_downcast<GuiNode>(node);
         mChildren.push_back(guiNode);
 
         mTransform->addChild(guiNode->getOsgNode());
@@ -184,8 +190,13 @@ namespace odOsg
         }
     }
 
-    odRender::ObjectNode *GuiNode::createObjectNode()
+    void GuiNode::addChildHandle(odRender::Handle *handle)
     {
+        if(handle == nullptr)
+        {
+            return;
+        }
+
         if(mObjectGroup == nullptr)
         {
             mObjectGroup = new osg::Group;
@@ -195,30 +206,36 @@ namespace odOsg
             mTransform->addChild(mObjectGroup);
         }
 
-        auto node = od::make_refd<ObjectNode>(mRenderer, mObjectGroup);
+        auto osgHandle = od::confident_downcast<Handle>(handle);
 
-        node->setLocalLightMask(0); // usually, we don't want local lights to illuminate the GUI
+        mObjectGroup->addChild(osgHandle->getOsgNode());
 
-        mObjectNodes.push_back(node);
-
-        return node.get();
+        mChildHandles.push_back(osgHandle);
     }
 
-    void GuiNode::removeObjectNode(odRender::ObjectNode *node)
+    void GuiNode::removeChildHandle(odRender::Handle *handle)
     {
-        ObjectNode *on = static_cast<ObjectNode*>(node);
-        auto it = std::find(mObjectNodes.begin(), mObjectNodes.end(), on);
-        if(it != mObjectNodes.end())
+        if(handle == nullptr)
         {
-            mObjectNodes.erase(it);
+            return;
+        }
+
+        auto osgHandle = od::confident_downcast<Handle>(handle);
+
+        auto it = std::find(mChildHandles.begin(), mChildHandles.end(), osgHandle);
+        if(it != mChildHandles.end())
+        {
+            mObjectGroup->removeChild(osgHandle->getOsgNode());
+
+            mChildHandles.erase(it);
         }
     }
 
     void GuiNode::update(float relTime)
     {
-        if(mWidget != nullptr)
+        if(mWidget.isNonNull())
         {
-            mWidget->update(relTime);
+            mWidget.aquire()->update(relTime);
         }
     }
 

@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_RENDER_GEOMETRY_H_
 
 #include <vector>
+#include <memory>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -16,38 +17,52 @@
 
 #include <odCore/RefCounted.h>
 
+#include <odCore/render/Array.h>
+
 namespace odRender
 {
 
+    class Texture;
+
+    enum class PrimitiveType
+    {
+        LINES,
+        TRIANGLES,
+        TRIANGLE_FAN,
+        TRIANGLE_STRIP
+    };
+
     /**
      * An interface for a renderable geometry, to be implemented by the renderer module.
-     * This provides direct read-write access to the underlying vertex attributes. Note that
-     * this data is not the same as the data found in odDb::Model objects, as that data is
-     * optimized for storage and usually not directly renderable.
+     * This provides read-write access to the underlying vertex attributes. Note that
+     * this data might not be the same as the data found in odDb::Model objects, as that
+     * data is optimized for storage and usually not directly renderable.
      *
-     * If the underlying rendering system can not use the vector types expected to be provided
-     * by this interface, it is the implementations job to convert and copy them to it's
-     * represantation of choice. This makes it necessary that a user always calls notifyVertexDataChanged()
-     * after making edits to the vertex data, so the implementation can update it's local data.
+     * Usually a model needs to be split into multiple geometries, depending on how the renderer
+     * implements rendering of multiple textures. This splitting is to to be done by the renderer.
+     * In a split model, the vertex attributes can be shared among multiple geometries, so modifying
+     * an array in one geometry might change it in all of the model's geometries.
      */
     class Geometry : public od::RefCounted
     {
     public:
 
-        virtual ~Geometry() = default;
-
-        virtual std::vector<glm::vec3> &getVertexArray() = 0;
-        virtual std::vector<glm::vec4> &getColorArray() = 0;
-        virtual std::vector<glm::vec3> &getNormalArray() = 0;
-        virtual std::vector<glm::vec2> &getTextureCoordArray() = 0;
-
         virtual void setHasBoneInfo(bool b) = 0;
         virtual bool hasBoneInfo() const = 0;
-        virtual std::vector<glm::vec4> &getBoneIndexArray() = 0;
-        virtual std::vector<glm::vec4> &getBoneWeightArray() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getBoneIndexArrayAccessHandler() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getBoneWeightArrayAccessHandler() = 0;
 
-        virtual void notifyColorDirty() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec3>> getVertexArrayAccessHandler() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getColorArrayAccessHandler() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec3>> getNormalArrayAccessHandler() = 0;
+        virtual std::unique_ptr<ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() = 0;
 
+        virtual std::unique_ptr<ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() = 0;
+
+        virtual void setTexture(Texture *texture) = 0;
+
+        virtual bool usesIndexedRendering() = 0;
+        virtual PrimitiveType getPrimitiveType() = 0;
 
     };
 

@@ -8,10 +8,13 @@
 #ifndef INCLUDE_RFL_DRAGON_SKY_H_
 #define INCLUDE_RFL_DRAGON_SKY_H_
 
-#include <osg/Vec3>
+#include <odCore/RefCounted.h>
+
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
+
+#include <odCore/render/Handle.h>
 
 namespace dragonRfl
 {
@@ -43,6 +46,11 @@ namespace dragonRfl
 		odRfl::ClassRef		mLensFlare;
 		odRfl::Integer		mFlareElevation;
 		odRfl::Integer		mFlareDirection;
+
+
+    private:
+
+		od::RefPtr<odRender::Handle> mRenderNode;
 
     };
 

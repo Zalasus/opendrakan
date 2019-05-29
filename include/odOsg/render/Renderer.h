@@ -8,11 +8,10 @@
 #ifndef INCLUDE_ODOSG_RENDERER_H_
 #define INCLUDE_ODOSG_RENDERER_H_
 
-#include <odCore/render/Renderer.h>
-
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <memory>
 
 #include <osg/Group>
 #include <osg/Uniform>
@@ -21,15 +20,21 @@
 #include <odCore/RefCounted.h>
 #include <odCore/BoundingSphere.h>
 
+#include <odCore/render/Renderer.h>
+
 #include <odOsg/render/ShaderFactory.h>
+
+namespace od
+{
+    class Light;
+}
 
 namespace odOsg
 {
-
-    class ModelNode;
     class Texture;
     class Camera;
     class GuiNode;
+    class Model;
 
     class Renderer : public odRender::Renderer
     {
@@ -47,11 +52,14 @@ namespace odOsg
 
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
-        virtual od::RefPtr<odRender::Light> createLight(od::LevelObject *obj) override;
 
-        virtual od::RefPtr<odRender::ObjectNode> createObjectNode(od::LevelObject &obj) override;
-        virtual od::RefPtr<odRender::ModelNode> createModelNode(odDb::Model *model) override;
-        virtual od::RefPtr<odRender::LayerNode> createLayerNode(od::Layer *layer) override;
+        virtual od::RefPtr<odRender::Handle> createHandle(odRender::RenderSpace space) override;
+        virtual od::RefPtr<odRender::Model> createModel() override;
+        virtual od::RefPtr<odRender::Geometry> createGeometry(odRender::PrimitiveType primitiveType, bool indexed) override;
+
+        virtual od::RefPtr<odRender::Model> createModelFromDb(odDb::Model *model) override;
+        virtual od::RefPtr<odRender::Model> createModelFromLayer(od::Layer *layer) override;
+
         virtual od::RefPtr<odRender::Image> createImage(odDb::Texture *dbTexture) override;
         virtual od::RefPtr<odRender::Texture> createTexture(odRender::Image *image) override;
         virtual od::RefPtr<odRender::GuiNode> createGuiNode(odGui::Widget *widget) override;
@@ -60,9 +68,8 @@ namespace odOsg
         virtual odRender::Camera *getCamera() override;
 
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
-        void applyToLightUniform(const osg::Matrix &viewMatrix, odRender::Light *light, size_t index);
+        void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index);
         void applyNullLight(size_t index);
-        void getLightsIntersectingSphere(const od::BoundingSphere &sphere, std::vector<odRender::Light*> &lights, uint32_t lightMask);
 
         void setFreeLook(bool f);
 
@@ -72,6 +79,9 @@ namespace odOsg
         void _setupGuiStuff();
 
         void _threadedRender();
+
+        od::RefPtr<Model> _buildSingleLodModelNode(odDb::Model *model);
+        od::RefPtr<Model> _buildMultiLodModelNode(odDb::Model *model);
 
         ShaderFactory mShaderFactory;
         std::thread mRenderThread;
@@ -85,15 +95,13 @@ namespace odOsg
 
         osg::ref_ptr<osgViewer::Viewer> mViewer;
         osg::ref_ptr<osg::Group> mSceneRoot;
-        osg::ref_ptr<osg::Group> mObjects;
-        osg::ref_ptr<osg::Group> mLayers;
+        osg::ref_ptr<osg::Group> mLevelRoot;
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group> mGuiRoot;
         od::RefPtr<GuiNode> mGuiRootNode;
 
         bool mLightingEnabled;
-        std::vector<od::RefPtr<odRender::Light>> mLights;
         osg::ref_ptr<osg::Uniform> mGlobalLightDiffuse;
         osg::ref_ptr<osg::Uniform> mGlobalLightAmbient;
         osg::ref_ptr<osg::Uniform> mGlobalLightDirection;

@@ -14,19 +14,12 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <LinearMath/btMotionState.h>
-
 #include <odCore/db/Class.h>
 #include <odCore/rfl/RflMessage.h>
 
 namespace odAnim
 {
     class Skeleton;
-}
-
-namespace odRender
-{
-    class ObjectNode;
 }
 
 namespace od
@@ -59,12 +52,12 @@ namespace od
         Always
     };
 
-    class LevelObject : public btMotionState
+    class LevelObject
     {
     public:
 
         LevelObject(Level &level);
-        ~LevelObject();
+        virtual ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline odDb::Class *getClass() { return mClass; }
@@ -80,9 +73,11 @@ namespace od
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }
         inline bool isScaled() const { return mIsScaled; }
-        inline odRender::ObjectNode *getRenderNode() { return mRenderNode; }
 
         void loadFromRecord(DataReader dr);
+
+        void buildLinks();
+
         void spawned();
         void despawned();
         void destroyed();
@@ -152,10 +147,6 @@ namespace od
         void messageAllLinkedObjects(odRfl::RflMessage message);
         void requestDestruction();
 
-        // implement btMotionState
-        virtual void getWorldTransform(btTransform& worldTrans) const override;
-        virtual void setWorldTransform(const btTransform& worldTrans) override;
-
 
     private:
 
@@ -163,14 +154,12 @@ namespace od
         void _updateLayerBelowObject();
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
-        void _setRenderNodeVisible(bool visible);
 
 
         Level &mLevel;
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
         od::RefPtr<odDb::Class> mClass;
-        od::RefPtr<odRender::ObjectNode> mRenderNode;
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odRfl::RflClass> mRflClassInstance;
         uint32_t mLightingLayerId;

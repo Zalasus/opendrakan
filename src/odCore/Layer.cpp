@@ -8,15 +8,20 @@
 #include <odCore/Layer.h>
 
 #include <limits>
-#include <BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h>
 
 #include <glm/common.hpp>
 
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
+#include <odCore/Light.h>
 
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Geometry.h>
+#include <odCore/render/Array.h>
+#include <odCore/render/Model.h>
+
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 namespace od
 {
@@ -40,6 +45,7 @@ namespace od
     , mLightAscension(0)
     , mLightDropoffType(DROPOFF_NONE)
     , mVisibleTriangles(0)
+    , mCollidingTriangles(0)
     {
     }
 
@@ -148,95 +154,30 @@ namespace od
 
             mCells.push_back(c);
 
-            if(c.leftTextureRef != HoleTextureRef && c.leftTextureRef != InvisibleTextureRef)
+            if(c.leftTextureRef != HoleTextureRef)
             {
-            	++mVisibleTriangles;
-            }
-
-            if(c.rightTextureRef != HoleTextureRef && c.rightTextureRef != InvisibleTextureRef)
-            {
-            	++mVisibleTriangles;
-            }
-        }
-    }
-
-    btCollisionShape *Layer::getCollisionShape()
-    {
-        if(mCollisionShape != nullptr)
-        {
-            return mCollisionShape.get();
-        }
-
-        if(mVisibleTriangles == 0)
-        {
-        	return nullptr;
-        }
-
-        bool mustUse32BitIndices = (mVertices.size() - 1 > 0xffff); // should save us some memory most of the time
-        mBulletMesh = std::make_unique<btTriangleMesh>(mustUse32BitIndices, false);
-        btTriangleMesh *mesh = mBulletMesh.get(); // because we call members very often and unique_ptr has some overhead
-
-        // first, add all vertices in grid to shape
-        mesh->preallocateVertices(mVertices.size() * 3); // bullet seems to be buggy here. it actually needs 3 times the space it reserves
-        for(size_t i = 0; i < mVertices.size(); ++i)
-        {
-            size_t aXRel = i%(mWidth+1);
-            size_t aZRel = i/(mWidth+1); // has to be an integer operation to floor it
-            float aX = aXRel; // ignore origin so shape is relative to layer origin. we place it in world coords via the collision object
-            float aZ = aZRel;
-
-            mesh->findOrAddVertex(btVector3(aX, mVertices[i].heightOffsetLu, aZ), false);
-        }
-
-        // second, push indices for each triangle, ignoring those without texture as these define holes the player can walk/fall through
-        mesh->preallocateIndices(mVisibleTriangles * 3);
-        for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
-        {
-            size_t cellIndex = triIndex/2;
-            bool isLeft = (triIndex%2 == 0);
-            Cell cell = mCells[cellIndex];
-            odDb::AssetRef texture = isLeft ? cell.leftTextureRef : cell.rightTextureRef;
-
-            if(texture == HoleTextureRef) // unlike when building geometry, we want to include invisible triangles here!
-            {
-                continue;
-            }
-
-            int aZRel = cellIndex/mWidth; // has to be an integer operation to floor it
-
-            // calculate indices of corner vertices. same as in buildGeometry()
-            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
-            size_t b = a + 1;
-            size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
-            size_t d = c + 1;
-
-            if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
-            {
-                if(isLeft)
+                if(c.leftTextureRef != InvisibleTextureRef)
                 {
-                    mesh->addTriangleIndices(c, b, a);
+                    ++mCollidingTriangles;
 
                 }else
                 {
-                    mesh->addTriangleIndices(c, d, b);
+                    ++mVisibleTriangles;
                 }
+            }
 
-            }else // division = BACKSLASH
+            if(c.rightTextureRef != HoleTextureRef)
             {
-                if(isLeft)
+            	if(c.rightTextureRef != InvisibleTextureRef)
                 {
-                    mesh->addTriangleIndices(a, c, d);
+                    ++mCollidingTriangles;
 
                 }else
                 {
-                    mesh->addTriangleIndices(a, d, b);
+                    ++mVisibleTriangles;
                 }
             }
         }
-
-        mCollisionShape = std::make_unique<btBvhTriangleMeshShape>(mesh, true, true);
-
-        return mCollisionShape.get();
     }
 
     void Layer::spawn()
@@ -244,15 +185,25 @@ namespace od
         odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr)
         {
-            mLayerNode = renderer->createLayerNode(this);
+            mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
+            mRenderModel = renderer->createModelFromLayer(this);
+
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setModel(mRenderModel);
+            mRenderHandle->setPosition(getOrigin());
         }
+
+        mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
+        mPhysicsHandle->setLightCallback(this);
 
         _bakeLocalLayerLight();
     }
 
     void Layer::despawn()
     {
-        mLayerNode = nullptr;
+        mRenderHandle = nullptr;
+        mRenderModel = nullptr;
+        mPhysicsHandle = nullptr;
     }
 
     bool Layer::hasHoleAt(const glm::vec2 &absolutePos)
@@ -437,17 +388,123 @@ namespace od
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
-    void Layer::_bakeLocalLayerLight()
+    void Layer::removeAffectingLight(od::Light *light)
     {
-        if(mLayerNode == nullptr || mLayerNode->getGeometry() == nullptr)
+        if(light == nullptr)
         {
             return;
         }
 
-        odRender::Geometry *geometry = mLayerNode->getGeometry();
-        std::vector<glm::vec3> &vertexArray = geometry->getVertexArray();
-        std::vector<glm::vec3> &normalArray = geometry->getNormalArray();
-        std::vector<glm::vec4> &colorArray = geometry->getColorArray();
+        // let's hope the light is dynamic, cause otherwise we have no way of easily removing the baked light from the vertices
+
+        if(light->isDynamic() && mRenderHandle != nullptr)
+        {
+            mRenderHandle->removeLight(light);
+        }
+    }
+
+    void Layer::addAffectingLight(od::Light *light)
+    {
+        if(light == nullptr)
+        {
+            return;
+        }
+
+        // static lights can be baked into the vertex colors. all others need to be passed to the renderer
+        if(!light->isDynamic())
+        {
+            _bakeStaticLight(light);
+
+        }else
+        {
+            if(mRenderHandle != nullptr)
+            {
+                mRenderHandle->addLight(light);
+            }
+        }
+    }
+
+    void Layer::clearLightList()
+    {
+        mRenderHandle->clearLightList();
+    }
+
+    void Layer::_bakeStaticLight(od::Light *light)
+    {
+        if(light == nullptr || mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
+        {
+            return;
+        }
+
+        if(mRenderModel->getGeometryCount() > 1 && !mRenderModel->hasSharedVertexArrays())
+        {
+            throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
+        }
+
+        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
+
+        glm::vec3 relLightPosition = light->getPosition() - getOrigin(); // relative to layer origin
+        float lightRadius = light->getRadius();
+        float lightIntensity = light->getIntensityScaling();
+        glm::vec3 lightColor = light->getColor();
+
+        // find maximum rectangular area that can possibly be intersected by the light so we can early-reject vertices
+        //  without having to calculate the distance to the light everytime
+        int32_t xMin = std::max(relLightPosition.x-lightRadius, 0.0f);
+        int32_t xMax = std::min(relLightPosition.x+lightRadius, (float)mWidth);
+        int32_t zMin = std::max(relLightPosition.z-lightRadius, 0.0f);
+        int32_t zMax = std::max(relLightPosition.z+lightRadius, (float)mHeight);
+
+        odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());
+
+        for(size_t i = 0; i < vertexArray.size(); ++i)
+        {
+            glm::vec3 vertexPosition = vertexArray[i];
+
+            if(vertexPosition.x < xMin || vertexPosition.x > xMax ||
+               vertexPosition.z < zMin || vertexPosition.z > zMax)
+            {
+                continue;
+            }
+
+            if(glm::length(vertexPosition - relLightPosition) > lightRadius)
+            {
+                continue;
+            }
+
+            glm::vec3 lightDir = relLightPosition - vertexPosition;
+            float distance = glm::length(lightDir);
+            lightDir /= distance;
+
+            float normDistance = distance/lightRadius;
+            float attenuation = -0.82824*normDistance*normDistance - 0.13095*normDistance + 1.01358;
+            attenuation = glm::clamp(attenuation, 0.0f, 1.0f);
+
+            float cosTheta = glm::max(glm::dot(normalArray[i], lightDir), 0.0f);
+
+            glm::vec3 newVertexColor = lightIntensity * lightColor * cosTheta * attenuation;
+            colorArray[i] += glm::vec4(newVertexColor, 0.0f);
+        }
+    }
+
+    void Layer::_bakeLocalLayerLight()
+    {
+        if(mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
+        {
+            return;
+        }
+
+        if(mRenderModel->getGeometryCount() > 1 && !mRenderModel->hasSharedVertexArrays())
+        {
+            throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
+        }
+
+        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
+        odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
+        odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());
 
         if(normalArray.size() != vertexArray.size())
         {
@@ -538,8 +595,75 @@ namespace od
 
             colorArray[i] = glm::vec4(lightColor, 1.0);
         }
+    }
 
-        geometry->notifyColorDirty();
+    void Layer::_calculateNormalsInternal()
+    {
+        mLocalNormals.resize(mVertices.size(), glm::vec3(0.0));
+
+        for(size_t triIndex = 0; triIndex < mWidth*mHeight*2; ++triIndex)
+        {
+            size_t cellIndex = triIndex/2;
+            bool isLeft = (triIndex%2 == 0);
+            od::Layer::Cell cell = mCells[cellIndex];
+
+            int32_t aZRel = cellIndex/mWidth; // has to be an integer operation to floor it
+
+            // calculate indices of corner vertices
+            size_t a = cellIndex + aZRel; // add row index since we want to skip top right vertex in every row passed so far
+            size_t b = a + 1;
+            size_t c = a + (mWidth+1); // one row below a, one row contains width+1 vertices
+            size_t d = c + 1;
+
+            size_t centerIndex;
+            size_t leftIndex; // as in "used left of cross product"
+            size_t rightIndex;
+
+            if(!(cell.flags & OD_LAYER_FLAG_DIV_BACKSLASH))
+            {
+                if(isLeft)
+                {
+                    centerIndex = a;
+                    leftIndex = c;
+                    rightIndex = b;
+
+                }else
+                {
+                    centerIndex = d;
+                    leftIndex = b;
+                    rightIndex = c;
+                }
+
+            }else // division = BACKSLASH
+            {
+                if(isLeft)
+                {
+                    centerIndex = c;
+                    leftIndex = d;
+                    rightIndex = a;
+
+                }else
+                {
+                    centerIndex = b;
+                    leftIndex = a;
+                    rightIndex = d;
+                }
+            }
+
+            glm::vec3 center = getVertexAt(centerIndex);
+            glm::vec3 left = getVertexAt(leftIndex) - center;
+            glm::vec3 right = getVertexAt(rightIndex) - center;
+            glm::vec3 normal = glm::cross(left, right);
+
+            mLocalNormals[centerIndex] += normal;
+            mLocalNormals[leftIndex] += normal;
+            mLocalNormals[rightIndex] += normal;
+        }
+
+        for(size_t i = 0; i < mLocalNormals.size(); ++i)
+        {
+            mLocalNormals[i] = glm::normalize(mLocalNormals[i]);
+        }
     }
 }
 

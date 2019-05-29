@@ -10,12 +10,15 @@
 
 #include <odCore/db/Animation.h>
 
+#include <odCore/physics/Handles.h>
 #include <odCore/physics/CharacterController.h>
 
 #include <odCore/input/Action.h>
 #include <odCore/input/CursorListener.h>
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
+
+#include <odCore/render/Handle.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
 #include <dragonRfl/LocalPlayer.h>
@@ -43,6 +46,7 @@ namespace dragonRfl
 		virtual void setPitch(float f) override { mPitch = f; }
 		virtual glm::vec3 getPosition() override;
 		virtual od::LevelObject &getLevelObject() override;
+		virtual odPhysics::Handle *getPhysicsHandle() override;
 
 
 	 private:
@@ -70,6 +74,9 @@ namespace dragonRfl
 		float mLastUpdatedYaw;
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
+
+		od::RefPtr<odRender::Handle> mRenderHandle;
+		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
 		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;

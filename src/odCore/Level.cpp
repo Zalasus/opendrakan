@@ -20,6 +20,9 @@
 #include <odCore/LevelObject.h>
 #include <odCore/BoundingBox.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
+
 namespace od
 {
 
@@ -29,7 +32,6 @@ namespace od
     , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
-    , mPhysicsManager(*this)
     {
     }
 
@@ -39,12 +41,6 @@ namespace od
     	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
     	{
     		(*it)->despawned();
-    	}
-
-    	// TODO: this needs a proper mechanism and a map~ we will be doing this on the fly later
-    	for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-    	{
-    		mPhysicsManager.removeLayer(*it->get());
     	}
     }
 
@@ -59,20 +55,26 @@ namespace od
         //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
         _loadObjects(file);
 
+        for(auto &object : mLevelObjects)
+        {
+            object->buildLinks();
+        }
+
         Logger::info() << "Level loaded successfully";
     }
 
     void Level::spawnAllObjects()
     {
         Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
-        {
-            (*it)->spawned();
-        }
 
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
             (*it)->spawn();
+        }
+
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            (*it)->spawned();
         }
     }
 
@@ -106,45 +108,26 @@ namespace od
 
     Layer *Level::getFirstLayerBelowPoint(const glm::vec3 &v)
     {
-        // TODO: use an efficient spatial search here
-        //  using brute force for now
+        // TODO: should we implement an efficient quadtree structure for spatial lookups of layers,
+        //  we might want to switch to using that here. until then, we make the lookup using the physics system
 
-        glm::vec2 xz(v.x, v.z);
+        glm::vec3 end = v + glm::vec3(0, -1000, 0); // FIXME: we should make the ray length dynamic
 
-        // first, find all candidate layers that overlap the given point in the xz plane
-        mLayerLookupCache.clear();
-        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        odPhysics::RayTestResult result;
+        bool hasHit = mEngine.getPhysicsSystem().rayTestClosest(v, end, odPhysics::PhysicsTypeMasks::Layer, nullptr, result);
+
+        if(hasHit)
         {
-            if((*it)->contains(xz))
+            odPhysics::LayerHandle *handle = result.handle->asLayerHandle();
+            if(handle == nullptr)
             {
-                mLayerLookupCache.push_back(it->get());
+                throw od::Exception("Unexpected non-layer handle found during layer-below-object-search");
             }
+
+            return &handle->getLayer();
         }
 
-        // then, find the layer with smallest, negative height difference among those candiates
-        Layer *closestLayer = nullptr;
-        float minDistance = std::numeric_limits<float>::max();
-        for(auto it = mLayerLookupCache.begin(); it != mLayerLookupCache.end(); ++it)
-        {
-            if((*it)->hasHoleAt(xz))
-            {
-                continue;
-            }
-
-            float heightDifferenceDown = v.y - (*it)->getAbsoluteHeightAt(xz);
-            if(heightDifferenceDown < 0)
-            {
-                continue; // don't care about layers above us
-            }
-
-            if(heightDifferenceDown < minDistance)
-            {
-                minDistance = heightDifferenceDown;
-                closestLayer = *it;
-            }
-        }
-
-        return closestLayer;
+        return nullptr;
     }
 
     void Level::findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results)
@@ -183,8 +166,6 @@ namespace od
                 it = mDestructionQueue.erase(it);
             }
         }
-
-        mPhysicsManager.update(relTime);
 
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
         {
@@ -275,11 +256,6 @@ namespace od
 			DataReader zdr(zstr);
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
-
-			if(mLayers[i]->getCollisionShape() != nullptr)
-			{
-				mPhysicsManager.addLayer(*mLayers[i]);
-			}
     	}
     }
 

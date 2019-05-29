@@ -25,7 +25,7 @@ namespace odOsg
 
     class GuiQuad;
     class Renderer;
-    class ObjectNode;
+    class Handle;
 
     class GuiNode : public odRender::GuiNode
     {
@@ -53,8 +53,8 @@ namespace odOsg
         virtual odRender::GuiQuad *createGuiQuad() override;
         virtual void removeGuiQuad(odRender::GuiQuad *quad) override;
 
-        virtual odRender::ObjectNode *createObjectNode() override;
-        virtual void removeObjectNode(odRender::ObjectNode *node) override;
+        virtual void addChildHandle(odRender::Handle *handle) override;
+        virtual void removeChildHandle(odRender::Handle *handle) override;
 
         void update(float relTime);
 
@@ -62,7 +62,7 @@ namespace odOsg
     private:
 
         Renderer *mRenderer;
-        od::WeakRefPtr<odGui::Widget> mWidget;
+        od::WeakObserverRefPtr<odGui::Widget> mWidget;
 
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;
@@ -71,7 +71,7 @@ namespace odOsg
 
         std::vector<od::RefPtr<GuiNode>> mChildren;
         std::vector<od::RefPtr<GuiQuad>> mGuiQuads;
-        std::vector<od::RefPtr<ObjectNode>> mObjectNodes;
+        std::vector<od::RefPtr<Handle>> mChildHandles;
     };
 
 }

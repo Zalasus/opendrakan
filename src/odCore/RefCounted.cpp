@@ -14,10 +14,10 @@
 namespace od
 {
 
-
     RefCounted::RefCounted()
     : mRefCount(0)
     , mObserverCount(0)
+    , mRefControlBlock(nullptr)
     {
     }
 
@@ -26,6 +26,17 @@ namespace od
         if(mRefCount != 0)
         {
             Logger::warn() << "RefCounted object was destroyed when references to it still existed";
+        }
+
+        if(mRefControlBlock != nullptr)
+        {
+            mRefControlBlock->refExpired = true;
+
+            if(mRefControlBlock->weakRefCount == 0)
+            {
+                delete mRefControlBlock;
+                mRefControlBlock = nullptr;
+            }
         }
     }
 
@@ -111,6 +122,16 @@ namespace od
         }
 
         --mObserverCount;
+    }
+
+    RefControlBlock *RefCounted::getOrCreateRefControlBlock()
+    {
+        if(mRefControlBlock == nullptr)
+        {
+            mRefControlBlock = new RefControlBlock();
+        }
+
+        return mRefControlBlock;
     }
 
     void RefCounted::_notifyAllObservers()

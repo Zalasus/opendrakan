@@ -16,7 +16,7 @@
 namespace odRender
 {
     class GuiQuad;
-    class ObjectNode;
+    class Handle;
 
     class GuiNode : public od::RefCounted
     {
@@ -39,8 +39,8 @@ namespace odRender
         virtual GuiQuad *createGuiQuad() = 0;
         virtual void removeGuiQuad(GuiQuad *quad) = 0;
 
-        virtual ObjectNode *createObjectNode() = 0;
-        virtual void removeObjectNode(ObjectNode *node) = 0;
+        virtual void addChildHandle(Handle *handle) = 0;
+        virtual void removeChildHandle(Handle *handle) = 0;
 
     };
 

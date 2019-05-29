@@ -12,6 +12,10 @@
 namespace odRfl
 {
 
+    RflClass::~RflClass()
+    {
+    }
+
     void RflClass::onLoaded(od::LevelObject &obj)
     {
     }
@@ -41,6 +45,10 @@ namespace odRfl
 	}
 
 	void RflClass::onDestroyed(od::LevelObject &obj)
+	{
+	}
+
+	void RflClass::onVisibilityChanged()
 	{
 	}
 

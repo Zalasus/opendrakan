@@ -9,8 +9,8 @@
 
 #include <odCore/Exception.h>
 #include <odCore/db/Sound.h>
+#include <odCore/Downcast.h>
 
-#include <odOsg/Utils.h>
 #include <odOsg/audio/SoundSystem.h>
 #include <odOsg/audio/Buffer.h>
 
@@ -153,7 +153,7 @@ namespace odOsg
         if(mCurrentSound != nullptr)
         {
             auto buffer = mCurrentSound->getOrCreateAudioBuffer(&mSoundSystem);
-            mCurrentBuffer = upcast<Buffer>(buffer.get());
+            mCurrentBuffer = od::confident_downcast<Buffer>(buffer.get());
 
             // warning, deadlock potential. Don't lock mutex before getOrCreateAudioBuffer() call
             std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());

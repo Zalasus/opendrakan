@@ -18,17 +18,14 @@
 #include <odCore/anim/Skeleton.h>
 
 #include <odCore/db/Model.h>
+#include <odCore/db/ModelBounds.h>
 #include <odCore/db/SkeletonBuilder.h>
 
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 
-#include <odCore/physics/BulletAdapter.h>
-
-#include <odCore/render/Renderer.h>
-#include <odCore/render/ObjectNode.h>
-#include <odCore/render/ModelNode.h>
-
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/Handles.h>
 
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
@@ -114,17 +111,15 @@ namespace od
             mInitialScale = glm::vec3(1, 1, 1);
         }
 
-        odRfl::ObjectBuilderProbe builder; // it is important that we probe the fields before reading the record for this one
+        odRfl::ObjectBuilderProbe builder;
         mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
-        mRflClassInstance = mClass->makeInstance();
-        if(mRflClassInstance != nullptr)
+        mRflClassInstance = mClass->makeInstanceForLevelObject(*this);
+        if(mRflClassInstance == nullptr)
         {
-            mRflClassInstance->probeFields(builder);
-
-        }else
-        {
-            Logger::debug() << "Could not instantiate class of level object";
+            throw Exception("Failed to instantiate class of level object");
         }
+        // it is important that we probe the fields before reading the record for this one
+        mRflClassInstance->probeFields(builder);
         builder.readFieldRecord(dr); // this will read the field stuff and overwrite the fields in the class instance
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
@@ -144,50 +139,27 @@ namespace od
         }
     }
 
+    void LevelObject::buildLinks()
+    {
+        mLinkedObjects.clear();
+        mLinkedObjects.reserve(mLinks.size());
+
+        for(auto it = mLinks.begin(); it != mLinks.end(); ++it)
+        {
+            LevelObject *obj = mLevel.getLevelObjectByIndex(*it);
+            if(obj == nullptr)
+            {
+                Logger::warn() << "Object 0x" << std::hex << getObjectId() <<
+                        " linked to nonexistent object 0x" << *it << std::dec;
+                continue;
+            }
+
+            mLinkedObjects.push_back(obj);
+        }
+    }
+
     void LevelObject::spawned()
     {
-        // build vector of linked object pointers from the stored indices if we haven't done that yet
-        if(mLinkedObjects.size() != mLinks.size())
-        {
-            mLinkedObjects.clear();
-            mLinkedObjects.reserve(mLinks.size());
-
-            for(auto it = mLinks.begin(); it != mLinks.end(); ++it)
-            {
-                LevelObject *obj = mLevel.getLevelObjectByIndex(*it);
-                if(obj == nullptr)
-                {
-                    Logger::warn() << "Object 0x" << std::hex << getObjectId() <<
-                            " linked to nonexistent object 0x" << *it << std::dec;
-                    continue;
-                }
-
-                mLinkedObjects.push_back(obj);
-            }
-        }
-
-        odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
-        if(renderer != nullptr && mClass->hasModel())
-        {
-            mRenderNode = renderer->createObjectNode(*this);
-            if(mRenderNode != nullptr)
-            {
-                od::RefPtr<odRender::ModelNode> model = mClass->getModel()->getOrCreateRenderNode(renderer);
-                mRenderNode->setModel(model);
-
-                mRenderNode->setPosition(mPosition);
-                mRenderNode->setOrientation(mRotation);
-                mRenderNode->setScale(mScale);
-
-                if(mLightingLayer != nullptr)
-                {
-                    mRenderNode->setGlobalLight(mLightingLayer->getLightColor(), mLightingLayer->getAmbientColor(), mLightingLayer->getLightDirection());
-                }
-            }
-        }
-
-        _setRenderNodeVisible(mIsVisible);
-
         _updateLayerBelowObject();
 
         if(mRflClassInstance != nullptr)
@@ -207,8 +179,6 @@ namespace od
         }
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
-
-        // TODO: how to ensure no unnecessary updates/cullings happen on our subgraph if present?
 
         // detach this from any object it may be attached to, and detach all objects attached to this
         detach();
@@ -286,27 +256,28 @@ namespace od
 
         mIsVisible = v;
 
-        _setRenderNodeVisible(mIsVisible);
+        mRflClassInstance->onVisibilityChanged();
     }
 
     void LevelObject::setObjectType(LevelObjectType type)
     {
         mObjectType = type;
 
+        bool objectVisible;
         switch(type)
         {
         case LevelObjectType::Normal:
-            mIsVisible = true;
+            objectVisible = true;
             break;
 
         case LevelObjectType::Light:
         case LevelObjectType::Detector:
         default:
-            mIsVisible = false;
+            objectVisible = false;
             break;
         }
 
-        _setRenderNodeVisible(mIsVisible);
+        (void)objectVisible;
     }
 
     odAnim::Skeleton *LevelObject::getOrCreateSkeleton()
@@ -395,17 +366,6 @@ namespace od
         mLevel.requestLevelObjectDestruction(this);
     }
 
-    void LevelObject::getWorldTransform(btTransform& worldTrans) const
-    {
-        worldTrans = odPhysics::BulletAdapter::makeBulletTransform(getPosition(), getRotation());
-    }
-
-    void LevelObject::setWorldTransform(const btTransform& worldTrans)
-    {
-        setPosition(odPhysics::BulletAdapter::toGlm(worldTrans.getOrigin()));
-        setRotation(odPhysics::BulletAdapter::toGlm(worldTrans.getRotation()));
-    }
-
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
         mLayerBelowObjectDirty = true;
@@ -419,23 +379,11 @@ namespace od
         {
             (*it)->_attachmentTargetsTransformUpdated(this);
         }
-
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setPosition(mPosition);
-            mRenderNode->setOrientation(mRotation);
-            mRenderNode->setScale(mScale);
-        }
     }
 
     void LevelObject::_updateLayerBelowObject()
     {
         mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
-
-        if(mRenderNode != nullptr && mLayerBelowObject != nullptr && mLightingLayer == nullptr)
-        {
-            mRenderNode->setGlobalLight(mLayerBelowObject->getLightColor(), mLayerBelowObject->getAmbientColor(), mLayerBelowObject->getLightDirection());
-        }
 
         mLayerBelowObjectDirty = false;
     }
@@ -487,14 +435,6 @@ namespace od
         }
 
         mAttachedObjects.clear();
-    }
-
-    void LevelObject::_setRenderNodeVisible(bool visible)
-    {
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setVisible(visible);
-        }
     }
 
 }

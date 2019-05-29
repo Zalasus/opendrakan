@@ -33,11 +33,30 @@ namespace od
     };
 
 
-    class RefCounted
+    struct RefControlBlock
     {
     public:
 
+        friend class RefCounted;
 
+        size_t weakRefCount;
+        bool refExpired;
+
+
+    private:
+
+        RefControlBlock()
+        : weakRefCount(0)
+        , refExpired(false)
+        {
+        }
+
+    };
+
+
+    class RefCounted
+    {
+    public:
 
         RefCounted();
         virtual ~RefCounted();
@@ -49,6 +68,8 @@ namespace od
 
         void addReferenceObserver(ReferenceObserver *observer);
         void removeReferenceObserver(ReferenceObserver *observer);
+
+        RefControlBlock *getOrCreateRefControlBlock();
 
 
     protected:
@@ -63,6 +84,7 @@ namespace od
         size_t mRefCount;
         size_t mObserverCount;
         ReferenceObserver *mObservers[MaxObservers];
+        RefControlBlock *mRefControlBlock;
     };
 
 

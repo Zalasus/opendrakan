@@ -18,6 +18,8 @@
 
 #include <odCore/render/Renderer.h>
 
+#include <odCore/physics/PhysicsSystem.h>
+
 namespace dragonRfl
 {
 
@@ -84,24 +86,38 @@ namespace dragonRfl
             return;
         }
 
+        odPhysics::Handle *playerHandle = player->getPhysicsHandle();
+
+        glm::vec3::value_type maxDistance = 3;
+        glm::vec3::value_type bounceBackDistance = 0.1; // TODO: calculate this based of FOV or something
+
         glm::vec3 eye = player->getPosition();
-        glm::quat lookDirection(glm::vec3(player->getPitch(), player->getYaw(), 0));
+        glm::quat lookDirectionQuat(glm::vec3(player->getPitch(), player->getYaw(), 0));
+        glm::vec3 lookDirection = lookDirectionQuat * glm::vec3(0, 0, 1);
 
         // perform raycast to find obstacle closest point with unobstructed view of player
         glm::vec3 from = player->getPosition();
-        glm::vec3 to = from + lookDirection * glm::vec3(0, 0, 3);
-        odPhysics::RaycastResult result;
-        bool hit = player->getLevelObject().getLevel().getPhysicsManager().raycastClosest(from, to, result, &player->getLevelObject());
+        glm::vec3 to = from + lookDirection * maxDistance;
+
+        static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
+
+        odPhysics::RayTestResult result;
+        bool hit = mRfl.getEngine().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
         if(!hit)
         {
             eye = to;
 
         }else
         {
-            eye = result.hitPoint;
+            // we hit something. bounce a bit off of surface (like a reflected beam of light) so we don't clip into the object
+
+            glm::vec3 reflectedDirection = lookDirection - 2*glm::dot(lookDirection, result.hitNormal)*result.hitNormal;
+            reflectedDirection = glm::normalize(reflectedDirection);
+
+            eye = result.hitPoint + reflectedDirection * bounceBackDistance;
         }
 
-        _setObjectPositionAndViewMatrix(eye, lookDirection);
+        _setObjectPositionAndViewMatrix(eye, lookDirectionQuat);
     }
 
     void TrackingCamera::_setObjectPositionAndViewMatrix(const glm::vec3 &eyepoint, const glm::quat &lookDirection)

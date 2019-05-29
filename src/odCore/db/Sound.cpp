@@ -87,9 +87,9 @@ namespace odDb
 
     od::RefPtr<odAudio::Buffer> Sound::getOrCreateAudioBuffer(odAudio::SoundSystem *soundSystem)
     {
-        if(mSoundBuffer != nullptr)
+        if(!mSoundBuffer.isNull())
         {
-            return mSoundBuffer.get();
+            return mSoundBuffer.aquire();
         }
 
         if(soundSystem == nullptr)
@@ -98,9 +98,7 @@ namespace odDb
         }
 
         auto buffer = soundSystem->createBuffer(this);
-
         mSoundBuffer = buffer.get();
-
         return buffer;
     }
 

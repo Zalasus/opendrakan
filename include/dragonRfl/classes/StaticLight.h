@@ -14,7 +14,9 @@
 
 #include <glm/vec3.hpp>
 
-#include <odCore/render/Light.h>
+#include <odCore/Light.h>
+
+#include <odCore/physics/Handles.h>
 
 namespace dragonRfl
 {
@@ -30,7 +32,7 @@ namespace dragonRfl
         virtual void probeFields(odRfl::FieldProbe &probe) override;
         virtual void onLoaded(od::LevelObject &obj) override;
         virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMoved(od::LevelObject &obj) override;
+        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
         virtual void onDespawned(od::LevelObject &obj) override;
 
 
@@ -43,7 +45,9 @@ namespace dragonRfl
         odRfl::Enum         mQualityLevelRequired;
 
         glm::vec3 mLightColorVector;
-        od::RefPtr<odRender::Light> mLight;
+        od::RefPtr<od::Light> mLight;
+        bool mNeedsUpdate;
+
     };
 
 }

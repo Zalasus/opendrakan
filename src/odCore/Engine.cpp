@@ -24,6 +24,8 @@
 
 #include <odCore/audio/SoundSystem.h>
 
+#include <odCore/physics/bullet/BulletPhysicsSystem.h>
+
 namespace od
 {
 
@@ -41,6 +43,16 @@ namespace od
 
 	Engine::~Engine()
 	{
+	}
+
+	odPhysics::PhysicsSystem &Engine::getPhysicsSystem()
+	{
+	    if(mPhysicsSystem == nullptr)
+	    {
+	        throw Exception("Engine has no physics system");
+	    }
+
+	    return *mPhysicsSystem;
 	}
 
 	void Engine::setRenderer(odRender::Renderer *renderer)
@@ -79,6 +91,7 @@ namespace od
 
 	    mDbManager = std::make_unique<odDb::DbManager>(*this);
         mRflManager = std::make_unique<odRfl::RflManager>(*this);
+        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(*this);
 
 	    mRflManager->onStartup();
 
@@ -107,25 +120,33 @@ namespace od
 		    mRenderer->onStart();
 		}
 
-		auto targetUpdateInterval = std::chrono::microseconds((int64_t)(1e6/60.0));
+		float targetUpdateIntervalUs = (1e6/60.0);
+		auto targetUpdateInterval = std::chrono::microseconds((int64_t)targetUpdateIntervalUs);
 		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
 		while(!mIsDone)
 		{
 		    auto loopStart = std::chrono::high_resolution_clock::now();
 
+		    double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
+            lastUpdateStartTime = loopStart;
+
 		    if(mLevel != nullptr)
 		    {
-		        double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
-		        lastUpdateStartTime = loopStart;
-
 		        mLevel->update(relTime);
 		    }
+
+		    mPhysicsSystem->update(relTime);
 
 		    auto loopEnd = std::chrono::high_resolution_clock::now();
 		    auto loopTime = loopEnd - loopStart;
 		    if(loopTime < targetUpdateInterval)
 		    {
 		        std::this_thread::sleep_for(targetUpdateInterval - loopTime);
+
+		    }else
+		    {
+		        float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
+		        Logger::warn() << "Update took too long. Took " << loopTimeMs << "ms, target update interval was " << (targetUpdateIntervalUs*1e-3) << "ms";
 		    }
 		}
 

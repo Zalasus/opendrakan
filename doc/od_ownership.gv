@@ -1,0 +1,134 @@
+
+/*
+ * A DOT graph representing shared ownership relations in OpenDrakan.
+ *
+ * Strong references are marked by solid, black arrows.
+ * Weak references are marked by dashed, blue arrows.
+ * Non-owning references are marked by dotted, gray arrows.
+ */
+
+digraph od_ownership
+{
+    subgraph cluster_core
+    {
+        graph [label="Engine Core"];
+
+        DB [style=filled, fillcolor=LightYellow];
+        Class;
+        Texture;
+        Model;
+        Sound;
+        Level;
+        LevelObject;
+        Layer;
+        Widget;
+        Light;
+    }
+
+    subgraph cluster_renderer
+    {
+        graph [label="Renderer", style=filled, fillcolor=PaleTurquoise];
+        node [style=filled, fillcolor=white];
+
+        R_Handle [label="Handle"];
+        R_Model [label="Model"];
+        R_Geometry [label="Geometry"];
+        R_Texture [label="Texture"];
+        R_Image [label="Image"];
+        R_GuiQuad [label="GuiQuad"];
+        R_GuiNode [label="GuiNode"];
+        R_LightState [label="LightState"];        
+    }
+
+    subgraph cluster_physics
+    {
+        graph [label="Physics System", style=filled, fillcolor=PaleTurquoise];
+        node [style=filled, fillcolor=white];
+
+        P_ObjectHandle [label="ObjectHandle"];
+        P_LayerHandle [label="LayerHandle"];
+        P_LightHandle [label="LightHandle"];        
+    }
+
+    subgraph cluster_sound
+    {
+        graph [label="Sound System", style=filled, fillcolor=PaleTurquoise];
+        node [style=filled, fillcolor=white];
+        
+        S_Buffer [label="Buffer"];
+        S_Source [label="Source"];
+    }
+    
+
+    // non-owning references
+    edge [style=dotted, color=gray]
+    {
+        P_ObjectHandle -> LevelObject;
+
+        P_LightHandle -> Light;
+
+        P_LayerHandle -> Layer;
+    }
+
+    // weak references
+    edge [style = dashed, color=MidnightBlue]
+    {
+        DB -> Class;
+        DB -> Texture;
+        DB -> Model;
+        DB -> Sound;
+
+        Texture -> R_Image;
+
+        R_Image -> R_Texture;
+
+        R_GuiQuad -> Widget;
+        
+        Sound -> S_Buffer;
+    }
+
+    // strong references
+    edge [style = solid, color=black]
+    {
+        Class -> Model;
+
+        Level -> LevelObject;
+        Level -> Layer;
+
+        LevelObject -> Class;
+        LevelObject -> R_Handle;
+        LevelObject -> P_ObjectHandle;
+        
+        Layer -> R_Handle;
+        Layer -> P_LayerHandle;
+        
+        Light -> P_LightHandle;
+
+        R_Handle -> R_Model;
+        R_Handle -> R_LightState;
+
+        R_Model -> R_Geometry [label=a];
+
+        R_Geometry -> R_Texture;
+
+        R_Texture -> R_Image;
+
+        R_Image -> Texture;
+
+        R_GuiQuad -> R_Texture;
+
+        R_GuiNode -> R_GuiNode [label=a];
+        R_GuiNode -> R_GuiQuad [label=a];
+        R_GuiNode -> R_Handle [label=a];
+
+        R_LightState -> Light [label=a];
+        
+        S_Buffer -> Sound;
+        
+        S_Source -> S_Buffer;
+        S_Source -> Sound;
+    }
+
+}
+
+

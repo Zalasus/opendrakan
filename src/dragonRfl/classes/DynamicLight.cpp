@@ -47,6 +47,8 @@ namespace dragonRfl
     {
         StaticLight::onSpawned(obj);
 
+        mLight->setDynamic(true);
+
         obj.setEnableRflUpdateHook(true);
 
         mStarted = (mStartEffect == EffectStartType::WhenCreated);
@@ -54,6 +56,8 @@ namespace dragonRfl
 
     void DynamicLight::onUpdate(od::LevelObject &obj, float relTime)
     {
+        StaticLight::onUpdate(obj, relTime);
+
         if(mLight == nullptr || !mStarted)
         {
             return;
@@ -97,8 +101,13 @@ namespace dragonRfl
 
         }else
         {
-            mLight->setColor(glm::vec3(0.0, 0.0, 0.0));
+            mLight->setColor(glm::vec3(0.0, 0.0, 0.0)); // TODO: lights need an off-flag. an off-state light could free up one light slot
         }
+    }
+
+    void DynamicLight::onMoved(od::LevelObject &obj)
+    {
+        mNeedsUpdate = true;
     }
 
     void DynamicLight::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)

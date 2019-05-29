@@ -63,7 +63,10 @@ namespace dragonRfl
         Main_Menu,
         Pause,
         Demo_Record,
-        Demo_Playback
+        Demo_Playback,
+
+        // these are our own, additional actions
+        PhysicsDebug_Toggle
     };
 
     // TODO: move this out of global scope

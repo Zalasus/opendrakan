@@ -289,14 +289,14 @@ namespace odDb
             throw od::Exception("Passed nullptr as renderer to getRenderImage");
         }
 
-        if(mRenderImage == nullptr)
+        if(mRenderImage.isNull())
         {
             od::RefPtr<odRender::Image> image = renderer->createImage(this);
             mRenderImage = image.get();
             return image;
         }
 
-        return od::RefPtr<odRender::Image>(mRenderImage.get());
+        return mRenderImage.aquire();
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)

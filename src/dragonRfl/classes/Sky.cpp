@@ -17,8 +17,7 @@
 
 #include <odCore/rfl/Rfl.h>
 
-#include <odCore/render/ObjectNode.h>
-
+#include <odCore/render/Renderer.h>
 
 namespace dragonRfl
 {
@@ -61,11 +60,16 @@ namespace dragonRfl
 
     void DomedSky::onSpawned(od::LevelObject &obj)
 	{
-        odRender::ObjectNode *skyNode = obj.getRenderNode();
-        if(skyNode != nullptr)
+        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        if(renderer == nullptr)
         {
-            skyNode->setRenderMode(odRender::ObjectNode::RenderMode::Sky);
+            return;
         }
+
+        mRenderNode = renderer->createHandleFromObject(obj);
+
+        std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
+        mRenderNode->setRenderBin(odRender::RenderBin::SKY);
 	}
 
 

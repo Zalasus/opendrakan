@@ -15,6 +15,11 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/ClassBuilderProbe.h>
 
+namespace od
+{
+    class LevelObject;
+}
+
 namespace odRfl
 {
 	class RflClassRegistrar;
@@ -38,6 +43,8 @@ namespace odDb
 
         void loadFromRecord(ClassFactory &factory, od::DataReader dr);
         std::unique_ptr<odRfl::RflClass> makeInstance();
+
+        std::unique_ptr<odRfl::RflClass> makeInstanceForLevelObject(od::LevelObject &obj);
 
 
 	private:

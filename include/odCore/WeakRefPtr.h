@@ -8,22 +8,176 @@
 #ifndef INCLUDE_ODCORE_WEAKREFPTR_H_
 #define INCLUDE_ODCORE_WEAKREFPTR_H_
 
+#include <cassert>
+
 #include <odCore/RefCounted.h>
 
 namespace od
 {
 
     template <typename T>
-    class WeakRefPtr : public ReferenceObserver
+    class WeakRefPtr
     {
     public:
 
         WeakRefPtr()
         : mPtr(nullptr)
+        , mControlBlock(nullptr)
         {
         }
 
-        WeakRefPtr(T *ptr)
+        explicit WeakRefPtr(T *p)
+        : mPtr(p)
+        , mControlBlock(nullptr)
+        {
+            if(mPtr != nullptr)
+            {
+                mControlBlock = mPtr->getOrCreateRefControlBlock();
+                mControlBlock->weakRefCount++;
+            }
+        }
+
+        WeakRefPtr(const WeakRefPtr<T> &p)
+        : mPtr(p.mPtr)
+        , mControlBlock(p.mControlBlock)
+        {
+            if(mControlBlock != nullptr)
+            {
+                mControlBlock->weakRefCount++;
+            }
+        }
+
+        ~WeakRefPtr()
+        {
+            _removeRef();
+        }
+
+        WeakRefPtr<T> &operator=(T *p)
+        {
+            _removeRef();
+
+            mPtr = p;
+            if(mPtr != nullptr)
+            {
+                mControlBlock = mPtr->getOrCreateRefControlBlock();
+                mControlBlock->weakRefCount++;
+            }
+
+            return *this;
+        }
+
+        WeakRefPtr<T> & operator=(const WeakRefPtr<T> &p)
+        {
+            _removeRef();
+
+            mPtr = p.mPtr;
+            mControlBlock = p.mControlBlock;
+
+            if(mControlBlock != nullptr)
+            {
+                mControlBlock->weakRefCount++;
+
+            }else
+            {
+                assert(mPtr == nullptr);
+            }
+
+            return *this;
+        }
+
+        bool operator==(T* p) const
+        {
+            if(p == nullptr)
+            {
+                return isNull();
+
+            }else
+            {
+                if(mControlBlock == nullptr || mControlBlock->refExpired)
+                {
+                    return false;
+
+                }else
+                {
+                    return mPtr == p;
+                }
+            }
+        }
+
+        bool isNull() const
+        {
+            return !_ptrValidAndNonNull();
+        }
+
+        bool isNonNull() const
+        {
+            return !isNull();
+        }
+
+        RefPtr<T> aquire() const
+        {
+            if(_ptrValidAndNonNull())
+            {
+                return RefPtr<T>(mPtr);
+
+            }else
+            {
+                // if object does no longer exist, there is no point in keeping a ref to the control block here
+                _removeRef();
+
+                return RefPtr<T>(nullptr);
+            }
+        }
+
+
+    private:
+
+        bool _ptrValidAndNonNull() const
+        {
+            if(mControlBlock != nullptr && !(mControlBlock->refExpired))
+            {
+                assert(mPtr != nullptr);
+                return true;
+
+            }else
+            {
+                return false;
+            }
+        }
+
+        void _removeRef() const
+        {
+            if(mControlBlock != nullptr)
+            {
+                assert(mControlBlock->weakRefCount > 0);
+                mControlBlock->weakRefCount--;
+                if(mControlBlock->weakRefCount == 0 && mControlBlock->refExpired)
+                {
+                    delete mControlBlock;
+                }
+            }
+
+            mControlBlock = nullptr;
+            mPtr = nullptr;
+        }
+
+        mutable T *mPtr;
+        mutable RefControlBlock *mControlBlock;
+
+    };
+
+
+    template <typename T>
+    class WeakObserverRefPtr : public ReferenceObserver
+    {
+    public:
+
+        WeakObserverRefPtr()
+        : mPtr(nullptr)
+        {
+        }
+
+        explicit WeakObserverRefPtr(T *ptr)
         : mPtr(ptr)
         {
             if(mPtr != nullptr)
@@ -32,7 +186,7 @@ namespace od
             }
         }
 
-        WeakRefPtr(const WeakRefPtr<T> &refPtr)
+        WeakObserverRefPtr(const WeakObserverRefPtr<T> &refPtr)
         : mPtr(refPtr.mPtr)
         {
             if(mPtr != nullptr)
@@ -41,7 +195,7 @@ namespace od
             }
         }
 
-        ~WeakRefPtr()
+        ~WeakObserverRefPtr()
         {
             if(mPtr != nullptr)
             {
@@ -49,7 +203,7 @@ namespace od
             }
         }
 
-        WeakRefPtr<T> &operator=(T *ptr)
+        WeakObserverRefPtr<T> &operator=(T *ptr)
         {
             if(mPtr != nullptr)
             {
@@ -66,24 +220,24 @@ namespace od
             return *this;
         }
 
-        WeakRefPtr<T> &operator=(const WeakRefPtr<T> &weakPtr)
+        WeakObserverRefPtr<T> &operator=(const WeakObserverRefPtr<T> &weakPtr)
         {
             return this->operator=(weakPtr.mPtr);
         }
 
-        operator T*() const
+        bool isNull() const
         {
-            return mPtr;
+            return mPtr == nullptr;
         }
 
-        T *operator->() const
+        bool isNonNull() const
         {
-            return mPtr;
+            return !isNull();
         }
 
-        T *get()
+        RefPtr<T> aquire() const
         {
-            return mPtr;
+            return RefPtr<T>(mPtr);
         }
 
 

@@ -13,11 +13,11 @@
 #include <functional>
 
 #include <glm/vec2.hpp>
+#include <odCore/Downcast.h>
 
 #include <odCore/RefCounted.h>
 #include <odCore/WeakRefPtr.h>
 #include <odCore/Exception.h>
-
 #include <odCore/input/Action.h>
 #include <odCore/input/Keys.h>
 
@@ -60,18 +60,15 @@ namespace odInput
 
             od::RefPtr<ActionHandle<_ActionEnum>> actionHandle;
             auto &weakRef = mActions[actionCode];
-            if(weakRef == nullptr)
+            if(weakRef.isNull())
             {
                 actionHandle = od::make_refd<ActionHandle<_ActionEnum>>(*this, action);
                 weakRef = actionHandle.get();
 
             }else
             {
-                actionHandle = dynamic_cast<ActionHandle<_ActionEnum>*>(weakRef.get());
-                if(actionHandle == nullptr)
-                {
-                    throw od::Exception("Upcast during retrieval of action failed. Are you mixing action implementations?");
-                }
+                auto ref = weakRef.aquire();
+                actionHandle = od::downcast<ActionHandle<_ActionEnum>>(ref.get());
             }
 
             return actionHandle;
@@ -102,15 +99,16 @@ namespace odInput
             // NOTE: storing direct references to the actions here is faster, but may overflow the max
             //  amount of observers per action very quickly
             //  FIXME: however, using an int here will prevent bindings from getting removed automatically
+            //  TODO: now that we have a weakptr that uses a control block instead of observers we might want to fix this
             std::array<int, MAX_BINDINGS> actions;
         };
 
         odGui::Gui *mGui;
         std::map<Key, Binding> mBindings;
 
-        std::map<int, od::WeakRefPtr<IAction>> mActions;
+        std::map<int, od::WeakObserverRefPtr<IAction>> mActions;
 
-        std::vector<od::WeakRefPtr<CursorListener>> mCursorListeners;
+        std::vector<od::WeakObserverRefPtr<CursorListener>> mCursorListeners;
     };
 
 }

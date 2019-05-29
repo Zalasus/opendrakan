@@ -34,9 +34,10 @@ namespace odInput
 
         for(auto &cl : mCursorListeners)
         {
-            if(cl != nullptr)
+            if(cl.isNonNull())
             {
-                cl->triggerCallback(ndc);
+                auto listener = cl.aquire();
+                listener->triggerCallback(ndc);
             }
         }
     }
@@ -136,7 +137,7 @@ namespace odInput
     {
         auto listener = od::make_refd<CursorListener>();
 
-        mCursorListeners.push_back(listener.get());
+        mCursorListeners.emplace_back(listener.get());
 
         return listener;
     }
@@ -149,18 +150,20 @@ namespace odInput
             return;
         }
 
-        if(it->second != nullptr)
+        if(it->second.isNonNull())
         {
-            if(event.type == InputEvent::Type::Repeat && !it->second->isRepeatable())
+            auto action = it->second.aquire();
+
+            if(event.type == InputEvent::Type::Repeat && !action->isRepeatable())
             {
                 return;
 
-            }else if(event.type == InputEvent::Type::Up && it->second->ignoresUpEvents())
+            }else if(event.type == InputEvent::Type::Up && action->ignoresUpEvents())
             {
                 return;
             }
 
-            it->second->triggerCallback(event);
+            action->triggerCallback(event);
         }
     }
 

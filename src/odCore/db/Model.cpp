@@ -18,8 +18,13 @@
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/SkeletonBuilder.h>
 #include <odCore/db/Texture.h>
+#include <odCore/db/ModelBounds.h>
+
 #include <odCore/render/Renderer.h>
-#include <odCore/render/ModelNode.h>
+#include <odCore/render/Model.h>
+
+#include <odCore/physics/PhysicsSystem.h>
+#include <odCore/physics/ModelShape.h>
 
 #define OD_POLYGON_FLAG_DOUBLESIDED 0x02
 
@@ -37,12 +42,22 @@ namespace odDb
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
-	, mRenderNode(nullptr)
+	, mRenderModel(nullptr)
 	{
 	}
 
 	Model::~Model()
 	{
+	}
+
+	ModelBounds &Model::getModelBounds(size_t lodIndex)
+	{
+	    if(lodIndex >= mModelBounds.size())
+	    {
+	        throw od::Exception("LOD index for getting model bounds out of bounds. Lol");
+	    }
+
+	    return mModelBounds[lodIndex];
 	}
 
 	void Model::loadNameAndShading(ModelFactory &factory, od::DataReader &&dr)
@@ -167,9 +182,11 @@ namespace odDb
 		   >> shapeCount
 		   >> shapeType;
 
-		odPhysics::ModelBounds::ShapeType type = (shapeType == 0) ? odPhysics::ModelBounds::SPHERES : odPhysics::ModelBounds::BOXES;
-		mModelBounds = std::make_unique<odPhysics::ModelBounds>(type, shapeCount);
-		mModelBounds->setMainBounds(mainBs, mainObb);
+		ModelBounds::ShapeType type = (shapeType == 0) ? ModelBounds::SPHERES : ModelBounds::BOXES;
+		mModelBounds.emplace_back(type, shapeCount);
+
+		ModelBounds &bounds = mModelBounds.back();
+		bounds.setMainBounds(mainBs, mainObb);
 
 		for(size_t i = 0; i < shapeCount; ++i)
 		{
@@ -178,7 +195,7 @@ namespace odDb
 			dr >> firstChildIndex
 			   >> nextSiblingIndex;
 
-			mModelBounds->addHierarchyEntry(firstChildIndex, nextSiblingIndex);
+			bounds.addHierarchyEntry(firstChildIndex, nextSiblingIndex);
 		}
 
 		for(size_t i = 0; i < shapeCount; ++i)
@@ -187,13 +204,13 @@ namespace odDb
 			{
 				od::BoundingSphere bs;
 				dr >> bs;
-				mModelBounds->addSphere(bs);
+				bounds.addSphere(bs);
 
 			}else
 			{
 				od::OrientedBoundingBox obb;
 				dr >> obb;
-				mModelBounds->addBox(obb);
+				bounds.addBox(obb);
 
 				// ignore the field of words after each box
 				uint16_t unkPolyCount;
@@ -204,17 +221,19 @@ namespace odDb
 
 		//Logger::info() << "Bounding data for model " << mModelName;
 		//mModelBounds->printInfo();
-
-		mModelBounds->getSharedCollisionShape(); // to trigger building the shape
 	}
 
 	void Model::loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr)
 	{
+	    // main bounds/culling bounds. actual collision bounds follow later
+	    od::BoundingSphere mainSphere;
+	    od::OrientedBoundingBox mainObb;
+	    dr >> mainSphere >> mainObb;
+
 		uint16_t lodCount;
 		std::vector<std::string> lodNames;
 
-		dr >> od::DataReader::Ignore(16*4) // bounding info (16 floats)
-		   >> lodCount;
+		dr >> lodCount;
 
 		if(lodCount == 0)
 		{
@@ -284,8 +303,6 @@ namespace odDb
 					boneAffections.push_back(bAff);
 				}
             }
-
-
 		}
 
 		// lod info
@@ -374,10 +391,17 @@ namespace odDb
 		//mSkeletonBuilder->printInfo(std::cout);
 
 		dr >> od::DataReader::Expect<uint16_t>(lodCount);
+
+        mModelBounds.reserve(lodCount);
+
 		for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
 		{
 		    uint16_t sphereCount;
 		    dr >> sphereCount;
+
+		    mModelBounds.emplace_back(ModelBounds::SPHERES, sphereCount);
+		    ModelBounds &bounds = mModelBounds.back();
+		    bounds.setMainBounds(mainSphere, mainObb);
 
 		    for(size_t sphereIndex = 0; sphereIndex < sphereCount; ++sphereIndex)
 		    {
@@ -400,24 +424,41 @@ namespace odDb
 
 		        }else
 		        {
-		            //glm::vec3 sphereCenter = mVertices[positionVertexIndex];
-		            //od::BoundingSphere sphere(sphereCenter, radius);
+                    bounds.addHierarchyEntry(firstChild, nextSibling);
+
+		            glm::vec3 sphereCenter = mVertices[positionVertexIndex];
+		            od::BoundingSphere sphere(sphereCenter, radius);
+		            bounds.addSphere(sphere);
 		        }
 		    }
 		}
  	}
 
-	od::RefPtr<odRender::ModelNode> Model::getOrCreateRenderNode(odRender::Renderer *renderer)
+	odRender::Model *Model::getOrCreateRenderModel(odRender::Renderer *renderer)
 	{
-	    if(mRenderNode == nullptr)
+	    if(renderer == nullptr)
 	    {
-	        od::RefPtr<odRender::ModelNode> node = renderer->createModelNode(this);
-	        mRenderNode = node.get();
-	        return node;
+	        throw od::InvalidArgumentException("Got null renderer");
 	    }
 
-	    return od::RefPtr<odRender::ModelNode>(mRenderNode.get());
+	    if(mRenderModel == nullptr)
+	    {
+	        mRenderModel = renderer->createModelFromDb(this);
+	    }
+
+        return mRenderModel;
 	}
 
+	od::RefPtr<odPhysics::ModelShape> Model::getOrCreateModelShape(odPhysics::PhysicsSystem &ps)
+    {
+	    if(!mPhysicsShape.isNull())
+	    {
+	        return mPhysicsShape.aquire();
+	    }
+
+	    od::RefPtr<odPhysics::ModelShape> shape = ps.createModelShape(*this);
+        mPhysicsShape = shape.get();
+        return shape;
+    }
 }
 

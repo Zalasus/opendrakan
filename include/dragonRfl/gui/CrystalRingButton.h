@@ -12,7 +12,8 @@
 
 #include <odCore/gui/Widget.h>
 
-#include <odCore/render/ObjectNode.h>
+#include <odCore/render/Handle.h>
+#include <odCore/render/Model.h>
 
 #include <odCore/anim/Interpolator.h>
 
@@ -50,9 +51,9 @@ namespace dragonRfl
 
     private:
 
-        od::RefPtr<odRender::ObjectNode> mCrystalNode;
-        od::RefPtr<odRender::ObjectNode> mInnerRingNode;
-        od::RefPtr<odRender::ObjectNode> mOuterRingNode;
+        od::RefPtr<odRender::Handle> mCrystalHandle;
+        od::RefPtr<odRender::Handle> mInnerRingHandle;
+        od::RefPtr<odRender::Handle> mOuterRingHandle;
         glm::vec4 mCrystalColorInactive;
         glm::vec4 mCrystalColorActive;
         std::function<void(int)> mClickedCallback;

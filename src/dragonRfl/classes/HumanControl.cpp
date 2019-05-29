@@ -19,7 +19,9 @@
 
 #include <odCore/audio/SoundSystem.h>
 
-#include <odCore/physics/CharacterController.h>
+#include <odCore/physics/PhysicsSystem.h>
+
+#include <odCore/render/Renderer.h>
 
 #include <dragonRfl/RflDragon.h>
 
@@ -87,13 +89,20 @@ namespace dragonRfl
     	mPitch = playerLookDirection.x;
     	mYaw = playerLookDirection.y;
 
-    	odRender::ObjectNode *objectNode = obj.getRenderNode();
+    	odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+    	if(renderer == nullptr)
+    	{
+    	    return;
+    	}
+    	mRenderHandle = renderer->createHandleFromObject(obj);
+
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton != nullptr)
         {
-            mCharacterController = std::make_unique<odPhysics::CharacterController>(obj, 0.05, 0.3);
+            //mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
+            mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
 
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(objectNode, skeleton);
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderHandle, skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
@@ -172,6 +181,15 @@ namespace dragonRfl
             soundSystem->setListenerPosition(pos);
             soundSystem->setListenerOrientation(at, up);
         }
+
+        if(mRenderHandle != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+
+            mRenderHandle->setPosition(obj.getPosition());
+            mRenderHandle->setOrientation(obj.getRotation());
+            mRenderHandle->setScale(obj.getScale());
+        }
     }
 
 	glm::vec3 HumanControl::getPosition()
@@ -187,6 +205,11 @@ namespace dragonRfl
 	od::LevelObject &HumanControl::getLevelObject()
 	{
 	    return *mPlayerObject;
+	}
+
+	odPhysics::Handle *HumanControl::getPhysicsHandle()
+	{
+	    return nullptr;
 	}
 
     void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)

@@ -10,6 +10,8 @@
 
 #include <odCore/RefCounted.h>
 
+#include <odCore/render/Geometry.h>
+
 namespace od
 {
     class LevelObject;
@@ -31,14 +33,19 @@ namespace odRender
 {
 
     class Camera;
-    class ObjectNode;
-    class ModelNode;
-    class LayerNode;
     class Texture;
     class Image;
-    class Light;
     class RendererEventListener;
     class GuiNode;
+    class Handle;
+    class Model;
+
+    enum class RenderSpace
+    {
+        NONE,
+        LEVEL,
+        GUI
+    };
 
     /**
      * Interface for a renderer implementation.
@@ -57,17 +64,22 @@ namespace odRender
 
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
-        virtual od::RefPtr<odRender::Light> createLight(od::LevelObject *obj) = 0;
 
-        virtual od::RefPtr<ObjectNode> createObjectNode(od::LevelObject &obj) = 0;
-        virtual od::RefPtr<ModelNode> createModelNode(odDb::Model *model) = 0;
-        virtual od::RefPtr<LayerNode> createLayerNode(od::Layer *layer) = 0;
+        virtual od::RefPtr<Handle> createHandle(RenderSpace space) = 0;
+        virtual od::RefPtr<Model> createModel() = 0;
+        virtual od::RefPtr<Geometry> createGeometry(PrimitiveType primitiveType, bool indexed) = 0;
+
+        virtual od::RefPtr<Model> createModelFromDb(odDb::Model *model) = 0;
+        virtual od::RefPtr<Model> createModelFromLayer(od::Layer *layer) = 0;
+
         virtual od::RefPtr<Image> createImage(odDb::Texture *dbTexture) = 0;
         virtual od::RefPtr<Texture> createTexture(Image *image) = 0;
         virtual od::RefPtr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;
         virtual GuiNode *getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;
+
+        od::RefPtr<Handle> createHandleFromObject(od::LevelObject &obj);
 
     };
 

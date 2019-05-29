@@ -53,6 +53,9 @@ namespace od
         inline glm::vec3 &extends() { return mExtends; }
         inline glm::vec3 &center() { return mCenter; }
         inline glm::quat &orientation() { return mOrientation; }
+        inline const glm::vec3 &extends() const { return mExtends; }
+        inline const glm::vec3 &center() const { return mCenter; }
+        inline const glm::quat &orientation() const { return mOrientation; }
 
         OrientedBoundingBox &operator=(const OrientedBoundingBox &obb);
 

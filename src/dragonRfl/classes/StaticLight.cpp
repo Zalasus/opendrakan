@@ -15,7 +15,7 @@
 #include <odCore/Level.h>
 #include <odCore/Engine.h>
 
-#include <odCore/render/Renderer.h>
+#include <odCore/physics/PhysicsSystem.h>
 
 namespace dragonRfl
 {
@@ -26,6 +26,7 @@ namespace dragonRfl
     , mRadius(1.0)
     , mLightMap(odDb::AssetRef::NULL_REF)
     , mQualityLevelRequired(0)
+    , mNeedsUpdate(true)
     {
     }
 
@@ -49,33 +50,32 @@ namespace dragonRfl
 
     void StaticLight::onSpawned(od::LevelObject &obj)
     {
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
-        if(renderer != nullptr)
-        {
-            mLight = renderer->createLight(&obj);
-            mLight->setColor(mLightColorVector);
-            mLight->setRadius(mRadius);
-            mLight->setIntensityScaling(mIntensityScaling);
-            mLight->setRequiredQualityLevel(mQualityLevelRequired);
-        }
+        mLight = od::make_refd<od::Light>(obj.getLevel().getEngine().getPhysicsSystem());
+        mLight->setColor(mLightColorVector);
+        mLight->setRadius(mRadius);
+        mLight->setIntensityScaling(mIntensityScaling);
+        mLight->setRequiredQualityLevel(mQualityLevelRequired);
+        mLight->setPosition(obj.getPosition());
+
+        obj.setEnableRflUpdateHook(true);
+        mNeedsUpdate = true;
     }
 
-    void StaticLight::onMoved(od::LevelObject &obj)
+    void StaticLight::onUpdate(od::LevelObject &obj, float relTime)
     {
-        static bool warned = false;
-        if(!warned)
+        if(!mNeedsUpdate || mLight == nullptr)
         {
-            Logger::warn() << "Moved light! This is currently unsupported";
-            Logger::warn() << "  If light moved into new objects, those will not receive new light until they move themselves";
-            warned = true;
+            return;
         }
+
+        mLight->updateAffectedList();
+        mNeedsUpdate = false;
     }
 
     void StaticLight::onDespawned(od::LevelObject &obj)
     {
         mLight = nullptr;
     }
-
 
     OD_REGISTER_RFLCLASS(DragonRfl, StaticLight);
 

@@ -15,6 +15,10 @@
 
 #include <odCore/db/DbManager.h>
 
+#include <odCore/render/Renderer.h>
+
+#include <odCore/physics/PhysicsSystem.h>
+
 #include <dragonRfl/Actions.h>
 
 #include <dragonRfl/gui/DragonGui.h>
@@ -60,6 +64,13 @@ namespace dragonRfl
         mmAction->addCallback(actionHandler);
         mmAction->bindToKey(odInput::Key::Return);
         mMenuAction = mmAction;
+
+        auto physicsDebugAction = im.getOrCreateAction(Action::PhysicsDebug_Toggle);
+        physicsDebugAction->setRepeatable(false);
+        physicsDebugAction->setIgnoreUpEvents(true);
+        physicsDebugAction->addCallback(actionHandler);
+        physicsDebugAction->bindToKey(odInput::Key::F3);
+        mPhysicsDebugAction = physicsDebugAction;
     }
 
     void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
@@ -68,6 +79,13 @@ namespace dragonRfl
         {
         case Action::Main_Menu:
             mGui->setMenuMode(!mGui->isMenuMode());
+            break;
+
+        case Action::PhysicsDebug_Toggle:
+            if(getEngine().getRenderer() != nullptr)
+            {
+                getEngine().getPhysicsSystem().toggleDebugDrawing();
+            }
             break;
 
         default:

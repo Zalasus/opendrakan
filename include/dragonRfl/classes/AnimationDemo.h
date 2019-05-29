@@ -16,6 +16,8 @@
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
+#include <odCore/render/Handle.h>
+
 namespace dragonRfl
 {
 
@@ -46,6 +48,8 @@ namespace dragonRfl
         size_t mCurrentAnimIndex;
 
         std::unique_ptr<odAnim::SkeletonAnimationPlayer> mPlayer;
+
+        od::RefPtr<odRender::Handle> mRenderHandle;
 
     };
 

@@ -43,6 +43,7 @@ namespace dragonRfl
         std::unique_ptr<DragonGui> mGui;
 
         od::RefPtr<odInput::IAction> mMenuAction;
+        od::RefPtr<odInput::IAction> mPhysicsDebugAction;
     };
 
 }

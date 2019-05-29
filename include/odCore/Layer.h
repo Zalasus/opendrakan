@@ -11,24 +11,28 @@
 #include <memory>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
-#include <BulletCollision/CollisionShapes/btTriangleMesh.h>
-#include <BulletCollision/CollisionShapes/btCollisionShape.h>
 
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
+#include <odCore/LightCallback.h>
 
 #include <odCore/db/Asset.h>
 
-#include <odCore/render/LayerNode.h>
+#include <odCore/render/Handle.h>
 
 #define OD_LAYER_FLAG_DIV_BACKSLASH 1
+
+namespace odPhysics
+{
+    class LayerHandle;
+}
 
 namespace od
 {
     class Level;
 
-    class Layer
+    class Layer : public LightCallback
     {
     public:
 
@@ -71,7 +75,7 @@ namespace od
         static const odDb::AssetRef InvisibleTextureRef;
 
         Layer(Level &level);
-        ~Layer();
+        virtual ~Layer();
 
         inline Level &getLevel() { return mLevel; }
         inline uint32_t getId() const { return mId; };
@@ -90,11 +94,33 @@ namespace od
         inline const std::vector<Vertex> &getVertexVector() { return mVertices; }
         inline const std::vector<Cell> &getCellVector() { return mCells; }
         inline size_t getVisibleTriangleCount() const { return mVisibleTriangles; }
+        inline size_t getCollidingTriangleCount() const { return mCollidingTriangles; }
         inline LayerType getLayerType() const { return mType; }
+
+        inline glm::vec3 getOrigin() const { return glm::vec3(mOriginX, getWorldHeightLu(), mOriginZ); }
+
+        /// Returns vertex at (x, z) in world space. Caller is responsible to check that x and z are within bounds
+        inline glm::vec3 getWorldVertexAt(int32_t x, int32_t z) const
+        {
+            return getVertexAt(x, z) + getOrigin();
+        }
+
+        /// Returns vertex at (x, z) in model space. Caller is responsible to check that x and z are within bounds
+        inline glm::vec3 getVertexAt(int32_t x, int32_t z) const
+        {
+            return glm::vec3(x, mVertices[x + (mWidth+1)*z].heightOffsetLu, z);
+        }
+
+        // Returns vertex at vertex index i in model space. Caller is responsible to check that i is within bounds
+        inline glm::vec3 getVertexAt(int32_t i) const
+        {
+            int32_t x = i%(mWidth+1);
+            int32_t z = i/(mWidth+1);
+            return glm::vec3(x, mVertices[i].heightOffsetLu, z);
+        }
 
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
-        btCollisionShape *getCollisionShape();
 
         void spawn();
         void despawn();
@@ -112,10 +138,17 @@ namespace od
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
+        virtual void removeAffectingLight(od::Light *light) override;
+        virtual void addAffectingLight(od::Light *light) override;
+        virtual void clearLightList() override;
+
 
     private:
 
+        void _bakeStaticLight(od::Light *light);
         void _bakeLocalLayerLight();
+
+        void _calculateNormalsInternal();
 
         Level              	   &mLevel;
         uint32_t                mId;
@@ -138,12 +171,15 @@ namespace od
         std::vector<Vertex> mVertices;
         std::vector<Cell>   mCells;
         size_t mVisibleTriangles;
+        size_t mCollidingTriangles;
 
-        std::unique_ptr<btTriangleMesh> mBulletMesh;
-        std::unique_ptr<btCollisionShape> mCollisionShape;
         AxisAlignedBoundingBox mBoundingBox;
 
-        od::RefPtr<odRender::LayerNode> mLayerNode;
+        od::RefPtr<odRender::Handle> mRenderHandle;
+        od::RefPtr<odRender::Model> mRenderModel;
+        od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
+
+        std::vector<glm::vec3> mLocalNormals; // temporary array, unused right now
     };
 
 }

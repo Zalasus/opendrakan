@@ -40,6 +40,11 @@ namespace odAudio
     class SoundSystem;
 }
 
+namespace odPhysics
+{
+    class PhysicsSystem;
+}
+
 namespace od
 {
 
@@ -67,6 +72,8 @@ namespace od
 		inline bool isDone() { return mIsDone; }
 		inline void setDone(bool done) { mIsDone = done; }
 
+        odPhysics::PhysicsSystem &getPhysicsSystem();
+
 		void setRenderer(odRender::Renderer *renderer);
 		void setSoundSystem(odAudio::SoundSystem *soundSystem);
 
@@ -82,11 +89,16 @@ namespace od
 
 		void _findEngineRoot(const std::string &rrcFileName);
 
+		// intrinsic subsystems. these _must_ be initialized before, and destroyed after all other engine property
 		std::unique_ptr<odDb::DbManager> mDbManager;
 		std::unique_ptr<odInput::InputManager> mInputManager;
 		std::unique_ptr<odRfl::RflManager> mRflManager;
+		std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
+
+		// external subsystems. these are managed from the outside, but still must live longer than this Engine object.
 		odRender::Renderer *mRenderer;
 		odAudio::SoundSystem *mSoundSystem;
+
 		bool mHasInitialLevelOverride;
 		FilePath mInitialLevelOverride;
 		FilePath mEngineRootDir;

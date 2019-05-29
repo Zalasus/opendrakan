@@ -38,6 +38,7 @@ namespace dragonRfl
 
         virtual void onSpawned(od::LevelObject &obj) override;
         virtual void onUpdate(od::LevelObject &obj, float relTime);
+        virtual void onMoved(od::LevelObject &obj) override;
         virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
 
 

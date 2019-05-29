@@ -62,7 +62,7 @@ namespace odDb
 
         std::vector<uint8_t> mDataBuffer;
 
-        od::WeakRefPtr<odAudio::Buffer> mSoundBuffer;
+        od::WeakObserverRefPtr<odAudio::Buffer> mSoundBuffer;
 	};
 
 	template <>

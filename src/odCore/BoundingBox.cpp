@@ -10,7 +10,7 @@
 #include <limits>
 
 #include <glm/mat3x3.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/matrix.hpp>
 
 #include <odCore/DataStream.h>
 
@@ -64,7 +64,7 @@ namespace od
     {
         return    v.x >= mMin.x && v.x <= mMax.x
                && v.y >= mMin.x && v.y <= mMax.y
-               && v.z >= mMin.x && v.z <= mMax.z; // 15:55
+               && v.z >= mMin.x && v.z <= mMax.z;
     }
 
     void AxisAlignedBoundingBox::expandBy(const glm::vec3 &v)
@@ -82,7 +82,7 @@ namespace od
     OrientedBoundingBox::OrientedBoundingBox()
     : mExtends(0, 0, 0)
     , mCenter(0, 0, 0)
-    , mOrientation(0, 0, 0, 1)
+    , mOrientation(1, 0, 0, 0)
     {
     }
 
@@ -112,22 +112,36 @@ namespace od
     template <>
     DataReader &DataReader::operator >> <OrientedBoundingBox>(OrientedBoundingBox &obb)
     {
-        glm::vec3 center;
+        // an OBB is defined by it's minimum corner and a scale*rotation matrix.
+        //  we need to decompose that matrix to get the center+scale+orientation definition we use
+
+        glm::vec3 cornerOffset;
         glm::mat3 xform;
 
-        (*this) >> center
+        (*this) >> cornerOffset
                 >> xform;
 
-        glm::mat4 m(xform);
+        // simple matrix decomposition for matrix with only scale and rotation:
+        //  since a rotation matrix is orthonormal, and xform is calculated as scale*rot, we can find the scaling factors
+        //  in the absolutes of the row vectors. thus, we first extract the scale factors, then factor in the inverse
+        //  scaling matrix to get the rotation matrix (same as normalizing each row)
+
+        xform = glm::transpose(xform); // transpose so we turn scale*rot into rot*scale, which means we can use column vectors
 
         glm::vec3 scale;
-        glm::quat orientation;
-        glm::vec3 tranlation;
-        glm::vec3 skew;
-        glm::vec4 perspective;
-        glm::decompose(m, scale, orientation, tranlation, skew, perspective);
+        scale.x = glm::length(xform[0]);
+        scale.y = glm::length(xform[1]);
+        scale.z = glm::length(xform[2]);
 
-        // TODO: xform will probably never have skew, and definetly no perspective and translation. find faster decomposition!
+        glm::mat3 inverseScaleXform(1.0);
+        inverseScaleXform[0][0] = 1.0/scale.x;
+        inverseScaleXform[1][1] = 1.0/scale.y;
+        inverseScaleXform[2][2] = 1.0/scale.z;
+
+        glm::mat3 rotationXform(xform * inverseScaleXform);
+        glm::quat orientation(rotationXform);
+
+        glm::vec3 center = cornerOffset + orientation*(scale*0.5f);
 
         obb = OrientedBoundingBox(scale, center, orientation);
 
