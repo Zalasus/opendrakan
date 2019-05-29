@@ -27,7 +27,8 @@ namespace odBulletPhysics
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
         mCollisionObject->setCustomDebugColor(btVector3(215.0/256, 221.0/256, 86.0/256));
 
-        setPosition(light.getPosition());
+        btTransform worldTransform = BulletAdapter::makeBulletTransform(mLight.getPosition(), glm::quat(1, 0, 0, 0));
+        mCollisionObject->setWorldTransform(worldTransform);
 
         mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Light, odPhysics::PhysicsTypeMasks::All);
     }
@@ -41,12 +42,16 @@ namespace odBulletPhysics
     void LightHandle::setRadius(float radius)
     {
         mShape->setUnscaledRadius(radius);
+
+        mCollisionWorld->updateSingleAabb(mCollisionObject.get());
     }
 
     void LightHandle::setPosition(const glm::vec3 &pos)
     {
         btTransform worldTransform = BulletAdapter::makeBulletTransform(pos, glm::quat(1, 0, 0, 0));
         mCollisionObject->setWorldTransform(worldTransform);
+
+        mCollisionWorld->updateSingleAabb(mCollisionObject.get());
     }
 
     od::Light &LightHandle::getLight()

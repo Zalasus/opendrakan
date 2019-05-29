@@ -35,8 +35,8 @@ namespace odBulletPhysics
         mCollisionWorld = std::make_unique<btCollisionWorld>(mDispatcher.get(), mBroadphase.get(), mCollisionConfiguration.get());
 
         // so we get ghost object interaction
-        mGhostPairCallback = std::make_unique<btGhostPairCallback>();
-        mCollisionWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
+        //mGhostPairCallback = std::make_unique<btGhostPairCallback>();
+        //mCollisionWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
 
         odRender::Renderer *renderer = engine.getRenderer();
         if(renderer != nullptr)
@@ -54,8 +54,6 @@ namespace odBulletPhysics
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
 
-        mCollisionWorld->updateAabbs(); // FIXME: doesn't seem very efficient doing this everytime
-
         AllRayCallback callback(bStart, bEnd, typeMask, resultsOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
 
@@ -66,8 +64,6 @@ namespace odBulletPhysics
     {
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
-
-        mCollisionWorld->updateAabbs(); // FIXME: doesn't seem very efficient doing this everytime
 
         ClosestRayCallback callback(bStart, bEnd, typeMask, exclude, resultOut);
         mCollisionWorld->rayTest(bStart, bEnd, callback);
@@ -100,8 +96,6 @@ namespace odBulletPhysics
         {
             throw od::Exception("Handle for contact test contained nullptr bullet object");
         }
-
-        mCollisionWorld->updateAabbs(); // FIXME: doesn't seem very efficient doing this everytime
 
         ContactResultCallback callback(handle, typeMask, resultsOut);
         mCollisionWorld->contactTest(bulletObject, callback);

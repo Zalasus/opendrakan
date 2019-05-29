@@ -94,6 +94,8 @@ namespace odBulletPhysics
         btTransform newTransform(mCollisionObject->getWorldTransform());
         newTransform.setOrigin(BulletAdapter::toBullet(p));
         mCollisionObject->setWorldTransform(newTransform);
+
+        mCollisionWorld->updateSingleAabb(mCollisionObject.get());
     }
 
     void ObjectHandle::setOrientation(const glm::quat &q)
@@ -101,6 +103,8 @@ namespace odBulletPhysics
         btTransform newTransform(mCollisionObject->getWorldTransform());
         newTransform.setRotation(BulletAdapter::toBullet(q));
         mCollisionObject->setWorldTransform(newTransform);
+
+        mCollisionWorld->updateSingleAabb(mCollisionObject.get());
     }
 
     void ObjectHandle::setScale(const glm::vec3 &s)
@@ -113,6 +117,8 @@ namespace odBulletPhysics
             mCollisionObject->setCollisionShape(mUniqueShape.get());
         }
         mUniqueShape->setLocalScaling(BulletAdapter::toBullet(s));
+
+        mCollisionWorld->updateSingleAabb(mCollisionObject.get());
     }
 
     od::LevelObject &ObjectHandle::getLevelObject()
