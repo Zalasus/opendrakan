@@ -234,7 +234,7 @@ namespace odDb
         }
 
         // translate whatever is stored in texture into 8-bit RGBA format
-        mRgba8888Data.reserve(mWidth*mHeight*4);
+        mRgba8888Data = std::make_unique<uint8_t[]>(mWidth*mHeight*4);
         for(size_t i = 0; i < mWidth*mHeight*4; i += 4)
         {
         	uint8_t red;

@@ -8,6 +8,8 @@
 #ifndef TEXTURE_H_
 #define TEXTURE_H_
 
+#include <memory>
+
 #include <odCore/SrscFile.h>
 #include <odCore/WeakRefPtr.h>
 
@@ -34,7 +36,7 @@ namespace odDb
 
         inline uint32_t getWidth() const { return mWidth; }
         inline uint32_t getHeight() const { return mHeight; }
-        inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.data(); }
+        inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.get(); }
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
@@ -70,7 +72,7 @@ namespace odDb
         od::RefPtr<Class> mMaterialClass;
         std::unique_ptr<odRfl::RflClass> mMaterialInstance;
 
-        std::vector<uint8_t> mRgba8888Data;
+        std::unique_ptr<uint8_t[]> mRgba8888Data;
 
         od::WeakObserverRefPtr<odRender::Image> mRenderImage;
     };
