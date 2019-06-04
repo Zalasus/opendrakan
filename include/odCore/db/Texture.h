@@ -52,7 +52,7 @@ namespace odDb
 
     private:
 
-        unsigned char _filter16BitChannel(uint16_t color, uint16_t mask);
+        unsigned char _filter16BitChannel(uint16_t color, uint32_t mask, uint32_t shift);
 
         uint32_t mWidth;
         uint32_t mHeight;

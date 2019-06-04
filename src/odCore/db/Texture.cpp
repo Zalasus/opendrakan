@@ -125,7 +125,7 @@ namespace odDb
         std::function<void(unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)> pixelReaderFunc;
         if(mBitsPerPixel == 8)
         {
-            pixelReaderFunc = [&zdr, &factory](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
+            pixelReaderFunc = [&zdr, &factory, hasColorKey, keyRed, keyGreen, keyBlue](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
                 uint8_t palIndex;
                 zdr >> palIndex;
@@ -135,7 +135,15 @@ namespace odDb
                 red = palColor.red;
                 green = palColor.green;
                 blue = palColor.blue;
-                alpha = OD_TEX_OPAQUE_ALPHA;
+
+                if(hasColorKey && red == keyRed && green == keyGreen && blue == keyBlue)
+                {
+                    alpha = 0;
+
+                }else
+                {
+                    alpha = OD_TEX_OPAQUE_ALPHA;
+                }
             };
 
         }else if(mBitsPerPixel == 16)
@@ -148,64 +156,92 @@ namespace odDb
              * 8       3:3:2+8        AAAAAAAA RRRGGGBB
              */
 
-        	uint32_t redMask;
-			uint32_t greenMask;
-			uint32_t blueMask;
-			uint32_t alphaMask;
-
-            if(mAlphaBitsPerPixel == 0 || !(mFlags & OD_TEX_FLAG_ALPHACHANNEL))
+            if(hasColorKey)
             {
-                redMask =   0xf800;
-                greenMask = 0x07e0;
-                blueMask =  0x001f;
-                alphaMask = 0;
-
-            }else if(mAlphaBitsPerPixel == 1)
-            {
-                redMask =   0x7c00;
-                greenMask = 0x03e0;
-                blueMask =  0x001f;
-                alphaMask = 0x8000;
-
-            }else if(mAlphaBitsPerPixel == 4)
-            {
-                redMask =   0x0f00;
-                greenMask = 0x00f0;
-                blueMask =  0x000f;
-                alphaMask = 0xf000;
-
-            }else if(mAlphaBitsPerPixel == 8)
-            {
-                redMask =   0x00e0;
-                greenMask = 0x001c;
-                blueMask =  0x0003;
-                alphaMask = 0xff00;
-
-            }else
-            {
-            	throw od::Exception("Invalid alpha BPP count");
+                Logger::info() << "Found color key on 16 bpp texture. This is unsupported and will be ignored";
             }
 
-            pixelReaderFunc = [this, &zdr, redMask, greenMask, blueMask, alphaMask](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
+            uint8_t rBits;
+            uint8_t rShift;
+
+            uint8_t gBits;
+            uint8_t gShift;
+
+            uint8_t bBits;
+            uint8_t bShift;
+
+            uint8_t aBits;
+            uint8_t aShift;
+
+            aBits = (mFlags & OD_TEX_FLAG_ALPHACHANNEL) ? mAlphaBitsPerPixel : 0;
+
+            switch(aBits)
+            {
+            case 0:
+                rBits = 5;
+                gBits = 6;
+                bBits = 5;
+                break;
+
+            case 1:
+                rBits = 5;
+                gBits = 5;
+                bBits = 5;
+                break;
+
+            case 4:
+                rBits = 4;
+                gBits = 4;
+                bBits = 4;
+                break;
+
+            case 8:
+                rBits = 3;
+                gBits = 3;
+                bBits = 2;
+                break;
+
+            default:
+                throw od::Exception("Invalid alpha BPP count");
+            }
+
+            aShift = rBits + gBits + bBits;
+            rShift = gBits + bBits;
+            gShift = bBits;
+            bShift = 0;
+
+            uint32_t rMask = (1 << rBits) - 1;
+            uint32_t gMask = (1 << gBits) - 1;
+            uint32_t bMask = (1 << bBits) - 1;
+            uint32_t aMask = aBits != 0 ? (1 << aBits) - 1 : 0;
+
+            pixelReaderFunc = [this, &zdr, rMask, rShift, gMask, gShift, bMask, bShift, aMask, aShift](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
             	uint16_t c;
             	zdr >> c;
 
-            	red = _filter16BitChannel(c, redMask);
-            	green = _filter16BitChannel(c, greenMask);
-            	blue = _filter16BitChannel(c, blueMask);
-            	alpha = alphaMask ? _filter16BitChannel(c, alphaMask) : OD_TEX_OPAQUE_ALPHA;
+            	red = _filter16BitChannel(c, rMask, rShift);
+                green = _filter16BitChannel(c, gMask, gShift);
+                blue = _filter16BitChannel(c, bMask, bShift);
+                alpha = aMask ? _filter16BitChannel(c, aMask, aShift) : OD_TEX_OPAQUE_ALPHA;
             };
 
         }else if(mBitsPerPixel == 24)
         {
-            pixelReaderFunc = [&zdr](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
+            pixelReaderFunc = [&zdr, hasColorKey, keyRed, keyGreen, keyBlue](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
                 zdr >> red
                     >> green
                     >> blue;
 
-                alpha = OD_TEX_OPAQUE_ALPHA;
+                if(hasColorKey && red == keyRed && green == keyGreen && blue == keyBlue)
+                {
+                    alpha = 0;
+
+                }else
+                {
+                    alpha = OD_TEX_OPAQUE_ALPHA;
+                }
             };
 
         }else if(mBitsPerPixel == 32)
@@ -243,11 +279,6 @@ namespace odDb
         	uint8_t alpha;
 
             pixelReaderFunc(red, green, blue, alpha);
-
-            if(hasColorKey && red == keyRed && green == keyGreen && blue == keyBlue)
-            {
-            	alpha = 0;
-            }
 
             mRgba8888Data[i]   = red;
             mRgba8888Data[i+1] = green;
@@ -299,21 +330,11 @@ namespace odDb
         return mRenderImage.aquire();
     }
 
-    unsigned char Texture::_filter16BitChannel(uint16_t color, uint16_t mask)
+    unsigned char Texture::_filter16BitChannel(uint16_t color, uint32_t mask, uint32_t shift)
     {
-    	// filtering algorithm:
-    	//    mask out channel
-    	//    shift channel so highest channel bit lies in highest output bit
-    	//    copy lowest channel bit to all output bits not occupied by channel after shift
-    	//
-    	//   too complicated to do it with as few instructions as possible. try using float operations
+        uint32_t channel = (color >> shift) & mask;
 
-    	//uint16_t channelShifted = (color & mask) << shift;
-    	//uint16_t bitToRepeatMask = (mask << shift) & ~(mask << shift + 1);
-
-    	float percentColor = ((float)(color&mask)/mask);
-
-    	return 0xff * percentColor;
+        return (channel*0xff)/mask;
     }
 
 }
