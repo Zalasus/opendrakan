@@ -39,8 +39,18 @@ namespace odDb
         inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.get(); }
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
+        /**
+         * Returns whether this is a "next frame" (part of a texture animation).
+         * Sadly, there is no way to tell whether a texture is animated, how many frames it has
+         * and which frames are part of the animation without loading all textures following the
+         * one in question and checking if they are "next frame"-textures.
+         */
+        inline bool isNextFrame() const { return mIsNextFrame; }
+
         void loadFromRecord(TextureFactory &factory, od::DataReader dr);
         void exportToPng(const od::FilePath &path);
+
+        virtual void postLoad() override;
 
         /**
          * Provides an odRender::Image object that can be used to create Texture objects.
@@ -61,12 +71,15 @@ namespace odDb
         uint32_t mColorKey;
         od::RecordId mMipMapId;
         od::RecordId mAlternateId;
-        uint16_t mFlags;
+        uint8_t mAnimationFps;
+        uint8_t mFlags;
         uint16_t mMipMapNumber;
         AssetRef mMaterialClassRef;
         uint32_t mUsageCount;
         uint32_t mCompressionLevel;
         uint32_t mCompressedSize;
+
+        bool mIsNextFrame;
 
         bool mHasAlphaChannel;
         od::RefPtr<Class> mMaterialClass;

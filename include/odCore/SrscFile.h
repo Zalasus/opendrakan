@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <mutex>
 
 #include <odCore/FilePath.h>
 #include <odCore/DataStream.h>
@@ -21,6 +22,33 @@ namespace od
 
     typedef uint16_t RecordId;
     typedef uint16_t RecordType;
+
+    class RecordInputCursor
+    {
+    public:
+
+        RecordInputCursor(RecordInputCursor &&c);
+
+        DataReader getReader();
+
+        void next();
+        void nextOfType(RecordType type, int32_t maxDistance = -1);
+        void nextOfId(RecordId id, int32_t maxDistance = -1);
+        void nextOfTypeId(RecordType type, RecordId id, int32_t maxDistance = -1);
+
+        void prev();
+        void prevOfType(RecordType type, int32_t maxDistance = -1);
+        void prevOfId(RecordId id, int32_t maxDistance = -1);
+        void prevOfTypeId(RecordType type, RecordId id, int32_t maxDistance = -1);
+    };
+
+    class RecordOutputCursor
+    {
+    public:
+
+        void flush();
+
+    };
 
 	class SrscFile
 	{
@@ -74,6 +102,11 @@ namespace od
 		inline void decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw) { decompressRecord(prefix, *dirIt, extractRaw); }
 
 
+        RecordInputCursor getFirstRecordOfType(RecordType type);
+        RecordInputCursor getFirstRecordOfId(RecordId id);
+		RecordInputCursor getFirstRecordOfTypeId(RecordType type, RecordId id);
+
+
 	protected:
 
 		void _readHeaderAndDirectory();
@@ -84,6 +117,8 @@ namespace od
 		uint16_t mVersion;
 		uint32_t mDirectoryOffset;
 		std::vector<DirEntry> mDirectory;
+
+		std::mutex mMutex;
 	};
 
 }

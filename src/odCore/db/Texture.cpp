@@ -43,11 +43,13 @@ namespace odDb
     , mColorKey(0)
     , mMipMapId(0)
     , mAlternateId(0)
+    , mAnimationFps(0)
     , mFlags(0)
     , mMipMapNumber(0)
     , mUsageCount(0)
     , mCompressionLevel(0)
     , mCompressedSize(0)
+    , mIsNextFrame(false)
     , mHasAlphaChannel(false)
     {
     }
@@ -73,12 +75,15 @@ namespace odDb
            >> od::DataReader::Ignore(2)
            >> mAlternateId
            >> od::DataReader::Ignore(6)
+           >> mAnimationFps
            >> mFlags
            >> mMipMapNumber
            >> mMaterialClassRef
            >> mUsageCount
            >> mCompressionLevel
            >> mCompressedSize;
+
+        mIsNextFrame = mFlags & OD_TEX_FLAG_NEXTFRAME;
 
         if(mFlags & OD_TEX_FLAG_ALPHAMAP)
         {
@@ -311,6 +316,11 @@ namespace odDb
                 << " to file '" << path.str() << "'";
 
 		throw od::UnsupportedException("PNG export is unsupported as of now");
+    }
+
+    void Texture::postLoad()
+    {
+
     }
 
     od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)

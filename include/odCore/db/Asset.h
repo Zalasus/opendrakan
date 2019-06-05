@@ -28,6 +28,9 @@ namespace odDb
 		inline od::RecordId getAssetId() const { return mId; }
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
 
+		//virtual void load(od::RecordInputCursor &cursor) = 0;
+		virtual void postLoad();
+
 
 	private:
 
