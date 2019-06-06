@@ -11,12 +11,108 @@
 #include <iomanip>
 #include <sstream>
 #include <streambuf>
+#include <functional>
+#include <algorithm>
 
 #include <odCore/DataStream.h>
 #include <odCore/Exception.h>
 
 namespace od
 {
+
+    static bool _stepForward(SrscFile::DirIterator &it, const SrscFile::DirIterator &end, int32_t maxSteps, const std::function<bool(const SrscFile::DirEntry&)> &predicate)
+    {
+        if(it == end)
+        {
+            return false;
+        }
+
+        int32_t step = 0;
+        while(++it != end && ++step <= maxSteps)
+        {
+            if(predicate(*it))
+            {
+                return true;
+            }
+        }
+
+        if(step >= maxSteps)
+        {
+            it = end;
+        }
+
+        return false;
+    }
+
+    SrscFile::RecordInputCursor::RecordInputCursor(SrscFile &file, std::mutex &mutex, DirIterator &dirIt)
+    : mFile(file)
+    , mDirIterator(dirIt)
+    , mLock(mutex, std::try_to_lock)
+    {
+        if(!mLock.owns_lock())
+        {
+            throw od::Exception("Created input cursor for SrscFile when file was still locked (probably by another cursor)");
+        }
+    }
+
+    SrscFile::RecordInputCursor::RecordInputCursor(RecordInputCursor &&c)
+    : mFile(c.mFile)
+    , mDirIterator(c.mDirIterator)
+    , mLock(std::move(c.mLock))
+    {
+    }
+
+    DataReader SrscFile::RecordInputCursor::getReader()
+    {
+        if(!mLock.owns_lock())
+        {
+            throw od::Exception("Tried to access record using moved cursor");
+        }
+
+        if(mDirIterator == mFile.getDirectoryEnd())
+        {
+            throw od::Exception("Tried to access record using invalid cursor");
+        }
+
+        //size_t availableBytes = mDirIterator->dataSize;
+        //return DataReader(mFile.getStreamForRecord(*mDirIterator), availableBytes);
+
+        return DataReader(mFile.getStreamForRecord(mDirIterator));
+    }
+
+    bool SrscFile::RecordInputCursor::isValid()
+    {
+        return (mDirIterator != mFile.getDirectoryEnd()) && mLock.owns_lock();
+    }
+
+    bool SrscFile::RecordInputCursor::next()
+    {
+        if(mDirIterator != mFile.getDirectoryEnd())
+        {
+            ++mDirIterator;
+        }
+
+        return mDirIterator != mFile.getDirectoryEnd();
+    }
+
+    bool SrscFile::RecordInputCursor::nextOfType(RecordType type, int32_t maxDistance = -1)
+    {
+        auto pred = [type](const SrscFile::DirEntry &d) { return d.type == type; };
+        return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
+    }
+
+    bool SrscFile::RecordInputCursor::nextOfId(RecordId id, int32_t maxDistance = -1)
+    {
+        auto pred = [id](const SrscFile::DirEntry &d) { return d.recordId == id; };
+        return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
+    }
+
+    bool SrscFile::RecordInputCursor::nextOfTypeId(RecordType type, RecordId id, int32_t maxDistance = -1)
+    {
+        auto pred = [type, id](const SrscFile::DirEntry &d) { return d.type == type && d.recordId == id; };
+        return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
+    }
+
 
 	SrscFile::SrscFile(const FilePath &filePath)
 	: mFilePath(filePath)
@@ -44,68 +140,50 @@ namespace od
 		return mDirectory.end();
 	}
 
-	SrscFile::DirIterator SrscFile::getDirIteratorById(RecordId id, DirIterator start)
+	std::istream &SrscFile::getStreamForRecord(const SrscFile::DirIterator &dirIt)
 	{
-		while(start != mDirectory.end())
-		{
-			if(start->recordId == id)
-			{
-				return start;
-			}
+	    _checkDirIterator(dirIt);
 
-			++start;
-		}
-
-		return mDirectory.end();
-	}
-
-	SrscFile::DirIterator SrscFile::getDirIteratorByType(RecordType type, DirIterator start)
-	{
-		while(start != mDirectory.end())
-		{
-			if(start->type == type)
-			{
-				return start;
-			}
-
-			++start;
-		}
-
-		return mDirectory.end();
-	}
-
-	SrscFile::DirIterator SrscFile::getDirIteratorByTypeId(RecordType type, RecordId id, DirIterator start)
-	{
-		while(start != mDirectory.end())
-		{
-			if(start->recordId == id && start->type == type)
-			{
-				return start;
-			}
-
-			++start;
-		}
-
-		return mDirectory.end();
-	}
-
-	std::istream &SrscFile::getStreamForRecord(const SrscFile::DirEntry &dirEntry)
-	{
-		mInputStream.seekg(dirEntry.dataOffset);
+		mInputStream.seekg(dirIt->dataOffset);
 
 		return mInputStream;
 	}
 
+	SrscFile::RecordInputCursor SrscFile::getFirstRecordOfType(RecordType type)
+	{
+	    auto pred = [type](const SrscFile::DirEntry &d) { return d.type == type; }; // TODO: duplicate predicate (see RecordInputCursor)
+	    auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
+	    return RecordInputCursor(*this, mMutex, it);
+	}
+
+    SrscFile::RecordInputCursor SrscFile::getFirstRecordOfId(RecordId id)
+    {
+        auto pred = [id](const SrscFile::DirEntry &d) { return d.recordId == id; };
+        auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
+        return RecordInputCursor(*this, mMutex, it);
+    }
+
+    SrscFile::RecordInputCursor SrscFile::getFirstRecordOfTypeId(RecordType type, RecordId id)
+    {
+        auto pred = [type, id](const SrscFile::DirEntry &d) { return d.type == type && d.recordId == id; };
+        auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
+        return RecordInputCursor(*this, mMutex, it);
+    }
+
 	void SrscFile::decompressAll(const std::string &prefix, bool extractRaw)
 	{
-		for(DirEntry entry : mDirectory)
+		for(auto it = mDirectory.begin(); it != mDirectory.end(); ++it)
 		{
-			decompressRecord(prefix, entry, extractRaw);
+			decompressRecord(prefix, it, extractRaw);
 		}
 	}
 
-	void SrscFile::decompressRecord(const std::string &prefix, const DirEntry &dirEntry, bool extractRaw)
+	void SrscFile::decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw)
 	{
+	    _checkDirIterator(dirIt);
+
+	    const DirEntry &dirEntry = *dirIt;
+
 		if(extractRaw)
 		{
 			std::string filename;
@@ -125,7 +203,7 @@ namespace od
 
 		}else
 		{
-		    throw UnsupportedException("Can't decompress right now");
+		    throw UnsupportedException("The 'decompress' feature in SrscFile is historic and no longer supported. Use odDb to access decompressed record data");
 		}
 	}
 
@@ -169,4 +247,21 @@ namespace od
 			mDirectory[i] = entry;
 		}
 	}
+
+    void SrscFile::_checkDirIterator(const DirIterator &dirIt)
+    {
+        if(dirIt == getDirectoryEnd())
+        {
+            throw od::Exception("Tried to use directory iterator not within directory bounds");
+        }
+
+        // ugly hack: DirIterator is a typedef of std::vector's iterator, but that gives us no proper
+        // way of checking whether the iterator was created by our mDirectory. we could create our own
+        // iterator containing a ref to it's parent, but for now, check if the adress is within range
+        DirEntry *entry = &(*dirIt);
+        if(entry < mDirectory.data() || entry > (mDirectory.data() + mDirectory.size()*sizeof(DirEntry)))
+        {
+            throw od::Exception("Tried use directory iterator that does not belong to this SrscFile instance");
+        }
+    }
 }
