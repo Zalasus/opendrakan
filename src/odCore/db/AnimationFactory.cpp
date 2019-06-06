@@ -19,21 +19,30 @@ namespace odDb
 
 	od::RefPtr<Animation> AnimationFactory::loadAsset(od::RecordId animId)
 	{
-		od::SrscFile::DirIterator infoRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_INFO, animId);
-        if(infoRecord == getSrscFile().getDirectoryEnd())
+	    auto inputCursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::ANIMATION_INFO, animId);
+        if(!inputCursor.isValid())
         {
         	return nullptr;
         }
 
+        auto infoRecordIt = inputCursor.getDirIterator();
+
         od::RefPtr<Animation> newAnim = od::make_refd<Animation>(getAssetProvider(), animId);
 
-        newAnim->loadInfo(od::DataReader(getSrscFile().getStreamForRecord(infoRecord)));
+        newAnim->loadInfo(inputCursor.getReader());
 
-        od::SrscFile::DirIterator animFramesRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_FRAMES, animId, infoRecord);
-        newAnim->loadFrames(od::DataReader(getSrscFile().getStreamForRecord(animFramesRecord)));
+        if(!inputCursor.nextOfTypeId(od::SrscRecordType::ANIMATION_FRAMES, animId, 2))
+        {
+            throw od::Exception("Found no frames record after animation info record");
+        }
+        newAnim->loadFrames(inputCursor.getReader());
 
-        od::SrscFile::DirIterator animLookupRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::ANIMATION_LOOKUP, animId, infoRecord);
-        newAnim->loadFrameLookup(od::DataReader(getSrscFile().getStreamForRecord(animLookupRecord)));
+        inputCursor.moveTo(infoRecordIt);
+        if(!inputCursor.nextOfTypeId(od::SrscRecordType::ANIMATION_LOOKUP, animId, 2))
+        {
+            throw od::Exception("Found no lookup record after animation info record");
+        }
+        newAnim->loadFrameLookup(inputCursor.getReader());
 
         return newAnim;
 	}

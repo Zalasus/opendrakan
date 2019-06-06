@@ -19,14 +19,14 @@ namespace odDb
 
     od::RefPtr<Sequence> SequenceFactory::loadAsset(od::RecordId assetId)
     {
-        od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::SEQUENCE, assetId);
-        if(dirIt == getSrscFile().getDirectoryEnd())
+        auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::SEQUENCE, assetId);
+        if(!cursor.isValid())
         {
             return nullptr;
         }
 
         od::RefPtr<Sequence> sequence = od::make_refd<Sequence>(getAssetProvider(), assetId);
-        od::DataReader dr(getSrscFile().getStreamForRecord(dirIt));
+        od::DataReader dr(cursor.getReader());
         sequence->loadFromRecord(dr);
 
         return sequence;

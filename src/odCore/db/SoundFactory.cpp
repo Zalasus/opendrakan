@@ -19,14 +19,14 @@ namespace odDb
 
     od::RefPtr<Sound> SoundFactory::loadAsset(od::RecordId soundId)
     {
-        od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::SOUND, soundId);
-        if(dirIt == getSrscFile().getDirectoryEnd())
+        auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::SOUND, soundId);
+        if(!cursor.isValid())
         {
             return nullptr;
         }
 
         od::RefPtr<Sound> sound = od::make_refd<Sound>(getAssetProvider(), soundId);
-        od::DataReader dr(getSrscFile().getStreamForRecord(dirIt));
+        od::DataReader dr(cursor.getReader());
         sound->loadFromRecord(dr);
 
         return sound;

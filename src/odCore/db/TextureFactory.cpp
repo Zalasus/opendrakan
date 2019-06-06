@@ -14,6 +14,9 @@
 namespace odDb
 {
 
+    static TextureFactory::PaletteColor UNSPECIFIED_PALETTE_COLOR = { 0, 0, 0, 0 };
+
+
 	TextureFactory::TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine)
 	: AssetFactory<Texture>(ap, textureContainer)
 	, mEngine(engine)
@@ -25,8 +28,7 @@ namespace odDb
 	{
 		if(index >= mPalette.size())
 		{
-			PaletteColor black = { .red = 0, .green = 0, .blue = 0, .dummy = 0 };
-			return black;
+			return UNSPECIFIED_PALETTE_COLOR;
 		}
 
 		return mPalette[index];
@@ -34,14 +36,14 @@ namespace odDb
 
 	od::RefPtr<Texture> TextureFactory::loadAsset(od::RecordId textureId)
 	{
-		od::SrscFile::DirIterator dirIt = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::TEXTURE, textureId);
-		if(dirIt == getSrscFile().getDirectoryEnd())
+		auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::TEXTURE, textureId);
+		if(!cursor.isValid())
 		{
 			return nullptr;
 		}
 
 		od::RefPtr<Texture> texture = od::make_refd<Texture>(getAssetProvider(), textureId);
-		texture->loadFromRecord(*this, od::DataReader(getSrscFile().getStreamForRecord(dirIt)));
+		texture->loadFromRecord(*this, cursor.getReader());
 
 		return texture;
 	}
@@ -50,14 +52,14 @@ namespace odDb
 	{
 		Logger::verbose() << "Loading texture database palette";
 
-		od::SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(od::SrscRecordType::PALETTE);
-		if(it == getSrscFile().getDirectoryEnd())
+		auto cursor = getSrscFile().getFirstRecordOfType(od::SrscRecordType::PALETTE);
+		if(!cursor.isValid())
 		{
 			Logger::warn() << "Texture container has no palette record. 8 bit textures will be blank";
 			return;
 		}
 
-		od::DataReader dr(getSrscFile().getStreamForRecord(it));
+		od::DataReader dr = cursor.getReader();
 
 		uint16_t colorCount;
 		dr >> colorCount;

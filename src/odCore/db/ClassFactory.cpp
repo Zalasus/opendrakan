@@ -27,23 +27,23 @@ namespace odDb
 
 	od::RecordId ClassFactory::findFirstClassOfType(uint16_t rflClassType)
     {
-	    auto it = this->getSrscFile().getDirIteratorByType(od::SrscRecordType::CLASS);
-	    while(it != this->getSrscFile().getDirectoryEnd())
+	    auto cursor = getSrscFile().getFirstRecordOfType(od::SrscRecordType::CLASS);
+	    while(cursor.isValid())
 	    {
-	        od::DataReader dr(this->getSrscFile().getStreamForRecord(it));
+	        od::DataReader dr = cursor.getReader();
 
 	        std::string classname;
 	        uint16_t type;
-	        dr >> classname
+	        dr >> classname // this string has variable length, so load it even though we don't need it
 	           >> od::DataReader::Ignore(6)
 	           >> type;
 
 	        if(type == rflClassType)
 	        {
-	            return it->recordId;
+	            return cursor.getDirIterator()->recordId;
 	        }
 
-	        it = this->getSrscFile().getDirIteratorByType(od::SrscRecordType::CLASS, it+1);
+	        cursor.nextOfType(od::SrscRecordType::CLASS);
 	    }
 
 	    return AssetRef::NULL_REF.assetId;
@@ -51,27 +51,27 @@ namespace odDb
 
     od::RefPtr<Class> ClassFactory::loadAsset(od::RecordId classId)
     {
-        od::SrscFile::DirIterator it = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::CLASS, classId);
-        if(it == getSrscFile().getDirectoryEnd())
+        auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::CLASS, classId);
+        if(!cursor.isValid())
         {
         	return nullptr;
         }
 
         od::RefPtr<Class> newClass = od::make_refd<Class>(getAssetProvider(), classId);
-        newClass->loadFromRecord(*this, od::DataReader(getSrscFile().getStreamForRecord(it)));
+        newClass->loadFromRecord(*this, cursor.getReader());
 
         return newClass;
     }
 
     void ClassFactory::_loadRflRecord()
     {
-        od::SrscFile::DirIterator it = getSrscFile().getDirIteratorByType(od::SrscRecordType::CLASS_RFL);
-        if(it == getSrscFile().getDirectoryEnd())
+        auto cursor = getSrscFile().getFirstRecordOfType(od::SrscRecordType::CLASS_RFL);
+        if(!cursor.isValid())
         {
             throw od::Exception("Class database contained no RFL definition record");
         }
 
-        od::DataReader dr(getSrscFile().getStreamForRecord(it));
+        od::DataReader dr = cursor.getReader();
 
         std::string rflPathStr;
         dr >> od::DataReader::Ignore(8)
@@ -81,7 +81,7 @@ namespace odDb
 
         // ignore path part. should we ever encouter multiple RFLs with the same name in different
         //  directories, we need to handle this differently
-        mRfl = mRflManager.getRfl(rflPath.fileStrNoExt());
+        mRfl = mRflManager.getRfl(rflPath.fileStrNoExt()); // TODO: catch NotFoundException and throw one with meaningful description
     }
 
 }

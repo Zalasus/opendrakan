@@ -20,36 +20,49 @@ namespace odDb
 
 	od::RefPtr<Model> ModelFactory::loadAsset(od::RecordId id)
 	{
-		od::SrscFile::DirIterator nameRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_NAME, id);
-		if(nameRecord == getSrscFile().getDirectoryEnd())
+		auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::MODEL_NAME, id);
+		if(!cursor.isValid())
 		{
 			return nullptr;
 		}
 
+		auto nameRecordIt = cursor.getDirIterator();
+
 		// required records
 		od::RefPtr<Model> model = od::make_refd<Model>(getAssetProvider(), id);
-		model->loadNameAndShading(*this, od::DataReader(getSrscFile().getStreamForRecord(nameRecord)));
+		model->loadNameAndShading(*this, cursor.getReader());
 
-		od::SrscFile::DirIterator vertRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_VERTICES, id, nameRecord);
-		model->loadVertices(*this, od::DataReader(getSrscFile().getStreamForRecord(vertRecord)));
-
-		od::SrscFile::DirIterator texRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_TEXTURES, id, nameRecord);
-		model->loadTextures(*this, od::DataReader(getSrscFile().getStreamForRecord(texRecord)));
-
-		od::SrscFile::DirIterator faceRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_POLYGONS, id, nameRecord);
-		model->loadPolygons(*this, od::DataReader(getSrscFile().getStreamForRecord(faceRecord)));
-
-		// optional records FIXME: this regularly causes us to search the whole directory. maybe we should use the order of the records?
-		od::SrscFile::DirIterator lodRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_LOD_BONES, id, nameRecord);
-		if(lodRecord != getSrscFile().getDirectoryEnd())
+		if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_VERTICES, id, 8))
 		{
-			model->loadLodsAndBones(*this, od::DataReader(getSrscFile().getStreamForRecord(lodRecord)));
+		    throw od::Exception("Found no vertex record after model name record");
 		}
+		model->loadVertices(*this, cursor.getReader());
 
-		od::SrscFile::DirIterator boundingRecord = getSrscFile().getDirIteratorByTypeId(od::SrscRecordType::MODEL_BOUNDING, id, nameRecord);
-		if(boundingRecord != getSrscFile().getDirectoryEnd())
-		{
-			model->loadBoundingData(*this, od::DataReader(getSrscFile().getStreamForRecord(boundingRecord)));
+		cursor.moveTo(nameRecordIt);
+		if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_TEXTURES, id, 8))
+        {
+            throw od::Exception("Found no texture record after model name record");
+        }
+		model->loadTextures(*this, cursor.getReader());
+
+		cursor.moveTo(nameRecordIt);
+        if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_POLYGONS, id, 8))
+        {
+            throw od::Exception("Found no polyon record after model name record");
+        }
+		model->loadPolygons(*this, cursor.getReader());
+
+		// optional records
+		cursor.moveTo(nameRecordIt);
+        if(cursor.nextOfTypeId(od::SrscRecordType::MODEL_LOD_BONES, id, 8))
+        {
+            model->loadLodsAndBones(*this, cursor.getReader());
+        }
+
+		cursor.moveTo(nameRecordIt);
+        if(cursor.nextOfTypeId(od::SrscRecordType::MODEL_BOUNDING, id, 8))
+        {
+			model->loadBoundingData(*this, cursor.getReader());
 		}
 
 		return model;
