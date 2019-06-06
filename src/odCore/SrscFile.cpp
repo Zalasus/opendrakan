@@ -113,6 +113,13 @@ namespace od
         return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
     }
 
+    void SrscFile::RecordInputCursor::moveTo(const SrscFile::DirIterator &dirIt)
+    {
+        mFile._checkDirIterator(dirIt);
+
+        mDirIterator = dirIt;
+    }
+
 
 	SrscFile::SrscFile(const FilePath &filePath)
 	: mFilePath(filePath)
@@ -158,6 +165,9 @@ namespace od
 
     SrscFile::RecordInputCursor SrscFile::getFirstRecordOfId(RecordId id)
     {
+        // TODO: we could create a map indexing the first record of every ID, thus speeding up finding assets in a file immensely
+        //  or maybe let the asset containers do that. IDK
+
         auto pred = [id](const SrscFile::DirEntry &d) { return d.recordId == id; };
         auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
         return RecordInputCursor(*this, mMutex, it);

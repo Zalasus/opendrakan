@@ -54,6 +54,8 @@ namespace od
             RecordInputCursor(SrscFile &file, std::mutex &mutex, DirIterator &dirIt);
             RecordInputCursor(RecordInputCursor &&c);
 
+            inline const DirIterator &getDirIterator() { return mDirIterator; }
+
             DataReader getReader();
 
             bool isValid();
@@ -62,6 +64,11 @@ namespace od
             bool nextOfType(RecordType type, int32_t maxDistance = -1);
             bool nextOfId(RecordId id, int32_t maxDistance = -1);
             bool nextOfTypeId(RecordType type, RecordId id, int32_t maxDistance = -1);
+
+            inline bool nextOfType(SrscRecordType type, int32_t maxDistance = -1) { return nextOfType(static_cast<RecordType>(type), maxDistance); }
+            inline bool nextOfTypeId(SrscRecordType type, RecordId id, int32_t maxDistance = -1) { return nextOfTypeId(static_cast<RecordType>(type), id, maxDistance); }
+
+            void moveTo(const DirIterator &dirIt);
 
 
         private:
@@ -88,6 +95,10 @@ namespace od
         RecordInputCursor getFirstRecordOfType(RecordType type);
         RecordInputCursor getFirstRecordOfId(RecordId id);
 		RecordInputCursor getFirstRecordOfTypeId(RecordType type, RecordId id);
+
+		// convenience
+		inline RecordInputCursor getFirstRecordOfType(SrscRecordType type) { return getFirstRecordOfType(static_cast<RecordType>(type)); }
+        inline RecordInputCursor getFirstRecordOfTypeId(SrscRecordType type, RecordId id) { return getFirstRecordOfTypeId(static_cast<RecordType>(type), id); }
 
         // "historic reasons"
 		void decompressAll(const std::string &prefix, bool extractRaw);
