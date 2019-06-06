@@ -116,14 +116,16 @@ namespace dragonRfl
         }
 
         // string was not cached. load and decrypt it
-        auto dirIt = mRrcFile.getDirIteratorByTypeId(od::SrscRecordType::LOCALIZED_STRING, stringId);
-        if(dirIt == mRrcFile.getDirectoryEnd())
+        auto cursor = mRrcFile.getFirstRecordOfTypeId(od::SrscRecordType::LOCALIZED_STRING, stringId);
+        if(!cursor.isValid())
         {
             std::ostringstream oss;
             oss << "String with ID 0x" << std::hex << stringId << std::dec << " not found";
 
             throw od::NotFoundException(oss.str());
         }
+
+        auto dirIt = cursor.getDirIterator();
 
         if(dirIt->dataSize > 255)
         {

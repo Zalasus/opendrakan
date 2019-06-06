@@ -64,12 +64,7 @@ namespace od
 
     DataReader SrscFile::RecordInputCursor::getReader()
     {
-        if(!mLock.owns_lock())
-        {
-            throw od::Exception("Tried to access record using moved cursor");
-        }
-
-        if(mDirIterator == mFile.getDirectoryEnd())
+        if(!isValid())
         {
             throw od::Exception("Tried to access record using invalid cursor");
         }
@@ -95,19 +90,19 @@ namespace od
         return mDirIterator != mFile.getDirectoryEnd();
     }
 
-    bool SrscFile::RecordInputCursor::nextOfType(RecordType type, int32_t maxDistance = -1)
+    bool SrscFile::RecordInputCursor::nextOfType(RecordType type, int32_t maxDistance)
     {
         auto pred = [type](const SrscFile::DirEntry &d) { return d.type == type; };
         return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
     }
 
-    bool SrscFile::RecordInputCursor::nextOfId(RecordId id, int32_t maxDistance = -1)
+    bool SrscFile::RecordInputCursor::nextOfId(RecordId id, int32_t maxDistance)
     {
         auto pred = [id](const SrscFile::DirEntry &d) { return d.recordId == id; };
         return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
     }
 
-    bool SrscFile::RecordInputCursor::nextOfTypeId(RecordType type, RecordId id, int32_t maxDistance = -1)
+    bool SrscFile::RecordInputCursor::nextOfTypeId(RecordType type, RecordId id, int32_t maxDistance)
     {
         auto pred = [type, id](const SrscFile::DirEntry &d) { return d.type == type && d.recordId == id; };
         return _stepForward(mDirIterator, mFile.getDirectoryEnd(), maxDistance, pred);
@@ -159,7 +154,7 @@ namespace od
 	SrscFile::RecordInputCursor SrscFile::getFirstRecordOfType(RecordType type)
 	{
 	    auto pred = [type](const SrscFile::DirEntry &d) { return d.type == type; }; // TODO: duplicate predicate (see RecordInputCursor)
-	    auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
+	    auto it = std::find_if(getDirectoryBegin(), getDirectoryEnd(), pred);
 	    return RecordInputCursor(*this, mMutex, it);
 	}
 
@@ -169,14 +164,14 @@ namespace od
         //  or maybe let the asset containers do that. IDK
 
         auto pred = [id](const SrscFile::DirEntry &d) { return d.recordId == id; };
-        auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
+        auto it = std::find_if(getDirectoryBegin(), getDirectoryEnd(), pred);
         return RecordInputCursor(*this, mMutex, it);
     }
 
     SrscFile::RecordInputCursor SrscFile::getFirstRecordOfTypeId(RecordType type, RecordId id)
     {
         auto pred = [type, id](const SrscFile::DirEntry &d) { return d.type == type && d.recordId == id; };
-        auto it = std::find(getDirectoryBegin(), getDirectoryEnd(), pred);
+        auto it = std::find_if(getDirectoryBegin(), getDirectoryEnd(), pred);
         return RecordInputCursor(*this, mMutex, it);
     }
 

@@ -24,13 +24,13 @@ static void srscStat(od::SrscFile &file, size_t dataByteCount)
               << std::setw(24) << "Data"
               << std::endl;
 
-    const std::vector<od::SrscFile::DirEntry> &directory = file.getDirectory();
-    auto it = directory.begin();
-    while(it != directory.end())
+    auto begin = file.getDirectoryBegin();
+    auto it = begin;
+    while(it != file.getDirectoryEnd())
     {
 
         std::cout
-            << std::setw(6) << (it - directory.begin())
+            << std::setw(6) << (it - begin)
             << std::setw(6) << std::hex << it->type << std::dec
             << std::setw(8) << it->dataSize
             << std::setw(6) << std::hex << it->recordId << std::dec
@@ -38,7 +38,7 @@ static void srscStat(od::SrscFile &file, size_t dataByteCount)
 
         std::cout << "  ";
 
-        od::DataReader dr(file.getStreamForRecord(*it));
+        od::DataReader dr(file.getStreamForRecord(it));
 
         for(size_t i = 0; i < it->dataSize; ++i)
         {
@@ -165,12 +165,11 @@ int main(int argc, char **argv)
             {
                 std::cout << "Extracting all records with ID " << std::hex << extractRecordId << std::dec << " to " << outputPath << std::endl;
 
-                od::SrscFile::DirIterator dirIt = srscFile.getDirIteratorById(extractRecordId);
-                while(dirIt != srscFile.getDirectoryEnd())
+                auto cursor = srscFile.getFirstRecordOfId(extractRecordId);
+                while(cursor.isValid())
                 {
-                    srscFile.decompressRecord(outputPath, dirIt, true);
-
-                    dirIt = srscFile.getDirIteratorById(extractRecordId, dirIt+1);
+                    srscFile.decompressRecord(outputPath, cursor.getDirIterator(), true);
+                    cursor.nextOfId(extractRecordId);
                 }
 
             }else
