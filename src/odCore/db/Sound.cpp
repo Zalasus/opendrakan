@@ -38,8 +38,10 @@ namespace odDb
 	{
 	}
 
-    void Sound::loadFromRecord(od::DataReader &dr)
+    void Sound::load(od::SrscFile::RecordInputCursor cursor)
     {
+        od::DataReader dr = cursor.getReader();
+
         dr  >> mSoundName
 			>> mFlags
 			>> mChannels

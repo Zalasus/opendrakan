@@ -43,9 +43,7 @@ namespace odDb
 		inline float getMinTime() const { return mMinTime; } ///< As calculated from the keyframes
 		inline float getMaxTime() const { return mMaxTime; } ///< As calculated from the keyframes
 
-		void loadInfo(od::DataReader &&dr);
-		void loadFrames(od::DataReader &&dr);
-		void loadFrameLookup(od::DataReader &&dr);
+		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		std::pair<KfIterator, KfIterator> getKeyframesForNode(int32_t nodeId);
 
@@ -64,6 +62,10 @@ namespace odDb
 	private:
 
 		typedef std::pair<uint32_t, uint32_t> FrameLookupEntry; // first frame index, frame count
+
+		void _loadInfo(od::DataReader dr);
+        void _loadFrames(od::DataReader dr);
+        void _loadFrameLookup(od::DataReader dr);
 
 		std::string mAnimationName;
 		float mDuration;

@@ -26,45 +26,8 @@ namespace odDb
 			return nullptr;
 		}
 
-		auto nameRecordIt = cursor.getDirIterator();
-
-		// required records
-		od::RefPtr<Model> model = od::make_refd<Model>(getAssetProvider(), id);
-		model->loadNameAndShading(*this, cursor.getReader());
-
-		if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_VERTICES, id, 8))
-		{
-		    throw od::Exception("Found no vertex record after model name record");
-		}
-		model->loadVertices(*this, cursor.getReader());
-
-		cursor.moveTo(nameRecordIt);
-		if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_TEXTURES, id, 8))
-        {
-            throw od::Exception("Found no texture record after model name record");
-        }
-		model->loadTextures(*this, cursor.getReader());
-
-		cursor.moveTo(nameRecordIt);
-        if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_POLYGONS, id, 8))
-        {
-            throw od::Exception("Found no polyon record after model name record");
-        }
-		model->loadPolygons(*this, cursor.getReader());
-
-		// optional records
-		cursor.moveTo(nameRecordIt);
-        if(cursor.nextOfTypeId(od::SrscRecordType::MODEL_LOD_BONES, id, 8))
-        {
-            model->loadLodsAndBones(*this, cursor.getReader());
-        }
-
-		cursor.moveTo(nameRecordIt);
-        if(cursor.nextOfTypeId(od::SrscRecordType::MODEL_BOUNDING, id, 8))
-        {
-			model->loadBoundingData(*this, cursor.getReader());
-		}
-
+		od::RefPtr<Model> model = od::make_refd<Model>(getAssetProvider(), id, *this);
+		model->load(std::move(cursor));
 		return model;
 	}
 

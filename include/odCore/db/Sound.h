@@ -40,7 +40,7 @@ namespace odDb
 		inline const std::vector<uint8_t> &getDataBuffer() const { return mDataBuffer; }
 		inline const std::string &getName() const { return mSoundName; }
 
-		void loadFromRecord(od::DataReader &dr);
+		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		float getLinearGain() const;
 

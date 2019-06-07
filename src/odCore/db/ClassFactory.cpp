@@ -57,9 +57,8 @@ namespace odDb
         	return nullptr;
         }
 
-        od::RefPtr<Class> newClass = od::make_refd<Class>(getAssetProvider(), classId);
-        newClass->loadFromRecord(*this, cursor.getReader());
-
+        od::RefPtr<Class> newClass = od::make_refd<Class>(getAssetProvider(), classId, *this);
+        newClass->load(std::move(cursor));
         return newClass;
     }
 

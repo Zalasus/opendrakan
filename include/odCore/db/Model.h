@@ -78,7 +78,7 @@ namespace odDb
             Smooth
         };
 
-		Model(AssetProvider &ap, od::RecordId modelId);
+		Model(AssetProvider &ap, od::RecordId modelId, ModelFactory &factory);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
         ~Model();
 
@@ -96,12 +96,7 @@ namespace odDb
 
 		ModelBounds &getModelBounds(size_t lodIndex = 0);
 
-		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
-		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
-		void loadTextures(ModelFactory &factory, od::DataReader &&dr);
-		void loadPolygons(ModelFactory &factory, od::DataReader &&dr);
-		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
-		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
+		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		odRender::Model *getOrCreateRenderModel(odRender::Renderer *renderer);
 
@@ -109,6 +104,16 @@ namespace odDb
 
 
 	private:
+
+		void _loadNameAndShading(od::DataReader dr);
+        void _loadVertices(od::DataReader dr);
+        void _loadTextures(od::DataReader dr);
+        void _loadPolygons(od::DataReader dr);
+        void _loadBoundingData(od::DataReader dr);
+        void _loadLodsAndBones(od::DataReader dr);
+
+
+		ModelFactory &mModelFactory;
 
 		std::string mModelName;
 		ShadingType mShadingType;

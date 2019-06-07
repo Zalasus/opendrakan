@@ -43,9 +43,7 @@ namespace odDb
 		}
 
 		od::RefPtr<Texture> texture = od::make_refd<Texture>(getAssetProvider(), textureId, *this);
-
 		texture->load(std::move(cursor));
-
 		return texture;
 	}
 

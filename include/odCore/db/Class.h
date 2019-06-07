@@ -35,19 +35,21 @@ namespace odDb
 	{
 	public:
 
-		Class(AssetProvider &ap, od::RecordId classId);
+		Class(AssetProvider &ap, od::RecordId classId, ClassFactory &classFactory);
 
 		inline bool hasModel() const { return mModel != nullptr; }
         inline od::RefPtr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
 
-        void loadFromRecord(ClassFactory &factory, od::DataReader dr);
-        std::unique_ptr<odRfl::RflClass> makeInstance();
+        virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
+        std::unique_ptr<odRfl::RflClass> makeInstance();
         std::unique_ptr<odRfl::RflClass> makeInstanceForLevelObject(od::LevelObject &obj);
 
 
 	private:
+
+        ClassFactory &mClassFactory;
 
         std::string mClassName;
         AssetRef mModelRef;

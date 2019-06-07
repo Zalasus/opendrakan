@@ -25,25 +25,8 @@ namespace odDb
         	return nullptr;
         }
 
-        auto infoRecordIt = inputCursor.getDirIterator();
-
         od::RefPtr<Animation> newAnim = od::make_refd<Animation>(getAssetProvider(), animId);
-
-        newAnim->loadInfo(inputCursor.getReader());
-
-        if(!inputCursor.nextOfTypeId(od::SrscRecordType::ANIMATION_FRAMES, animId, 2))
-        {
-            throw od::Exception("Found no frames record after animation info record");
-        }
-        newAnim->loadFrames(inputCursor.getReader());
-
-        inputCursor.moveTo(infoRecordIt);
-        if(!inputCursor.nextOfTypeId(od::SrscRecordType::ANIMATION_LOOKUP, animId, 2))
-        {
-            throw od::Exception("Found no lookup record after animation info record");
-        }
-        newAnim->loadFrameLookup(inputCursor.getReader());
-
+        newAnim->load(std::move(inputCursor));
         return newAnim;
 	}
 

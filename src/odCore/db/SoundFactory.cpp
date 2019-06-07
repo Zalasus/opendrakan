@@ -26,9 +26,7 @@ namespace odDb
         }
 
         od::RefPtr<Sound> sound = od::make_refd<Sound>(getAssetProvider(), soundId);
-        od::DataReader dr(cursor.getReader());
-        sound->loadFromRecord(dr);
-
+        sound->load(std::move(cursor));
         return sound;
     }
 

@@ -48,6 +48,7 @@ namespace odDb
 
         virtual void load(od::DataReader &dr) = 0;
 
+
     protected:
 
         ActionType mActionType;
@@ -122,7 +123,7 @@ namespace odDb
 
 	    Sequence(AssetProvider &ap, od::RecordId id);
 
-		void loadFromRecord(od::DataReader &dr);
+		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 
 	private:

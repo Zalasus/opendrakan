@@ -26,9 +26,7 @@ namespace odDb
         }
 
         od::RefPtr<Sequence> sequence = od::make_refd<Sequence>(getAssetProvider(), assetId);
-        od::DataReader dr(cursor.getReader());
-        sequence->loadFromRecord(dr);
-
+        sequence->load(std::move(cursor));
         return sequence;
     }
 }

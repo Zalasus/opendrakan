@@ -22,14 +22,9 @@ namespace odDb
 	{
 	}
 
-	void Asset::load(od::SrscFile::RecordInputCursor cursor)
-	{
-	}
-
 	void Asset::postLoad()
 	{
 	}
-
 
 
     bool AssetRef::operator<(const AssetRef &right) const
