@@ -21,28 +21,27 @@
 #include <odCore/render/Image.h>
 #include <odCore/render/Texture.h>
 
-#define OD_TEX_FLAG_HIGHQUALITY         0x0080
-#define OD_TEX_FLAG_DYNAMICTEXTURE      0x0040
-#define OD_TEX_FLAG_NEXTFRAME           0x0020
-#define OD_TEX_FLAG_MIPMAP              0x0008
-#define OD_TEX_FLAG_ALTERNATE           0x0004
-#define OD_TEX_FLAG_ALPHACHANNEL        0x0002
-#define OD_TEX_FLAG_ALPHAMAP            0x0001
+#define OD_TEX_FLAG_HIGHQUALITY         0x80
+#define OD_TEX_FLAG_DYNAMICTEXTURE      0x40
+#define OD_TEX_FLAG_NEXTFRAME           0x20
+#define OD_TEX_FLAG_MIPMAP              0x08
+#define OD_TEX_FLAG_ALTERNATE           0x04
+#define OD_TEX_FLAG_ALPHACHANNEL        0x02
+#define OD_TEX_FLAG_ALPHAMAP            0x01
 
 #define OD_TEX_OPAQUE_ALPHA 			0xff
 
 namespace odDb
 {
 
-    Texture::Texture(AssetProvider &ap, od::RecordId id)
+    Texture::Texture(AssetProvider &ap, od::RecordId id, TextureFactory &factory)
     : Asset(ap, id)
+    , mTextureFactory(factory)
     , mWidth(0)
     , mHeight(0)
     , mBitsPerPixel(0)
     , mAlphaBitsPerPixel(0)
     , mColorKey(0)
-    , mMipMapId(0)
-    , mAlternateId(0)
     , mAnimationFps(0)
     , mFlags(0)
     , mMipMapNumber(0)
@@ -50,6 +49,7 @@ namespace odDb
     , mCompressionLevel(0)
     , mCompressedSize(0)
     , mIsNextFrame(false)
+    , mAnimFrameCount(1)
     , mHasAlphaChannel(false)
     {
     }
@@ -58,9 +58,68 @@ namespace odDb
     {
     }
 
-    void Texture::loadFromRecord(TextureFactory &factory, od::DataReader dr)
+    void Texture::exportToPng(const od::FilePath &path)
     {
-    	Logger::debug() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
+        Logger::verbose() << "Exporting texture " << std::hex << getAssetId() << std::dec
+                << " with dimensions " << mWidth << "x" << mHeight
+                << " to file '" << path.str() << "'";
+
+		throw od::UnsupportedException("PNG export is unsupported as of now");
+    }
+
+    void Texture::load(od::SrscFile::RecordInputCursor cursor)
+    {
+        {
+            od::DataReader dr = cursor.getReader();
+            _loadFromRecord(dr);
+        }
+
+        mAnimFrameCount = 1;
+        while(cursor.nextOfTypeId(od::SrscRecordType::TEXTURE, getAssetId()+mAnimFrameCount, 1))
+        {
+            od::DataReader dr = cursor.getReader();
+            // skip to flags to check
+            uint8_t animFps;
+            uint8_t flags;
+
+            dr >> od::DataReader::Ignore(34)
+               >> animFps
+               >> flags;
+
+            if(!(flags & OD_TEX_FLAG_NEXTFRAME))
+            {
+                break;
+            }
+
+            ++mAnimFrameCount;
+        }
+    }
+
+    void Texture::postLoad()
+    {
+        // TODO: load animation frames (if any)
+    }
+
+    od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
+    {
+        if(renderer == nullptr)
+        {
+            throw od::Exception("Passed nullptr as renderer to getRenderImage");
+        }
+
+        if(mRenderImage.isNull())
+        {
+            od::RefPtr<odRender::Image> image = renderer->createImage(this);
+            mRenderImage = image.get();
+            return image;
+        }
+
+        return mRenderImage.aquire();
+    }
+
+    void Texture::_loadFromRecord(od::DataReader &dr)
+    {
+        Logger::debug() << "Loading texture " << std::hex << this->getAssetId() << std::dec;
 
         uint32_t rowSpacing;
 
@@ -71,10 +130,9 @@ namespace odDb
            >> mAlphaBitsPerPixel
            >> od::DataReader::Ignore(2)
            >> mColorKey
-           >> mMipMapId
-           >> od::DataReader::Ignore(2)
-           >> mAlternateId
-           >> od::DataReader::Ignore(6)
+           >> mNextMipMapRef
+           >> mAlternateRef
+           >> mBumpMapRef
            >> mAnimationFps
            >> mFlags
            >> mMipMapNumber
@@ -87,8 +145,8 @@ namespace odDb
 
         if(mFlags & OD_TEX_FLAG_ALPHAMAP)
         {
-        	Logger::error() << "Unsupported alpha map with " << mAlphaBitsPerPixel << "BPP";
-        	throw od::UnsupportedException("Alpha maps unsupported right now");
+            Logger::error() << "Unsupported alpha map with " << mAlphaBitsPerPixel << "BPP";
+            throw od::UnsupportedException("Alpha maps unsupported right now");
         }
 
         uint32_t trailingBytes = rowSpacing - mWidth*(mBitsPerPixel/8);
@@ -130,12 +188,12 @@ namespace odDb
         std::function<void(unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)> pixelReaderFunc;
         if(mBitsPerPixel == 8)
         {
-            pixelReaderFunc = [&zdr, &factory, hasColorKey, keyRed, keyGreen, keyBlue](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
+            pixelReaderFunc = [this, &zdr, hasColorKey, keyRed, keyGreen, keyBlue](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
                 uint8_t palIndex;
                 zdr >> palIndex;
 
-                TextureFactory::PaletteColor palColor = factory.getPaletteColor(palIndex);
+                TextureFactory::PaletteColor palColor = mTextureFactory.getPaletteColor(palIndex);
 
                 red = palColor.red;
                 green = palColor.green;
@@ -222,10 +280,10 @@ namespace odDb
 
             pixelReaderFunc = [this, &zdr, rMask, rShift, gMask, gShift, bMask, bShift, aMask, aShift](unsigned char &red, unsigned char &green, unsigned char &blue, unsigned char &alpha)
             {
-            	uint16_t c;
-            	zdr >> c;
+                uint16_t c;
+                zdr >> c;
 
-            	red = _filter16BitChannel(c, rMask, rShift);
+                red = _filter16BitChannel(c, rMask, rShift);
                 green = _filter16BitChannel(c, gMask, gShift);
                 blue = _filter16BitChannel(c, bMask, bShift);
                 alpha = aMask ? _filter16BitChannel(c, aMask, aShift) : OD_TEX_OPAQUE_ALPHA;
@@ -271,17 +329,17 @@ namespace odDb
 
         }else
         {
-        	throw od::Exception("Invalid BPP");
+            throw od::Exception("Invalid BPP");
         }
 
         // translate whatever is stored in texture into 8-bit RGBA format
         mRgba8888Data = std::make_unique<uint8_t[]>(mWidth*mHeight*4);
         for(size_t i = 0; i < mWidth*mHeight*4; i += 4)
         {
-        	uint8_t red;
-        	uint8_t green;
-        	uint8_t blue;
-        	uint8_t alpha;
+            uint8_t red;
+            uint8_t green;
+            uint8_t blue;
+            uint8_t alpha;
 
             pixelReaderFunc(red, green, blue, alpha);
 
@@ -298,46 +356,15 @@ namespace odDb
 
         if(!mMaterialClassRef.isNull())
         {
-        	mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
-        	mMaterialInstance = mMaterialClass->makeInstance();
-        	if(mMaterialInstance != nullptr)
-        	{
-        	    mMaterialInstance->onLoaded(factory.getEngine());
-        	}
+            mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
+            mMaterialInstance = mMaterialClass->makeInstance();
+            if(mMaterialInstance != nullptr)
+            {
+                mMaterialInstance->onLoaded(mTextureFactory.getEngine());
+            }
         }
 
         Logger::debug() << "Texture successfully loaded";
-    }
-
-    void Texture::exportToPng(const od::FilePath &path)
-    {
-        Logger::verbose() << "Exporting texture " << std::hex << getAssetId() << std::dec
-                << " with dimensions " << mWidth << "x" << mHeight
-                << " to file '" << path.str() << "'";
-
-		throw od::UnsupportedException("PNG export is unsupported as of now");
-    }
-
-    void Texture::postLoad()
-    {
-
-    }
-
-    od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
-    {
-        if(renderer == nullptr)
-        {
-            throw od::Exception("Passed nullptr as renderer to getRenderImage");
-        }
-
-        if(mRenderImage.isNull())
-        {
-            od::RefPtr<odRender::Image> image = renderer->createImage(this);
-            mRenderImage = image.get();
-            return image;
-        }
-
-        return mRenderImage.aquire();
     }
 
     unsigned char Texture::_filter16BitChannel(uint16_t color, uint32_t mask, uint32_t shift)

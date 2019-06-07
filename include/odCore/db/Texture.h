@@ -9,6 +9,7 @@
 #define TEXTURE_H_
 
 #include <memory>
+#include <vector>
 
 #include <odCore/SrscFile.h>
 #include <odCore/WeakRefPtr.h>
@@ -31,7 +32,7 @@ namespace odDb
     {
     public:
 
-        Texture(AssetProvider &ap, od::RecordId id);
+        Texture(AssetProvider &ap, od::RecordId id, TextureFactory &factory);
         ~Texture();
 
         inline uint32_t getWidth() const { return mWidth; }
@@ -40,16 +41,19 @@ namespace odDb
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         /**
-         * Returns whether this is a "next frame" (part of a texture animation).
+         * Returns whether this has the "next frame" flag set (is part of a texture animation).
          * Sadly, there is no way to tell whether a texture is animated, how many frames it has
          * and which frames are part of the animation without loading all textures following the
          * one in question and checking if they are "next frame"-textures.
          */
         inline bool isNextFrame() const { return mIsNextFrame; }
 
-        void loadFromRecord(TextureFactory &factory, od::DataReader dr);
+        inline bool isAnimation() const { return mAnimFrameCount > 1; }
+        inline size_t getAnimationFrameCount() const { return mAnimFrameCount; }
+
         void exportToPng(const od::FilePath &path);
 
+        virtual void load(od::SrscFile::RecordInputCursor cursor) override;
         virtual void postLoad() override;
 
         /**
@@ -62,15 +66,19 @@ namespace odDb
 
     private:
 
+        void _loadFromRecord(od::DataReader &dr);
         unsigned char _filter16BitChannel(uint16_t color, uint32_t mask, uint32_t shift);
+
+        TextureFactory &mTextureFactory;
 
         uint32_t mWidth;
         uint32_t mHeight;
         uint16_t mBitsPerPixel;
         uint16_t mAlphaBitsPerPixel;
         uint32_t mColorKey;
-        od::RecordId mMipMapId;
-        od::RecordId mAlternateId;
+        AssetRef mNextMipMapRef;
+        AssetRef mAlternateRef;
+        AssetRef mBumpMapRef;
         uint8_t mAnimationFps;
         uint8_t mFlags;
         uint16_t mMipMapNumber;
@@ -80,6 +88,8 @@ namespace odDb
         uint32_t mCompressedSize;
 
         bool mIsNextFrame;
+
+        size_t mAnimFrameCount;
 
         bool mHasAlphaChannel;
         od::RefPtr<Class> mMaterialClass;
