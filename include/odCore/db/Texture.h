@@ -51,6 +51,8 @@ namespace odDb
 
         inline bool isAnimation() const { return mAnimFrameCount > 1; }
         inline size_t getAnimationFrameCount() const { return mAnimFrameCount; }
+        inline int32_t getAnimationFPS() const { return mAnimationFps; }
+        inline const std::vector<od::RefPtr<Texture>> getNextAnimationFrames() const { return mNextAnimationFrames; }
 
         void exportToPng(const od::FilePath &path);
 
