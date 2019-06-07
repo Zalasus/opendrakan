@@ -34,7 +34,6 @@ namespace odPhysics
 
 namespace odDb
 {
-    class ModelFactory;
     class ModelBounds;
 
 	class Model : public Asset
@@ -96,12 +95,7 @@ namespace odDb
 
 		ModelBounds &getModelBounds(size_t lodIndex = 0);
 
-		void loadNameAndShading(ModelFactory &factory, od::DataReader &&dr);
-		void loadVertices(ModelFactory &factory, od::DataReader &&dr);
-		void loadTextures(ModelFactory &factory, od::DataReader &&dr);
-		void loadPolygons(ModelFactory &factory, od::DataReader &&dr);
-		void loadBoundingData(ModelFactory &factory, od::DataReader &&dr);
-		void loadLodsAndBones(ModelFactory &factory, od::DataReader &&dr);
+		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		odRender::Model *getOrCreateRenderModel(odRender::Renderer *renderer);
 
@@ -109,6 +103,13 @@ namespace odDb
 
 
 	private:
+
+		void _loadNameAndShading(od::DataReader dr);
+        void _loadVertices(od::DataReader dr);
+        void _loadTextures(od::DataReader dr);
+        void _loadPolygons(od::DataReader dr);
+        void _loadBoundingData(od::DataReader dr);
+        void _loadLodsAndBones(od::DataReader dr);
 
 		std::string mModelName;
 		ShadingType mShadingType;
@@ -141,6 +142,11 @@ namespace odDb
         static const char *name()
         {
             return "Model";
+        }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::MODEL_NAME);
         }
     };
 

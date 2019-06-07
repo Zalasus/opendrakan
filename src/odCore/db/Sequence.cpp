@@ -118,8 +118,10 @@ namespace odDb
     {
     }
 
-	void Sequence::loadFromRecord(od::DataReader &dr)
+	void Sequence::load(od::SrscFile::RecordInputCursor cursor)
 	{
+	    od::DataReader dr = cursor.getReader();
+
 		uint32_t actorCount;
 
 		dr >> mSequenceName

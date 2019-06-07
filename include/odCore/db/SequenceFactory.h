@@ -14,19 +14,7 @@
 namespace odDb
 {
 
-    class SequenceFactory : public AssetFactory<Sequence>
-    {
-    public:
-
-        SequenceFactory(AssetProvider &ap, od::SrscFile &sequenceContainer);
-
-
-    protected:
-
-        // implement AssetFactory<Sequence>
-        virtual od::RefPtr<Sequence> loadAsset(od::RecordId textureId) override;
-
-    };
+    typedef GenericAssetFactory<Sequence> SequenceFactory;
 
 }
 

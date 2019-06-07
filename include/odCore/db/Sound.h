@@ -40,7 +40,7 @@ namespace odDb
 		inline const std::vector<uint8_t> &getDataBuffer() const { return mDataBuffer; }
 		inline const std::string &getName() const { return mSoundName; }
 
-		void loadFromRecord(od::DataReader &dr);
+		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		float getLinearGain() const;
 
@@ -71,6 +71,11 @@ namespace odDb
         static const char *name()
         {
             return "Sound";
+        }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::SOUND);
         }
     };
 

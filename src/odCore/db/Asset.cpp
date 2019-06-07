@@ -22,6 +22,10 @@ namespace odDb
 	{
 	}
 
+	void Asset::postLoad()
+	{
+	}
+
 
     bool AssetRef::operator<(const AssetRef &right) const
     {

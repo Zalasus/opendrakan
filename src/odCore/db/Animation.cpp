@@ -34,61 +34,25 @@ namespace odDb
 	{
 	}
 
-	void Animation::loadInfo(od::DataReader &&dr)
-	{
-		uint32_t flags;
-		uint32_t unk1;
+    void Animation::load(od::SrscFile::RecordInputCursor cursor)
+    {
+        auto dirIt = cursor.getDirIterator();
 
-		dr >> mAnimationName
-		   >> mDuration
-           >> mOriginalFrameCount
-           >> mFrameCount
-		   >> flags
-           >> mModelNodeCount
-           >> mModelChannelCount
-		   >> unk1
-           >> mReferenceCount
-           >> mRotationThreshold
-           >> mScaleThreshold
-           >> mTranslationThreshold;
+        _loadInfo(cursor.getReader());
 
-		mIsLooping = !(flags & 0x01);
-	}
+        if(!cursor.nextOfTypeId(od::SrscRecordType::ANIMATION_FRAMES, getAssetId(), 2))
+        {
+            throw od::Exception("Found no frames record after animation info record");
+        }
+        _loadFrames(cursor.getReader());
 
-	void Animation::loadFrames(od::DataReader &&dr)
-	{
-		uint16_t frameCount;
-		dr >> frameCount;
-
-		mKeyframes.reserve(frameCount);
-		for(size_t i = 0; i < frameCount; ++i)
-		{
-			Keyframe kf;
-			dr >> kf.time
-			   >> kf.xform;
-
-			mMinTime = std::min(mMinTime, kf.time);
-			mMaxTime = std::max(mMaxTime, kf.time);
-
-			mKeyframes.push_back(kf);
-		}
-	}
-
-	void Animation::loadFrameLookup(od::DataReader &&dr)
-	{
-		uint16_t entryCount;
-		dr >> entryCount;
-
-		mFrameLookup.reserve(entryCount);
-		for(size_t i = 0; i < entryCount; ++i)
-		{
-			uint32_t firstFrameIndex;
-			uint32_t frameCount;
-			dr >> firstFrameIndex >> frameCount;
-
-			mFrameLookup.push_back(std::make_pair(firstFrameIndex, frameCount));
-		}
-	}
+        cursor.moveTo(dirIt);
+        if(!cursor.nextOfTypeId(od::SrscRecordType::ANIMATION_LOOKUP, getAssetId(), 2))
+        {
+            throw od::Exception("Found no lookup record after animation info record");
+        }
+        _loadFrameLookup(cursor.getReader());
+    }
 
 	std::pair<Animation::KfIterator, Animation::KfIterator> Animation::getKeyframesForNode(int32_t nodeId)
 	{
@@ -158,6 +122,62 @@ namespace odDb
 	    }
 
 	    return std::make_pair(it-1, it);
+    }
+
+	void Animation::_loadInfo(od::DataReader dr)
+    {
+        uint32_t flags;
+        uint32_t unk1;
+
+        dr >> mAnimationName
+           >> mDuration
+           >> mOriginalFrameCount
+           >> mFrameCount
+           >> flags
+           >> mModelNodeCount
+           >> mModelChannelCount
+           >> unk1
+           >> mReferenceCount
+           >> mRotationThreshold
+           >> mScaleThreshold
+           >> mTranslationThreshold;
+
+        mIsLooping = !(flags & 0x01);
+    }
+
+    void Animation::_loadFrames(od::DataReader dr)
+    {
+        uint16_t frameCount;
+        dr >> frameCount;
+
+        mKeyframes.reserve(frameCount);
+        for(size_t i = 0; i < frameCount; ++i)
+        {
+            Keyframe kf;
+            dr >> kf.time
+               >> kf.xform;
+
+            mMinTime = std::min(mMinTime, kf.time);
+            mMaxTime = std::max(mMaxTime, kf.time);
+
+            mKeyframes.push_back(kf);
+        }
+    }
+
+    void Animation::_loadFrameLookup(od::DataReader dr)
+    {
+        uint16_t entryCount;
+        dr >> entryCount;
+
+        mFrameLookup.reserve(entryCount);
+        for(size_t i = 0; i < entryCount; ++i)
+        {
+            uint32_t firstFrameIndex;
+            uint32_t frameCount;
+            dr >> firstFrameIndex >> frameCount;
+
+            mFrameLookup.push_back(std::make_pair(firstFrameIndex, frameCount));
+        }
     }
 
 }

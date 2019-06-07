@@ -197,7 +197,8 @@ namespace od
 
     void Level::_loadNameAndDeps(SrscFile &file)
     {
-    	DataReader dr(file.getStreamForRecordType(SrscRecordType::LEVEL_NAME));
+        auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_NAME);
+    	DataReader dr = cursor.getReader();
 
     	dr  >> mLevelName
             >> mMaxWidth
@@ -228,7 +229,8 @@ namespace od
 
     void Level::_loadLayers(SrscFile &file)
     {
-    	DataReader dr(file.getStreamForRecordType(SrscRecordType::LEVEL_LAYERS));
+    	auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_LAYERS);
+    	DataReader dr = cursor.getReader();
 
     	uint32_t layerCount;
     	dr >> layerCount;
@@ -261,7 +263,8 @@ namespace od
 
     void Level::_loadLayerGroups(SrscFile &file)
     {
-    	DataReader dr(file.getStreamForRecordType(SrscRecordType::LEVEL_LAYERGROUPS));
+    	auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_LAYERGROUPS);
+        DataReader dr = cursor.getReader();
 
     	uint32_t groupCount;
     	dr >> groupCount;
@@ -289,14 +292,14 @@ namespace od
     {
     	Logger::verbose() << "Loading level objects";
 
-    	SrscFile::DirIterator objectRecord = file.getDirIteratorByType(SrscRecordType::LEVEL_OBJECTS);
-    	if(objectRecord == file.getDirectoryEnd())
+    	auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_OBJECTS);
+    	if(!cursor.isValid())
     	{
     		Logger::verbose() << "Level has no objects";
-    		return; // if record does not appear level has no objects
+    		return;
     	}
 
-    	DataReader dr(file.getStreamForRecord(objectRecord));
+        DataReader dr = cursor.getReader();
 
     	uint16_t objectCount;
     	dr >> objectCount;

@@ -88,8 +88,7 @@ namespace odRfl
 
             }else
             {
-                // for debugging, add red tint to objects witout a lighting layer
-                mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(1,0,0));
+                mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(0));
             }
         }
 

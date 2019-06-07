@@ -18,17 +18,20 @@
 namespace odDb
 {
 
-    Class::Class(AssetProvider &ap, od::RecordId classId)
+    Class::Class(AssetProvider &ap, od::RecordId classId, ClassFactory &factory)
     : Asset(ap, classId)
+    , mClassFactory(factory)
     , mRflClassId(0)
     , mIconNumber(0)
-    , mRfl(nullptr)
+    , mRfl(mClassFactory.getRfl())
     , mRflClassRegistrar(nullptr)
     {
     }
 
-    void Class::loadFromRecord(ClassFactory &factory, od::DataReader dr)
+    void Class::load(od::SrscFile::RecordInputCursor cursor)
     {
+        od::DataReader dr = cursor.getReader();
+
         dr >> mClassName
            >> od::DataReader::Ignore(2)
            >> mModelRef
@@ -50,13 +53,11 @@ namespace odDb
             }
         }
 
-        if(factory.getRfl() != nullptr)
+        if(mRfl != nullptr)
         {
-            mRfl = factory.getRfl();
-
             try
             {
-                mRflClassRegistrar = factory.getRfl()->getRegistrarForClass(mRflClassId);
+                mRflClassRegistrar = mRfl->getRegistrarForClass(mRflClassId);
 
             }catch(od::NotFoundException &e)
             {

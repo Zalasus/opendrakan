@@ -7,6 +7,8 @@
 
 #include <odOsg/render/Image.h>
 
+#include <osg/ImageSequence>
+
 #include <odCore/Exception.h>
 
 #include <odCore/db/Texture.h>
@@ -19,9 +21,36 @@ namespace odOsg
     Image::Image(odDb::Texture *dbTexture)
     : mDbTexture(dbTexture)
     {
+        if(dbTexture == nullptr)
+        {
+            throw od::Exception("Tried to create osg image from null texture");
+        }
+
         mOsgImage = new osg::Image;
-        mOsgImage->setImage(mDbTexture->getWidth(), mDbTexture->getHeight(), 1, 4, GL_RGBA, GL_UNSIGNED_BYTE,
-                mDbTexture->getRawR8G8B8A8Data(), osg::Image::NO_DELETE);
+        mOsgImage->setImage(  mDbTexture->getWidth(), mDbTexture->getHeight(), 1, 4, GL_RGBA, GL_UNSIGNED_BYTE
+                            , mDbTexture->getRawR8G8B8A8Data(), osg::Image::NO_DELETE);
+
+        if(dbTexture->isAnimation())
+        {
+            osg::ref_ptr<osg::ImageSequence> imgSequence = new osg::ImageSequence;
+            imgSequence->setImage(0, mOsgImage);
+
+            auto &nextFrames = dbTexture->getNextAnimationFrames();
+            for(size_t i = 0; i < nextFrames.size(); ++i)
+            {
+                auto frame = nextFrames[i];
+                osg::ref_ptr<osg::Image> img = new osg::Image;
+                img->setImage(  frame->getWidth(), frame->getHeight(), 1, 4, GL_RGBA, GL_UNSIGNED_BYTE
+                              , frame->getRawR8G8B8A8Data(), osg::Image::NO_DELETE);
+
+                imgSequence->setImage(i+1, img);
+            }
+
+            imgSequence->setLength(((double)dbTexture->getAnimationFrameCount())/dbTexture->getAnimationFPS());
+            imgSequence->play();
+
+            mOsgImage = imgSequence;
+        }
     }
 
     Image::~Image()

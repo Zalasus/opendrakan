@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <mutex>
 
 #include <odCore/FilePath.h>
 #include <odCore/DataStream.h>
@@ -21,6 +22,14 @@ namespace od
 
     typedef uint16_t RecordId;
     typedef uint16_t RecordType;
+
+    class RecordOutputCursor
+    {
+    public:
+
+        void flush();
+
+    };
 
 	class SrscFile
 	{
@@ -38,6 +47,37 @@ namespace od
 
 		typedef std::vector<DirEntry>::iterator DirIterator;
 
+		class RecordInputCursor
+        {
+        public:
+
+            RecordInputCursor(SrscFile &file, std::mutex &mutex, DirIterator &dirIt);
+            RecordInputCursor(RecordInputCursor &&c);
+
+            inline const DirIterator &getDirIterator() { return mDirIterator; }
+
+            DataReader getReader();
+
+            bool isValid();
+
+            bool next();
+            bool nextOfType(RecordType type, int32_t maxDistance = -1);
+            bool nextOfId(RecordId id, int32_t maxDistance = -1);
+            bool nextOfTypeId(RecordType type, RecordId id, int32_t maxDistance = -1);
+
+            inline bool nextOfType(SrscRecordType type, int32_t maxDistance = -1) { return nextOfType(static_cast<RecordType>(type), maxDistance); }
+            inline bool nextOfTypeId(SrscRecordType type, RecordId id, int32_t maxDistance = -1) { return nextOfTypeId(static_cast<RecordType>(type), id, maxDistance); }
+
+            void moveTo(const DirIterator &dirIt);
+
+
+        private:
+
+            SrscFile &mFile;
+            DirIterator mDirIterator;
+            std::unique_lock<std::mutex> mLock;
+        };
+
 		SrscFile(const FilePath &filePath);
 		~SrscFile();
 
@@ -46,37 +86,29 @@ namespace od
 		inline size_t getRecordCount() const { return mDirectory.size(); };
 		inline const std::vector<DirEntry> &getDirectory() const { return mDirectory; };
 
-
+		// low level access to directory. no locking
 		DirIterator getDirectoryBegin();
 		DirIterator getDirectoryEnd();
+		std::istream &getStreamForRecord(const DirIterator &dirIt);
 
-		// FIXME: Holy shit, what happened here? Get rid of these methods! Only the first three should suffice
-		DirIterator getDirIteratorById(RecordId id, DirIterator start);
-		DirIterator getDirIteratorByType(RecordType type, DirIterator start);
-		DirIterator getDirIteratorByTypeId(RecordType type, RecordId id, DirIterator start);
-		inline DirIterator getDirIteratorByType(SrscRecordType type, DirIterator start) { return getDirIteratorByType(static_cast<RecordType>(type), start); }
-		inline DirIterator getDirIteratorByTypeId(SrscRecordType type, RecordId id, DirIterator start) { return getDirIteratorByTypeId(static_cast<RecordType>(type), id, start); }
-		inline DirIterator getDirIteratorById(RecordId id) { return getDirIteratorById(id, mDirectory.begin()); }
-		inline DirIterator getDirIteratorByType(RecordType type) { return getDirIteratorByType(type, mDirectory.begin()); }
-		inline DirIterator getDirIteratorByTypeId(RecordType type, RecordId id) { return getDirIteratorByTypeId(type, id, mDirectory.begin()); }
-		inline DirIterator getDirIteratorByType(SrscRecordType type) { return getDirIteratorByType(static_cast<RecordType>(type), mDirectory.begin()); }
-		inline DirIterator getDirIteratorByTypeId(SrscRecordType type, RecordId id) { return getDirIteratorByTypeId(static_cast<RecordType>(type), id, mDirectory.begin()); }
+		// high level interface with proper locking
+        RecordInputCursor getFirstRecordOfType(RecordType type);
+        RecordInputCursor getFirstRecordOfId(RecordId id);
+		RecordInputCursor getFirstRecordOfTypeId(RecordType type, RecordId id);
 
-		std::istream &getStreamForRecord(const DirEntry &dirEntry);
-		inline std::istream &getStreamForRecord(const DirIterator &dirIt) { return getStreamForRecord(*dirIt); }
-		inline std::istream &getStreamForRecordType(RecordType type) { return getStreamForRecord(getDirIteratorByType(type)); }
-		inline std::istream &getStreamForRecordTypeId(RecordType type, RecordId id) { return getStreamForRecord(getDirIteratorByTypeId(type, id)); }
-		inline std::istream &getStreamForRecordType(SrscRecordType type) { return getStreamForRecord(getDirIteratorByType(static_cast<RecordType>(type))); }
-		inline std::istream &getStreamForRecordTypeId(SrscRecordType type, RecordId id) { return getStreamForRecord(getDirIteratorByTypeId(static_cast<RecordType>(type), id)); }
+		// convenience
+		inline RecordInputCursor getFirstRecordOfType(SrscRecordType type) { return getFirstRecordOfType(static_cast<RecordType>(type)); }
+        inline RecordInputCursor getFirstRecordOfTypeId(SrscRecordType type, RecordId id) { return getFirstRecordOfTypeId(static_cast<RecordType>(type), id); }
 
+        // "historic reasons"
 		void decompressAll(const std::string &prefix, bool extractRaw);
-		void decompressRecord(const std::string &prefix, const DirEntry &dirEntry, bool extractRaw);
-		inline void decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw) { decompressRecord(prefix, *dirIt, extractRaw); }
+        void decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw);
 
 
 	protected:
 
 		void _readHeaderAndDirectory();
+		void _checkDirIterator(const DirIterator &it);
 
 		FilePath mFilePath;
 		std::ifstream mInputStream;
@@ -84,6 +116,8 @@ namespace od
 		uint16_t mVersion;
 		uint32_t mDirectoryOffset;
 		std::vector<DirEntry> mDirectory;
+
+		std::mutex mMutex;
 	};
 
 }
