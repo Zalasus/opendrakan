@@ -104,11 +104,10 @@ namespace odDb
         if(mAnimFrameCount > 1 && !isNextFrame())
         {
             mNextAnimationFrames.reserve(mAnimFrameCount-1);
-            for(size_t i = 0; i < mAnimFrameCount-1; ++i)
+            for(size_t i = 1; i < mAnimFrameCount; ++i)
             {
-                // FIXME: causes stack overflows for some reason
-                //auto frame = getAssetProvider().getAsset<Texture>(getAssetId() + i);
-                //mNextAnimationFrames.push_back(frame);
+                auto frame = getAssetProvider().getAsset<Texture>(getAssetId() + i);
+                mNextAnimationFrames.push_back(frame);
             }
         }
 
