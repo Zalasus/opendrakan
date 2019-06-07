@@ -72,6 +72,11 @@ namespace odDb
         {
             return "Sound";
         }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::SOUND);
+        }
     };
 
 }

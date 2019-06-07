@@ -31,9 +31,8 @@
 namespace odDb
 {
 
-	Model::Model(AssetProvider &ap, od::RecordId modelId, ModelFactory &factory)
+	Model::Model(AssetProvider &ap, od::RecordId modelId)
 	: Asset(ap, modelId)
-	, mModelFactory(factory)
 	, mModelName("")
 	, mShadingType(ShadingType::None)
 	, mBlendWithLandscape(false)

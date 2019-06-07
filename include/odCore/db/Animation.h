@@ -94,6 +94,11 @@ namespace odDb
         {
             return "Animation";
         }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::ANIMATION_INFO);
+        }
     };
 }
 

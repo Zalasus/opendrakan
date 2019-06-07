@@ -13,6 +13,7 @@
 
 #include <odCore/SrscFile.h>
 #include <odCore/WeakRefPtr.h>
+#include <odCore/SrscRecordTypes.h>
 
 #include <odCore/db/Asset.h>
 #include <odCore/db/Class.h>
@@ -90,6 +91,7 @@ namespace odDb
         bool mIsNextFrame;
 
         size_t mAnimFrameCount;
+        std::vector<od::RefPtr<Texture>> mNextAnimationFrames; // not cyclic! these are always != this
 
         bool mHasAlphaChannel;
         od::RefPtr<Class> mMaterialClass;
@@ -106,6 +108,11 @@ namespace odDb
         static const char *name()
         {
             return "Texture";
+        }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::TEXTURE);
         }
     };
 

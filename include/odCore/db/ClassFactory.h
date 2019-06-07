@@ -46,8 +46,8 @@ namespace odDb
 
     protected:
 
-        // implement AssetFactory<ClassFactory>
-        virtual od::RefPtr<Class> loadAsset(od::RecordId classId) override;
+        // implement AssetFactory<Class>
+        virtual od::RefPtr<Class> createNewAsset(od::RecordId id) override;
 
 
     private:

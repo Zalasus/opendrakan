@@ -49,17 +49,9 @@ namespace odDb
 	    return AssetRef::NULL_REF.assetId;
     }
 
-    od::RefPtr<Class> ClassFactory::loadAsset(od::RecordId classId)
+    od::RefPtr<Class> ClassFactory::createNewAsset(od::RecordId id)
     {
-        auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::CLASS, classId);
-        if(!cursor.isValid())
-        {
-        	return nullptr;
-        }
-
-        od::RefPtr<Class> newClass = od::make_refd<Class>(getAssetProvider(), classId, *this);
-        newClass->load(std::move(cursor));
-        return newClass;
+        return od::make_refd<Class>(getAssetProvider(), id, *this);
     }
 
     void ClassFactory::_loadRflRecord()

@@ -74,30 +74,57 @@ namespace odDb
             _loadFromRecord(dr);
         }
 
-        mAnimFrameCount = 1;
-        while(cursor.nextOfTypeId(od::SrscRecordType::TEXTURE, getAssetId()+mAnimFrameCount, 1))
+        if(!isNextFrame())
         {
-            od::DataReader dr = cursor.getReader();
-            // skip to flags to check
-            uint8_t animFps;
-            uint8_t flags;
-
-            dr >> od::DataReader::Ignore(34)
-               >> animFps
-               >> flags;
-
-            if(!(flags & OD_TEX_FLAG_NEXTFRAME))
+            mAnimFrameCount = 1;
+            while(cursor.nextOfTypeId(od::SrscRecordType::TEXTURE, getAssetId()+mAnimFrameCount, 1))
             {
-                break;
-            }
+                od::DataReader dr = cursor.getReader();
+                // skip to flags to check
+                uint8_t animFps;
+                uint8_t flags;
 
-            ++mAnimFrameCount;
+                dr >> od::DataReader::Ignore(34)
+                   >> animFps
+                   >> flags;
+
+                if(!(flags & OD_TEX_FLAG_NEXTFRAME))
+                {
+                    break;
+                }
+
+                ++mAnimFrameCount;
+            }
         }
     }
 
     void Texture::postLoad()
     {
-        // TODO: load animation frames (if any)
+        // maybe do this on demand rather than doing it for every texture and even unused ones?
+        if(mAnimFrameCount > 1 && !isNextFrame())
+        {
+            mNextAnimationFrames.reserve(mAnimFrameCount-1);
+            for(size_t i = 0; i < mAnimFrameCount-1; ++i)
+            {
+                // FIXME: causes stack overflows for some reason
+                //auto frame = getAssetProvider().getAsset<Texture>(getAssetId() + i);
+                //mNextAnimationFrames.push_back(frame);
+            }
+        }
+
+        // even if it's unlikely that this texture and it's material share an SRSC file, it would
+        // not be hard to build such a file, and our library allows to create a TextureFactory and
+        // a ClassFactory from the same SrscFile anyway. thus, we should load the material here instead
+        // of loading it in load(...). better safe than sorry.
+        if(!mMaterialClassRef.isNull())
+        {
+            mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
+            mMaterialInstance = mMaterialClass->makeInstance();
+            if(mMaterialInstance != nullptr)
+            {
+                mMaterialInstance->onLoaded(mTextureFactory.getEngine());
+            }
+        }
     }
 
     od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
@@ -352,16 +379,6 @@ namespace odDb
         if(zstr != nullptr)
         {
             zstr->seekToEndOfZlib();
-        }
-
-        if(!mMaterialClassRef.isNull())
-        {
-            mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
-            mMaterialInstance = mMaterialClass->makeInstance();
-            if(mMaterialInstance != nullptr)
-            {
-                mMaterialInstance->onLoaded(mTextureFactory.getEngine());
-            }
         }
 
         Logger::debug() << "Texture successfully loaded";

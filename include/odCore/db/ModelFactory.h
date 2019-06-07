@@ -10,24 +10,11 @@
 
 #include <odCore/db/Model.h>
 #include <odCore/db/AssetFactory.h>
-#include <odCore/SrscFile.h>
 
 namespace odDb
 {
 
-	class ModelFactory : public AssetFactory<Model>
-	{
-	public:
-
-		ModelFactory(AssetProvider &ap, od::SrscFile &modelContainer);
-
-
-	protected:
-
-		// implement AssetFactory<Model>
-		virtual od::RefPtr<Model> loadAsset(od::RecordId id) override;
-
-	};
+	typedef GenericAssetFactory<Model> ModelFactory;
 
 }
 

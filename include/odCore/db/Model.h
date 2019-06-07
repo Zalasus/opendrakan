@@ -34,7 +34,6 @@ namespace odPhysics
 
 namespace odDb
 {
-    class ModelFactory;
     class ModelBounds;
 
 	class Model : public Asset
@@ -78,7 +77,7 @@ namespace odDb
             Smooth
         };
 
-		Model(AssetProvider &ap, od::RecordId modelId, ModelFactory &factory);
+		Model(AssetProvider &ap, od::RecordId modelId);
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
         ~Model();
 
@@ -112,9 +111,6 @@ namespace odDb
         void _loadBoundingData(od::DataReader dr);
         void _loadLodsAndBones(od::DataReader dr);
 
-
-		ModelFactory &mModelFactory;
-
 		std::string mModelName;
 		ShadingType mShadingType;
 		bool mBlendWithLandscape;
@@ -146,6 +142,11 @@ namespace odDb
         static const char *name()
         {
             return "Model";
+        }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::MODEL_NAME);
         }
     };
 

@@ -70,6 +70,11 @@ namespace odDb
         {
             return "Class";
         }
+
+        static constexpr od::RecordType baseType()
+        {
+            return static_cast<od::RecordType>(od::SrscRecordType::CLASS);
+        }
     };
 
 }

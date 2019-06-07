@@ -13,22 +13,9 @@
 
 namespace odDb
 {
-    class Database;
 
-    class SoundFactory : public AssetFactory<Sound>
-    {
-    public:
+    typedef GenericAssetFactory<Sound> SoundFactory;
 
-        SoundFactory(AssetProvider &ap, od::SrscFile &soundContainer);
-
-
-    protected:
-
-        // implement AssetFactory<Texture>
-        virtual od::RefPtr<Sound> loadAsset(od::RecordId soundId) override;
-
-
-    };
 }
 
 

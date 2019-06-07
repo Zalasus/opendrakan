@@ -14,18 +14,7 @@
 namespace odDb
 {
 
-    class AnimationFactory : public AssetFactory<Animation>
-    {
-    public:
-
-        AnimationFactory(AssetProvider &ap, od::SrscFile &animationContainer);
-
-
-    protected:
-
-        virtual od::RefPtr<Animation> loadAsset(od::RecordId animId) override;
-
-    };
+    typedef GenericAssetFactory<Animation> AnimationFactory;
 
 }
 

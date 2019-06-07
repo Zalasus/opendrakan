@@ -60,6 +60,7 @@ namespace odDb
 	struct AssetTraits
 	{
 	    static const char *name();
+	    static constexpr od::RecordType baseType();
 	};
 
 	/**

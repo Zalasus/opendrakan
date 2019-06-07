@@ -34,17 +34,9 @@ namespace odDb
 		return mPalette[index];
 	}
 
-	od::RefPtr<Texture> TextureFactory::loadAsset(od::RecordId textureId)
+	od::RefPtr<Texture> TextureFactory::createNewAsset(od::RecordId id)
 	{
-		auto cursor = getSrscFile().getFirstRecordOfTypeId(od::SrscRecordType::TEXTURE, textureId);
-		if(!cursor.isValid())
-		{
-			return nullptr;
-		}
-
-		od::RefPtr<Texture> texture = od::make_refd<Texture>(getAssetProvider(), textureId, *this);
-		texture->load(std::move(cursor));
-		return texture;
+		return od::make_refd<Texture>(getAssetProvider(), id, *this);
 	}
 
 	void TextureFactory::_loadPalette()
