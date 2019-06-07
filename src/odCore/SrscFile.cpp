@@ -264,7 +264,7 @@ namespace od
         // way of checking whether the iterator was created by our mDirectory. we could create our own
         // iterator containing a ref to it's parent, but for now, check if the adress is within range
         DirEntry *entry = &(*dirIt);
-        if(entry < mDirectory.data() || entry > (mDirectory.data() + mDirectory.size()*sizeof(DirEntry)))
+        if(entry < mDirectory.data() || entry > (mDirectory.data() + mDirectory.size()))
         {
             throw od::Exception("Tried use directory iterator that does not belong to this SrscFile instance");
         }
