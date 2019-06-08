@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <odCore/SrscFile.h>
+#include <odCore/FilePath.h>
 
 static void srscStat(od::SrscFile &file, size_t dataByteCount)
 {
@@ -67,7 +68,7 @@ static void printUsage()
         << "    srsced [options] [file]" << std::endl << std::endl
         << "Reads and edits SRSC files (editing unimplemented)" << std::endl << std::endl
         << "Options:" << std::endl
-        << "    -o <path>  Output path (default '.')" << std::endl
+        << "    -o <path>  Output directory (default '.')" << std::endl
         << "    -x         Extract raw records" << std::endl
         << "    -i <id>    Limit extraction to records with ID <id>" << std::endl
         << "    -c <count> Sets count of data bytes to print (default 10)" << std::endl
@@ -80,7 +81,7 @@ static void printUsage()
 int main(int argc, char **argv)
 {
     std::string filename;
-    std::string outputPath = ".";
+    od::FilePath outputPath(".");
     bool extract = false;
     bool limitExtractionIds = false;
     uint16_t extractRecordId = 0;
@@ -121,7 +122,7 @@ int main(int argc, char **argv)
             break;
 
         case 'o':
-            outputPath = std::string(optarg);
+            outputPath = od::FilePath(optarg);
             break;
 
         case 'h':

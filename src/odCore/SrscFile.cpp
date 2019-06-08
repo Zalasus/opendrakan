@@ -175,15 +175,15 @@ namespace od
         return RecordInputCursor(*this, mMutex, it);
     }
 
-	void SrscFile::decompressAll(const std::string &prefix, bool extractRaw)
+	void SrscFile::decompressAll(const od::FilePath &outputDir, bool extractRaw)
 	{
 		for(auto it = mDirectory.begin(); it != mDirectory.end(); ++it)
 		{
-			decompressRecord(prefix, it, extractRaw);
+			decompressRecord(outputDir, it, extractRaw);
 		}
 	}
 
-	void SrscFile::decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw)
+	void SrscFile::decompressRecord(const od::FilePath &outputDir, const DirIterator &dirIt, bool extractRaw)
 	{
 	    _checkDirIterator(dirIt);
 
@@ -193,7 +193,7 @@ namespace od
 		{
 			std::string filename;
 			std::ostringstream ss;
-			ss << prefix << "rawrecord" << dirEntry.index << "-" << std::hex << dirEntry.type << "-" << dirEntry.recordId << "-" << dirEntry.groupId << std::dec << ".dat";
+			ss << outputDir.str() << "/rawrecord" << dirEntry.index << "-" << std::hex << dirEntry.type << "-" << dirEntry.recordId << "-" << dirEntry.groupId << std::dec << ".dat";
 
 			std::ofstream out(ss.str(), std::ios::out | std::ios::binary);
 
