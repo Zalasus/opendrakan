@@ -77,6 +77,17 @@ namespace odOsg
 
     void SoundSystem::setEaxPreset(odAudio::EaxPreset preset)
     {
+        throw od::UnsupportedException("EAX is still unimplemented");
+    }
+
+    void SoundSystem::playMusic(odAudio::MusicId musicId)
+    {
+        throw od::UnsupportedException("Music is still unimplemented");
+    }
+
+    void SoundSystem::stopMusic()
+    {
+        throw od::UnsupportedException("Music is still unimplemented");
     }
 
     void SoundSystem::doErrorCheck(const std::string &failmsg)

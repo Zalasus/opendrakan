@@ -44,6 +44,9 @@ namespace odOsg
 
         virtual void setEaxPreset(odAudio::EaxPreset preset) override;
 
+        virtual void playMusic(odAudio::MusicId musicId) override;
+        virtual void stopMusic() override;
+
 
         static void doErrorCheck(const std::string &failmsg);
 

@@ -25,6 +25,8 @@ namespace odAudio
     class Source;
     class Buffer;
 
+    typedef uint32_t MusicId;
+
     /**
      * @brief Abstract interface for a sound system implementation.
      */
@@ -42,6 +44,9 @@ namespace odAudio
         virtual od::RefPtr<Buffer> createBuffer(odDb::Sound *sound) = 0;
 
         virtual void setEaxPreset(EaxPreset preset) = 0;
+
+        virtual void playMusic(MusicId musicId) = 0;
+        virtual void stopMusic() = 0;
 
     };
 
