@@ -43,7 +43,10 @@ namespace odAudio
         bool hasNextChunk();
         bool isEnd();
         void nextChunk();
+        void skipToFirstSubchunk();
         RiffReader firstSubchunk();
+
+        void nextChunkOfType(const std::string &type, const std::string &listType = "");
 
         void printTree(std::ostream &out);
 
