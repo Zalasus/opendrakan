@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 
 #include <glm/vec2.hpp>
+#include <glm/vec4.hpp>
 
 #include <odCore/RefCounted.h>
 

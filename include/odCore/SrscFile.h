@@ -101,8 +101,8 @@ namespace od
         inline RecordInputCursor getFirstRecordOfTypeId(SrscRecordType type, RecordId id) { return getFirstRecordOfTypeId(static_cast<RecordType>(type), id); }
 
         // "historic reasons"
-		void decompressAll(const std::string &prefix, bool extractRaw);
-        void decompressRecord(const std::string &prefix, const DirIterator &dirIt, bool extractRaw);
+		void decompressAll(const od::FilePath &outputDir, bool extractRaw);
+        void decompressRecord(const od::FilePath &outputDir, const DirIterator &dirIt, bool extractRaw);
 
 
 	protected:

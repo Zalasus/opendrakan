@@ -1,6 +1,7 @@
 Debug/
 Release/
 build/
+build-release/
 .settings/
 .project
 .cproject
