@@ -42,24 +42,31 @@ namespace odAudio
 
         bool hasNextChunk();
         bool isEnd();
-        void nextChunk();
-        void skipToFirstSubchunk();
-        RiffReader firstSubchunk();
 
-        void nextChunkOfType(const std::string &type, const std::string &listType = "");
+        void skipToNextChunk();
+        void skipToNextChunkOfType(const std::string &type, const std::string &listType = "");
+        void skipToFirstSubchunk();
+        void skipToFistSubchunkOfType(const std::string &type, const std::string &listType = "");
+
+        RiffReader getReaderForNextChunk();
+        RiffReader getReaderForNextChunkOfType(const std::string &type, const std::string &listType = "");
+        RiffReader getReaderForFirstSubchunk();
+        RiffReader getReaderForFirstSubchunkOfType(const std::string &type, const std::string &listType = "");
+
+        od::DataReader getReader();
 
         void printTree(std::ostream &out);
 
 
     private:
 
+        RiffReader(od::DataReader reader, std::streamoff end, std::nullptr_t);
         RiffReader(od::DataReader reader, std::streamoff parentEnd);
 
         void _readChunkHeader();
         std::string _readFourCC();
 
         od::DataReader mReader;
-        size_t mDataBytes;
 
         bool mHasSubchunks;
         uint32_t mChunkLength;
