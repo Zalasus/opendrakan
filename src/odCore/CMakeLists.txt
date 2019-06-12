@@ -4,6 +4,7 @@
 set(SOURCES
         "anim/Skeleton.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
+        "audio/MusicContainer.cpp"
         "audio/RiffReader.cpp"
         "db/Animation.cpp"
         "db/Asset.cpp"

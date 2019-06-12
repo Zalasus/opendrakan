@@ -10,6 +10,7 @@
 
 #include <map>
 #include <string>
+#include <array>
 
 #include <odCore/SrscFile.h>
 
@@ -25,6 +26,25 @@ namespace odAudio
     {
     public:
 
+        struct Guid
+        {
+            static constexpr size_t LENGTH = 16;
+
+            std::array<char, LENGTH> data;
+
+            Guid()
+            {
+            }
+
+            Guid(const std::array<char, LENGTH> &d)
+            : data(d)
+            {
+            }
+
+            bool operator<(const Guid &rhs) const;
+            bool operator==(const Guid &rhs) const;
+        };
+
         typedef uint32_t MusicId;
 
 
@@ -39,10 +59,12 @@ namespace odAudio
 
         void _buildIndex();
         void _addDlsToIndex(RiffReader rr, od::RecordId id);
+        void _addSegmentToIndex(RiffReader rr, od::RecordId id);
 
         od::SrscFile mRrc;
 
-        std::map<std::string, od::RecordId> mDlsMap;
+        std::map<std::string, od::RecordId> mDlsNameMap;
+        std::map<Guid, od::RecordId> mDlsGuidMap;
     };
 
 }
