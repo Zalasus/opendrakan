@@ -11,6 +11,7 @@
 #include <ostream>
 
 #include <odCore/DataStream.h>
+#include <odCore/Exception.h>
 
 namespace odAudio
 {
@@ -33,6 +34,9 @@ namespace odAudio
         static const constexpr char *RIFF_CHUNK_ID = "RIFF";
         static const constexpr char *LIST_CHUNK_ID = "LIST";
 
+        static const size_t LIST_CHUNK_DATAOFFSET = 12;
+        static const size_t REGULAR_CHUNK_DATAOFFSET = 8;
+
         RiffReader(od::DataReader reader);
 
         inline bool hasSubchunks() const { return mHasSubchunks; }
@@ -53,7 +57,7 @@ namespace odAudio
         RiffReader getReaderForFirstSubchunk();
         RiffReader getReaderForFirstSubchunkOfType(const std::string &type, const std::string &listType = "");
 
-        od::DataReader getReader();
+        od::DataReader getDataReader();
 
         void printTree(std::ostream &out);
 
@@ -76,6 +80,18 @@ namespace odAudio
         std::streamoff mChunkStart;
         std::streamoff mChunkEnd;
         std::streamoff mParentEnd;
+    };
+
+
+    class RiffException : public od::Exception
+    {
+    public:
+
+        RiffException(const std::string &msg)
+        : Exception(msg)
+        {
+        }
+
     };
 
 }

@@ -21,7 +21,7 @@ namespace odAudio
 
         if(mChunkId != RIFF_CHUNK_ID)
         {
-            throw od::Exception("Not a RIFF file");
+            throw RiffException("Not a RIFF file");
         }
 
         mParentEnd = mChunkEnd;
@@ -90,10 +90,10 @@ namespace odAudio
     {
         if(!mHasSubchunks)
         {
-            throw od::Exception("Chunk has no subchunks");
+            throw RiffException("Chunk has no subchunks");
         }
 
-        mReader.seek(mChunkStart + 12);
+        mReader.seek(mChunkStart + LIST_CHUNK_DATAOFFSET);
         mParentEnd = mChunkEnd;
         _readChunkHeader();
     }
@@ -113,11 +113,10 @@ namespace odAudio
     {
         if(!mHasSubchunks)
         {
-            return RiffReader(mReader, mParentEnd, nullptr);
-            //throw od::Exception("Chunk has no subchunks");
+            throw RiffException("Chunk has no subchunks");
         }
 
-        mReader.seek(mChunkStart + 12);
+        mReader.seek(mChunkStart + LIST_CHUNK_DATAOFFSET);
         return RiffReader(mReader, mChunkEnd);
     }
 
@@ -131,6 +130,32 @@ namespace odAudio
         }
 
         return rr;
+    }
+
+    RiffReader RiffReader::getReaderForFirstSubchunkOfType(const std::string &type, const std::string &listType)
+    {
+        RiffReader rr = getReaderForFirstSubchunk();
+
+        while(!rr.isEnd() && rr.getChunkId() != type && rr.getListId() != listType)
+        {
+            rr.skipToNextChunk();
+        }
+
+        return rr;
+    }
+
+    od::DataReader RiffReader::getDataReader()
+    {
+        if(mHasSubchunks)
+        {
+            mReader.seek(mChunkStart + LIST_CHUNK_DATAOFFSET);
+
+        }else
+        {
+            mReader.seek(mChunkStart + REGULAR_CHUNK_DATAOFFSET);
+        }
+
+        return mReader;
     }
 
     static void _recursiveRiffPrint(std::ostream &out, odAudio::RiffReader rr, int depth)

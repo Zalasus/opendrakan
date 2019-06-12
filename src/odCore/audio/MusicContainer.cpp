@@ -8,6 +8,8 @@
 #include <odCore/audio/MusicContainer.h>
 
 #include <cstring>
+#include <sstream>
+#include <iomanip>
 
 #include <odCore/SrscRecordTypes.h>
 
@@ -24,9 +26,25 @@ namespace odAudio
         return std::memcmp(data.data(), rhs.data.data(), LENGTH) == 0;
     }
 
+    std::ostream &operator<<(std::ostream &lhs, const MusicContainer::Guid &rhs)
+    {
+        std::ostringstream ss;
+        ss << std::hex;
+        for(size_t i = 0; i < MusicContainer::Guid::LENGTH; ++i)
+        {
+            ss << std::setfill('0') << std::setw(2) << ((uint32_t)rhs.data[i] & 0xff);
+        }
+        ss << std::dec;
+
+        lhs << ss.str();
+
+        return lhs;
+    }
+
 
     MusicContainer::MusicContainer(const od::FilePath &musicContainerFile)
-    : mRrc(musicContainerFile)
+    : mFile(musicContainerFile)
+    , mRrc(musicContainerFile)
     {
         _buildIndex();
     }
@@ -36,15 +54,21 @@ namespace odAudio
         auto cursor = mRrc.getFirstRecordOfType(od::SrscRecordType::MUSIC);
         while(cursor.isValid())
         {
-            RiffReader riffReader(cursor.getReader());
-
-            if(riffReader.getListId() == "DLS ")
+            try
             {
-                _addDlsToIndex(riffReader, cursor.getDirIterator()->recordId);
+                RiffReader riffReader(cursor.getReader());
 
-            }else if(riffReader.getListId() == "DMSG")
+                if(riffReader.getListId() == "DLS ")
+                {
+                    _addDlsToIndex(riffReader, cursor.getDirIterator()->recordId);
+
+                }else if(riffReader.getListId() == "DMSG")
+                {
+                    _addSegmentToIndex(riffReader, cursor.getDirIterator()->recordId);
+                }
+
+            }catch(RiffException &r)
             {
-                _addSegmentToIndex(riffReader, cursor.getDirIterator()->recordId);
             }
 
             cursor.nextOfType(od::SrscRecordType::MUSIC);
@@ -57,6 +81,8 @@ namespace odAudio
 
         bool gotDlid = false;
         bool gotName = false;
+        std::string name;
+        Guid dlid;
         while(!rr.isEnd())
         {
             if(rr.getChunkId() == "dlid")
@@ -70,13 +96,11 @@ namespace odAudio
                 if(rr.getChunkLength() != Guid::LENGTH)
                 {
                     Logger::warn() << "DLS record has dlid chunk of invalid length. Can't add DLS to GUID index";
-                    continue;
+                    break;
                 }
 
-                Guid dlid;
-                od::DataReader dr = rr.getReader();
+                od::DataReader dr = rr.getDataReader();
                 dr.read(dlid.data.data(), 16);
-                mDlsGuidMap[dlid] = id;
                 gotDlid = true;
 
             }else if(rr.getListId() == "INFO")
@@ -90,18 +114,42 @@ namespace odAudio
                 RiffReader nameReader = rr.getReaderForFirstSubchunkOfType("INAM");
                 if(nameReader.isEnd())
                 {
-                    Logger::warn() << "DLS record has no INAM subchunk in INFO chunk. Can't add DLS to name index";
-                    continue;
+                    Logger::warn() << "DLS record has no INAM subchunk in INFO chunk";
+                    break;
                 }
 
-                std::string name;
                 name.resize(nameReader.getChunkLength(), ' ');
-                nameReader.getReader().read(&name[0], 16);
-                mDlsNameMap[name] = id;
+                nameReader.getDataReader().read(&name[0], 16);
                 gotName = true;
             }
 
+            if(gotDlid && gotName)
+            {
+                break;
+            }
+
             rr.skipToNextChunk();
+        }
+
+        if(gotDlid && gotName)
+        {
+            auto it = mDlsGuidMap.find(dlid);
+            if(it != mDlsGuidMap.end())
+            {
+                Logger::warn() << "Ignoring duplicate DLS with GUID=" << dlid << " and name '" << name << "'";
+                return;
+            }
+
+            mDlsGuidMap[dlid] = id;
+            Logger::verbose() << "Added DLS '" << name << "' with GUID=" << dlid << " to index";
+
+        }else if(!gotDlid)
+        {
+            Logger::warn() << "DLS had no valid GUID";
+
+        }else if(!gotName)
+        {
+            Logger::warn() << "DLS had no valid name";
         }
     }
 

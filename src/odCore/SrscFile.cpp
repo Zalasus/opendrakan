@@ -27,6 +27,8 @@ namespace od
             return false;
         }
 
+        if(maxSteps < 0) maxSteps = std::numeric_limits<decltype(maxSteps)>::max();
+
         int32_t step = 0;
         while(++it != end && ++step <= maxSteps)
         {

@@ -50,10 +50,6 @@ namespace odAudio
 
         MusicContainer(const od::FilePath &musicContainerFile);
 
-        od::RecordId getSegmentRecordId(MusicId musicId);
-
-        od::DataReader getReaderForDls();
-
 
     private:
 
@@ -61,11 +57,13 @@ namespace odAudio
         void _addDlsToIndex(RiffReader rr, od::RecordId id);
         void _addSegmentToIndex(RiffReader rr, od::RecordId id);
 
+        od::FilePath mFile;
         od::SrscFile mRrc;
 
-        std::map<std::string, od::RecordId> mDlsNameMap;
         std::map<Guid, od::RecordId> mDlsGuidMap;
     };
+
+    std::ostream &operator<<(std::ostream &lhs, const MusicContainer::Guid &rhs);
 
 }
 
