@@ -12,7 +12,7 @@
 #include <AL/alc.h>
 #include <string>
 
-#define OD_SOUND_DEFAULT_FREQUENCY 44100
+#include <odOsg/Constants.h>
 
 namespace odOsg
 {
@@ -26,7 +26,7 @@ namespace odOsg
 
         static const ALCint AbsoluteMaximumSources;
 
-        OpenAlContext(const char *deviceName = NULL, ALCint outputFrequency = OD_SOUND_DEFAULT_FREQUENCY);
+        OpenAlContext(const char *deviceName = NULL, ALCint outputFrequency = Constants::AUDIO_SAMPLE_RATE);
         OpenAlContext(const OpenAlContext &c) = delete;
         ~OpenAlContext();
 

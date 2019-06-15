@@ -50,6 +50,12 @@ namespace odOsg
          */
         static constexpr const char *SHADER_SOURCE_PATH = "resources/shader_src";
 
+
+        /**
+         * @brief Default sample rate to be used for audio output.
+         */
+        static constexpr uint32_t AUDIO_SAMPLE_RATE = 44100;
+
     };
 
 }
