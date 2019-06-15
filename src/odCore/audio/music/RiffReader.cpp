@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odCore/audio/RiffReader.h>
+#include <odCore/audio/music/RiffReader.h>
 
 #include <cassert>
 

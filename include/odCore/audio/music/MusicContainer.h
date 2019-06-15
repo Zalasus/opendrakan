@@ -14,7 +14,7 @@
 
 #include <odCore/SrscFile.h>
 
-#include <odCore/audio/RiffReader.h>
+#include <odCore/audio/music/RiffReader.h>
 
 namespace odAudio
 {

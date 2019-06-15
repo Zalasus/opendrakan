@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odCore/audio/MusicContainer.h>
+#include <odCore/audio/music/MusicContainer.h>
 
 #include <cstring>
 #include <sstream>
