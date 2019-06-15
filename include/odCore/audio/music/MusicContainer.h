@@ -10,11 +10,11 @@
 
 #include <map>
 #include <string>
-#include <array>
 
 #include <odCore/SrscFile.h>
 
 #include <odCore/audio/music/RiffReader.h>
+#include <odCore/audio/music/Guid.h>
 
 namespace odAudio
 {
@@ -26,27 +26,7 @@ namespace odAudio
     {
     public:
 
-        struct Guid
-        {
-            static constexpr size_t LENGTH = 16;
-
-            std::array<char, LENGTH> data;
-
-            Guid()
-            {
-            }
-
-            Guid(const std::array<char, LENGTH> &d)
-            : data(d)
-            {
-            }
-
-            bool operator<(const Guid &rhs) const;
-            bool operator==(const Guid &rhs) const;
-        };
-
         typedef uint32_t MusicId;
-
 
         MusicContainer(const od::FilePath &musicContainerFile);
 
@@ -62,8 +42,6 @@ namespace odAudio
 
         std::map<Guid, od::RecordId> mDlsGuidMap;
     };
-
-    std::ostream &operator<<(std::ostream &lhs, const MusicContainer::Guid &rhs);
 
 }
 

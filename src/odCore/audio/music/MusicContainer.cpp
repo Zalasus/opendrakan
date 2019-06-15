@@ -16,32 +16,6 @@
 namespace odAudio
 {
 
-    bool MusicContainer::Guid::operator<(const Guid &rhs) const
-    {
-        return std::memcmp(data.data(), rhs.data.data(), LENGTH) < 0;
-    }
-
-    bool MusicContainer::Guid::operator==(const Guid &rhs) const
-    {
-        return std::memcmp(data.data(), rhs.data.data(), LENGTH) == 0;
-    }
-
-    std::ostream &operator<<(std::ostream &lhs, const MusicContainer::Guid &rhs)
-    {
-        std::ostringstream ss;
-        ss << std::hex;
-        for(size_t i = 0; i < MusicContainer::Guid::LENGTH; ++i)
-        {
-            ss << std::setfill('0') << std::setw(2) << ((uint32_t)rhs.data[i] & 0xff);
-        }
-        ss << std::dec;
-
-        lhs << ss.str();
-
-        return lhs;
-    }
-
-
     MusicContainer::MusicContainer(const od::FilePath &musicContainerFile)
     : mFile(musicContainerFile)
     , mRrc(musicContainerFile)
@@ -93,14 +67,7 @@ namespace odAudio
                     continue;
                 }
 
-                if(rr.getChunkLength() != Guid::LENGTH)
-                {
-                    Logger::warn() << "DLS record has dlid chunk of invalid length. Can't add DLS to GUID index";
-                    break;
-                }
-
-                od::DataReader dr = rr.getDataReader();
-                dr.read(dlid.data.data(), 16);
+                dlid = Guid(rr);
                 gotDlid = true;
 
             }else if(rr.getListId() == "INFO")
