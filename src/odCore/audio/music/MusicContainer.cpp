@@ -7,11 +7,9 @@
 
 #include <odCore/audio/music/MusicContainer.h>
 
-#include <cstring>
-#include <sstream>
-#include <iomanip>
-
 #include <odCore/SrscRecordTypes.h>
+
+#include <odCore/audio/music/Segment.h>
 
 namespace odAudio
 {
@@ -78,7 +76,7 @@ namespace odAudio
                     continue;
                 }
 
-                RiffReader nameReader = rr.getReaderForFirstSubchunkOfType("INAM");
+                RiffReader nameReader = rr.getReaderForFirstSubchunkOfType(FourCC("INAM"));
                 if(nameReader.isEnd())
                 {
                     Logger::warn() << "DLS record has no INAM subchunk in INFO chunk";
@@ -122,6 +120,7 @@ namespace odAudio
 
     void MusicContainer::_addSegmentToIndex(RiffReader rr, od::RecordId id)
     {
+        Segment segment(rr);
     }
 
 }

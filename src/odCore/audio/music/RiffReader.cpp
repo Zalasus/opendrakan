@@ -8,11 +8,49 @@
 #include <odCore/audio/music/RiffReader.h>
 
 #include <cassert>
+#include <sstream>
 
 #include <odCore/Exception.h>
 
 namespace odAudio
 {
+
+    FourCC::FourCC()
+    : code(0)
+    {
+    }
+
+    FourCC::FourCC(const char *c)
+    : code(0)
+    , str(c)
+    {
+        if(c[0] == '\0' || c[1] == '\0' || c[2] == '\0' || c[3] == '\0')
+        {
+            throw od::Exception("FourCC string too short");
+        }
+
+        code = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];
+    }
+
+    FourCC::FourCC(char c0, char c1, char c2, char c3)
+    : FourCC((c0 << 24) | (c1 << 16) | (c2 << 8) | c3)
+    {
+    }
+
+    FourCC::FourCC(uint32_t i)
+    : code(i)
+    {
+        std::ostringstream ss;
+        ss << (char)(code >> 24)
+           << (char)(code >> 16)
+           << (char)(code >> 8)
+           << (char)code;
+        str = ss.str();
+    }
+
+
+    const FourCC RiffReader::RIFF_CHUNK_ID = FourCC("RIFF");
+    const FourCC RiffReader::LIST_CHUNK_ID = FourCC("LIST");
 
     RiffReader::RiffReader(od::DataReader reader)
     : mReader(reader)
@@ -68,22 +106,10 @@ namespace odAudio
         _readChunkHeader();
     }
 
-    void RiffReader::skipToNextChunkOfType(const std::string &type, const std::string &listType)
+    void RiffReader::skipToNextChunkOfType(const FourCC &type, const FourCC &listType)
     {
-        if(type == LIST_CHUNK_ID || type == RIFF_CHUNK_ID)
-        {
-            while(!isEnd() && getListId() != listType)
-            {
-                skipToNextChunk();
-            }
-
-        }else
-        {
-            while(!isEnd() && getChunkId() != type)
-            {
-                skipToNextChunk();
-            }
-        }
+        skipToNextChunk(); // skip at least once!
+        _skipUntilTypeFound(type, listType);
     }
 
     void RiffReader::skipToFirstSubchunk()
@@ -120,26 +146,20 @@ namespace odAudio
         return RiffReader(mReader, mChunkEnd);
     }
 
-    RiffReader RiffReader::getReaderForNextChunkOfType(const std::string &type, const std::string &listType)
+    RiffReader RiffReader::getReaderForNextChunkOfType(const FourCC &type, const FourCC &listType)
     {
         RiffReader rr = getReaderForNextChunk();
 
-        while(!rr.isEnd() && rr.getChunkId() != type && rr.getListId() != listType)
-        {
-            rr.skipToNextChunk();
-        }
+        rr._skipUntilTypeFound(type, listType);
 
         return rr;
     }
 
-    RiffReader RiffReader::getReaderForFirstSubchunkOfType(const std::string &type, const std::string &listType)
+    RiffReader RiffReader::getReaderForFirstSubchunkOfType(const FourCC &type, const FourCC &listType)
     {
         RiffReader rr = getReaderForFirstSubchunk();
 
-        while(!rr.isEnd() && rr.getChunkId() != type && rr.getListId() != listType)
-        {
-            rr.skipToNextChunk();
-        }
+        rr._skipUntilTypeFound(type, listType);
 
         return rr;
     }
@@ -200,7 +220,7 @@ namespace odAudio
 
         }else
         {
-            mListId.clear();
+            mListId = FourCC();
         }
 
         size_t bytesToSkip = mChunkLength + 8; // 8 header bytes not included in length
@@ -208,12 +228,29 @@ namespace odAudio
         mChunkEnd = mChunkStart + bytesToSkip;
     }
 
-    std::string RiffReader::_readFourCC()
+    void RiffReader::_skipUntilTypeFound(const FourCC &type, const FourCC &listType)
     {
-        char c[5] = {0};
-        mReader.read(&c[0], 4);
+        if(type == LIST_CHUNK_ID || type == RIFF_CHUNK_ID)
+        {
+            while(!isEnd() && getListId() != listType)
+            {
+                skipToNextChunk();
+            }
 
-        return std::string(&c[0]);
+        }else
+        {
+            while(!isEnd() && getChunkId() != type)
+            {
+                skipToNextChunk();
+            }
+        }
+    }
+
+    FourCC RiffReader::_readFourCC()
+    {
+        char c[4];
+        mReader >> c[0] >> c[1] >> c[2] >> c[3];
+        return FourCC(c[0], c[1], c[2], c[3]);
     }
 
 }

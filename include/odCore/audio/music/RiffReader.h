@@ -15,6 +15,42 @@
 
 namespace odAudio
 {
+    class FourCC
+    {
+    public:
+
+        FourCC();
+        explicit FourCC(const char *c);
+        FourCC(char c0, char c1, char c2, char c3);
+
+        operator uint32_t() const
+        {
+            return code;
+        }
+
+        bool operator==(const FourCC &f)
+        {
+            return code == f.code;
+        }
+
+        bool operator==(const char *c)
+        {
+            return *this == FourCC(c);
+        }
+
+        bool operator!=(const FourCC &f)
+        {
+            return code != f.code;
+        }
+
+        uint32_t code;
+        std::string str;
+
+
+    private:
+
+        explicit FourCC(uint32_t i);
+    };
 
     /**
      * @brief Basic chunk-level RIFF reader.
@@ -31,8 +67,8 @@ namespace odAudio
     {
     public:
 
-        static const constexpr char *RIFF_CHUNK_ID = "RIFF";
-        static const constexpr char *LIST_CHUNK_ID = "LIST";
+        static const FourCC RIFF_CHUNK_ID;
+        static const FourCC LIST_CHUNK_ID;
 
         static const size_t LIST_CHUNK_DATAOFFSET = 12;
         static const size_t REGULAR_CHUNK_DATAOFFSET = 8;
@@ -41,21 +77,21 @@ namespace odAudio
 
         inline bool hasSubchunks() const { return mHasSubchunks; }
         inline uint32_t getChunkLength() const { return mChunkLength; }
-        inline std::string getChunkId() const { return mChunkId; }
-        inline std::string getListId() const { return mListId; }
+        inline FourCC getChunkId() const { return mChunkId; }
+        inline FourCC getListId() const { return mListId; }
 
         bool hasNextChunk();
         bool isEnd();
 
         void skipToNextChunk();
-        void skipToNextChunkOfType(const std::string &type, const std::string &listType = "");
+        void skipToNextChunkOfType(const FourCC &type, const FourCC &listType = FourCC());
         void skipToFirstSubchunk();
-        void skipToFistSubchunkOfType(const std::string &type, const std::string &listType = "");
+        void skipToFistSubchunkOfType(const FourCC &type, const FourCC &listType = FourCC());
 
         RiffReader getReaderForNextChunk();
-        RiffReader getReaderForNextChunkOfType(const std::string &type, const std::string &listType = "");
+        RiffReader getReaderForNextChunkOfType(const FourCC &type, const FourCC &listType = FourCC());
         RiffReader getReaderForFirstSubchunk();
-        RiffReader getReaderForFirstSubchunkOfType(const std::string &type, const std::string &listType = "");
+        RiffReader getReaderForFirstSubchunkOfType(const FourCC &type, const FourCC &listType = FourCC());
 
         od::DataReader getDataReader();
 
@@ -68,14 +104,15 @@ namespace odAudio
         RiffReader(od::DataReader reader, std::streamoff parentEnd);
 
         void _readChunkHeader();
-        std::string _readFourCC();
+        void _skipUntilTypeFound(const FourCC &type, const FourCC &listType);
+        FourCC _readFourCC();
 
         od::DataReader mReader;
 
         bool mHasSubchunks;
         uint32_t mChunkLength;
-        std::string mChunkId;
-        std::string mListId;
+        FourCC mChunkId;
+        FourCC mListId;
 
         std::streamoff mChunkStart;
         std::streamoff mChunkEnd;
