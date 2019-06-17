@@ -8,7 +8,6 @@
 #include <odCore/audio/music/RiffReader.h>
 
 #include <cassert>
-#include <sstream>
 
 #include <odCore/Exception.h>
 
@@ -20,9 +19,13 @@ namespace odAudio
     {
     }
 
+    FourCC::FourCC(uint32_t i)
+    : FourCC(i, i >> 8, i >> 16, i >> 24)
+    {
+    }
+
     FourCC::FourCC(const char *c)
     : code(0)
-    , str(c)
     {
         if(c[0] == '\0' || c[1] == '\0' || c[2] == '\0' || c[3] == '\0')
         {
@@ -33,19 +36,17 @@ namespace odAudio
     }
 
     FourCC::FourCC(char c0, char c1, char c2, char c3)
-    : FourCC((c0 << 24) | (c1 << 16) | (c2 << 8) | c3)
+    : code((c0 << 24) | (c1 << 16) | (c2 << 8) | c3)
     {
     }
 
-    FourCC::FourCC(uint32_t i)
-    : code(i)
+    std::ostream &operator<<(std::ostream &lhs, const FourCC &rhs)
     {
-        std::ostringstream ss;
-        ss << (char)(code >> 24)
-           << (char)(code >> 16)
-           << (char)(code >> 8)
-           << (char)code;
-        str = ss.str();
+        lhs << (char)(rhs.code >> 24)
+            << (char)(rhs.code >> 16)
+            << (char)(rhs.code >> 8)
+            << (char)rhs.code;
+        return lhs;
     }
 
 
@@ -82,12 +83,12 @@ namespace odAudio
     {
     }
 
-    bool RiffReader::hasNextChunk()
+    bool RiffReader::hasNextChunk() const
     {
         return mChunkEnd < mParentEnd;
     }
 
-    bool RiffReader::isEnd()
+    bool RiffReader::isEnd() const
     {
         return mChunkStart >= mParentEnd;
     }
@@ -248,9 +249,9 @@ namespace odAudio
 
     FourCC RiffReader::_readFourCC()
     {
-        char c[4];
-        mReader >> c[0] >> c[1] >> c[2] >> c[3];
-        return FourCC(c[0], c[1], c[2], c[3]);
+        uint32_t i;
+        mReader >> i;
+        return FourCC(i);
     }
 
 }

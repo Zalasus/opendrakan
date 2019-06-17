@@ -20,6 +20,10 @@ namespace odAudio
     public:
 
         FourCC();
+        /**
+         * @brief Creates a FourCC from an integer that has been read as little-endian.
+         */
+        explicit FourCC(uint32_t i);
         explicit FourCC(const char *c);
         FourCC(char c0, char c1, char c2, char c3);
 
@@ -28,29 +32,31 @@ namespace odAudio
             return code;
         }
 
-        bool operator==(const FourCC &f)
+        bool operator==(const FourCC &f) const
         {
             return code == f.code;
         }
 
-        bool operator==(const char *c)
+        bool operator==(const char *c) const
         {
             return *this == FourCC(c);
         }
 
-        bool operator!=(const FourCC &f)
+        bool operator!=(const FourCC &f) const
         {
             return code != f.code;
         }
 
+        bool operator!=(const char *c) const
+        {
+            return *this != FourCC(c);
+        }
+
         uint32_t code;
-        std::string str;
-
-
-    private:
-
-        explicit FourCC(uint32_t i);
     };
+
+    std::ostream &operator<<(std::ostream &lhs, const FourCC &rhs);
+
 
     /**
      * @brief Basic chunk-level RIFF reader.
@@ -80,8 +86,13 @@ namespace odAudio
         inline FourCC getChunkId() const { return mChunkId; }
         inline FourCC getListId() const { return mListId; }
 
-        bool hasNextChunk();
-        bool isEnd();
+        /**
+         * @brief Returns the chunk ID or the list ID for LIST/RIFF chunks.
+         */
+        inline FourCC getChunkOrListId() const { return mHasSubchunks ? mListId : mChunkId; }
+
+        bool hasNextChunk() const;
+        bool isEnd() const;
 
         void skipToNextChunk();
         void skipToNextChunkOfType(const FourCC &type, const FourCC &listType = FourCC());

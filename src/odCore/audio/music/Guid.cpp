@@ -9,6 +9,7 @@
 
 #include <cstring>
 #include <iomanip>
+#include <sstream>
 
 #include <odCore/Exception.h>
 

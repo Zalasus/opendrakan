@@ -41,6 +41,7 @@ namespace odAudio
 
             }catch(RiffException &r)
             {
+                // if the record contains no RIFF data, simply ignore it
             }
 
             cursor.nextOfType(od::SrscRecordType::MUSIC);
