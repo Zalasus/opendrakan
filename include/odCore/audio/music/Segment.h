@@ -33,6 +33,7 @@ namespace odAudio
         Segment(RiffReader rr);
 
         inline Guid getGuid() const { return mGuid; }
+        inline const std::vector<MidiEvent> &getMidiEvents() const { return mMidiEvents; }
 
 
     private:

@@ -30,6 +30,8 @@ namespace odAudio
 
         MusicContainer(const od::FilePath &musicContainerFile);
 
+        od::RecordId getDlsRecordByGuid(const Guid &guid);
+
 
     private:
 
