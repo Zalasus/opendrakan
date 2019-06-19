@@ -22,12 +22,35 @@ namespace odAudio
 
         struct MidiEvent
         {
+            static const size_t STRUCT_BYTES = 17;
+
+            uint32_t startTime; // MUSIC_TIME
+            uint32_t duration;  // MUSIC_TIME
+            uint32_t channelIndex;
+            int16_t timeOffset;
+            uint8_t midiStatus;
+            uint8_t midiData1;
+            uint8_t midiData2;
+        };
+
+        struct MidiCurve
+        {
+            static const size_t STRUCT_BYTES = 17;
+
             uint32_t startTime;
             uint32_t duration;
+            uint32_t resetDuration;
             uint32_t channelIndex;
-            uint8_t command;
-            uint8_t commandArg1;
-            uint8_t commandArg2;
+            int16_t timeOffset;
+            int16_t startValue;
+            int16_t endValue;
+            int16_t resetValue;
+            uint8_t type;
+            uint8_t curveShape;
+            uint8_t ccData;
+            uint8_t flags;
+            uint16_t paramType;
+            uint16_t mergeIndex;
         };
 
         Segment(RiffReader rr);
@@ -42,10 +65,12 @@ namespace odAudio
         void _loadHeader(RiffReader rr);
         void _loadTracklist(RiffReader rr);
         void _loadSequenceTrack(RiffReader rr);
+        void _loadBandTrack(RiffReader rr);
 
         Guid mGuid;
 
         std::vector<MidiEvent> mMidiEvents;
+        std::vector<MidiCurve> mMidiCurves;
 
     };
 
