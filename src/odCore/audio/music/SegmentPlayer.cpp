@@ -31,7 +31,7 @@ namespace odAudio
         auto &midiEvents = mSegment->getMidiEvents();
         for(auto &event : midiEvents)
         {
-            switch(event.command)
+            switch(event.midiStatus)
             {
             case 0x90: // note-on
                 {
@@ -39,8 +39,8 @@ namespace odAudio
                     note.on = true;
                     note.channel = event.channelIndex;
                     note.time = event.startTime;
-                    note.note = event.commandArg1;
-                    note.velocity = event.commandArg2;
+                    note.note = event.midiData1;
+                    note.velocity = event.midiData2;
                     mNoteEvents.push_back(note);
 
                     note.on = false;
@@ -62,12 +62,10 @@ namespace odAudio
 
     void SegmentPlayer::play()
     {
-
     }
 
     void SegmentPlayer::pause()
     {
-
     }
 
     void SegmentPlayer::update(float relTime)

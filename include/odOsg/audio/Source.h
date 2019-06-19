@@ -51,15 +51,18 @@ namespace odOsg
         virtual void update(float relTime) override;
 
 
+    protected:
+
+        SoundSystem &mSoundSystem;
+        ALuint mSourceId;
+
+
     private:
 
         template <typename T>
         void _setProperty(ALuint property, const T &value, const std::string &failMsg);
 
         void _updateSourceGain_locked(); // call only with worker mutex held
-
-        SoundSystem &mSoundSystem;
-        ALuint mSourceId;
 
         od::RefPtr<odDb::Sound> mCurrentSound;
         od::RefPtr<Buffer> mCurrentBuffer;
