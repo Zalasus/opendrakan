@@ -7,6 +7,8 @@
 
 #include <odCore/audio/music/Segment.h>
 
+#include <cassert>
+
 #include <odCore/Logger.h>
 
 namespace odAudio
@@ -89,24 +91,20 @@ namespace odAudio
     {
         od::DataReader dr = rr.getDataReader();
 
-        static const uint32_t EVENT_BYTE_COUNT = 20; // size of _one_ event struct in bytes
-
         // the seqt chunk does not conform to the RIFF specs in that it contains subchunks even though it is not a LIST
         // since I don't want to add more methods to RiffReader to handle this sole exception, we read it like normal data
         // and pray that evtl always comes before curl
 
         uint32_t eventListBytes;
+        uint32_t bytesPerEvent;
         dr >> od::DataReader::Expect<uint32_t>(0x6c747665) // "evtl" as LE-int
            >> eventListBytes
-           >> od::DataReader::Expect<uint32_t>(EVENT_BYTE_COUNT); // this field should never be anything but the documented length
+           >> bytesPerEvent;
 
-        size_t eventCount = eventListBytes/EVENT_BYTE_COUNT;
-        if(eventListBytes != eventCount*EVENT_BYTE_COUNT)
-        {
-            Logger::warn() << "Stray bytes in event list";
-        }
+        assert(bytesPerEvent >= MidiEvent::STRUCT_BYTES);
 
-        Logger::info() << "Event count: " << eventCount;
+        size_t eventCount = eventListBytes/bytesPerEvent;
+        size_t trailingBytesPerEvent = bytesPerEvent - MidiEvent::STRUCT_BYTES;
 
         mMidiEvents.reserve(eventCount);
         for(size_t i = 0; i < eventCount; ++i)
@@ -115,13 +113,61 @@ namespace odAudio
             dr >> event.startTime
                >> event.duration
                >> event.channelIndex
-               >> event.command
-               >> event.commandArg1
-               >> event.commandArg2
-               >> od::DataReader::Ignore(5);
+               >> event.timeOffset
+               >> event.midiStatus
+               >> event.midiData1
+               >> event.midiData2
+               >> od::DataReader::Ignore(trailingBytesPerEvent);
 
             mMidiEvents.push_back(event);
         }
+
+        if(eventListBytes & 1)
+        {
+            dr >> od::DataReader::Ignore(1);
+        }
+
+        // now load curves
+        uint32_t curveListBytes;
+        uint32_t bytesPerCurve;
+        dr >> od::DataReader::Expect<uint32_t>(0x6c727563) // "curl" as LE-int
+           >> curveListBytes
+           >> bytesPerCurve;
+
+        assert(bytesPerCurve >= MidiCurve::STRUCT_BYTES);
+
+        size_t curveCount = curveListBytes/bytesPerCurve;
+        size_t trailingBytesPerCurve = curveCount - MidiCurve::STRUCT_BYTES;
+
+        mMidiCurves.reserve(curveCount);
+        for(size_t i = 0; i < eventCount; ++i)
+        {
+            MidiCurve curve;
+            dr >> curve.startTime
+               >> curve.duration
+               >> curve.resetDuration
+               >> curve.channelIndex
+               >> curve.timeOffset
+               >> curve.startValue
+               >> curve.endValue
+               >> curve.resetValue
+               >> curve.type
+               >> curve.curveShape
+               >> curve.ccData
+               >> curve.flags
+               >> curve.paramType
+               >> curve.mergeIndex
+               >> od::DataReader::Ignore(trailingBytesPerCurve);
+
+            Logger::info() << std::hex << (uint32_t)curve.type;
+
+            mMidiCurves.push_back(curve);
+        }
+    }
+
+    void Segment::_loadBandTrack(RiffReader rr)
+    {
+
     }
 
 }
