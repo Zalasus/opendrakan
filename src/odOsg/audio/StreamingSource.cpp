@@ -88,17 +88,19 @@ namespace odOsg
         }
 
         // take played buffers and refill them
-        for(size_t i = 0; i < processedBuffers; ++i)
+        for(ALint i = 0; i < processedBuffers; ++i)
         {
             auto buffer = mBuffers.front();
             mBuffers.pop_front();
 
-            alSourceUnqueueBuffers(mSourceId, 1, &buffer->mBufferId);
+            ALuint bufferId = buffer->getBufferId();
+
+            alSourceUnqueueBuffers(mSourceId, 1, &bufferId);
             SoundSystem::doErrorCheck("Could not unqueue buffer from streaming source");
 
             _fillBuffer_locked(buffer, mFillCallback);
 
-            alSourceQueueBuffers(mSourceId, 1, &buffer->mBufferId);
+            alSourceQueueBuffers(mSourceId, 1, &bufferId);
             SoundSystem::doErrorCheck("Could not queue buffer into streaming source");
             mBuffers.push_back(buffer);
         }
@@ -108,7 +110,7 @@ namespace odOsg
     {
         mFillCallback(mTempFillBuffer.get(), mSamplesPerBuffer);
 
-        alBufferData(buffer->getBufferId(), AL_FORMAT_STEREO16, mTempFillBuffer.get(), mSamplesPerBuffer, mSoundSystem.getContext().getOutputFrequency());
+        alBufferData(buffer->getBufferId(), AL_FORMAT_MONO16, mTempFillBuffer.get(), mSamplesPerBuffer, mSoundSystem.getContext().getOutputFrequency());
         SoundSystem::doErrorCheck("Failed to push data from fill buffer to AL buffer");
     }
 }

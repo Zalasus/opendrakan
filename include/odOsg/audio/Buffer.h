@@ -26,6 +26,7 @@ namespace odOsg
     {
     public:
 
+        Buffer(SoundSystem &ss);
         Buffer(SoundSystem &ss, odDb::Sound *sound);
         virtual ~Buffer();
 

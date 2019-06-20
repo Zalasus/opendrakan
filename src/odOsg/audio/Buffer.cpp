@@ -15,15 +15,20 @@
 namespace odOsg
 {
 
-    Buffer::Buffer(SoundSystem &soundSystem, odDb::Sound *sound)
-    : mSoundSystem(soundSystem)
+    Buffer::Buffer(SoundSystem &ss)
+    : mSoundSystem(ss)
     , mBufferId(0)
-    , mSound(sound)
     {
         std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
 
         alGenBuffers(1, &mBufferId);
         SoundSystem::doErrorCheck("Could not generate buffer");
+    }
+
+    Buffer::Buffer(SoundSystem &soundSystem, odDb::Sound *sound)
+    : Buffer(soundSystem)
+    {
+        mSound = sound;
 
         uint32_t bitsPerChannel = mSound->getBitsPerChannel();
         uint32_t channelCount = mSound->getChannelCount();
@@ -51,6 +56,7 @@ namespace odOsg
             throw od::UnsupportedException("Sound has unsupported format");
         }
 
+        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
         const auto &data = mSound->getDataBuffer();
         alBufferData(mBufferId, format, data.data(), data.size(), mSound->getSamplingFrequency());
         SoundSystem::doErrorCheck("Could not fill buffer with data");

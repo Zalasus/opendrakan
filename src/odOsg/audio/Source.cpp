@@ -197,7 +197,7 @@ namespace odOsg
     {
         std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
 
-        if(fadeOutTime == 0.0)
+        if(fadeOutTime <= 0.0)
         {
             alSourceStop(mSourceId);
             SoundSystem::doErrorCheck("Could not stop source");
@@ -213,6 +213,7 @@ namespace odOsg
     {
         if(mFadingValue.update(relTime))
         {
+            //std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
             _updateSourceGain_locked();
         }
     }

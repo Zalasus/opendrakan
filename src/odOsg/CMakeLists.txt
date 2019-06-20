@@ -4,6 +4,7 @@ set(SOURCES
         "audio/OpenAlContext.cpp"
         "audio/SoundSystem.cpp"
         "audio/Source.cpp"
+        "audio/StreamingSource.cpp"
         "render/Camera.cpp"
         "render/Geometry.cpp"
         "render/GuiNode.cpp"
