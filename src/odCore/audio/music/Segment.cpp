@@ -159,8 +159,6 @@ namespace odAudio
                >> curve.mergeIndex
                >> od::DataReader::Ignore(trailingBytesPerCurve);
 
-            Logger::info() << std::hex << (uint32_t)curve.type;
-
             mMidiCurves.push_back(curve);
         }
     }
