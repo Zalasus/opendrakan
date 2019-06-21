@@ -19,8 +19,6 @@ namespace odOsg
     : mSoundSystem(ss)
     , mBufferId(0)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alGenBuffers(1, &mBufferId);
         SoundSystem::doErrorCheck("Could not generate buffer");
     }
@@ -56,7 +54,6 @@ namespace odOsg
             throw od::UnsupportedException("Sound has unsupported format");
         }
 
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
         const auto &data = mSound->getDataBuffer();
         alBufferData(mBufferId, format, data.data(), data.size(), mSound->getSamplingFrequency());
         SoundSystem::doErrorCheck("Could not fill buffer with data");
@@ -64,8 +61,6 @@ namespace odOsg
 
     Buffer::~Buffer()
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alDeleteBuffers(1, &mBufferId);
         SoundSystem::doErrorCheck("Could not delete buffer");
     }

@@ -19,8 +19,6 @@ namespace odOsg
     template <>
     void Source::_setProperty<bool>(ALuint property, const bool &value, const std::string &failMsg)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         ALint alBool = value ? AL_TRUE : AL_FALSE;
 
         alSourcei(mSourceId, property, alBool);
@@ -30,7 +28,6 @@ namespace odOsg
     template <>
     void Source::_setProperty<float>(ALuint property, const float &value, const std::string &failMsg)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
         alSourcef(mSourceId, property, value);
         SoundSystem::doErrorCheck(failMsg);
     }
@@ -38,7 +35,6 @@ namespace odOsg
     template <>
     void Source::_setProperty<glm::vec3>(ALuint property, const glm::vec3 &value, const std::string &failMsg)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
         alSource3f(mSourceId, property, value.x, value.y, value.z);
         SoundSystem::doErrorCheck(failMsg);
     }
@@ -51,16 +47,12 @@ namespace odOsg
     , mSoundGain(1.0)
     , mFadingValue(1.0)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alGenSources(1, &mSourceId);
         SoundSystem::doErrorCheck("Could not generate source");
     }
 
     Source::~Source()
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alSourceStop(mSourceId);
         SoundSystem::doErrorCheck("Could not stop source to delete it");
 
@@ -73,8 +65,6 @@ namespace odOsg
 
     Source::State Source::getState()
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         ALint sourceState;
         alGetSourcei(mSourceId, AL_SOURCE_STATE, &sourceState);
         SoundSystem::doErrorCheck("Could not query source state");
@@ -129,8 +119,6 @@ namespace odOsg
 
     void Source::setGain(float gain)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         mSourceGain = gain;
         _updateSourceGain_locked();
     }
@@ -141,8 +129,6 @@ namespace odOsg
 
         if(mCurrentBuffer != nullptr)
         {
-            std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
             alSourceStop(mSourceId);
             SoundSystem::doErrorCheck("Could not stop source to unqueue buffer");
 
@@ -154,9 +140,6 @@ namespace odOsg
         {
             auto buffer = mCurrentSound->getOrCreateAudioBuffer(&mSoundSystem);
             mCurrentBuffer = od::confident_downcast<Buffer>(buffer.get());
-
-            // warning, deadlock potential. Don't lock mutex before getOrCreateAudioBuffer() call
-            std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
 
             alSourcei(mSourceId, AL_BUFFER, mCurrentBuffer->getBufferId());
             SoundSystem::doErrorCheck("Could not attach sound buffer to source");
@@ -177,8 +160,6 @@ namespace odOsg
 
     void Source::play(float fadeInTime)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         if(fadeInTime > 0.0)
         {
             mFadingValue.move(1.0f, fadeInTime);
@@ -195,8 +176,6 @@ namespace odOsg
 
     void Source::stop(float fadeOutTime)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         if(fadeOutTime <= 0.0)
         {
             alSourceStop(mSourceId);
@@ -213,7 +192,6 @@ namespace odOsg
     {
         if(mFadingValue.update(relTime))
         {
-            //std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
             _updateSourceGain_locked();
         }
     }

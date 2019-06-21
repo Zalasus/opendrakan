@@ -34,16 +34,12 @@ namespace odOsg
 
     void SoundSystem::setListenerPosition(const glm::vec3 &pos)
     {
-        std::lock_guard<std::mutex> lock(mWorkerMutex);
-
         alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
         doErrorCheck("Could not set listener position");
     }
 
     void SoundSystem::setListenerOrientation(const glm::vec3 &at, const glm::vec3 &up)
     {
-        std::lock_guard<std::mutex> lock(mWorkerMutex);
-
         float atAndUp[6] = { at.x, at.y, at.z,
                              up.x, up.y, up.z  };
 
@@ -53,8 +49,6 @@ namespace odOsg
 
     void SoundSystem::setListenerVelocity(const glm::vec3 &v)
     {
-        std::lock_guard<std::mutex> lock(mWorkerMutex);
-
         alListener3f(AL_VELOCITY, v.x, v.y, v.z);
         doErrorCheck("Could not set listener velocity");
     }

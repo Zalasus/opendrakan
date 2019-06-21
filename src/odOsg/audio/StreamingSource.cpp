@@ -37,17 +37,15 @@ namespace odOsg
         {
             mBuffers[i] = od::make_refd<Buffer>(ss);
             mBufferIds[i] = mBuffers[i]->getBufferId();
+            _fillBuffer_locked(mBuffers[i], FILL_WITH_SILENCE);
         }
 
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
         alSourceQueueBuffers(mSourceId, bufferCount, mBufferIds.data());
         SoundSystem::doErrorCheck("Could not enqueue newly created buffers into streaming source");
     }
 
     StreamingSource::~StreamingSource()
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alSourceStop(mSourceId);
         SoundSystem::doErrorCheck("Could not stop streaming source to delete it");
 
@@ -76,7 +74,9 @@ namespace odOsg
     {
         Source::update(relTime);
 
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
+        ALint queuedBuffers;
+        alGetSourcei(mSourceId, AL_BUFFERS_QUEUED, &queuedBuffers);
+        SoundSystem::doErrorCheck("Failed to query number of queued buffers of streaming source");
 
         ALint processedBuffers;
         alGetSourcei(mSourceId, AL_BUFFERS_PROCESSED, &processedBuffers);
@@ -85,6 +85,10 @@ namespace odOsg
         if(processedBuffers == 0)
         {
             return;
+
+        }else if(processedBuffers == queuedBuffers)
+        {
+            Logger::warn() << "Streaming source underrun. Make sure you provide enough buffers or make them big enough";
         }
 
         // take played buffers and refill them
@@ -100,6 +104,8 @@ namespace odOsg
 
             _fillBuffer_locked(buffer, mFillCallback);
 
+            Logger::info() << "Fill buffer " << bufferId;
+
             alSourceQueueBuffers(mSourceId, 1, &bufferId);
             SoundSystem::doErrorCheck("Could not queue buffer into streaming source");
             mBuffers.push_back(buffer);
@@ -110,7 +116,7 @@ namespace odOsg
     {
         mFillCallback(mTempFillBuffer.get(), mSamplesPerBuffer);
 
-        alBufferData(buffer->getBufferId(), AL_FORMAT_MONO16, mTempFillBuffer.get(), mSamplesPerBuffer, mSoundSystem.getContext().getOutputFrequency());
+        alBufferData(buffer->getBufferId(), AL_FORMAT_MONO16, mTempFillBuffer.get(), mSamplesPerBuffer*2, mSoundSystem.getContext().getOutputFrequency());
         SoundSystem::doErrorCheck("Failed to push data from fill buffer to AL buffer");
     }
 }

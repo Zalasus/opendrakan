@@ -32,7 +32,6 @@ namespace odOsg
         SoundSystem();
         virtual ~SoundSystem();
 
-        inline std::mutex &getWorkerMutex() { return mWorkerMutex; }
         inline OpenAlContext &getContext() { return mContext; }
 
         virtual void setListenerPosition(const glm::vec3 &pos) override;
@@ -58,7 +57,6 @@ namespace odOsg
         OpenAlContext mContext;
 
         std::thread mWorkerThread;
-        std::mutex  mWorkerMutex;
         std::atomic_bool mTerminateFlag;
 
         std::vector<od::WeakObserverRefPtr<Source>> mSources;
