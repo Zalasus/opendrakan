@@ -83,6 +83,14 @@ namespace odAudio
     {
     }
 
+    RiffReader::RiffReader(od::DataReader reader, std::streamoff parentEnd, std::streamoff myStart)
+    : mReader(reader)
+    , mParentEnd(parentEnd)
+    {
+        mReader.seek(myStart);
+        _readChunkHeader();
+    }
+
     bool RiffReader::hasNextChunk() const
     {
         return mChunkEnd < mParentEnd;
@@ -125,29 +133,33 @@ namespace odAudio
         _readChunkHeader();
     }
 
-    RiffReader RiffReader::getReaderForNextChunk()
+    void RiffReader::skipToFirstSubchunkOfType(const FourCC &type, const FourCC &listType)
+    {
+        skipToFirstSubchunk();
+        _skipUntilTypeFound(type, listType);
+    }
+
+    RiffReader RiffReader::getReaderForNextChunk() const
     {
         if(!hasNextChunk())
         {
             return RiffReader(mReader, mParentEnd, nullptr);
         }
 
-        mReader.seek(mChunkEnd);
-        return RiffReader(mReader, mParentEnd);
+        return RiffReader(mReader, mParentEnd, mChunkEnd);
     }
 
-    RiffReader RiffReader::getReaderForFirstSubchunk()
+    RiffReader RiffReader::getReaderForFirstSubchunk() const
     {
         if(!mHasSubchunks)
         {
             throw RiffException("Chunk has no subchunks");
         }
 
-        mReader.seek(mChunkStart + LIST_CHUNK_DATAOFFSET);
-        return RiffReader(mReader, mChunkEnd);
+        return RiffReader(mReader, mChunkEnd, mChunkStart + LIST_CHUNK_DATAOFFSET);
     }
 
-    RiffReader RiffReader::getReaderForNextChunkOfType(const FourCC &type, const FourCC &listType)
+    RiffReader RiffReader::getReaderForNextChunkOfType(const FourCC &type, const FourCC &listType) const
     {
         RiffReader rr = getReaderForNextChunk();
 
@@ -156,7 +168,7 @@ namespace odAudio
         return rr;
     }
 
-    RiffReader RiffReader::getReaderForFirstSubchunkOfType(const FourCC &type, const FourCC &listType)
+    RiffReader RiffReader::getReaderForFirstSubchunkOfType(const FourCC &type, const FourCC &listType) const
     {
         RiffReader rr = getReaderForFirstSubchunk();
 

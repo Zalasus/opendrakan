@@ -97,12 +97,12 @@ namespace odAudio
         void skipToNextChunk();
         void skipToNextChunkOfType(const FourCC &type, const FourCC &listType = FourCC());
         void skipToFirstSubchunk();
-        void skipToFistSubchunkOfType(const FourCC &type, const FourCC &listType = FourCC());
+        void skipToFirstSubchunkOfType(const FourCC &type, const FourCC &listType = FourCC());
 
-        RiffReader getReaderForNextChunk();
-        RiffReader getReaderForNextChunkOfType(const FourCC &type, const FourCC &listType = FourCC());
-        RiffReader getReaderForFirstSubchunk();
-        RiffReader getReaderForFirstSubchunkOfType(const FourCC &type, const FourCC &listType = FourCC());
+        RiffReader getReaderForNextChunk() const;
+        RiffReader getReaderForNextChunkOfType(const FourCC &type, const FourCC &listType = FourCC()) const;
+        RiffReader getReaderForFirstSubchunk() const;
+        RiffReader getReaderForFirstSubchunkOfType(const FourCC &type, const FourCC &listType = FourCC()) const;
 
         od::DataReader getDataReader();
 
@@ -111,8 +111,9 @@ namespace odAudio
 
     private:
 
-        RiffReader(od::DataReader reader, std::streamoff end, std::nullptr_t);
+        RiffReader(od::DataReader reader, std::streamoff end, std::nullptr_t); // creates a reader with a defined end-condition
         RiffReader(od::DataReader reader, std::streamoff parentEnd);
+        RiffReader(od::DataReader reader, std::streamoff parentEnd, std::streamoff myStart); // same as above, but seeks to myStart before reading header
 
         void _readChunkHeader();
         void _skipUntilTypeFound(const FourCC &type, const FourCC &listType);
