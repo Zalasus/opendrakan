@@ -20,10 +20,28 @@ namespace odAudio
     {
     public:
 
+        struct Instrument
+        {
+            uint32_t patch;
+            uint32_t assignPatch;
+            uint32_t noteRanges[4];
+            uint32_t pChannel;
+            uint32_t flags;
+            uint8_t  pan;
+            uint8_t  volume;
+            int16_t  transpose;
+            uint32_t channelPriority;
+            int16_t  pitchBendRange;
+
+            Guid dlsGuid;
+        };
+
         Band(RiffReader rr);
 
 
     private:
+
+        std::vector<Instrument> mInstruments;
 
     };
 
@@ -32,6 +50,7 @@ namespace odAudio
     public:
 
         typedef uint32_t music_time_t;
+        typedef uint64_t ref_time_t;
 
         struct MidiEvent
         {
@@ -94,6 +113,19 @@ namespace odAudio
         void _loadSequenceTrack(RiffReader rr);
         void _loadBandTrack(RiffReader rr);
         void _loadTempoTrack(RiffReader rr);
+
+        uint32_t     mNumberOfRepeats;
+        music_time_t mLength;
+        music_time_t mPlayStart;
+        music_time_t mLoopStart;
+        music_time_t mLoopEnd;
+        uint32_t     mResolution;
+        ref_time_t   mRefTimeLength;
+        uint32_t     mFlags;
+        uint32_t     mReserved;
+        ref_time_t   mRefTimeLoopStart;
+        ref_time_t   mRefTimeLoopEnd;
+        ref_time_t   mRefTimePlayStart;
 
         Guid mGuid;
 

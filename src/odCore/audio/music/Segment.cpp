@@ -19,7 +19,43 @@ namespace odAudio
     {
         if(rr.getChunkOrListId() != "DMBD") throw od::Exception("Not a Band form");
 
+        RiffReader instrumentList = rr.getReaderForFirstSubchunkOfType("LIST", "lbil");
+        for(RiffReader instrument = instrumentList.getReaderForFirstSubchunk(); !instrument.isEnd(); instrument.skipToNextChunk())
+        {
+            if(instrument.getChunkOrListId() != "lbin") continue;
 
+            RiffReader header = instrument.getReaderForFirstSubchunkOfType("bins");
+            if(header.isEnd()) throw od::Exception("No bins chunk in instrument");
+            od::DataReader dr = header.getDataReader();
+
+            Instrument ins;
+            dr >> ins.patch
+               >> ins.assignPatch
+               >> ins.noteRanges[0]
+               >> ins.noteRanges[1]
+               >> ins.noteRanges[2]
+               >> ins.noteRanges[3]
+               >> ins.pChannel
+               >> ins.flags
+               >> ins.pan
+               >> ins.volume
+               >> ins.transpose
+               >> ins.channelPriority
+               >> ins.pitchBendRange;
+
+            RiffReader ref = instrument.getReaderForFirstSubchunkOfType("LIST", "DMRF");
+            if(ref.isEnd())
+            {
+                Logger::warn() << "Instrument contains no DLS reference. Ignoring instrument";
+                continue;
+            }
+            ref.skipToFirstSubchunkOfType("guid");
+            if(ref.isEnd()) throw od::Exception("No DLS GUID in instrument");
+
+            ins.dlsGuid = Guid(ref);
+
+            mInstruments.push_back(ins);
+        }
     }
 
 
@@ -66,11 +102,27 @@ namespace odAudio
 
     void Segment::_loadHeader(RiffReader rr)
     {
+        assert(rr.getChunkOrListId() == "segh");
 
+        od::DataReader dr = rr.getDataReader();
+        dr >> mNumberOfRepeats
+           >> mLength
+           >> mPlayStart
+           >> mLoopStart
+           >> mLoopEnd
+           >> mResolution
+           >> mRefTimeLength
+           >> mFlags
+           >> mReserved
+           >> mRefTimeLoopStart
+           >> mRefTimeLoopEnd
+           >> mRefTimePlayStart;
     }
 
     void Segment::_loadTracklist(RiffReader trackList)
     {
+        assert(trackList.getChunkOrListId() == "trkl");
+
         for(RiffReader track = trackList.getReaderForFirstSubchunk(); !track.isEnd(); track.skipToNextChunk())
         {
             if(track.getChunkOrListId() != "DMTK")
@@ -91,11 +143,11 @@ namespace odAudio
 
             if(typeId == "seqt")
             {
-                _loadSequenceTrack(track.getReaderForFirstSubchunkOfType(FourCC("seqt")));
+                _loadSequenceTrack(track.getReaderForFirstSubchunkOfType("seqt"));
 
             }else if(typeId == "DMBT")
             {
-                _loadBandTrack(track.getReaderForFirstSubchunkOfType(FourCC("RIFF"), FourCC("DMBT")));
+                _loadBandTrack(track.getReaderForFirstSubchunkOfType("RIFF", "DMBT"));
 
             }else if(typeId == "tetr")
             {
@@ -106,7 +158,7 @@ namespace odAudio
 
     void Segment::_loadSequenceTrack(RiffReader rr)
     {
-        if(rr.getChunkOrListId() != "seqt") throw od::Exception("Not a sequence track");
+        assert(rr.getChunkOrListId() == "seqt");
 
         od::DataReader dr = rr.getDataReader();
 
@@ -184,7 +236,7 @@ namespace odAudio
 
     void Segment::_loadBandTrack(RiffReader rr)
     {
-        if(rr.getChunkOrListId() != "DMBT") throw od::Exception("Not a band track");
+        assert(rr.getChunkOrListId() == "DMBT");
 
         rr.skipToFirstSubchunkOfType(FourCC("LIST"), FourCC("lbdl"));
         if(rr.isEnd()) throw od::Exception("No lbdl subchunk in band list");
@@ -220,7 +272,7 @@ namespace odAudio
 
     void Segment::_loadTempoTrack(RiffReader rr)
     {
-        if(rr.getChunkOrListId() != "tetr") throw od::Exception("Not a tempo track");
+        assert(rr.getChunkOrListId() == "tetr");
 
         od::DataReader dr = rr.getDataReader();
 
@@ -237,8 +289,9 @@ namespace odAudio
         {
            TempoEvent event;
            dr >> event.time
+              >> od::DataReader::Ignore(4) // TODO: seems like I have to hardcode alignment. does that mean I can assume a fixed bytesPerEvent?
               >> event.tempo
-              >> od::DataReader::Ignore(trailingBytesPerEvent);
+              >> od::DataReader::Ignore(trailingBytesPerEvent-4);
 
            mTempoEvents.push_back(event);
         }
