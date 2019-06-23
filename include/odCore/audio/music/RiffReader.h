@@ -24,7 +24,7 @@ namespace odAudio
          * @brief Creates a FourCC from an integer that has been read as little-endian.
          */
         explicit FourCC(uint32_t i);
-        explicit FourCC(const char *c);
+        FourCC(const char *c);
         FourCC(char c0, char c1, char c2, char c3);
 
         operator uint32_t() const

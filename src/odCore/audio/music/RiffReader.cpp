@@ -179,6 +179,11 @@ namespace odAudio
 
     od::DataReader RiffReader::getDataReader()
     {
+        if(isEnd())
+        {
+            throw od::Exception("Tried to get data reader from invalid RiffReader");
+        }
+
         if(mHasSubchunks)
         {
             mReader.seek(mChunkStart + LIST_CHUNK_DATAOFFSET);
