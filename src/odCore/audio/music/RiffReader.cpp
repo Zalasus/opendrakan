@@ -69,6 +69,8 @@ namespace odAudio
     RiffReader::RiffReader(od::DataReader reader, std::streamoff parentEnd)
     : mReader(reader)
     , mParentEnd(parentEnd)
+    , mSubchunkCount(0)
+    , mSubchunkCountValid(false)
     {
         _readChunkHeader();
     }
@@ -80,12 +82,16 @@ namespace odAudio
     , mChunkStart(end)
     , mChunkEnd(end)
     , mParentEnd(end)
+    , mSubchunkCount(0)
+    , mSubchunkCountValid(false)
     {
     }
 
     RiffReader::RiffReader(od::DataReader reader, std::streamoff parentEnd, std::streamoff myStart)
     : mReader(reader)
     , mParentEnd(parentEnd)
+    , mSubchunkCount(0)
+    , mSubchunkCountValid(false)
     {
         mReader.seek(myStart);
         _readChunkHeader();
@@ -196,6 +202,27 @@ namespace odAudio
         return mReader;
     }
 
+    size_t RiffReader::getSubchunkCount()
+    {
+        if(!mHasSubchunks)
+        {
+            return 0;
+        }
+
+        if(!mSubchunkCountValid)
+        {
+            RiffReader rr = getReaderForFirstSubchunk();
+            while(!rr.isEnd())
+            {
+                rr.skipToNextChunk();
+                mSubchunkCount++;
+            }
+            mSubchunkCountValid = true;
+        }
+
+        return mSubchunkCount;
+    }
+
     static void _recursiveRiffPrint(std::ostream &out, odAudio::RiffReader rr, int depth)
     {
         while(!rr.isEnd())
@@ -240,6 +267,9 @@ namespace odAudio
         {
             mListId = FourCC();
         }
+
+        mSubchunkCount = 0;
+        mSubchunkCountValid = false;
 
         size_t bytesToSkip = mChunkLength + 8; // 8 header bytes not included in length
         if(bytesToSkip & 1) ++bytesToSkip; // sizes are padded to always be even

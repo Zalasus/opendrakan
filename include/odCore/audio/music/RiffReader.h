@@ -106,6 +106,11 @@ namespace odAudio
 
         od::DataReader getDataReader();
 
+        /**
+         * @brief Returns number of subchunks in this chunk. May need to count subchunks first.
+         */
+        size_t getSubchunkCount();
+
         void printTree(std::ostream &out);
 
 
@@ -129,6 +134,9 @@ namespace odAudio
         std::streamoff mChunkStart;
         std::streamoff mChunkEnd;
         std::streamoff mParentEnd;
+
+        size_t mSubchunkCount;
+        bool mSubchunkCountValid;
     };
 
 

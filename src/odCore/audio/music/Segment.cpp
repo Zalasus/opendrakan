@@ -20,6 +20,7 @@ namespace odAudio
         if(rr.getChunkOrListId() != "DMBD") throw od::Exception("Not a Band form");
 
         RiffReader instrumentList = rr.getReaderForFirstSubchunkOfType("LIST", "lbil");
+        mInstruments.reserve(instrumentList.getSubchunkCount());
         for(RiffReader instrument = instrumentList.getReaderForFirstSubchunk(); !instrument.isEnd(); instrument.skipToNextChunk())
         {
             if(instrument.getChunkOrListId() != "lbin") continue;
@@ -241,6 +242,7 @@ namespace odAudio
         rr.skipToFirstSubchunkOfType(FourCC("LIST"), FourCC("lbdl"));
         if(rr.isEnd()) throw od::Exception("No lbdl subchunk in band list");
 
+        mBandEvents.reserve(rr.getSubchunkCount());
         for(RiffReader bandItem = rr.getReaderForFirstSubchunk(); !bandItem.isEnd(); bandItem.skipToNextChunk())
         {
             if(bandItem.getListId() != "lbnd")
