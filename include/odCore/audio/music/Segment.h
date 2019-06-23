@@ -9,16 +9,29 @@
 #define INCLUDE_ODCORE_AUDIO_MUSIC_SEGMENT_H_
 
 #include <vector>
+#include <memory>
 
 #include <odCore/audio/music/RiffReader.h>
 #include <odCore/audio/music/Guid.h>
 
 namespace odAudio
 {
+    class Band
+    {
+    public:
+
+        Band(RiffReader rr);
+
+
+    private:
+
+    };
 
     class Segment
     {
     public:
+
+        typedef uint32_t music_time_t;
 
         struct MidiEvent
         {
@@ -53,6 +66,20 @@ namespace odAudio
             uint16_t mergeIndex;
         };
 
+        struct BandEvent
+        {
+            music_time_t time;
+            std::unique_ptr<Band> band;
+        };
+
+        struct TempoEvent
+        {
+            static const size_t STRUCT_BYTES = 12;
+
+            music_time_t time;
+            double tempo; // bpm
+        };
+
         Segment(RiffReader rr);
 
         inline Guid getGuid() const { return mGuid; }
@@ -66,11 +93,14 @@ namespace odAudio
         void _loadTracklist(RiffReader rr);
         void _loadSequenceTrack(RiffReader rr);
         void _loadBandTrack(RiffReader rr);
+        void _loadTempoTrack(RiffReader rr);
 
         Guid mGuid;
 
         std::vector<MidiEvent> mMidiEvents;
         std::vector<MidiCurve> mMidiCurves;
+        std::vector<BandEvent> mBandEvents;
+        std::vector<TempoEvent> mTempoEvents;
 
     };
 

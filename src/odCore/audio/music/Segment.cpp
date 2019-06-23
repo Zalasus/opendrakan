@@ -14,6 +14,15 @@
 namespace odAudio
 {
 
+
+    Band::Band(RiffReader rr)
+    {
+        if(rr.getChunkOrListId() != "DMBD") throw od::Exception("Not a Band form");
+
+
+    }
+
+
     Segment::Segment(RiffReader rr)
     {
         _load(rr);
@@ -48,7 +57,7 @@ namespace odAudio
 
             }else if(rr.getChunkOrListId() == "trkl")
             {
-                _loadTracklist(rr.getReaderForFirstSubchunk());
+                _loadTracklist(rr);
             }
 
             rr.skipToNextChunk();
@@ -60,38 +69,48 @@ namespace odAudio
 
     }
 
-    void Segment::_loadTracklist(RiffReader rr)
+    void Segment::_loadTracklist(RiffReader trackList)
     {
-        while(!rr.isEnd())
+        for(RiffReader track = trackList.getReaderForFirstSubchunk(); !track.isEnd(); track.skipToNextChunk())
         {
-            if(rr.getChunkOrListId() == "DMTK")
+            if(track.getChunkOrListId() != "DMTK")
             {
-                RiffReader header = rr.getReaderForFirstSubchunkOfType(FourCC("trkh"));
-                if(header.isEnd()) throw od::Exception("Segment track has no header");
-                od::DataReader dr = header.getDataReader();
-                uint32_t headerType;
-                uint32_t headerListType;
-                dr >> od::DataReader::Ignore(24)
-                   >> headerType
-                   >> headerListType;
-
-                FourCC typeId(headerType != 0 ? headerType : headerListType);
-
-                if(typeId == "seqt")
-                {
-                    _loadSequenceTrack(rr.getReaderForFirstSubchunkOfType(FourCC("seqt")));
-                }
+                continue;
             }
 
-            rr.skipToNextChunk();
+            RiffReader header = track.getReaderForFirstSubchunkOfType(FourCC("trkh"));
+            if(header.isEnd()) throw od::Exception("Segment track has no header");
+            od::DataReader dr = header.getDataReader();
+            uint32_t headerType;
+            uint32_t headerListType;
+            dr >> od::DataReader::Ignore(24)
+               >> headerType
+               >> headerListType;
+
+            FourCC typeId(headerType != 0 ? headerType : headerListType);
+
+            if(typeId == "seqt")
+            {
+                _loadSequenceTrack(track.getReaderForFirstSubchunkOfType(FourCC("seqt")));
+
+            }else if(typeId == "DMBT")
+            {
+                _loadBandTrack(track.getReaderForFirstSubchunkOfType(FourCC("RIFF"), FourCC("DMBT")));
+
+            }else if(typeId == "tetr")
+            {
+                _loadTempoTrack(track.getReaderForFirstSubchunkOfType(FourCC("tetr")));
+            }
         }
     }
 
     void Segment::_loadSequenceTrack(RiffReader rr)
     {
+        if(rr.getChunkOrListId() != "seqt") throw od::Exception("Not a sequence track");
+
         od::DataReader dr = rr.getDataReader();
 
-        // the seqt chunk does not conform to the RIFF specs in that it contains subchunks even though it is not a LIST
+        // the seqt chunk does not conform to the RIFF specs in that it contains subchunks even though it is not a LIST.
         // since I don't want to add more methods to RiffReader to handle this sole exception, we read it like normal data
         // and pray that evtl always comes before curl
 
@@ -165,7 +184,64 @@ namespace odAudio
 
     void Segment::_loadBandTrack(RiffReader rr)
     {
+        if(rr.getChunkOrListId() != "DMBT") throw od::Exception("Not a band track");
 
+        rr.skipToFirstSubchunkOfType(FourCC("LIST"), FourCC("lbdl"));
+        if(rr.isEnd()) throw od::Exception("No lbdl subchunk in band list");
+
+        for(RiffReader bandItem = rr.getReaderForFirstSubchunk(); !bandItem.isEnd(); bandItem.skipToNextChunk())
+        {
+            if(bandItem.getListId() != "lbnd")
+            {
+                continue;
+            }
+
+            bool newStyleHeader = false;
+            RiffReader header = bandItem.getReaderForFirstSubchunkOfType(FourCC("bdih"));
+            if(header.isEnd())
+            {
+                header = bandItem.getReaderForFirstSubchunkOfType(FourCC("bd2h"));
+                if(header.isEnd()) throw od::Exception("No band header in band form (neither bdih nor bd2h)");
+                newStyleHeader = true;
+            }
+
+            od::DataReader dr = header.getDataReader();
+            if(newStyleHeader) dr >> od::DataReader::Ignore(4);
+            music_time_t bandTime;
+            dr >> bandTime;
+
+            mBandEvents.emplace_back();
+            BandEvent &bandEvent = mBandEvents.back();
+
+            RiffReader band = bandItem.getReaderForFirstSubchunkOfType(FourCC("RIFF"), FourCC("DMBD"));
+            bandEvent.band = std::make_unique<Band>(band);
+        }
+    }
+
+    void Segment::_loadTempoTrack(RiffReader rr)
+    {
+        if(rr.getChunkOrListId() != "tetr") throw od::Exception("Not a tempo track");
+
+        od::DataReader dr = rr.getDataReader();
+
+        uint32_t bytesPerEvent;
+        dr >> bytesPerEvent;
+
+        assert(bytesPerEvent >= TempoEvent::STRUCT_BYTES);
+
+        size_t eventCount = rr.getChunkLength()/bytesPerEvent;
+        size_t trailingBytesPerEvent = bytesPerEvent - TempoEvent::STRUCT_BYTES;
+
+        mTempoEvents.reserve(eventCount);
+        for(size_t i = 0; i < eventCount; ++i)
+        {
+           TempoEvent event;
+           dr >> event.time
+              >> event.tempo
+              >> od::DataReader::Ignore(trailingBytesPerEvent);
+
+           mTempoEvents.push_back(event);
+        }
     }
 
 }
