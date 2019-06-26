@@ -22,8 +22,8 @@ namespace odAudio
 
         virtual ~MidiSynth() = default;
 
-        void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) = 0;
-        void noteOff(uint8_t channel, uint8_t note) = 0;
+        virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) = 0;
+        virtual void noteOff(uint8_t channel, uint8_t note) = 0;
 
     };
 

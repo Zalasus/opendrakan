@@ -20,9 +20,17 @@ namespace odAudio
     {
     public:
 
-        SegmentPlayer(MidiSynth *synth);
+        /**
+         * @brief The number of ticks added to music time in the duration of a quarter note.
+         *
+         * As defined by the DirectMusic specs (in constant DMUS_PPQ).
+         */
+        static const size_t MUSICTIME_TICKS_PER_QUARTER = 768;
 
-        void setSegment(std::unique_ptr<Segment> &&s);
+        SegmentPlayer(MidiSynth *synth);
+        ~SegmentPlayer();
+
+        void setSegment(std::unique_ptr<Segment> s);
 
         void play();
         void pause();
@@ -41,21 +49,12 @@ namespace odAudio
             uint8_t velocity;
         };
 
-        struct Curve
-        {
-            uint32_t startTime;
-            uint32_t endTime;
-            uint8_t controller;
-            uint16_t startValue;
-            uint16_t endValue;
-        };
-
         MidiSynth *mSynth;
 
         std::unique_ptr<Segment> mSegment;
         std::vector<NoteEvent> mNoteEvents;
 
-        float mTempo; // in ticks per millisecond
+        double mTempoBps; // beats per second
         uint32_t mCurrentMusicTime;
         std::vector<NoteEvent>::iterator mNoteIterator;
     };

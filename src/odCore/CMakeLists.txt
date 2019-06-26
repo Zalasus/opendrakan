@@ -8,6 +8,7 @@ set(SOURCES
         "audio/music/MusicContainer.cpp"
         "audio/music/RiffReader.cpp"
         "audio/music/Segment.cpp"
+        "audio/music/SegmentPlayer.cpp"
         "db/Animation.cpp"
         "db/Asset.cpp"
         "db/AssetProvider.cpp"

@@ -19,8 +19,8 @@ namespace odOsg
 
         FluidSynth();
 
-        void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) override;
-        void noteOff(uint8_t channel, uint8_t note) override;
+        virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) override;
+        virtual void noteOff(uint8_t channel, uint8_t note) override;
 
     };
 

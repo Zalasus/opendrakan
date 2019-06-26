@@ -5,6 +5,7 @@ set(SOURCES
         "audio/SoundSystem.cpp"
         "audio/Source.cpp"
         "audio/StreamingSource.cpp"
+        "audio/music/FluidSynth.cpp"
         "render/Camera.cpp"
         "render/Geometry.cpp"
         "render/GuiNode.cpp"

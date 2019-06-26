@@ -12,20 +12,23 @@
 #include <odCore/audio/music/Segment.h>
 #include <odCore/audio/music/MidiSynth.h>
 
-
 namespace odAudio
 {
 
     SegmentPlayer::SegmentPlayer(MidiSynth *synth)
     : mSynth(synth)
-    , mTempo(1.0f)
+    , mTempoBps(25.0/60.0)
     , mCurrentMusicTime(0)
     {
     }
 
-    void SegmentPlayer::setSegment(std::unique_ptr<Segment> &&s)
+    SegmentPlayer::~SegmentPlayer()
     {
-        mSegment = s;
+    }
+
+    void SegmentPlayer::setSegment(std::unique_ptr<Segment> s)
+    {
+        mSegment = std::move(s);
 
         mNoteEvents.clear();
         auto &midiEvents = mSegment->getMidiEvents();
@@ -70,9 +73,9 @@ namespace odAudio
 
     void SegmentPlayer::update(float relTime)
     {
-        mCurrentMusicTime += (relTime*1000)*mTempo;
+        mCurrentMusicTime += relTime*mTempoBps*MUSICTIME_TICKS_PER_QUARTER*4;
 
-        while(mNoteIterator != mNoteEvents.end() && mNoteIterator->time < mCurrentMusicTime)
+        while(mNoteIterator != mNoteEvents.end() && mNoteIterator->time <= mCurrentMusicTime)
         {
             if(mNoteIterator->on)
             {

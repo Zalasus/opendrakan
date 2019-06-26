@@ -13,6 +13,7 @@
 #include <atomic>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <odCore/WeakRefPtr.h>
 
@@ -20,9 +21,14 @@
 
 #include <odOsg/audio/OpenAlContext.h>
 
+namespace odAudio
+{
+    class MusicContainer;
+    class SegmentPlayer;
+}
+
 namespace odOsg
 {
-
     class Source;
 
     class SoundSystem : public odAudio::SoundSystem
@@ -43,6 +49,7 @@ namespace odOsg
 
         virtual void setEaxPreset(odAudio::EaxPreset preset) override;
 
+        virtual void loadMusicContainer(const od::FilePath &rrcPath) override;
         virtual void playMusic(odAudio::MusicId musicId) override;
         virtual void stopMusic() override;
 
@@ -53,6 +60,7 @@ namespace odOsg
     private:
 
         void _doWorkerStuff();
+        void _doMusicStuff();
 
         OpenAlContext mContext;
 
@@ -60,6 +68,13 @@ namespace odOsg
         std::atomic_bool mTerminateFlag;
 
         std::vector<od::WeakObserverRefPtr<Source>> mSources;
+
+        std::unique_ptr<odAudio::MusicContainer> mMusicContainer;
+        std::thread mMusicThread;
+        std::atomic_bool mShouldTerminateMusicThread;
+        std::mutex mMusicWorkerMutex;
+        odAudio::SegmentPlayer *mSegmentPlayer;
+
     };
 
 }

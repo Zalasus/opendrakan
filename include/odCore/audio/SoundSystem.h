@@ -11,6 +11,7 @@
 #include <glm/vec3.hpp>
 
 #include <odCore/RefCounted.h>
+#include <odCore/FilePath.h>
 
 #include <odCore/audio/EaxPresets.h>
 
@@ -45,6 +46,7 @@ namespace odAudio
 
         virtual void setEaxPreset(EaxPreset preset) = 0;
 
+        virtual void loadMusicContainer(const od::FilePath &rrcPath) = 0;
         virtual void playMusic(MusicId musicId) = 0;
         virtual void stopMusic() = 0;
 

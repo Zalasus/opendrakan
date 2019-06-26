@@ -11,8 +11,12 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/audio/music/SegmentPlayer.h>
+#include <odCore/audio/music/MusicContainer.h>
+
 #include <odOsg/audio/Source.h>
 #include <odOsg/audio/Buffer.h>
+#include <odOsg/audio/music/FluidSynth.h>
 
 namespace odOsg
 {
@@ -20,6 +24,8 @@ namespace odOsg
     SoundSystem::SoundSystem()
     : mContext() // only support default device for now
     , mTerminateFlag(false)
+    , mShouldTerminateMusicThread(false)
+    , mSegmentPlayer(nullptr)
     {
         mContext.makeCurrent();
 
@@ -29,7 +35,9 @@ namespace odOsg
     SoundSystem::~SoundSystem()
     {
         mTerminateFlag = true;
-        mWorkerThread.join();
+        mShouldTerminateMusicThread = true;
+        if(mWorkerThread.joinable()) mWorkerThread.join();
+        if(mMusicThread.joinable()) mMusicThread.join();
     }
 
     void SoundSystem::setListenerPosition(const glm::vec3 &pos)
@@ -74,9 +82,33 @@ namespace odOsg
         throw od::UnsupportedException("EAX is still unimplemented");
     }
 
+    void SoundSystem::loadMusicContainer(const od::FilePath &rrcPath)
+    {
+        if(mMusicContainer == nullptr)
+        {
+            mMusicThread = std::thread(&SoundSystem::_doMusicStuff, this);
+        }
+
+        mMusicContainer = std::make_unique<odAudio::MusicContainer>(rrcPath);
+    }
+
     void SoundSystem::playMusic(odAudio::MusicId musicId)
     {
-        throw od::UnsupportedException("Music is still unimplemented");
+        if(mMusicContainer == nullptr)
+        {
+            throw od::Exception("No music container loaded. Make sure to load one before trying to play music");
+        }
+
+        if(mSegmentPlayer == nullptr)
+        {
+            throw od::Exception("No segment player present. Seems like the music thread died");
+        }
+
+        /*auto segment = mMusicContainer->loadSegment(musicId);
+
+        std::lock_guard<std::mutex> lock(mMusicWorkerMutex);
+        mSegmentPlayer->setSegment(segment);
+        mSegmentPlayer->play();*/
     }
 
     void SoundSystem::stopMusic()
@@ -159,6 +191,43 @@ namespace odOsg
         Logger::verbose() << "Terminated sound worker thread";
     }
 
+    void SoundSystem::_doMusicStuff()
+    {
+        Logger::verbose() << "Started music worker thread";
+
+        FluidSynth synth;
+        odAudio::SegmentPlayer player(&synth);
+        mSegmentPlayer = &player;
+
+        auto lastTime = std::chrono::high_resolution_clock::now();
+        while(!mShouldTerminateMusicThread)
+        {
+            auto now = std::chrono::high_resolution_clock::now();
+            float relTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastTime).count();
+            lastTime = now;
+
+            try
+            {
+                std::lock_guard<std::mutex> lock(mMusicWorkerMutex);
+                player.update(relTime);
+
+            }catch(od::Exception &e)
+            {
+                Logger::error() << "Error in music worker thread: " << e.what();
+                Logger::error() << "Terminating music worker thread...";
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(mMusicWorkerMutex);
+            mSegmentPlayer = nullptr;
+        }
+
+        Logger::verbose() << "Terminated music worker thread";
+    }
 }
 
 
