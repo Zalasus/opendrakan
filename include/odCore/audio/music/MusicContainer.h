@@ -12,12 +12,14 @@
 #include <string>
 
 #include <odCore/SrscFile.h>
+#include <odCore/RefCounted.h>
 
 #include <odCore/audio/music/RiffReader.h>
 #include <odCore/audio/music/Guid.h>
 
 namespace odAudio
 {
+    class Segment;
 
     /**
      * @brief Helper class for reading and indexing Music.rrc and for providing music data to the music system.
@@ -31,6 +33,8 @@ namespace odAudio
         MusicContainer(const od::FilePath &musicContainerFile);
 
         od::RecordId getDlsRecordByGuid(const Guid &guid);
+
+        od::RefPtr<Segment> loadSegment(MusicId id);
 
 
     private:

@@ -11,6 +11,8 @@
 #include <vector>
 #include <memory>
 
+#include <odCore/RefCounted.h>
+
 #include <odCore/audio/music/RiffReader.h>
 #include <odCore/audio/music/Guid.h>
 
@@ -45,7 +47,7 @@ namespace odAudio
 
     };
 
-    class Segment
+    class Segment : public od::RefCounted
     {
     public:
 

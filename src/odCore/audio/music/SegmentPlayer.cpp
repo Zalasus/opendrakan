@@ -26,9 +26,9 @@ namespace odAudio
     {
     }
 
-    void SegmentPlayer::setSegment(std::unique_ptr<Segment> s)
+    void SegmentPlayer::setSegment(Segment *s)
     {
-        mSegment = std::move(s);
+        mSegment = s;
 
         mNoteEvents.clear();
         auto &midiEvents = mSegment->getMidiEvents();

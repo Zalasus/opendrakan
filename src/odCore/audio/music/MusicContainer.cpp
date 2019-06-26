@@ -7,6 +7,8 @@
 
 #include <odCore/audio/music/MusicContainer.h>
 
+#include <limits>
+
 #include <odCore/SrscRecordTypes.h>
 
 #include <odCore/audio/music/Segment.h>
@@ -19,6 +21,35 @@ namespace odAudio
     , mRrc(musicContainerFile)
     {
         _buildIndex();
+    }
+
+    od::RecordId MusicContainer::getDlsRecordByGuid(const Guid &guid)
+    {
+        auto it = mDlsGuidMap.find(guid);
+        if(it == mDlsGuidMap.end())
+        {
+            throw od::NotFoundException("No DLS with given GUID found");
+        }
+
+        return it->second;
+    }
+
+    od::RefPtr<Segment> MusicContainer::loadSegment(MusicId id)
+    {
+        if(id > std::numeric_limits<od::RecordId>::max())
+        {
+            throw od::Exception("Music ID out of record ID limits");
+        }
+
+        auto cursor = mRrc.getFirstRecordOfTypeId(od::SrscRecordType::MUSIC, static_cast<od::RecordId>(id));
+        if(!cursor.isValid())
+        {
+            throw od::NotFoundException("Music with given ID not found");
+        }
+
+        RiffReader rr(cursor.getReader());
+        auto segment = od::make_refd<Segment>(rr);
+        return segment;
     }
 
     void MusicContainer::_buildIndex()

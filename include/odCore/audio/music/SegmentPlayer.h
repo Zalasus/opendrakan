@@ -8,8 +8,11 @@
 #ifndef INCLUDE_ODCORE_AUDIO_MUSIC_SEGMENTPLAYER_H_
 #define INCLUDE_ODCORE_AUDIO_MUSIC_SEGMENTPLAYER_H_
 
-#include <memory>
+#include <stdint.h>
+#include <stdlib.h>
 #include <vector>
+
+#include <odCore/RefCounted.h>
 
 namespace odAudio
 {
@@ -30,7 +33,7 @@ namespace odAudio
         SegmentPlayer(MidiSynth *synth);
         ~SegmentPlayer();
 
-        void setSegment(std::unique_ptr<Segment> s);
+        void setSegment(Segment *s);
 
         void play();
         void pause();
@@ -51,7 +54,7 @@ namespace odAudio
 
         MidiSynth *mSynth;
 
-        std::unique_ptr<Segment> mSegment;
+        od::RefPtr<Segment> mSegment;
         std::vector<NoteEvent> mNoteEvents;
 
         double mTempoBps; // beats per second
