@@ -13,7 +13,7 @@
 #include <odCore/DataStream.h>
 #include <odCore/Exception.h>
 
-namespace odAudio
+namespace od
 {
     class FourCC
     {

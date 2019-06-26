@@ -14,10 +14,14 @@
 
 #include <odCore/RefCounted.h>
 
+namespace odDb
+{
+    class Segment;
+}
+
 namespace odAudio
 {
     class MidiSynth;
-    class Segment;
 
     class SegmentPlayer
     {
@@ -33,7 +37,7 @@ namespace odAudio
         SegmentPlayer(MidiSynth *synth);
         ~SegmentPlayer();
 
-        void setSegment(Segment *s);
+        void setSegment(odDb::Segment *s);
 
         void play();
         void pause();
@@ -54,7 +58,7 @@ namespace odAudio
 
         MidiSynth *mSynth;
 
-        od::RefPtr<Segment> mSegment;
+        od::RefPtr<odDb::Segment> mSegment;
         std::vector<NoteEvent> mNoteEvents;
 
         double mTempoBps; // beats per second

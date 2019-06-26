@@ -5,15 +5,15 @@
  *      Author: zal
  */
 
-#include <odCore/audio/music/MusicContainer.h>
+#include <odCore/db/MusicContainer.h>
 
 #include <limits>
 
 #include <odCore/SrscRecordTypes.h>
 
-#include <odCore/audio/music/Segment.h>
+#include <odCore/db/Segment.h>
 
-namespace odAudio
+namespace odDb
 {
 
     MusicContainer::MusicContainer(const od::FilePath &musicContainerFile)
@@ -23,7 +23,7 @@ namespace odAudio
         _buildIndex();
     }
 
-    od::RecordId MusicContainer::getDlsRecordByGuid(const Guid &guid)
+    od::RecordId MusicContainer::getDlsRecordByGuid(const od::Guid &guid)
     {
         auto it = mDlsGuidMap.find(guid);
         if(it == mDlsGuidMap.end())
@@ -47,7 +47,7 @@ namespace odAudio
             throw od::NotFoundException("Music with given ID not found");
         }
 
-        RiffReader rr(cursor.getReader());
+        od::RiffReader rr(cursor.getReader());
         auto segment = od::make_refd<Segment>(rr);
         return segment;
     }
@@ -59,7 +59,7 @@ namespace odAudio
         {
             try
             {
-                RiffReader riffReader(cursor.getReader());
+                od::RiffReader riffReader(cursor.getReader());
 
                 if(riffReader.getListId() == "DLS ")
                 {
@@ -70,7 +70,7 @@ namespace odAudio
                     _addSegmentToIndex(riffReader, cursor.getDirIterator()->recordId);
                 }
 
-            }catch(RiffException &r)
+            }catch(od::RiffException &r)
             {
                 // if the record contains no RIFF data, simply ignore it
             }
@@ -79,14 +79,14 @@ namespace odAudio
         }
     }
 
-    void MusicContainer::_addDlsToIndex(RiffReader rr, od::RecordId id)
+    void MusicContainer::_addDlsToIndex(od::RiffReader rr, od::RecordId id)
     {
         rr.skipToFirstSubchunk();
 
         bool gotDlid = false;
         bool gotName = false;
         std::string name;
-        Guid dlid;
+        od::Guid dlid;
         while(!rr.isEnd())
         {
             if(rr.getChunkId() == "dlid")
@@ -97,7 +97,7 @@ namespace odAudio
                     continue;
                 }
 
-                dlid = Guid(rr);
+                dlid = od::Guid(rr);
                 gotDlid = true;
 
             }else if(rr.getListId() == "INFO")
@@ -108,7 +108,7 @@ namespace odAudio
                     continue;
                 }
 
-                RiffReader nameReader = rr.getReaderForFirstSubchunkOfType(FourCC("INAM"));
+                od::RiffReader nameReader = rr.getReaderForFirstSubchunkOfType("INAM");
                 if(nameReader.isEnd())
                 {
                     Logger::warn() << "DLS record has no INAM subchunk in INFO chunk";
@@ -150,7 +150,7 @@ namespace odAudio
         }
     }
 
-    void MusicContainer::_addSegmentToIndex(RiffReader rr, od::RecordId id)
+    void MusicContainer::_addSegmentToIndex(od::RiffReader rr, od::RecordId id)
     {
         Segment segment(rr);
     }

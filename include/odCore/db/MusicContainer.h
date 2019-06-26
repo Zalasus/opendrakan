@@ -14,10 +14,10 @@
 #include <odCore/SrscFile.h>
 #include <odCore/RefCounted.h>
 
-#include <odCore/audio/music/RiffReader.h>
-#include <odCore/audio/music/Guid.h>
+#include <odCore/RiffReader.h>
+#include <odCore/Guid.h>
 
-namespace odAudio
+namespace odDb
 {
     class Segment;
 
@@ -32,7 +32,7 @@ namespace odAudio
 
         MusicContainer(const od::FilePath &musicContainerFile);
 
-        od::RecordId getDlsRecordByGuid(const Guid &guid);
+        od::RecordId getDlsRecordByGuid(const od::Guid &guid);
 
         od::RefPtr<Segment> loadSegment(MusicId id);
 
@@ -40,13 +40,13 @@ namespace odAudio
     private:
 
         void _buildIndex();
-        void _addDlsToIndex(RiffReader rr, od::RecordId id);
-        void _addSegmentToIndex(RiffReader rr, od::RecordId id);
+        void _addDlsToIndex(od::RiffReader rr, od::RecordId id);
+        void _addSegmentToIndex(od::RiffReader rr, od::RecordId id);
 
         od::FilePath mFile;
         od::SrscFile mRrc;
 
-        std::map<Guid, od::RecordId> mDlsGuidMap;
+        std::map<od::Guid, od::RecordId> mDlsGuidMap;
     };
 
 }

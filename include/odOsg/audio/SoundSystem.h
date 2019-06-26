@@ -21,9 +21,13 @@
 
 #include <odOsg/audio/OpenAlContext.h>
 
-namespace odAudio
+namespace odDb
 {
     class MusicContainer;
+}
+
+namespace odAudio
+{
     class SegmentPlayer;
 }
 
@@ -69,7 +73,7 @@ namespace odOsg
 
         std::vector<od::WeakObserverRefPtr<Source>> mSources;
 
-        std::unique_ptr<odAudio::MusicContainer> mMusicContainer;
+        std::unique_ptr<odDb::MusicContainer> mMusicContainer;
         std::thread mMusicThread;
         std::atomic_bool mShouldTerminateMusicThread;
         std::mutex mMusicWorkerMutex;

@@ -11,9 +11,9 @@
 #include <array>
 #include <ostream>
 
-#include <odCore/audio/music/RiffReader.h>
+#include <odCore/RiffReader.h>
 
-namespace odAudio
+namespace od
 {
 
     struct Guid

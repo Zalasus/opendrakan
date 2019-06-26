@@ -5,13 +5,13 @@
  *      Author: zal
  */
 
-#include <odCore/audio/music/RiffReader.h>
+#include <odCore/RiffReader.h>
 
 #include <cassert>
 
 #include <odCore/Exception.h>
 
-namespace odAudio
+namespace od
 {
 
     FourCC::FourCC()
@@ -223,7 +223,7 @@ namespace odAudio
         return mSubchunkCount;
     }
 
-    static void _recursiveRiffPrint(std::ostream &out, odAudio::RiffReader rr, int depth)
+    static void _recursiveRiffPrint(std::ostream &out, RiffReader rr, int depth)
     {
         while(!rr.isEnd())
         {

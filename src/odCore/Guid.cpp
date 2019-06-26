@@ -5,7 +5,7 @@
  *      Author: zal
  */
 
-#include <odCore/audio/music/Guid.h>
+#include <odCore/Guid.h>
 
 #include <cstring>
 #include <iomanip>
@@ -13,7 +13,7 @@
 
 #include <odCore/Exception.h>
 
-namespace odAudio
+namespace od
 {
 
     Guid::Guid(RiffReader &rr)

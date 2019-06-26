@@ -12,7 +12,7 @@
 #include <odCore/Exception.h>
 
 #include <odCore/audio/music/SegmentPlayer.h>
-#include <odCore/audio/music/MusicContainer.h>
+#include <odCore/db/MusicContainer.h>
 
 #include <odOsg/audio/Source.h>
 #include <odOsg/audio/Buffer.h>
@@ -89,7 +89,7 @@ namespace odOsg
             mMusicThread = std::thread(&SoundSystem::_doMusicStuff, this);
         }
 
-        mMusicContainer = std::make_unique<odAudio::MusicContainer>(rrcPath);
+        mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
     }
 
     void SoundSystem::playMusic(odAudio::MusicId musicId)

@@ -5,27 +5,26 @@
  *      Author: zal
  */
 
-#include <odCore/audio/music/Segment.h>
+#include <odCore/db/Segment.h>
 
 #include <cassert>
 
 #include <odCore/Logger.h>
 
-namespace odAudio
+namespace odDb
 {
 
-
-    Band::Band(RiffReader rr)
+    Band::Band(od::RiffReader rr)
     {
         if(rr.getChunkOrListId() != "DMBD") throw od::Exception("Not a Band form");
 
-        RiffReader instrumentList = rr.getReaderForFirstSubchunkOfType("LIST", "lbil");
+        od::RiffReader instrumentList = rr.getReaderForFirstSubchunkOfType("LIST", "lbil");
         mInstruments.reserve(instrumentList.getSubchunkCount());
-        for(RiffReader instrument = instrumentList.getReaderForFirstSubchunk(); !instrument.isEnd(); instrument.skipToNextChunk())
+        for(od::RiffReader instrument = instrumentList.getReaderForFirstSubchunk(); !instrument.isEnd(); instrument.skipToNextChunk())
         {
             if(instrument.getChunkOrListId() != "lbin") continue;
 
-            RiffReader header = instrument.getReaderForFirstSubchunkOfType("bins");
+            od::RiffReader header = instrument.getReaderForFirstSubchunkOfType("bins");
             if(header.isEnd()) throw od::Exception("No bins chunk in instrument");
             od::DataReader dr = header.getDataReader();
 
@@ -44,7 +43,7 @@ namespace odAudio
                >> ins.channelPriority
                >> ins.pitchBendRange;
 
-            RiffReader ref = instrument.getReaderForFirstSubchunkOfType("LIST", "DMRF");
+            od::RiffReader ref = instrument.getReaderForFirstSubchunkOfType("LIST", "DMRF");
             if(ref.isEnd())
             {
                 Logger::warn() << "Instrument contains no DLS reference. Ignoring instrument";
@@ -53,19 +52,19 @@ namespace odAudio
             ref.skipToFirstSubchunkOfType("guid");
             if(ref.isEnd()) throw od::Exception("No DLS GUID in instrument");
 
-            ins.dlsGuid = Guid(ref);
+            ins.dlsGuid = od::Guid(ref);
 
             mInstruments.push_back(ins);
         }
     }
 
 
-    Segment::Segment(RiffReader rr)
+    Segment::Segment(od::RiffReader rr)
     {
         _load(rr);
     }
 
-    void Segment::_load(RiffReader rr)
+    void Segment::_load(od::RiffReader rr)
     {
         if(rr.getChunkOrListId() != "DMSG")
         {
@@ -86,7 +85,7 @@ namespace odAudio
 
             if(rr.getChunkId() == "guid")
             {
-                mGuid = Guid(rr);
+                mGuid = od::Guid(rr);
 
             }else if(rr.getChunkId() == "segh")
             {
@@ -101,7 +100,7 @@ namespace odAudio
         }
     }
 
-    void Segment::_loadHeader(RiffReader rr)
+    void Segment::_loadHeader(od::RiffReader rr)
     {
         assert(rr.getChunkOrListId() == "segh");
 
@@ -120,18 +119,18 @@ namespace odAudio
            >> mRefTimePlayStart;
     }
 
-    void Segment::_loadTracklist(RiffReader trackList)
+    void Segment::_loadTracklist(od::RiffReader trackList)
     {
         assert(trackList.getChunkOrListId() == "trkl");
 
-        for(RiffReader track = trackList.getReaderForFirstSubchunk(); !track.isEnd(); track.skipToNextChunk())
+        for(od::RiffReader track = trackList.getReaderForFirstSubchunk(); !track.isEnd(); track.skipToNextChunk())
         {
             if(track.getChunkOrListId() != "DMTK")
             {
                 continue;
             }
 
-            RiffReader header = track.getReaderForFirstSubchunkOfType(FourCC("trkh"));
+            od::RiffReader header = track.getReaderForFirstSubchunkOfType("trkh");
             if(header.isEnd()) throw od::Exception("Segment track has no header");
             od::DataReader dr = header.getDataReader();
             uint32_t headerType;
@@ -140,7 +139,7 @@ namespace odAudio
                >> headerType
                >> headerListType;
 
-            FourCC typeId(headerType != 0 ? headerType : headerListType);
+            od::FourCC typeId(headerType != 0 ? headerType : headerListType);
 
             if(typeId == "seqt")
             {
@@ -152,12 +151,12 @@ namespace odAudio
 
             }else if(typeId == "tetr")
             {
-                _loadTempoTrack(track.getReaderForFirstSubchunkOfType(FourCC("tetr")));
+                _loadTempoTrack(track.getReaderForFirstSubchunkOfType("tetr"));
             }
         }
     }
 
-    void Segment::_loadSequenceTrack(RiffReader rr)
+    void Segment::_loadSequenceTrack(od::RiffReader rr)
     {
         assert(rr.getChunkOrListId() == "seqt");
 
@@ -235,15 +234,15 @@ namespace odAudio
         }
     }
 
-    void Segment::_loadBandTrack(RiffReader rr)
+    void Segment::_loadBandTrack(od::RiffReader rr)
     {
         assert(rr.getChunkOrListId() == "DMBT");
 
-        rr.skipToFirstSubchunkOfType(FourCC("LIST"), FourCC("lbdl"));
+        rr.skipToFirstSubchunkOfType("LIST", "lbdl");
         if(rr.isEnd()) throw od::Exception("No lbdl subchunk in band list");
 
         mBandEvents.reserve(rr.getSubchunkCount());
-        for(RiffReader bandItem = rr.getReaderForFirstSubchunk(); !bandItem.isEnd(); bandItem.skipToNextChunk())
+        for(od::RiffReader bandItem = rr.getReaderForFirstSubchunk(); !bandItem.isEnd(); bandItem.skipToNextChunk())
         {
             if(bandItem.getListId() != "lbnd")
             {
@@ -251,10 +250,10 @@ namespace odAudio
             }
 
             bool newStyleHeader = false;
-            RiffReader header = bandItem.getReaderForFirstSubchunkOfType(FourCC("bdih"));
+            od::RiffReader header = bandItem.getReaderForFirstSubchunkOfType("bdih");
             if(header.isEnd())
             {
-                header = bandItem.getReaderForFirstSubchunkOfType(FourCC("bd2h"));
+                header = bandItem.getReaderForFirstSubchunkOfType("bd2h");
                 if(header.isEnd()) throw od::Exception("No band header in band form (neither bdih nor bd2h)");
                 newStyleHeader = true;
             }
@@ -267,12 +266,12 @@ namespace odAudio
             mBandEvents.emplace_back();
             BandEvent &bandEvent = mBandEvents.back();
 
-            RiffReader band = bandItem.getReaderForFirstSubchunkOfType(FourCC("RIFF"), FourCC("DMBD"));
+            od::RiffReader band = bandItem.getReaderForFirstSubchunkOfType("RIFF", "DMBD");
             bandEvent.band = std::make_unique<Band>(band);
         }
     }
 
-    void Segment::_loadTempoTrack(RiffReader rr)
+    void Segment::_loadTempoTrack(od::RiffReader rr)
     {
         assert(rr.getChunkOrListId() == "tetr");
 

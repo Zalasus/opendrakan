@@ -26,8 +26,6 @@
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
-#include <odCore/audio/music/MusicContainer.h>
-
 namespace od
 {
 
@@ -90,8 +88,6 @@ namespace od
 	    }
 
 	    _findEngineRoot("Dragon.rrc");
-
-	    odAudio::MusicContainer m(FilePath("Music.rrc", mEngineRootDir));
 
 	    mDbManager = std::make_unique<odDb::DbManager>(*this);
         mRflManager = std::make_unique<odRfl::RflManager>(*this);

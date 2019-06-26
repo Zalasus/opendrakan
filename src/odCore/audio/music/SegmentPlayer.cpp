@@ -9,7 +9,8 @@
 
 #include <algorithm>
 
-#include <odCore/audio/music/Segment.h>
+#include <odCore/db/Segment.h>
+
 #include <odCore/audio/music/MidiSynth.h>
 
 namespace odAudio
@@ -26,7 +27,7 @@ namespace odAudio
     {
     }
 
-    void SegmentPlayer::setSegment(Segment *s)
+    void SegmentPlayer::setSegment(odDb::Segment *s)
     {
         mSegment = s;
 

@@ -13,10 +13,10 @@
 
 #include <odCore/RefCounted.h>
 
-#include <odCore/audio/music/RiffReader.h>
-#include <odCore/audio/music/Guid.h>
+#include <odCore/RiffReader.h>
+#include <odCore/Guid.h>
 
-namespace odAudio
+namespace odDb
 {
     class Band
     {
@@ -35,10 +35,10 @@ namespace odAudio
             uint32_t channelPriority;
             int16_t  pitchBendRange;
 
-            Guid dlsGuid;
+            od::Guid dlsGuid;
         };
 
-        Band(RiffReader rr);
+        Band(od::RiffReader rr);
 
 
     private:
@@ -101,20 +101,20 @@ namespace odAudio
             double tempo; // bpm
         };
 
-        Segment(RiffReader rr);
+        Segment(od::RiffReader rr);
 
-        inline Guid getGuid() const { return mGuid; }
+        inline od::Guid getGuid() const { return mGuid; }
         inline const std::vector<MidiEvent> &getMidiEvents() const { return mMidiEvents; }
 
 
     private:
 
-        void _load(RiffReader rr);
-        void _loadHeader(RiffReader rr);
-        void _loadTracklist(RiffReader rr);
-        void _loadSequenceTrack(RiffReader rr);
-        void _loadBandTrack(RiffReader rr);
-        void _loadTempoTrack(RiffReader rr);
+        void _load(od::RiffReader rr);
+        void _loadHeader(od::RiffReader rr);
+        void _loadTracklist(od::RiffReader rr);
+        void _loadSequenceTrack(od::RiffReader rr);
+        void _loadBandTrack(od::RiffReader rr);
+        void _loadTempoTrack(od::RiffReader rr);
 
         uint32_t     mNumberOfRepeats;
         music_time_t mLength;
@@ -129,7 +129,7 @@ namespace odAudio
         ref_time_t   mRefTimeLoopEnd;
         ref_time_t   mRefTimePlayStart;
 
-        Guid mGuid;
+        od::Guid mGuid;
 
         std::vector<MidiEvent> mMidiEvents;
         std::vector<MidiCurve> mMidiCurves;
