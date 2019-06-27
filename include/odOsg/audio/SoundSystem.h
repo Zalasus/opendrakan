@@ -64,7 +64,6 @@ namespace odOsg
     private:
 
         void _doWorkerStuff();
-        void _doMusicStuff();
 
         OpenAlContext mContext;
 
@@ -74,9 +73,6 @@ namespace odOsg
         std::vector<od::WeakObserverRefPtr<Source>> mSources;
 
         std::unique_ptr<odDb::MusicContainer> mMusicContainer;
-        std::thread mMusicThread;
-        std::atomic_bool mShouldTerminateMusicThread;
-        std::mutex mMusicWorkerMutex;
         odAudio::SegmentPlayer *mSegmentPlayer;
 
     };

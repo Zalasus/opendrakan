@@ -24,7 +24,6 @@ namespace odOsg
     SoundSystem::SoundSystem()
     : mContext() // only support default device for now
     , mTerminateFlag(false)
-    , mShouldTerminateMusicThread(false)
     , mSegmentPlayer(nullptr)
     {
         mContext.makeCurrent();
@@ -35,9 +34,7 @@ namespace odOsg
     SoundSystem::~SoundSystem()
     {
         mTerminateFlag = true;
-        mShouldTerminateMusicThread = true;
         if(mWorkerThread.joinable()) mWorkerThread.join();
-        if(mMusicThread.joinable()) mMusicThread.join();
     }
 
     void SoundSystem::setListenerPosition(const glm::vec3 &pos)
@@ -84,11 +81,6 @@ namespace odOsg
 
     void SoundSystem::loadMusicContainer(const od::FilePath &rrcPath)
     {
-        if(mMusicContainer == nullptr)
-        {
-            mMusicThread = std::thread(&SoundSystem::_doMusicStuff, this);
-        }
-
         mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
     }
 
@@ -191,43 +183,6 @@ namespace odOsg
         Logger::verbose() << "Terminated sound worker thread";
     }
 
-    void SoundSystem::_doMusicStuff()
-    {
-        Logger::verbose() << "Started music worker thread";
-
-        FluidSynth synth;
-        odAudio::SegmentPlayer player(&synth);
-        mSegmentPlayer = &player;
-
-        auto lastTime = std::chrono::high_resolution_clock::now();
-        while(!mShouldTerminateMusicThread)
-        {
-            auto now = std::chrono::high_resolution_clock::now();
-            float relTime = std::chrono::duration_cast<std::chrono::duration<float>>(now - lastTime).count();
-            lastTime = now;
-
-            try
-            {
-                std::lock_guard<std::mutex> lock(mMusicWorkerMutex);
-                player.update(relTime);
-
-            }catch(od::Exception &e)
-            {
-                Logger::error() << "Error in music worker thread: " << e.what();
-                Logger::error() << "Terminating music worker thread...";
-                break;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-
-        {
-            std::lock_guard<std::mutex> lock(mMusicWorkerMutex);
-            mSegmentPlayer = nullptr;
-        }
-
-        Logger::verbose() << "Terminated music worker thread";
-    }
 }
 
 
