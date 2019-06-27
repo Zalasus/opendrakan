@@ -8,6 +8,9 @@
 #ifndef INCLUDE_ODOSG_AUDIO_MUSIC_FLUIDSYNTH_H_
 #define INCLUDE_ODOSG_AUDIO_MUSIC_FLUIDSYNTH_H_
 
+#include <fluidsynth/types.h>
+#include <fluidsynth/synth.h>
+
 #include <odCore/audio/music/MidiSynth.h>
 
 namespace odOsg
@@ -18,9 +21,14 @@ namespace odOsg
     public:
 
         FluidSynth();
+        virtual ~FluidSynth();
 
         virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) override;
         virtual void noteOff(uint8_t channel, uint8_t note) override;
+
+    private:
+
+        fluid_synth_t *mSynth;
 
     };
 
