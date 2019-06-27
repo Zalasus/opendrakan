@@ -24,10 +24,11 @@ namespace odOsg
     };
 
 
-    StreamingSource::StreamingSource(SoundSystem &ss, size_t bufferCount, size_t samplesPerBuffer)
+    StreamingSource::StreamingSource(SoundSystem &ss, size_t bufferCount, size_t samplesPerBufferAndChannel, bool isStereo)
     : Source(ss)
-    , mSamplesPerBuffer(samplesPerBuffer)
-    , mTempFillBuffer(std::make_unique<int16_t[]>(samplesPerBuffer))
+    , mSamplesPerBuffer(samplesPerBufferAndChannel * (isStereo ? 1 : 2))
+    , mIsStereo(isStereo)
+    , mTempFillBuffer(std::make_unique<int16_t[]>(mSamplesPerBuffer))
     , mBuffers(bufferCount, nullptr)
     {
         setBufferFillCallback(nullptr);
@@ -116,7 +117,10 @@ namespace odOsg
     {
         mFillCallback(mTempFillBuffer.get(), mSamplesPerBuffer);
 
-        alBufferData(buffer->getBufferId(), AL_FORMAT_MONO16, mTempFillBuffer.get(), mSamplesPerBuffer*2, mSoundSystem.getContext().getOutputFrequency());
+        ALenum format = mIsStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+        ALsizei size = mSamplesPerBuffer*sizeof(uint16_t);
+
+        alBufferData(buffer->getBufferId(), format, mTempFillBuffer.get(), size, mSoundSystem.getContext().getOutputFrequency());
         SoundSystem::doErrorCheck("Failed to push data from fill buffer to AL buffer");
     }
 }

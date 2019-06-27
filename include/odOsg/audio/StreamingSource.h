@@ -27,7 +27,7 @@ namespace odOsg
 
         typedef std::function<void(int16_t *buffer, size_t bufferSize)> BufferFillCallback;
 
-        StreamingSource(SoundSystem &ss, size_t bufferCount, size_t samplesPerBuffer);
+        StreamingSource(SoundSystem &ss, size_t bufferCount, size_t samplesPerBufferAndChannel, bool stereo);
         virtual ~StreamingSource();
 
         void setBufferFillCallback(const BufferFillCallback &callback);
@@ -41,6 +41,7 @@ namespace odOsg
         void _fillBuffer_locked(Buffer *buffer, const StreamingSource::BufferFillCallback &callback);
 
         size_t mSamplesPerBuffer;
+        bool mIsStereo;
         std::unique_ptr<int16_t[]> mTempFillBuffer;
         std::deque<od::RefPtr<Buffer>> mBuffers;
         std::vector<ALuint> mBufferIds;
