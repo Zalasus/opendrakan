@@ -9,6 +9,8 @@
 
 #include <odCore/Engine.h>
 
+#include <odCore/audio/SoundSystem.h>
+
 #include <odCore/input/InputManager.h>
 
 #include <odCore/rfl/PrefetchProbe.h>
@@ -47,6 +49,12 @@ namespace dragonRfl
         {
             mGui = std::make_unique<DragonGui>(engine);
             engine.getInputManager().setGui(mGui.get());
+        }
+
+        if(engine.getSoundSystem() != nullptr)
+        {
+            od::FilePath musicRrc("Music.rrc", engine.getEngineRootDir());
+            engine.getSoundSystem()->loadMusicContainer(musicRrc.adjustCase());
         }
 
         if(!engine.hasInitialLevelOverride())

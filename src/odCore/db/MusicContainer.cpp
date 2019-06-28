@@ -20,6 +20,7 @@ namespace odDb
     : mFile(musicContainerFile)
     , mRrc(musicContainerFile)
     {
+        Logger::info() << "Loading music container " << mFile;
         _buildIndex();
     }
 
@@ -138,7 +139,7 @@ namespace odDb
             }
 
             mDlsGuidMap[dlid] = id;
-            Logger::verbose() << "Added DLS '" << name << "' with GUID=" << dlid << " to index";
+            Logger::verbose() << "Added DLS with GUID=" << dlid << " and name '" << name << "' to index";
 
         }else if(!gotDlid)
         {
@@ -152,7 +153,7 @@ namespace odDb
 
     void MusicContainer::_addSegmentToIndex(od::RiffReader rr, od::RecordId id)
     {
-        Segment segment(rr);
+        //Segment segment(rr);
     }
 
 }
