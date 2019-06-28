@@ -11,12 +11,15 @@
 
 #include <odCore/Exception.h>
 
-#include <odCore/audio/music/SegmentPlayer.h>
 #include <odCore/db/MusicContainer.h>
+#include <odCore/db/Segment.h>
+
+#include <odCore/audio/music/SegmentPlayer.h>
 
 #include <odOsg/audio/Source.h>
+#include <odOsg/audio/StreamingSource.h>
 #include <odOsg/audio/Buffer.h>
-#include <odOsg/audio/music/FluidSynth.h>
+#include <odOsg/audio/music/DummySynth.h>
 
 namespace odOsg
 {
@@ -82,6 +85,20 @@ namespace odOsg
     void SoundSystem::loadMusicContainer(const od::FilePath &rrcPath)
     {
         mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
+
+        mSynth = std::make_unique<DummySynth>();
+        mSegmentPlayer = std::make_unique<odAudio::SegmentPlayer>(*mSynth);
+
+        auto musicSource = od::make_refd<StreamingSource>(*this, 128, 64, true);
+        auto fillCallback = [this](int16_t *buffer, size_t size)
+        {
+            mSynth->fillInterleavedStereoBuffer(buffer, size);
+
+            float passedTime = size/(2.0*mContext.getOutputFrequency());
+            mSegmentPlayer->update(passedTime);
+        };
+        musicSource->setBufferFillCallback(fillCallback);
+        mMusicSource = musicSource;
     }
 
     void SoundSystem::playMusic(odAudio::MusicId musicId)
@@ -96,16 +113,15 @@ namespace odOsg
             throw od::Exception("No segment player present. Seems like the music thread died");
         }
 
-        /*auto segment = mMusicContainer->loadSegment(musicId);
+        auto segment = mMusicContainer->loadSegment(musicId);
 
-        std::lock_guard<std::mutex> lock(mMusicWorkerMutex);
         mSegmentPlayer->setSegment(segment);
-        mSegmentPlayer->play();*/
+        mSegmentPlayer->play();
     }
 
     void SoundSystem::stopMusic()
     {
-        throw od::UnsupportedException("Music is still unimplemented");
+        mSegmentPlayer->pause();
     }
 
     void SoundSystem::doErrorCheck(const std::string &failmsg)

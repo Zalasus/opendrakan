@@ -34,7 +34,7 @@ namespace odAudio
          */
         static const size_t MUSICTIME_TICKS_PER_QUARTER = 768;
 
-        SegmentPlayer(MidiSynth *synth);
+        SegmentPlayer(MidiSynth &synth);
         ~SegmentPlayer();
 
         void setSegment(odDb::Segment *s);
@@ -56,7 +56,7 @@ namespace odAudio
             uint8_t velocity;
         };
 
-        MidiSynth *mSynth;
+        MidiSynth &mSynth;
 
         od::RefPtr<odDb::Segment> mSegment;
         std::vector<NoteEvent> mNoteEvents;

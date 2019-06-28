@@ -5,7 +5,8 @@ set(SOURCES
         "audio/SoundSystem.cpp"
         "audio/Source.cpp"
         "audio/StreamingSource.cpp"
-        "audio/music/FluidSynth.cpp"
+        #"audio/music/FluidSynth.cpp"
+        "audio/music/DummySynth.cpp"
         "render/Camera.cpp"
         "render/Geometry.cpp"
         "render/GuiNode.cpp"
@@ -25,7 +26,7 @@ set(SOURCES
         
 find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 find_package(OpenAL REQUIRED)
-find_package(fluidsynth REQUIRED)
+#find_package(fluidsynth REQUIRED)
 
 add_executable(odOsg ${SOURCES})
 

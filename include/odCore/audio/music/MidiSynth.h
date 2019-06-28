@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_AUDIO_MUSIC_MIDISYNTH_H_
 
 #include <stdint.h>
+#include <stdlib.h>
 
 namespace odAudio
 {
@@ -24,6 +25,8 @@ namespace odAudio
 
         virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) = 0;
         virtual void noteOff(uint8_t channel, uint8_t note) = 0;
+
+        virtual void fillInterleavedStereoBuffer(int16_t *buffer, size_t size) = 0;
 
     };
 

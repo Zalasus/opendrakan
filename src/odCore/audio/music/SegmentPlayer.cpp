@@ -16,7 +16,7 @@
 namespace odAudio
 {
 
-    SegmentPlayer::SegmentPlayer(MidiSynth *synth)
+    SegmentPlayer::SegmentPlayer(MidiSynth &synth)
     : mSynth(synth)
     , mTempoBps(25.0/60.0)
     , mCurrentMusicTime(0)
@@ -80,11 +80,11 @@ namespace odAudio
         {
             if(mNoteIterator->on)
             {
-                mSynth->noteOn(mNoteIterator->channel, mNoteIterator->note, mNoteIterator->velocity);
+                mSynth.noteOn(mNoteIterator->channel, mNoteIterator->note, mNoteIterator->velocity);
 
             }else
             {
-                mSynth->noteOff(mNoteIterator->channel, mNoteIterator->note);
+                mSynth.noteOff(mNoteIterator->channel, mNoteIterator->note);
             }
 
             ++mNoteIterator;

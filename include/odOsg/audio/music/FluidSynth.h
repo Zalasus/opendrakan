@@ -26,6 +26,9 @@ namespace odOsg
         virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) override;
         virtual void noteOff(uint8_t channel, uint8_t note) override;
 
+        virtual void fillInterleavedStereoBuffer(int16_t *buffer, size_t size) override;
+
+
     private:
 
         fluid_synth_t *mSynth;

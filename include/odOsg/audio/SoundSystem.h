@@ -29,6 +29,7 @@ namespace odDb
 namespace odAudio
 {
     class SegmentPlayer;
+    class MidiSynth;
 }
 
 namespace odOsg
@@ -73,8 +74,10 @@ namespace odOsg
         std::vector<od::WeakObserverRefPtr<Source>> mSources;
 
         std::unique_ptr<odDb::MusicContainer> mMusicContainer;
-        odAudio::SegmentPlayer *mSegmentPlayer;
 
+        od::RefPtr<odAudio::Source> mMusicSource;
+        std::unique_ptr<odAudio::MidiSynth> mSynth;
+        std::unique_ptr<odAudio::SegmentPlayer> mSegmentPlayer;
     };
 
 }
