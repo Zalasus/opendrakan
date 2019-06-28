@@ -62,7 +62,8 @@ namespace odAudio
         std::vector<NoteEvent> mNoteEvents;
 
         double mTempoBps; // beats per second
-        uint32_t mCurrentMusicTime;
+        bool mPlaying;
+        double mCurrentMusicTime;
         std::vector<NoteEvent>::iterator mNoteIterator;
     };
 

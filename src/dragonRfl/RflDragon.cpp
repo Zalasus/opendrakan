@@ -55,6 +55,7 @@ namespace dragonRfl
         {
             od::FilePath musicRrc("Music.rrc", engine.getEngineRootDir());
             engine.getSoundSystem()->loadMusicContainer(musicRrc.adjustCase());
+            engine.getSoundSystem()->playMusic(1);
         }
 
         if(!engine.hasInitialLevelOverride())

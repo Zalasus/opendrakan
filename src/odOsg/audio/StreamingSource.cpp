@@ -105,8 +105,6 @@ namespace odOsg
 
             _fillBuffer_locked(buffer, mFillCallback);
 
-            Logger::info() << "Fill buffer " << bufferId;
-
             alSourceQueueBuffers(mSourceId, 1, &bufferId);
             SoundSystem::doErrorCheck("Could not queue buffer into streaming source");
             mBuffers.push_back(buffer);
@@ -118,7 +116,7 @@ namespace odOsg
         mFillCallback(mTempFillBuffer.get(), mSamplesPerBuffer);
 
         ALenum format = mIsStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
-        ALsizei size = mSamplesPerBuffer*sizeof(uint16_t);
+        ALsizei size = mSamplesPerBuffer*sizeof(int16_t);
 
         alBufferData(buffer->getBufferId(), format, mTempFillBuffer.get(), size, mSoundSystem.getContext().getOutputFrequency());
         SoundSystem::doErrorCheck("Failed to push data from fill buffer to AL buffer");

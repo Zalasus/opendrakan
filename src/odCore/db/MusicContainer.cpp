@@ -48,6 +48,8 @@ namespace odDb
             throw od::NotFoundException("Music with given ID not found");
         }
 
+        Logger::verbose() << "Loading music segment " << std::hex << id << std::dec;
+
         od::RiffReader rr(cursor.getReader());
         auto segment = od::make_refd<Segment>(rr);
         return segment;

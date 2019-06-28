@@ -19,7 +19,9 @@ namespace odAudio
     SegmentPlayer::SegmentPlayer(MidiSynth &synth)
     : mSynth(synth)
     , mTempoBps(25.0/60.0)
+    , mPlaying(false)
     , mCurrentMusicTime(0)
+    , mNoteIterator(mNoteEvents.end())
     {
     }
 
@@ -30,8 +32,13 @@ namespace odAudio
     void SegmentPlayer::setSegment(odDb::Segment *s)
     {
         mSegment = s;
-
         mNoteEvents.clear();
+
+        if(mSegment == nullptr)
+        {
+            return;
+        }
+
         auto &midiEvents = mSegment->getMidiEvents();
         for(auto &event : midiEvents)
         {
@@ -66,15 +73,23 @@ namespace odAudio
 
     void SegmentPlayer::play()
     {
+        mPlaying = true;
     }
 
     void SegmentPlayer::pause()
     {
+        mPlaying = false;
     }
 
     void SegmentPlayer::update(float relTime)
     {
-        mCurrentMusicTime += relTime*mTempoBps*MUSICTIME_TICKS_PER_QUARTER*4;
+        if(!mPlaying)
+        {
+            return;
+        }
+
+        double musicTimePassed = relTime*mTempoBps*MUSICTIME_TICKS_PER_QUARTER*4;
+        mCurrentMusicTime += musicTimePassed;
 
         while(mNoteIterator != mNoteEvents.end() && mNoteIterator->time <= mCurrentMusicTime)
         {

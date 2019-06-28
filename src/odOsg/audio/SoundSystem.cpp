@@ -99,6 +99,7 @@ namespace odOsg
         };
         musicSource->setBufferFillCallback(fillCallback);
         mMusicSource = musicSource;
+        mSources.emplace_back(musicSource.get());
     }
 
     void SoundSystem::playMusic(odAudio::MusicId musicId)
@@ -117,6 +118,8 @@ namespace odOsg
 
         mSegmentPlayer->setSegment(segment);
         mSegmentPlayer->play();
+
+        mMusicSource->play(0.0);
     }
 
     void SoundSystem::stopMusic()
