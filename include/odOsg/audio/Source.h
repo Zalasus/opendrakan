@@ -9,6 +9,7 @@
 #define INCLUDE_ODOSG_AUDIO_SOURCE_H_
 
 #include <string>
+#include <mutex>
 
 #include <odCore/audio/Source.h>
 
@@ -34,6 +35,8 @@ namespace odOsg
         Source(const Source &s) = delete;
         virtual ~Source();
 
+        inline std::mutex &getMutex() { return mMutex; }
+
         virtual State getState() override;
 
         virtual void setPosition(const glm::vec3 &p) override;
@@ -48,6 +51,7 @@ namespace odOsg
         virtual void play(float fadeInTime) override;
         virtual void stop(float fadeOutTime) override;
 
+        /// @brief Called from the sound worker thread with the mutex already held.
         virtual void update(float relTime);
 
 
@@ -55,6 +59,7 @@ namespace odOsg
 
         SoundSystem &mSoundSystem;
         ALuint mSourceId;
+        std::mutex mMutex;
 
 
     private:

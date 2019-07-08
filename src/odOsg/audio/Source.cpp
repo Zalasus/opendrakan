@@ -47,12 +47,17 @@ namespace odOsg
     , mSoundGain(1.0)
     , mFadingValue(1.0)
     {
+        // no need to sync here. there is no way the worker thread could get to us yet
+        //std::lock_guard<std::mutex> lock(getMutex());
+
         alGenSources(1, &mSourceId);
         SoundSystem::doErrorCheck("Could not generate source");
     }
 
     Source::~Source()
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         alSourceStop(mSourceId);
         SoundSystem::doErrorCheck("Could not stop source to delete it");
 
@@ -65,6 +70,8 @@ namespace odOsg
 
     Source::State Source::getState()
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         ALint sourceState;
         alGetSourcei(mSourceId, AL_SOURCE_STATE, &sourceState);
         SoundSystem::doErrorCheck("Could not query source state");
@@ -89,42 +96,51 @@ namespace odOsg
 
     void Source::setPosition(const glm::vec3 &p)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         _setProperty(AL_POSITION, p, "Could not set source position");
     }
 
     void Source::setVelocity(const glm::vec3 &v)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         _setProperty(AL_VELOCITY, v, "Could not set source velocity");
     }
 
     void Source::setDirection(const glm::vec3 &d)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         _setProperty(AL_DIRECTION, d, "Could not set source direction");
     }
 
     void Source::setRelative(bool relative)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         _setProperty(AL_SOURCE_RELATIVE, relative, "Could not set source relative state");
     }
 
     void Source::setPitch(float pitch)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         _setProperty(AL_PITCH, pitch, "Could not set source pitch");
     }
 
     void Source::setLooping(bool looping)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         _setProperty(AL_LOOPING, looping, "Could not set source looping state");
     }
 
     void Source::setGain(float gain)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
         mSourceGain = gain;
         _updateSourceGain_locked();
     }
 
     void Source::setSound(odDb::Sound *s)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         mCurrentSound = s;
 
         if(mCurrentBuffer != nullptr)
@@ -160,6 +176,8 @@ namespace odOsg
 
     void Source::play(float fadeInTime)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         if(fadeInTime > 0.0)
         {
             mFadingValue.move(1.0f, fadeInTime);
@@ -176,6 +194,8 @@ namespace odOsg
 
     void Source::stop(float fadeOutTime)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         if(fadeOutTime <= 0.0)
         {
             alSourceStop(mSourceId);
