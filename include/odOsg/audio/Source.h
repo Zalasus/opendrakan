@@ -48,7 +48,7 @@ namespace odOsg
         virtual void play(float fadeInTime) override;
         virtual void stop(float fadeOutTime) override;
 
-        virtual void update(float relTime) override;
+        virtual void update(float relTime);
 
 
     protected:

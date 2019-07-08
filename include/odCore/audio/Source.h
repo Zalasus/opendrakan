@@ -53,8 +53,6 @@ namespace odAudio
         virtual void play(float fadeInTime) = 0;
         virtual void stop(float fadeOutTime) = 0;
 
-        virtual void update(float relTime) = 0;
-
     };
 
 }
