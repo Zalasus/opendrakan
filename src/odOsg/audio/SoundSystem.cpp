@@ -92,6 +92,8 @@ namespace odOsg
         auto musicSource = od::make_refd<StreamingSource>(*this, 128, 64, true);
         auto fillCallback = [this](int16_t *buffer, size_t size)
         {
+            assert(size % 2 == 0);
+
             mSynth->fillInterleavedStereoBuffer(buffer, size);
 
             float passedTime = size/(2.0*mContext.getOutputFrequency());
@@ -182,6 +184,7 @@ namespace odOsg
                     if(weakSource.isNonNull())
                     {
                         auto source = weakSource.aquire();
+                        std::lock_guard<std::mutex> lock(source->getMutex());
                         source->update(relTime);
                     }
 
