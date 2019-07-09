@@ -42,45 +42,21 @@ namespace od
 
     size_t RefCounted::referenceCreated()
     {
-        return ++mRefCount;
+        size_t count = mRefCount.fetch_add(1, std::memory_order_relaxed);
+
+        return count;
     }
 
     size_t RefCounted::referenceDestroyed()
     {
-        if(mRefCount > 0)
-        {
-            --mRefCount;
-
-            if(mRefCount == 0)
-            {
-                _notifyAllObservers();
-            }
-
-        }else
+        if(mRefCount <= 0)
         {
             throw Exception("Destroyed reference to RefCounted object when it already had 0 references");
         }
 
-        return mRefCount;
-    }
+        size_t count = mRefCount.fetch_sub(1, std::memory_order_relaxed);
 
-    size_t RefCounted::referenceReleased()
-    {
-        if(mRefCount > 0)
-        {
-            --mRefCount;
-
-        }else
-        {
-            throw Exception("Released reference to RefCounted object when it already had 0 references");
-        }
-
-        return mRefCount;
-    }
-
-    size_t RefCounted::getReferenceCount()
-    {
-        return mRefCount;
+        return count;
     }
 
     void RefCounted::addReferenceObserver(ReferenceObserver *observer)
@@ -134,7 +110,7 @@ namespace od
         return mRefControlBlock;
     }
 
-    void RefCounted::_notifyAllObservers()
+    void RefCounted::notifyAllObservers()
     {
         for(size_t i = 0; i < mObserverCount; ++i)
         {

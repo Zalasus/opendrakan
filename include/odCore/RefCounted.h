@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <type_traits>
 #include <utility>
+#include <atomic>
 
 namespace od
 {
@@ -40,7 +41,7 @@ namespace od
         friend class RefCounted;
 
         size_t weakRefCount;
-        bool refExpired;
+        std::atomic_bool refExpired;
 
 
     private:
@@ -61,10 +62,25 @@ namespace od
         RefCounted();
         virtual ~RefCounted();
 
+        inline size_t getReferenceCount() const { return mRefCount; }
+        inline RefControlBlock *getRefControlBlock() { return mRefControlBlock; }
+
+        /**
+         * @brief Decrements the reference count atomically.
+         * @return The value the reference count had *before* incrementing
+         */
         size_t referenceCreated();
+
+        /**
+         * @brief Decrements the reference count atomically.
+         * @return The value the reference count had *before* incrementing
+         */
         size_t referenceDestroyed();
-        size_t referenceReleased();
-        size_t getReferenceCount();
+
+        /**
+         * @brief Notifies all observers that the object is about to be destroyed.
+         */
+        void notifyAllObservers();
 
         void addReferenceObserver(ReferenceObserver *observer);
         void removeReferenceObserver(ReferenceObserver *observer);
@@ -81,7 +97,7 @@ namespace od
 
         void _notifyAllObservers();
 
-        size_t mRefCount;
+        std::atomic_size_t mRefCount;
         size_t mObserverCount;
         ReferenceObserver *mObservers[MaxObservers];
         RefControlBlock *mRefControlBlock;
@@ -126,29 +142,14 @@ namespace od
 
         ~RefPtr()
         {
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceDestroyed();
-                if(mPtr->getReferenceCount() <= 0)
-                {
-                    delete mPtr;
-                }
-            }
+            _unref();
         }
 
         RefPtr<T> &operator=(T *ptr)
         {
-            if(mPtr != nullptr)
-            {
-                mPtr->referenceDestroyed();
-                if(mPtr->getReferenceCount() <= 0)
-                {
-                    delete mPtr;
-                }
-            }
+            _unref();
 
             mPtr = ptr;
-
             if(mPtr != nullptr)
             {
                 mPtr->referenceCreated();
@@ -179,7 +180,7 @@ namespace od
 
             if(ptr != nullptr)
             {
-                ptr->referenceReleased();
+                ptr->referenceDestroyed();
             }
 
             return ptr;
@@ -192,6 +193,20 @@ namespace od
 
 
     private:
+
+        void _unref()
+        {
+            if(mPtr != nullptr)
+            {
+                size_t oldRefCount = mPtr->referenceDestroyed();
+                if(oldRefCount <= 1)
+                {
+                    mPtr->notifyAllObservers();
+                    delete mPtr;
+                    mPtr = nullptr;
+                }
+            }
+        }
 
         T *mPtr;
 
