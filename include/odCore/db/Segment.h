@@ -66,14 +66,15 @@ namespace odDb
             uint8_t midiData1;
             uint8_t midiData2;
         };
+        static_assert(sizeof(MidiEvent) >= MidiEvent::STRUCT_BYTES, "Invalid struct bytes");
 
         struct MidiCurve
         {
-            static const size_t STRUCT_BYTES = 17;
+            static const size_t STRUCT_BYTES = 28;
 
-            uint32_t startTime;
-            uint32_t duration;
-            uint32_t resetDuration;
+            music_time_t startTime;
+            music_time_t duration;
+            music_time_t resetDuration;
             uint32_t channelIndex;
             int16_t timeOffset;
             int16_t startValue;
@@ -83,9 +84,11 @@ namespace odDb
             uint8_t curveShape;
             uint8_t ccData;
             uint8_t flags;
-            uint16_t paramType;
-            uint16_t mergeIndex;
+            // DX8. these don't appear in drakan SGTs
+            //uint16_t paramType;
+            //uint16_t mergeIndex;
         };
+        static_assert(sizeof(MidiCurve) >= MidiCurve::STRUCT_BYTES, "Invalid struct bytes");
 
         struct BandEvent
         {

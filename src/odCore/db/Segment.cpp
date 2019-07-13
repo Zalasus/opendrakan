@@ -208,10 +208,10 @@ namespace odDb
         assert(bytesPerCurve >= MidiCurve::STRUCT_BYTES);
 
         size_t curveCount = curveListBytes/bytesPerCurve;
-        size_t trailingBytesPerCurve = curveCount - MidiCurve::STRUCT_BYTES;
+        size_t trailingBytesPerCurve = bytesPerCurve - MidiCurve::STRUCT_BYTES;
 
         mMidiCurves.reserve(curveCount);
-        for(size_t i = 0; i < eventCount; ++i)
+        for(size_t i = 0; i < curveCount; ++i)
         {
             MidiCurve curve;
             dr >> curve.startTime
@@ -226,9 +226,12 @@ namespace odDb
                >> curve.curveShape
                >> curve.ccData
                >> curve.flags
-               >> curve.paramType
-               >> curve.mergeIndex
+               // DX8. these don't appear in drakan SGTs
+               //>> curve.paramType
+               //>> curve.mergeIndex
                >> od::DataReader::Ignore(trailingBytesPerCurve);
+
+            Logger::info() << "ct: " << (int)curve.type << " data:" << (int)curve.ccData << " shape:" << (int)curve.curveShape;
 
             mMidiCurves.push_back(curve);
         }
