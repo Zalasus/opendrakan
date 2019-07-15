@@ -231,8 +231,6 @@ namespace odDb
                //>> curve.mergeIndex
                >> od::DataReader::Ignore(trailingBytesPerCurve);
 
-            Logger::info() << "ct: " << (int)curve.type << " data:" << (int)curve.ccData << " shape:" << (int)curve.curveShape;
-
             mMidiCurves.push_back(curve);
         }
     }
