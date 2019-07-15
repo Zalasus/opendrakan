@@ -35,6 +35,12 @@ namespace odDb
         return it->second;
     }
 
+    od::SrscFile::RecordInputCursor MusicContainer::getCursorForDls(const od::Guid &guid)
+    {
+        od::RecordId id = getDlsRecordByGuid(guid);
+        return mRrc.getFirstRecordOfTypeId(od::SrscRecordType::MUSIC, id);
+    }
+
     od::RefPtr<Segment> MusicContainer::loadSegment(MusicId id)
     {
         if(id > std::numeric_limits<od::RecordId>::max())

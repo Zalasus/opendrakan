@@ -88,8 +88,8 @@ namespace odOsg
     {
         mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
 
-        //mSynth = std::make_unique<DummySynth>();
-        mSynth = std::make_unique<StupidSineSynth>(5);
+        mSynth = std::make_unique<DummySynth>();
+        //mSynth = std::make_unique<StupidSineSynth>(5);
         mSegmentPlayer = std::make_unique<odAudio::SegmentPlayer>(*mSynth);
 
         auto musicSource = od::make_refd<StreamingSource>(*this, 128, 64, true);

@@ -33,6 +33,7 @@ namespace odDb
         MusicContainer(const od::FilePath &musicContainerFile);
 
         od::RecordId getDlsRecordByGuid(const od::Guid &guid);
+        od::SrscFile::RecordInputCursor getCursorForDls(const od::Guid &guid);
 
         od::RefPtr<Segment> loadSegment(MusicId id);
 
