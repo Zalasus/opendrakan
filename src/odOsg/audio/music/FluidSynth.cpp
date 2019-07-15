@@ -71,6 +71,12 @@ namespace odOsg
             void *ptr = nullptr;
             std::istringstream ss(filename+1);
             ss >> ptr;
+
+            if(ss.fail())
+            {
+                return nullptr;
+            }
+
             return ptr;
         }
 
@@ -147,6 +153,11 @@ namespace odOsg
 
         inline fluid_settings_t *getInstance() { return mInstance; }
 
+        void setString(const char *key, const char *value)
+        {
+            fluid_settings_setstr(mInstance, key, value);
+        }
+
 
     private:
 
@@ -160,6 +171,7 @@ namespace odOsg
     , mMusicContainer(nullptr)
     {
         Settings settings;
+        settings.setString("player.timing-source", "sample");
 
         mSynth = new_fluid_synth(settings.getInstance());
         if(mSynth == nullptr) throw od::Exception("Failed to create fluid synth");
