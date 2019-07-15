@@ -11,13 +11,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <vector>
+#include <deque>
 
 #include <odCore/RefCounted.h>
 
-namespace odDb
-{
-    class Segment;
-}
+#include <odCore/db/Segment.h>
 
 namespace odAudio
 {
@@ -47,6 +45,8 @@ namespace odAudio
 
     private:
 
+        void _applyCurve(const odDb::Segment::MidiCurve &curve);
+
         struct NoteEvent
         {
             uint32_t time;
@@ -65,6 +65,10 @@ namespace odAudio
         bool mPlaying;
         double mCurrentMusicTime;
         std::vector<NoteEvent>::iterator mNoteIterator;
+
+        std::vector<odDb::Segment::MidiCurve> mCurveEvents;
+        std::vector<odDb::Segment::MidiCurve>::iterator mCurveIterator;
+        std::deque<odDb::Segment::MidiCurve> mActiveCurves;
     };
 
 }
