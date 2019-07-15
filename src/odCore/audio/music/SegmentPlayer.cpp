@@ -27,7 +27,6 @@ namespace odAudio
     , mPlaying(false)
     , mCurrentMusicTime(0)
     , mNoteIterator(mNoteEvents.end())
-    , mCurveIterator(mCurveEvents.end())
     {
     }
 
@@ -41,10 +40,8 @@ namespace odAudio
 
         mSegment = s;
         mNoteEvents.clear();
-        mCurveEvents.clear();
         mActiveCurves.clear();
         mNoteIterator = mNoteEvents.end();
-        mCurveIterator = mCurveEvents.end();
 
         if(mSegment == nullptr)
         {
@@ -52,6 +49,8 @@ namespace odAudio
         }
 
         auto &midiEvents = mSegment->getMidiEvents();
+        // note events turn into two events. all others stay the same. but since most events are note events, we don't waste too much space
+        mNoteEvents.reserve(midiEvents.size()*2);
         for(auto &event : midiEvents)
         {
             switch(event.midiStatus)
@@ -81,11 +80,18 @@ namespace odAudio
         std::sort(mNoteEvents.begin(), mNoteEvents.end(), pred);
         mNoteIterator = mNoteEvents.begin();
 
-        auto &curves = mSegment->getMidiCurves();
-        mCurveEvents.assign(curves.begin(), curves.end());
-        auto curvePred = [](const odDb::Segment::MidiCurve &lhs, const odDb::Segment::MidiCurve &rhs) { return lhs.startTime < rhs.startTime; };
-        std::sort(mCurveEvents.begin(), mCurveEvents.end(), curvePred);
-        mCurveIterator = mCurveEvents.begin();
+        mCurveIterator = mSegment->getMidiCurves().begin();
+        mBandIterator = mSegment->getBandEvents().begin();
+        mTempoIterator = mSegment->getTempoEvents().begin();
+
+        // preload all used DLSs so we don't get skipping music due to DLS loading
+        // TODO: maybe let the sound system handle this. there is more resource management involved than just preloading DLSs (unloading etc.)
+        for(auto &dlsGuid : mSegment->getDlsGuids())
+        {
+            mSynth.preloadDls(dlsGuid);
+        }
+
+        update(0.0f);
     }
 
     void SegmentPlayer::play()
@@ -105,10 +111,24 @@ namespace odAudio
             return;
         }
 
-        double musicTimePassed = relTime*mTempoBps*MUSICTIME_TICKS_PER_QUARTER*4;
+        double musicTimePassed = relTime*mTempoBps*MUSICTIME_TICKS_PER_QUARTER;// note: "beats" in bpm seems to refer to quarternotes for some reason
         mCurrentMusicTime += musicTimePassed;
 
-        // process all note events that occured since the last update
+        // first, process single shot events (tempo, band and midi events). we apply all unprocessed events that lie in the past at once.
+
+        while(mTempoIterator != mSegment->getTempoEvents().end() && mTempoIterator->time <= mCurrentMusicTime)
+        {
+            mTempoBps = mTempoIterator->tempo / 60.0; // got bpm. we want bps
+            ++mTempoIterator;
+        }
+
+        while(mBandIterator != mSegment->getBandEvents().end() && mBandIterator->time <= mCurrentMusicTime)
+        {
+            // TODO: we only need to apply the most recent band
+            _applyBand(mBandIterator->band.get());
+            ++mBandIterator;
+        }
+
         while(mNoteIterator != mNoteEvents.end() && mNoteIterator->time <= mCurrentMusicTime)
         {
             if(mNoteIterator->on)
@@ -123,9 +143,11 @@ namespace odAudio
             ++mNoteIterator;
         }
 
-        // add new curves to the top of the curve deque
+
+        // now handle curves. these aren't single shot, but stay active over multiple updates. thus, keep a deque of active curves
+        //  that is updated periodically. first, add new curves to the top of the curve deque
         auto hasStarted = [this](const odDb::Segment::MidiCurve &curve) { return curve.startTime <= mCurrentMusicTime; };
-        while(mCurveIterator != mCurveEvents.end() && hasStarted(*mCurveIterator))
+        while(mCurveIterator != mSegment->getMidiCurves().end() && hasStarted(*mCurveIterator))
         {
             mActiveCurves.push_back(*mCurveIterator);
             ++mCurveIterator;
@@ -207,6 +229,19 @@ namespace odAudio
         case directmusic::DMUS_CURVET_NRPNCURVE:  // non-registered parameter number curve (probably DX8)
         default:
            throw od::Exception("Unsupported/unknown curve type");
+        }
+    }
+
+    void SegmentPlayer::_applyBand(odDb::Band *band)
+    {
+        if(band == nullptr)
+        {
+            return;
+        }
+
+        for(auto &instrument : band->getInstruments())
+        {
+            mSynth.assignPreset(instrument.pChannel, 0, instrument.patch, instrument.dlsGuid);
         }
     }
 }

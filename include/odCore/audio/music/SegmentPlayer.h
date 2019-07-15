@@ -46,6 +46,7 @@ namespace odAudio
     private:
 
         void _applyCurve(const odDb::Segment::MidiCurve &curve);
+        void _applyBand(odDb::Band *band);
 
         struct NoteEvent
         {
@@ -64,11 +65,15 @@ namespace odAudio
         double mTempoBps; // beats per second
         bool mPlaying;
         double mCurrentMusicTime;
-        std::vector<NoteEvent>::iterator mNoteIterator;
+        std::vector<NoteEvent>::const_iterator mNoteIterator;
 
-        std::vector<odDb::Segment::MidiCurve> mCurveEvents;
-        std::vector<odDb::Segment::MidiCurve>::iterator mCurveIterator;
+        odDb::Segment::CurveVector::const_iterator mCurveIterator;
         std::deque<odDb::Segment::MidiCurve> mActiveCurves;
+
+        odDb::Segment::TempoVector::const_iterator mTempoIterator;
+
+        odDb::Segment::BandVector::const_iterator mBandIterator;
+
     };
 
 }

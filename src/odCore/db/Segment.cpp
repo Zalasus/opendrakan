@@ -8,6 +8,7 @@
 #include <odCore/db/Segment.h>
 
 #include <cassert>
+#include <algorithm>
 
 #include <odCore/Logger.h>
 
@@ -46,13 +47,15 @@ namespace odDb
             od::RiffReader ref = instrument.getReaderForFirstSubchunkOfType("LIST", "DMRF");
             if(ref.isEnd())
             {
-                Logger::warn() << "Instrument contains no DLS reference. Ignoring instrument";
+                Logger::warn() << "Instrument contains no DLS reference. This is probably a GM instrument, which is unsupported. Ignoring instrument";
                 continue;
             }
             ref.skipToFirstSubchunkOfType("guid");
             if(ref.isEnd()) throw od::Exception("No DLS GUID in instrument");
 
             ins.dlsGuid = od::Guid(ref);
+
+            mDlsGuids.insert(ins.dlsGuid);
 
             mInstruments.push_back(ins);
         }
@@ -233,6 +236,10 @@ namespace odDb
 
             mMidiCurves.push_back(curve);
         }
+
+        // sort curves by starting time
+        auto pred = [](const MidiCurve &lhs, const MidiCurve &rhs){ return lhs.startTime < rhs.startTime; };
+        std::sort(mMidiCurves.begin(), mMidiCurves.end(), pred);
     }
 
     void Segment::_loadBandTrack(od::RiffReader rr)
@@ -266,10 +273,17 @@ namespace odDb
 
             mBandEvents.emplace_back();
             BandEvent &bandEvent = mBandEvents.back();
+            bandEvent.time = bandTime;
 
             od::RiffReader band = bandItem.getReaderForFirstSubchunkOfType("RIFF", "DMBD");
             bandEvent.band = std::make_unique<Band>(band);
+
+            auto &guids = bandEvent.band->getDlsGuids();
+            mDlsGuids.insert(guids.begin(), guids.end());
         }
+
+        auto pred = [](const BandEvent &lhs, const BandEvent &rhs){ return lhs.time < rhs.time; };
+        std::sort(mBandEvents.begin(), mBandEvents.end(), pred);
     }
 
     void Segment::_loadTempoTrack(od::RiffReader rr)
@@ -297,6 +311,9 @@ namespace odDb
 
            mTempoEvents.push_back(event);
         }
+
+        auto pred = [](const TempoEvent &lhs, const TempoEvent &rhs){ return lhs.time < rhs.time; };
+        std::sort(mTempoEvents.begin(), mTempoEvents.end(), pred);
     }
 
 }

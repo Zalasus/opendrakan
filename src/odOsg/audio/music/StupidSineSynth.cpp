@@ -22,18 +22,16 @@ namespace odOsg
 
         double step = std::pow(2.0, 1.0/12.0);
         double pitchFreq = 440;
-        uint8_t pitchNote = 69; // A4
+        size_t pitchNote = 69; // A4
         mFrequencies.resize(256, 0);
         for(size_t note = 0; note < mFrequencies.size(); ++note)
         {
-            mFrequencies[note] = pitchFreq * std::pow(step, note-pitchNote);
+            mFrequencies[note] = pitchFreq * std::pow(step, ((int)note)-((int)pitchNote));
         }
     }
 
     void StupidSineSynth::noteOn(uint8_t channel, uint8_t note, uint8_t velocity)
     {
-        Logger::info() << "(note on) n=" << (uint32_t)note << " c=" << (uint32_t)channel << " v=" << (uint32_t)velocity;
-
         if(channel == mChannel)
         {
             mNotes[note] = true;
@@ -42,8 +40,6 @@ namespace odOsg
 
     void StupidSineSynth::noteOff(uint8_t channel, uint8_t note)
     {
-        Logger::info() << "(note off) n=" << (uint32_t)note << " c=" << (uint32_t)channel;
-
         if(channel == mChannel)
         {
             mNotes[note] = false;

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <memory>
+#include <set>
 
 #include <odCore/RefCounted.h>
 
@@ -40,13 +41,25 @@ namespace odDb
 
         Band(od::RiffReader rr);
 
+        inline const std::vector<Instrument> &getInstruments() const { return mInstruments; }
+        inline const std::set<od::Guid> &getDlsGuids() const { return mDlsGuids; }
+
 
     private:
 
         std::vector<Instrument> mInstruments;
 
+        std::set<od::Guid> mDlsGuids;
+
     };
 
+    /**
+     * @brief Data model for a styleless DirectMusic segment.
+     *
+     * This won't load styles. It is only useful for segments that store all music data in a sequence track (like the ones used by Drakan).
+     *
+     * All tracks except MIDI events are sorted by (starting) time after being loaded.
+     */
     class Segment : public od::RefCounted
     {
     public:
@@ -106,9 +119,17 @@ namespace odDb
 
         Segment(od::RiffReader rr);
 
+        typedef std::vector<MidiEvent> MidiEventVector;
+        typedef std::vector<MidiCurve> CurveVector;
+        typedef std::vector<TempoEvent> TempoVector;
+        typedef std::vector<BandEvent> BandVector;
+
         inline od::Guid getGuid() const { return mGuid; }
-        inline const std::vector<MidiEvent> &getMidiEvents() const { return mMidiEvents; }
-        inline const std::vector<MidiCurve> &getMidiCurves() const { return mMidiCurves; }
+        inline const MidiEventVector &getMidiEvents() const { return mMidiEvents; }
+        inline const CurveVector &getMidiCurves() const { return mMidiCurves; }
+        inline const TempoVector &getTempoEvents() const { return mTempoEvents; }
+        inline const BandVector &getBandEvents() const { return mBandEvents; }
+        inline const std::set<od::Guid> &getDlsGuids() const { return mDlsGuids; }
 
 
     private:
@@ -135,10 +156,12 @@ namespace odDb
 
         od::Guid mGuid;
 
-        std::vector<MidiEvent> mMidiEvents;
-        std::vector<MidiCurve> mMidiCurves;
-        std::vector<BandEvent> mBandEvents;
-        std::vector<TempoEvent> mTempoEvents;
+        MidiEventVector mMidiEvents;
+        CurveVector mMidiCurves;
+        BandVector mBandEvents;
+        TempoVector mTempoEvents;
+
+        std::set<od::Guid> mDlsGuids;
 
     };
 
