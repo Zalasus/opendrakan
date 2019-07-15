@@ -30,6 +30,24 @@ namespace directmusic
          DMUS_CURVES_LOG     = 0x3,
          DMUS_CURVES_SINE    = 0x4
     };
+
+
+    enum instrument_flags
+    {
+        DMUS_IO_INST_PATCH              = 0x0001,
+        DMUS_IO_INST_BANKSELECT         = 0x0002,
+        DMUS_IO_INST_ASSIGN_PATCH       = 0x0008,
+        DMUS_IO_INST_NOTERANGES         = 0x0010,
+        DMUS_IO_INST_PAN                = 0x0020,
+        DMUS_IO_INST_VOLUME             = 0x0040,
+        DMUS_IO_INST_TRANSPOSE          = 0x0080,
+        DMUS_IO_INST_GM                 = 0x0100,
+        DMUS_IO_INST_GS                 = 0x0200,
+        DMUS_IO_INST_XG                 = 0x0400,
+        DMUS_IO_INST_CHANNEL_PRIORITY   = 0x0800,
+        DMUS_IO_INST_USE_DEFAULT_GM_SET = 0x1000,
+        DMUS_IO_INST_PITCHBENDRANGE     = 0x2000
+    };
 }
 
 #endif /* INCLUDE_ODCORE_AUDIO_MUSIC_DMUSICDEFINES_H_ */
