@@ -7,6 +7,7 @@ set(SOURCES
         "audio/StreamingSource.cpp"
         #"audio/music/FluidSynth.cpp"
         "audio/music/DummySynth.cpp"
+        "audio/music/StupidSineSynth.cpp"
         "render/Camera.cpp"
         "render/Geometry.cpp"
         "render/GuiNode.cpp"

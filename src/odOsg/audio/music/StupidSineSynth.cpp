@@ -18,13 +18,15 @@ namespace odOsg
     : mChannel(channel)
     , mT(0)
     {
-        mNotes.resize(108-21, false);
+        mNotes.resize(256, false);
 
         double step = std::pow(2.0, 1.0/12.0);
-        mFrequencies.resize(108-21, 0);
+        double pitchFreq = 440;
+        uint8_t pitchNote = 69; // A4
+        mFrequencies.resize(256, 0);
         for(size_t note = 0; note < mFrequencies.size(); ++note)
         {
-            mFrequencies[note] = 27.5 * std::pow(step, note);
+            mFrequencies[note] = pitchFreq * std::pow(step, note-pitchNote);
         }
     }
 
@@ -34,7 +36,7 @@ namespace odOsg
 
         if(channel == mChannel)
         {
-            mNotes[note - 21] = true;
+            mNotes[note] = true;
         }
     }
 
@@ -44,7 +46,7 @@ namespace odOsg
 
         if(channel == mChannel)
         {
-            mNotes[note - 21] = false;
+            mNotes[note] = false;
         }
     }
 
