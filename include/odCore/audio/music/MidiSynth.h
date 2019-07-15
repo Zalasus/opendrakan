@@ -11,6 +11,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <odCore/Guid.h>
+
 namespace odAudio
 {
 
@@ -32,6 +34,9 @@ namespace odAudio
         virtual void allNotesOff() = 0;
 
         virtual void fillInterleavedStereoBuffer(int16_t *buffer, size_t size) = 0;
+
+        virtual void preloadDls(const od::Guid &dlsGuid) = 0;
+        virtual void assignPreset(uint8_t channel, uint32_t bank, uint32_t patch, const od::Guid &dlsGuid) = 0;
 
     };
 

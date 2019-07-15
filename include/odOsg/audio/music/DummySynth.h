@@ -32,6 +32,8 @@ namespace odOsg
 
         virtual void fillInterleavedStereoBuffer(int16_t *buffer, size_t size) override;
 
+        virtual void preloadDls(const od::Guid &dlsGuid) override;
+        virtual void assignPreset(uint8_t channel, uint32_t bank, uint32_t patch, const od::Guid &dlsGuid) override;
     };
 
 }

@@ -62,6 +62,15 @@ namespace odOsg
         }
     }
 
+    void DummySynth::preloadDls(const od::Guid &dlsGuid)
+    {
+
+    }
+
+    void DummySynth::assignPreset(uint8_t channel, uint32_t bank, uint32_t patch, const od::Guid &dlsGuid)
+    {
+
+    }
 }
 
 

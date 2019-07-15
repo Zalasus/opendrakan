@@ -94,6 +94,14 @@ namespace odOsg
         }
     }
 
+    void StupidSineSynth::preloadDls(const od::Guid &dlsGuid)
+    {
+    }
+
+    void StupidSineSynth::assignPreset(uint8_t channel, uint32_t bank, uint32_t patch, const od::Guid &dlsGuid)
+    {
+    }
+
     void StupidSineSynth::setChannel(uint8_t channel)
     {
         mChannel = channel;
