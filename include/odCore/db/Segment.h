@@ -108,6 +108,7 @@ namespace odDb
 
         inline od::Guid getGuid() const { return mGuid; }
         inline const std::vector<MidiEvent> &getMidiEvents() const { return mMidiEvents; }
+        inline const std::vector<MidiCurve> &getMidiCurves() const { return mMidiCurves; }
 
 
     private:

@@ -25,6 +25,8 @@ namespace odAudio
 
         virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) = 0;
         virtual void noteOff(uint8_t channel, uint8_t note) = 0;
+        virtual void controllerChange(uint8_t channel, uint8_t controller, uint8_t value) = 0;
+        virtual void channelPressure(uint8_t channel, uint8_t value) = 0;
 
         virtual void fillInterleavedStereoBuffer(int16_t *buffer, size_t size) = 0;
 

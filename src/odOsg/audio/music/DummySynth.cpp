@@ -27,6 +27,16 @@ namespace odOsg
         Logger::info() << "(note off) n=" << (uint32_t)note << " c=" << (uint32_t)channel;;
     }
 
+    void DummySynth::controllerChange(uint8_t channel, uint8_t controller, uint8_t value)
+    {
+
+    }
+
+    void DummySynth::channelPressure(uint8_t channel, uint8_t value)
+    {
+
+    }
+
     void DummySynth::fillInterleavedStereoBuffer(int16_t *buffer, size_t size)
     {
 
