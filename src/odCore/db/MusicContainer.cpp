@@ -118,8 +118,8 @@ namespace odDb
                     break;
                 }
 
-                name.resize(nameReader.getChunkLength(), ' ');
-                nameReader.getDataReader().read(&name[0], 16);
+                name.resize(nameReader.getChunkLength()-1, ' ');
+                nameReader.getDataReader().read(&name[0], nameReader.getChunkLength()-1);
                 gotName = true;
             }
 

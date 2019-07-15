@@ -69,7 +69,7 @@ namespace odOsg
 
     void DummySynth::assignPreset(uint8_t channel, uint32_t bank, uint32_t patch, const od::Guid &dlsGuid)
     {
-        Logger::debug() << "Dummy synth: (assign preset) channel=" << channel << " bank=" << bank << " patch=" << patch
+        Logger::debug() << "Dummy synth: (assign preset) channel=" << (int)channel << " bank=" << bank << " patch=" << patch
                 << " dls=" << dlsGuid;
     }
 }
