@@ -48,12 +48,28 @@ namespace odOsg
         }
     }
 
+    void StupidSineSynth::pitchBend(uint8_t channel, uint16_t value)
+    {
+    }
+
     void StupidSineSynth::controllerChange(uint8_t channel, uint8_t controller, uint8_t value)
     {
     }
 
     void StupidSineSynth::channelPressure(uint8_t channel, uint8_t value)
     {
+    }
+
+    void StupidSineSynth::keyPressure(uint8_t channel, uint8_t key, uint8_t value)
+    {
+    }
+
+    void StupidSineSynth::allNotesOff()
+    {
+        for(size_t i = 0; i < mNotes.size(); ++i)
+        {
+            mNotes[i] = false;
+        }
     }
 
     void StupidSineSynth::fillInterleavedStereoBuffer(int16_t *buffer, size_t size)
@@ -82,10 +98,7 @@ namespace odOsg
     {
         mChannel = channel;
 
-        for(size_t i = 0; i < mNotes.size(); ++i)
-        {
-            mNotes[i] = false;
-        }
+        allNotesOff();
     }
 
 }

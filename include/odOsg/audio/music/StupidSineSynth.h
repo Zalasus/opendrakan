@@ -28,8 +28,11 @@ namespace odOsg
 
         virtual void noteOn(uint8_t channel, uint8_t note, uint8_t velocity) override;
         virtual void noteOff(uint8_t channel, uint8_t note) override;
+        virtual void pitchBend(uint8_t channel, uint16_t value) override;
         virtual void controllerChange(uint8_t channel, uint8_t controller, uint8_t value) override;
         virtual void channelPressure(uint8_t channel, uint8_t value) override;
+        virtual void keyPressure(uint8_t channel, uint8_t key, uint8_t value) override;
+        virtual void allNotesOff() override;
 
         virtual void fillInterleavedStereoBuffer(int16_t *buffer, size_t size) override;
 
