@@ -70,8 +70,10 @@ namespace odOsg
 
         std::thread mWorkerThread;
         std::atomic_bool mTerminateFlag;
+        std::mutex mWorkerMutex;
 
-        std::vector<od::WeakObserverRefPtr<Source>> mSources;
+        //std::vector<od::WeakObserverRefPtr<Source>> mWeakSources; // FIXME: broken due to weak refptr not being threadsafe
+        std::vector<od::RefPtr<Source>> mSources;
 
         std::unique_ptr<odDb::MusicContainer> mMusicContainer;
 

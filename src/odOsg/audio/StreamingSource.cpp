@@ -47,6 +47,8 @@ namespace odOsg
 
     StreamingSource::~StreamingSource()
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         alSourceStop(mSourceId);
         SoundSystem::doErrorCheck("Could not stop streaming source to delete it");
 
@@ -56,6 +58,8 @@ namespace odOsg
 
     void StreamingSource::setBufferFillCallback(const BufferFillCallback &callback)
     {
+        std::lock_guard<std::mutex> lock(getMutex());
+
         if(callback == nullptr)
         {
             mFillCallback = FILL_WITH_SILENCE;

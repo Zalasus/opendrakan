@@ -20,6 +20,7 @@
 #include <odOsg/audio/StreamingSource.h>
 #include <odOsg/audio/Buffer.h>
 #include <odOsg/audio/music/DummySynth.h>
+#include <odOsg/audio/music/StupidSineSynth.h>
 
 namespace odOsg
 {
@@ -65,6 +66,7 @@ namespace odOsg
     {
         auto source = od::make_refd<Source>(*this);
 
+        std::lock_guard<std::mutex> lock(mWorkerMutex);
         mSources.emplace_back(source.get());
 
         return source.get();
@@ -86,7 +88,8 @@ namespace odOsg
     {
         mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
 
-        mSynth = std::make_unique<DummySynth>();
+        //mSynth = std::make_unique<DummySynth>();
+        mSynth = std::make_unique<StupidSineSynth>(5);
         mSegmentPlayer = std::make_unique<odAudio::SegmentPlayer>(*mSynth);
 
         auto musicSource = od::make_refd<StreamingSource>(*this, 128, 64, true);
@@ -101,6 +104,8 @@ namespace odOsg
         };
         musicSource->setBufferFillCallback(fillCallback);
         mMusicSource = musicSource;
+
+        std::lock_guard<std::mutex> lock(mWorkerMutex);
         mSources.emplace_back(musicSource.get());
     }
 
@@ -179,8 +184,10 @@ namespace odOsg
 
             try
             {
-                for(auto &weakSource : mSources)
+                // FIXME: weak pointers are not thread safe. this causes crashes and deadlocks. for now, we take strong ownership, which is inefficient
+                /*for(auto &weakSource : mWeakSources)
                 {
+
                     if(weakSource.isNonNull())
                     {
                         auto source = weakSource.aquire();
@@ -190,6 +197,15 @@ namespace odOsg
 
                     //TODO: maybe delete null entries here? leaving them in poses a minor memory leak
                     //  (not that severe since we don't create sources on the fly)
+                }*/
+
+                std::lock_guard<std::mutex> lock(mWorkerMutex);
+                for(auto &source : mSources)
+                {
+                    if(source != nullptr)
+                    {
+                        source->update(relTime);
+                    }
                 }
 
             }catch(od::Exception &e)
