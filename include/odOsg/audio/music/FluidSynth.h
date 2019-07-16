@@ -10,8 +10,7 @@
 
 #include <map>
 
-#include <fluidsynth/types.h>
-#include <fluidsynth/synth.h>
+#include <fluidsynth.h>
 
 #include <odCore/audio/music/MidiSynth.h>
 

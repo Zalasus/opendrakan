@@ -10,10 +10,6 @@
 #include <sstream>
 #include <cstdio>
 
-#include <fluidsynth/misc.h>
-#include <fluidsynth/settings.h>
-#include <fluidsynth/sfont.h>
-
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
@@ -117,7 +113,7 @@ namespace odOsg
     private:
 
         odDb::MusicContainer &mContainer;
-        od::Guid &mGuid;
+        od::Guid mGuid;
         od::SrscFile::RecordInputCursor mInputCursor;
         od::DataReader mReader;
 
@@ -185,8 +181,7 @@ namespace odOsg
                                                   &DlsLoaderWrapper::_dlsLoader_tell,
                                                   &DlsLoaderWrapper::_dlsLoader_close);
         _errorCheck(result, "Failed to set soundfont loader callbacks");
-        result = fluid_synth_add_sfloader(mSynth, sfloader);
-        _errorCheck(result, "Failed to add soundfont loader to synth");
+        fluid_synth_add_sfloader(mSynth, sfloader);
     }
 
     FluidSynth::~FluidSynth()

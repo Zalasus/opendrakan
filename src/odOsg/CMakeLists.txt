@@ -5,7 +5,7 @@ set(SOURCES
         "audio/SoundSystem.cpp"
         "audio/Source.cpp"
         "audio/StreamingSource.cpp"
-        #"audio/music/FluidSynth.cpp"
+        "audio/music/FluidSynth.cpp"
         "audio/music/DummySynth.cpp"
         "audio/music/StupidSineSynth.cpp"
         "render/Camera.cpp"
@@ -29,6 +29,9 @@ find_package(OpenSceneGraph 3.4.0 REQUIRED osgDB osgViewer osgGA osgUtil)
 find_package(OpenAL REQUIRED)
 #find_package(fluidsynth REQUIRED)
 
+find_package(PkgConfig)
+pkg_check_modules(FLUID REQUIRED fluidsynth)
+
 add_executable(odOsg ${SOURCES})
 
 target_link_libraries(odOsg 
@@ -36,4 +39,6 @@ target_link_libraries(odOsg
                         ${WHOLE_ARCHIVE_START} dragonRfl ${WHOLE_ARCHIVE_END}
                         ${OPENSCENEGRAPH_LIBRARIES}
                         ${OPENAL_LIBRARY}
-                        ${FLUIDSYNTH_LIBRARY})
+                        ${FLUID_LIBRARIES})
+                        
+target_include_directories(odOsg PRIVATE ${FLUID_INCLUDE_DIRS})
