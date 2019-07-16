@@ -27,6 +27,8 @@ namespace odOsg
         , mGuid(guid)
         , mInputCursor(mContainer.getCursorForDls(guid))
         , mReader(mInputCursor.getReader())
+        , mDataOffset(mInputCursor.getDirIterator()->dataOffset)
+        , mDataSize(mInputCursor.getDirIterator()->dataSize)
         {
         }
 
@@ -40,11 +42,15 @@ namespace odOsg
             switch(origin)
             {
             case SEEK_SET:
-                mReader.seek(offset);
+                mReader.seek(offset + mDataOffset);
                 break;
 
             case SEEK_CUR:
-                mReader.seek(mReader.tell() + offset);
+                mReader.seek(offset + mReader.tell());
+                break;
+
+            case SEEK_END:
+                mReader.seek(offset + mDataOffset + mDataSize);
                 break;
 
             default:
@@ -54,15 +60,18 @@ namespace odOsg
 
         long tell()
         {
-            return mReader.tell();
+            return mReader.tell() - mDataOffset;
         }
 
         static void *_dlsLoader_open(const char *filename)
         {
             if(filename[0] != '&')
             {
+                Logger::error() << "Tried to load invalid DLS " << filename << " using the memory wrapper. Filename should be a pointer prefixed by &";
                 return nullptr;
             }
+
+            Logger::debug() << "Opened DLS loader wrapper with filename " << filename;
 
             void *ptr = nullptr;
             std::istringstream ss(filename+1);
@@ -116,6 +125,8 @@ namespace odOsg
         od::Guid mGuid;
         od::SrscFile::RecordInputCursor mInputCursor;
         od::DataReader mReader;
+        size_t mDataOffset;
+        size_t mDataSize;
 
     };
 
@@ -129,50 +140,36 @@ namespace odOsg
     }
 
 
-    class Settings
+    FluidSynth::Settings::Settings()
     {
-    public:
-
-        Settings()
+        mInstance = new_fluid_settings();
+        if(mInstance == nullptr)
         {
-            mInstance = new_fluid_settings();
-            if(mInstance == nullptr)
-            {
-                throw od::Exception("Failed to create fluid synth settings");
-            }
+            throw od::Exception("Failed to create fluid synth settings");
         }
+    }
 
-        ~Settings()
-        {
-            delete_fluid_settings(mInstance);
-        }
+    FluidSynth::Settings::~Settings()
+    {
+        delete_fluid_settings(mInstance);
+    }
 
-        inline fluid_settings_t *getInstance() { return mInstance; }
-
-        void setString(const char *key, const char *value)
-        {
-            fluid_settings_setstr(mInstance, key, value);
-        }
-
-
-    private:
-
-        fluid_settings_t *mInstance;
-
-    };
+    void FluidSynth::Settings::setString(const char *key, const char *value)
+    {
+        fluid_settings_setstr(mInstance, key, value);
+    }
 
 
     FluidSynth::FluidSynth()
     : mSynth(nullptr)
     , mMusicContainer(nullptr)
     {
-        Settings settings;
-        settings.setString("player.timing-source", "sample");
+        mSettings.setString("player.timing-source", "sample");
 
-        mSynth = new_fluid_synth(settings.getInstance());
+        mSynth = new_fluid_synth(mSettings.getInstance());
         if(mSynth == nullptr) throw od::Exception("Failed to create fluid synth");
 
-        fluid_sfloader_t *sfloader = new_fluid_defsfloader(settings.getInstance()); // TODO: do I have to delete this? o.o
+        fluid_sfloader_t *sfloader = new_fluid_defsfloader(mSettings.getInstance()); // TODO: do I have to delete this? o.o
         if(sfloader == nullptr) throw od::Exception("Failed to create fluid soundfont loader");
         int result = fluid_sfloader_set_callbacks(sfloader,
                                                   &DlsLoaderWrapper::_dlsLoader_open,
@@ -256,6 +253,8 @@ namespace odOsg
             return it->second;
         }
 
+        Logger::verbose() << "Loading DLS " << dlsGuid;
+
         if(mMusicContainer == nullptr)
         {
             throw od::Exception("No music container provided to FluidSynth when a DLS needed to be loaded");
@@ -266,14 +265,16 @@ namespace odOsg
 
         DlsLoaderWrapper loaderWrapper(*mMusicContainer, dlsGuid);
 
-        std::ostringstream ss("&");
-        ss << static_cast<void*>(&loaderWrapper);
+        std::ostringstream ss;
+        ss << '&' << static_cast<void*>(&loaderWrapper);
         std::string str = ss.str();
 
         int sfId = fluid_synth_sfload(mSynth, str.c_str(), 0);
         if(sfId == FLUID_FAILED) throw od::Exception("Failed to load DLS");
 
         mSoundFontIdMap.insert(std::make_pair(dlsGuid, sfId));
+
+        Logger::debug() << "Successfully loaded DLS " << dlsGuid;
 
         return sfId;
     }

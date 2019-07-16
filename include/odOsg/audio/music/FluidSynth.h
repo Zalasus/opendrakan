@@ -47,8 +47,27 @@ namespace odOsg
 
     private:
 
+        class Settings
+        {
+        public:
+
+            Settings();
+            ~Settings();
+
+            inline fluid_settings_t *getInstance() { return mInstance; }
+
+            void setString(const char *key, const char *value);
+
+        private:
+
+            fluid_settings_t *mInstance;
+
+        };
+
+
         int _getOrLoadDls(const od::Guid &dlsGuid);
 
+        Settings mSettings;
         fluid_synth_t *mSynth;
         odDb::MusicContainer *mMusicContainer;
         std::map<od::Guid, int> mSoundFontIdMap;
