@@ -1,7 +1,9 @@
 
 # config for odCore
 
-set(SOURCES
+add_library(odCore STATIC "")
+
+target_sources(odCore PRIVATE
         "anim/Skeleton.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
         "audio/music/SegmentPlayer.cpp"
@@ -70,22 +72,26 @@ set(SOURCES
         "ZStream.cpp")
     
 find_package(Threads REQUIRED)
-#find_package(glm 0.9.8.3 REQUIRED) FIXME: this breaks the travis build on ubuntu xenial. skip for now. build works without it
-find_package(ZLIB REQUIRED)
-find_package(Bullet 2.8.3 REQUIRED Collision LinearMath)
-    
-    
-add_library(odCore STATIC ${SOURCES})
+target_link_libraries(odCore ${CMAKE_THREAD_LIBS_INIT})
 
-target_link_libraries(odCore
-                        ${CMAKE_THREAD_LIBS_INIT}
-                        ${ZLIB_LIBRARIES} 
-                        ${BULLET_LIBRARIES})
-                    
-# since some glm versions (not necessarily older ones) require this:
-target_compile_definitions(odCore PUBLIC GLM_ENABLE_EXPERIMENTAL)
-                    
+find_package(ZLIB REQUIRED)
+target_link_libraries(odCore ${ZLIB_LIBRARIES})
 target_include_directories(odCore PRIVATE ${ZLIB_INCLUDE_DIRS})
-target_include_directories(odCore PUBLIC ${GLM_INCLUDE_DIRS} ${BULLET_INCLUDE_DIRS})
+
+find_package(Bullet 2.8.3 REQUIRED Collision LinearMath)
+target_link_libraries(odCore ${BULLET_LIBRARIES})
+target_include_directories(odCore PRIVATE ${BULLET_INCLUDE_DIRS})
+
+# FIXME: making this required breaks the travis build on ubuntu xenial. for now we make it optional and display a warning if not found
+find_package(glm 0.9.8)
+if(glm_FOUND)
+    target_link_libraries(odCore PUBLIC ${GLM_LIBRARY})
+    target_include_directories(odCore PUBLIC ${GLM_INCLUDE_DIRS})
+    # since some glm versions (not necessarily older ones) require this:
+    target_compile_definitions(odCore PUBLIC GLM_ENABLE_EXPERIMENTAL)
+else()
+    message(WARNING "Could not find glm cmake package. Trying to continue generating, as build works anyway on most systems if it is installed")
+endif()
+    
     
     

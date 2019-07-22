@@ -1,9 +1,7 @@
 
 
-set(SOURCES
-        "Main.cpp")
-        
-add_executable(srsced ${SOURCES})
+add_executable(srsced "")
 
-target_link_libraries(srsced 
-                        odCore)
+target_sources(srsced PRIVATE "Main.cpp")
+
+target_link_libraries(srsced odCore)

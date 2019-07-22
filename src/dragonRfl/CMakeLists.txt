@@ -1,6 +1,7 @@
 
+add_library(dragonRfl STATIC "")
 
-set(SOURCES
+target_sources(dragonRfl PRIVATE
     "classes/common/ItemCommon.cpp"
     "classes/common/PlayerCommon.cpp"
     "classes/AnimationDemo.cpp"
@@ -28,7 +29,5 @@ set(SOURCES
     "gui/MainMenu.cpp"
     "Actions.cpp"
     "RflDragon.cpp")
-
-add_library(dragonRfl STATIC ${SOURCES})
 
 target_link_libraries(dragonRfl odCore)
