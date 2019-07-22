@@ -19,9 +19,13 @@
 #include <odOsg/audio/Source.h>
 #include <odOsg/audio/StreamingSource.h>
 #include <odOsg/audio/Buffer.h>
-#include <odOsg/audio/music/DummySynth.h>
-#include <odOsg/audio/music/StupidSineSynth.h>
-#include <odOsg/audio/music/FluidSynth.h>
+
+#ifdef USE_FLUIDSYNTH
+    #include <odOsg/audio/music/FluidSynth.h>
+#else
+    #include <odOsg/audio/music/DummySynth.h>
+    #include <odOsg/audio/music/StupidSineSynth.h>
+#endif
 
 namespace odOsg
 {
@@ -89,11 +93,14 @@ namespace odOsg
     {
         mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
 
-        //mSynth = std::make_unique<DummySynth>();
-        //mSynth = std::make_unique<StupidSineSynth>(5);
+#ifdef USE_FLUIDSYNTH
         auto fluidSynth = std::make_unique<FluidSynth>();
         fluidSynth->setMusicContainer(mMusicContainer.get());
         mSynth = std::move(fluidSynth);
+#else
+        mSynth = std::make_unique<DummySynth>();
+        //mSynth = std::make_unique<StupidSineSynth>(5);
+#endif
         mSegmentPlayer = std::make_unique<odAudio::SegmentPlayer>(*mSynth);
 
         auto musicSource = od::make_refd<StreamingSource>(*this, 128, 64, true);
