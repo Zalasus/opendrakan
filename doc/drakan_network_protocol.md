@@ -15,7 +15,9 @@ data, including the identifier and the length field itself.
 The packets starting with 0x2a contain two bytes after that which seem to indicate source
 followed by destination. 0x01 seems to be the server, clients start at 0x02. Could be 0x00 means broadcast.
 
-The next 5 bytes are unknown.
+The next 1/2/4 bytes seem to be a packet counter/sequence number. It is a steadily growing number (only for one packet direction).
+Haven't seen this become bigger than 0xa6, so it could be anything from one up to 4 bytes.
+Next byte is unknown.
 After that is another 16 length field containing the length of the rest of the packet, _not_ including that length
 field.
 
@@ -26,7 +28,8 @@ uint16_t   packet_length; // including type and length field (equal to UDP/TCP p
 // only for packet_type 0x2a: 
 uint8_t    source;
 uint8_t    destination;
-uint8_t[5] unknown; // command type?
+uint32_t   sequence_number;
+uint8_t    unknown; // command type?
 
 uint16_t   command_specifier_length; // not including this field
 uint8_t[~] command_data;
