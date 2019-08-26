@@ -77,7 +77,7 @@ namespace dragonRfl
             mCrystalHandle->setModel(mn);
             mCrystalHandle->setScale(glm::vec3(0.58/diameter));
             mCrystalHandle->setPosition(glm::vec3(0.5, 0.5, 0));
-            mCrystalHandle->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mCrystalHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
             mCrystalHandle->setEnableColorModifier(true);
             mCrystalHandle->setColorModifier(mCrystalColor);
 
@@ -93,7 +93,7 @@ namespace dragonRfl
             mInnerRingHandle->setModel(mn);
             mInnerRingHandle->setScale(glm::vec3(1/diameter));
             mInnerRingHandle->setPosition(glm::vec3(0.5, 0.5, 0));
-            mInnerRingHandle->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mInnerRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
 
             getRenderNode()->addChildHandle(mInnerRingHandle);
         }
@@ -107,7 +107,7 @@ namespace dragonRfl
             mOuterRingHandle->setModel(mn);
             mOuterRingHandle->setScale(glm::vec3(1/diameter));
             mOuterRingHandle->setPosition(glm::vec3(0.5, 0.5, 0));
-            mOuterRingHandle->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mOuterRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
 
             getRenderNode()->addChildHandle(mOuterRingHandle);
         }

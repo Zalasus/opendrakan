@@ -44,15 +44,19 @@ namespace odOsg
 
     void GuiQuad::setTexture(odRender::Texture *texture)
     {
+        osg::StateSet *ss = mGeometry->getOrCreateStateSet();
+
         if(texture == nullptr)
         {
+            ss->setTextureAttribute(0, nullptr, osg::StateAttribute::ON);
+            ss->removeDefine("TEXTURE");
             mTexture = nullptr;
             return;
         }
 
         mTexture = od::confident_downcast<Texture>(texture);
-
-        mGeometry->getOrCreateStateSet()->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
+        ss->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
+        ss->setDefine("TEXTURE");
     }
 
     void GuiQuad::setTextureCoords(const glm::vec2 &tl, const glm::vec2 &br)
