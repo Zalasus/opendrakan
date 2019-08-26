@@ -26,6 +26,8 @@ target_sources(dragonRfl PRIVATE
     "gui/CrystalRingButton.cpp"
     "gui/Cursor.cpp"
     "gui/DragonGui.cpp"
+    "gui/GuiTextures.cpp"
+    "gui/HealthIndicator.cpp"
     "gui/MainMenu.cpp"
     "Actions.cpp"
     "RflDragon.cpp")

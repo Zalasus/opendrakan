@@ -15,6 +15,7 @@
 
 #include <dragonRfl/gui/Cursor.h>
 #include <dragonRfl/gui/MainMenu.h>
+#include <dragonRfl/gui/HealthIndicator.h>
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 #define OD_DRAGONRRC_PATH "Dragon.rrc"
@@ -66,6 +67,11 @@ namespace dragonRfl
         setCursorWidget(cursor);
 
         setCursorPosition(glm::vec2(0, 0));
+
+        auto healthIndicator = od::make_refd<HealthIndicator>(*this);
+        healthIndicator->setOrigin(odGui::WidgetOrigin::BottomLeft);
+        healthIndicator->setPosition(0, 1);
+        addWidget(healthIndicator);
 
         mMainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
         addWidget(mMainMenu);

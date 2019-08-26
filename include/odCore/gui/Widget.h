@@ -153,6 +153,12 @@ namespace odGui
 
         void setVisible(bool b);
 
+        /**
+         * This affects stacking inside the parent widget. A widget with a lower Z index is always on top of other widgets
+         * with higher Z indices.
+         *
+         * A widgets own rendered elements (if available) are always rendered at Z index 0.
+         */
         void setZIndex(int32_t zIndex);
         void reorderChildren();
 
