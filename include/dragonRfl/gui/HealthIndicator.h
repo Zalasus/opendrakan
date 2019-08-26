@@ -18,7 +18,7 @@ namespace dragonRfl
 {
 
     class DragonGui;
-    class Bubble;
+    class Orb;
 
     class HealthIndicator : public odGui::Widget
     {
@@ -34,10 +34,10 @@ namespace dragonRfl
 
         DragonGui &mDragonGui;
 
-        odAnim::Interpolated<float> mHealthLevel;
+        odAnim::Interpolated<float, odAnim::SineInterpolator<float>> mHealthLevel;
 
-        od::RefPtr<Bubble> mHealthBubble;
-        od::RefPtr<Bubble> mFlashBubble;
+        od::RefPtr<Orb> mHealthOrb;
+        od::RefPtr<Orb> mFlashOrb;
     };
 
 }

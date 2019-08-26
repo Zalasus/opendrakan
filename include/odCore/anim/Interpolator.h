@@ -9,16 +9,40 @@
 #define INCLUDE_ODCORE_ANIM_INTERPOLATOR_H_
 
 #include <type_traits>
+#include <cmath>
 
 #include <odCore/Logger.h>
 
 namespace odAnim
 {
 
-    template <typename T, typename _TimeType = float>
+    template <typename T>
+    struct LinearInterpolator
+    {
+        inline T operator()(const T &start, const T &end, float delta)
+        {
+            return start*(1 - delta) + end*delta;
+        }
+    };
+
+    template <typename T>
+    struct SineInterpolator
+    {
+        inline T operator()(const T &start, const T &end, float delta)
+        {
+            LinearInterpolator<T> lerp;
+
+            delta = std::sin((delta-0.5)*3.141592654)*0.5 + 0.5;
+            return lerp(start, end, delta);
+        }
+    };
+
+    template <typename T, typename _Interpolator = LinearInterpolator<T>>
     class Interpolated
     {
     public:
+
+        typedef float _TimeType;
 
         Interpolated(const T &value)
         : mValue(value)
@@ -76,8 +100,8 @@ namespace odAnim
 
             }else
             {
-                // need to interpolate (only linear interpolation for now)
-                newValue = mStart*(1 - timeDelta) + mTarget*timeDelta;
+                // need to interpolate
+                newValue = mInterpolator(mStart, mTarget, timeDelta);
             }
 
             bool changed = (newValue != mValue);
@@ -106,6 +130,7 @@ namespace odAnim
         bool mActive;
         _TimeType mLastTime;
         _TimeType mDuration;
+        _Interpolator mInterpolator;
     };
 
 }

@@ -24,6 +24,14 @@ namespace odOsg
     {
         // vertex order is top-left, bottom-left, bottom-right, top-right
         //  this allows us to use glDrawArrays using a triangle fan, minimizing memory usage
+
+        mColorArray->at(0) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        mColorArray->at(1) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        mColorArray->at(2) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+        mColorArray->at(3) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
+
+        mGeometry->setUseVertexBufferObjects(true); // !!! important !!! would've to manage another dirty state otherwise
+        mGeometry->setUseDisplayList(false);
         mGeometry->setVertexArray(mVertexArray);
         mGeometry->setTexCoordArray(0, mTextureCoordArray, osg::Array::BIND_PER_VERTEX);
         mGeometry->setColorArray(mColorArray, osg::Array::BIND_PER_VERTEX);
@@ -31,11 +39,6 @@ namespace odOsg
 
         setVertexCoords(glm::vec2(0, 0), glm::vec2(1, 1));
         setTextureCoords(glm::vec2(0, 1), glm::vec2(1, 0));
-
-        mColorArray->at(0) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
-        mColorArray->at(1) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
-        mColorArray->at(2) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
-        mColorArray->at(3) = osg::Vec4(1.0, 1.0, 1.0, 1.0);
     }
 
     GuiQuad::~GuiQuad()
@@ -65,6 +68,7 @@ namespace odOsg
         mTextureCoordArray->at(1).set(tl.x, br.y);
         mTextureCoordArray->at(2).set(br.x, br.y);
         mTextureCoordArray->at(3).set(br.x, tl.y);
+        mTextureCoordArray->dirty();
     }
 
     void GuiQuad::setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight)
@@ -80,6 +84,7 @@ namespace odOsg
         mTextureCoordArray->at(1).set(tlNorm.x, brNorm.y);
         mTextureCoordArray->at(2).set(brNorm.x, brNorm.y);
         mTextureCoordArray->at(3).set(brNorm.x, tlNorm.y);
+        mTextureCoordArray->dirty();
     }
 
     void GuiQuad::setVertexCoords(const glm::vec2 &tl, const glm::vec2 &br)
@@ -88,6 +93,7 @@ namespace odOsg
         mVertexArray->at(1).set(tl.x, br.y, 0.0);
         mVertexArray->at(2).set(br.x, br.y, 0.0);
         mVertexArray->at(3).set(br.x, tl.y, 0.0);
+        mVertexArray->dirty();
     }
 
     void GuiQuad::setColor(const glm::vec4 &color)
@@ -97,6 +103,7 @@ namespace odOsg
         mColorArray->at(1) = c;
         mColorArray->at(2) = c;
         mColorArray->at(3) = c;
+        mColorArray->dirty();
     }
 
 }
