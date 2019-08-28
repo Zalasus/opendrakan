@@ -183,6 +183,19 @@ namespace od
         return mLevelObjects[index].get();
     }
 
+    LevelObject *Level::findObjectOfType(odRfl::RflClassId id)
+    {
+        for(auto &obj : mLevelObjects)
+        {
+            if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
+            {
+                return obj.get();
+            }
+        }
+
+        return nullptr;
+    }
+
     odDb::AssetProvider &Level::getDependency(uint16_t index)
     {
         auto it = mDependencyMap.find(index);

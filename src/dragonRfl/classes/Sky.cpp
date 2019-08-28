@@ -8,8 +8,6 @@
 
 #include <dragonRfl/classes/Sky.h>
 
-#include <dragonRfl/RflDragon.h>
-
 #include <odCore/Level.h>
 #include <odCore/OdDefines.h>
 #include <odCore/Engine.h>
@@ -18,6 +16,10 @@
 #include <odCore/rfl/Rfl.h>
 
 #include <odCore/render/Renderer.h>
+
+#include <dragonRfl/RflDragon.h>
+
+#include <dragonRfl/classes/TrackingCamera.h>
 
 namespace dragonRfl
 {
@@ -60,6 +62,23 @@ namespace dragonRfl
 
     void DomedSky::onSpawned(od::LevelObject &obj)
 	{
+        // handle attachment: attach sky to camera (not player!!!) FIXME: somehow, the sky is still a bit stuttery
+        odRfl::RflClassId cameraClassId = odRfl::RflClassTraits<TrackingCamera>::classId();
+        od::LevelObject *cameraObject = obj.getLevel().findObjectOfType(cameraClassId);
+        if(cameraObject == nullptr)
+        {
+            // no camera present in level. we don't want a dangling sky in the level, so we let the sky commit suicide
+            Logger::warn() << "Sky found no camera in the level. Destroying sky...";
+            obj.requestDestruction();
+            return;
+        }
+
+        glm::vec3 skyOffset(0, -mOffsetDown.get()*OD_WORLD_SCALE, 0);
+        obj.setPosition(cameraObject->getPosition() + skyOffset);
+        obj.attachTo(cameraObject, false, true, false);
+
+
+        // we need a special render node for the sky (in it's own render bin)
         odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
         if(renderer == nullptr)
         {
@@ -72,6 +91,14 @@ namespace dragonRfl
         mRenderNode->setRenderBin(odRender::RenderBin::SKY);
 	}
 
+    void DomedSky::onMoved(od::LevelObject &obj)
+    {
+        if(mRenderNode != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
+            mRenderNode->setPosition(obj.getPosition());
+        }
+    }
 
     OD_REGISTER_RFLCLASS(DragonRfl, DomedSky);
 

@@ -40,6 +40,7 @@ namespace odDb
 		inline bool hasModel() const { return mModel != nullptr; }
         inline od::RefPtr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
+        inline odRfl::RflClassId getRflClassId() const { return mRflClassId; }
 
         virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 

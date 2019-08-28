@@ -18,6 +18,8 @@
 #include <odCore/FilePath.h>
 #include <odCore/Layer.h>
 
+#include <odCore/rfl/RflClass.h>
+
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
 
@@ -47,6 +49,13 @@ namespace od
         void update(float relTime);
 
         LevelObject *getLevelObjectByIndex(uint16_t index);
+
+        /**
+         * @brief Finds the first object with the given class type.
+         *
+         * @return The first object of class type \c id or nullptr if none found.
+         */
+        LevelObject *findObjectOfType(odRfl::RflClassId id);
 
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;

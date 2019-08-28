@@ -29,6 +29,7 @@ namespace dragonRfl
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
         virtual void onSpawned(od::LevelObject &obj) override;
+        virtual void onMoved(od::LevelObject &obj) override;
 
 
     protected:
