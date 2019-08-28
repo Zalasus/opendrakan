@@ -45,6 +45,11 @@ namespace odOsg
     {
     }
 
+    odRender::Texture *GuiQuad::getTexture()
+    {
+        return mTexture;
+    }
+
     void GuiQuad::setTexture(odRender::Texture *texture)
     {
         osg::StateSet *ss = mGeometry->getOrCreateStateSet();

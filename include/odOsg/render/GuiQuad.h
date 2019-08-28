@@ -25,6 +25,8 @@ namespace odOsg
 
         inline osg::Geometry *getOsgGeometry() { return mGeometry; }
 
+        virtual odRender::Texture *getTexture() override;
+
         virtual void setTexture(odRender::Texture *texture) override;
         virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;

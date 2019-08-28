@@ -24,10 +24,23 @@ namespace dragonRfl
     {
     public:
 
+        static constexpr float DEFAULT_ANIM_TIME = 0.8;
+
         HealthIndicator(DragonGui &gui);
         virtual ~HealthIndicator();
 
         virtual void onUpdate(float relTime) override;
+
+        /**
+         * @brief Sets the health orb's fill state (0=empty, 1=full).
+         *
+         * The transition will be animated in respect to the \c animTime parameter. The animation
+         * includes a "flash" of the orb.
+         *
+         * @param state  The fill state to set the widget to. 0 means empty, 1 means full
+         * @param animTime  Duration of the transition animation. Pass 0 to instantly apply new state.
+         */
+        void setFillState(float state, float animTime = DEFAULT_ANIM_TIME);
 
 
     private:

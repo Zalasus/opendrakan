@@ -12,6 +12,7 @@
 #include <glm/common.hpp>
 
 #include <odCore/render/GuiNode.h>
+#include <odCore/render/Texture.h>
 
 #include <dragonRfl/gui/DragonGui.h>
 #include <dragonRfl/gui/GuiTextures.h>
@@ -39,6 +40,7 @@ namespace dragonRfl
 
             mOrbQuad_Left = this->getRenderNode()->createGuiQuad();
             mOrbQuad_Left->setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
+            mOrbQuad_Left->getTexture()->setEnableWrapping(false);
             setFillRatio(1.0);
 
             this->setDimensions(glm::vec2(width, mHeightPx), odGui::WidgetDimensionType::Pixels);
@@ -69,8 +71,10 @@ namespace dragonRfl
 
             mOrbQuad_Left = this->getRenderNode()->createGuiQuad();
             mOrbQuad_Left->setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
+            mOrbQuad_Left->getTexture()->setEnableWrapping(false);
             mOrbQuad_Right = this->getRenderNode()->createGuiQuad();
             mOrbQuad_Right->setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
+            mOrbQuad_Right->getTexture()->setEnableWrapping(false);
             setFillRatio(1.0);
 
             float width = glm::abs(mTopLeftPx_Left.x - mBottomRightPx_Left.x) + glm::abs(mTopLeftPx_Right.x - mBottomRightPx_Right.x);
@@ -108,6 +112,19 @@ namespace dragonRfl
                 {
                     mOrbQuad_Right->setVertexCoords(glm::vec2(0.5, invRatio), glm::vec2(1,1));
                 }
+            }
+        }
+
+        void setColor(const glm::vec4 &color)
+        {
+            if(mOrbQuad_Left != nullptr)
+            {
+                mOrbQuad_Left->setColor(color);
+            }
+
+            if(mOrbQuad_Right != nullptr)
+            {
+                mOrbQuad_Left->setColor(color);
             }
         }
 
@@ -163,7 +180,7 @@ namespace dragonRfl
         mFlashOrb->setPosition(orbOffset/size);
         this->addChild(mFlashOrb);
 
-        mHealthLevel.move(0.8, 1);
+        mHealthLevel.move(0.8, 0.8);
         mHealthOrb->setFillRatio(mHealthLevel);
         mFlashOrb->setFillRatio(mHealthLevel);
     }
@@ -178,6 +195,23 @@ namespace dragonRfl
         {
             mHealthOrb->setFillRatio(mHealthLevel);
             mFlashOrb->setFillRatio(mHealthLevel);
+
+            float f = glm::clamp(mHealthLevel.normVelocity(), 0.0f, 1.0f);
+            mFlashOrb->setColor(glm::vec4(1,1,1,f));
+        }
+    }
+
+    void HealthIndicator::setFillState(float state, float animTime)
+    {
+        state = glm::clamp(state, 0.0f, 1.0f);
+
+        if(animTime <= 0)
+        {
+            mHealthLevel.set(state);
+
+        }else
+        {
+            mHealthLevel.move(state, animTime);
         }
     }
 

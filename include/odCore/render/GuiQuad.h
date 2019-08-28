@@ -24,6 +24,8 @@ namespace odRender
     {
     public:
 
+        virtual odRender::Texture *getTexture() = 0;
+
         /**
          * Convenience method. Fetches texture from an asset provider, sets up image and creates
          * a new render texture from a DB texture to be used by this quad.
