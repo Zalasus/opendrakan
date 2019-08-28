@@ -16,6 +16,7 @@ varying vec4 vertexColor;
 varying vec3 lightColor;
 
 // although the layer light is baked into the vertex colors, we still apply the ambient color since the LightManager uses it to "disable" lighting
+//  the renderer has to take this into account by setting the ambient component to zero normally
 uniform vec3  layerLightAmbient;
 
 uniform vec3  objectLightDiffuse[MAX_LIGHTS];

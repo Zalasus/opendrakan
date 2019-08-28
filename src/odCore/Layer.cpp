@@ -191,6 +191,9 @@ namespace od
             std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
             mRenderHandle->setModel(mRenderModel);
             mRenderHandle->setPosition(getOrigin());
+
+            // global light is baked into vertices, so disable it here. shader should ignore it anyway
+            mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0,0,0), glm::vec3(0,0,0));
         }
 
         mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
