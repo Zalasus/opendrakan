@@ -467,6 +467,7 @@ namespace odOsg
 
         osgViewer::Viewer::Windows windows;
         mViewer->getWindows(windows, true);
+        if(windows.empty()) throw od::Exception("Viewer created no windows");
         for(osgViewer::GraphicsWindow *window: windows)
         {
             window->setWindowName("OpenDrakan (OSG)");
@@ -476,6 +477,11 @@ namespace odOsg
                 window->setCursor(osgViewer::GraphicsWindow::NoCursor);
             }
         }
+
+        int x, y, width, height;
+        windows[0]->getWindowRectangle(x, y, width, height);
+        double aspect = static_cast<double>(width)/height;
+        mViewer->getCamera()->setProjectionMatrixAsPerspective(45, aspect, 1, 10000);
 
         double simTime = 0;
         double frameTime = 0;
