@@ -234,8 +234,15 @@ namespace odAnim
         }
 
         // we are are somewhere between keyframes, and have to pick the closer one
-        bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
-        return firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform;
+
+        if(mLastKeyframes != currentKeyframes) // only update decompositions when necessary
+        {
+            bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
+            mLeftTransform = glm::dualquat(firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform);
+            mRightTransform = mLeftTransform;
+        }
+
+        return mLeftTransform;
     }
 
 
