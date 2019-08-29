@@ -1,4 +1,6 @@
 
+option(USE_FLUIDSYNTH "Whether to use FluidSynth subsystem to render music. (might be broken)" OFF)
+
 add_executable(odOsg "")
 
 target_sources(odOsg PRIVATE 
@@ -34,19 +36,21 @@ target_link_libraries(odOsg ${OPENSCENEGRAPH_LIBRARIES})
 find_package(OpenAL REQUIRED)
 target_link_libraries(odOsg ${OPENAL_LIBRARY})
 
-# FluidSynth is only available as a module via PkgConfig as of 2.0.6
-find_package(PkgConfig)
-if(PKGCONFIG_FOUND)
-    pkg_check_modules(FLUID fluidsynth)
-    if(FLUID_FOUND)
-        target_link_libraries(odOsg ${FLUID_LIBRARIES})
-        target_include_directories(odOsg PRIVATE ${FLUID_INCLUDE_DIRS})
-        target_compile_definitions(odOsg PRIVATE USE_FLUIDSYNTH)
-        target_sources(odOsg PRIVATE "audio/music/FluidSynth.cpp")
+if(USE_FLUIDSYNTH)
+    # FluidSynth is only available as a module via PkgConfig as of 2.0.6
+    find_package(PkgConfig)
+    if(PKGCONFIG_FOUND)
+        pkg_check_modules(FLUID fluidsynth)
+        if(FLUID_FOUND)
+            target_link_libraries(odOsg ${FLUID_LIBRARIES})
+            target_include_directories(odOsg PRIVATE ${FLUID_INCLUDE_DIRS})
+            target_compile_definitions(odOsg PRIVATE USE_FLUIDSYNTH)
+            target_sources(odOsg PRIVATE "audio/music/FluidSynth.cpp")
+        else()
+            message("No FluidSynth found. Disabling music.")
+        endif()
     else()
-        message("No FluidSynth found. Disabling music.")
+        message("No pkgconfig found. pkgconfig is required to find FluidSynth. Disabling music.")
     endif()
-else()
-    message("No pkgconfig found. pkgconfig is required to find FluidSynth. Disabling music.")
 endif()
 

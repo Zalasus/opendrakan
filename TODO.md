@@ -6,7 +6,7 @@ This list contains all the features and details of OpenDrakan that still need to
 Feel free to pick an item and open a ticket for it should you wish to work on a feature.
 
 - Multiplayer
-    Biggest hurdle to progress yet. Nearly all game logic should interact with this, so until this stands, progress with game logic is stalled
+    - Biggest hurdle to progress yet. Nearly all game logic should interact with this, so until this stands, progress with game logic is stalled
     - Protocol compatibility has low priority. If the original protocol is the source of bugs, or simply can't be reverse-engineered sufficiently, scratch it
     - Since handling multiplayer probably involves some incremental state tracking, this can probably be leveraged for easily implementing savegames
 - Drakan GUI
@@ -31,11 +31,11 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
     - ~~Needs support for multiple interpolation styles (mostly "no interpolation" for authentic Drakan animations)~~
 - STOMP sequences
 - Renderer synchronization
-    Access synchronization to the rendering subsystem is inconsistently used or even absent in many cases. This needs a
-    new efficient and effective concept.
+    - Access synchronization to the rendering subsystem is inconsistently used or even absent in many cases. This needs a
+      new efficient and effective concept.
 - Physics performance
-    The physics system is the biggest hog of game logic loop time right now. There might be some optimizations possible, like
-    a broadphase that handles layers separately.
+    - The physics system is the biggest hog of game logic loop time right now. There might be some optimizations possible, like
+      a broadphase that handles layers separately.
 - RFL classes
     - Most of the class types still need to be implemented
         - Keep in mind that these will likely require close interaction with the multiplayer code
