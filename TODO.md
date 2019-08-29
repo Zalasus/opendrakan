@@ -8,7 +8,7 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
 - Multiplayer
     Biggest hurdle to progress yet. Nearly all game logic should interact with this, so until this stands, progress with game logic is stalled
     - Protocol compatibility has low priority. If the original protocol is the source of bugs, or simply can't be reverse-engineered sufficiently, scratch it
-    - Since handling multiplayer probably involves some incremental state tracking, this can probablybe leveraged for easily implementing savegames
+    - Since handling multiplayer probably involves some incremental state tracking, this can probably be leveraged for easily implementing savegames
 - Drakan GUI
     - GUI framework needs refinement
         - Support for layout building blocks (boxes, scrollable widgets etc.)
@@ -47,4 +47,10 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
 - DLS loading in music subsystem
     - The FluidSynth based subsystem does not like Drakan's DLS files, also requires big dependency for DLS support
     - Might want to try out a different synth altogether
+- Character controllers
+    - Character controlled by player
+    - Dragon controlled by player
+    - Character controlled by AI
+    - Dragon controlled by AI
+- AI
         
