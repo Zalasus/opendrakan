@@ -37,6 +37,7 @@ namespace odAnim
     , mAccumulator(nullptr)
     , mBoneAccumulationFactors(0.0)
     , mObjectAccumulationFactors(0.0)
+    , mUseInterpolation(false)
     {
         if(mBone == nullptr)
         {
@@ -94,6 +95,7 @@ namespace odAnim
                 break;
 
             case AccumulationMode::Accumulate:
+                mUseInterpolation = true; // accumulated motion should always be interpolated
                 mObjectAccumulationFactors[i] = 1.0;
                 mBoneAccumulationFactors[i] = 0.0;
                 break;
@@ -164,7 +166,7 @@ namespace odAnim
             }
         }
 
-        glm::dualquat sampledTransform = _sampleLinear(mAnimTime);
+        glm::dualquat sampledTransform = mUseInterpolation ? _sampleLinear(mAnimTime) : _sampleNearest(mAnimTime);
 
         if(mAccumulator == nullptr)
         {
@@ -219,6 +221,21 @@ namespace odAnim
         float delta = (mAnimTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
 
         return glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
+    }
+
+    glm::dualquat BoneAnimator::_sampleNearest(float time)
+    {
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), time);
+
+        if(currentKeyframes.first == currentKeyframes.second)
+        {
+            // clamped state. no need to interpolate
+            return glm::dualquat(currentKeyframes.first->xform);
+        }
+
+        // we are are somewhere between keyframes, and have to pick the closer one
+        bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
+        return firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform;
     }
 
 

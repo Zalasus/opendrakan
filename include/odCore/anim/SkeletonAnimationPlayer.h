@@ -48,6 +48,15 @@ namespace odAnim
         inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
 
         /**
+         * @brief Sets whether to use linear interpolation (true) or sample frames by nearest-neighbour (false).
+         *
+         * Original Drakan does not seem to use any sort of interpolation between frames, so false is the default.
+         *
+         * This is automatically set to true if movement accumulation is enabled on any axis.
+         */
+        inline void setUseInterpolation(bool b) { mUseInterpolation = b; }
+
+        /**
          * @brief Instantly plays animation.
          *
          * This will set up the animator to play the passed animation as if the animation has been
@@ -82,6 +91,7 @@ namespace odAnim
     private:
 
         glm::dualquat _sampleLinear(float time);
+        glm::dualquat _sampleNearest(float time);
 
         Skeleton::Bone *mBone;
 
@@ -117,6 +127,8 @@ namespace odAnim
         MotionAccumulator *mAccumulator;
         glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
         glm::vec3 mObjectAccumulationFactors; // tells what part of translation is pushed to accumulator
+
+        bool mUseInterpolation;
     };
 
 

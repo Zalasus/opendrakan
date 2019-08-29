@@ -28,7 +28,7 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
 - Skeletal animation code needs work
     - Needs support for inverse kinematics
     - Movements of skeleton need to apply to bounding data
-    - Needs support for multiple interpolation styles (mostly "no interpolation" for authentic Drakan animations)
+    - ~~Needs support for multiple interpolation styles (mostly "no interpolation" for authentic Drakan animations)~~
 - STOMP sequences
 - Renderer synchronization
     Access synchronization to the rendering subsystem is inconsistently used or even absent in many cases. This needs a
