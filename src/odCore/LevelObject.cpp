@@ -41,12 +41,49 @@ namespace od
      * the triangles of our layer are oriented. we could store this based on the last association, but i doubt that
      * will have much of an impact).
      */
-    static bool _hasCrossedTriangle(const glm::vec3 &a, const glm::vec3 &b)
+    static bool _hasCrossedTriangle(const glm::vec3 &p_a, const glm::vec3 &p_b)
     {
-        // first, let's throw away y, and since we are on a unit grid, only keep the fractional part
-        glm::vec2 p = glm::fract(glm::vec2(b.x-a.x, b.z-a.z));
+        // we translate the coordinates: the center of the grid cell that contains a becomes (0,0)
+        glm::vec2 ref = glm::floor(glm::vec2(p_a.x, p_a.z)) + glm::vec2(0.5, 0.5);
+        glm::vec2 a = glm::vec2(p_a.x, p_a.z) - ref;
+        glm::vec2 b = glm::vec2(p_b.x, p_b.z) - ref;
 
-        return true; // TODO: ehhh, i'll figure this out later
+        // if b is not even in the same cell anymore, we obviously crossed a triangle
+        if(b.x < -0.5 || b.x > 0.5 || b.y < -0.5 || b.y > 0.5)
+        {
+            return true;
+        }
+
+        // using the signs of the coordinates relative to the cell center, we can check in which
+        // triangle each point is. if they aren't in the same triangle, we crossed a boundary.
+
+        // +----+  /\ Y/Z
+        // |\0 /|
+        // |3\/1|  > X
+        // | /\ |
+        // |/2 \|
+        // +----+
+
+        auto calcTriangle =  [](const glm::vec2 &p) -> int
+        {
+            if(p.y >= p.x)
+            {
+                // p is in 0 or 2
+                return (p.y > 0) ? 0 : 2;
+
+            }else
+            {
+                // a is in 3 or 1
+                return (p.x > 0) ? 1 : 3;
+            }
+        };
+
+        if(calcTriangle(a) != calcTriangle(b))
+        {
+            return true;
+        }
+
+        return false;
     }
 
 
