@@ -421,6 +421,34 @@ namespace od
         mLevel.requestLevelObjectDestruction(this);
     }
 
+    AxisAlignedBoundingBox LevelObject::getBoundingBox()
+    {
+        if(mClass == nullptr || !mClass->hasModel())
+        {
+            return AxisAlignedBoundingBox(mPosition, mPosition);
+        }
+
+        auto &modelBB = mClass->getModel()->getCalculatedBoundingBox();
+
+        glm::vec3 min = (modelBB.min() * mScale) * mRotation + mPosition;
+        glm::vec3 max = (modelBB.max() * mScale) * mRotation + mPosition;
+
+        return AxisAlignedBoundingBox(min, max);
+    }
+
+    BoundingSphere LevelObject::getBoundingSphere()
+    {
+        if(mClass == nullptr || !mClass->hasModel())
+        {
+            return BoundingSphere(mPosition, 0);
+        }
+
+        float calcRadius = mClass->getModel()->getCalculatedBoundingSphere().radius();
+        float maxScale = std::max(std::max(mScale.x, mScale.y), mScale.z);
+
+        return BoundingSphere(mPosition, calcRadius*maxScale);
+    }
+
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
         if(mRflClassInstance != nullptr)

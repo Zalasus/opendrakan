@@ -14,7 +14,11 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/BoundingBox.h>
+#include <odCore/BoundingSphere.h>
+
 #include <odCore/db/Class.h>
+
 #include <odCore/rfl/RflMessage.h>
 
 namespace odAnim
@@ -148,6 +152,18 @@ namespace od
         void setEnableRflUpdateHook(bool enableHook);
         void messageAllLinkedObjects(odRfl::RflMessage message);
         void requestDestruction();
+
+        /**
+         * @brief Calculates a axis-aligned bounding box for this object from it's model, taking position, rotation and scale into account.
+         */
+        AxisAlignedBoundingBox getBoundingBox();
+
+        /**
+         * @brief Calculates a bounding sphere for this object from it's model, taking position and scale into account.
+         *
+         * Note that rotation does not affect bounding spheres.
+         */
+        BoundingSphere getBoundingSphere();
 
 
     private:

@@ -74,7 +74,20 @@ namespace dragonRfl
             return;
         }
 
-        od::LevelObject *playerObject = (mRfl.getLocalPlayer() != nullptr) ? &mRfl.getLocalPlayer()->getLevelObject() : nullptr;
+        if(mRfl.getLocalPlayer() != nullptr)
+        {
+            return;
+        }
+
+        od::LevelObject &playerObject = mRfl.getLocalPlayer()->getLevelObject();
+
+        // since we currently only can detect the player (no definition of "NPC" exists yet), we can speed things up a bit by only performing
+        // the costly contact test if the player position is inside our bounding sphere. later we should further improve this by using a
+        // "single contact test" for the methods that only detect the player. the physics system does not have that interface yet, though.
+        if(!obj.getBoundingSphere().contains(playerObject.getPosition()))
+        {
+            return;
+        }
 
         mResultCache.clear();
         obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
@@ -88,7 +101,7 @@ namespace dragonRfl
                 continue;
             }
 
-            if(&objectHandle->getLevelObject() == playerObject)
+            if(&objectHandle->getLevelObject() == &playerObject)
             {
                 playerIsIn = true;
                 break;
