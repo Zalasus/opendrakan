@@ -240,6 +240,7 @@ namespace odAnim
             bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
             mLeftTransform = glm::dualquat(firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform);
             mRightTransform = mLeftTransform;
+            mLastKeyframes = currentKeyframes;
         }
 
         return mLeftTransform;
