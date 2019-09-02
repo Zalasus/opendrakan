@@ -156,7 +156,7 @@ namespace od
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
 
-        void _updateAssociatedLayer();
+        void _updateAssociatedLayer(bool callChangedHook);
 
 
         Level &mLevel;

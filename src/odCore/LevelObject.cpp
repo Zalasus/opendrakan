@@ -214,7 +214,7 @@ namespace od
 
     void LevelObject::spawned()
     {
-        _updateAssociatedLayer();
+        _updateAssociatedLayer(false);
 
         if(mRflClassInstance != nullptr)
         {
@@ -283,7 +283,7 @@ namespace od
 
         if(crossedTriangle)
         {
-            _updateAssociatedLayer();
+            _updateAssociatedLayer(true);
         }
 
         _onTransformChanged(this);
@@ -434,7 +434,7 @@ namespace od
         }
     }
 
-    void LevelObject::_updateAssociatedLayer()
+    void LevelObject::_updateAssociatedLayer(bool callChangedHook)
     {
         odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
 
@@ -452,7 +452,7 @@ namespace od
 
         mAssociatedLayer = newLayer;
 
-        if(mRflClassInstance != nullptr && oldLayer != newLayer)
+        if(callChangedHook && mRflClassInstance != nullptr && oldLayer != newLayer)
         {
             mRflClassInstance->onLayerChanged(*this, oldLayer, newLayer);
         }

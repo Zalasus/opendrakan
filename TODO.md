@@ -36,6 +36,8 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
 - Physics performance
     - The physics system is the biggest hog of game logic loop time right now. There might be some optimizations possible, like
       a broadphase that handles layers separately.
+    - Since lights are exclusively spherical in nature, they can be even more optimized with an M-Tree broadphase, which also
+      eliminates the need for a narrowphase
 - RFL classes
     - Most of the class types still need to be implemented
         - Keep in mind that these will likely require close interaction with the multiplayer code
