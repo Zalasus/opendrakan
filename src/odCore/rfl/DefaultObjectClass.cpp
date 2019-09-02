@@ -24,6 +24,19 @@
 namespace odRfl
 {
 
+    static void _assignLayerLight(odRender::Handle *handle, od::Layer *layer)
+    {
+        if(layer != nullptr)
+        {
+            handle->setGlobalLight(layer->getLightDirection(), layer->getLightColor(), layer->getAmbientColor());
+
+        }else
+        {
+            handle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(0));
+        }
+    }
+
+
     DefaultObjectClass::~DefaultObjectClass()
     {
     }
@@ -39,6 +52,10 @@ namespace odRfl
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
             mRenderHandle = renderer->createHandleFromObject(obj);
+
+            od::Layer *lightingLayer = obj.getLightSourceLayer();
+            if(lightingLayer == nullptr) lightingLayer = obj.getAssociatedLayer();
+            _assignLayerLight(mRenderHandle, lightingLayer);
         }
 
         // if we created a rendering handle, create physics handle, too
@@ -49,9 +66,8 @@ namespace odRfl
             mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
 
             mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
+            mLightReceiver->updateAffectingLights();
         }
-
-        _updateLighting(obj);
     }
 
     void DefaultObjectClass::onDespawned(od::LevelObject &obj)
@@ -63,38 +79,17 @@ namespace odRfl
 
     void DefaultObjectClass::onMoved(od::LevelObject &obj)
     {
-        _updateLighting(obj);
-    }
-
-    void DefaultObjectClass::_updateLighting(od::LevelObject &obj)
-    {
-        if(mRenderHandle != nullptr)
-        {
-            od::Layer *lightingLayer;
-            if(obj.getLightSourceLayer() != nullptr)
-            {
-                lightingLayer = obj.getLightSourceLayer();
-
-            }else
-            {
-                // a slight upwards offset fixes many lighting issues with objects whose origin is exactly on the ground
-                glm::vec3 probePoint = obj.getPosition() + glm::vec3(0, 0.1, 0);
-                lightingLayer = obj.getLevel().getFirstLayerBelowPoint(probePoint);
-            }
-
-            if(lightingLayer != nullptr)
-            {
-                mRenderHandle->setGlobalLight(lightingLayer->getLightDirection(), lightingLayer->getLightColor(), lightingLayer->getAmbientColor());
-
-            }else
-            {
-                mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(0));
-            }
-        }
-
         if(mLightReceiver != nullptr)
         {
             mLightReceiver->updateAffectingLights();
+        }
+    }
+
+    void DefaultObjectClass::onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to)
+    {
+        if(mRenderHandle != nullptr && obj.getLightSourceLayer() == nullptr)
+        {
+            _assignLayerLight(mRenderHandle, to);
         }
     }
 

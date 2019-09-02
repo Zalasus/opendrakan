@@ -438,6 +438,7 @@ namespace od
     {
         odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
 
+        // a slight upwards offset fixes many association issues with objects whose origin is exactly on the ground
         glm::vec3 rayStart = mPosition + (mAssociateWithCeiling ? glm::vec3(0, -0.1, 0) : glm::vec3(0, 0.1, 0));
 
         float heightOffset =  mLevel.getVerticalExtent() * (mAssociateWithCeiling ? 1 : -1);

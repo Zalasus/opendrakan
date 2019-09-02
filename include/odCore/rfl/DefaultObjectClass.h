@@ -40,11 +40,10 @@ namespace odRfl
         virtual void onSpawned(od::LevelObject &obj) override;
         virtual void onDespawned(od::LevelObject &obj) override;
         virtual void onMoved(od::LevelObject &obj) override;
+        virtual void onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to) override;
 
 
     protected:
-
-        void _updateLighting(od::LevelObject &obj);
 
         od::RefPtr<odRender::Handle> mRenderHandle;
         od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
