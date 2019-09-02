@@ -26,6 +26,7 @@ namespace odRfl
 
     static void _assignLayerLight(odRender::Handle *handle, od::Layer *layer)
     {
+        std::lock_guard<std::mutex> lock(handle->getMutex());
         if(layer != nullptr)
         {
             handle->setGlobalLight(layer->getLightDirection(), layer->getLightColor(), layer->getAmbientColor());
@@ -82,6 +83,35 @@ namespace odRfl
         if(mLightReceiver != nullptr)
         {
             mLightReceiver->updateAffectingLights();
+        }
+
+        if(mRenderHandle != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setPosition(obj.getPosition());
+            mRenderHandle->setOrientation(obj.getRotation());
+            mRenderHandle->setScale(obj.getScale());
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setPosition(obj.getPosition());
+            mPhysicsHandle->setOrientation(obj.getRotation());
+            mPhysicsHandle->setScale(obj.getScale());
+        }
+    }
+
+    void DefaultObjectClass::onVisibilityChanged(od::LevelObject &obj)
+    {
+        if(mRenderHandle != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setVisible(obj.isVisible());
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setEnableCollision(obj.isVisible());
         }
     }
 

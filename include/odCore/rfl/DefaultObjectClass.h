@@ -40,6 +40,7 @@ namespace odRfl
         virtual void onSpawned(od::LevelObject &obj) override;
         virtual void onDespawned(od::LevelObject &obj) override;
         virtual void onMoved(od::LevelObject &obj) override;
+        virtual void onVisibilityChanged(od::LevelObject &obj) override;
         virtual void onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to) override;
 
 

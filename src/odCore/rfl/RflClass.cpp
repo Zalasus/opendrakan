@@ -48,7 +48,7 @@ namespace odRfl
 	{
 	}
 
-	void RflClass::onVisibilityChanged()
+	void RflClass::onVisibilityChanged(od::LevelObject &obj)
 	{
 	}
 

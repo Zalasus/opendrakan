@@ -311,7 +311,7 @@ namespace od
 
         mIsVisible = v;
 
-        mRflClassInstance->onVisibilityChanged();
+        mRflClassInstance->onVisibilityChanged(*this);
     }
 
     void LevelObject::setObjectType(LevelObjectType type)

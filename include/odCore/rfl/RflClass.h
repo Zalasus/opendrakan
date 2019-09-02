@@ -94,7 +94,7 @@ namespace odRfl
 		virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, RflMessage message);
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);
-		virtual void onVisibilityChanged();
+		virtual void onVisibilityChanged(od::LevelObject &obj);
 		virtual void onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to);
 
 	};
