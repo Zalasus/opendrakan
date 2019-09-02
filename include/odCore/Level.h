@@ -44,7 +44,6 @@ namespace od
         void requestLevelObjectDestruction(LevelObject *obj);
         Layer *getLayerById(uint32_t id);
         Layer *getLayerByIndex(uint16_t index);
-        Layer *getFirstLayerBelowPoint(const glm::vec3 &v);
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
 
         void update(float relTime);

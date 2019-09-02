@@ -107,30 +107,6 @@ namespace od
         return mLayers[index].get();
     }
 
-    Layer *Level::getFirstLayerBelowPoint(const glm::vec3 &v)
-    {
-        // TODO: should we implement an efficient quadtree structure for spatial lookups of layers,
-        //  we might want to switch to using that here. until then, we make the lookup using the physics system
-
-        glm::vec3 end = v + glm::vec3(0, -1000, 0); // FIXME: we should make the ray length dynamic
-
-        odPhysics::RayTestResult result;
-        bool hasHit = mEngine.getPhysicsSystem().rayTestClosest(v, end, odPhysics::PhysicsTypeMasks::Layer, nullptr, result);
-
-        if(hasHit)
-        {
-            odPhysics::LayerHandle *handle = result.handle->asLayerHandle();
-            if(handle == nullptr)
-            {
-                throw od::Exception("Unexpected non-layer handle found during layer-below-object-search");
-            }
-
-            return &handle->getLayer();
-        }
-
-        return nullptr;
-    }
-
     void Level::findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results)
     {
         // TODO: use an efficient spatial search here
