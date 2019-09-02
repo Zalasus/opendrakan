@@ -30,6 +30,10 @@ namespace odBulletPhysics
         btTransform worldTransform = BulletAdapter::makeBulletTransform(mLight.getPosition(), glm::quat(1, 0, 0, 0));
         mCollisionObject->setWorldTransform(worldTransform);
 
+        // FIXME: due to the nature of how we provide a getter and setter for the Light::dynamic state, this info is almost never accurate
+        auto flags = light.isDynamic() ? btCollisionObject::CF_KINEMATIC_OBJECT : btCollisionObject::CF_STATIC_OBJECT;
+        mCollisionObject->setCollisionFlags(flags);
+
         mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Light, odPhysics::PhysicsTypeMasks::All);
     }
 
