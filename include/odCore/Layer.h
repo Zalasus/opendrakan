@@ -90,6 +90,8 @@ namespace od
         inline glm::vec3 getLightColor() const { return mLightColor; }
         inline glm::vec3 getAmbientColor() const { return mAmbientColor; }
         inline glm::vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
+        inline float getMinHeight() const { return mMinHeight; }
+        inline float getMaxHeight() const { return mMaxHeight; }
         inline const AxisAlignedBoundingBox &getBoundingBox() { return mBoundingBox; }
         inline const std::vector<Vertex> &getVertexVector() { return mVertices; }
         inline const std::vector<Cell> &getCellVector() { return mCells; }
@@ -173,6 +175,8 @@ namespace od
         size_t mVisibleTriangles;
         size_t mCollidingTriangles;
 
+        float mMinHeight;
+        float mMaxHeight;
         AxisAlignedBoundingBox mBoundingBox;
 
         od::RefPtr<odRender::Handle> mRenderHandle;

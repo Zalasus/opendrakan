@@ -33,6 +33,23 @@
 namespace od
 {
 
+    /**
+     * @brief Checks whether a translation from a to b crosses a triangle on the unit layer grid.
+     *
+     * This is used to limit the times the layer association is updated, since that only has to happen when
+     * an object moves across a triangle in the grid (we have to check both triangles since we don't know how
+     * the triangles of our layer are oriented. we could store this based on the last association, but i doubt that
+     * will have much of an impact).
+     */
+    static bool _hasCrossedTriangle(const glm::vec3 &a, const glm::vec3 &b)
+    {
+        // first, let's throw away y, and since we are on a unit grid, only keep the fractional part
+        glm::vec2 p = glm::fract(glm::vec2(b.x-a.x, b.z-a.z));
+
+        return true; // TODO: ehhh, i'll figure this out later
+    }
+
+
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
@@ -49,8 +66,8 @@ namespace od
     , mIgnoreAttachmentTranslation(false)
     , mIgnoreAttachmentRotation(false)
     , mIgnoreAttachmentScale(false)
-    , mLayerBelowObjectDirty(true)
-    , mLayerBelowObject(nullptr)
+    , mAssociatedLayer(nullptr)
+    , mAssociateWithCeiling(false)
     , mRflUpdateHookEnabled(false)
     {
     }
@@ -160,7 +177,7 @@ namespace od
 
     void LevelObject::spawned()
     {
-        _updateLayerBelowObject();
+        _updateAssociatedLayer();
 
         if(mRflClassInstance != nullptr)
         {
@@ -201,11 +218,6 @@ namespace od
             return;
         }
 
-        if(mLayerBelowObjectDirty)
-        {
-            _updateLayerBelowObject();
-        }
-
         if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
         {
             mRflClassInstance->onUpdate(*this, relTime);
@@ -229,7 +241,13 @@ namespace od
 
     void LevelObject::setPosition(const glm::vec3 &v)
     {
+        bool crossedTriangle = _hasCrossedTriangle(mPosition, v);
         mPosition = v;
+
+        if(crossedTriangle)
+        {
+            _updateAssociatedLayer();
+        }
 
         _onTransformChanged(this);
     }
@@ -368,8 +386,6 @@ namespace od
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
     {
-        mLayerBelowObjectDirty = true;
-
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->onMoved(*this);
@@ -381,11 +397,27 @@ namespace od
         }
     }
 
-    void LevelObject::_updateLayerBelowObject()
+    void LevelObject::_updateAssociatedLayer()
     {
-        mLayerBelowObject = mLevel.getFirstLayerBelowPoint(getPosition());
+        odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
 
-        mLayerBelowObjectDirty = false;
+        glm::vec3 rayStart = mPosition + (mAssociateWithCeiling ? glm::vec3(0, -0.1, 0) : glm::vec3(0, 0.1, 0));
+
+        float heightOffset =  mLevel.getVerticalExtent() * (mAssociateWithCeiling ? 1 : -1);
+        glm::vec3 rayEnd = mPosition + glm::vec3(0, heightOffset, 0);
+
+        odPhysics::RayTestResult hitResult;
+        ps.rayTestClosest(rayStart, rayEnd, odPhysics::PhysicsTypeMasks::Layer, nullptr, hitResult);
+
+        od::Layer *oldLayer = mAssociatedLayer;
+        od::Layer *newLayer = (hitResult.handle == nullptr) ? nullptr : &hitResult.handle->asLayerHandle()->getLayer();
+
+        mAssociatedLayer = newLayer;
+
+        if(mRflClassInstance != nullptr && oldLayer != newLayer)
+        {
+            mRflClassInstance->onLayerChanged(*this, oldLayer, newLayer);
+        }
     }
 
     void LevelObject::_attachmentTargetsTransformUpdated(LevelObject *transformChangeSource)

@@ -52,6 +52,10 @@ namespace odRfl
 	{
 	}
 
+    void RflClass::onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to)
+    {
+    }
+
 }
 
 

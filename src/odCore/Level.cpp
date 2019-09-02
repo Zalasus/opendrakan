@@ -32,6 +32,7 @@ namespace od
     , mDbManager(engine.getDbManager())
     , mMaxWidth(0)
     , mMaxHeight(0)
+    , mVerticalExtent(0)
     {
     }
 
@@ -262,6 +263,9 @@ namespace od
 
     	dr >> DataReader::Expect<uint32_t>(1);
 
+    	float minHeight = std::numeric_limits<float>::max();
+    	float maxHeight = std::numeric_limits<float>::lowest();
+
     	for(size_t i = 0; i < layerCount; ++i)
     	{
     		uint32_t compressedDataSize;
@@ -271,7 +275,19 @@ namespace od
 			DataReader zdr(zstr);
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
+
+			if(mLayers[i]->getMinHeight() < minHeight)
+			{
+			    minHeight = mLayers[i]->getMinHeight();
+			}
+
+			if(mLayers[i]->getMaxHeight() > maxHeight)
+			{
+			    maxHeight = mLayers[i]->getMaxHeight();
+			}
     	}
+
+    	mVerticalExtent = maxHeight - minHeight;
     }
 
     void Level::_loadLayerGroups(SrscFile &file)

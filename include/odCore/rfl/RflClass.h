@@ -49,6 +49,7 @@ namespace od
 {
     class LevelObject;
 	class Engine;
+	class Layer;
 }
 
 namespace odPhysics
@@ -94,6 +95,8 @@ namespace odRfl
 		virtual void onMoved(od::LevelObject &obj);
 		virtual void onDestroyed(od::LevelObject &obj);
 		virtual void onVisibilityChanged();
+		virtual void onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to);
+
 	};
 
 

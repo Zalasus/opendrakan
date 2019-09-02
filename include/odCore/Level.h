@@ -37,6 +37,7 @@ namespace od
 
         inline FilePath getFilePath() const { return mLevelPath; }
         inline Engine &getEngine() { return mEngine; }
+        inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
 
         void loadLevel();
         void spawnAllObjects();
@@ -81,6 +82,8 @@ namespace od
         std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
 
 		std::list<LevelObject*> mDestructionQueue;
+
+		float mVerticalExtent;
     };
 
 

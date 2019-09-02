@@ -46,6 +46,8 @@ namespace od
     , mLightDropoffType(DROPOFF_NONE)
     , mVisibleTriangles(0)
     , mCollidingTriangles(0)
+    , mMinHeight(0)
+    , mMaxHeight(0)
     {
     }
 
@@ -134,8 +136,10 @@ namespace od
             mVertices.push_back(v);
         }
 
-        glm::vec3 min(mOriginX, getWorldHeightLu()+lowestHeightOffset, mOriginZ);
-        glm::vec3 max(mOriginX+mWidth, getWorldHeightLu()+maxHeightOffset, mOriginZ+mHeight);
+        mMinHeight = lowestHeightOffset + getWorldHeightLu();
+        mMaxHeight = maxHeightOffset + getWorldHeightLu();
+        glm::vec3 min(mOriginX, mMinHeight, mOriginZ);
+        glm::vec3 max(mOriginX+mWidth, mMaxHeight, mOriginZ+mHeight);
         mBoundingBox = AxisAlignedBoundingBox(min, max);
 
         mCells.reserve(mWidth*mHeight);

@@ -73,6 +73,8 @@ namespace od
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }
         inline bool isScaled() const { return mIsScaled; }
+        inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
+        inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
         void loadFromRecord(DataReader dr);
 
@@ -151,9 +153,10 @@ namespace od
     private:
 
         void _onTransformChanged(LevelObject *transformChangeSource);
-        void _updateLayerBelowObject();
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
+
+        void _updateAssociatedLayer();
 
 
         Level &mLevel;
@@ -192,8 +195,8 @@ namespace od
         bool mIgnoreAttachmentRotation;
         bool mIgnoreAttachmentScale;
 
-        bool mLayerBelowObjectDirty;
-        Layer *mLayerBelowObject;
+        Layer *mAssociatedLayer;
+        bool mAssociateWithCeiling;
 
         bool mRflUpdateHookEnabled;
     };
