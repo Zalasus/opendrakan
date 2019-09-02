@@ -44,8 +44,8 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
     - Many classes' original behaviour still needs to be researched (will add list of implemented/documented classes soon)
 - Layer PVS
     - We shouldn't spawn objects and layers until they are deemed visible by the current layer
-    - A stronger association between objects and the layers they are "on" might be necessary
-        - Should consider objects that hang off the ceiling, too
+    - ~~A stronger association between objects and the layers they are "on" might be necessary~~
+        - ~~Should consider objects that hang off the ceiling, too~~
 - DLS loading in music subsystem
     - The FluidSynth based subsystem does not like Drakan's DLS files, also requires big dependency for DLS support
     - Might want to try out a different synth altogether
