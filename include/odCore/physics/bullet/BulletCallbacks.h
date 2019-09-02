@@ -15,7 +15,7 @@
 
 namespace odBulletPhysics
 {
-    class ClosestNotMeConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback
+    class ClosestNotMeConvexResultCallback final : public btCollisionWorld::ClosestConvexResultCallback
     {
     public:
 
@@ -30,7 +30,7 @@ namespace odBulletPhysics
     };
 
 
-    class ClosestRayCallback : public btCollisionWorld::RayResultCallback
+    class ClosestRayCallback final : public btCollisionWorld::RayResultCallback
     {
     public:
 
@@ -48,7 +48,7 @@ namespace odBulletPhysics
     };
 
 
-    class AllRayCallback : public btCollisionWorld::RayResultCallback
+    class AllRayCallback final : public btCollisionWorld::RayResultCallback
     {
     public:
 
@@ -68,7 +68,7 @@ namespace odBulletPhysics
     };
 
 
-    class ContactResultCallback : public btCollisionWorld::ContactResultCallback
+    class ContactResultCallback final : public btCollisionWorld::ContactResultCallback
     {
     public:
 

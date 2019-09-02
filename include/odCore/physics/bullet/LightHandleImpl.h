@@ -26,7 +26,7 @@ namespace od
 namespace odBulletPhysics
 {
 
-    class LightHandle : public odPhysics::LightHandle
+    class LightHandle final : public odPhysics::LightHandle
     {
     public:
 

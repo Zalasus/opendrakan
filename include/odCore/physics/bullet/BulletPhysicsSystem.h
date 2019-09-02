@@ -37,7 +37,7 @@ namespace odBulletPhysics
      * Since this is a non-optional component and I have no plans to provide alternatives to bullet yet,
      * this still is contained within the engine core, making Bullet a dependency.
      */
-    class BulletPhysicsSystem : public odPhysics::PhysicsSystem
+    class BulletPhysicsSystem final : public odPhysics::PhysicsSystem
     {
     public:
 

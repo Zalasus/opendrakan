@@ -26,7 +26,7 @@ namespace odBulletPhysics
     class BulletPhysicsSystem;
     class ModelShape;
 
-    class ObjectHandle : public odPhysics::ObjectHandle
+    class ObjectHandle final : public odPhysics::ObjectHandle
     {
     public:
 

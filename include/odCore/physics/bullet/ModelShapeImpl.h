@@ -27,7 +27,7 @@ namespace odDb
 namespace odBulletPhysics
 {
 
-    class ModelShape : public odPhysics::ModelShape
+    class ModelShape final : public odPhysics::ModelShape
     {
     public:
 

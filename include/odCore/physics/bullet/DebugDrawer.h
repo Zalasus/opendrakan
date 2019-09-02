@@ -29,7 +29,7 @@ namespace odRender
 namespace odBulletPhysics
 {
 
-    class DebugDrawer : public btIDebugDraw
+    class DebugDrawer final : public btIDebugDraw
     {
     public:
 

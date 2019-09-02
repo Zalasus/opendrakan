@@ -19,7 +19,7 @@ namespace odBulletPhysics
     /**
      * @brief A btCompoundShape with automatic memory management for it's children.
      */
-    class ManagedCompoundShape : public btCompoundShape
+    class ManagedCompoundShape final : public btCompoundShape
     {
     public:
 

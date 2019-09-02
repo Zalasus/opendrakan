@@ -25,7 +25,7 @@ namespace od
 namespace odBulletPhysics
 {
 
-    class LayerHandle : public odPhysics::LayerHandle
+    class LayerHandle final : public odPhysics::LayerHandle
     {
     public:
 
