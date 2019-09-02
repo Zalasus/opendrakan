@@ -77,7 +77,7 @@ namespace dragonRfl
         od::LevelObject *playerObject = (mRfl.getLocalPlayer() != nullptr) ? &mRfl.getLocalPlayer()->getLevelObject() : nullptr;
 
         mResultCache.clear();
-        obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::All, mResultCache);
+        obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
 
         bool playerIsIn = false;
         for(auto &result : mResultCache)
