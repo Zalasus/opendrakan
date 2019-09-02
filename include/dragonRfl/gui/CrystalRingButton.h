@@ -56,13 +56,17 @@ namespace dragonRfl
         od::RefPtr<odRender::Handle> mOuterRingHandle;
         glm::vec4 mCrystalColorInactive;
         glm::vec4 mCrystalColorActive;
+        glm::vec4 mRingColorInactive;
+        glm::vec4 mRingColorActive;
         std::function<void(int)> mClickedCallback;
         int mCallbackUserData;
 
-        float mCrystalSpeedPercent; // 0=stop, 1=max speed
+        odAnim::Interpolated<float, odAnim::SineInterpolator<float>> mCrystalSpeed; // should be more like half-sine
+
         bool mClicked;
         float mRingAnimPercent;
         odAnim::Interpolated<glm::vec4> mCrystalColor;
+        odAnim::Interpolated<glm::vec4> mRingColor;
 
         od::RefPtr<odAudio::Source> mSoundSource;
     };
