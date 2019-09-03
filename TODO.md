@@ -33,11 +33,12 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
 - Renderer synchronization
     - Access synchronization to the rendering subsystem is inconsistently used or even absent in many cases. This needs a
       new efficient and effective concept.
+    - The render loop and the update loop are not synchronized. Thus, it is possible for the renderer to render a partially updated scene,
+      resulting in things like the skydome stuttering as a frame occurs between updating the sky and camera
 - Physics performance
     - The physics system is the biggest hog of game logic loop time right now. There might be some optimizations possible, like
       a broadphase that handles layers separately.
-    - Since lights are exclusively spherical in nature, they can be even more optimized with an M-Tree broadphase, which also
-      eliminates the need for a narrowphase
+    - Since lights are exclusively spherical in nature, they can be even more optimized with an M-Tree broadphase
 - RFL classes
     - Most of the class types still need to be implemented
         - Keep in mind that these will likely require close interaction with the multiplayer code
@@ -55,4 +56,9 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
     - Character controlled by AI
     - Dragon controlled by AI
 - AI
+- SFX handling
+    - If something needs to play SFX, right now that means it has to create it's own sound source. While this obviously works, it might
+      be sub-optimal for performance. It'd be better to have a priority queue that distributes the SFX across a few sources.
+- Pure OpenGL (or even Vulkan) renderer
+    - OSG is a pretty heavy dependency and we only use a small subset of it. A better, pure OpenGL renderer shouldn't be too hard to implement
         
