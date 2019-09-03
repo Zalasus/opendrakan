@@ -61,7 +61,7 @@ namespace dragonRfl
         std::function<void(int)> mClickedCallback;
         int mCallbackUserData;
 
-        odAnim::Interpolated<float, odAnim::SineInterpolator<float>> mCrystalSpeed; // should be more like half-sine
+        odAnim::Interpolated<float, odAnim::HalfSineInterpolator<float>> mCrystalSpeed;
 
         bool mClicked;
         float mRingAnimPercent;

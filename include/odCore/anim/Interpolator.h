@@ -37,6 +37,18 @@ namespace odAnim
         }
     };
 
+    template <typename T>
+    struct HalfSineInterpolator
+    {
+        inline T operator()(const T &start, const T &end, float delta) const
+        {
+            LinearInterpolator<T> lerp;
+
+            delta = std::sin(delta*3.141592654*0.5);
+            return lerp(start, end, delta);
+        }
+    };
+
     template <typename T, typename _Interpolator = LinearInterpolator<T>>
     class Interpolated
     {
