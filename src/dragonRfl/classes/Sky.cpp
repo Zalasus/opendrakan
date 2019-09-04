@@ -24,8 +24,9 @@
 namespace dragonRfl
 {
 
-	DomedSky::DomedSky(DragonRfl &rfl)
-	: mPrimarySky(true)
+	DomedSkyImpl::DomedSkyImpl(DragonRfl &rfl, od::LevelObject &obj)
+	: odRfl::LevelObjectClassImpl(rfl, obj)
+    , mPrimarySky(true)
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)
 	, mEffects(0) // none
@@ -41,7 +42,7 @@ namespace dragonRfl
 	{
 	}
 
-    void DomedSky::probeFields(odRfl::FieldProbe &probe)
+    void DomedSkyImpl::probeFields(odRfl::FieldProbe &probe)
     {
 		probe("Position")
     		     (mPrimarySky, "Primary Sky")
@@ -60,8 +61,10 @@ namespace dragonRfl
 			     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
-    void DomedSky::onSpawned(od::LevelObject &obj)
+    void DomedSkyImpl::onSpawned()
 	{
+        od::LevelObject &obj = getLevelObject();
+
         // handle attachment: attach sky to camera (not player!!!) FIXME: somehow, the sky is still a bit stuttery
         odRfl::RflClassId cameraClassId = odRfl::RflClassTraits<TrackingCamera>::classId();
         od::LevelObject *cameraObject = obj.getLevel().findObjectOfType(cameraClassId);
@@ -91,15 +94,13 @@ namespace dragonRfl
         mRenderNode->setRenderBin(odRender::RenderBin::SKY);
 	}
 
-    void DomedSky::onMoved(od::LevelObject &obj)
+    void DomedSkyImpl::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
     {
         if(mRenderNode != nullptr)
         {
             std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
-            mRenderNode->setPosition(obj.getPosition());
+            mRenderNode->setPosition(to);
         }
     }
-
-    OD_REGISTER_RFLCLASS(DragonRfl, DomedSky);
 
 }

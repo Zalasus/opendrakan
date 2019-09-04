@@ -13,6 +13,7 @@
 
 #include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/RflManager.h>
+
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
@@ -29,16 +30,6 @@
     {\
         template<> constexpr const char *odRfl::RflTraits<rfl>::name() { return rflName; }\
     }
-
-/**
- * @brief Convenience macro for defining a static registrar object for an RFL.
- *
- * @note Put this in any source file (like the one defining your RFL's methods).
- *
- * @param rfl       The class implementing the RFL
- */
-#define OD_REGISTER_RFL(rfl) \
-	static odRfl::RflRegistrarImpl<rfl> sOdRflRegistrar_ ## rfl;
 
 namespace od
 {
@@ -64,105 +55,12 @@ namespace odRfl
 
 		virtual void onStartup() override;
 
+		virtual void onRegisterClasses() = 0;
+
 
 	private:
 
 		od::Engine &mEngine;
-
-	};
-
-
-	template <typename T>
-    struct RflTraits
-    {
-        static constexpr const char *name();
-    };
-
-
-	template <typename _SubRfl>
-	class AutoRegisteringRfl : public Rfl
-	{
-	public:
-
-	    virtual const char *getName() const final override
-	    {
-	        return RflTraits<_SubRfl>::name();
-	    }
-
-	    virtual size_t getRegisteredClassCount() const final override
-	    {
-	        return RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton().size();
-	    }
-
-	    virtual RflClassRegistrar *getRegistrarForClass(RflClassId id) final override
-        {
-            std::map<RflClassId, RflClassRegistrar*> &map = RflClassMapHolder<_SubRfl>::getClassRegistrarMapSingleton();
-            auto it = map.find(id);
-            if(it == map.end())
-            {
-                throw od::NotFoundException("Class with given ID is not registered in RFL");
-            }
-
-            return it->second;
-        }
-
-	    virtual RflClass *createInstanceOfClass(RflClassId id) final override
-        {
-	        RflClassRegistrar *registrar = getRegistrarForClass(id);
-	        if(registrar == nullptr)
-	        {
-	            throw od::NotFoundException("Class with given ID is not registered in RFL");
-	        }
-
-	        return registrar->createInstance(this);
-        }
-
-
-	protected:
-
-	    AutoRegisteringRfl(od::Engine &e) : Rfl(e) {}
-
-	};
-
-
-	class RflRegistrar
-	{
-	public:
-
-	    friend class RflManager;
-
-        virtual ~RflRegistrar() = default;
-
-        virtual const char *getName() const = 0;
-	    virtual Rfl *createInstance(od::Engine &engine) const = 0;
-
-
-	protected:
-
-	    static std::vector<RflRegistrar*> &getRflRegistrarListSingleton();
-
-	};
-
-
-	template <typename _Rfl>
-	class RflRegistrarImpl : public RflRegistrar
-	{
-	public:
-
-	    RflRegistrarImpl()
-	    {
-            getRflRegistrarListSingleton().push_back(this);
-        }
-
-	    virtual const char *getName() const override
-	    {
-	        return RflTraits<_Rfl>::name();
-	    }
-
-	    virtual Rfl *createInstance(od::Engine &engine) const override
-	    {
-	        return new _Rfl(engine);
-	    }
 
 	};
 

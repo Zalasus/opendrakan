@@ -47,8 +47,15 @@ namespace odPhysics
 
 namespace od
 {
-
     class Level;
+
+    enum class GameType
+    {
+        SP,
+        MP_CLIENT,
+        MP_HOST,
+        MP_DEDICATED_SERVER
+    };
 
 	class Engine : public odRender::RendererEventListener
 	{

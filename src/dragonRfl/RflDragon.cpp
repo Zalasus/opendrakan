@@ -32,7 +32,7 @@ namespace dragonRfl
 {
 
     DragonRfl::DragonRfl(od::Engine &engine)
-    : AutoRegisteringRfl<DragonRfl>(engine)
+    : odRfl::Rfl(engine)
     , mLocalPlayer(nullptr)
     {
     }
@@ -82,6 +82,10 @@ namespace dragonRfl
         mPhysicsDebugAction = physicsDebugAction;
     }
 
+    void DragonRfl::registerClasses()
+    {
+    }
+
     void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
         switch(action->getAction())
@@ -101,8 +105,5 @@ namespace dragonRfl
             break;
         }
     }
-
-
-    OD_REGISTER_RFL(DragonRfl);
 
 }

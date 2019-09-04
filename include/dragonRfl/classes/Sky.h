@@ -10,26 +10,30 @@
 
 #include <odCore/RefCounted.h>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 #include <odCore/render/Handle.h>
+
+#include <dragonRfl/classes/special/SelfDestruct.h>
 
 namespace dragonRfl
 {
 
     class DragonRfl;
 
-    class DomedSky : public odRfl::RflClass
+    ODRFL_DEFINE_CLASS(0x001a, "System", "Domed Sky", DomedSky);
+
+    class DomedSkyImpl : public odRfl::LevelObjectClassImpl
     {
     public:
 
-        DomedSky(DragonRfl &rfl);
+        DomedSkyImpl(DragonRfl &rfl, od::LevelObject &obj);
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMoved(od::LevelObject &obj) override;
+        virtual void onSpawned() override;
+        virtual void onTranslated(const glm::vec3 &from, const glm::vec3 &to) override;
 
 
     protected:
@@ -55,8 +59,9 @@ namespace dragonRfl
 
     };
 
-}
+    OD_IMPLEMENT_RFLCLASS_CLIENT(DomedSky, DomedSkyImpl);
+    OD_IMPLEMENT_RFLCLASS_SERVER(DomedSky, SelfDestruct);
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001a, "System", "Domed Sky", dragonRfl::DomedSky);
+}
 
 #endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

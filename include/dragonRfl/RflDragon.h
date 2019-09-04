@@ -22,17 +22,19 @@ namespace dragonRfl
     class LocalPlayer;
     class DragonGui;
 
-    class DragonRfl : public odRfl::AutoRegisteringRfl<DragonRfl>
+    class DragonRfl : public odRfl::Rfl
     {
     public:
 
         DragonRfl(od::Engine &engine);
-        ~DragonRfl();
+        virtual ~DragonRfl();
 
         inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
         inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
 
         virtual void onStartup() override;
+
+        void registerClasses();
 
 
     private:
@@ -47,7 +49,5 @@ namespace dragonRfl
     };
 
 }
-
-OD_DEFINE_RFL_TRAITS("Dragon", dragonRfl::DragonRfl);
 
 #endif /* INCLUDE_DRAGONRFL_RFLDRAGON_H_ */
