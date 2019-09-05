@@ -23,13 +23,11 @@ namespace dragonRfl
 
     class DragonRfl;
 
-    ODRFL_DEFINE_CLASS(0x001a, "System", "Domed Sky", DomedSky);
-
-    class DomedSkyImpl : public odRfl::LevelObjectClassImpl
+    class DomedSky : public odRfl::LevelObjectClassBase
     {
     public:
 
-        DomedSkyImpl(DragonRfl &rfl, od::LevelObject &obj);
+        DomedSky(DragonRfl &rfl, od::LevelObject &obj);
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
         virtual void onSpawned() override;
@@ -59,9 +57,9 @@ namespace dragonRfl
 
     };
 
-    OD_IMPLEMENT_RFLCLASS_CLIENT(DomedSky, DomedSkyImpl);
-    OD_IMPLEMENT_RFLCLASS_SERVER(DomedSky, SelfDestruct);
-
 }
+
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::DomedSky, 0x001a, "System", "Domed Sky");
+ODRFL_DEFINE_CLASS_IMPLEMENTATIONS(dragonRfl::DomedSky, dragonRfl::DomedSky, dragonRfl::SelfDestruct);
 
 #endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

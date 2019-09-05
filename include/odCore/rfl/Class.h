@@ -12,11 +12,19 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
-#define ODRFL_DEFINE_CLASS(id, category_str, name_str, identifier) \
-    struct identifier {}; \
-    template <> constexpr odRfl::ClassId odRfl::ClassTraits<identifier>::classId() { return id; } \
-    template <> constexpr const char *odRfl::ClassTraits<identifier>::name() { return name_str; } \
-    template <> constexpr const char *odRfl::ClassTraits<identifier>::category() { return category_str; }
+#define ODRFL_DEFINE_CLASS_BASE(base_identifier, id, category_str, name_str) \
+    template <> constexpr odRfl::ClassId odRfl::ClassTraits<base_identifier>::classId() { return id; } \
+    template <> constexpr const char *odRfl::ClassTraits<base_identifier>::name() { return name_str; } \
+    template <> constexpr const char *odRfl::ClassTraits<base_identifier>::category() { return category_str; }
+
+#define ODRFL_DEFINE_CLASS_IMPLEMENTATIONS(base_identifier, client_impl_identifier, server_impl_identifier) \
+    namespace odRfl { \
+    template <>\
+    struct ClassImplementationTraits<base_identifier> \
+    { \
+        using ClientImpl = client_impl_identifier; \
+        using ServerImpl = server_impl_identifier; \
+    }; }
 
 namespace od
 {
@@ -32,7 +40,7 @@ namespace odRfl
     typedef uint16_t ClassId;
 
 
-    template <typename T>
+    template <typename _Base>
     struct ClassTraits
     {
         static constexpr ClassId classId();
@@ -41,12 +49,22 @@ namespace odRfl
     };
 
 
-    class ClassImpl
+    template <typename _Base>
+    struct ClassImplementationTraits
+    {
+        struct NoImplType{};
+
+        using ClientImpl = NoImplType;
+        using ServerImpl = NoImplType;
+    };
+
+
+    class ClassBase
     {
     public:
 
-        ClassImpl(Rfl &rfl);
-        virtual ~ClassImpl() = default;
+        ClassBase(Rfl &rfl);
+        virtual ~ClassBase() = default;
 
         virtual void probeFields(FieldProbe &probe) = 0;
 
@@ -55,11 +73,11 @@ namespace odRfl
     };
 
 
-    class LevelObjectClassImpl : public ClassImpl
+    class LevelObjectClassBase : public ClassBase
     {
     public:
 
-        LevelObjectClassImpl(Rfl &rfl, od::LevelObject &obj);
+        LevelObjectClassBase(Rfl &rfl, od::LevelObject &obj);
 
         inline od::LevelObject &getLevelObject() { return mLevelObject; };
 

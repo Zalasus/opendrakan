@@ -5,7 +5,6 @@
  *      Author: zal
  */
 
-
 #include <dragonRfl/classes/Sky.h>
 
 #include <odCore/Level.h>
@@ -24,8 +23,8 @@
 namespace dragonRfl
 {
 
-	DomedSkyImpl::DomedSkyImpl(DragonRfl &rfl, od::LevelObject &obj)
-	: odRfl::LevelObjectClassImpl(rfl, obj)
+	DomedSky::DomedSky(DragonRfl &rfl, od::LevelObject &obj)
+	: odRfl::LevelObjectClassBase(rfl, obj)
     , mPrimarySky(true)
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)
@@ -42,7 +41,7 @@ namespace dragonRfl
 	{
 	}
 
-    void DomedSkyImpl::probeFields(odRfl::FieldProbe &probe)
+    void DomedSky::probeFields(odRfl::FieldProbe &probe)
     {
 		probe("Position")
     		     (mPrimarySky, "Primary Sky")
@@ -61,12 +60,12 @@ namespace dragonRfl
 			     (mFlareDirection, "Flare Direction (0 - 359)");
     }
 
-    void DomedSkyImpl::onSpawned()
+    void DomedSky::onSpawned()
 	{
         od::LevelObject &obj = getLevelObject();
 
         // handle attachment: attach sky to camera (not player!!!) FIXME: somehow, the sky is still a bit stuttery
-        odRfl::RflClassId cameraClassId = odRfl::RflClassTraits<TrackingCamera>::classId();
+        odRfl::ClassId cameraClassId = odRfl::ClassTraits<TrackingCamera>::classId();
         od::LevelObject *cameraObject = obj.getLevel().findObjectOfType(cameraClassId);
         if(cameraObject == nullptr)
         {
@@ -94,7 +93,7 @@ namespace dragonRfl
         mRenderNode->setRenderBin(odRender::RenderBin::SKY);
 	}
 
-    void DomedSkyImpl::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
+    void DomedSky::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
     {
         if(mRenderNode != nullptr)
         {
