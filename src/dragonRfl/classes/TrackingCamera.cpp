@@ -46,7 +46,7 @@ namespace dragonRfl
 
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
-	    odRender::Renderer *renderer = mRfl.getEngine().getRenderer();
+	    odRender::Renderer *renderer = getRfl().getEngine().getRenderer();
 	    if(renderer != nullptr)
 	    {
 	        mRenderCamera = renderer->getCamera();
@@ -60,7 +60,7 @@ namespace dragonRfl
 	    // set initial view matrix
 	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
 
-	    if(mRfl.getLocalPlayer() == nullptr)
+	    if(getRflAs<DragonRfl>().getLocalPlayer() == nullptr)
 	    {
 	        // no player to track~ however, the camera object is tracked by the sky, so it still should be present
 	        return;
@@ -80,7 +80,7 @@ namespace dragonRfl
 
     void TrackingCamera::updateCamera()
     {
-        LocalPlayer *player = mRfl.getLocalPlayer();
+        LocalPlayer *player = getRflAs<DragonRfl>().getLocalPlayer();
         if(player == nullptr)
         {
             return;
@@ -102,7 +102,7 @@ namespace dragonRfl
         static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
 
         odPhysics::RayTestResult result;
-        bool hit = mRfl.getEngine().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
+        bool hit = getRfl().getEngine().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
         if(!hit)
         {
             eye = to;

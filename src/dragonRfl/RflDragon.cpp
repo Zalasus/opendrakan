@@ -27,7 +27,6 @@
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
-
 namespace dragonRfl
 {
 
@@ -48,7 +47,7 @@ namespace dragonRfl
 
     void DragonRfl::onLoaded()
     {
-        registerClass<UserInterfaceProperties>();
+        _registerClasses();
     }
 
     void DragonRfl::onStartup()

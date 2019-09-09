@@ -43,6 +43,7 @@ namespace dragonRfl
         };
 
         SoundEffect();
+        virtual ~SoundEffect();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 

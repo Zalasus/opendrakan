@@ -29,10 +29,8 @@ namespace dragonRfl
 {
 
     HumanControl::HumanControl()
-    : mRfl(rfl)
-    , mYaw(0)
+    : mYaw(0)
 	, mPitch(0)
-    , mPlayerObject(nullptr)
     , mState(State::Idling)
     , mLastUpdatedYaw(0)
     {
@@ -51,8 +49,9 @@ namespace dragonRfl
     void HumanControl::onLoaded()
     {
         auto &obj = getLevelObject();
+        auto &rfl = getRflAs<DragonRfl>();
 
-        if(mRfl.getLocalPlayer() != nullptr)
+        if(rfl.getLocalPlayer() != nullptr)
         {
             Logger::warn() << "Duplicate HumanControl objects found in level. Destroying duplicate";
             obj.requestDestruction();
@@ -61,11 +60,10 @@ namespace dragonRfl
 
         obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
-        mPlayerObject = &obj;
-        mRfl.setLocalPlayer(this);
+        rfl.setLocalPlayer(this);
 
         // prefetch referenced assets
-        odRfl::PrefetchProbe probe(mPlayerObject->getClass()->getAssetProvider());
+        odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
         this->probeFields(probe);
 
         // configure controls
@@ -206,17 +204,12 @@ namespace dragonRfl
 
 	glm::vec3 HumanControl::getPosition()
     {
-    	if(mPlayerObject == nullptr)
-    	{
-    		return glm::vec3(0,0,0);
-    	}
-
-    	return mPlayerObject->getPosition();
+    	return getLevelObject().getPosition();
     }
 
 	od::LevelObject &HumanControl::getLevelObject()
 	{
-	    return *mPlayerObject;
+	    return LevelObjectClassBase::getLevelObject();
 	}
 
 	odPhysics::Handle *HumanControl::getPhysicsHandle()

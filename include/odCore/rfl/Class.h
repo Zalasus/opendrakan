@@ -15,6 +15,7 @@
 
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
+#include <odCore/Downcast.h>
 
 #include <odCore/rfl/FieldProbe.h>
 
@@ -60,6 +61,15 @@ namespace odRfl
 
         void setRfl(Rfl &rfl);
         Rfl &getRfl();
+
+        /**
+         * Dirty hack. Since we know the RFL type at compile time, isn't there a better way to perform a safe cast?
+         */
+        template <typename _Rfl>
+        _Rfl &getRflAs()
+        {
+            return *od::confident_downcast<_Rfl>(&getRfl());
+        }
 
         virtual void probeFields(FieldProbe &probe) = 0;
 

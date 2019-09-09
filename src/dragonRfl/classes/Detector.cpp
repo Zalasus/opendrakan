@@ -73,13 +73,14 @@ namespace dragonRfl
             return;
         }
 
-        if(mRfl.getLocalPlayer() != nullptr)
+        auto &rfl = getRflAs<DragonRfl>();
+        if(rfl.getLocalPlayer() != nullptr)
         {
             return;
         }
 
         od::LevelObject &obj = getLevelObject();
-        od::LevelObject &playerObject = mRfl.getLocalPlayer()->getLevelObject();
+        od::LevelObject &playerObject = rfl.getLocalPlayer()->getLevelObject();
 
         // since we currently only can detect the player (no definition of "NPC" exists yet), we can speed things up a bit by only performing
         // the costly contact test if the player position is inside our bounding sphere. later we should further improve this by using a

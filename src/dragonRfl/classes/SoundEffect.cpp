@@ -29,6 +29,11 @@ namespace dragonRfl
     {
     }
 
+    SoundEffect::~SoundEffect()
+    {
+
+    }
+
     void SoundEffect::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Sound Effect")

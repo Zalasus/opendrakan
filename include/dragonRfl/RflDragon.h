@@ -41,6 +41,9 @@ namespace dragonRfl
 
         void _handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
 
+        // note: this is defined in ClassRegistry.cpp, as to avoid having to include all the class headers in the main RFL logic code
+        void _registerClasses();
+
         LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
 

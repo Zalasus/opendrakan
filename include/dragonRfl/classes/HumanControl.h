@@ -71,7 +71,6 @@ namespace dragonRfl
 
 		float mYaw;
 		float mPitch;
-		od::LevelObject *mPlayerObject;
 
 		State mState;
 		float mLastUpdatedYaw;
