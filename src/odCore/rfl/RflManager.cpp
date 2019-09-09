@@ -43,6 +43,16 @@ namespace odRfl
         }
     }
 
+    void RflManager::_addRflAndCallLoadHook(std::unique_ptr<Rfl> rfl)
+    {
+        if(rfl == nullptr) return;
+
+        Logger::info() << "Loaded RFL '" << rfl->getName() << "'";
+
+        mLoadedRfls.push_back(std::move(rfl));
+        mLoadedRfls.back()->onLoaded();
+    }
+
 }
 
 

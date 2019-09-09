@@ -16,6 +16,10 @@
 
 #include <odCore/physics/PhysicsSystem.h>
 
+#include <odCore/rfl/RflManager.h>
+
+#include <dragonRfl/RflDragon.h>
+
 #include <odOsg/render/Renderer.h>
 #include <odOsg/audio/SoundSystem.h>
 #include <odOsg/InputListener.h>
@@ -57,6 +61,8 @@ int main(int argc, char **argv)
 
     od::Engine engine;
     sEngine = &engine;
+
+    engine.getRflManager().loadStaticRfl<dragonRfl::DragonRfl>();
 
     engine.setRenderer(&osgRenderer);
     engine.setSoundSystem(&soundSystem);

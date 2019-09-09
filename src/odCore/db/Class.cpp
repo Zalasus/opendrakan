@@ -87,18 +87,23 @@ namespace odDb
 
     std::unique_ptr<odRfl::LevelObjectClassBase> Class::makeInstanceForLevelObject(od::LevelObject &obj)
     {
+        std::unique_ptr<odRfl::LevelObjectClassBase> instance;
+
         if(mRflClassRegistrar == nullptr)
         {
-            return std::make_unique<odRfl::DefaultObjectClass>();
-        }
+            instance = std::make_unique<odRfl::DefaultObjectClass>();
 
-        std::unique_ptr<odRfl::ClassBase> newInstance = makeInstance();
-        if(newInstance->getBaseType() != odRfl::ClassBaseType::LEVEL_OBJECT)
+        }else
         {
-            throw od::Exception("Tried to make level object with non-level-object class");
+            std::unique_ptr<odRfl::ClassBase> newInstance = makeInstance();
+            if(newInstance->getBaseType() != odRfl::ClassBaseType::LEVEL_OBJECT)
+            {
+                throw od::Exception("Tried to make level object with non-level-object class");
+            }
+
+            instance.reset(newInstance.release()->asLevelObjectBase());
         }
 
-        std::unique_ptr<odRfl::LevelObjectClassBase> instance(newInstance.release()->asLevelObjectBase());
         instance->setLevelObject(obj);
         return instance;
     }

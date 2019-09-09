@@ -39,6 +39,9 @@ namespace od
 	, mIsDone(false)
 	{
         mInputManager = std::make_unique<odInput::InputManager>();
+        mDbManager = std::make_unique<odDb::DbManager>(*this);
+        mRflManager = std::make_unique<odRfl::RflManager>(*this);
+        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(*this);
 	}
 
 	Engine::~Engine()
@@ -88,10 +91,6 @@ namespace od
 	    }
 
 	    _findEngineRoot("Dragon.rrc");
-
-	    mDbManager = std::make_unique<odDb::DbManager>(*this);
-        mRflManager = std::make_unique<odRfl::RflManager>(*this);
-        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(*this);
 
 	    mRflManager->onStartup();
 
