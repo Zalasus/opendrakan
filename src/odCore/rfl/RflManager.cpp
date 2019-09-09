@@ -19,18 +19,6 @@ namespace odRfl
     RflManager::RflManager(od::Engine &engine)
     : mEngine(engine)
     {
-        // first, instantiate all statically linked RFLs
-        std::vector<RflRegistrar*> &rfls = RflRegistrar::getRflRegistrarListSingleton();
-        mLoadedRfls.reserve(rfls.size());
-        for(auto it = rfls.begin(); it != rfls.end(); ++it)
-        {
-            std::unique_ptr<Rfl> rfl((*it)->createInstance(mEngine));
-            mLoadedRfls.push_back(std::move(rfl));
-
-            Logger::info() << "Loaded RFL " << mLoadedRfls.back()->getName();
-        }
-
-        Logger::info() << "Loaded " << mLoadedRfls.size() << " RFL(s)";
     }
 
     Rfl *RflManager::getRfl(const std::string &name)

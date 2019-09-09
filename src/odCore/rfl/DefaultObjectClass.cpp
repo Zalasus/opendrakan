@@ -37,6 +37,9 @@ namespace odRfl
         }
     }
 
+    DefaultObjectClass::DefaultObjectClass()
+    {
+    }
 
     DefaultObjectClass::~DefaultObjectClass()
     {
@@ -46,8 +49,10 @@ namespace odRfl
     {
     }
 
-    void DefaultObjectClass::onSpawned(od::LevelObject &obj)
+    void DefaultObjectClass::onSpawned()
     {
+        od::LevelObject &obj = getLevelObject();
+
         // create render node if applicable
         odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
         if(renderer != nullptr && obj.getClass()->hasModel())
@@ -71,15 +76,17 @@ namespace odRfl
         }
     }
 
-    void DefaultObjectClass::onDespawned(od::LevelObject &obj)
+    void DefaultObjectClass::onDespawned()
     {
         mRenderHandle = nullptr;
         mPhysicsHandle = nullptr;
         mLightReceiver = nullptr;
     }
 
-    void DefaultObjectClass::onMoved(od::LevelObject &obj)
+    void DefaultObjectClass::onTransformChanged()
     {
+        od::LevelObject &obj = getLevelObject();
+
         if(mLightReceiver != nullptr)
         {
             mLightReceiver->updateAffectingLights();
@@ -101,23 +108,23 @@ namespace odRfl
         }
     }
 
-    void DefaultObjectClass::onVisibilityChanged(od::LevelObject &obj)
+    void DefaultObjectClass::onVisibilityChanged()
     {
         if(mRenderHandle != nullptr)
         {
             std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
-            mRenderHandle->setVisible(obj.isVisible());
+            mRenderHandle->setVisible(getLevelObject().isVisible());
         }
 
         if(mPhysicsHandle != nullptr)
         {
-            mPhysicsHandle->setEnableCollision(obj.isVisible());
+            mPhysicsHandle->setEnableCollision(getLevelObject().isVisible());
         }
     }
 
-    void DefaultObjectClass::onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to)
+    void DefaultObjectClass::onLayerChanged(od::Layer *from, od::Layer *to)
     {
-        if(mRenderHandle != nullptr && obj.getLightSourceLayer() == nullptr)
+        if(mRenderHandle != nullptr && getLevelObject().getLightSourceLayer() == nullptr)
         {
             _assignLayerLight(mRenderHandle, to);
         }

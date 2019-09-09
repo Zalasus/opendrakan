@@ -8,13 +8,14 @@
 
 #include <dragonRfl/classes/Key.h>
 
-#include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
+
+#include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
 {
 
-	Key::Key(DragonRfl &rfl)
+	Key::Key()
 	: mLockCode(0)
 	{
 	}
@@ -26,8 +27,5 @@ namespace dragonRfl
         probe.beginCategory("Key");
         probe.registerField(mLockCode, "Lock Code");
     }
-
-
-	OD_REGISTER_RFLCLASS(DragonRfl, Key);
 
 }

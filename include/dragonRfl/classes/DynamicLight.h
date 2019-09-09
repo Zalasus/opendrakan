@@ -32,14 +32,14 @@ namespace dragonRfl
             WhenEnabled
         };
 
-        DynamicLight(DragonRfl &rfl);
+        DynamicLight();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime);
-        virtual void onMoved(od::LevelObject &obj) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime);
+        virtual void onTransformChanged() override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
     protected:
@@ -57,6 +57,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0085, "Light Source", "Dynamic Light", dragonRfl::DynamicLight);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::DynamicLight, 0x0085, "Light Source", "Dynamic Light");
 
 #endif /* INCLUDE_DRAGONRFL_DYNAMICLIGHT_H_ */

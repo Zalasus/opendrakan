@@ -19,7 +19,7 @@
 
 #include <odCore/db/Class.h>
 
-#include <odCore/rfl/RflMessage.h>
+#include <odCore/Message.h>
 
 namespace odAnim
 {
@@ -65,7 +65,7 @@ namespace od
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline odDb::Class *getClass() { return mClass; }
-        inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
+        inline odRfl::LevelObjectClassBase *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline glm::vec3 getPosition() const { return mPosition; }
         inline glm::vec3 getScale() const { return mScale; }
@@ -88,7 +88,7 @@ namespace od
         void despawned();
         void destroyed();
         void update(float relTime);
-        void messageReceived(LevelObject &sender, odRfl::RflMessage message);
+        void messageReceived(LevelObject &sender, od::Message message);
 
         void setPosition(const glm::vec3 &v);
         void setRotation(const glm::quat &q);
@@ -150,7 +150,7 @@ namespace od
          * @brief Enables or disables the RFL update hook.
          */
         void setEnableRflUpdateHook(bool enableHook);
-        void messageAllLinkedObjects(odRfl::RflMessage message);
+        void messageAllLinkedObjects(od::Message message);
         void requestDestruction();
 
         /**
@@ -180,7 +180,7 @@ namespace od
         odDb::AssetRef mClassRef;
         od::RefPtr<odDb::Class> mClass;
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
-        std::unique_ptr<odRfl::RflClass> mRflClassInstance;
+        std::unique_ptr<odRfl::LevelObjectClassBase> mRflClassInstance;
         uint32_t mLightingLayerId;
         Layer *mLightingLayer;
         glm::vec3 mInitialPosition;

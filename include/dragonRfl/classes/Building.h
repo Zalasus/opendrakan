@@ -10,7 +10,6 @@
 
 #include <odCore/rfl/DefaultObjectClass.h>
 
-#include <odCore/rfl/RflClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -33,11 +32,11 @@ namespace dragonRfl
 	{
 	public:
 
-		Building(DragonRfl &rfl);
+		Building();
 
 		virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
 
 
 	protected:
@@ -67,6 +66,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0011, "Ground Object", "Building", dragonRfl::Building);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::Building, 0x0011, "Ground Object", "Building");
 
 #endif /* INCLUDE_RFL_DRAGON_BUILDING_H_ */

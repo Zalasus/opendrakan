@@ -13,7 +13,7 @@
 namespace dragonRfl
 {
 
-    UserInterfaceProperties::UserInterfaceProperties(DragonRfl &rfl)
+    UserInterfaceProperties::UserInterfaceProperties()
     : mInnerRing(odDb::AssetRef::NULL_REF)
     , mOuterRing(odDb::AssetRef::NULL_REF)
     , mCrystalTop(odDb::AssetRef::NULL_REF)
@@ -101,7 +101,5 @@ namespace dragonRfl
 
     }
 
-
-    OD_REGISTER_RFLCLASS(DragonRfl, UserInterfaceProperties);
 }
 

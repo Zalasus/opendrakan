@@ -22,8 +22,9 @@ namespace od
 
 namespace odRfl
 {
-	class RflClassRegistrar;
-	class RflClass;
+	class ClassRegistrar;
+	class ClassBase;
+	class LevelObjectClassBase;
 	class Rfl;
 }
 
@@ -40,12 +41,12 @@ namespace odDb
 		inline bool hasModel() const { return mModel != nullptr; }
         inline od::RefPtr<Model> getModel() { return mModel; }
         inline std::string getName() const { return mClassName; }
-        inline odRfl::RflClassId getRflClassId() const { return mRflClassId; }
+        inline odRfl::ClassId getRflClassId() const { return mRflClassId; }
 
         virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
-        std::unique_ptr<odRfl::RflClass> makeInstance();
-        std::unique_ptr<odRfl::RflClass> makeInstanceForLevelObject(od::LevelObject &obj);
+        std::unique_ptr<odRfl::ClassBase> makeInstance();
+        std::unique_ptr<odRfl::LevelObjectClassBase> makeInstanceForLevelObject(od::LevelObject &obj);
 
 
 	private:
@@ -60,7 +61,7 @@ namespace odDb
         uint16_t mIconNumber;
 
         odRfl::Rfl *mRfl;
-        odRfl::RflClassRegistrar *mRflClassRegistrar;
+        odRfl::ClassRegistrar *mRflClassRegistrar;
 
 	};
 

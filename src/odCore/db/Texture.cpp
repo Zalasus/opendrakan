@@ -121,7 +121,7 @@ namespace odDb
             mMaterialInstance = mMaterialClass->makeInstance();
             if(mMaterialInstance != nullptr)
             {
-                mMaterialInstance->onLoaded(mTextureFactory.getEngine());
+                mMaterialInstance->onLoaded();
             }
         }
     }

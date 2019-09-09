@@ -8,20 +8,18 @@
 #ifndef INCLUDE_RFL_DRAGON_MATERIAL_H_
 #define INCLUDE_RFL_DRAGON_MATERIAL_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-	class Material : public odRfl::RflClass
+	class Material : public odRfl::MaterialClassBase
 	{
 	public:
 
-		Material(DragonRfl &rfl);
+		Material();
 
 		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
@@ -52,7 +50,7 @@ namespace dragonRfl
 	{
 	public:
 
-		BlendedMaterial(DragonRfl &rfl);
+		BlendedMaterial();
 
 		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
@@ -68,7 +66,7 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x004b, "Material", "Standard Material", dragonRfl::Material);
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0072, "Material", "Blended Material", dragonRfl::BlendedMaterial);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::Material, 0x004b, "Material", "Standard Material");
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::BlendedMaterial, 0x0072, "Material", "Blended Material");
 
 #endif /* INCLUDE_RFL_DRAGON_MATERIAL_H_ */

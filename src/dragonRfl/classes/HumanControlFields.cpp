@@ -193,14 +193,8 @@ namespace dragonRfl
     {
     }
 
-    HumanControlFields::~HumanControlFields()
-    {
-    }
-
     void HumanControlFields::probeFields(odRfl::FieldProbe &probe)
     {
-        PlayerCommon::probeFields(probe);
-
         probe
             ("Character Channels")
                (mRightWeaponChannel, "Right Weapon Channel")

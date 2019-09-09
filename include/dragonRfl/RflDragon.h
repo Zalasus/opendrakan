@@ -32,9 +32,9 @@ namespace dragonRfl
         inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
         inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
 
+        virtual const char *getName() const override;
+        virtual void onLoaded() override;
         virtual void onStartup() override;
-
-        void registerClasses();
 
 
     private:

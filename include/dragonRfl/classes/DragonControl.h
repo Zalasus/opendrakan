@@ -19,7 +19,7 @@ namespace dragonRfl
     {
     public:
 
-        DragonControl(DragonRfl &rfl);
+        DragonControl();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
@@ -92,6 +92,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001c, "Player", "Dragon Control", dragonRfl::DragonControl);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::DragonControl, 0x001c, "Player", "Dragon Control");
 
 #endif /* INCLUDE_RFL_DRAGON_DRAGONCONTROL_H_ */

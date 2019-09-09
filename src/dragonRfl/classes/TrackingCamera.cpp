@@ -23,13 +23,11 @@
 namespace dragonRfl
 {
 
-	TrackingCamera::TrackingCamera(DragonRfl &rfl)
+	TrackingCamera::TrackingCamera()
 	: mTrackingMode(1)
 	, mRubberBandStrength(2)
 	, mSpinSpeed(20)
 	, mCrosshairDistance(8)
-	, mRfl(rfl)
-	, mCameraObject(nullptr)
 	{
 	}
 
@@ -42,9 +40,9 @@ namespace dragonRfl
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
 	}
 
-	void TrackingCamera::onLoaded(od::LevelObject &obj)
+	void TrackingCamera::onLoaded()
 	{
-	    mCameraObject = &obj;
+	    auto &obj = getLevelObject();
 
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
@@ -55,8 +53,10 @@ namespace dragonRfl
 	    }
 	}
 
-	void TrackingCamera::onSpawned(od::LevelObject &obj)
+	void TrackingCamera::onSpawned()
 	{
+        auto &obj = getLevelObject();
+
 	    // set initial view matrix
 	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
 
@@ -69,11 +69,11 @@ namespace dragonRfl
 	    obj.setEnableRflUpdateHook(true);
 	}
 
-	void TrackingCamera::onDespawned(od::LevelObject &obj)
+	void TrackingCamera::onDespawned()
 	{
 	}
 
-	void TrackingCamera::onUpdate(od::LevelObject &obj, float relTime)
+	void TrackingCamera::onUpdate(float relTime)
 	{
 	    updateCamera();
 	}
@@ -125,16 +125,13 @@ namespace dragonRfl
         glm::vec3 front = lookDirection * glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
         glm::vec3 up = lookDirection * glm::vec3(0, 1, 0);
 
-        mCameraObject->setPosition(eyepoint);
-        mCameraObject->setRotation(lookDirection);
+        getLevelObject().setPosition(eyepoint);
+        getLevelObject().setRotation(lookDirection);
 
         if(mRenderCamera != nullptr)
         {
             mRenderCamera->lookAt(eyepoint, eyepoint + front, up);
         }
     }
-
-
-	OD_REGISTER_RFLCLASS(DragonRfl, TrackingCamera);
 
 }

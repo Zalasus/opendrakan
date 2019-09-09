@@ -17,7 +17,7 @@
 
 #include <odCore/physics/Handles.h>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 
 namespace odRfl
 {
@@ -29,19 +29,20 @@ namespace odRfl
      * RFL classes. As soon as that is the case, not being able to locate an RFL class should warrant
      * an exception or rejection of the class database.
      */
-    class DefaultObjectClass : public RflClass
+    class DefaultObjectClass : public LevelObjectClassBase
     {
     public:
 
+        DefaultObjectClass();
         virtual ~DefaultObjectClass();
 
         virtual void probeFields(FieldProbe &probe) override;
 
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
-        virtual void onMoved(od::LevelObject &obj) override;
-        virtual void onVisibilityChanged(od::LevelObject &obj) override;
-        virtual void onLayerChanged(od::LevelObject &obj, od::Layer *from, od::Layer *to) override;
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
+        virtual void onVisibilityChanged() override;
+        virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
+        virtual void onTransformChanged() override;
 
 
     protected:

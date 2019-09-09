@@ -15,7 +15,7 @@
 namespace dragonRfl
 {
 
-	DragonControl::DragonControl(DragonRfl &rfl)
+	DragonControl::DragonControl()
     : mWalkBackwardAnim(odDb::AssetRef::NULL_REF)
 	, mAirCamHorzDistance(1024.0)
 	, mAirCamVertDistance(1024.0)
@@ -169,8 +169,5 @@ namespace dragonRfl
 		probe.registerField(mDoneDismountingSounds, "Done Dismounting Sounds");
 		probe.registerField(mDoneDismountSndChance, "Done Dismount Snd Chance (1-100)");
 	}
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, DragonControl);
 
 }

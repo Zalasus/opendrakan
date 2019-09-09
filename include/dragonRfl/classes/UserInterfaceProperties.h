@@ -8,20 +8,18 @@
 #ifndef INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_
 #define INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-    class UserInterfaceProperties : public odRfl::RflClass
+    class UserInterfaceProperties : public odRfl::ClassBase
     {
     public:
 
-        UserInterfaceProperties(DragonRfl &rfl);
+        UserInterfaceProperties();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
@@ -69,6 +67,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0062, "System", "User Interface Properties", dragonRfl::UserInterfaceProperties);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::UserInterfaceProperties, 0x0062, "System", "User Interface Properties");
 
 #endif /* INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_ */

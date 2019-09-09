@@ -44,7 +44,7 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface.db has no class container");
         }
 
-        odRfl::RflClassId uiPropsClassId = odRfl::RflClassTraits<UserInterfaceProperties>::classId();
+        odRfl::ClassId uiPropsClassId = odRfl::ClassTraits<UserInterfaceProperties>::classId();
         od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
         if(id == odDb::AssetRef::NULL_REF.assetId)
         {
@@ -52,13 +52,13 @@ namespace dragonRfl
         }
 
         od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
+        std::unique_ptr<odRfl::ClassBase> uiPropsInstance = uiPropsClass->makeInstance();
         mUserInterfaceProperties.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfaceProperties == nullptr)
         {
             throw od::Exception("Could not cast or instantiate User Interface Properties instance");
         }
-        mUserInterfaceProperties->onLoaded(engine);
+        mUserInterfaceProperties->onLoaded();
 
         odRfl::PrefetchProbe probe(*mInterfaceDb);
         mUserInterfaceProperties->probeFields(probe);

@@ -28,7 +28,7 @@
 namespace dragonRfl
 {
 
-    HumanControl::HumanControl(DragonRfl &rfl)
+    HumanControl::HumanControl()
     : mRfl(rfl)
     , mYaw(0)
 	, mPitch(0)
@@ -42,8 +42,16 @@ namespace dragonRfl
     {
     }
 
-    void HumanControl::onLoaded(od::LevelObject &obj)
+    void HumanControl::probeFields(odRfl::FieldProbe &probe)
     {
+        PlayerCommon::probeFields(probe);
+        mFields.probeFields(probe);
+    }
+
+    void HumanControl::onLoaded()
+    {
+        auto &obj = getLevelObject();
+
         if(mRfl.getLocalPlayer() != nullptr)
         {
             Logger::warn() << "Duplicate HumanControl objects found in level. Destroying duplicate";
@@ -78,8 +86,10 @@ namespace dragonRfl
         mCursorListener->setCallback(std::bind(&HumanControl::_handleCursorMovement, this, std::placeholders::_1));
     }
 
-    void HumanControl::onSpawned(od::LevelObject &obj)
+    void HumanControl::onSpawned()
     {
+        auto &obj = getLevelObject();
+
     	Logger::verbose() << "Spawned Human Control at "
     			<< obj.getPosition().x << "/"
 				<< obj.getPosition().y << "/"
@@ -120,11 +130,11 @@ namespace dragonRfl
     	obj.setEnableRflUpdateHook(true);
     }
 
-    void HumanControl::onUpdate(od::LevelObject &obj, float relTime)
+    void HumanControl::onUpdate(float relTime)
     {
         static const float turnAnimThreshold = M_PI/2; // angular yaw speed at which turn animation is triggered (in rad/sec)
 
-        obj.setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
+        getLevelObject().setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
 
         float yawSpeed = (mYaw - mLastUpdatedYaw)/relTime;
         mLastUpdatedYaw = mYaw;
@@ -137,12 +147,12 @@ namespace dragonRfl
         case State::TurningRight:
             if(yawSpeed >= turnAnimThreshold)
             {
-                _playAnim(mTurnLeft, true, false);
+                _playAnim(mFields.mTurnLeft, true, false);
                 mState = State::TurningLeft;
 
             }else if(yawSpeed <= -turnAnimThreshold)
             {
-                _playAnim(mTurnRight, true, false);
+                _playAnim(mFields.mTurnRight, true, false);
                 mState = State::TurningRight;
 
             }else if(mState != State::Idling)
@@ -167,8 +177,10 @@ namespace dragonRfl
         }
     }
 
-    void HumanControl::onMoved(od::LevelObject &obj)
+    void HumanControl::onTransformChanged()
     {
+        auto &obj = getLevelObject();
+
         odAudio::SoundSystem *soundSystem = obj.getLevel().getEngine().getSoundSystem();
         if(soundSystem != nullptr)
         {
@@ -224,7 +236,7 @@ namespace dragonRfl
                 break;
 
             case Action::Backward:
-                _playAnim(mRunBackwards, false, true);
+                _playAnim(mFields.mRunBackwards, false, true);
                 mState = State::RunningBackward;
                 break;
 
@@ -265,8 +277,5 @@ namespace dragonRfl
             mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
         }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, HumanControl);
 
 }

@@ -20,14 +20,14 @@
 namespace dragonRfl
 {
 
-	Building::Building(DragonRfl &rfl)
+	Building::Building()
 	: mInitialHealth(0)
 	, mSnapMode(0)
 	, mSoundEffectObject(odDb::AssetRef::NULL_REF)
 	, mIsDoorWay(false)
 	, mCanArokhLandOn(false)
 	, mDoorWayAlong(0)
-	, mMessageToSend(odRfl::RflMessage::Off)
+	, mMessageToSend(od::Message::Off)
 	, m2DExplosionObject(odDb::AssetRef::NULL_REF)
 	, mExplosionGenerator(odDb::AssetRef::NULL_REF)
 	, mSmokeGenerator(odDb::AssetRef::NULL_REF)
@@ -38,9 +38,9 @@ namespace dragonRfl
 	, mFallWhenDead(true)
 	, mHitGroundSound(odDb::AssetRef::NULL_REF)
 	, mSendMessageWhenPushed(true)
-	, mMessageToSendWhenPushed(odRfl::RflMessage::Off)
+	, mMessageToSendWhenPushed(od::Message::Off)
 	, mSendMessageAfterPushed(true)
-	, mMessageToSendAfterPushed(odRfl::RflMessage::Off)
+	, mMessageToSendAfterPushed(od::Message::Off)
 	{
 	}
 
@@ -71,17 +71,14 @@ namespace dragonRfl
 				(mMessageToSendAfterPushed, "Message to Send After Pushed");
     }
 
-    void Building::onSpawned(od::LevelObject &obj)
+    void Building::onSpawned()
 	{
-        DefaultObjectClass::onSpawned(obj);
+        DefaultObjectClass::onSpawned();
 	}
 
-    void Building::onDespawned(od::LevelObject &obj)
+    void Building::onDespawned()
     {
-        DefaultObjectClass::onDespawned(obj);
+        DefaultObjectClass::onDespawned();
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, Building);
 
 }

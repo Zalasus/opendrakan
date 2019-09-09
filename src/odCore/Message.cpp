@@ -1,58 +1,58 @@
 /*
- * RflMessage.cpp
+ * Message.cpp
  *
- *  Created on: Jun 8, 2018
+ *  Created on: Sep 8, 2019
  *      Author: zal
  */
 
-#include <odCore/rfl/RflMessage.h>
+#include <odCore/Message.h>
 
-namespace odRfl
+namespace od
 {
 
-    std::ostream &operator<<(std::ostream &out, RflMessage message)
+    std::ostream &operator<<(std::ostream &out, Message message)
     {
         const char *msgStr = nullptr;
 
         switch(message)
         {
-        case RflMessage::Off:
+        case Message::Off:
             msgStr = "Off";
             break;
 
-        case RflMessage::On:
+        case Message::On:
             msgStr = "On";
             break;
 
-        case RflMessage::Lock:
+        case Message::Lock:
             msgStr = "Lock";
             break;
 
-        case RflMessage::Unlock:
+        case Message::Unlock:
             msgStr = "Unlock";
             break;
 
-        case RflMessage::PlaySequence:
+        case Message::PlaySequence:
             msgStr = "Play Sequence";
             break;
 
-        case RflMessage::BlowUp:
+        case Message::BlowUp:
             msgStr = "Blow Up";
             break;
 
-        case RflMessage::Triggered:
+        case Message::Triggered:
             msgStr = "Triggered";
             break;
 
-        case RflMessage::MoveToWaypoint:
+        case Message::MoveToWaypoint:
             msgStr = "Move to WayPoint";
             break;
 
-        case RflMessage::ImDead:
+        case Message::ImDead:
             msgStr = " I'm Dead";
             break;
 
-        case RflMessage::Gib:
+        case Message::Gib:
             msgStr = " Gib";
             break;
 
@@ -66,5 +66,4 @@ namespace odRfl
     }
 
 }
-
 

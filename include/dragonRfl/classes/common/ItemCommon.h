@@ -10,7 +10,7 @@
 
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 
 namespace dragonRfl
 {
@@ -32,7 +32,7 @@ namespace dragonRfl
 
 
 
-	class ItemCommon : public odRfl::RflClass
+	class ItemCommon : public odRfl::LevelObjectClassBase
 	{
 	public:
 

@@ -11,7 +11,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 
 #include <odCore/render/Camera.h>
@@ -19,20 +19,18 @@
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-	class TrackingCamera : public odRfl::RflClass
+	class TrackingCamera : public odRfl::LevelObjectClassBase
 	{
 	public:
 
-		TrackingCamera(DragonRfl &rfl);
+		TrackingCamera();
 
 		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-		virtual void onLoaded(od::LevelObject &obj) override;
-		virtual void onSpawned(od::LevelObject &obj) override;
-		virtual void onDespawned(od::LevelObject &obj) override;
-		virtual void onUpdate(od::LevelObject &obj, float relTime) override;
+		virtual void onLoaded() override;
+		virtual void onSpawned() override;
+		virtual void onDespawned() override;
+		virtual void onUpdate(float relTime) override;
 
         void updateCamera();
 
@@ -46,14 +44,11 @@ namespace dragonRfl
 		odRfl::Float    mSpinSpeed;
 		odRfl::Float	mCrosshairDistance;
 
-		DragonRfl &mRfl;
-		od::LevelObject *mCameraObject;
-
 		od::RefPtr<odRender::Camera> mRenderCamera;
 	};
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001b, "System", "Tracking Camera", dragonRfl::TrackingCamera);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::TrackingCamera, 0x001b, "System", "Tracking Camera");
 
 #endif /* INCLUDE_RFL_DRAGON_TRACKINGCAMERA_H_ */

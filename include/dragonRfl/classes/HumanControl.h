@@ -21,6 +21,7 @@
 #include <odCore/render/Handle.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
+#include <dragonRfl/classes/common/PlayerCommon.h>
 #include <dragonRfl/LocalPlayer.h>
 #include <dragonRfl/Actions.h>
 
@@ -28,17 +29,19 @@ namespace dragonRfl
 {
     class DragonRfl;
 
-	class HumanControl : public HumanControlFields, public LocalPlayer
+	class HumanControl : public PlayerCommon, public LocalPlayer
 	{
 	public:
 
-		HumanControl(DragonRfl &rfl);
+		HumanControl();
 		virtual ~HumanControl();
 
-		virtual void onLoaded(od::LevelObject &obj) override;
-		virtual void onSpawned(od::LevelObject &obj) override;
-		virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-		virtual void onMoved(od::LevelObject &obj) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+
+		virtual void onLoaded() override;
+		virtual void onSpawned() override;
+		virtual void onUpdate(float relTime) override;
+		virtual void onTransformChanged() override;
 
 		virtual float getYaw() const override { return mYaw; }
 		virtual void setYaw(float f) override { mYaw = f; }
@@ -64,7 +67,7 @@ namespace dragonRfl
 		void _handleCursorMovement(const glm::vec2 &posNdc);
 		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
 
-		DragonRfl &mRfl;
+		HumanControlFields mFields;
 
 		float mYaw;
 		float mPitch;
@@ -87,6 +90,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0009, "Player", "Human Control", dragonRfl::HumanControl);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::HumanControl, 0x0009, "Player", "Human Control");
 
 #endif /* INCLUDE_RFL_DRAGON_HUMANCONTROL_H_ */

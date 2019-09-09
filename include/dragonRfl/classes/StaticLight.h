@@ -8,7 +8,7 @@
 #ifndef INCLUDE_RFL_DRAGON_STATICLIGHT_H_
 #define INCLUDE_RFL_DRAGON_STATICLIGHT_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -21,19 +21,17 @@
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-    class StaticLight : public odRfl::RflClass
+    class StaticLight : public odRfl::LevelObjectClassBase
     {
     public:
 
-        StaticLight(DragonRfl &rfl);
+        StaticLight();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime) override;
+        virtual void onDespawned() override;
 
 
     protected:
@@ -52,6 +50,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0084, "Light Source", "Static Light", dragonRfl::StaticLight);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::StaticLight, 0x0084, "Light Source", "Static Light");
 
 #endif /* INCLUDE_RFL_DRAGON_STATICLIGHT_H_ */

@@ -18,7 +18,7 @@
 #include <odCore/FilePath.h>
 #include <odCore/Layer.h>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
@@ -55,7 +55,7 @@ namespace od
          *
          * @return The first object of class type \c id or nullptr if none found.
          */
-        LevelObject *findObjectOfType(odRfl::RflClassId id);
+        LevelObject *findObjectOfType(odRfl::ClassId id);
 
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;

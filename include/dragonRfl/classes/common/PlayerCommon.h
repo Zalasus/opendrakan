@@ -8,14 +8,14 @@
 #ifndef INCLUDE_RFL_COMMON_PLAYERCOMMON_H_
 #define INCLUDE_RFL_COMMON_PLAYERCOMMON_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
 
-    class PlayerCommon : public odRfl::RflClass
+    class PlayerCommon : public odRfl::LevelObjectClassBase
     {
     public:
 

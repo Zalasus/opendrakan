@@ -57,7 +57,7 @@ namespace odDb
         {
             try
             {
-                mRflClassRegistrar = mRfl->getRegistrarForClass(mRflClassId);
+                mRflClassRegistrar = mRfl->getRegistrarForClassId(mRflClassId);
 
             }catch(od::NotFoundException &e)
             {
@@ -67,7 +67,7 @@ namespace odDb
         }
     }
 
-    std::unique_ptr<odRfl::RflClass> Class::makeInstance()
+    std::unique_ptr<odRfl::ClassBase> Class::makeInstance()
 	{
         if(mRflClassRegistrar == nullptr)
         {
@@ -77,27 +77,30 @@ namespace odDb
 
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
-    	std::unique_ptr<odRfl::RflClass> newInstance(mRflClassRegistrar->createInstance(mRfl));
+    	std::unique_ptr<odRfl::ClassBase> newInstance(mRflClassRegistrar->makeInstance());
         mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
         newInstance->probeFields(mClassBuilder);
+        newInstance->setRfl(*mRfl);
 
         return newInstance;
 	}
 
-    std::unique_ptr<odRfl::RflClass> Class::makeInstanceForLevelObject(od::LevelObject &obj)
+    std::unique_ptr<odRfl::LevelObjectClassBase> Class::makeInstanceForLevelObject(od::LevelObject &obj)
     {
         if(mRflClassRegistrar == nullptr)
         {
             return std::make_unique<odRfl::DefaultObjectClass>();
         }
 
-        Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
+        std::unique_ptr<odRfl::ClassBase> newInstance = makeInstance();
+        if(newInstance->getBaseType() != odRfl::ClassBaseType::LEVEL_OBJECT)
+        {
+            throw od::Exception("Tried to make level object with non-level-object class");
+        }
 
-        std::unique_ptr<odRfl::RflClass> newInstance(mRflClassRegistrar->createInstance(mRfl));
-        mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
-        newInstance->probeFields(mClassBuilder);
-
-        return newInstance;
+        std::unique_ptr<odRfl::LevelObjectClassBase> instance(newInstance.release()->asLevelObjectBase());
+        instance->setLevelObject(obj);
+        return instance;
     }
 
 }

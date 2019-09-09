@@ -8,7 +8,7 @@
 #ifndef INCLUDE_RFL_DRAGON_DETECTOR_H_
 #define INCLUDE_RFL_DRAGON_DETECTOR_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -19,7 +19,7 @@ namespace dragonRfl
 {
     class DragonRfl;
 
-    class Detector : public odRfl::RflClass
+    class Detector : public odRfl::LevelObjectClassBase
     {
     public:
 
@@ -61,12 +61,12 @@ namespace dragonRfl
         };
         typedef odRfl::EnumImpl<InitialState, 0, 1> EnumInitialState;
 
-        Detector(DragonRfl &rfl);
+        Detector();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime) override;
 
 
     protected:
@@ -86,7 +86,6 @@ namespace dragonRfl
 
     private:
 
-        DragonRfl &mRfl;
         od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
         odPhysics::ContactTestResultVector mResultCache;
         bool mPlayerWasIn;
@@ -94,6 +93,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x003d, "System", "Detector", dragonRfl::Detector);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::Detector, 0x003d, "System", "Detector");
 
 #endif /* INCLUDE_RFL_DRAGON_DETECTOR_H_ */

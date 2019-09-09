@@ -21,7 +21,7 @@
 namespace dragonRfl
 {
 
-    AnimationDemo::AnimationDemo(DragonRfl &rfl)
+    AnimationDemo::AnimationDemo()
     : mAnimations({})
     , mSwitchPeriodSeconds(10.0)
     , mFirstUpdate(true)
@@ -37,8 +37,10 @@ namespace dragonRfl
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onSpawned(od::LevelObject &obj)
+    void AnimationDemo::onSpawned()
     {
+        od::LevelObject &obj = getLevelObject();
+
         if(!obj.getClass()->hasModel())
         {
             return;
@@ -65,7 +67,7 @@ namespace dragonRfl
         obj.setEnableRflUpdateHook(true);
     }
 
-    void AnimationDemo::onUpdate(od::LevelObject &obj, float relTime)
+    void AnimationDemo::onUpdate(float relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {
@@ -98,8 +100,5 @@ namespace dragonRfl
             Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, AnimationDemo);
 
 }

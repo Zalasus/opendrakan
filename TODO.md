@@ -35,6 +35,8 @@ Feel free to pick an item and open a ticket for it should you wish to work on a 
       new efficient and effective concept.
     - The render loop and the update loop are not synchronized. Thus, it is possible for the renderer to render a partially updated scene,
       resulting in things like the skydome stuttering as a frame occurs between updating the sky and camera
+        - A possible elegant solution would be to define "update chains" in the renderer, preventing it from rendering objects with update dependencies
+          out of order
 - Physics performance
     - The physics system is the biggest hog of game logic loop time right now. There might be some optimizations possible, like
       a broadphase that handles layers separately.

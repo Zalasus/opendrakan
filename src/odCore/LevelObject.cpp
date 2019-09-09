@@ -21,7 +21,7 @@
 #include <odCore/db/ModelBounds.h>
 #include <odCore/db/SkeletonBuilder.h>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
 
 #include <odCore/physics/PhysicsSystem.h>
@@ -172,6 +172,7 @@ namespace od
         {
             throw Exception("Failed to instantiate class of level object");
         }
+
         // it is important that we probe the fields before reading the record for this one
         mRflClassInstance->probeFields(builder);
         builder.readFieldRecord(dr); // this will read the field stuff and overwrite the fields in the class instance
@@ -189,7 +190,7 @@ namespace od
 
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onLoaded(*this); // do this last! we want to pass a fully set up level object here
+            mRflClassInstance->onLoaded(); // do this last! we want to pass a fully set up level object here
         }
     }
 
@@ -218,7 +219,7 @@ namespace od
 
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onSpawned(*this);
+            mRflClassInstance->onSpawned();
         }
 
         mState = LevelObjectState::Spawned;
@@ -229,7 +230,7 @@ namespace od
     {
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onDespawned(*this);
+            mRflClassInstance->onDespawned();
         }
 
         Logger::debug() << "Object " << getObjectId() << " despawned";
@@ -257,11 +258,11 @@ namespace od
 
         if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onUpdate(*this, relTime);
+            mRflClassInstance->onUpdate(relTime);
         }
     }
 
-    void LevelObject::messageReceived(LevelObject &sender, odRfl::RflMessage message)
+    void LevelObject::messageReceived(LevelObject &sender, od::Message message)
     {
         if(mState == LevelObjectState::Destroyed)
         {
@@ -272,16 +273,21 @@ namespace od
 
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onMessageReceived(*this, sender, message);
+            mRflClassInstance->onMessageReceived(sender, message);
         }
     }
 
     void LevelObject::setPosition(const glm::vec3 &v)
     {
-        bool crossedTriangle = _hasCrossedTriangle(mPosition, v);
+        glm::vec3 prevPos = mPosition;
         mPosition = v;
 
-        if(crossedTriangle)
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onTranslated(prevPos, v);
+        }
+
+        if(_hasCrossedTriangle(prevPos, v))
         {
             _updateAssociatedLayer(true);
         }
@@ -291,16 +297,27 @@ namespace od
 
     void LevelObject::setRotation(const glm::quat &q)
     {
+        glm::quat prevRot = mRotation;
         mRotation = q;
+
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onRotated(prevRot, q);
+        }
 
         _onTransformChanged(this);
     }
 
     void LevelObject::setScale(const glm::vec3 &scale)
     {
+        glm::vec3 prevScale = mScale;
         mScale = scale;
-
         mIsScaled = (mScale != glm::vec3(1,1,1));
+
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onScaled(prevScale, scale);
+        }
 
         _onTransformChanged(this);
     }
@@ -311,7 +328,10 @@ namespace od
 
         mIsVisible = v;
 
-        mRflClassInstance->onVisibilityChanged(*this);
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onVisibilityChanged();
+        }
     }
 
     void LevelObject::setObjectType(LevelObjectType type)
@@ -408,7 +428,7 @@ namespace od
         mRflUpdateHookEnabled = enableHook;
     }
 
-    void LevelObject::messageAllLinkedObjects(odRfl::RflMessage message)
+    void LevelObject::messageAllLinkedObjects(od::Message message)
     {
         for(auto it = mLinkedObjects.begin(); it != mLinkedObjects.end(); ++it)
         {
@@ -453,7 +473,7 @@ namespace od
     {
         if(mRflClassInstance != nullptr)
         {
-            mRflClassInstance->onMoved(*this);
+            mRflClassInstance->onTransformChanged();
         }
 
         for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
@@ -482,7 +502,7 @@ namespace od
 
         if(callChangedHook && mRflClassInstance != nullptr && oldLayer != newLayer)
         {
-            mRflClassInstance->onLayerChanged(*this, oldLayer, newLayer);
+            mRflClassInstance->onLayerChanged(oldLayer, newLayer);
         }
     }
 

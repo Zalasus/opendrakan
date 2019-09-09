@@ -19,11 +19,15 @@ namespace odRfl
     {
     }
 
-    std::vector<RflRegistrar*> &RflRegistrar::getRflRegistrarListSingleton()
+    ClassRegistrar *Rfl::getRegistrarForClassId(ClassId id)
     {
-        static std::vector<RflRegistrar*> list;
+        auto it = mRegisteredClasses.find(id);
+        if(it == mRegisteredClasses.end())
+        {
+            return nullptr;
+        }
 
-        return list;
+        return &it->second.get();
     }
 
 }

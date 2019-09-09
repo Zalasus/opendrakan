@@ -23,9 +23,8 @@
 namespace dragonRfl
 {
 
-	DomedSky::DomedSky(DragonRfl &rfl, od::LevelObject &obj)
-	: odRfl::LevelObjectClassBase(rfl, obj)
-    , mPrimarySky(true)
+	DomedSky::DomedSky()
+	: mPrimarySky(true)
 	, mFollowMode(0) // original height
 	, mOffsetDown(10000.0)
 	, mEffects(0) // none

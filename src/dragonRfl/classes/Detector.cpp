@@ -19,20 +19,19 @@
 namespace dragonRfl
 {
 
-    Detector::Detector(DragonRfl &rfl)
+    Detector::Detector()
     : mTask(Task::TriggerOnly)
     , mDetectWhich(DetectWhich::Both)
     , mDetectMethod(DetectMethod::OutsideToInside)
     , mOneWay(false)
     , mTriggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
     , mInitialState(InitialState::Enabled)
-    , mTriggerMessage(odRfl::RflMessage::Off)
+    , mTriggerMessage(od::Message::Off)
     , mDetectOnlyOnce(false)
     , mSequenceToPlay(odDb::AssetRef::NULL_REF)
     , mMessageString("")
     , mDoesCaveEntranceTeleport(true)
     , mDragonTakesOffUponTeleport(true)
-    , mRfl(rfl)
     , mPlayerWasIn(false)
     {
     }
@@ -54,20 +53,20 @@ namespace dragonRfl
                 (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
-    void Detector::onLoaded(od::LevelObject &obj)
+    void Detector::onLoaded()
     {
-        obj.setObjectType(od::LevelObjectType::Detector);
+        getLevelObject().setObjectType(od::LevelObjectType::Detector);
     }
 
-    void Detector::onSpawned(od::LevelObject &obj)
+    void Detector::onSpawned()
     {
-        obj.setEnableRflUpdateHook(true);
+        getLevelObject().setEnableRflUpdateHook(true);
 
-        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj, true);
+        mPhysicsHandle = getLevelObject().getLevel().getEngine().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
         mPhysicsHandle->setEnableCollision(false);
     }
 
-    void Detector::onUpdate(od::LevelObject &obj, float relTime)
+    void Detector::onUpdate(float relTime)
     {
         if(mTask != Task::TriggerOnly || mPhysicsHandle == nullptr)
         {
@@ -79,6 +78,7 @@ namespace dragonRfl
             return;
         }
 
+        od::LevelObject &obj = getLevelObject();
         od::LevelObject &playerObject = mRfl.getLocalPlayer()->getLevelObject();
 
         // since we currently only can detect the player (no definition of "NPC" exists yet), we can speed things up a bit by only performing
@@ -127,8 +127,6 @@ namespace dragonRfl
 
         mPlayerWasIn = playerIsIn;
     }
-
-    OD_REGISTER_RFLCLASS(DragonRfl, Detector);
 
 }
 

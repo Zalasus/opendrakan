@@ -160,7 +160,7 @@ namespace od
         return mLevelObjects[index].get();
     }
 
-    LevelObject *Level::findObjectOfType(odRfl::RflClassId id)
+    LevelObject *Level::findObjectOfType(odRfl::ClassId id)
     {
         for(auto &obj : mLevelObjects)
         {

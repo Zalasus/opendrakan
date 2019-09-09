@@ -97,7 +97,7 @@ namespace odDb
 
         bool mHasAlphaChannel;
         od::RefPtr<Class> mMaterialClass;
-        std::unique_ptr<odRfl::RflClass> mMaterialInstance;
+        std::unique_ptr<odRfl::ClassBase> mMaterialInstance;
 
         std::unique_ptr<uint8_t[]> mRgba8888Data;
 

@@ -16,18 +16,14 @@
 
 #include <odCore/render/Handle.h>
 
-#include <dragonRfl/classes/special/SelfDestruct.h>
-
 namespace dragonRfl
 {
-
-    class DragonRfl;
 
     class DomedSky : public odRfl::LevelObjectClassBase
     {
     public:
 
-        DomedSky(DragonRfl &rfl, od::LevelObject &obj);
+        DomedSky();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
         virtual void onSpawned() override;
@@ -60,6 +56,5 @@ namespace dragonRfl
 }
 
 ODRFL_DEFINE_CLASS_BASE(dragonRfl::DomedSky, 0x001a, "System", "Domed Sky");
-ODRFL_DEFINE_CLASS_IMPLEMENTATIONS(dragonRfl::DomedSky, dragonRfl::DomedSky, dragonRfl::SelfDestruct);
 
 #endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

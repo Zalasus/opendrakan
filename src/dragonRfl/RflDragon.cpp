@@ -41,6 +41,16 @@ namespace dragonRfl
     {
     }
 
+    const char *DragonRfl::getName() const
+    {
+        return "dragon";
+    }
+
+    void DragonRfl::onLoaded()
+    {
+        registerClass<UserInterfaceProperties>();
+    }
+
     void DragonRfl::onStartup()
     {
         od::Engine &engine = getEngine();
@@ -80,10 +90,6 @@ namespace dragonRfl
         physicsDebugAction->addCallback(actionHandler);
         physicsDebugAction->bindToKey(odInput::Key::F3);
         mPhysicsDebugAction = physicsDebugAction;
-    }
-
-    void DragonRfl::registerClasses()
-    {
     }
 
     void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)

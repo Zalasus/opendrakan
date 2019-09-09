@@ -8,9 +8,8 @@
 #ifndef INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_
 #define INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
-#include <odCore/rfl/RflMessage.h>
 
 namespace dragonRfl
 {
@@ -23,16 +22,16 @@ namespace dragonRfl
         DependsOnMessage
     };
 
-    class CountDownToZero : public odRfl::RflClass
+    class CountDownToZero : public odRfl::LevelObjectClassBase
     {
     public:
 
-        CountDownToZero(DragonRfl &rfl);
+        CountDownToZero();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
     protected:
@@ -53,6 +52,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0007, "System", "Count Down To Zero", dragonRfl::CountDownToZero);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::CountDownToZero, 0x0007, "System", "Count Down To Zero");
 
 #endif /* INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_ */

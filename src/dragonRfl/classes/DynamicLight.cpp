@@ -13,9 +13,8 @@
 namespace dragonRfl
 {
 
-    DynamicLight::DynamicLight(DragonRfl &rfl)
-    : StaticLight(rfl)
-    , mIntensityEffect(IntensityEffect::Off)
+    DynamicLight::DynamicLight()
+    : mIntensityEffect(IntensityEffect::Off)
     , mEffectTime(1.0)
     , mEffectAmplitude(1.0)
     , mStartEffect(EffectStartType::WhenCreated)
@@ -43,20 +42,20 @@ namespace dragonRfl
         }
     }
 
-    void DynamicLight::onSpawned(od::LevelObject &obj)
+    void DynamicLight::onSpawned()
     {
-        StaticLight::onSpawned(obj);
+        StaticLight::onSpawned();
 
         mLight->setDynamic(true);
 
-        obj.setEnableRflUpdateHook(true);
+        getLevelObject().setEnableRflUpdateHook(true);
 
         mStarted = (mStartEffect == EffectStartType::WhenCreated);
     }
 
-    void DynamicLight::onUpdate(od::LevelObject &obj, float relTime)
+    void DynamicLight::onUpdate(float relTime)
     {
-        StaticLight::onUpdate(obj, relTime);
+        StaticLight::onUpdate(relTime);
 
         if(mLight == nullptr || !mStarted)
         {
@@ -105,27 +104,27 @@ namespace dragonRfl
         }
     }
 
-    void DynamicLight::onMoved(od::LevelObject &obj)
+    void DynamicLight::onTransformChanged()
     {
         mNeedsUpdate = true;
     }
 
-    void DynamicLight::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
+    void DynamicLight::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         switch(message)
         {
-        case odRfl::RflMessage::Triggered:
+        case od::Message::Triggered:
             if(mStartEffect == EffectStartType::WhenEnabled)
             {
                 mStarted = true;
             }
             break;
 
-        case odRfl::RflMessage::On:
+        case od::Message::On:
             mLightIsOn = true;
             break;
 
-        case odRfl::RflMessage::Off:
+        case od::Message::Off:
             mLightIsOn = false;
             break;
 
@@ -133,8 +132,5 @@ namespace dragonRfl
             break;
         }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, DynamicLight);
 
 }

@@ -12,7 +12,7 @@
 
 #include <glm/vec4.hpp>
 
-#include <odCore/rfl/RflMessage.h>
+#include <odCore/Message.h>
 #include <odCore/DataStream.h>
 #include <odCore/Exception.h>
 
@@ -201,7 +201,7 @@ namespace odRfl
 
     typedef EnumImpl<uint32_t>          Enum;
     typedef EnumImpl<bool, 0, 1>        EnumYesNo;
-    typedef EnumImpl<RflMessage, 0, 9>  EnumMessage;
+    typedef EnumImpl<od::Message, 0, 9> EnumMessage;
 
 }
 

@@ -8,20 +8,22 @@
 #include <dragonRfl/classes/CountDownToZero.h>
 
 #include <limits>
-#include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
+
 #include <odCore/LevelObject.h>
+#include <odCore/rfl/Rfl.h>
+
+#include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
 {
 
-    CountDownToZero::CountDownToZero(DragonRfl &rfl)
+    CountDownToZero::CountDownToZero()
     : mInitialCounterValue(1)
     , mWhenTriggered(TimerTriggerMode::DependsOnMessage)
-    , mMessageToSend(odRfl::RflMessage::On)
-    , mIncrementMessage(odRfl::RflMessage::Off)
-    , mDecrementMessage(odRfl::RflMessage::On)
-    , mResetMessage(odRfl::RflMessage::Triggered)
+    , mMessageToSend(od::Message::On)
+    , mIncrementMessage(od::Message::Off)
+    , mDecrementMessage(od::Message::On)
+    , mResetMessage(od::Message::Triggered)
     , mCounterValue(1)
     {
     }
@@ -37,18 +39,18 @@ namespace dragonRfl
                (mResetMessage, "Reset Message");
     }
 
-    void CountDownToZero::onLoaded(od::LevelObject &obj)
+    void CountDownToZero::onLoaded()
     {
-        obj.setSpawnStrategy(od::SpawnStrategy::Always);
-        obj.setObjectType(od::LevelObjectType::Detector);
+        getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
+        getLevelObject().setObjectType(od::LevelObjectType::Detector);
     }
 
-    void CountDownToZero::onSpawned(od::LevelObject &obj)
+    void CountDownToZero::onSpawned()
     {
         mCounterValue = mInitialCounterValue;
     }
 
-    void CountDownToZero::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
+    void CountDownToZero::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         uint32_t newCounter = mCounterValue;
 
@@ -89,17 +91,14 @@ namespace dragonRfl
         // only trigger when we hit 0, not when we are already at zero when receiving message TODO: is this the right behaviour?
         if(mCounterValue != 0 && newCounter == 0)
         {
-            obj.messageAllLinkedObjects(mMessageToSend);
+            getLevelObject().messageAllLinkedObjects(mMessageToSend);
         }
 
-        Logger::verbose() << "Counter " << obj.getObjectId() << " received message '" << message << "' from " << sender.getObjectId() << ". "
+        Logger::verbose() << "Counter " << getLevelObject().getObjectId() << " received message '" << message << "' from " << sender.getObjectId() << ". "
                 << "Count was " << mCounterValue << ", now is " << newCounter;
 
         mCounterValue = newCounter;
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, CountDownToZero);
 
 }
 

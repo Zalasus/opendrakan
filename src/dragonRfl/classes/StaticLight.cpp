@@ -20,7 +20,7 @@
 namespace dragonRfl
 {
 
-    StaticLight::StaticLight(DragonRfl &rfl)
+    StaticLight::StaticLight()
     : mColor(0xffffffff)
     , mIntensityScaling(1.0)
     , mRadius(1.0)
@@ -40,16 +40,20 @@ namespace dragonRfl
                 (mQualityLevelRequired, "Quality Level Required");
     }
 
-    void StaticLight::onLoaded(od::LevelObject &obj)
+    void StaticLight::onLoaded()
     {
+        auto &obj = getLevelObject();
+
         obj.setObjectType(od::LevelObjectType::Light);
 
         glm::vec4 color = mColor.asColorVector();
         mLightColorVector = glm::vec3(color.r, color.g, color.b);
     }
 
-    void StaticLight::onSpawned(od::LevelObject &obj)
+    void StaticLight::onSpawned()
     {
+        auto &obj = getLevelObject();
+
         mLight = od::make_refd<od::Light>(obj.getLevel().getEngine().getPhysicsSystem());
         mLight->setColor(mLightColorVector);
         mLight->setRadius(mRadius);
@@ -61,7 +65,7 @@ namespace dragonRfl
         mNeedsUpdate = true;
     }
 
-    void StaticLight::onUpdate(od::LevelObject &obj, float relTime)
+    void StaticLight::onUpdate(float relTime)
     {
         if(!mNeedsUpdate || mLight == nullptr)
         {
@@ -72,12 +76,10 @@ namespace dragonRfl
         mNeedsUpdate = false;
     }
 
-    void StaticLight::onDespawned(od::LevelObject &obj)
+    void StaticLight::onDespawned()
     {
         mLight = nullptr;
     }
-
-    OD_REGISTER_RFLCLASS(DragonRfl, StaticLight);
 
 }
 

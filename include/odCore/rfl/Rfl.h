@@ -10,26 +10,13 @@
 
 #include <string>
 #include <map>
+#include <utility>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/RflManager.h>
 
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
-
-/**
- * @brief Convenience macro for defining the traits type for an RFL.
- *
- * @note Put this in global scope of the header declaring your RFL. Putting it in a namespace won't work.
- *
- * @param rflName   A string containing the RFL's name
- * @param rfl       The class implementing the RFL
- */
-#define OD_DEFINE_RFL_TRAITS(rflName, rfl) \
-    namespace odRfl\
-    {\
-        template<> constexpr const char *odRfl::RflTraits<rfl>::name() { return rflName; }\
-    }
 
 namespace od
 {
@@ -49,18 +36,30 @@ namespace odRfl
 		inline od::Engine &getEngine() { return mEngine; }
 
 		virtual const char *getName() const = 0;
-		virtual size_t getRegisteredClassCount() const = 0;
-		virtual RflClassRegistrar *getRegistrarForClass(RflClassId id) = 0;
-        virtual RflClass *createInstanceOfClass(RflClassId id) = 0;
 
+		virtual void onLoaded() = 0;
 		virtual void onStartup() override;
 
-		virtual void onRegisterClasses() = 0;
+		ClassRegistrar *getRegistrarForClassId(ClassId id);
+
+
+	protected:
+
+		template <typename _ClassBase>
+		void registerClass()
+		{
+		    ClassId id = ClassTraits<_ClassBase>::classId();
+		    ClassRegistrar &registrar = ClassTraits<_ClassBase>::getRegistrar();
+
+		    mRegisteredClasses.insert(std::make_pair(id, std::ref(registrar)));
+		}
 
 
 	private:
 
 		od::Engine &mEngine;
+
+		std::map<ClassId, std::reference_wrapper<ClassRegistrar>> mRegisteredClasses;
 
 	};
 

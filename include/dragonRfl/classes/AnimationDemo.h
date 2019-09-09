@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -23,16 +23,16 @@ namespace dragonRfl
 
     class DragonRfl;
 
-    class AnimationDemo : public odRfl::RflClass
+    class AnimationDemo : public odRfl::LevelObjectClassBase
     {
     public:
 
-        AnimationDemo(DragonRfl &rfl);
+        AnimationDemo();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime) override;
 
 
     protected:
@@ -55,6 +55,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x000c, "Debug", "Animation Demo", dragonRfl::AnimationDemo);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::AnimationDemo, 0x000c, "Debug", "Animation Demo");
 
 #endif /* INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_ */

@@ -8,7 +8,8 @@
 #ifndef INCLUDE_DRAGONRFL_CLASSES_HUMANCONTROLFIELDS_H_
 #define INCLUDE_DRAGONRFL_CLASSES_HUMANCONTROLFIELDS_H_
 
-#include <dragonRfl/classes/common/PlayerCommon.h>
+#include <odCore/rfl/Field.h>
+#include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
@@ -17,17 +18,13 @@ namespace dragonRfl
      * Seperate container class for the RFL fields in HumanControl. This exists just so the actual
      * RFL class HumanControl is not cluttered with the 179 members this class defines. Keeps logic and RFL stuff seperate.
      */
-    class HumanControlFields : public PlayerCommon
+    class HumanControlFields
     {
     public:
 
         HumanControlFields();
-        virtual ~HumanControlFields();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
-
-
-    protected:
+        void probeFields(odRfl::FieldProbe &probe);
 
         odRfl::CharChannel      mRightWeaponChannel;
         odRfl::CharChannel      mLeftWeaponChannel;
