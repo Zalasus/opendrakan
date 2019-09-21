@@ -249,19 +249,6 @@ namespace od
         mState = LevelObjectState::Destroyed;
     }
 
-    void LevelObject::update(float relTime)
-    {
-        if(mState != LevelObjectState::Spawned)
-        {
-            return;
-        }
-
-        if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->onUpdate(relTime);
-        }
-    }
-
     void LevelObject::messageReceived(LevelObject &sender, od::Message message)
     {
         if(mState == LevelObjectState::Destroyed)
@@ -275,6 +262,23 @@ namespace od
         {
             mRflClassInstance->onMessageReceived(sender, message);
         }
+    }
+
+    void LevelObject::update(float relTime)
+    {
+        if(mState != LevelObjectState::Spawned)
+        {
+            return;
+        }
+
+        if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onUpdate(relTime);
+        }
+    }
+
+    void LevelObject::postUpdate()
+    {
     }
 
     void LevelObject::setPosition(const glm::vec3 &v)

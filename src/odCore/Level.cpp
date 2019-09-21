@@ -148,6 +148,11 @@ namespace od
         {
             (*it)->update(relTime);
         }
+
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            (*it)->postUpdate();
+        }
     }
 
     LevelObject *Level::getLevelObjectByIndex(uint16_t index)

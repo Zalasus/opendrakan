@@ -87,8 +87,24 @@ namespace od
         void spawned();
         void despawned();
         void destroyed();
-        void update(float relTime);
         void messageReceived(LevelObject &sender, od::Message message);
+
+        /**
+         * @brief Called each tick during the update stage.
+         * @param relTime  The time passed since the last update, in seconds.
+         */
+        void update(float relTime);
+
+        /**
+         * @brief Called after everything in the level has been updated and a snapshot is about to occur.
+         *
+         * This is where an object can perform updates that only need to reflect the final level state for this tick.
+         * These updates should not affect other objects.
+         *
+         * One example for what might happen here is updating the object's associated layer, which only needs to consider
+         * the final position assigned during this tick.
+         */
+        void postUpdate();
 
         void setPosition(const glm::vec3 &v);
         void setRotation(const glm::quat &q);
