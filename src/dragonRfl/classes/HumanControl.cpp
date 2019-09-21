@@ -110,7 +110,7 @@ namespace dragonRfl
             //mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
             mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
 
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderHandle, skeleton);
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
@@ -172,6 +172,11 @@ namespace dragonRfl
         if(mCharacterController != nullptr)
         {
             mCharacterController->update(relTime);
+        }
+
+        if(mAnimPlayer != nullptr)
+        {
+            mAnimPlayer->update(relTime);
         }
     }
 

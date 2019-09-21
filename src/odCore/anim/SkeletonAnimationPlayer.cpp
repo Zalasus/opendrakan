@@ -247,9 +247,8 @@ namespace odAnim
     }
 
 
-    SkeletonAnimationPlayer::SkeletonAnimationPlayer(odRender::Handle *renderHandle, Skeleton *skeleton)
-    : mRenderHandle(renderHandle)
-    , mSkeleton(skeleton)
+    SkeletonAnimationPlayer::SkeletonAnimationPlayer(Skeleton *skeleton)
+    : mSkeleton(skeleton)
     , mRig(nullptr)
     , mPlaying(false)
     {
@@ -263,29 +262,10 @@ namespace odAnim
         {
             mBoneAnimators.push_back(BoneAnimator(mSkeleton->getBoneByJointIndex(i)));
         }
-
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->addFrameListener(this);
-
-            mRig = mRenderHandle->getRig();
-            if(mRig == nullptr)
-            {
-                throw od::Exception("Failed to get Rig from object node");
-            }
-
-        }else
-        {
-            // TODO: Hook us into another update callback here
-        }
     }
 
     SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
     {
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->removeFrameListener(this);
-        }
     }
 
     void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim,  PlaybackType type, float speedMultiplier)
@@ -345,7 +325,7 @@ namespace odAnim
         animator.setAccumulationModes(modes);
     }
 
-    void SkeletonAnimationPlayer::onFrameUpdate(double simTime, double relTime, uint32_t frameNumber)
+    void SkeletonAnimationPlayer::update(float relTime)
     {
         if(!mPlaying)
         {
@@ -365,13 +345,6 @@ namespace odAnim
             // TODO: invoke callback?
         }
         mPlaying = stillPlaying;
-
-        // note: even if we are no longer playing by now, we still might need to flatten the last frame.
-        //   thus, we don't check for the playing flag here
-        if(mRig != nullptr)
-        {
-            mSkeleton->flatten(mRig);
-        }
     }
 
 }

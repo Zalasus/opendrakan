@@ -22,9 +22,6 @@
 #include <odCore/anim/Skeleton.h>
 #include <odCore/anim/MotionAccumulator.h>
 
-#include <odCore/render/Handle.h>
-#include <odCore/render/FrameListener.h>
-
 namespace odAnim
 {
 
@@ -132,11 +129,11 @@ namespace odAnim
     };
 
 
-    class SkeletonAnimationPlayer : public odRender::FrameListener
+    class SkeletonAnimationPlayer
     {
     public:
 
-        explicit SkeletonAnimationPlayer(odRender::Handle *renderHandle, Skeleton *skeleton);
+        explicit SkeletonAnimationPlayer(Skeleton *skeleton);
         virtual ~SkeletonAnimationPlayer();
 
         inline bool isPlaying() const { return mPlaying; }
@@ -170,13 +167,11 @@ namespace odAnim
 
         void setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex = 0);
 
-        // implement odRender::FrameListener
-        virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) override;
+        void update(float relTime);
 
 
     private:
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
         Skeleton *mSkeleton;
         odRender::Rig *mRig;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!

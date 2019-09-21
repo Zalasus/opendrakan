@@ -62,7 +62,7 @@ namespace dragonRfl
             return;
         }
 
-        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderHandle, skeleton);
+        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
 
         obj.setEnableRflUpdateHook(true);
     }
@@ -98,6 +98,11 @@ namespace dragonRfl
             mPlayer->playAnimation(currentAnimation, playbackType, 1.0f);
 
             Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
+        }
+
+        if(mRenderHandle != nullptr)
+        {
+            getLevelObject().getOrCreateSkeleton()->flatten(mRenderHandle->getRig());
         }
     }
 
