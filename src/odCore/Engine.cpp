@@ -136,6 +136,11 @@ namespace od
 
 		    mPhysicsSystem->update(relTime);
 
+		    if(mRenderer != nullptr)
+		    {
+		        mRenderer->advance(relTime);
+		    }
+
 		    auto loopEnd = std::chrono::high_resolution_clock::now();
 		    auto loopTime = loopEnd - loopStart;
 		    if(loopTime < targetUpdateInterval)

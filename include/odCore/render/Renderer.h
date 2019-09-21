@@ -79,6 +79,16 @@ namespace odRender
 
         virtual Camera *getCamera() = 0;
 
+        /**
+         * @brief Notifies the renderer that a logic tick has happened.
+         *
+         * Since the tick rate is not guaranteed to be fixed, the parameter relTime should be used
+         * to correctly interpolate between ticks.
+         *
+         * @param relTime  Time since last tick, in seconds.
+         */
+        virtual void advance(float relTime) = 0;
+
         od::RefPtr<Handle> createHandleFromObject(od::LevelObject &obj);
 
     };

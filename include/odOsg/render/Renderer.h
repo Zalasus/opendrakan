@@ -12,6 +12,7 @@
 #include <mutex>
 #include <vector>
 #include <memory>
+#include <atomic>
 
 #include <osg/Group>
 #include <osg/Uniform>
@@ -67,6 +68,8 @@ namespace odOsg
 
         virtual odRender::Camera *getCamera() override;
 
+        virtual void advance(float relTime) override;
+
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
         void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index);
         void applyNullLight(size_t index);
@@ -109,6 +112,8 @@ namespace odOsg
         osg::ref_ptr<osg::Uniform> mLocalLightsRadius;
         osg::ref_ptr<osg::Uniform> mLocalLightsIntensity;
         osg::ref_ptr<osg::Uniform> mLocalLightsPosition;
+
+        float mTickTime;
     };
 
 }

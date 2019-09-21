@@ -364,6 +364,11 @@ namespace odOsg
         return mCamera;
     }
 
+    void Renderer::advance(float relTime)
+    {
+        mTickTime += relTime; // TODO: synchronize
+    }
+
     void Renderer::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction)
     {
         if(!mLightingEnabled)
