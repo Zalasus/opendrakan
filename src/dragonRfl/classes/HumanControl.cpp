@@ -176,7 +176,12 @@ namespace dragonRfl
 
         if(mAnimPlayer != nullptr)
         {
-            mAnimPlayer->update(relTime);
+            bool skeletonChanged = mAnimPlayer->update(relTime);
+
+            if(skeletonChanged && mRenderHandle != nullptr)
+            {
+                getLevelObject().getOrCreateSkeleton()->flatten(mRenderHandle->getRig());
+            }
         }
     }
 

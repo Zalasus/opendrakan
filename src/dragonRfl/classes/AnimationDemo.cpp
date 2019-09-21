@@ -100,9 +100,13 @@ namespace dragonRfl
             Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }
 
-        if(mRenderHandle != nullptr)
+        if(mPlayer != nullptr)
         {
-            getLevelObject().getOrCreateSkeleton()->flatten(mRenderHandle->getRig());
+            bool skeletonChanged = mPlayer->update(relTime);
+            if(skeletonChanged && mRenderHandle != nullptr)
+            {
+                getLevelObject().getOrCreateSkeleton()->flatten(mRenderHandle->getRig());
+            }
         }
     }
 

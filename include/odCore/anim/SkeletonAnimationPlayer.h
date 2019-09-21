@@ -167,7 +167,13 @@ namespace odAnim
 
         void setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex = 0);
 
-        void update(float relTime);
+        /**
+         * @brief Advances the animation by relTime and applies changes to the skeleton.
+         *
+         * Returns true if any changes have been made to the skeleton (making flattening necessary), or false
+         * if not.
+         */
+        bool update(float relTime);
 
 
     private:

@@ -325,11 +325,11 @@ namespace odAnim
         animator.setAccumulationModes(modes);
     }
 
-    void SkeletonAnimationPlayer::update(float relTime)
+    bool SkeletonAnimationPlayer::update(float relTime)
     {
         if(!mPlaying)
         {
-            return;
+            return false;
         }
 
         bool stillPlaying = true;
@@ -345,6 +345,8 @@ namespace odAnim
             // TODO: invoke callback?
         }
         mPlaying = stillPlaying;
+
+        return true; // last frame might still have changed the skeleton
     }
 
 }
