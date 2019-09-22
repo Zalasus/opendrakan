@@ -34,13 +34,12 @@ namespace odOsg
     }
 
 
-    class HandleFrameListenerCallback : public osg::Callback
+    class HandleUpdateCallback : public osg::Callback
     {
     public:
 
-        HandleFrameListenerCallback(Handle *handle, odRender::FrameListener *fl)
+        HandleUpdateCallback(Handle &handle)
         : mHandle(handle)
-        , mFrameListener(fl)
         , mLastSimTime(0.0)
         , mFirstUpdate(true)
         {
@@ -68,12 +67,7 @@ namespace odOsg
                 mFirstUpdate = false;
             }
 
-            if(mFrameListener != nullptr)
-            {
-                std::lock_guard<std::mutex> lock(mHandle->getMutex());
-
-                mFrameListener->onFrameUpdate(simTime, simTime-mLastSimTime, fs->getFrameNumber());
-            }
+            mHandle.update(simTime, simTime-mLastSimTime, fs->getFrameNumber());
 
             mLastSimTime = simTime;
 
@@ -83,19 +77,19 @@ namespace odOsg
 
     private:
 
-        Handle *mHandle;
-        odRender::FrameListener *mFrameListener;
+        Handle &mHandle;
         double mLastSimTime;
         bool mFirstUpdate;
     };
 
 
-    Handle::Handle(Renderer *renderer, osg::Group *parentGroup)
-    : mParentGroup(parentGroup)
+    Handle::Handle(Renderer &renderer, osg::Group *parentGroup)
+    : mRenderer(renderer)
+    , mParentGroup(parentGroup)
     , mModel(nullptr)
     , mFrameListener(nullptr)
     , mTransform(new osg::PositionAttitudeTransform)
-    , mLightStateAttribute(new LightStateAttribute(renderer, Constants::MAX_LIGHTS))
+    , mLightStateAttribute(new LightStateAttribute(&renderer, Constants::MAX_LIGHTS))
     {
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
 
@@ -103,6 +97,10 @@ namespace odOsg
         {
             mParentGroup->addChild(mTransform);
         }
+
+        // TODO: maybe allow to designate static objects that don't need this?
+        mUpdateCallback = new HandleUpdateCallback(*this);
+        mTransform->addUpdateCallback(mUpdateCallback);
     }
 
     Handle::~Handle()
@@ -143,14 +141,16 @@ namespace odOsg
     {
         _assert_mutex_locked(mMutex);
 
-        mTransform->setPosition(GlmAdapter::toOsg(pos));
+        mNextUpdatePosition = pos;
+        //mTransform->setPosition(GlmAdapter::toOsg(pos));
     }
 
     void Handle::setOrientation(const glm::quat &orientation)
     {
         _assert_mutex_locked(mMutex);
 
-        mTransform->setAttitude(GlmAdapter::toOsg(orientation));
+        mNextUpdateRotation = orientation;
+        //mTransform->setAttitude(GlmAdapter::toOsg(orientation));
     }
 
     void Handle::setScale(const glm::vec3 &scale)
@@ -242,37 +242,11 @@ namespace odOsg
 
     void Handle::addFrameListener(odRender::FrameListener *listener)
     {
-        _assert_mutex_locked(mMutex);
-
-        if(mFrameListener != nullptr)
-        {
-            throw od::UnsupportedException("Multiple frame listeners unsupported as of now");
-        }
-
-        mFrameListener = listener;
-
-        if(mFrameListener != nullptr && mUpdateCallback == nullptr)
-        {
-            mUpdateCallback = new HandleFrameListenerCallback(this, mFrameListener);
-            mTransform->addUpdateCallback(mUpdateCallback);
-
-        }else if(mFrameListener == nullptr && mUpdateCallback != nullptr)
-        {
-            mTransform->removeUpdateCallback(mUpdateCallback);
-            mUpdateCallback = nullptr;
-        }
+        throw od::UnsupportedException("Frame listeners unsupported right now");
     }
 
     void Handle::removeFrameListener(odRender::FrameListener *listener)
     {
-        _assert_mutex_locked(mMutex);
-
-        if(mFrameListener != listener)
-        {
-            return;
-        }
-
-        mFrameListener = nullptr;;
     }
 
     void Handle::setEnableColorModifier(bool enable)
@@ -353,6 +327,12 @@ namespace odOsg
         osg::Vec3f dir = GlmAdapter::toOsg(direction);
 
         mLightStateAttribute->setLayerLight(dif, amb, dir);
+    }
+
+    void Handle::update(double simTime, double relTime, uint32_t frameNumber)
+    {
+        mTransform->setPosition(GlmAdapter::toOsg(mNextUpdatePosition));
+        mTransform->setAttitude(GlmAdapter::toOsg(mNextUpdateRotation));
     }
 
 }

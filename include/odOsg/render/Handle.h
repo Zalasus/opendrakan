@@ -28,7 +28,7 @@ namespace odOsg
     {
     public:
 
-        Handle(Renderer *renderer, osg::Group *parent);
+        Handle(Renderer &renderer, osg::Group *parent);
         virtual ~Handle();
 
         inline osg::Group *getOsgNode() { return mTransform; }
@@ -71,9 +71,12 @@ namespace odOsg
          */
         virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) override;
 
+        void update(double simTime, double relTime, uint32_t frameNumber);
+
 
     private:
 
+        Renderer &mRenderer;
         osg::ref_ptr<osg::Group> mParentGroup;
 
         std::mutex mMutex;
@@ -85,6 +88,10 @@ namespace odOsg
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
         osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
         std::unique_ptr<Rig> mRig;
+
+        glm::vec3 mNextUpdatePosition;
+        glm::quat mNextUpdateRotation;
+        glm::vec3 mNextUpdateScale;
     };
 
 }

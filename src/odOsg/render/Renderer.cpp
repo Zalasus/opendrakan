@@ -146,15 +146,15 @@ namespace odOsg
         switch(space)
         {
         case odRender::RenderSpace::NONE:
-            handle = od::make_refd<Handle>(this, nullptr);
+            handle = od::make_refd<Handle>(*this, nullptr);
             break;
 
         case odRender::RenderSpace::LEVEL:
-            handle = od::make_refd<Handle>(this, mLevelRoot);
+            handle = od::make_refd<Handle>(*this, mLevelRoot);
             break;
 
         case odRender::RenderSpace::GUI:
-            handle = od::make_refd<Handle>(this, mGuiRoot);
+            handle = od::make_refd<Handle>(*this, mGuiRoot);
             break;
 
         default:
