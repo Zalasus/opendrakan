@@ -69,7 +69,7 @@ namespace od
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;
 
-        void activateLayerPVS(Layer &layer);
+        void activateLayerPVS(Layer *layer);
 
         void calculateInitialLayerAssociations();
 

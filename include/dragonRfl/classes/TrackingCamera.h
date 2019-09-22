@@ -31,6 +31,7 @@ namespace dragonRfl
 		virtual void onSpawned() override;
 		virtual void onDespawned() override;
 		virtual void onUpdate(float relTime) override;
+		virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
 
         void updateCamera();
 

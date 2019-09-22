@@ -57,6 +57,8 @@ namespace dragonRfl
 	{
         auto &obj = getLevelObject();
 
+        obj.getLevel().activateLayerPVS(obj.getAssociatedLayer());
+
 	    // set initial view matrix
 	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
 
@@ -76,6 +78,11 @@ namespace dragonRfl
 	void TrackingCamera::onUpdate(float relTime)
 	{
 	    updateCamera();
+	}
+
+	void TrackingCamera::onLayerChanged(od::Layer *from, od::Layer *to)
+	{
+	    getLevelObject().getLevel().activateLayerPVS(to);
 	}
 
     void TrackingCamera::updateCamera()

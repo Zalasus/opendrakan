@@ -202,11 +202,18 @@ namespace od
         return it->second;
     }
 
-    void Level::activateLayerPVS(Layer &layer)
+    void Level::activateLayerPVS(Layer *layer)
     {
-        if(mCurrentActivePvsLayer == nullptr)
+        if(layer == nullptr)
         {
-            for(auto index : layer.getVisibleLayerIndices())
+            for(auto &layer : mLayers)
+            {
+                layer->despawn();
+            }
+
+        }else if(mCurrentActivePvsLayer == nullptr)
+        {
+            for(auto index : layer->getVisibleLayerIndices())
             {
                 getLayerByIndex(index)->spawn();
             }
@@ -217,7 +224,7 @@ namespace od
             // while keeping all the ones that are in both. despawning all active layers and respawning the relevant
             // ones would be too inefficient
 
-            auto &newPvs = layer.getVisibleLayerIndices();
+            auto &newPvs = layer->getVisibleLayerIndices();
             auto &oldPvs = mCurrentActivePvsLayer->getVisibleLayerIndices();
 
             std::vector<uint32_t> layerPvsMerged = newPvs;
@@ -248,7 +255,7 @@ namespace od
             }
         }
 
-        mCurrentActivePvsLayer = &layer;
+        mCurrentActivePvsLayer = layer;
     }
 
     void Level::calculateInitialLayerAssociations()
