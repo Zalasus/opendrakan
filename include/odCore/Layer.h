@@ -80,7 +80,7 @@ namespace od
         inline Level &getLevel() { return mLevel; }
         inline uint32_t getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
-        inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
+        inline std::vector<uint32_t> &getVisibleLayerIndices() { return mVisibleLayers; };
         inline uint32_t getOriginX() const { return mOriginX; }
         inline uint32_t getOriginZ() const { return mOriginZ; }
         inline uint32_t getWidth() const { return mWidth; }
@@ -98,6 +98,7 @@ namespace od
         inline size_t getVisibleTriangleCount() const { return mVisibleTriangles; }
         inline size_t getCollidingTriangleCount() const { return mCollidingTriangles; }
         inline LayerType getLayerType() const { return mType; }
+        inline bool isSpawned() const { return mIsSpawned; }
 
         inline glm::vec3 getOrigin() const { return glm::vec3(mOriginX, getWorldHeightLu(), mOriginZ); }
 
@@ -184,6 +185,8 @@ namespace od
         od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
 
         std::vector<glm::vec3> mLocalNormals; // temporary array, unused right now
+
+        bool mIsSpawned;
     };
 
 }

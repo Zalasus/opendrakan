@@ -73,6 +73,7 @@ namespace od
         inline LevelObjectState getState() const { return mState; }
         inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
+        inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
         inline const std::vector<LevelObject*> &getLinkedObjects() const { return mLinkedObjects; }
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }

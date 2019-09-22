@@ -33,6 +33,7 @@ namespace od
     , mMaxWidth(0)
     , mMaxHeight(0)
     , mVerticalExtent(0)
+    , mCurrentActivePvsLayer(nullptr)
     {
     }
 
@@ -62,21 +63,6 @@ namespace od
         }
 
         Logger::info() << "Level loaded successfully";
-    }
-
-    void Level::spawnAllObjects()
-    {
-        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
-
-        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-        {
-            (*it)->spawn();
-        }
-
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
-        {
-            (*it)->spawned();
-        }
     }
 
     void Level::requestLevelObjectDestruction(LevelObject *obj)
@@ -127,6 +113,32 @@ namespace od
             {
                 results.push_back(it->get());
             }
+        }
+    }
+
+    void Level::initialSpawn()
+    {
+        for(auto &obj : mLevelObjects)
+        {
+            if(obj->getSpawnStrategy() == SpawnStrategy::Always)
+            {
+                obj->spawned();
+            }
+        }
+    }
+
+    void Level::spawnAllObjects()
+    {
+        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
+
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            (*it)->spawn();
+        }
+
+        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        {
+            (*it)->spawned();
         }
     }
 
@@ -188,6 +200,55 @@ namespace od
         }
 
         return it->second;
+    }
+
+    void Level::activateLayerPVS(Layer &layer)
+    {
+        if(mCurrentActivePvsLayer == nullptr)
+        {
+            for(auto index : layer.getVisibleLayerIndices())
+            {
+                getLayerByIndex(index)->spawn();
+            }
+
+        }else
+        {
+            // we want to despawn all layers that are in the previous layer's PVS but not in the passed layer's PVS,
+            // while keeping all the ones that are in both. despawning all active layers and respawning the relevant
+            // ones would be too inefficient
+
+            auto &newPvs = layer.getVisibleLayerIndices();
+            auto &oldPvs = mCurrentActivePvsLayer->getVisibleLayerIndices();
+
+            std::vector<uint32_t> layerPvsMerged = newPvs;
+            layerPvsMerged.insert(layerPvsMerged.end(), oldPvs.begin(), oldPvs.end());
+            std::sort(layerPvsMerged.begin(), layerPvsMerged.end());
+
+            for(size_t i = 0; i < layerPvsMerged.size()-1; ++i)
+            {
+                if(layerPvsMerged[i] == layerPvsMerged[i+1])
+                {
+                    // this layer stays
+                    i++;
+                    continue;
+
+                }else
+                {
+                    // this layer changed
+                    Layer *layerToToggle = getLayerByIndex(layerPvsMerged[i]);
+                    if(layerToToggle->isSpawned())
+                    {
+                        layerToToggle->despawn();
+
+                    }else
+                    {
+                        layerToToggle->spawn();
+                    }
+                }
+            }
+        }
+
+        mCurrentActivePvsLayer = &layer;
     }
 
     void Level::_loadNameAndDeps(SrscFile &file)

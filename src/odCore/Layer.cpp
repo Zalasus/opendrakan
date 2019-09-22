@@ -48,6 +48,7 @@ namespace od
     , mCollidingTriangles(0)
     , mMinHeight(0)
     , mMaxHeight(0)
+    , mIsSpawned(false)
     {
     }
 
@@ -204,6 +205,8 @@ namespace od
         mPhysicsHandle->setLightCallback(this);
 
         _bakeLocalLayerLight();
+
+        mIsSpawned = true;
     }
 
     void Layer::despawn()
@@ -211,6 +214,8 @@ namespace od
         mRenderHandle = nullptr;
         mRenderModel = nullptr;
         mPhysicsHandle = nullptr;
+
+        mIsSpawned = false;
     }
 
     bool Layer::hasHoleAt(const glm::vec2 &absolutePos)

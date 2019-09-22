@@ -40,11 +40,20 @@ namespace od
         inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
 
         void loadLevel();
-        void spawnAllObjects();
         void requestLevelObjectDestruction(LevelObject *obj);
         Layer *getLayerById(uint32_t id);
         Layer *getLayerByIndex(uint16_t index);
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
+
+        /**
+         * @brief Spawns all objects with SpawnStrategy::Always.
+         */
+        void initialSpawn();
+
+        /**
+         * @brief Spawns all objects, regardless of their visibility and SpawnStrategy.
+         */
+        void spawnAllObjects();
 
         void update(float relTime);
 
@@ -59,6 +68,8 @@ namespace od
 
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;
+
+        void activateLayerPVS(Layer &layer);
 
 
     private:
@@ -83,6 +94,8 @@ namespace od
 		std::list<LevelObject*> mDestructionQueue;
 
 		float mVerticalExtent;
+
+		Layer *mCurrentActivePvsLayer;
     };
 
 
