@@ -215,7 +215,12 @@ namespace od
 
     void LevelObject::spawned()
     {
-        _updateAssociatedLayer(false);
+        // if we haven't got an associated layer yet, search for it now.
+        // TODO: add flag tracking this. might be possible we searched once, but found there is no layer to associate with
+        if(mAssociatedLayer == nullptr)
+        {
+            updateAssociatedLayer(false);
+        }
 
         if(mRflClassInstance != nullptr)
         {
@@ -293,7 +298,7 @@ namespace od
 
         if(_hasCrossedTriangle(prevPos, v))
         {
-            _updateAssociatedLayer(true);
+            updateAssociatedLayer(true);
         }
 
         _onTransformChanged(this);
@@ -473,20 +478,7 @@ namespace od
         return BoundingSphere(mPosition, calcRadius*maxScale);
     }
 
-    void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
-    {
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->onTransformChanged();
-        }
-
-        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
-        {
-            (*it)->_attachmentTargetsTransformUpdated(this);
-        }
-    }
-
-    void LevelObject::_updateAssociatedLayer(bool callChangedHook)
+    void LevelObject::updateAssociatedLayer(bool callChangedHook)
     {
         odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
 
@@ -507,6 +499,19 @@ namespace od
         if(callChangedHook && mRflClassInstance != nullptr && oldLayer != newLayer)
         {
             mRflClassInstance->onLayerChanged(oldLayer, newLayer);
+        }
+    }
+
+    void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
+    {
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onTransformChanged();
+        }
+
+        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
+        {
+            (*it)->_attachmentTargetsTransformUpdated(this);
         }
     }
 

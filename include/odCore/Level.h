@@ -71,6 +71,8 @@ namespace od
 
         void activateLayerPVS(Layer &layer);
 
+        void calculateInitialLayerAssociations();
+
 
     private:
 

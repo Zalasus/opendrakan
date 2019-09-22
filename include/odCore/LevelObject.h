@@ -182,14 +182,14 @@ namespace od
          */
         BoundingSphere getBoundingSphere();
 
+        void updateAssociatedLayer(bool callChangedHook = true);
+
 
     private:
 
         void _onTransformChanged(LevelObject *transformChangeSource);
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
-
-        void _updateAssociatedLayer(bool callChangedHook);
 
 
         Level &mLevel;

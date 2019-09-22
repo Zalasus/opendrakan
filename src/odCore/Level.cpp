@@ -251,6 +251,27 @@ namespace od
         mCurrentActivePvsLayer = &layer;
     }
 
+    void Level::calculateInitialLayerAssociations()
+    {
+        // create temporary physics handles for all layers (without lighting, etc.)
+        std::vector<od::RefPtr<odPhysics::LayerHandle>> layerHandles;
+        layerHandles.reserve(mLayers.size());
+        for(auto &layer : mLayers)
+        {
+            if(layer->isSpawned())
+            {
+                continue;
+            }
+
+            layerHandles.push_back(mEngine.getPhysicsSystem().createLayerHandle(*layer));
+        }
+
+        for(auto &obj : mLevelObjects)
+        {
+            obj->updateAssociatedLayer(false);
+        }
+    }
+
     void Level::_loadNameAndDeps(SrscFile &file)
     {
         auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_NAME);
