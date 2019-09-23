@@ -172,10 +172,10 @@ namespace od
 	    mLevel = std::make_unique<od::Level>(levelFile, *this);
         mLevel->loadLevel();
 
-        mLevel->calculateInitialLayerAssociations();
+        //mLevel->calculateInitialLayerAssociations();
+        //mLevel->initialSpawn();
 
-        //mLevel->spawnAllObjects();
-        mLevel->initialSpawn();
+        mLevel->spawnAllObjects();
 	}
 
 	void Engine::onRenderWindowClosed()
