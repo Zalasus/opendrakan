@@ -99,8 +99,8 @@ namespace odOsg
         }
 
         // TODO: maybe allow to designate static objects that don't need this?
-        mUpdateCallback = new HandleUpdateCallback(*this);
-        mTransform->addUpdateCallback(mUpdateCallback);
+        //mUpdateCallback = new HandleUpdateCallback(*this);
+        //mTransform->addUpdateCallback(mUpdateCallback);
     }
 
     Handle::~Handle()
@@ -142,7 +142,7 @@ namespace odOsg
         _assert_mutex_locked(mMutex);
 
         mNextUpdatePosition = pos;
-        //mTransform->setPosition(GlmAdapter::toOsg(pos));
+        mTransform->setPosition(GlmAdapter::toOsg(pos));
     }
 
     void Handle::setOrientation(const glm::quat &orientation)
@@ -150,7 +150,7 @@ namespace odOsg
         _assert_mutex_locked(mMutex);
 
         mNextUpdateRotation = orientation;
-        //mTransform->setAttitude(GlmAdapter::toOsg(orientation));
+        mTransform->setAttitude(GlmAdapter::toOsg(orientation));
     }
 
     void Handle::setScale(const glm::vec3 &scale)
@@ -331,8 +331,8 @@ namespace odOsg
 
     void Handle::update(double simTime, double relTime, uint32_t frameNumber)
     {
-        mTransform->setPosition(GlmAdapter::toOsg(mNextUpdatePosition));
-        mTransform->setAttitude(GlmAdapter::toOsg(mNextUpdateRotation));
+        //mTransform->setPosition(GlmAdapter::toOsg(mNextUpdatePosition));
+        //mTransform->setAttitude(GlmAdapter::toOsg(mNextUpdateRotation));
     }
 
 }
