@@ -60,7 +60,7 @@ namespace dragonRfl
 
     void Detector::onSpawned()
     {
-        getLevelObject().setEnableRflUpdateHook(true);
+        getLevelObject().setEnableUpdate(true);
 
         mPhysicsHandle = getLevelObject().getLevel().getEngine().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
         mPhysicsHandle->setEnableCollision(false);

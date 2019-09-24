@@ -61,7 +61,7 @@ namespace dragonRfl
         mLight->setRequiredQualityLevel(mQualityLevelRequired);
         mLight->setPosition(obj.getPosition());
 
-        obj.setEnableRflUpdateHook(true);
+        obj.setEnableUpdate(true);
         mNeedsUpdate = true;
     }
 

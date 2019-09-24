@@ -64,7 +64,7 @@ namespace dragonRfl
 
         mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
 
-        obj.setEnableRflUpdateHook(true);
+        obj.setEnableUpdate(true);
     }
 
     void AnimationDemo::onUpdate(float relTime)

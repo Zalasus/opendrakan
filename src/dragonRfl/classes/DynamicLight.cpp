@@ -48,7 +48,7 @@ namespace dragonRfl
 
         mLight->setDynamic(true);
 
-        getLevelObject().setEnableRflUpdateHook(true);
+        getLevelObject().setEnableUpdate(true);
 
         mStarted = (mStartEffect == EffectStartType::WhenCreated);
     }

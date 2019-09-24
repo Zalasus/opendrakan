@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <list>
+#include <set>
 #include <glm/vec3.hpp>
 
 #include <odCore/FilePath.h>
@@ -73,6 +74,9 @@ namespace od
 
         void calculateInitialLayerAssociations();
 
+        void addToUpdateQueue(LevelObject &obj);
+        void removeFromUpdateQueue(LevelObject &obj);
+
 
     private:
 
@@ -98,6 +102,14 @@ namespace od
 		float mVerticalExtent;
 
 		Layer *mCurrentActivePvsLayer;
+
+		std::set<LevelObject*> mObjectUpdateQueue;
+
+		// since an object could add/remove itself from the update queue during the update phase,
+        // we have to consider that any iterators of mObjectUpdateQueue might become invalid while
+		// performing the update. thus, we copy the queue into this temporary vector during update
+		// so no invalidation can occur.
+        std::vector<LevelObject*> mTempObjectUpdateQueue;
     };
 
 

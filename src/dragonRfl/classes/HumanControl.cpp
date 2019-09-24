@@ -125,7 +125,7 @@ namespace dragonRfl
             Logger::warn() << "Used Human Control class on object without skeleton";
         }
 
-    	obj.setEnableRflUpdateHook(true);
+    	obj.setEnableUpdate(true);
     }
 
     void HumanControl::onUpdate(float relTime)

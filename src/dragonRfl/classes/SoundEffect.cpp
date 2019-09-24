@@ -66,7 +66,7 @@ namespace dragonRfl
 
         if(mPlayMode == PlayMode::Once || mPlayMode == PlayMode::Intermittent)
         {
-            getLevelObject().setEnableRflUpdateHook(true);
+            getLevelObject().setEnableUpdate(true);
             mSoundSource->setLooping(false);
 
         }else if(mPlayMode == PlayMode::Looping || mPlayMode == PlayMode::LoopingAndTriggered)

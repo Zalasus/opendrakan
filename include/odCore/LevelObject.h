@@ -91,6 +91,14 @@ namespace od
         void messageReceived(LevelObject &sender, od::Message message);
 
         /**
+         * @brief Enables or disables updates for this object.
+         *
+         * Changing this in the update hook will not prevent the postUpdate hook to be called. The change
+         * will only become effective with the next update.
+         */
+        void setEnableUpdate(bool enable);
+
+        /**
          * @brief Called each tick during the update stage.
          * @param relTime  The time passed since the last update, in seconds.
          */
@@ -163,10 +171,6 @@ namespace od
          */
         void detach();
 
-        /**
-         * @brief Enables or disables the RFL update hook.
-         */
-        void setEnableRflUpdateHook(bool enableHook);
         void messageAllLinkedObjects(od::Message message);
         void requestDestruction();
 
@@ -183,6 +187,8 @@ namespace od
         BoundingSphere getBoundingSphere();
 
         void updateAssociatedLayer(bool callChangedHook = true);
+
+
 
 
     private:
@@ -230,8 +236,6 @@ namespace od
 
         Layer *mAssociatedLayer;
         bool mAssociateWithCeiling;
-
-        bool mRflUpdateHookEnabled;
     };
 
 }

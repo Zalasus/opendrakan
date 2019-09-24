@@ -52,7 +52,7 @@ namespace dragonRfl
 	{
         auto &obj = getLevelObject();
 
-	    obj.setEnableRflUpdateHook(true);
+	    obj.setEnableUpdate(true);
 
 	    mTimerRunning = (mStartMode == TimerStartMode::RunInstantly);
 	}

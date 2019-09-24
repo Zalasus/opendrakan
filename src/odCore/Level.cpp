@@ -156,14 +156,17 @@ namespace od
             }
         }
 
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        mTempObjectUpdateQueue.clear();
+        mTempObjectUpdateQueue.assign(mObjectUpdateQueue.begin(), mObjectUpdateQueue.end());
+
+        for(auto obj : mTempObjectUpdateQueue)
         {
-            (*it)->update(relTime);
+            obj->update(relTime);
         }
 
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        for(auto obj : mTempObjectUpdateQueue)
         {
-            (*it)->postUpdate();
+            obj->postUpdate();
         }
     }
 
@@ -276,6 +279,20 @@ namespace od
         for(auto &obj : mLevelObjects)
         {
             obj->updateAssociatedLayer(false);
+        }
+    }
+
+    void Level::addToUpdateQueue(LevelObject &obj)
+    {
+        mObjectUpdateQueue.insert(&obj);
+    }
+
+    void Level::removeFromUpdateQueue(LevelObject &obj)
+    {
+        auto it = mObjectUpdateQueue.find(&obj);
+        if(it != mObjectUpdateQueue.end())
+        {
+            mObjectUpdateQueue.erase(it);
         }
     }
 

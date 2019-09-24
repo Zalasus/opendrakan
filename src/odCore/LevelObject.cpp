@@ -105,7 +105,6 @@ namespace od
     , mIgnoreAttachmentScale(false)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
-    , mRflUpdateHookEnabled(false)
     {
     }
 
@@ -269,6 +268,18 @@ namespace od
         }
     }
 
+    void LevelObject::setEnableUpdate(bool enable)
+    {
+        if(enable)
+        {
+            mLevel.addToUpdateQueue(*this);
+
+        }else
+        {
+            mLevel.removeFromUpdateQueue(*this);
+        }
+    }
+
     void LevelObject::update(float relTime)
     {
         if(mState != LevelObjectState::Spawned)
@@ -276,7 +287,7 @@ namespace od
             return;
         }
 
-        if(mRflUpdateHookEnabled && mRflClassInstance != nullptr)
+        if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->onUpdate(relTime);
         }
@@ -430,11 +441,6 @@ namespace od
         }
 
         mAttachmentTarget = nullptr;
-    }
-
-    void LevelObject::setEnableRflUpdateHook(bool enableHook)
-    {
-        mRflUpdateHookEnabled = enableHook;
     }
 
     void LevelObject::messageAllLinkedObjects(od::Message message)

@@ -68,7 +68,7 @@ namespace dragonRfl
 	        return;
 	    }
 
-	    obj.setEnableRflUpdateHook(true);
+	    obj.setEnableUpdate(true);
 	}
 
 	void TrackingCamera::onDespawned()
