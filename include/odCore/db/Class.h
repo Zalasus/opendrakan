@@ -45,11 +45,16 @@ namespace odDb
 
         virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
-        std::unique_ptr<odRfl::ClassBase> makeInstance();
-        std::unique_ptr<odRfl::LevelObjectClassBase> makeInstanceForLevelObject(od::LevelObject &obj);
+        std::unique_ptr<odRfl::ClassBase> makeInstance(odRfl::RflManager &rflManager);
+        std::unique_ptr<odRfl::LevelObjectClassBase> makeInstanceForLevelObject(odRfl::RflManager &rflManager, od::LevelObject &obj);
 
 
 	private:
+
+        /**
+         * @brief Returns cached registrar or attempts once to retrieve it from the RFL.
+         */
+        odRfl::ClassRegistrar *_getRegistrar(odRfl::RflManager &rflManager);
 
         ClassFactory &mClassFactory;
 
@@ -60,8 +65,9 @@ namespace odDb
         odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
 
+        bool mTriedToCacheRegistrar;
+        odRfl::ClassRegistrar *mCachedRflClassRegistrar;
         odRfl::Rfl *mRfl;
-        odRfl::ClassRegistrar *mRflClassRegistrar;
 
 	};
 

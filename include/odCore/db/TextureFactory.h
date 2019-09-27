@@ -14,11 +14,6 @@
 #include <odCore/db/AssetFactory.h>
 #include <odCore/db/Texture.h>
 
-namespace od
-{
-    class Engine;
-}
-
 namespace odDb
 {
 
@@ -37,9 +32,7 @@ namespace odDb
 		/**
          * This needs an engine instance because classes pass it to the RFL loaded hook.
          */
-		TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine);
-
-		inline od::Engine &getEngine() { return mEngine; }
+		TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer);
 
 		PaletteColor getPaletteColor(size_t index);
 
@@ -54,7 +47,6 @@ namespace odDb
 
 		void _loadPalette();
 
-		od::Engine &mEngine;
 		std::vector<PaletteColor> mPalette;
 	};
 

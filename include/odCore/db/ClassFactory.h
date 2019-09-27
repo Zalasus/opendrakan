@@ -8,19 +8,10 @@
 #ifndef INCLUDE_CLASSFACTORY_H_
 #define INCLUDE_CLASSFACTORY_H_
 
+#include <odCore/FilePath.h>
+
 #include <odCore/db/Class.h>
 #include <odCore/db/AssetFactory.h>
-
-namespace od
-{
-    class Engine;
-}
-
-namespace odRfl
-{
-    class Rfl;
-    class RflManager;
-}
 
 namespace odDb
 {
@@ -29,9 +20,9 @@ namespace odDb
     {
     public:
 
-        ClassFactory(AssetProvider &ap, od::SrscFile &classContainer, od::Engine &engine);
+        ClassFactory(AssetProvider &ap, od::SrscFile &classContainer);
 
-        inline odRfl::Rfl *getRfl() { return mRfl; }
+        inline const od::FilePath &getRflPath() { return mRflPath; }
 
         /**
          * @brief Finds the first class record in this factory's container with the given RFL record type.
@@ -54,9 +45,7 @@ namespace odDb
 
         void _loadRflRecord();
 
-        odRfl::RflManager &mRflManager;
-        odRfl::Rfl *mRfl;
-
+        od::FilePath mRflPath;
     };
 
 }

@@ -17,9 +17,8 @@ namespace odDb
     static TextureFactory::PaletteColor UNSPECIFIED_PALETTE_COLOR = { 0, 0, 0, 0 };
 
 
-	TextureFactory::TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine)
+	TextureFactory::TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer)
 	: AssetFactory<Texture>(ap, textureContainer)
-	, mEngine(engine)
 	{
 		_loadPalette();
 	}

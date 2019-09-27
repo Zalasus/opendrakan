@@ -18,9 +18,8 @@
 namespace odDb
 {
 
-	ClassFactory::ClassFactory(AssetProvider &ap, od::SrscFile &classContainer, od::Engine &engine)
+	ClassFactory::ClassFactory(AssetProvider &ap, od::SrscFile &classContainer)
     : AssetFactory<Class>(ap, classContainer)
-    , mRflManager(engine.getRflManager())
     {
         _loadRflRecord();
     }
@@ -68,12 +67,7 @@ namespace odDb
         dr >> od::DataReader::Ignore(8)
            >> rflPathStr;
 
-        od::FilePath rflPath(rflPathStr, getSrscFile().getFilePath().dir());
-
-        // ignore path part. should we ever encouter multiple RFLs with the same name in different
-        //  directories, we need to handle this differently
-        mRfl = mRflManager.getRfl(rflPath.fileStrNoExt()); // TODO: catch NotFoundException and throw one with meaningful description
+        mRflPath = od::FilePath(rflPathStr, getSrscFile().getFilePath().dir());
     }
 
 }
-

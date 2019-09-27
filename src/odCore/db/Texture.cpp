@@ -118,11 +118,6 @@ namespace odDb
         if(!mMaterialClassRef.isNull())
         {
             mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
-            mMaterialInstance = mMaterialClass->makeInstance();
-            if(mMaterialInstance != nullptr)
-            {
-                mMaterialInstance->onLoaded();
-            }
         }
     }
 

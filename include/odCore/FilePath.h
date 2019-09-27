@@ -29,6 +29,11 @@ namespace od
 			RELATIVE
 		};
 
+        /**
+         * @brief Constructs an empty FilePath.
+         */
+        FilePath();
+
 		/**
 		 * Constructs a new FilePath object from the given path. If path is
 		 * relative, it is assumed to be relative to the current working directory.

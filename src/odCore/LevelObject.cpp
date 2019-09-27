@@ -166,7 +166,7 @@ namespace od
 
         odRfl::ObjectBuilderProbe builder;
         mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
-        mRflClassInstance = mClass->makeInstanceForLevelObject(*this);
+        mRflClassInstance = mClass->makeInstanceForLevelObject(mLevel.getEngine().getRflManager(), *this);
         if(mRflClassInstance == nullptr)
         {
             throw Exception("Failed to instantiate class of level object");
@@ -571,7 +571,3 @@ namespace od
     }
 
 }
-
-
-
-

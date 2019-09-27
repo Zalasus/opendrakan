@@ -27,7 +27,7 @@ namespace dragonRfl
     : odGui::Gui(*engine.getRenderer())
     , mEngine(engine)
     , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, engine.getEngineRootDir()).adjustCase())
-    , mRrcTextureFactory(*this, mRrcFile, engine)
+    , mRrcTextureFactory(*this, mRrcFile)
     , mInterfaceDb(nullptr)
     {
         if(engine.getRenderer() == nullptr)
@@ -52,7 +52,7 @@ namespace dragonRfl
         }
 
         od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::ClassBase> uiPropsInstance = uiPropsClass->makeInstance();
+        std::unique_ptr<odRfl::ClassBase> uiPropsInstance = uiPropsClass->makeInstance(engine.getRflManager());
         mUserInterfaceProperties.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfaceProperties == nullptr)
         {

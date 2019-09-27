@@ -23,8 +23,9 @@ namespace odDb
     , mClassFactory(factory)
     , mRflClassId(0)
     , mIconNumber(0)
-    , mRfl(mClassFactory.getRfl())
-    , mRflClassRegistrar(nullptr)
+    , mTriedToCacheRegistrar(false)
+    , mCachedRflClassRegistrar(nullptr)
+    , mRfl(nullptr)
     {
     }
 
@@ -52,24 +53,12 @@ namespace odDb
                 mModel = nullptr;
             }
         }
-
-        if(mRfl != nullptr)
-        {
-            try
-            {
-                mRflClassRegistrar = mRfl->getRegistrarForClassId(mRflClassId);
-
-            }catch(od::NotFoundException &e)
-            {
-                Logger::debug() << "RflClass type " << std::hex << mRflClassId << std::dec <<
-                    " of class '" << mClassName << "' not found. Probably unimplemented";
-            }
-        }
     }
 
-    std::unique_ptr<odRfl::ClassBase> Class::makeInstance()
+    std::unique_ptr<odRfl::ClassBase> Class::makeInstance(odRfl::RflManager &rflManager)
 	{
-        if(mRflClassRegistrar == nullptr)
+        odRfl::ClassRegistrar *registrar = _getRegistrar(rflManager);
+        if(registrar == nullptr)
         {
             Logger::debug() << "Tried to instantiate class without valid RFL class. Ignoring call as class is probably uinimplemented";
             return nullptr;
@@ -77,7 +66,7 @@ namespace odDb
 
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
-    	std::unique_ptr<odRfl::ClassBase> newInstance(mRflClassRegistrar->makeInstance());
+    	std::unique_ptr<odRfl::ClassBase> newInstance(registrar->makeInstance());
         mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
         newInstance->probeFields(mClassBuilder);
         newInstance->setRfl(*mRfl);
@@ -85,17 +74,17 @@ namespace odDb
         return newInstance;
 	}
 
-    std::unique_ptr<odRfl::LevelObjectClassBase> Class::makeInstanceForLevelObject(od::LevelObject &obj)
+    std::unique_ptr<odRfl::LevelObjectClassBase> Class::makeInstanceForLevelObject(odRfl::RflManager &rflManager, od::LevelObject &obj)
     {
         std::unique_ptr<odRfl::LevelObjectClassBase> instance;
 
-        if(mRflClassRegistrar == nullptr)
+        if(_getRegistrar(rflManager) == nullptr)
         {
             instance = std::make_unique<odRfl::DefaultObjectClass>();
 
         }else
         {
-            std::unique_ptr<odRfl::ClassBase> newInstance = makeInstance();
+            std::unique_ptr<odRfl::ClassBase> newInstance = makeInstance(rflManager);
             if(newInstance->getBaseType() != odRfl::ClassBaseType::LEVEL_OBJECT)
             {
                 throw od::Exception("Tried to make level object with non-level-object class");
@@ -106,6 +95,35 @@ namespace odDb
 
         instance->setLevelObject(obj);
         return instance;
+    }
+
+    odRfl::ClassRegistrar *Class::_getRegistrar(odRfl::RflManager &rflManager)
+    {
+        if(!mTriedToCacheRegistrar)
+        {
+            odRfl::Rfl *rfl = rflManager.getRfl(mClassFactory.getRflPath().fileStrNoExt());
+            if(rfl == nullptr)
+            {
+                Logger::warn() << "RFL '" << mClassFactory.getRflPath() << "' needed for Instantiating class '" << mClassName << "' not loaded";
+
+            } else
+            {
+                mRfl = rfl;
+                try
+                {
+                    mCachedRflClassRegistrar = mRfl->getRegistrarForClassId(mRflClassId);
+
+                }catch(od::NotFoundException &e)
+                {
+                    Logger::debug() << "RFL class type " << std::hex << mRflClassId << std::dec <<
+                        " of class '" << mClassName << "' not found. Probably unimplemented";
+                }
+            }
+
+            mTriedToCacheRegistrar = true;
+        }
+
+        return mCachedRflClassRegistrar;
     }
 
 }

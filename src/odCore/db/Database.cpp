@@ -129,41 +129,13 @@ namespace odDb
             throw od::Exception("Found less dependency definitions than stated in dependencies statement");
         }
 
-
         // now that the database is loaded, create the various asset factories
-
         _tryOpeningAssetContainer(mModelFactory,    mModelContainer,    ".mod");
         _tryOpeningAssetContainer(mAnimFactory,     mAnimContainer,     ".adb");
         _tryOpeningAssetContainer(mSoundFactory,    mSoundContainer,    ".sdb");
         _tryOpeningAssetContainer(mSequenceFactory, mSequenceContainer, ".ssd");
-
-        // texture container is different. it needs an engine reference
-        od::FilePath txdPath = mDbFilePath.ext(".txd");
-        if(txdPath.exists())
-        {
-            mTextureContainer = std::make_unique<od::SrscFile>(txdPath);
-            mTextureFactory = std::make_unique<TextureFactory>(*this, *mTextureContainer, mDbManager.getEngine());
-
-            Logger::verbose() << "Opened database texture container " << txdPath.str();
-
-        }else
-        {
-            Logger::verbose() << "Database has no texture container";
-        }
-
-        // same with class container
-        od::FilePath odbPath = mDbFilePath.ext(".odb");
-        if(odbPath.exists())
-        {
-            mClassContainer = std::make_unique<od::SrscFile>(odbPath);
-            mClassFactory = std::make_unique<ClassFactory>(*this, *mClassContainer, mDbManager.getEngine());
-
-            Logger::verbose() << "Opened database class container " << odbPath.str();
-
-        }else
-        {
-            Logger::verbose() << "Database has no class container";
-        }
+        _tryOpeningAssetContainer(mTextureFactory,  mTextureContainer,  ".txd");
+        _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
 	}
 
 	AssetProvider &Database::getDependency(uint16_t index)
@@ -238,8 +210,4 @@ namespace odDb
         return mSoundFactory->getAsset(recordId);
     }
 
-} 
-
-
-
-
+}

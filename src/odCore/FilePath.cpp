@@ -29,6 +29,12 @@ extern "C"
 namespace od
 {
 
+    FilePath::FilePath()
+    : mRootStyle(PathRootStyle::RELATIVE)
+	, mAlreadyBuiltPath(false)
+    {
+    }
+
 	FilePath::FilePath(const std::string &path)
 	: mOriginalPath(path)
 	, mRootStyle(PathRootStyle::RELATIVE)
@@ -291,8 +297,3 @@ namespace od
 		return left;
 	}
 }
-
-
-
-
-
