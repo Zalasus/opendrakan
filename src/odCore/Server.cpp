@@ -19,19 +19,19 @@
 namespace od
 {
 
-    Server::Server(odDb::DbManager &dbManager)
+    Server::Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager)
     : mDbManager(dbManager)
+    , mRflManager(rflManager)
     , mIsDone(false)
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>();
-        mRflManager = std::make_unique<odRfl::RflManager>();
     }
 
     void Server::run()
     {
         Logger::info() << "OpenDrakan server starting...";
 
-        mRflManager->onStartup();
+        mRflManager.onStartup();
 
         Logger::verbose() << "Everyting set up. Starting main server loop.";
 

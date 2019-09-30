@@ -33,19 +33,21 @@ namespace od
     {
     public:
 
-        Server(odDb::DbManager &dbManager);
+        Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager);
 
-        inline odRfl::RflManager &getRflManager() { return *mRflManager; }
+        inline odDb::DbManager &getDbManager() { return mDbManager; }
+        inline odRfl::RflManager &getRflManager() { return mRflManager; }
+        inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
 
         void run();
 
 
     private:
 
-        odDb::DbManager mDbManager;
+        odDb::DbManager &mDbManager;
+        odRfl::RflManager &mRflManager;
 
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
-        std::unique_ptr<odRfl::RflManager> mRflManager;
 
         std::unique_ptr<Level> mLevel;
 
