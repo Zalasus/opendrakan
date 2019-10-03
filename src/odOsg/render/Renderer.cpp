@@ -88,8 +88,6 @@ namespace odOsg
         mSceneRoot->addChild(mLevelRoot);
 
         _setupGuiStuff();
-
-        setEnableLighting(false);
     }
 
     Renderer::~Renderer()
