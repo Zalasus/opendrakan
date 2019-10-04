@@ -26,9 +26,19 @@ namespace odAnim
     class Skeleton;
 }
 
+namespace odRender
+{
+    class Handle;
+}
+
+namespace odPhysics
+{
+    class ObjectHandle;
+}
+
 namespace od
 {
-
+    class ObjectLightReceiver;
     class Level;
     class Layer;
 
@@ -65,7 +75,7 @@ namespace od
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline odDb::Class *getClass() { return mClass; }
-        inline odRfl::LevelObjectClassBase *getClassInstance() { return mRflClassInstance.get(); }
+        inline odRfl::LevelObjectClassBase *getClassInstance() { return nullptr; }
         inline Level &getLevel() { return mLevel; }
         inline glm::vec3 getPosition() const { return mPosition; }
         inline glm::vec3 getScale() const { return mScale; }
@@ -74,16 +84,14 @@ namespace od
         inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
-        inline const std::vector<LevelObject*> &getLinkedObjects() const { return mLinkedObjects; }
+        inline const std::vector<uint16_t> &getLinkedObjectIndices() const { return mLinkedObjectIndices; }
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }
-        inline bool isScaled() const { return mIsScaled; }
+        inline bool isScaled() const { return (mScale != glm::vec3(1,1,1)); }
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
         void loadFromRecord(DataReader dr);
-
-        void buildLinks();
 
         void spawned();
         void despawned();
@@ -189,8 +197,6 @@ namespace od
         void updateAssociatedLayer(bool callChangedHook = true);
 
 
-
-
     private:
 
         void _onTransformChanged(LevelObject *transformChangeSource);
@@ -199,20 +205,20 @@ namespace od
 
 
         Level &mLevel;
+
+        // loaded from the object record:
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
         od::RefPtr<odDb::Class> mClass;
-        std::unique_ptr<odAnim::Skeleton> mSkeleton;
-        std::unique_ptr<odRfl::LevelObjectClassBase> mRflClassInstance;
         uint32_t mLightingLayerId;
         Layer *mLightingLayer;
-        glm::vec3 mInitialPosition;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
-        std::vector<uint16_t> mLinks;
-        glm::vec3 mInitialScale;
+        std::vector<uint16_t> mLinkedObjectIndices;
+        glm::vec3 mInitialPosition;
         glm::quat mInitialRotation;
-        bool mIsScaled;
+        glm::vec3 mInitialScale;
+        bool mIsVisible;
 
         glm::vec3 mPosition;
         glm::quat mRotation;
@@ -221,9 +227,6 @@ namespace od
         LevelObjectState mState;
         LevelObjectType mObjectType;
         SpawnStrategy mSpawnStrategy;
-        bool mIsVisible;
-
-        std::vector<LevelObject*> mLinkedObjects;
 
         od::LevelObject *mAttachmentTarget;
         std::list<od::LevelObject*> mAttachedObjects;
@@ -236,6 +239,13 @@ namespace od
 
         Layer *mAssociatedLayer;
         bool mAssociateWithCeiling;
+
+        // created on demand:
+        std::unique_ptr<odAnim::Skeleton> mSkeleton;
+        std::unique_ptr<ObjectLightReceiver> mLightReceiver;
+        od::RefPtr<odRender::Handle> mRenderHandle;
+        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+
     };
 
 }

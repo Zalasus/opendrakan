@@ -19,12 +19,14 @@ namespace od
     {
     public:
 
+        Client(odRender::Renderer &renderer);
+
         inline odRender::Renderer &getRenderer() { return mRenderer; }
 
 
     private:
 
-
+        odRender::Renderer &mRenderer;
 
     };
 

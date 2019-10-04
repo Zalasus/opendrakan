@@ -54,6 +54,44 @@ namespace odRfl
 
     };
 
+
+    class DefaultServerObjectClass : public odRfl::LevelObjectClassBase
+    {
+    public:
+
+        virtual void probeFields(FieldProbe &probe) override;
+
+
+    private:
+
+        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+
+    };
+
+
+    class DefaultClientObjectClass : public odRfl::LevelObjectClassBase
+    {
+    public:
+
+        virtual void probeFields(FieldProbe &probe) override;
+
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
+        virtual void onVisibilityChanged() override;
+
+        // assume default objects are static, so we don't need these:
+        //virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
+        //virtual void onTransformChanged() override;
+
+
+    private:
+
+        od::RefPtr<odRender::Handle> mRenderHandle;
+        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::unique_ptr<od::ObjectLightReceiver> mLightReceiver;
+
+    };
+
 }
 
 

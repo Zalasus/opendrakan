@@ -130,6 +130,55 @@ namespace odRfl
         }
     }
 
+
+    void DefaultServerObjectClass::probeFields(FieldProbe &probe)
+    {
+    }
+
+
+    void DefaultClientObjectClass::probeFields(FieldProbe &probe)
+    {
+    }
+
+    void DefaultClientObjectClass::onSpawned()
+    {
+        od::LevelObject &obj = getLevelObject();
+
+        // create render node if applicable
+        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        if(renderer != nullptr && obj.getClass()->hasModel())
+        {
+            mRenderHandle = renderer->createHandleFromObject(obj);
+
+            od::Layer *lightingLayer = obj.getLightSourceLayer();
+            if(lightingLayer == nullptr) lightingLayer = obj.getAssociatedLayer();
+            _assignLayerLight(mRenderHandle, lightingLayer);
+        }
+
+        // if we created a rendering handle, create physics handle, too
+        odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
+        if(obj.getClass()->hasModel())
+        {
+            bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;
+            mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
+
+            mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
+            mLightReceiver->updateAffectingLights();
+        }
+    }
+
+    void DefaultClientObjectClass::onDespawned()
+    {
+        mRenderHandle = nullptr;
+        mPhysicsHandle = nullptr;
+        mLightReceiver = nullptr;
+    }
+
+    void DefaultClientObjectClass::onVisibilityChanged()
+    {
+
+    }
+
 }
 
 
