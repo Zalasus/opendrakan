@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include <odCore/Engine.h>
+
 namespace odDb
 {
     class DbManager;
@@ -29,15 +31,18 @@ namespace od
 {
     class Level;
 
-    class Server
+    class Server : public Engine
     {
     public:
 
         Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager);
 
-        inline odDb::DbManager &getDbManager() { return mDbManager; }
-        inline odRfl::RflManager &getRflManager() { return mRflManager; }
-        inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
+        virtual odDb::DbManager &getDbManager() override final;
+        virtual odRfl::RflManager &getRflManager() override final;
+        virtual odPhysics::PhysicsSystem &getPhysicsSystem() override final;
+        virtual odInput::InputManager *getInputManager() override final;
+        virtual odRender::Renderer *getRenderer() override final;
+        virtual odAudio::SoundSystem *getSoundSystem() override final;
 
         void run();
 

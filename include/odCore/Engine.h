@@ -49,6 +49,9 @@ namespace od
 {
     class Level;
 
+    class Server;
+    class Client;
+
     enum class GameType
     {
         SP,
@@ -57,29 +60,52 @@ namespace od
         MP_DEDICATED_SERVER
     };
 
-	class Engine : public odRender::RendererEventListener
+    /**
+     * @brief Interface for engine base objects that can provide engine subsystems.
+     *
+     * This will probably only be implemented by the Client and Server classes.
+     *
+     * TODO: Name is historically. We should rename this to something more expressive.
+     */
+    class Engine
+    {
+    public:
+
+        virtual ~Engine() = default;
+
+        // mandatory subsystems
+        virtual odDb::DbManager &getDbManager() = 0;
+        virtual odRfl::RflManager &getRflManager() = 0;
+        virtual odPhysics::PhysicsSystem &getPhysicsSystem() = 0;
+
+        // optional (client-only) subsystems
+        virtual odInput::InputManager *getInputManager() = 0;
+        virtual odRender::Renderer *getRenderer() = 0;
+        virtual odAudio::SoundSystem *getSoundSystem() = 0;
+    };
+
+
+	class EngineImplOld : public odRender::RendererEventListener, public Engine
 	{
 	public:
 
-	    Engine();
-		Engine(Engine &e) = delete;
-		Engine(const Engine &e) = delete;
-		~Engine();
+	    EngineImplOld();
+		virtual ~EngineImplOld();
 
 		inline bool hasInitialLevelOverride() const { return mHasInitialLevelOverride; }
 		inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
 		inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
 		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
-		inline odDb::DbManager &getDbManager() { return *mDbManager; }
-		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
-		inline odInput::InputManager &getInputManager() { return *mInputManager; }
-		inline odRender::Renderer *getRenderer() { return mRenderer; }
-		inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
 		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
 		inline bool isDone() { return mIsDone; }
 		inline void setDone(bool done) { mIsDone = done; }
 
-        odPhysics::PhysicsSystem &getPhysicsSystem();
+        virtual odDb::DbManager &getDbManager() override;
+        virtual odRfl::RflManager &getRflManager() override;
+        virtual odPhysics::PhysicsSystem &getPhysicsSystem() override;
+        virtual odInput::InputManager *getInputManager() override;
+        virtual odRender::Renderer *getRenderer() override;
+        virtual odAudio::SoundSystem *getSoundSystem() override;
 
 		void setRenderer(odRender::Renderer *renderer);
 		void setSoundSystem(odAudio::SoundSystem *soundSystem);
@@ -112,6 +138,9 @@ namespace od
 		std::unique_ptr<Level> mLevel;
 		bool mSetUp;
 		std::atomic_bool mIsDone;
+
+		std::unique_ptr<Server> mLocalServer;
+		std::unique_ptr<Client> mLocalClient;
 	};
 
 }

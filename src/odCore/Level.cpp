@@ -57,11 +57,6 @@ namespace od
         //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
         _loadObjects(file);
 
-        for(auto &object : mLevelObjects)
-        {
-            object->buildLinks();
-        }
-
         Logger::info() << "Level loaded successfully";
     }
 

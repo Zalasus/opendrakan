@@ -7,9 +7,11 @@
 
 #include <dragonRfl/classes/VisibilityToggler.h>
 
+#include <odCore/Level.h>
+#include <odCore/LevelObject.h>
+
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
-#include <odCore/LevelObject.h>
 
 namespace dragonRfl
 {
@@ -39,35 +41,32 @@ namespace dragonRfl
 
     void VisibilityToggler::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
-        const std::vector<od::LevelObject*> &linkedObjects = getLevelObject().getLinkedObjects();
+        const auto &linkedObjects = getLevelObject().getLinkedObjectIndices();
 
-        if(mTriggerMode == TriggerMode::ToggleVisibility)
+        for(auto index : linkedObjects)
         {
-            for(auto it = linkedObjects.begin(); it != linkedObjects.end(); ++it)
-            {
-                bool visible = (*it)->isVisible();
-                (*it)->setVisible(!visible);
-            }
+            od::LevelObject *obj = getLevelObject().getLevel().getLevelObjectByIndex(index);
+            if(obj == nullptr) continue;
 
-        }else if(mTriggerMode == TriggerMode::DependsOnMessage)
-        {
-            bool desiredVisibility;
-            if(message == mShowMessage)
+            if(mTriggerMode == TriggerMode::ToggleVisibility)
             {
-                desiredVisibility = true;
 
-            }else if(message == mHideMessage)
-            {
-                desiredVisibility = false;
+                obj->setVisible(!obj->isVisible());
 
-            }else
+            }else if(mTriggerMode == TriggerMode::DependsOnMessage)
             {
-                return; // ignore message
-            }
+                if(message == mShowMessage)
+                {
+                    obj->setVisible(true);
 
-            for(auto it = linkedObjects.begin(); it != linkedObjects.end(); ++it)
-            {
-                (*it)->setVisible(desiredVisibility);
+                }else if(message == mHideMessage)
+                {
+                    obj->setVisible(false);
+
+                }else
+                {
+                    return; // ignore message
+                }
             }
         }
     }

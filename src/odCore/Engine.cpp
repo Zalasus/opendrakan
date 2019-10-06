@@ -15,6 +15,8 @@
 #include <odCore/Exception.h>
 #include <odCore/Logger.h>
 #include <odCore/Level.h>
+#include <odCore/Server.h>
+#include <odCore/Client.h>
 
 #include <odCore/input/InputManager.h>
 
@@ -29,7 +31,7 @@
 namespace od
 {
 
-	Engine::Engine()
+	EngineImplOld::EngineImplOld()
 	: mRenderer(nullptr)
 	, mSoundSystem(nullptr)
     , mHasInitialLevelOverride(false)
@@ -44,11 +46,11 @@ namespace od
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(*this);
 	}
 
-	Engine::~Engine()
+	EngineImplOld::~EngineImplOld()
 	{
 	}
 
-	odPhysics::PhysicsSystem &Engine::getPhysicsSystem()
+	odPhysics::PhysicsSystem &EngineImplOld::getPhysicsSystem()
 	{
 	    if(mPhysicsSystem == nullptr)
 	    {
@@ -58,7 +60,7 @@ namespace od
 	    return *mPhysicsSystem;
 	}
 
-	void Engine::setRenderer(odRender::Renderer *renderer)
+	void EngineImplOld::setRenderer(odRender::Renderer *renderer)
 	{
 	    if(mRenderer != nullptr)
 	    {
@@ -73,7 +75,7 @@ namespace od
 	    }
 	}
 
-	void Engine::setSoundSystem(odAudio::SoundSystem *soundSystem)
+	void EngineImplOld::setSoundSystem(odAudio::SoundSystem *soundSystem)
 	{
 	    if(mSoundSystem != nullptr)
 	    {
@@ -83,7 +85,7 @@ namespace od
 	    mSoundSystem = soundSystem;
 	}
 
-	void Engine::setUp()
+	void EngineImplOld::setUp()
 	{
 	    if(mSetUp)
 	    {
@@ -97,7 +99,7 @@ namespace od
 	    mSetUp = true;
 	}
 
-	void Engine::run()
+	void EngineImplOld::run()
 	{
 		Logger::info() << "Starting OpenDrakan...";
 
@@ -162,7 +164,7 @@ namespace od
         }
 	}
 
-	void Engine::loadLevel(const FilePath &levelFile)
+	void EngineImplOld::loadLevel(const FilePath &levelFile)
 	{
 	    if(mLevel != nullptr)
 	    {
@@ -178,7 +180,7 @@ namespace od
         mLevel->spawnAllObjects();
 	}
 
-	void Engine::onRenderWindowClosed()
+	void EngineImplOld::onRenderWindowClosed()
 	{
 	    if(mRenderer == nullptr)
 	    {
@@ -188,7 +190,7 @@ namespace od
 	    setDone(true);
 	}
 
-	void Engine::_findEngineRoot(const std::string &rrcFileName)
+	void EngineImplOld::_findEngineRoot(const std::string &rrcFileName)
 	{
 	    // if we have been passed a level override, we need to find the engine root in that path.
 	    //  if not, assume the engine root is the current working directory.

@@ -242,9 +242,6 @@ namespace od
 
         // created on demand:
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
-        std::unique_ptr<ObjectLightReceiver> mLightReceiver;
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
 
     };
 

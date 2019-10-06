@@ -67,21 +67,24 @@ namespace dragonRfl
         this->probeFields(probe);
 
         // configure controls
-        odInput::InputManager &im = obj.getLevel().getEngine().getInputManager();
-        auto actionHandler = std::bind(&HumanControl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
+        odInput::InputManager *im = obj.getLevel().getEngine().getInputManager();
+        if(im != nullptr)
+        {
+            auto actionHandler = std::bind(&HumanControl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
 
-        mForwardAction = im.getOrCreateAction(Action::Forward);
-        mForwardAction->setRepeatable(false);
-        mForwardAction->addCallback(actionHandler);
-        mForwardAction->bindToKey(odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
+            mForwardAction = im->getOrCreateAction(Action::Forward);
+            mForwardAction->setRepeatable(false);
+            mForwardAction->addCallback(actionHandler);
+            mForwardAction->bindToKey(odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
 
-        mBackwardAction = im.getOrCreateAction(Action::Backward);
-        mBackwardAction->setRepeatable(false);
-        mBackwardAction->addCallback(actionHandler);
-        mBackwardAction->bindToKey(odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
+            mBackwardAction = im->getOrCreateAction(Action::Backward);
+            mBackwardAction->setRepeatable(false);
+            mBackwardAction->addCallback(actionHandler);
+            mBackwardAction->bindToKey(odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
 
-        mCursorListener = im.createCursorListener();
-        mCursorListener->setCallback(std::bind(&HumanControl::_handleCursorMovement, this, std::placeholders::_1));
+            mCursorListener = im->createCursorListener();
+            mCursorListener->setCallback(std::bind(&HumanControl::_handleCursorMovement, this, std::placeholders::_1));
+        }
     }
 
     void HumanControl::onSpawned()

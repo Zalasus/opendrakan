@@ -7,6 +7,8 @@
 #ifndef INCLUDE_ODCORE_CLIENT_H_
 #define INCLUDE_ODCORE_CLIENT_H_
 
+#include <odCore/Engine.h>
+
 namespace odRender
 {
     class Renderer;
@@ -15,18 +17,30 @@ namespace odRender
 namespace od
 {
 
-    class Client
+    class Client : public Engine
     {
     public:
 
-        Client(odRender::Renderer &renderer);
+        Client(odDb::DbManager &dbManager, odRfl::RflManager &rflManager, odRender::Renderer &renderer);
 
-        inline odRender::Renderer &getRenderer() { return mRenderer; }
+        /// @brief In contrast to getRenderer(), this returns a reference and is thus guaranteed to be non-null.
+        inline odRender::Renderer &getRendererSafe() { return mRenderer; }
+
+        virtual odDb::DbManager &getDbManager() override final;
+        virtual odRfl::RflManager &getRflManager() override final;
+        virtual odPhysics::PhysicsSystem &getPhysicsSystem() override final;
+        virtual odInput::InputManager *getInputManager() override final;
+        virtual odRender::Renderer *getRenderer() override final;
+        virtual odAudio::SoundSystem *getSoundSystem() override final;
 
 
     private:
 
+        odDb::DbManager &mDbManager;
+        odRfl::RflManager &mRflManager;
         odRender::Renderer &mRenderer;
+
+        std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
 
     };
 
