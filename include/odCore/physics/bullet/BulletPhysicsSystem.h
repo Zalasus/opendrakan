@@ -20,9 +20,9 @@
 
 #include <odCore/physics/PhysicsSystem.h>
 
-namespace od
+namespace odRender
 {
-    class Engine;
+    class Renderer;
 }
 
 namespace odBulletPhysics
@@ -41,7 +41,10 @@ namespace odBulletPhysics
     {
     public:
 
-        BulletPhysicsSystem(od::Engine &engine);
+        /**
+         * @param renderer  Optional renderer. If non-null, will be used for debug drawing
+         */
+        explicit BulletPhysicsSystem(odRender::Renderer *renderer);
         virtual ~BulletPhysicsSystem();
 
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::RayTestResultVector &resultsOut) override;

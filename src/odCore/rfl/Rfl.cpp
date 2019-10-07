@@ -10,15 +10,6 @@
 namespace odRfl
 {
 
-    Rfl::Rfl(od::Engine &engine)
-    : mEngine(engine)
-    {
-    }
-
-    void Rfl::onStartup()
-    {
-    }
-
     ClassRegistrar *Rfl::getRegistrarForClassId(ClassId id)
     {
         auto it = mRegisteredClasses.find(id);

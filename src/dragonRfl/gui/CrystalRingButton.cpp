@@ -10,7 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <odCore/Exception.h>
-#include <odCore/Engine.h>
+#include <odCore/Client.h>
 
 #include <odCore/render/GuiNode.h>
 #include <odCore/render/Renderer.h>
@@ -119,9 +119,9 @@ namespace dragonRfl
             getRenderNode()->addChildHandle(mOuterRingHandle);
         }
 
-        if(hoverSound != nullptr && gui.getEngine().getSoundSystem() != nullptr)
+        if(hoverSound != nullptr && gui.getClient().getSoundSystem() != nullptr)
         {
-            mSoundSource = gui.getEngine().getSoundSystem()->createSource();
+            mSoundSource = gui.getClient().getSoundSystem()->createSource();
             mSoundSource->setPosition(glm::vec3(0.0));
             mSoundSource->setRelative(true);
             mSoundSource->setLooping(true);

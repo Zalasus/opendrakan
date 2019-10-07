@@ -14,6 +14,7 @@
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/DefaultObjectClass.h>
+#include <odCore/rfl/RflManager.h>
 
 namespace odDb
 {

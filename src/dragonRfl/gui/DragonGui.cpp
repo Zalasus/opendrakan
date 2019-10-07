@@ -7,9 +7,11 @@
 
 #include <dragonRfl/gui/DragonGui.h>
 
-#include <odCore/Engine.h>
-#include <odCore/db/DbManager.h>
+#include <odCore/Client.h>
+
 #include <odCore/rfl/PrefetchProbe.h>
+
+#include <odCore/db/DbManager.h>
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
@@ -23,20 +25,15 @@
 namespace dragonRfl
 {
 
-    DragonGui::DragonGui(od::Engine &engine)
-    : odGui::Gui(*engine.getRenderer())
-    , mEngine(engine)
-    , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, engine.getEngineRootDir()).adjustCase())
+    DragonGui::DragonGui(od::Client &client)
+    : odGui::Gui(client.getRendererSafe())
+    , mClient(client)
+    , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, client.getEngineRootDir()).adjustCase())
     , mRrcTextureFactory(*this, mRrcFile)
     , mInterfaceDb(nullptr)
     {
-        if(engine.getRenderer() == nullptr)
-        {
-            Logger::warn() << "Created DragonGui using Engine without renderer. Prepare for chaos";
-        }
-
-        od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir());
-        mInterfaceDb = &engine.getDbManager().loadDb(interfaceDbPath.adjustCase());
+        od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
+        mInterfaceDb = &client.getDbManager().loadDb(interfaceDbPath.adjustCase());
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb->getClassFactory() == nullptr)
@@ -52,7 +49,7 @@ namespace dragonRfl
         }
 
         od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::ClassBase> uiPropsInstance = uiPropsClass->makeInstance(engine.getRflManager());
+        std::unique_ptr<odRfl::ClassBase> uiPropsInstance = uiPropsClass->makeInstance(client.getRflManager());
         mUserInterfaceProperties.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
         if(mUserInterfaceProperties == nullptr)
         {

@@ -26,7 +26,7 @@
 namespace odBulletPhysics
 {
 
-    BulletPhysicsSystem::BulletPhysicsSystem(od::Engine &engine)
+    BulletPhysicsSystem::BulletPhysicsSystem(odRender::Renderer *renderer)
     {
         mBroadphase = std::make_unique<btDbvtBroadphase>();
         mCollisionConfiguration = std::make_unique<btDefaultCollisionConfiguration>();
@@ -38,7 +38,6 @@ namespace odBulletPhysics
         //mGhostPairCallback = std::make_unique<btGhostPairCallback>();
         //mCollisionWorld->getPairCache()->setInternalGhostPairCallback(mGhostPairCallback.get());
 
-        odRender::Renderer *renderer = engine.getRenderer();
         if(renderer != nullptr)
         {
             mDebugDrawer = std::make_unique<DebugDrawer>(renderer, mCollisionWorld.get());

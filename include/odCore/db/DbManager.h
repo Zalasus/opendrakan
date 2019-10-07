@@ -27,10 +27,8 @@ namespace odDb
 	{
 	public:
 
-		DbManager(od::Engine &engine);
+		DbManager();
 		~DbManager();
-
-		inline od::Engine &getEngine() { return mEngine; }
 
 		bool isDbLoaded(const od::FilePath &dbFilePath) const;
 
@@ -47,7 +45,6 @@ namespace odDb
 
 	private:
 
-		od::Engine &mEngine;
 		std::vector<std::shared_ptr<Database>> mRiotDbs;
 	};
 

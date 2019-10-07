@@ -46,7 +46,7 @@ namespace dragonRfl
 
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
-	    odRender::Renderer *renderer = getRfl().getEngine().getRenderer();
+	    odRender::Renderer *renderer = nullptr; //getRfl().getEngine().getRenderer();
 	    if(renderer != nullptr)
 	    {
 	        mRenderCamera = renderer->getCamera();
@@ -109,7 +109,7 @@ namespace dragonRfl
         static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
 
         odPhysics::RayTestResult result;
-        bool hit = getRfl().getEngine().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
+        bool hit = false; //getRfl().getEngine().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
         if(!hit)
         {
             eye = to;

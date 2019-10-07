@@ -51,6 +51,7 @@ target_sources(odCore PRIVATE
         "rfl/RflManager.cpp"
         "BoundingBox.cpp"
         "BoundingSphere.cpp"
+        "Client.cpp"
         "ConfigFile.cpp"
         "DataStream.cpp"
         "Engine.cpp"
@@ -67,6 +68,7 @@ target_sources(odCore PRIVATE
         "RefCounted.cpp"
         "RiffReader.cpp"
         "GlmSerializers.cpp"
+        "Server.cpp"
         "SrscFile.cpp"
         "StringUtils.cpp"
         "ZStream.cpp")

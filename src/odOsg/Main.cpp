@@ -11,12 +11,16 @@
 #include <memory>
 
 #include <odCore/Logger.h>
-#include <odCore/Engine.h>
+#include <odCore/Client.h>
+#include <odCore/Server.h>
 #include <odCore/Exception.h>
+#include <odCore/FilePath.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
 #include <odCore/rfl/RflManager.h>
+
+#include <odCore/db/DbManager.h>
 
 #include <dragonRfl/RflDragon.h>
 
@@ -25,15 +29,11 @@
 #include <odOsg/InputListener.h>
 
 
-static od::Engine *sEngine = nullptr;
 static void handleSignal(int signal)
 {
     if(signal == SIGINT)
     {
-        if(sEngine != nullptr)
-        {
-            sEngine->setDone(true);
-        }
+        Logger::info() << "Caught SIGINT. Can't handle that ATM. You need to kill the process manually, sorry.";
     }
 }
 
@@ -52,22 +52,43 @@ static void printUsage()
         << std::endl;
 }
 
+static od::FilePath findEngineRoot(const od::FilePath &dir, const std::string &rrcFileName)
+{
+    // ascend in the passed directory until we find a Dragon.rrc
+    od::FilePath path = od::FilePath(rrcFileName, dir).adjustCase();
+    while(!path.exists() && path.depth() > 1)
+    {
+        path = od::FilePath(rrcFileName, path.dir().dir()).adjustCase();
+    }
+
+    if(!path.exists())
+    {
+        Logger::error() << "Could not find engine root in passed level path. "
+                << "Make sure your level is located in the same directory or a subdirectory of " << rrcFileName;
+        throw od::Exception("Could not find engine root in passed level path");
+    }
+
+    od::FilePath root = path.dir();
+    Logger::verbose() << "Found engine root here: " << root;
+    return root;
+}
+
 int main(int argc, char **argv)
 {
+    signal(SIGINT, &handleSignal);
+
     od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
 
-    odOsg::SoundSystem soundSystem;
+    //odOsg::SoundSystem soundSystem;
     odOsg::Renderer osgRenderer;
 
-    od::Engine engine;
-    sEngine = &engine;
+    odDb::DbManager dbManager;
 
-    engine.getRflManager().loadStaticRfl<dragonRfl::DragonRfl>();
+    odRfl::RflManager rflManager;
+    odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>();
 
-    engine.setRenderer(&osgRenderer);
-    engine.setSoundSystem(&soundSystem);
-
-    signal(SIGINT, &handleSignal);
+    od::Client client(dbManager, rflManager, osgRenderer);
+    od::Server server(dbManager, rflManager);
 
     int c;
     bool freeLook = false;
@@ -99,11 +120,22 @@ int main(int argc, char **argv)
         }
     }
 
+    od::FilePath engineRoot(".");
     if(optind < argc)
     {
         od::FilePath initialLevel(argv[optind]);
-        engine.setInitialLevelOverride(initialLevel.adjustCase());
+        if(!initialLevel.exists())
+        {
+            std::cerr << "Level file " << initialLevel << " does not exist" << std::endl;
+        }
+        //engine.setInitialLevelOverride(initialLevel.adjustCase());
+
+        // if we have been passed a level override, we need to find the engine root in that path.
+        //  if not, assume the engine root is the current working directory. TODO: add option to explicitly specify engine root
+        engineRoot = findEngineRoot(initialLevel, "dragon.rrc");
     }
+
+    client.setEngineRootDir(engineRoot);
 
     osgRenderer.setFreeLook(freeLook);
 
@@ -111,26 +143,24 @@ int main(int argc, char **argv)
     if(!freeLook)
     {
         // only create listener if freelook mode is not forced. else we might catch input events the manipulator needs
-        inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, engine.getInputManager());
+        inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManagerSafe());
     }
 
-    engine.setUp();
+    dragonRfl.onGameStartup(server, client);
 
     if(physicsDebug)
     {
-        engine.getPhysicsSystem().setEnableDebugDrawing(true);
+        client.getPhysicsSystem().setEnableDebugDrawing(true);
     }
 
     try
     {
-        engine.run();
+        //client.run();
 
     }catch(od::Exception &e)
     {
         Logger::error() << "Terminating due to fatal error: " << e.what();
     }
-
-    sEngine = nullptr;
 
     return 0;
 }

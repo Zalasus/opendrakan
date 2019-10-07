@@ -22,9 +22,14 @@ namespace od
     Server::Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager)
     : mDbManager(dbManager)
     , mRflManager(rflManager)
+    , mHasInitialLevelOverride(false)
     , mIsDone(false)
     {
-        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>();
+        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(nullptr);
+    }
+
+    Server::~Server()
+    {
     }
 
     odDb::DbManager &Server::getDbManager()
@@ -39,7 +44,7 @@ namespace od
 
     odPhysics::PhysicsSystem &Server::getPhysicsSystem()
     {
-        return mPhysicsSystem;
+        return *mPhysicsSystem;
     }
 
     odInput::InputManager *Server::getInputManager()
@@ -57,11 +62,14 @@ namespace od
         return nullptr;
     }
 
+    void Server::loadLevel(const od::FilePath &levelPath)
+    {
+
+    }
+
     void Server::run()
     {
         Logger::info() << "OpenDrakan server starting...";
-
-        mRflManager.onStartup();
 
         Logger::verbose() << "Everyting set up. Starting main server loop.";
 

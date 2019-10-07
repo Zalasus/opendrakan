@@ -18,8 +18,7 @@
 namespace odDb
 {
 
-    DbManager::DbManager(od::Engine &engine)
-    : mEngine(engine)
+    DbManager::DbManager()
     {
     }
 

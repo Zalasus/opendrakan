@@ -10,6 +10,8 @@
 
 #include <memory>
 
+#include <odCore/FilePath.h>
+
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
@@ -18,7 +20,7 @@
 
 namespace od
 {
-    class Engine;
+    class Client;
 }
 
 namespace dragonRfl
@@ -34,10 +36,10 @@ namespace dragonRfl
     {
     public:
 
-        DragonGui(od::Engine &engine);
+        DragonGui(od::Client &client);
         ~DragonGui();
 
-        inline od::Engine &getEngine() { return mEngine; }
+        inline od::Client &getClient() { return mClient; }
         inline UserInterfaceProperties *getUserInterfaceProperties() { return mUserInterfaceProperties.get(); }
 
         /**
@@ -66,7 +68,7 @@ namespace dragonRfl
 
         void _decryptString(char * const str, const size_t len);
 
-        od::Engine &mEngine;
+        od::Client &mClient;
         od::SrscFile mRrcFile;
         odDb::TextureFactory mRrcTextureFactory;
         odDb::Database *mInterfaceDb;

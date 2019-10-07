@@ -7,6 +7,8 @@
 
 #include <odCore/Client.h>
 
+#include <odCore/input/InputManager.h>
+
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
 namespace od
@@ -16,8 +18,14 @@ namespace od
     : mDbManager(dbManager)
     , mRflManager(rflManager)
     , mRenderer(renderer)
+    , mEngineRoot(".")
     {
-        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>();
+        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
+        mInputManager = std::make_unique<odInput::InputManager>();
+    }
+
+    Client::~Client()
+    {
     }
 
     odDb::DbManager &Client::getDbManager()
@@ -32,12 +40,12 @@ namespace od
 
     odPhysics::PhysicsSystem &Client::getPhysicsSystem()
     {
-        return mPhysicsSystem;
+        return *mPhysicsSystem;
     }
 
     odInput::InputManager *Client::getInputManager()
     {
-        return nullptr;
+        return mInputManager.get();
     }
 
     odRender::Renderer *Client::getRenderer()

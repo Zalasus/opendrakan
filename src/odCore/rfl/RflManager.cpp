@@ -16,8 +16,7 @@
 namespace odRfl
 {
 
-    RflManager::RflManager(od::Engine &engine)
-    : mEngine(engine)
+    RflManager::RflManager()
     {
     }
 
@@ -35,13 +34,11 @@ namespace odRfl
         return it->get();
     }
 
-    void RflManager::onStartup()
+    Rfl &RflManager::loadDynamicRfl(const od::FilePath &libPath)
     {
-        for(auto it = mLoadedRfls.begin(); it != mLoadedRfls.end(); ++it)
-        {
-            (*it)->onStartup();
-        }
+        throw od::UnsupportedException("Dynamic RFL loading is unimplemented ATM");
     }
+
 
     void RflManager::_addRflAndCallLoadHook(std::unique_ptr<Rfl> rfl)
     {

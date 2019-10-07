@@ -26,7 +26,7 @@ namespace dragonRfl
     {
     public:
 
-        DragonRfl(od::Engine &engine);
+        DragonRfl();
         virtual ~DragonRfl();
 
         inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
@@ -34,7 +34,7 @@ namespace dragonRfl
 
         virtual const char *getName() const override;
         virtual void onLoaded() override;
-        virtual void onStartup() override;
+        virtual void onGameStartup(od::Server &localServer, od::Client &localClient) override;
 
 
     private:

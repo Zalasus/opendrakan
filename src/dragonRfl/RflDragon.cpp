@@ -8,6 +8,8 @@
 #include <dragonRfl/RflDragon.h>
 
 #include <odCore/Engine.h>
+#include <odCore/Client.h>
+#include <odCore/Server.h>
 
 #include <odCore/audio/SoundSystem.h>
 
@@ -30,9 +32,8 @@
 namespace dragonRfl
 {
 
-    DragonRfl::DragonRfl(od::Engine &engine)
-    : odRfl::Rfl(engine)
-    , mLocalPlayer(nullptr)
+    DragonRfl::DragonRfl()
+    : mLocalPlayer(nullptr)
     {
     }
 
@@ -50,45 +51,46 @@ namespace dragonRfl
         _registerClasses();
     }
 
-    void DragonRfl::onStartup()
+    void DragonRfl::onGameStartup(od::Server &localServer, od::Client &localClient)
     {
-        od::Engine &engine = getEngine();
+        mGui = std::make_unique<DragonGui>(localClient);
+        localClient.getInputManagerSafe().setGui(mGui.get());
 
-        if(engine.getRenderer() != nullptr)
+        if(localClient.getSoundSystem() != nullptr)
         {
-            mGui = std::make_unique<DragonGui>(engine);
-            engine.getInputManager().setGui(mGui.get());
+            od::FilePath musicRrc("Music.rrc", localClient.getEngineRootDir());
+            localClient.getSoundSystem()->loadMusicContainer(musicRrc.adjustCase());
+            localClient.getSoundSystem()->playMusic(1);
         }
 
-        if(engine.getSoundSystem() != nullptr)
-        {
-            od::FilePath musicRrc("Music.rrc", engine.getEngineRootDir());
-            engine.getSoundSystem()->loadMusicContainer(musicRrc.adjustCase());
-            engine.getSoundSystem()->playMusic(1);
-        }
-
-        if(!engine.hasInitialLevelOverride())
+        if(!localServer.hasInitialLevelOverride())
         {
             od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
-            engine.loadLevel(initialLevel.adjustCase());
+            localServer.loadLevel(initialLevel.adjustCase());
         }
 
-        odInput::InputManager &im = engine.getInputManager();
+        odInput::InputManager *im = localClient.getInputManager();
+        if(im != nullptr)
+        {
+            auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
+            auto mmAction = im->getOrCreateAction(Action::Main_Menu);
+            mmAction->setRepeatable(false);
+            mmAction->setIgnoreUpEvents(true);
+            mmAction->addCallback(actionHandler);
+            mmAction->bindToKey(odInput::Key::Return);
+            mMenuAction = mmAction;
 
-        auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
-        auto mmAction = im.getOrCreateAction(Action::Main_Menu);
-        mmAction->setRepeatable(false);
-        mmAction->setIgnoreUpEvents(true);
-        mmAction->addCallback(actionHandler);
-        mmAction->bindToKey(odInput::Key::Return);
-        mMenuAction = mmAction;
-
-        auto physicsDebugAction = im.getOrCreateAction(Action::PhysicsDebug_Toggle);
-        physicsDebugAction->setRepeatable(false);
-        physicsDebugAction->setIgnoreUpEvents(true);
-        physicsDebugAction->addCallback(actionHandler);
-        physicsDebugAction->bindToKey(odInput::Key::F3);
-        mPhysicsDebugAction = physicsDebugAction;
+            auto physicsDebugAction = im->getOrCreateAction(Action::PhysicsDebug_Toggle);
+            physicsDebugAction->setRepeatable(false);
+            physicsDebugAction->setIgnoreUpEvents(true);
+            physicsDebugAction->bindToKey(odInput::Key::F3);
+            auto physDebugCallback = [&localClient](odInput::ActionHandle<Action> *action, odInput::InputEvent event)
+            {
+                localClient.getPhysicsSystem().toggleDebugDrawing();
+            };
+            physicsDebugAction->addCallback(physDebugCallback);
+            mPhysicsDebugAction = physicsDebugAction;
+        }
     }
 
     void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
@@ -100,10 +102,6 @@ namespace dragonRfl
             break;
 
         case Action::PhysicsDebug_Toggle:
-            if(getEngine().getRenderer() != nullptr)
-            {
-                getEngine().getPhysicsSystem().toggleDebugDrawing();
-            }
             break;
 
         default:

@@ -11,6 +11,7 @@
 #include <memory>
 
 #include <odCore/Engine.h>
+#include <odCore/FilePath.h>
 
 namespace odDb
 {
@@ -31,11 +32,22 @@ namespace od
 {
     class Level;
 
+    /**
+     * @brief Local server instance.
+     *
+     * There is no abstraction between a local and a remote server here! This class solely represents a
+     * local server, which can be either a dedicated server, a listen server, or a singleplayer server.
+     */
     class Server : public Engine
     {
     public:
 
         Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager);
+        virtual ~Server();
+
+        inline bool hasInitialLevelOverride() const { return mHasInitialLevelOverride; }
+        inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
+        inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
 
         virtual odDb::DbManager &getDbManager() override final;
         virtual odRfl::RflManager &getRflManager() override final;
@@ -43,6 +55,8 @@ namespace od
         virtual odInput::InputManager *getInputManager() override final;
         virtual odRender::Renderer *getRenderer() override final;
         virtual odAudio::SoundSystem *getSoundSystem() override final;
+
+        void loadLevel(const od::FilePath &levelPath);
 
         void run();
 
@@ -53,9 +67,10 @@ namespace od
         odRfl::RflManager &mRflManager;
 
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
-
         std::unique_ptr<Level> mLevel;
 
+        bool mHasInitialLevelOverride;
+        FilePath mInitialLevelOverride;
         bool mIsDone;
 
     };

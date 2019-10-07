@@ -26,6 +26,7 @@ namespace odRfl
 	class ClassBase;
 	class LevelObjectClassBase;
 	class Rfl;
+	class RflManager;
 }
 
 namespace odDb
