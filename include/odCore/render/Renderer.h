@@ -48,7 +48,7 @@ namespace odRender
     };
 
     /**
-     * Interface for a renderer implementation.
+     * @brief Interface for a renderer implementation.
      */
     class Renderer
     {
@@ -58,8 +58,6 @@ namespace odRender
 
         inline void toggleLighting() { setEnableLighting(!isLightingEnabled()); }
 
-        virtual void onStart() = 0;
-        virtual void onEnd() = 0;
         virtual void setRendererEventListener(RendererEventListener *listener) = 0;
 
         virtual void setEnableLighting(bool b) = 0;
@@ -80,14 +78,24 @@ namespace odRender
         virtual Camera *getCamera() = 0;
 
         /**
-         * @brief Notifies the renderer that a logic tick has happened.
+         * @brief Called once right before rendering starts.
          *
-         * Since the tick rate is not guaranteed to be fixed, the parameter relTime should be used
-         * to correctly interpolate between ticks.
-         *
-         * @param relTime  Time since last tick, in seconds.
+         * Use this to start subthreads, preallocate stuff etc. if needed.
          */
-        virtual void advance(float relTime) = 0;
+        virtual void setup() = 0;
+
+        /**
+         * @brief Called once after rendering stops.
+         *
+         * Stop your subthreads here, if needed.
+         */
+        virtual void shutdown() = 0;
+
+        /**
+         * @brief Renders a frame.
+         * @param relTime  Time passed since last frame was rendered, in seconds.
+         */
+        virtual void frame(float relTime) = 0;
 
         od::RefPtr<Handle> createHandleFromObject(od::LevelObject &obj);
 

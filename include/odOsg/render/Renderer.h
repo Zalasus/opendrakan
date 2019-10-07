@@ -8,11 +8,8 @@
 #ifndef INCLUDE_ODOSG_RENDERER_H_
 #define INCLUDE_ODOSG_RENDERER_H_
 
-#include <thread>
-#include <mutex>
 #include <vector>
 #include <memory>
-#include <atomic>
 
 #include <osg/Group>
 #include <osg/Uniform>
@@ -47,8 +44,6 @@ namespace odOsg
         inline ShaderFactory &getShaderFactory() { return mShaderFactory; }
         inline osgViewer::Viewer *getViewer() { return mViewer; }
 
-        virtual void onStart() override;
-        virtual void onEnd() override;
         virtual void setRendererEventListener(odRender::RendererEventListener *listener) override;
 
         virtual void setEnableLighting(bool b) override;
@@ -68,7 +63,10 @@ namespace odOsg
 
         virtual odRender::Camera *getCamera() override;
 
-        virtual void advance(float relTime) override;
+        virtual void setup() override;
+        virtual void shutdown() override;
+
+        virtual void frame(float relTime) override;
 
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
         void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index);
@@ -81,14 +79,10 @@ namespace odOsg
 
         void _setupGuiStuff();
 
-        void _threadedRender();
-
         od::RefPtr<Model> _buildSingleLodModelNode(odDb::Model *model);
         od::RefPtr<Model> _buildMultiLodModelNode(odDb::Model *model);
 
         ShaderFactory mShaderFactory;
-        std::thread mRenderThread;
-        std::mutex mRenderMutex;
 
         odRender::RendererEventListener *mEventListener;
 
@@ -113,7 +107,7 @@ namespace odOsg
         osg::ref_ptr<osg::Uniform> mLocalLightsIntensity;
         osg::ref_ptr<osg::Uniform> mLocalLightsPosition;
 
-        float mTickTime;
+        double mSimTime;
     };
 
 }

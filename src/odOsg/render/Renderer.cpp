@@ -44,6 +44,7 @@ namespace odOsg
     , mEventListener(nullptr)
     , mFreeLook(false)
     , mLightingEnabled(true)
+    , mSimTime(0.0)
     {
         mViewer = new osgViewer::Viewer;
 
@@ -95,26 +96,6 @@ namespace odOsg
         if(mViewer != nullptr)
         {
             mViewer->setDone(true);
-        }
-
-        // note: we need to do this even if the render thread already left it's thread function, or else it will std::terminate() us
-        if(mRenderThread.joinable())
-        {
-            mRenderThread.join();
-        }
-    }
-
-    void Renderer::onStart()
-    {
-        mRenderThread = std::thread(&Renderer::_threadedRender, this);
-    }
-
-    void Renderer::onEnd()
-    {
-        if(mRenderThread.joinable() && mViewer != nullptr)
-        {
-            mViewer->setDone(true);
-            mRenderThread.join();
         }
     }
 
@@ -363,9 +344,48 @@ namespace odOsg
         return mCamera;
     }
 
-    void Renderer::advance(float relTime)
+    void Renderer::setup()
     {
-        mTickTime += relTime; // TODO: synchronize
+        mViewer->realize();
+
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows, true);
+        if(windows.empty()) throw od::Exception("Viewer created no windows");
+        for(osgViewer::GraphicsWindow *window: windows)
+        {
+            window->setWindowName("OpenDrakan (OSG)");
+
+            if(!mFreeLook)
+            {
+                window->setCursor(osgViewer::GraphicsWindow::NoCursor);
+            }
+        }
+
+        int x, y, width, height;
+        windows[0]->getWindowRectangle(x, y, width, height);
+        double aspect = static_cast<double>(width)/height;
+        mViewer->getCamera()->setProjectionMatrixAsPerspective(45, aspect, 1, 10000);
+    }
+
+    void Renderer::shutdown()
+    {
+        if(mViewer != nullptr)
+        {
+            mViewer->setDone(true);
+            mViewer = nullptr;
+        }
+    }
+
+    void Renderer::frame(float relTime)
+    {
+        mSimTime += relTime;
+
+        // TODO: frame rate limiter ("timeUntilNextFrame" or smth)
+
+        mViewer->advance(mSimTime);
+        mViewer->eventTraversal();
+        mViewer->updateTraversal();
+        mViewer->renderingTraversals();
     }
 
     void Renderer::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction)
@@ -461,66 +481,6 @@ namespace odOsg
 
         mGuiRootNode = od::make_refd<GuiNode>(this, nullptr);
         mGuiRoot->addChild(mGuiRootNode->getOsgNode());
-    }
-
-    void Renderer::_threadedRender()
-    {
-        static const double maxFrameRate = 60;
-
-        mViewer->realize();
-
-        osgViewer::Viewer::Windows windows;
-        mViewer->getWindows(windows, true);
-        if(windows.empty()) throw od::Exception("Viewer created no windows");
-        for(osgViewer::GraphicsWindow *window: windows)
-        {
-            window->setWindowName("OpenDrakan (OSG)");
-
-            if(!mFreeLook)
-            {
-                window->setCursor(osgViewer::GraphicsWindow::NoCursor);
-            }
-        }
-
-        int x, y, width, height;
-        windows[0]->getWindowRectangle(x, y, width, height);
-        double aspect = static_cast<double>(width)/height;
-        mViewer->getCamera()->setProjectionMatrixAsPerspective(45, aspect, 1, 10000);
-
-        double simTime = 0;
-        double frameTime = 0;
-        while(!mViewer->done())
-        {
-            double minFrameTime = (maxFrameRate > 0.0) ? (1.0/maxFrameRate) : 0.0;
-            osg::Timer_t startFrameTick = osg::Timer::instance()->tick();
-
-            {
-                std::lock_guard<std::mutex> lock(mRenderMutex);
-
-                mViewer->advance(simTime);
-                mViewer->eventTraversal();
-                mViewer->updateTraversal();
-                mViewer->renderingTraversals();
-            }
-
-            osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
-            frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
-            simTime += frameTime;
-            if(frameTime < minFrameTime)
-            {
-                simTime += (minFrameTime-frameTime);
-                std::this_thread::sleep_for(std::chrono::microseconds(1000000*static_cast<size_t>(minFrameTime-frameTime)));
-            }
-        }
-
-        mViewer = nullptr;
-
-        if(mEventListener != nullptr)
-        {
-            mEventListener->onRenderWindowClosed();
-        }
-
-        Logger::verbose() << "Render thread terminated";
     }
 
     od::RefPtr<Model> Renderer::_buildSingleLodModelNode(odDb::Model *model)
