@@ -26,10 +26,9 @@
 namespace od
 {
 
-    Level::Level(const FilePath &levelPath, Engine &engine)
-    : mLevelPath(levelPath)
-    , mEngine(engine)
-    , mDbManager(engine.getDbManager())
+    Level::Level(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer)
+    : mPhysicsSystem(physicsSystem)
+    , mRenderer(renderer)
     , mMaxWidth(0)
     , mMaxHeight(0)
     , mVerticalExtent(0)
@@ -46,13 +45,13 @@ namespace od
     	}
     }
 
-    void Level::loadLevel()
+    void Level::loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager)
     {
-        Logger::info() << "Loading level " << mLevelPath.str();
+        Logger::info() << "Loading level " << levelPath.str();
 
-        SrscFile file(mLevelPath);
+        SrscFile file(levelPath);
 
-        _loadNameAndDeps(file);
+        _loadNameAndDeps(file, dbManager);
         _loadLayers(file);
         //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
         _loadObjects(file);
@@ -128,7 +127,7 @@ namespace od
 
         for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
         {
-            (*it)->spawn();
+            (*it)->spawn(mPhysicsSystem, mRenderer);
         }
 
         for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
@@ -213,7 +212,7 @@ namespace od
         {
             for(auto index : layer->getVisibleLayerIndices())
             {
-                getLayerByIndex(index)->spawn();
+                getLayerByIndex(index)->spawn(mPhysicsSystem, mRenderer);
             }
 
         }else
@@ -247,7 +246,7 @@ namespace od
 
                     }else
                     {
-                        layerToToggle->spawn();
+                        layerToToggle->spawn(mPhysicsSystem, mRenderer);
                     }
                 }
             }
@@ -268,7 +267,7 @@ namespace od
                 continue;
             }
 
-            layerHandles.push_back(mEngine.getPhysicsSystem().createLayerHandle(*layer));
+            layerHandles.push_back(mPhysicsSystem.createLayerHandle(*layer));
         }
 
         for(auto &obj : mLevelObjects)
@@ -291,7 +290,7 @@ namespace od
         }
     }
 
-    void Level::_loadNameAndDeps(SrscFile &file)
+    void Level::_loadNameAndDeps(SrscFile &file, odDb::DbManager &dbManager)
     {
         auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_NAME);
     	DataReader dr = cursor.getReader();
@@ -314,12 +313,12 @@ namespace od
             std::string dbPathStr;
             dr >> dbPathStr;
 
-            FilePath dbPath(dbPathStr, mLevelPath.dir());
-            odDb::Database &db = mDbManager.loadDb(dbPath.adjustCase());
+            FilePath dbPath(dbPathStr, file.getFilePath());
+            odDb::Database &db = dbManager.loadDb(dbPath.adjustCase());
 
             Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
 
-            mDependencyMap.insert(std::pair<uint16_t, odDb::DbRefWrapper>(dbIndex, db));
+            mDependencyMap.insert(std::make_pair(dbIndex, std::ref(db)));
         }
     }
 

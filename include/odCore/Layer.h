@@ -25,7 +25,13 @@
 
 namespace odPhysics
 {
+    class PhysicsSystem;
     class LayerHandle;
+}
+
+namespace odRender
+{
+    class Renderer;
 }
 
 namespace od
@@ -125,7 +131,7 @@ namespace od
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
 
-        void spawn();
+        void spawn(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer);
         void despawn();
 
         /**

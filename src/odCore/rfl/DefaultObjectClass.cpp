@@ -54,7 +54,7 @@ namespace odRfl
         od::LevelObject &obj = getLevelObject();
 
         // create render node if applicable
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
             mRenderHandle = renderer->createHandleFromObject(obj);
@@ -65,7 +65,7 @@ namespace odRfl
         }
 
         // if we created a rendering handle, create physics handle, too
-        odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
+        odPhysics::PhysicsSystem &ps = obj.getLevel().getPhysicsSystem(); // FIXME: get this from Client when we implement split-classes
         if(obj.getClass()->hasModel())
         {
             bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;
@@ -145,7 +145,7 @@ namespace odRfl
         od::LevelObject &obj = getLevelObject();
 
         // create render node if applicable
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
             mRenderHandle = renderer->createHandleFromObject(obj);
@@ -156,7 +156,7 @@ namespace odRfl
         }
 
         // if we created a rendering handle, create physics handle, too
-        odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
+        odPhysics::PhysicsSystem &ps = obj.getLevel().getPhysicsSystem();
         if(obj.getClass()->hasModel())
         {
             bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;

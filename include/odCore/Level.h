@@ -33,14 +33,19 @@ namespace od
     {
     public:
 
-        Level(const FilePath &levelPath, Engine &engine);
+        Level(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer);
         ~Level();
 
-        inline FilePath getFilePath() const { return mLevelPath; }
-        inline Engine &getEngine() { return mEngine; }
+        inline odPhysics::PhysicsSystem &getPhysicsSystem() { return mPhysicsSystem; }
         inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
 
-        void loadLevel();
+        /**
+         * @brief Loads a level from the given file.
+         * @param levelPath  A path to the .lvl file.
+         * @param dbManager  A DbManager from which to load databases the level depends on.
+         */
+        void loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager);
+
         void requestLevelObjectDestruction(LevelObject *obj);
         Layer *getLayerById(uint32_t id);
         Layer *getLayerByIndex(uint16_t index);
@@ -80,20 +85,19 @@ namespace od
 
     private:
 
-        void _loadNameAndDeps(SrscFile &file);
+        void _loadNameAndDeps(SrscFile &file, odDb::DbManager &dbManager);
         void _loadLayers(SrscFile &file);
         void _loadLayerGroups(SrscFile &file);
         void _loadObjects(SrscFile &file);
 
 
-        FilePath mLevelPath;
-        Engine &mEngine;
-        odDb::DbManager &mDbManager;
+        odPhysics::PhysicsSystem &mPhysicsSystem;
+        odRender::Renderer *mRenderer;
 
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::map<uint16_t, odDb::DbRefWrapper> mDependencyMap;
+        std::map<uint16_t, std::reference_wrapper<odDb::Database>> mDependencyMap;
         std::vector<std::unique_ptr<Layer>> mLayers;
         std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
 

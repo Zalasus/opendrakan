@@ -428,7 +428,7 @@ namespace od
 
     void LevelObject::updateAssociatedLayer(bool callChangedHook)
     {
-        odPhysics::PhysicsSystem &ps = mLevel.getEngine().getPhysicsSystem();
+        odPhysics::PhysicsSystem &ps = mLevel.getPhysicsSystem();
 
         // a slight upwards offset fixes many association issues with objects whose origin is exactly on the ground
         glm::vec3 rayStart = mPosition + (mAssociateWithCeiling ? glm::vec3(0, -0.1, 0) : glm::vec3(0, 0.1, 0));

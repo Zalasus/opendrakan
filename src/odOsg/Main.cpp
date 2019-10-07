@@ -85,7 +85,7 @@ int main(int argc, char **argv)
     odDb::DbManager dbManager;
 
     odRfl::RflManager rflManager;
-    odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>();
+    odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>(); // TODO: add option to specify dynamic RFL
 
     od::Client client(dbManager, rflManager, osgRenderer);
     od::Server server(dbManager, rflManager);
@@ -155,7 +155,7 @@ int main(int argc, char **argv)
 
     try
     {
-        //client.run();
+        server.run();
 
     }catch(od::Exception &e)
     {

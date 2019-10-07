@@ -185,9 +185,8 @@ namespace od
         }
     }
 
-    void Layer::spawn()
+    void Layer::spawn(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer)
     {
-        odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr)
         {
             mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
@@ -201,7 +200,7 @@ namespace od
             mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0,0,0), glm::vec3(0,0,0));
         }
 
-        mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
+        mPhysicsHandle = physicsSystem.createLayerHandle(*this);
         mPhysicsHandle->setLightCallback(this);
 
         _bakeLocalLayerLight();

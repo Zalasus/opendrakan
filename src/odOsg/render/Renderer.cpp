@@ -94,7 +94,6 @@ namespace odOsg
     {
         if(mViewer != nullptr)
         {
-            Logger::warn() << "Render thread was not stopped when renderer was destroyed";
             mViewer->setDone(true);
         }
 
