@@ -13,7 +13,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
-#include <odCore/Engine.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>

@@ -9,7 +9,6 @@
 
 #include <odCore/Level.h>
 #include <odCore/OdDefines.h>
-#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
 
 #include <odCore/rfl/Rfl.h>
@@ -80,7 +79,7 @@ namespace dragonRfl
 
 
         // we need a special render node for the sky (in it's own render bin)
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
         if(renderer == nullptr)
         {
             return;

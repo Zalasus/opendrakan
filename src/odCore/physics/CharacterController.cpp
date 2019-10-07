@@ -9,7 +9,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>

@@ -12,7 +12,6 @@
 #include <glm/common.hpp>
 
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 #include <odCore/Light.h>
 
 #include <odCore/render/Renderer.h>

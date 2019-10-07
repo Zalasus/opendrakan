@@ -7,12 +7,13 @@
 #ifndef INCLUDE_ODCORE_CLIENT_H_
 #define INCLUDE_ODCORE_CLIENT_H_
 
-#include <odCore/Engine.h>
+#include <memory>
+
 #include <odCore/FilePath.h>
 
-namespace odRender
+namespace odDb
 {
-    class Renderer;
+    class DbManager;
 }
 
 namespace odInput
@@ -20,28 +21,45 @@ namespace odInput
     class InputManager;
 }
 
+namespace odRfl
+{
+    class RflManager;
+}
+
+namespace odRender
+{
+    class Renderer;
+}
+
+namespace odAudio
+{
+    class SoundSystem;
+}
+
+namespace odPhysics
+{
+    class PhysicsSystem;
+}
+
 namespace od
 {
 
-    class Client : public Engine
+    class Client
     {
     public:
 
         Client(odDb::DbManager &dbManager, odRfl::RflManager &rflManager, odRender::Renderer &renderer);
-        virtual ~Client();
+        ~Client();
 
-        /// @brief In contrast to getRenderer(), this returns a reference and is thus guaranteed to be non-null.
-        inline odRender::Renderer &getRendererSafe() { return mRenderer; }
-        inline odInput::InputManager &getInputManagerSafe() { return *mInputManager; }
         inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
         inline const od::FilePath &getEngineRootDir() const { return mEngineRoot; }
 
-        virtual odDb::DbManager &getDbManager() override final;
-        virtual odRfl::RflManager &getRflManager() override final;
-        virtual odPhysics::PhysicsSystem &getPhysicsSystem() override final;
-        virtual odInput::InputManager *getInputManager() override final;
-        virtual odRender::Renderer *getRenderer() override final;
-        virtual odAudio::SoundSystem *getSoundSystem() override final;
+        inline odDb::DbManager &getDbManager() { return mDbManager; }
+        inline odRfl::RflManager &getRflManager() { return mRflManager; }
+        inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
+        inline odInput::InputManager &getInputManager() { return *mInputManager; }
+        inline odRender::Renderer &getRenderer() { return mRenderer; }
+        inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
 
 
     private:

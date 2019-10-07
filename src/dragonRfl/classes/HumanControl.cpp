@@ -9,7 +9,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
@@ -67,7 +66,7 @@ namespace dragonRfl
         this->probeFields(probe);
 
         // configure controls
-        odInput::InputManager *im = obj.getLevel().getEngine().getInputManager();
+        odInput::InputManager *im = nullptr; //obj.getLevel().getEngine().getInputManager();
         if(im != nullptr)
         {
             auto actionHandler = std::bind(&HumanControl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
@@ -100,7 +99,7 @@ namespace dragonRfl
     	mPitch = playerLookDirection.x;
     	mYaw = playerLookDirection.y;
 
-    	odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+    	odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
     	if(renderer == nullptr)
     	{
     	    return;
@@ -111,7 +110,7 @@ namespace dragonRfl
         if(skeleton != nullptr)
         {
             //mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
-            mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
+            //mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
 
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
@@ -192,7 +191,7 @@ namespace dragonRfl
     {
         auto &obj = getLevelObject();
 
-        odAudio::SoundSystem *soundSystem = obj.getLevel().getEngine().getSoundSystem();
+        odAudio::SoundSystem *soundSystem = nullptr; //obj.getLevel().getEngine().getSoundSystem();
         if(soundSystem != nullptr)
         {
             glm::vec3 pos = obj.getPosition();

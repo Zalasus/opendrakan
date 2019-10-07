@@ -13,7 +13,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -26,7 +25,6 @@ namespace dragonRfl
     , mRadius(1.0)
     , mLightMap(odDb::AssetRef::NULL_REF)
     , mQualityLevelRequired(0)
-    , mNeedsUpdate(true)
     {
     }
 
@@ -54,26 +52,24 @@ namespace dragonRfl
     {
         auto &obj = getLevelObject();
 
-        mLight = od::make_refd<od::Light>(obj.getLevel().getEngine().getPhysicsSystem());
+        /*mLight = od::make_refd<od::Light>(obj.getLevel().getEngine().getPhysicsSystem());
         mLight->setColor(mLightColorVector);
         mLight->setRadius(mRadius);
         mLight->setIntensityScaling(mIntensityScaling);
         mLight->setRequiredQualityLevel(mQualityLevelRequired);
-        mLight->setPosition(obj.getPosition());
+        mLight->setPosition(obj.getPosition());*/
 
         obj.setEnableUpdate(true);
-        mNeedsUpdate = true;
     }
 
     void StaticLight::onUpdate(float relTime)
     {
-        if(!mNeedsUpdate || mLight == nullptr)
+        if(mLight != nullptr)
         {
-            return;
+            mLight->updateAffectedList();
         }
 
-        mLight->updateAffectedList();
-        mNeedsUpdate = false;
+        getLevelObject().setEnableUpdate(false);
     }
 
     void StaticLight::onDespawned()

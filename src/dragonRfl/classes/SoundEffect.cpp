@@ -9,7 +9,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 #include <odCore/audio/SoundSystem.h>
 #include <odCore/audio/Source.h>
@@ -48,7 +47,7 @@ namespace dragonRfl
     {
         getLevelObject().setObjectType(od::LevelObjectType::Detector);
 
-        odAudio::SoundSystem *soundSystem = getLevelObject().getLevel().getEngine().getSoundSystem();
+        odAudio::SoundSystem *soundSystem = nullptr; //getLevelObject().getLevel().getEngine().getSoundSystem();
         if(soundSystem != nullptr)
         {
             mSoundSource = soundSystem->createSource();

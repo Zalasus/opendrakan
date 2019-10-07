@@ -32,36 +32,6 @@ namespace od
     {
     }
 
-    odDb::DbManager &Server::getDbManager()
-    {
-        return mDbManager;
-    }
-
-    odRfl::RflManager &Server::getRflManager()
-    {
-        return mRflManager;
-    }
-
-    odPhysics::PhysicsSystem &Server::getPhysicsSystem()
-    {
-        return *mPhysicsSystem;
-    }
-
-    odInput::InputManager *Server::getInputManager()
-    {
-        return nullptr;
-    }
-
-    odRender::Renderer *Server::getRenderer()
-    {
-        return nullptr;
-    }
-
-    odAudio::SoundSystem *Server::getSoundSystem()
-    {
-        return nullptr;
-    }
-
     void Server::loadLevel(const od::FilePath &levelPath)
     {
 

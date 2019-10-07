@@ -12,7 +12,6 @@
 #include <odCore/rfl/Rfl.h>
 
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
 
 #include <odCore/physics/PhysicsSystem.h>

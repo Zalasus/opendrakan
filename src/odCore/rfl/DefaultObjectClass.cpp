@@ -7,7 +7,6 @@
 
 #include <odCore/rfl/DefaultObjectClass.h>
 
-#include <odCore/Engine.h>
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>

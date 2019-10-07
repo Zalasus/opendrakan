@@ -14,7 +14,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 namespace dragonRfl
 {
@@ -62,8 +61,8 @@ namespace dragonRfl
     {
         getLevelObject().setEnableUpdate(true);
 
-        mPhysicsHandle = getLevelObject().getLevel().getEngine().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
-        mPhysicsHandle->setEnableCollision(false);
+        //mPhysicsHandle = getLevelObject().getLevel().getEngine().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
+        //mPhysicsHandle->setEnableCollision(false);
     }
 
     void Detector::onUpdate(float relTime)
@@ -91,7 +90,7 @@ namespace dragonRfl
         }
 
         mResultCache.clear();
-        obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
+        //obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
 
         bool playerIsIn = false;
         for(auto &result : mResultCache)

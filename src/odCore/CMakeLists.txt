@@ -54,7 +54,6 @@ target_sources(odCore PRIVATE
         "Client.cpp"
         "ConfigFile.cpp"
         "DataStream.cpp"
-        "Engine.cpp"
         "Exception.cpp"
         "FilePath.cpp"
         "Guid.cpp"

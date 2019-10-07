@@ -12,7 +12,6 @@
 
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
-#include <odCore/Engine.h>
 
 #include <odCore/rfl/Rfl.h>
 

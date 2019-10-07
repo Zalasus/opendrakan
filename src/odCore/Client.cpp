@@ -28,35 +28,5 @@ namespace od
     {
     }
 
-    odDb::DbManager &Client::getDbManager()
-    {
-        return mDbManager;
-    }
-
-    odRfl::RflManager &Client::getRflManager()
-    {
-        return mRflManager;
-    }
-
-    odPhysics::PhysicsSystem &Client::getPhysicsSystem()
-    {
-        return *mPhysicsSystem;
-    }
-
-    odInput::InputManager *Client::getInputManager()
-    {
-        return mInputManager.get();
-    }
-
-    odRender::Renderer *Client::getRenderer()
-    {
-        return &mRenderer;
-    }
-
-    odAudio::SoundSystem *Client::getSoundSystem()
-    {
-        return nullptr;
-    }
-
 }
 

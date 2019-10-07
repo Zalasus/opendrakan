@@ -16,7 +16,6 @@
 #include <odCore/Logger.h>
 #include <odCore/ZStream.h>
 #include <odCore/Exception.h>
-#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
 #include <odCore/BoundingBox.h>
 

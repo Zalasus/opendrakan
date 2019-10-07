@@ -143,7 +143,7 @@ int main(int argc, char **argv)
     if(!freeLook)
     {
         // only create listener if freelook mode is not forced. else we might catch input events the manipulator needs
-        inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManagerSafe());
+        inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManager());
     }
 
     dragonRfl.onGameStartup(server, client);

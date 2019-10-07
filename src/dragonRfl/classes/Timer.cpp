@@ -8,9 +8,9 @@
 
 #include <dragonRfl/classes/Timer.h>
 
-#include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
 #include <odCore/LevelObject.h>
+
+#include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
 {

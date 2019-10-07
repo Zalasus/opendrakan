@@ -106,7 +106,7 @@ namespace dragonRfl
 
     void DynamicLight::onTransformChanged()
     {
-        mNeedsUpdate = true;
+        getLevelObject().setEnableUpdate(true);
     }
 
     void DynamicLight::onMessageReceived(od::LevelObject &sender, od::Message message)

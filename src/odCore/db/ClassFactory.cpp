@@ -7,11 +7,12 @@
 
 #include <odCore/db/ClassFactory.h>
 
-#include <odCore/Engine.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/StringUtils.h>
+
 #include <odCore/db/Database.h>
+
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/RflManager.h>
 

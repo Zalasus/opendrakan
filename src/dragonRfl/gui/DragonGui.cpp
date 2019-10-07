@@ -26,7 +26,7 @@ namespace dragonRfl
 {
 
     DragonGui::DragonGui(od::Client &client)
-    : odGui::Gui(client.getRendererSafe())
+    : odGui::Gui(client.getRenderer())
     , mClient(client)
     , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, client.getEngineRootDir()).adjustCase())
     , mRrcTextureFactory(*this, mRrcFile)

@@ -14,7 +14,6 @@
 
 #include <odCore/render/Renderer.h>
 
-#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 
@@ -48,7 +47,7 @@ namespace dragonRfl
 
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
         if(renderer == nullptr)
         {
             return;

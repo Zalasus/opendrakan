@@ -14,7 +14,6 @@
 
 #include <odCore/Logger.h>
 #include <odCore/SrscRecordTypes.h>
-#include <odCore/Engine.h>
 
 #include <odCore/render/Renderer.h>
 

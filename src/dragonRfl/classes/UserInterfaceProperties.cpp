@@ -8,7 +8,6 @@
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
 
 namespace dragonRfl
 {

@@ -9,7 +9,6 @@
 
 #include <algorithm>
 
-#include <odCore/Engine.h>
 #include <odCore/Level.h>
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
