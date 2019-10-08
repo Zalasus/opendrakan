@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_SERVER_H_
 
 #include <memory>
+#include <atomic>
 
 #include <odCore/FilePath.h>
 
@@ -47,6 +48,7 @@ namespace od
         inline bool hasInitialLevelOverride() const { return mHasInitialLevelOverride; }
         inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
         inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
+        inline void setIsDone(bool b) { mIsDone.store(b, std::memory_order::memory_order_relaxed); }
 
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
@@ -67,7 +69,7 @@ namespace od
 
         bool mHasInitialLevelOverride;
         FilePath mInitialLevelOverride;
-        bool mIsDone;
+        std::atomic_bool mIsDone;
 
     };
 

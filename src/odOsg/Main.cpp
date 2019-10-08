@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 #include <odCore/Logger.h>
 #include <odCore/Client.h>
@@ -28,12 +29,16 @@
 #include <odOsg/audio/SoundSystem.h>
 #include <odOsg/InputListener.h>
 
-
+static od::Server *sServer = nullptr;
+static od::Client *sClient = nullptr;
 static void handleSignal(int signal)
 {
     if(signal == SIGINT)
     {
-        Logger::info() << "Caught SIGINT. Can't handle that ATM. You need to kill the process manually, sorry.";
+        Logger::info() << "Caught SIGINT. Terminating server and client";
+
+        if(sServer != nullptr) sServer->setIsDone(true);
+        if(sClient != nullptr) sClient->setIsDone(true);
     }
 }
 
@@ -79,6 +84,8 @@ int main(int argc, char **argv)
 
     od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
 
+    od::Logger::info() << "Starting OpenDrakan...";
+
     //odOsg::SoundSystem soundSystem;
     odOsg::Renderer osgRenderer;
 
@@ -88,7 +95,10 @@ int main(int argc, char **argv)
     odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>(); // TODO: add option to specify dynamic RFL
 
     od::Client client(dbManager, rflManager, osgRenderer);
+    sClient = &client;
+
     od::Server server(dbManager, rflManager);
+    sServer = &server;
 
     int c;
     bool freeLook = false;
@@ -153,14 +163,44 @@ int main(int argc, char **argv)
         client.getPhysicsSystem().setEnableDebugDrawing(true);
     }
 
-    try
+    auto serverThreadFunc = [&server, &client]()
     {
-        server.run();
+        try
+        {
+            server.run();
 
-    }catch(od::Exception &e)
+        }catch(od::Exception &e)
+        {
+            Logger::error() << "Terminating server due to fatal error: " << e.what();
+        }
+
+        client.setIsDone(true);
+    };
+
+    auto clientThreadFunc = [&client, &server]()
     {
-        Logger::error() << "Terminating due to fatal error: " << e.what();
-    }
+        try
+        {
+            client.run();
+
+        }catch(od::Exception &e)
+        {
+            Logger::error() << "Terminating client due to fatal error: " << e.what();
+        }
+
+        server.setIsDone(true);
+    };
+
+    std::thread serverThread(serverThreadFunc);
+
+    // we run the client in the main thread for now, as there is always a client for the normal game
+    clientThreadFunc();
+
+    server.setIsDone(true); // clientThreadFunc() will not have set this if it terminated abnormally! (non-OD-exception)
+    serverThread.join();
+
+    sClient = nullptr;
+    sServer = nullptr;
 
     return 0;
 }

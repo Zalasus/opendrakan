@@ -41,12 +41,12 @@ namespace od
     {
         Logger::info() << "OpenDrakan server starting...";
 
-        Logger::verbose() << "Everyting set up. Starting main server loop.";
+        Logger::info() << "Server set up. Starting main server loop";
 
         float targetUpdateIntervalUs = (1e6/60.0);
         auto targetUpdateInterval = std::chrono::microseconds((int64_t)targetUpdateIntervalUs);
         auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
-        while(!mIsDone)
+        while(!mIsDone.load(std::memory_order_relaxed))
         {
             auto loopStart = std::chrono::high_resolution_clock::now();
 
@@ -69,12 +69,11 @@ namespace od
             }else
             {
                 float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
-                Logger::warn() << "Update took too long. Took " << loopTimeMs << "ms, target update interval was " << (targetUpdateIntervalUs*1e-3) << "ms";
+                Logger::warn() << "Server tick took too long (" << loopTimeMs << "ms, target was " << (targetUpdateIntervalUs*1e-3) << "ms)";
             }
         }
 
         Logger::info() << "Shutting down server gracefully";
-
     }
 
 }

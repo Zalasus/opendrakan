@@ -8,6 +8,7 @@
 #define INCLUDE_ODCORE_CLIENT_H_
 
 #include <memory>
+#include <atomic>
 
 #include <odCore/FilePath.h>
 
@@ -53,6 +54,7 @@ namespace od
 
         inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
         inline const od::FilePath &getEngineRootDir() const { return mEngineRoot; }
+        inline void setIsDone(bool b) { mIsDone.store(b, std::memory_order_relaxed); }
 
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
@@ -60,6 +62,8 @@ namespace od
         inline odInput::InputManager &getInputManager() { return *mInputManager; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
         inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
+
+        void run();
 
 
     private:
@@ -72,6 +76,8 @@ namespace od
         std::unique_ptr<odInput::InputManager> mInputManager;
 
         od::FilePath mEngineRoot;
+
+        std::atomic_bool mIsDone;
 
     };
 
