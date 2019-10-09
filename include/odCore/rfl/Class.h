@@ -19,16 +19,38 @@
 
 #include <odCore/rfl/FieldProbe.h>
 
-#define ODRFL_DEFINE_CLASS_BASE(base_identifier, id, category_str, name_str) \
-    namespace odRfl \
-    { \
-        template <> constexpr ClassId ClassTraits<base_identifier>::classId() { return id; } \
-        template <> constexpr const char *ClassTraits<base_identifier>::name() { return name_str; } \
-        template <> constexpr const char *ClassTraits<base_identifier>::category() { return category_str; } \
-    }
+#define ODRFL_DEFINE_CLASS(base_ident, id, category_str, name_str) \
+        static_assert(std::is_default_constructible<base_ident>::value, "RFL class base must be default-constructible"); \
+        static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "RFL class base must implement odRfl::ClassBase"); \
+        namespace odRfl \
+        { \
+            template <> constexpr ClassId ClassTraits<base_ident>::classId() { return id; } \
+            template <> constexpr const char *ClassTraits<base_ident>::name() { return name_str; } \
+            template <> constexpr const char *ClassTraits<base_ident>::category() { return category_str; } \
+        }
+
+#define ODRFL_DEFINE_CUSTOM_CLASSFACTORY(base_ident, factory_ident) \
+        static_assert(std::is_default_constructible<factory_ident>::value, "Custom RFL class factory must be default-constructible"); \
+        static_assert(std::is_base_of<odRfl::ClassFactory, factory_ident>::value, "Custom RFL class factory must implement odRfl::ClassFactory"); \
+        namespace odRfl \
+        { \
+            template <> ClassFactory &ClassTraits<base_ident>::getFactory() { static factory_ident factory; return factory; } \
+        }
+
+#define ODRFL_DEFINE_CLASS_IMPL_CLIENT(base_ident, impl_ident) \
+        static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "Base of RFL class implementation must implement odRfl::ClassBase"); \
+        static_assert(std::is_base_of<odRfl::ClientClassImpl, impl_ident>::value, "RFL client class implementation must implement odRfl::ClientClassImpl"); \
+        static_assert(std::is_base_of<base_ident, impl_ident>::value, "RFL class implementation must inherit from the given base "); \
+
+#define ODRFL_DEFINE_CLASS_IMPL_SERVER(base_ident, impl_ident) \
+        static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "Base of RFL class implementation must implement odRfl::ClassBase"); \
+        static_assert(std::is_base_of<odRfl::ServerClassImpl, impl_ident>::value, "RFL server class implementation must implement odRfl::ServerClassImpl"); \
+        static_assert(std::is_base_of<base_ident, impl_ident>::value, "RFL class implementation must inherit from the given base "); \
 
 namespace od
 {
+    class Client;
+    class Server;
     class LevelObject;
     class Layer;
 }
@@ -53,28 +75,25 @@ namespace odRfl
     class MaterialClassBase;
 
     /**
-     * @brief Base for all RFL classes. Most of the time, you won't be extending this directly, but a derived version instead.
+     * @brief Interface for containers of RFL class fields. This allows introspection of your RFL class's configurable fields at runtime.
+     *
+     * The basic idea is this: You create a class implementing this interface. Your class contains the configurable
+     * fields as data members. To make those fields visible to the engine, you register them with an odRfl::FieldProbe
+     * in the probeFields() method. Default values of your fields are (obviously) assigned in the constructor.
+     *
+     * Your subclass can be instantiated standalone, for instance if the editor wants to know the fields that are
+     * available in your class in order to list them a dialog, OR it can be instantiated as part of the actual RFL class
+     * implementation that provides class behaviour and thus needs access to the field values the level designer has selected.
+     * In the latter case, the registration of the fields would also cause them to be filled with the values from the level files.
+     *
+     * TODO: recommend inheritance or composition for using field bundle in RFL class implementation?
+     * the latter would either mean we'd have to use public data members, or define an unreasonable amount of getters for some classes.
      */
-    class ClassBase
+    class FieldProbeable
     {
     public:
 
-        ClassBase();
-        virtual ~ClassBase() = default;
-
-        void setRfl(Rfl &rfl);
-        Rfl &getRfl();
-
-        /**
-         * @brief Obtains the associated RFL as a subtype.
-         *
-         * FIXME: Dirty hack. Since we know the RFL type at compile time, isn't there a better way to perform a safe cast?
-         */
-        template <typename _Rfl>
-        _Rfl &getRflAs()
-        {
-            return *od::confident_downcast<_Rfl>(&getRfl());
-        }
+        virtual ~FieldProbeable() = default;
 
         /**
          * @brief Method for probing the configurable class fields.
@@ -82,11 +101,57 @@ namespace odRfl
          * Register all fields that need to be exposed to the engine here. Probing allows the engine to list the fields a
          * class has or to fill them with values.
          *
-         * This might be called multiple times during the loading procedure.
+         * This must be able to be called any number of times. The order/type/number etc. of fields probed here must not change
+         * from one probing to another.
          *
          * Do not do anything other than registering your fields with the probe in this method!
+         *
+         * For performance and safety reasons, you should probably declare your override of this as final.
          */
         virtual void probeFields(FieldProbe &probe) = 0;
+
+    };
+
+    /**
+     * @brief Interface for all RFL class bases.
+     *
+     * Your implementation of this is what defines your RFL class.
+     */
+    class ClassBase : public FieldProbeable
+    {
+    public:
+
+        virtual ~ClassBase() = default;
+
+        /**
+         * @brief Hook that is called after all fields have been filled.
+         *
+         * This purely means that the fields have been filled and the RFL instance is available via getRfl(). No other
+         * assumptions can be made about an instance's state when this is called.
+         *
+         * For LevelObjectClassBase, there will also be a level object available at this point. This is the point where you
+         * would set the object's SpawnStrategy.
+         */
+        virtual void onLoaded() = 0;
+
+    };
+
+
+    class MaterialClassBase : public ClassBase
+    {
+    public:
+
+        virtual ClassBaseType getBaseType() override;
+        virtual MaterialClassBase *asMaterialBase() override;
+
+    };
+
+
+    class ClassImpl
+    {
+    public:
+
+        virtual ~ClassImpl() = default;
 
         /**
          * @brief Hook that is called after all fields have been filled.
@@ -99,41 +164,46 @@ namespace odRfl
          */
         virtual void onLoaded();
 
-        /**
-         * @brief Returns this instance's base type.
-         */
-        virtual ClassBaseType getBaseType();
+    };
 
-        /**
-         * @brief Efficient downcast. Returns this instance as a LevelObjectClassBase, or nullptr if it is not a LevelObjectClassBase.
-         */
-        virtual LevelObjectClassBase *asLevelObjectBase();
 
-        /**
-         * @brief Efficient downcast. Returns this instance as a MaterialClassBase, or nullptr if it is not a MaterialClassBase.
-         */
-        virtual MaterialClassBase *asMaterialBase();
+    class ClientClassImpl  : public ClassImpl
+    {
+    public:
+
+        ClientClassImpl(od::Client &client);
+
+        inline od::Client &getClient() { return mClient; }
 
 
     private:
 
-        Rfl *mRfl;
+        od::Client &mClient;
 
     };
 
 
-    /**
-     * @brief Base class for all classes that can be applied to a level object.
-     *
-     * This defines most of the hooks that allow an RFL class to react to changes to a level object.
-     */
-    class LevelObjectClassBase : public ClassBase
+    class ServerClassImpl : public ClassImpl
     {
     public:
 
-        LevelObjectClassBase();
+        ServerClassImpl(od::Server &server);
 
-        void setLevelObject(od::LevelObject &obj);
+        inline od::Server &getServer() { return mServer; }
+
+
+    private:
+
+        od::Server &mServer;
+    };
+
+
+    class Spawnable
+    {
+    public:
+
+        virtual ~Spawnable();
+
         od::LevelObject &getLevelObject();
 
         /**
@@ -227,39 +297,21 @@ namespace odRfl
          * This is called right after the respective specific hook has been called.
          */
         virtual void onTransformChanged();
-
-        virtual ClassBaseType getBaseType() override;
-        virtual LevelObjectClassBase *asLevelObjectBase() override;
-
-
-    private:
-
-        od::LevelObject *mLevelObject;
     };
 
 
-    class MaterialClassBase : public ClassBase
+    class ClassFactory
     {
     public:
 
-        virtual ClassBaseType getBaseType() override;
-        virtual MaterialClassBase *asMaterialBase() override;
-
-    };
-
-
-    class ClassRegistrar
-    {
-    public:
-
-        virtual ~ClassRegistrar() = default;
+        virtual ~ClassFactory() = default;
 
         virtual std::unique_ptr<ClassBase> makeInstance() = 0;
 
     };
 
     template <typename T>
-    class ClassRegistrarImpl : public ClassRegistrar
+    class DefaultClassFactory : public ClassFactory
     {
     public:
 
@@ -269,7 +321,6 @@ namespace odRfl
         }
 
     };
-
 
 
     template <typename _Base>
@@ -289,14 +340,13 @@ namespace odRfl
                 return ClassBaseType::DEFAULT;
         }
 
-        static ClassRegistrar &getRegistrar()
+        static ClassFactory &getFactory()
         {
-            static ClassRegistrarImpl<_Base> registrar;
+            static DefaultClassFactory<_Base> factory;
 
-            return registrar;
+            return factory;
         }
     };
-
 }
 
 #endif /* INCLUDE_ODCORE_RFL_CLASS_H_ */
