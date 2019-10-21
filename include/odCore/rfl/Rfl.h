@@ -50,7 +50,7 @@ namespace odRfl
 		 */
 		virtual void onGameStartup(od::Server &localServer, od::Client &localClient) = 0;
 
-		ClassRegistrar *getRegistrarForClassId(ClassId id);
+		ClassFactory *getFactoryForClassId(ClassId id);
 
 
 	protected:
@@ -59,15 +59,15 @@ namespace odRfl
 		void registerClass()
 		{
 		    ClassId id = ClassTraits<_ClassBase>::classId();
-		    ClassRegistrar &registrar = ClassTraits<_ClassBase>::getRegistrar();
+		    ClassFactory &factory = ClassTraits<_ClassBase>::getFactory();
 
-		    mRegisteredClasses.insert(std::make_pair(id, std::ref(registrar)));
+		    mRegisteredClasses.insert(std::make_pair(id, std::ref(factory)));
 		}
 
 
 	private:
 
-		std::map<ClassId, std::reference_wrapper<ClassRegistrar>> mRegisteredClasses;
+		std::map<ClassId, std::reference_wrapper<ClassFactory>> mRegisteredClasses;
 
 	};
 

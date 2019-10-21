@@ -29,6 +29,19 @@
             template <> constexpr const char *ClassTraits<base_ident>::category() { return category_str; } \
         }
 
+#define ODRFL_DEFINE_CLASS_FIELDS(base_ident, fieldBundle_ident) \
+        static_assert(std::is_base_of<odRfl::FieldBundle, fieldBundle_ident>::value, "Field bundle must implement odRfl::FieldBundle"); \
+        static_assert(std::is_default_constructible<fieldBundle_ident>::value, "Field bundle must be default-constructible"); \
+        static_assert(!std::is_abstract<fieldBundle_ident>::value, "Field bundle must not be abstract"); \
+        namespace odRfl \
+        { \
+            template <> \
+            struct ClassFieldTraits<base_ident> \
+            { \
+                using type = fieldBundle_ident; \
+            }; \
+        }
+
 #define ODRFL_DEFINE_CUSTOM_CLASSFACTORY(base_ident, factory_ident) \
         static_assert(std::is_default_constructible<factory_ident>::value, "Custom RFL class factory must be default-constructible"); \
         static_assert(std::is_base_of<odRfl::ClassFactory, factory_ident>::value, "Custom RFL class factory must implement odRfl::ClassFactory"); \
@@ -39,13 +52,29 @@
 
 #define ODRFL_DEFINE_CLASS_IMPL_CLIENT(base_ident, impl_ident) \
         static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "Base of RFL class implementation must implement odRfl::ClassBase"); \
-        static_assert(std::is_base_of<odRfl::ClientClassImpl, impl_ident>::value, "RFL client class implementation must implement odRfl::ClientClassImpl"); \
+        static_assert(std::is_base_of<odRfl::ClassImpl, impl_ident>::value, "RFL client class implementation must implement odRfl::ClassImpl"); \
         static_assert(std::is_base_of<base_ident, impl_ident>::value, "RFL class implementation must inherit from the given base "); \
+        namespace odRfl \
+        { \
+            template <> \
+            struct ClassImplTraits<base_ident, odRfl::ImplType::SERVER> \
+            { \
+                using type = impl_ident; \
+            }; \
+        }
 
 #define ODRFL_DEFINE_CLASS_IMPL_SERVER(base_ident, impl_ident) \
         static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "Base of RFL class implementation must implement odRfl::ClassBase"); \
-        static_assert(std::is_base_of<odRfl::ServerClassImpl, impl_ident>::value, "RFL server class implementation must implement odRfl::ServerClassImpl"); \
+        static_assert(std::is_base_of<odRfl::ClassImpl, impl_ident>::value, "RFL server class implementation must implement odRfl::ClassImpl"); \
         static_assert(std::is_base_of<base_ident, impl_ident>::value, "RFL class implementation must inherit from the given base "); \
+        namespace odRfl \
+        { \
+            template <> \
+            struct ClassImplTraits<base_ident, odRfl::ImplType::CLIENT> \
+            { \
+                using type = impl_ident; \
+            }; \
+        }
 
 namespace od
 {
@@ -57,49 +86,39 @@ namespace od
 
 namespace odRfl
 {
-    class Rfl;
-
 
     typedef uint16_t ClassId;
 
-
-    enum class ClassBaseType
-    {
-        DEFAULT,
-        LEVEL_OBJECT,
-        MATERIAL
-    };
-
-
-    class LevelObjectClassBase;
-    class MaterialClassBase;
 
     /**
      * @brief Interface for containers of RFL class fields. This allows introspection of your RFL class's configurable fields at runtime.
      *
      * The basic idea is this: You create a class implementing this interface. Your class contains the configurable
      * fields as data members. To make those fields visible to the engine, you register them with an odRfl::FieldProbe
-     * in the probeFields() method. Default values of your fields are (obviously) assigned in the constructor.
+     * in the probeFields() method. Default values of your fields are (obviously) assigned in the default constructor.
      *
-     * Your subclass can be instantiated standalone, for instance if the editor wants to know the fields that are
-     * available in your class in order to list them a dialog, OR it can be instantiated as part of the actual RFL class
+     * Your FieldBundle subclass can be instantiated standalone (for instance if the editor wants to know the fields that are
+     * available in your class in order to list them a dialog) OR it can be instantiated as part of the actual RFL class
      * implementation that provides class behaviour and thus needs access to the field values the level designer has selected.
      * In the latter case, the registration of the fields would also cause them to be filled with the values from the level files.
      *
      * TODO: recommend inheritance or composition for using field bundle in RFL class implementation?
      * the latter would either mean we'd have to use public data members, or define an unreasonable amount of getters for some classes.
      */
-    class FieldProbeable
+    class FieldBundle
     {
     public:
 
-        virtual ~FieldProbeable() = default;
+        virtual ~FieldBundle() = default;
 
         /**
          * @brief Method for probing the configurable class fields.
          *
          * Register all fields that need to be exposed to the engine here. Probing allows the engine to list the fields a
          * class has or to fill them with values.
+         *
+         * FieldProbe is a visitor that can implement any operation on class fields. Among them are listing fields, filling fields
+         * or prefetching all asset references. This is completely up to the FieldProbe. You only have to register your fields here.
          *
          * This must be able to be called any number of times. The order/type/number etc. of fields probed here must not change
          * from one probing to another.
@@ -113,40 +132,82 @@ namespace odRfl
     };
 
     /**
+     * @brief Traits class linking a class base with a field bundle.
+     *
+     * If _Base is a valid class base, this will contain a typedef named \c type aliasing the
+     * class' FieldBundle implementation.
+     *
+     * There is no need to specialize this yourself. Use the convenience macro ODRFL_DEFINE_CLASS_FIELDS() instead.
+     */
+    template <typename _Base>
+    struct ClassFieldTraits
+    {
+    };
+
+
+    class Spawnable;
+
+    /**
      * @brief Interface for all RFL class bases.
      *
-     * Your implementation of this is what defines your RFL class.
+     * Your implementation of this is what defines your RFL class. It is what you pass to the ODRFL_DEFINE_CLASS() macro in order
+     * to link an RFL class ID and name to your C++ class (this happens via the ClassTraits<...> template).
+     *
+     * It is where you put code that is shared among all implementations of your class.
+     *
+     * This interface provides methods to convert your base to an interface for different engine objects. For instance, if your
+     * class is supposed to be placed on a level object, it would implement the Spawnable interface, and override asSpawnable()
+     * to return itself as a Spawnable. This way, costly dynamic_casts are avoided.
+     *
+     * You probably don't want to implement this directly, but use ClassBaseWrapper<...> with your implementation
+     * as template argument instead. The CRTP ClassBaseWrapper checks properties your ClassBase should have via static_asserts and
+     * provides implementations for the fast-casting methods (asSpawnable() etc.), since it knows which interfaces your base implements.
+     * FIXME: that does not work yet. you have to provide the overrides yourself
+     *
      */
-    class ClassBase : public FieldProbeable
+    class ClassBase
     {
     public:
 
         virtual ~ClassBase() = default;
 
-        /**
-         * @brief Hook that is called after all fields have been filled.
-         *
-         * This purely means that the fields have been filled and the RFL instance is available via getRfl(). No other
-         * assumptions can be made about an instance's state when this is called.
-         *
-         * For LevelObjectClassBase, there will also be a level object available at this point. This is the point where you
-         * would set the object's SpawnStrategy.
-         */
-        virtual void onLoaded() = 0;
+        virtual Spawnable *asSpawnable();
 
     };
 
 
-    class MaterialClassBase : public ClassBase
+    /**
+     * @brief Convenience template implementing common methods
+     *
+     * FIXME: great idea, but the static_cast does not work that way. it has no way of knowing that there is in fact a _DerivedBase
+     * subclassing the CRTP wrapper.
+     */
+    template <typename _DerivedBase, typename _FieldBundle>
+    class ClassBaseWrapper : public ClassBase, public _FieldBundle
     {
+        static_assert(std::is_default_constructible<_FieldBundle>::value, "Field bundle must be default-constructible");
+        static_assert(!std::is_abstract<_FieldBundle>::value, "Field bundle must not be abstract");
+
     public:
 
-        virtual ClassBaseType getBaseType() override;
-        virtual MaterialClassBase *asMaterialBase() override;
+        virtual Spawnable *asSpawnable() override
+        {
+            if(std::is_base_of<Spawnable, _DerivedBase>::value)
+            {
+                return static_cast<Spawnable*>(this);
+
+            }else
+            {
+                return nullptr;
+            }
+        }
 
     };
 
 
+    /**
+     * @brief Interface for a class implementation.
+     */
     class ClassImpl
     {
     public:
@@ -300,13 +361,27 @@ namespace odRfl
     };
 
 
+    enum class ImplType
+    {
+        SERVER,
+        CLIENT
+    };
+
+    template <typename _Base, ImplType _Type>
+    struct ClassImplTraits
+    {
+    };
+
+
     class ClassFactory
     {
     public:
 
         virtual ~ClassFactory() = default;
 
-        virtual std::unique_ptr<ClassBase> makeInstance() = 0;
+        virtual std::unique_ptr<FieldBundle> makeFieldBundle() = 0;
+        virtual std::unique_ptr<ClassBase> makeClientInstance(od::Client &client) = 0;
+        virtual std::unique_ptr<ClassBase> makeServerInstance(od::Server &server) = 0;
 
     };
 
@@ -315,9 +390,22 @@ namespace odRfl
     {
     public:
 
-        virtual std::unique_ptr<ClassBase> makeInstance() override
+        virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
         {
-            return std::make_unique<T>();
+            using Bundle = typename ClassFieldTraits<T>::type;
+            return std::make_unique<Bundle>();
+        }
+
+        virtual std::unique_ptr<ClassBase> makeClientInstance(od::Client &client) override
+        {
+            using Impl = typename ClassImplTraits<T, ImplType::CLIENT>::type;
+            return std::make_unique<Impl>(client);
+        }
+
+        virtual std::unique_ptr<ClassBase> makeServerInstance(od::Server &server) override
+        {
+            using Impl = typename ClassImplTraits<T, ImplType::SERVER>::type;
+            return std::make_unique<Impl>(server);
         }
 
     };
@@ -330,16 +418,6 @@ namespace odRfl
         static constexpr const char *name();
         static constexpr const char *category();
 
-        static constexpr ClassBaseType baseType()
-        {
-            if(std::is_base_of<LevelObjectClassBase, _Base>::value)
-                return ClassBaseType::LEVEL_OBJECT;
-            else if(std::is_base_of<MaterialClassBase, _Base>::value)
-                return ClassBaseType::MATERIAL;
-            else
-                return ClassBaseType::DEFAULT;
-        }
-
         static ClassFactory &getFactory()
         {
             static DefaultClassFactory<_Base> factory;
@@ -347,6 +425,7 @@ namespace odRfl
             return factory;
         }
     };
+
 }
 
 #endif /* INCLUDE_ODCORE_RFL_CLASS_H_ */

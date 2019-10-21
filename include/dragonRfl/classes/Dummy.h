@@ -12,9 +12,11 @@
 namespace dragonRfl
 {
 
-    class DummyFields : public odRfl::FieldProbeable
+    class DummyFields : public odRfl::FieldBundle
     {
     public:
+
+        DummyFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override final;
 
@@ -26,41 +28,38 @@ namespace dragonRfl
 
     };
 
-    class Dummy : public odRfl::ClassBase
+    class Dummy : public odRfl::ClassBase, public odRfl::Spawnable, public DummyFields
     {
     public:
 
-        Dummy();
+        virtual Spawnable *asSpawnable() override final;
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override final;
-
-
-    protected:
-
-        float           mDummyFloat;
-        int             mDummyInt;
-    };
-
-
-    class Dummy_Cl : public Dummy, public odRfl::ClientClassImpl
-    {
-    public:
-
-
+        // shared code goes here
 
     };
 
 
-    class Dummy_Sv : public Dummy, public odRfl::ServerClassImpl
+    class Dummy_Cl : public odRfl::ClientClassImpl, public Dummy
     {
     public:
 
+        Dummy_Cl(od::Client &client);
+
+    };
+
+
+    class Dummy_Sv : public odRfl::ServerClassImpl, public Dummy
+    {
+    public:
+
+        Dummy_Sv(od::Server &server);
 
     };
 
 }
 
 ODRFL_DEFINE_CLASS(dragonRfl::Dummy, 0xffff, "OD-Specific", "Dummy");
+ODRFL_DEFINE_CLASS_FIELDS(dragonRfl::Dummy, dragonRfl::DummyFields);
 ODRFL_DEFINE_CLASS_IMPL_CLIENT(dragonRfl::Dummy, dragonRfl::Dummy_Cl);
 ODRFL_DEFINE_CLASS_IMPL_SERVER(dragonRfl::Dummy, dragonRfl::Dummy_Sv);
 
