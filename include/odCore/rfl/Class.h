@@ -57,7 +57,7 @@
         namespace odRfl \
         { \
             template <> \
-            struct ClassImplTraits<base_ident, odRfl::ImplType::SERVER> \
+            struct ClassImplTraits<base_ident, odRfl::ImplType::CLIENT> \
             { \
                 using type = impl_ident; \
             }; \
@@ -70,7 +70,7 @@
         namespace odRfl \
         { \
             template <> \
-            struct ClassImplTraits<base_ident, odRfl::ImplType::CLIENT> \
+            struct ClassImplTraits<base_ident, odRfl::ImplType::SERVER> \
             { \
                 using type = impl_ident; \
             }; \
@@ -153,15 +153,16 @@ namespace odRfl
      * Your implementation of this is what defines your RFL class. It is what you pass to the ODRFL_DEFINE_CLASS() macro in order
      * to link an RFL class ID and name to your C++ class (this happens via the ClassTraits<...> template).
      *
-     * It is where you put code that is shared among all implementations of your class.
+     * It is where you put code that is shared among all implementations of your class. It is also possible to inherit ClassBase and
+     * a ClassImpl in the same class if you don't need split implementations in your class.
      *
      * This interface provides methods to convert your base to an interface for different engine objects. For instance, if your
      * class is supposed to be placed on a level object, it would implement the Spawnable interface, and override asSpawnable()
      * to return itself as a Spawnable. This way, costly dynamic_casts are avoided.
      *
-     * You probably don't want to implement this directly, but use ClassBaseWrapper<...> with your implementation
+     * ~~You probably don't want to implement this directly, but use ClassBaseWrapper<...> with your implementation
      * as template argument instead. The CRTP ClassBaseWrapper checks properties your ClassBase should have via static_asserts and
-     * provides implementations for the fast-casting methods (asSpawnable() etc.), since it knows which interfaces your base implements.
+     * provides implementations for the fast-casting methods (asSpawnable() etc.), since it knows which interfaces your base implements.~~
      * FIXME: that does not work yet. you have to provide the overrides yourself
      *
      */
@@ -172,6 +173,9 @@ namespace odRfl
         virtual ~ClassBase() = default;
 
         virtual Spawnable *asSpawnable();
+
+        // ??? more composition-friendly nomenclature?
+        virtual FieldBundle *getFieldBundle() = 0;
 
     };
 
@@ -207,6 +211,11 @@ namespace odRfl
 
     /**
      * @brief Interface for a class implementation.
+     *
+     * The subclasses ClassImplServer and ClassImplClient extend this interface with client/server specific functions.
+     *
+     * Implementations are typically specific for the server or client side, but in case you don't need a client/server
+     * object, implement this instead of ClassImplServer/ClassImplClient to make your implementation generic.
      */
     class ClassImpl
     {
@@ -216,18 +225,24 @@ namespace odRfl
 
         /**
          * @brief Hook that is called after all fields have been filled.
-         *
-         * This purely means that the fields have been filled and the RFL instance is available via getRfl(). No other
-         * assumptions can be made about an instance's state when this is called.
-         *
-         * For LevelObjectClassBase, there will also be a level object available at this point. This is the point where you
-         * would set the object's SpawnStrategy.
          */
         virtual void onLoaded();
 
     };
 
 
+    /**
+     * @brief Interface for a client-side class implementation.
+     *
+     * This provides the implementer with a od::Client object, which can be used to access
+     * the client's subsystems.
+     *
+     * Note that this client object is passed via the constructor, so your implementation must
+     * take a od::Client as a constructor parameter, and pass it along to the ClientClassImpl parent.
+     *
+     * If your implementation is the same on both client and server side, and doesn't need
+     * a client/server object, implement odRfl::ClassImpl instead of this.
+     */
     class ClientClassImpl  : public ClassImpl
     {
     public:
@@ -244,6 +259,15 @@ namespace odRfl
     };
 
 
+    /**
+     * @brief Interface for a server-side class implementation.
+     *
+     * This provides the implementer with a od::Server object, which can be used to access
+     * the server's subsystems.
+     *
+     * If your implementation is the same on both client and server side, and doesn't need
+     * a client/server object, implement odRfl::ClassImpl instead of this.
+     */
     class ServerClassImpl : public ClassImpl
     {
     public:
@@ -259,6 +283,9 @@ namespace odRfl
     };
 
 
+    /**
+     * @brief Interface for a class that can be applied to a Level Object.
+     */
     class Spawnable
     {
     public:

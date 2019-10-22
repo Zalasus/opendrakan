@@ -15,21 +15,18 @@
 namespace dragonRfl
 {
 
-	Timer::Timer()
+	TimerFields::TimerFields()
 	: mTimeUntilTrigger(5.0)
-	, mStartMode(TimerStartMode::RunWhenTriggered)
+	, mStartMode(TimerStartMode::RUN_WHEN_TRIGGERED)
 	, mRepeat(true)
 	, mDestroyAfterTimeout(true)
 	, mTriggerMessage(od::Message::On)
 	, mToggle(false)
 	, mDisableReenableMessage(od::Message::Off)
-	, mGotStartTrigger(false)
-	, mTimerRunning(false)
-	, mTimeElapsed(0.0)
 	{
 	}
 
-	void Timer::probeFields(odRfl::FieldProbe &probe)
+	void TimerFields::probeFields(odRfl::FieldProbe &probe)
 	{
 		probe("Timer")
 				(mTimeUntilTrigger, "Time Until Trigger")
@@ -39,6 +36,14 @@ namespace dragonRfl
 				(mTriggerMessage, "Trigger Message")
 				(mToggle, "Toggle (Message / Off)")
 				(mDisableReenableMessage, "Disable/Re-Enable Message");
+	}
+
+
+	Timer::Timer()
+	: mGotStartTrigger(false)
+    , mTimerRunning(false)
+    , mTimeElapsed(0.0)
+	{
 	}
 
 	void Timer::onLoaded()
@@ -54,7 +59,7 @@ namespace dragonRfl
 
 	    obj.setEnableUpdate(true);
 
-	    mTimerRunning = (mStartMode == TimerStartMode::RunInstantly);
+	    mTimerRunning = (mStartMode == TimerStartMode::RUN_INSTANTLY);
 	}
 
 	void Timer::onUpdate(float relTime)
@@ -90,7 +95,7 @@ namespace dragonRfl
 
 	void Timer::onMessageReceived(od::LevelObject &sender, od::Message message)
 	{
-	    if(mStartMode == TimerStartMode::RunWhenTriggered && !mGotStartTrigger)
+	    if(mStartMode == TimerStartMode::RUN_WHEN_TRIGGERED && !mGotStartTrigger)
 	    {
 	        // i assume any message will trigger the timer. there is no field that would indicate otherwise
 	        mTimerRunning = true;
