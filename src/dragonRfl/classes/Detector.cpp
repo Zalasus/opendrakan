@@ -8,34 +8,33 @@
 #include <dragonRfl/classes/Detector.h>
 
 #include <dragonRfl/RflDragon.h>
-#include <dragonRfl/LocalPlayer.h>
+#include <dragonRfl/classes/HumanControl.h>
+
+#include <odCore/Server.h>
+#include <odCore/LevelObject.h>
 
 #include <odCore/rfl/Rfl.h>
-
-#include <odCore/LevelObject.h>
-#include <odCore/Level.h>
 
 namespace dragonRfl
 {
 
-    Detector::Detector()
-    : mTask(Task::TriggerOnly)
-    , mDetectWhich(DetectWhich::Both)
-    , mDetectMethod(DetectMethod::OutsideToInside)
+    DetectorFields::DetectorFields()
+    : mTask(Task::TRIGGER_ONLY)
+    , mDetectWhich(DetectWhich::BOTH)
+    , mDetectMethod(DetectMethod::OUTSIDE_TO_INSIDE)
     , mOneWay(false)
     , mTriggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
-    , mInitialState(InitialState::Enabled)
+    , mInitialState(InitialState::ENABLED)
     , mTriggerMessage(od::Message::Off)
     , mDetectOnlyOnce(false)
     , mSequenceToPlay(odDb::AssetRef::NULL_REF)
     , mMessageString("")
     , mDoesCaveEntranceTeleport(true)
     , mDragonTakesOffUponTeleport(true)
-    , mPlayerWasIn(false)
     {
     }
 
-    void Detector::probeFields(odRfl::FieldProbe &probe)
+    void DetectorFields::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Detector")
                 (mTask, "Task")
@@ -52,6 +51,13 @@ namespace dragonRfl
                 (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
+
+    Detector::Detector(od::Server &server)
+    : odRfl::ServerClassImpl(server)
+    , mPlayerWasIn(false)
+    {
+    }
+
     void Detector::onLoaded()
     {
         getLevelObject().setObjectType(od::LevelObjectType::Detector);
@@ -61,36 +67,26 @@ namespace dragonRfl
     {
         getLevelObject().setEnableUpdate(true);
 
-        //mPhysicsHandle = getLevelObject().getLevel().getEngine().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
-        //mPhysicsHandle->setEnableCollision(false);
+        od::Server &server = getServer();
+        mPhysicsHandle = server.getPhysicsSystem().createObjectHandle(getLevelObject(), true);
+        mPhysicsHandle->setEnableCollision(false);
     }
 
     void Detector::onUpdate(float relTime)
     {
-        if(mTask != Task::TriggerOnly || mPhysicsHandle == nullptr)
-        {
-            return;
-        }
-
-        auto &rfl = getRflAs<DragonRfl>();
-        if(rfl.getLocalPlayer() != nullptr)
+        if(mTask != Task::TRIGGER_ONLY || mPhysicsHandle == nullptr)
         {
             return;
         }
 
         od::LevelObject &obj = getLevelObject();
-        od::LevelObject &playerObject = rfl.getLocalPlayer()->getLevelObject();
 
-        // since we currently only can detect the player (no definition of "NPC" exists yet), we can speed things up a bit by only performing
-        // the costly contact test if the player position is inside our bounding sphere. later we should further improve this by using a
-        // "single contact test" for the methods that only detect the player. the physics system does not have that interface yet, though.
-        if(!obj.getBoundingSphere().contains(playerObject.getPosition()))
-        {
-            return;
-        }
+        // TODO: since we currently only can detect the player (no definition of "NPC" exists yet), we could speed things up a bit by only
+        //  performing the costly contact test if the player position is inside our bounding sphere. later we should further improve this
+        //  by using a "single contact test" for the methods that only detect the player.
 
         mResultCache.clear();
-        //obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
+        getServer().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
 
         bool playerIsIn = false;
         for(auto &result : mResultCache)
@@ -101,7 +97,10 @@ namespace dragonRfl
                 continue;
             }
 
-            if(&objectHandle->getLevelObject() == &playerObject)
+            // the server has no notion on what a "player" is, yet. to not break the detector, we check whether the
+            //  object in question is of the HumanControl class
+            odRfl::ClassId objectClassId = objectHandle->getLevelObject().getClass()->getRflClassId();
+            if(objectClassId == odRfl::ClassTraits<HumanControl>::classId())
             {
                 playerIsIn = true;
                 break;
@@ -111,11 +110,11 @@ namespace dragonRfl
         bool triggered = false;
         switch(mDetectMethod)
         {
-        case DetectMethod::InsideToOutside:
+        case DetectMethod::INSIDE_TO_OUTSIDE:
             triggered = mPlayerWasIn && !playerIsIn;
             break;
 
-        case DetectMethod::OutsideToInside:
+        case DetectMethod::OUTSIDE_TO_INSIDE:
             triggered = !mPlayerWasIn && playerIsIn;
             break;
         }

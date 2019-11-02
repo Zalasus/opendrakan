@@ -243,6 +243,8 @@ namespace od
         // created on demand:
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
 
+        std::unique_ptr<odRfl::Spawnable> mRflInstance;
+
     };
 
 }

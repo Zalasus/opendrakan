@@ -163,6 +163,7 @@ namespace od
 
         odRfl::ObjectBuilderProbe builder;
         mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
+        mRflInstance = mClass->getFactory()
         //mRflClassInstance = mClass->makeInstanceForLevelObject(mLevel.getEngine().getRflManager(), *this);
         //if(mRflClassInstance == nullptr)
         //{

@@ -49,6 +49,11 @@ namespace odDb
         std::unique_ptr<odRfl::ClassBase> makeInstance(odRfl::RflManager &rflManager);
         std::unique_ptr<odRfl::LevelObjectClassBase> makeInstanceForLevelObject(odRfl::RflManager &rflManager, od::LevelObject &obj);
 
+        /**
+         * @brief Retrieves and
+         */
+        odRfl::ClassFactory *getFactory(odRfl::RflManager &manager);
+
 
 	private:
 

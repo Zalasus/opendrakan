@@ -90,6 +90,14 @@ namespace odRfl
     typedef uint16_t ClassId;
 
 
+    enum class ImplType
+    {
+        SERVER,
+        CLIENT,
+        EDITOR
+    };
+
+
     /**
      * @brief Interface for containers of RFL class fields. This allows introspection of your RFL class's configurable fields at runtime.
      *
@@ -111,6 +119,8 @@ namespace odRfl
 
         virtual ~FieldBundle() = default;
 
+        virtual std::unique_ptr<FieldBundle> clone() = 0;
+
         /**
          * @brief Method for probing the configurable class fields.
          *
@@ -130,6 +140,20 @@ namespace odRfl
         virtual void probeFields(FieldProbe &probe) = 0;
 
     };
+
+
+    template <typename _Bundle>
+    class FieldBundleWrapper : public FieldBundle
+    {
+    public:
+
+        virtual std::unique_ptr<_Bundle> clone() override final
+        {
+            return std::make_unique<_Bundle>(static_cast<const _Bundle&>(*this));
+        }
+
+    };
+
 
     /**
      * @brief Traits class linking a class base with a field bundle.
@@ -172,10 +196,17 @@ namespace odRfl
 
         virtual ~ClassBase() = default;
 
-        virtual Spawnable *asSpawnable();
+        virtual Spawnable *getSpawnable() = 0;
+        virtual FieldBundle &getFieldBundle() = 0;
 
-        // ??? more composition-friendly nomenclature?
-        virtual FieldBundle *getFieldBundle() = 0;
+    };
+
+
+    class ClassBase_
+    {
+    public:
+
+        ClassBase_(FieldBundle &bundle, Spawnable *spawnable);
 
     };
 
@@ -186,24 +217,42 @@ namespace odRfl
      * FIXME: great idea, but the static_cast does not work that way. it has no way of knowing that there is in fact a _DerivedBase
      * subclassing the CRTP wrapper.
      */
-    template <typename _DerivedBase, typename _FieldBundle>
-    class ClassBaseWrapper : public ClassBase, public _FieldBundle
+    template <typename _DerivedBase>
+    class ClassBaseWrapper : public ClassBase
     {
-        static_assert(std::is_default_constructible<_FieldBundle>::value, "Field bundle must be default-constructible");
-        static_assert(!std::is_abstract<_FieldBundle>::value, "Field bundle must not be abstract");
-
     public:
 
-        virtual Spawnable *asSpawnable() override
+        virtual Spawnable *getSpawnable() override final
         {
             if(std::is_base_of<Spawnable, _DerivedBase>::value)
             {
-                return static_cast<Spawnable*>(this);
+                _DerivedBase *thisAsBase = static_cast<_DerivedBase*>(this);
+                return static_cast<Spawnable*>(thisAsBase);
 
             }else
             {
                 return nullptr;
             }
+        }
+
+        virtual FieldBundle &getFieldBundle() override final
+        {
+            static_assert(std::is_base_of<FieldBundle, _DerivedBase>::value, "Derived base must inherit a FieldBundle");
+
+            _DerivedBase &thisAsBase = static_cast<_DerivedBase&>(*this);
+            return static_cast<FieldBundle&>(thisAsBase);
+        }
+
+        template<ImplType _Type>
+        class ImplTraits
+        {
+            using type = void;
+        };
+
+        template <ImplType _Type>
+        static std::unique_ptr<_DerivedBase> makeInstance()
+        {
+            if(std::is_void<ImplTraits<>)
         }
 
     };
@@ -388,12 +437,6 @@ namespace odRfl
     };
 
 
-    enum class ImplType
-    {
-        SERVER,
-        CLIENT
-    };
-
     template <typename _Base, ImplType _Type>
     struct ClassImplTraits
     {
@@ -448,7 +491,6 @@ namespace odRfl
         static ClassFactory &getFactory()
         {
             static DefaultClassFactory<_Base> factory;
-
             return factory;
         }
     };
