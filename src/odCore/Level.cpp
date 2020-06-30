@@ -10,6 +10,7 @@
 
 #include <algorithm>
 
+#include <odCore/Client.h>
 #include <odCore/OdDefines.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/SrscFile.h>
@@ -25,14 +26,19 @@
 namespace od
 {
 
-    Level::Level(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer)
-    : mPhysicsSystem(physicsSystem)
-    , mRenderer(renderer)
+    Level::Level(Engine &engine)
+    : mEngine(engine)
+    , mPhysicsSystem(engine.getPhysicsSystem())
+    , mRenderer(nullptr)
     , mMaxWidth(0)
     , mMaxHeight(0)
     , mVerticalExtent(0)
     , mCurrentActivePvsLayer(nullptr)
     {
+        if(engine.isClient())
+        {
+            mRenderer = &engine.getClient().getRenderer();
+        }
     }
 
     Level::~Level()
@@ -425,5 +431,3 @@ namespace od
     	}
     }
 }
-
-

@@ -26,8 +26,6 @@
 
 #include <dragonRfl/gui/DragonGui.h>
 
-#include <dragonRfl/classes/UserInterfaceProperties.h>
-
 namespace dragonRfl
 {
 
@@ -64,7 +62,7 @@ namespace dragonRfl
 
         if(!localServer.hasInitialLevelOverride())
         {
-            od::FilePath initialLevel(mGui->getUserInterfaceProperties()->mIntroLevelFilename);
+            od::FilePath initialLevel(mGui->getUserInterfaceProperties().introLevelFilename);
             localServer.loadLevel(initialLevel.adjustCase());
         }
 

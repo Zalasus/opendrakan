@@ -41,7 +41,7 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface.db has no class container");
         }
 
-        odRfl::ClassId uiPropsClassId = odRfl::ClassTraits<UserInterfaceProperties>::classId();
+        odRfl::ClassId uiPropsClassId = UserInterfaceProperties::classId();
         od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
         if(id == odDb::AssetRef::NULL_REF.assetId)
         {
@@ -49,16 +49,11 @@ namespace dragonRfl
         }
 
         od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::ClassBase> uiPropsInstance = uiPropsClass->makeInstance(client.getRflManager());
-        mUserInterfaceProperties.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
-        if(mUserInterfaceProperties == nullptr)
-        {
-            throw od::Exception("Could not cast or instantiate User Interface Properties instance");
-        }
-        mUserInterfaceProperties->onLoaded();
+        assert(uiPropsClass != nullptr); // this should not be null, given that the DB just gave us the ID
+        uiPropsClass->fillFields(mUserInterfaceProperties);
 
         odRfl::PrefetchProbe probe(*mInterfaceDb);
-        mUserInterfaceProperties->probeFields(probe);
+        mUserInterfaceProperties.probeFields(probe);
 
         auto cursor = od::make_refd<Cursor>(*this);
         setCursorWidget(cursor);
@@ -70,7 +65,7 @@ namespace dragonRfl
         healthIndicator->setPosition(0, 1);
         addWidget(healthIndicator);
 
-        mMainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
+        mMainMenu = od::make_refd<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);
 
         setMenuMode(false);

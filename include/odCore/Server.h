@@ -49,6 +49,8 @@ namespace od
         inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
         inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
         inline void setIsDone(bool b) { mIsDone.store(b, std::memory_order::memory_order_relaxed); }
+        inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
+        inline const od::FilePath &getEngineRootDir() const { return mEngineRoot; }
 
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
@@ -66,6 +68,8 @@ namespace od
 
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
         std::unique_ptr<Level> mLevel;
+
+        FilePath mEngineRoot;
 
         bool mHasInitialLevelOverride;
         FilePath mInitialLevelOverride;

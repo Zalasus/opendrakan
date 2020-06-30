@@ -19,13 +19,13 @@ namespace dragonRfl
 {
 
     class DragonGui;
-    class UserInterfaceProperties;
+    class UserInterfacePropertiesFields;
 
     class MainMenu : public odGui::Widget
     {
     public:
 
-        MainMenu(DragonGui &gui, UserInterfaceProperties *uiProps);
+        MainMenu(DragonGui &gui, UserInterfacePropertiesFields *uiProps);
 
 
     private:
@@ -42,7 +42,7 @@ namespace dragonRfl
         };
 
         void _addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
-            UserInterfaceProperties *uiProps, odGui::Widget *cont, int buttonCode);
+            UserInterfacePropertiesFields *uiProps, odGui::Widget *cont, int buttonCode);
 
         void _buttonClicked(int buttonCode);
 

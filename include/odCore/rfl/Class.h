@@ -13,68 +13,12 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/Engine.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
 #include <odCore/Downcast.h>
 
 #include <odCore/rfl/FieldProbe.h>
-
-#define ODRFL_DEFINE_CLASS(base_ident, id, category_str, name_str) \
-        static_assert(std::is_default_constructible<base_ident>::value, "RFL class base must be default-constructible"); \
-        static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "RFL class base must implement odRfl::ClassBase"); \
-        namespace odRfl \
-        { \
-            template <> constexpr ClassId ClassTraits<base_ident>::classId() { return id; } \
-            template <> constexpr const char *ClassTraits<base_ident>::name() { return name_str; } \
-            template <> constexpr const char *ClassTraits<base_ident>::category() { return category_str; } \
-        }
-
-#define ODRFL_DEFINE_CLASS_FIELDS(base_ident, fieldBundle_ident) \
-        static_assert(std::is_base_of<odRfl::FieldBundle, fieldBundle_ident>::value, "Field bundle must implement odRfl::FieldBundle"); \
-        static_assert(std::is_default_constructible<fieldBundle_ident>::value, "Field bundle must be default-constructible"); \
-        static_assert(!std::is_abstract<fieldBundle_ident>::value, "Field bundle must not be abstract"); \
-        namespace odRfl \
-        { \
-            template <> \
-            struct ClassFieldTraits<base_ident> \
-            { \
-                using type = fieldBundle_ident; \
-            }; \
-        }
-
-#define ODRFL_DEFINE_CUSTOM_CLASSFACTORY(base_ident, factory_ident) \
-        static_assert(std::is_default_constructible<factory_ident>::value, "Custom RFL class factory must be default-constructible"); \
-        static_assert(std::is_base_of<odRfl::ClassFactory, factory_ident>::value, "Custom RFL class factory must implement odRfl::ClassFactory"); \
-        namespace odRfl \
-        { \
-            template <> ClassFactory &ClassTraits<base_ident>::getFactory() { static factory_ident factory; return factory; } \
-        }
-
-#define ODRFL_DEFINE_CLASS_IMPL_CLIENT(base_ident, impl_ident) \
-        static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "Base of RFL class implementation must implement odRfl::ClassBase"); \
-        static_assert(std::is_base_of<odRfl::ClassImpl, impl_ident>::value, "RFL client class implementation must implement odRfl::ClassImpl"); \
-        static_assert(std::is_base_of<base_ident, impl_ident>::value, "RFL class implementation must inherit from the given base "); \
-        namespace odRfl \
-        { \
-            template <> \
-            struct ClassImplTraits<base_ident, odRfl::ImplType::CLIENT> \
-            { \
-                using type = impl_ident; \
-            }; \
-        }
-
-#define ODRFL_DEFINE_CLASS_IMPL_SERVER(base_ident, impl_ident) \
-        static_assert(std::is_base_of<odRfl::ClassBase, base_ident>::value, "Base of RFL class implementation must implement odRfl::ClassBase"); \
-        static_assert(std::is_base_of<odRfl::ClassImpl, impl_ident>::value, "RFL server class implementation must implement odRfl::ClassImpl"); \
-        static_assert(std::is_base_of<base_ident, impl_ident>::value, "RFL class implementation must inherit from the given base "); \
-        namespace odRfl \
-        { \
-            template <> \
-            struct ClassImplTraits<base_ident, odRfl::ImplType::SERVER> \
-            { \
-                using type = impl_ident; \
-            }; \
-        }
 
 namespace od
 {
@@ -88,14 +32,6 @@ namespace odRfl
 {
 
     typedef uint16_t ClassId;
-
-
-    enum class ImplType
-    {
-        SERVER,
-        CLIENT,
-        EDITOR
-    };
 
 
     /**
@@ -117,9 +53,9 @@ namespace odRfl
     {
     public:
 
-        virtual ~FieldBundle() = default;
+        virtual ~FieldBundle(); // = default
 
-        virtual std::unique_ptr<FieldBundle> clone() = 0;
+        //virtual std::unique_ptr<FieldBundle> clone() = 0;
 
         /**
          * @brief Method for probing the configurable class fields.
@@ -141,141 +77,56 @@ namespace odRfl
 
     };
 
-
-    template <typename _Bundle>
-    class FieldBundleWrapper : public FieldBundle
-    {
-    public:
-
-        virtual std::unique_ptr<_Bundle> clone() override final
-        {
-            return std::make_unique<_Bundle>(static_cast<const _Bundle&>(*this));
-        }
-
-    };
-
-
-    /**
-     * @brief Traits class linking a class base with a field bundle.
-     *
-     * If _Base is a valid class base, this will contain a typedef named \c type aliasing the
-     * class' FieldBundle implementation.
-     *
-     * There is no need to specialize this yourself. Use the convenience macro ODRFL_DEFINE_CLASS_FIELDS() instead.
-     */
-    template <typename _Base>
-    struct ClassFieldTraits
-    {
-    };
-
-
-    class Spawnable;
-
-    /**
-     * @brief Interface for all RFL class bases.
-     *
-     * Your implementation of this is what defines your RFL class. It is what you pass to the ODRFL_DEFINE_CLASS() macro in order
-     * to link an RFL class ID and name to your C++ class (this happens via the ClassTraits<...> template).
-     *
-     * It is where you put code that is shared among all implementations of your class. It is also possible to inherit ClassBase and
-     * a ClassImpl in the same class if you don't need split implementations in your class.
-     *
-     * This interface provides methods to convert your base to an interface for different engine objects. For instance, if your
-     * class is supposed to be placed on a level object, it would implement the Spawnable interface, and override asSpawnable()
-     * to return itself as a Spawnable. This way, costly dynamic_casts are avoided.
-     *
-     * ~~You probably don't want to implement this directly, but use ClassBaseWrapper<...> with your implementation
-     * as template argument instead. The CRTP ClassBaseWrapper checks properties your ClassBase should have via static_asserts and
-     * provides implementations for the fast-casting methods (asSpawnable() etc.), since it knows which interfaces your base implements.~~
-     * FIXME: that does not work yet. you have to provide the overrides yourself
-     *
-     */
-    class ClassBase
-    {
-    public:
-
-        virtual ~ClassBase() = default;
-
-        virtual Spawnable *getSpawnable() = 0;
-        virtual FieldBundle &getFieldBundle() = 0;
-
-    };
-
-
-    class ClassBase_
-    {
-    public:
-
-        ClassBase_(FieldBundle &bundle, Spawnable *spawnable);
-
-    };
-
-
-    /**
-     * @brief Convenience template implementing common methods
-     *
-     * FIXME: great idea, but the static_cast does not work that way. it has no way of knowing that there is in fact a _DerivedBase
-     * subclassing the CRTP wrapper.
-     */
-    template <typename _DerivedBase>
-    class ClassBaseWrapper : public ClassBase
-    {
-    public:
-
-        virtual Spawnable *getSpawnable() override final
-        {
-            if(std::is_base_of<Spawnable, _DerivedBase>::value)
-            {
-                _DerivedBase *thisAsBase = static_cast<_DerivedBase*>(this);
-                return static_cast<Spawnable*>(thisAsBase);
-
-            }else
-            {
-                return nullptr;
-            }
-        }
-
-        virtual FieldBundle &getFieldBundle() override final
-        {
-            static_assert(std::is_base_of<FieldBundle, _DerivedBase>::value, "Derived base must inherit a FieldBundle");
-
-            _DerivedBase &thisAsBase = static_cast<_DerivedBase&>(*this);
-            return static_cast<FieldBundle&>(thisAsBase);
-        }
-
-        template<ImplType _Type>
-        class ImplTraits
-        {
-            using type = void;
-        };
-
-        template <ImplType _Type>
-        static std::unique_ptr<_DerivedBase> makeInstance()
-        {
-            if(std::is_void<ImplTraits<>)
-        }
-
-    };
-
+    class SpawnableClass;
+    class ClientClass;
+    class ServerClass;
 
     /**
      * @brief Interface for a class implementation.
      *
      * The subclasses ClassImplServer and ClassImplClient extend this interface with client/server specific functions.
-     *
-     * Implementations are typically specific for the server or client side, but in case you don't need a client/server
-     * object, implement this instead of ClassImplServer/ClassImplClient to make your implementation generic.
      */
-    class ClassImpl
+    class ClassBase
     {
     public:
 
-        virtual ~ClassImpl() = default;
+        virtual ~ClassBase(); // = default;
+
+        /**
+         * @brief Returns a reference to the field bundle used by this implementation.
+         */
+        virtual FieldBundle &getFields() = 0;
 
         /**
          * @brief Hook that is called after all fields have been filled.
          */
         virtual void onLoaded();
+
+        virtual SpawnableClass *asSpawnableClass() = 0;
+        virtual ClientClass *asClientClass() = 0;
+        virtual ServerClass *asServerClass() = 0;
+    };
+
+
+    template <typename T>
+    class ClassImpl : public ClassBase
+    {
+    public:
+
+        virtual SpawnableClass *asSpawnableClass() override final
+        {
+            return od::static_downcast<T, SpawnableClass>(static_cast<T*>(this));
+        }
+
+        virtual ClientClass *asClientClass() override final
+        {
+            return od::static_downcast<T, ClientClass>(static_cast<T*>(this));
+        }
+
+        virtual ServerClass *asServerClass() override final
+        {
+            return od::static_downcast<T, ServerClass>(static_cast<T*>(this));
+        }
 
     };
 
@@ -285,25 +136,18 @@ namespace odRfl
      *
      * This provides the implementer with a od::Client object, which can be used to access
      * the client's subsystems.
-     *
-     * Note that this client object is passed via the constructor, so your implementation must
-     * take a od::Client as a constructor parameter, and pass it along to the ClientClassImpl parent.
-     *
-     * If your implementation is the same on both client and server side, and doesn't need
-     * a client/server object, implement odRfl::ClassImpl instead of this.
      */
-    class ClientClassImpl  : public ClassImpl
+    class ClientClass
     {
     public:
 
-        ClientClassImpl(od::Client &client);
-
-        inline od::Client &getClient() { return mClient; }
+        inline void setClient(od::Client &client) { mClient = &client; }
+        inline od::Client &getClient() { return *mClient; }
 
 
     private:
 
-        od::Client &mClient;
+        od::Client *mClient;
 
     };
 
@@ -313,35 +157,32 @@ namespace odRfl
      *
      * This provides the implementer with a od::Server object, which can be used to access
      * the server's subsystems.
-     *
-     * If your implementation is the same on both client and server side, and doesn't need
-     * a client/server object, implement odRfl::ClassImpl instead of this.
      */
-    class ServerClassImpl : public ClassImpl
+    class ServerClass
     {
     public:
 
-        ServerClassImpl(od::Server &server);
-
-        inline od::Server &getServer() { return mServer; }
+        inline void setServer(od::Server &server) { mServer = &server; }
+        inline od::Server &getServer() { return *mServer; }
 
 
     private:
 
-        od::Server &mServer;
+        od::Server *mServer;
     };
 
 
     /**
      * @brief Interface for a class that can be applied to a Level Object.
      */
-    class Spawnable
+    class SpawnableClass
     {
     public:
 
-        virtual ~Spawnable();
+        virtual ~SpawnableClass();
 
-        od::LevelObject &getLevelObject();
+        inline void setLevelObject(od::LevelObject &obj) { mLevelObject = &obj; }
+        inline od::LevelObject &getLevelObject() { return *mLevelObject; }
 
         /**
          * @brief Spawned hook. Part of the object lifecycle. Called when an object becomes active in the level.
@@ -392,7 +233,7 @@ namespace odRfl
         /**
          * @brief Called when the objects visibility state changed.
          */
-        virtual void onVisibilityChanged();
+        virtual void onVisibilityChanged(bool newVisibility);
 
         /**
          * @brief Called when the object's layer association changed. This only happens as a result of object translation.
@@ -434,12 +275,12 @@ namespace odRfl
          * This is called right after the respective specific hook has been called.
          */
         virtual void onTransformChanged();
-    };
 
 
-    template <typename _Base, ImplType _Type>
-    struct ClassImplTraits
-    {
+    private:
+
+        od::LevelObject *mLevelObject;
+
     };
 
 
@@ -447,54 +288,137 @@ namespace odRfl
     {
     public:
 
-        virtual ~ClassFactory() = default;
+        virtual ~ClassFactory(); // = default;
 
+        /**
+         * @brief Allocates a new field bundle. Will never return nullptr.
+         */
         virtual std::unique_ptr<FieldBundle> makeFieldBundle() = 0;
-        virtual std::unique_ptr<ClassBase> makeClientInstance(od::Client &client) = 0;
-        virtual std::unique_ptr<ClassBase> makeServerInstance(od::Server &server) = 0;
+
+        /**
+         * @brief Allocates a new class instace. Will never return nullptr.
+         */
+        virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) = 0;
 
     };
 
-    template <typename T>
-    class DefaultClassFactory : public ClassFactory
+    /**
+     * @brief A default class factory for RFL classes with two implementations, one for servers and one for clients.
+     *
+     * The factory selects which one to instantiate based on the Engine variant passed to the makeInstance method.
+     * It also handles assigning the Client/Server refs to the newly created instance.
+     */
+    template <typename _Fields, typename _ClientClassImpl, typename _ServerClassImpl>
+    class DefaultClassFactory final : public ClassFactory
     {
     public:
 
+        using Fields = _Fields;
+        using ClientClassImpl = _ClientClassImpl;
+        using ServerClassImpl = _ServerClassImpl;
+
+        static_assert(std::is_base_of<odRfl::FieldBundle, _Fields>::value, "_Fields must implement odRfl::FieldBundle");
+        static_assert(!std::is_abstract<_Fields>::value, "_Fields must not be abstract");
+
+        static_assert(std::is_base_of<odRfl::ClientClass, _ClientClassImpl>::value, "_ClientClassImpl must implement odRfl::ClientClass");
+        static_assert(!std::is_abstract<_ClientClassImpl>::value, "_ClientClassImpl must not be abstract");
+
+        static_assert(std::is_base_of<odRfl::ServerClass, _ServerClassImpl>::value, "_ServerClassImpl must implement odRfl::ServerClass");
+        static_assert(!std::is_abstract<_ServerClassImpl>::value, "_ServerClassImpl must not be abstract");
+
         virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
         {
-            using Bundle = typename ClassFieldTraits<T>::type;
-            return std::make_unique<Bundle>();
+            return std::make_unique<_Fields>();
         }
 
-        virtual std::unique_ptr<ClassBase> makeClientInstance(od::Client &client) override
+        virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) override
         {
-            using Impl = typename ClassImplTraits<T, ImplType::CLIENT>::type;
-            return std::make_unique<Impl>(client);
+            if(engine.isClient())
+            {
+                auto clientImpl = std::make_unique<_ClientClassImpl>();
+                clientImpl->setClient(engine.getClient());
+                return clientImpl;
+
+            }else if(engine.isServer())
+            {
+                auto serverImpl = std::make_unique<_ServerClassImpl>();
+                serverImpl->setServer(engine.getServer());
+                return serverImpl;
+
+            }else
+            {
+                throw od::Exception("Failed to instantiate class due to invalid Engine variant state");
+            }
+        }
+    };
+
+
+    /**
+     * @brief A class factory that can only instantiate a field bundle.
+     *
+     * Trying to make a class instance from this will cause a throw.
+     */
+    template <typename _Fields>
+    class FieldsOnlyClassFactory final : public ClassFactory
+    {
+    public:
+
+        using Fields = _Fields;
+
+        virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
+        {
+            return std::make_unique<_Fields>();
         }
 
-        virtual std::unique_ptr<ClassBase> makeServerInstance(od::Server &server) override
+        virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) override
         {
-            using Impl = typename ClassImplTraits<T, ImplType::SERVER>::type;
-            return std::make_unique<Impl>(server);
+            throw od::Exception("Tried to make instance of field-only class");
         }
 
     };
 
 
-    template <typename _Base>
-    struct ClassTraits
+    template <ClassId _Id, const char *_Category, const char *_Name, typename _Factory>
+    class ClassDefinition
     {
-        static constexpr ClassId classId();
-        static constexpr const char *name();
-        static constexpr const char *category();
+    public:
 
+        static_assert(std::is_base_of<odRfl::ClassFactory, _Factory>::value, "_Factory must implement odRfl::ClassFactory");
+        static_assert(!std::is_abstract<_Factory>::value, "_Factory must not be abstract");
+
+        using Factory = _Factory;
+
+        static inline constexpr ClassId classId() { return _Id; }
+        static inline constexpr const char *category() { return _Category; }
+        static inline constexpr const char *name() { return _Name; }
+
+        /**
+         * @brief Returns a factory for this class with static storage duration.
+         */
         static ClassFactory &getFactory()
         {
-            static DefaultClassFactory<_Base> factory;
+            static _Factory factory;
             return factory;
         }
+
     };
 
 }
+
+#define OD_DEFINE_CLASS(_cppclass, _id, _category, _name, _factory) \
+            struct _cppclass \
+            { \
+                static_assert(std::is_base_of<odRfl::ClassFactory, _factory>::value, "_factory must implement odRfl::ClassFactory"); \
+                static_assert(!std::is_abstract<_factory>::value, "_factory must not be abstract"); \
+                using Factory = _factory; \
+                static inline constexpr odRfl::ClassId classId() { return (_id); } \
+                static inline constexpr const char *category() { return (_category); } \
+                static inline constexpr const char *name() { return (_name); } \
+                static odRfl::ClassFactory &getFactory() \
+                { \
+                    static _factory factory; \
+                    return factory; \
+                } \
+            }
 
 #endif /* INCLUDE_ODCORE_RFL_CLASS_H_ */

@@ -7,13 +7,13 @@
 
 #include <odCore/db/Class.h>
 
+#include <odCore/Engine.h>
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 #include <odCore/db/ClassFactory.h>
 #include <odCore/db/AssetProvider.h>
 
 #include <odCore/rfl/Rfl.h>
-#include <odCore/rfl/DefaultObjectClass.h>
 #include <odCore/rfl/RflManager.h>
 
 namespace odDb
@@ -24,9 +24,7 @@ namespace odDb
     , mClassFactory(factory)
     , mRflClassId(0)
     , mIconNumber(0)
-    , mTriedToCacheRegistrar(false)
-    , mCachedRflClassRegistrar(nullptr)
-    , mRfl(nullptr)
+    , mCachedRflClassFactory(nullptr)
     {
     }
 
@@ -42,6 +40,7 @@ namespace odDb
 
         mClassBuilder.readFieldRecord(dr);
 
+        // TODO: why are we loading the model together with the class definition?
         if(mModelRef.assetId != 0)
         {
             try
@@ -56,10 +55,16 @@ namespace odDb
         }
     }
 
-    std::unique_ptr<odRfl::ClassBase> Class::makeInstance(odRfl::RflManager &rflManager)
+    void Class::fillFields(odRfl::FieldBundle &fieldBundle)
+    {
+        mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh
+        fieldBundle.probeFields(mClassBuilder);
+    }
+
+    std::unique_ptr<odRfl::ClassBase> Class::makeInstance(od::Engine &engine)
 	{
-        odRfl::ClassRegistrar *registrar = _getRegistrar(rflManager);
-        if(registrar == nullptr)
+        odRfl::ClassFactory *factory = getRflClassFactory(engine.getRflManager());
+        if(factory == nullptr)
         {
             Logger::debug() << "Tried to instantiate class without valid RFL class. Ignoring call as class is probably uinimplemented";
             return nullptr;
@@ -67,52 +72,26 @@ namespace odDb
 
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
-    	std::unique_ptr<odRfl::ClassBase> newInstance(registrar->makeInstance());
-        mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh TODO: pretty unelegant
-        newInstance->probeFields(mClassBuilder);
-        newInstance->setRfl(*mRfl);
+    	std::unique_ptr<odRfl::ClassBase> newInstance = factory->makeInstance(engine);
+        fillFields(newInstance->getFields());
 
         return newInstance;
 	}
 
-    std::unique_ptr<odRfl::LevelObjectClassBase> Class::makeInstanceForLevelObject(odRfl::RflManager &rflManager, od::LevelObject &obj)
+    odRfl::ClassFactory *Class::getRflClassFactory(odRfl::RflManager &rflManager)
     {
-        std::unique_ptr<odRfl::LevelObjectClassBase> instance;
-
-        if(_getRegistrar(rflManager) == nullptr)
-        {
-            instance = std::make_unique<odRfl::DefaultObjectClass>();
-
-        }else
-        {
-            std::unique_ptr<odRfl::ClassBase> newInstance = makeInstance(rflManager);
-            if(newInstance->getBaseType() != odRfl::ClassBaseType::LEVEL_OBJECT)
-            {
-                throw od::Exception("Tried to make level object with non-level-object class");
-            }
-
-            instance.reset(newInstance.release()->asLevelObjectBase());
-        }
-
-        instance->setLevelObject(obj);
-        return instance;
-    }
-
-    odRfl::ClassRegistrar *Class::_getRegistrar(odRfl::RflManager &rflManager)
-    {
-        if(!mTriedToCacheRegistrar)
+        if(mCachedRflClassFactory == nullptr)
         {
             odRfl::Rfl *rfl = rflManager.getRfl(mClassFactory.getRflPath().fileStrNoExt());
             if(rfl == nullptr)
             {
-                Logger::warn() << "RFL '" << mClassFactory.getRflPath() << "' needed for Instantiating class '" << mClassName << "' not loaded";
+                Logger::warn() << "RFL '" << mClassFactory.getRflPath() << "' needed for instantiating class '" << mClassName << "' not loaded";
 
             } else
             {
-                mRfl = rfl;
                 try
                 {
-                    mCachedRflClassRegistrar = mRfl->getRegistrarForClassId(mRflClassId);
+                    mCachedRflClassFactory = rfl->getFactoryForClassId(mRflClassId);
 
                 }catch(od::NotFoundException &e)
                 {
@@ -120,11 +99,9 @@ namespace odDb
                         " of class '" << mClassName << "' not found. Probably unimplemented";
                 }
             }
-
-            mTriedToCacheRegistrar = true;
         }
 
-        return mCachedRflClassRegistrar;
+        return mCachedRflClassFactory;
     }
 
 }

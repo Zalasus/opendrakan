@@ -8,65 +8,48 @@
 #ifndef INCLUDE_RFL_DRAGON_BUILDING_H_
 #define INCLUDE_RFL_DRAGON_BUILDING_H_
 
-#include <odCore/rfl/DefaultObjectClass.h>
-
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
-
-namespace odRender
-{
-    class Handle;
-}
-
-namespace odPhysics
-{
-    class ObjectHandle;
-}
 
 namespace dragonRfl
 {
 
-    class BuildingFields : public odRfl::FieldBundle
+    struct BuildingFields final : public odRfl::FieldBundle
     {
-    public:
+        BuildingFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override final;
 
-
-    protected:
-
-        odRfl::Integer          mInitialHealth;
-        odRfl::Enum             mSnapMode;
-        odRfl::ClassRef         mSoundEffectObject;
-        odRfl::EnumYesNo        mIsDoorWay;
-        odRfl::EnumYesNo        mCanArokhLandOn;
-        odRfl::Enum             mDoorWayAlong;
-        odRfl::EnumMessage      mMessageToSend;
+        odRfl::Integer          initialHealth;
+        odRfl::Enum             snapMode;
+        odRfl::ClassRef         soundEffectObject;
+        odRfl::EnumYesNo        isDoorWay;
+        odRfl::EnumYesNo        canArokhLandOn;
+        odRfl::Enum             doorWayAlong;
+        odRfl::EnumMessage      messageToSend;
         odRfl::ClassRef         m2DExplosionObject;
-        odRfl::ClassRef         mExplosionGenerator;
-        odRfl::ClassRef         mSmokeGenerator;
-        odRfl::ModelRefArray    mRubbleAnimation;
-        odRfl::Float            mRubbleAnimRate;
-        odRfl::EnumYesNo        mFlammable;
-        odRfl::Enum             mPushOverMode;
-        odRfl::EnumYesNo        mFallWhenDead;
-        odRfl::SoundRef         mHitGroundSound;
-        odRfl::EnumYesNo        mSendMessageWhenPushed;
-        odRfl::EnumMessage      mMessageToSendWhenPushed;
-        odRfl::EnumYesNo        mSendMessageAfterPushed;
-        odRfl::EnumMessage      mMessageToSendAfterPushed;
+        odRfl::ClassRef         explosionGenerator;
+        odRfl::ClassRef         smokeGenerator;
+        odRfl::ModelRefArray    rubbleAnimation;
+        odRfl::Float            rubbleAnimRate;
+        odRfl::EnumYesNo        flammable;
+        odRfl::Enum             pushOverMode;
+        odRfl::EnumYesNo        fallWhenDead;
+        odRfl::SoundRef         hitGroundSound;
+        odRfl::EnumYesNo        sendMessageWhenPushed;
+        odRfl::EnumMessage      messageToSendWhenPushed;
+        odRfl::EnumYesNo        sendMessageAfterPushed;
+        odRfl::EnumMessage      messageToSendAfterPushed;
 
     };
 
 
-	class Building : public odRfl::ClassBaseWrapper<Building>, protected odRfl::Spawnable, protected BuildingFields
-	{
-	};
-
-
-	class Building_Sv final : public odRfl::ServerClassImpl, private Building
+	class Building_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Building_Sv>
 	{
 	public:
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 	    virtual void onSpawned() override;
 	    virtual void onDespawned() override;
@@ -74,32 +57,29 @@ namespace dragonRfl
 
 	private:
 
-	    od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        BuildingFields mFields;
 
 	};
 
 
-	class Building_Cl final: public odRfl::ClientClassImpl, private Building
+	class Building_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Building_Cl>
     {
     public:
 
-        Building_Cl(od::Client &client);
-
-        virtual void onSpawned() override;
-        virtual void onDespawned() override;
-
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
     private:
 
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
-        od::RefPtr<odRender::Handle> mRenderHandle;
+        BuildingFields mFields;
 
     };
 
+    using BuildingFactory = odRfl::DefaultClassFactory<BuildingFields, Building_Cl, Building_Sv>;
+
+    //using Building = odRfl::ClassDefinition<, BuildingFactory>;
+
+    OD_DEFINE_CLASS(Building, 0x0011, "Ground Object", "Building", BuildingFactory);
 
 }
-
-ODRFL_DEFINE_CLASS(dragonRfl::Building, 0x0011, "Ground Object", "Building");
-ODRFL_DEFINE_CLASS_FIELDS(dragonRfl::Building, dragonRfl::BuildingFields);
 
 #endif /* INCLUDE_RFL_DRAGON_BUILDING_H_ */

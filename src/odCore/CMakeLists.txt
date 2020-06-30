@@ -29,7 +29,7 @@ target_sources(odCore PRIVATE
         "input/CursorListener.cpp"
         "input/InputManager.cpp"
         "physics/bullet/BulletCallbacks.cpp"
-        "physics/bullet/BulletPhysicsSystem.cpp"        
+        "physics/bullet/BulletPhysicsSystem.cpp"
         "physics/bullet/DebugDrawer.cpp"
         "physics/bullet/LayerHandleImpl.cpp"
         "physics/bullet/LightHandleImpl.cpp"
@@ -41,7 +41,7 @@ target_sources(odCore PRIVATE
         "render/GuiQuad.cpp"
         "render/Renderer.cpp"
         "rfl/ClassBuilderProbe.cpp"
-        "rfl/DefaultObjectClass.cpp"
+        #"rfl/DefaultObjectClass.cpp"
         "rfl/Field.cpp"
         "rfl/FieldProbe.cpp"
         "rfl/ObjectBuilderProbe.cpp"
@@ -54,6 +54,7 @@ target_sources(odCore PRIVATE
         "Client.cpp"
         "ConfigFile.cpp"
         "DataStream.cpp"
+        "Engine.cpp"
         "Exception.cpp"
         "FilePath.cpp"
         "Guid.cpp"
@@ -71,7 +72,7 @@ target_sources(odCore PRIVATE
         "SrscFile.cpp"
         "StringUtils.cpp"
         "ZStream.cpp")
-    
+
 find_package(Threads REQUIRED)
 target_link_libraries(odCore ${CMAKE_THREAD_LIBS_INIT})
 
@@ -93,6 +94,3 @@ if(glm_FOUND)
 else()
     message(WARNING "Could not find glm cmake package. Trying to continue generating, as build works anyway on most systems if it is installed")
 endif()
-    
-    
-    

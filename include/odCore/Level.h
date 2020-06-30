@@ -33,9 +33,10 @@ namespace od
     {
     public:
 
-        Level(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer);
+        Level(Engine &engine);
         ~Level();
 
+        inline Engine &getEngine() { return mEngine; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return mPhysicsSystem; }
         inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
 
@@ -90,7 +91,7 @@ namespace od
         void _loadLayerGroups(SrscFile &file);
         void _loadObjects(SrscFile &file);
 
-
+        Engine &mEngine;
         odPhysics::PhysicsSystem &mPhysicsSystem;
         odRender::Renderer *mRenderer;
 

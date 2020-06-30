@@ -75,7 +75,7 @@ namespace od
 
         inline LevelObjectId getObjectId() const { return mId; }
         inline odDb::Class *getClass() { return mClass; }
-        inline odRfl::LevelObjectClassBase *getClassInstance() { return nullptr; }
+        inline odRfl::ClassBase *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline glm::vec3 getPosition() const { return mPosition; }
         inline glm::vec3 getScale() const { return mScale; }
@@ -243,7 +243,8 @@ namespace od
         // created on demand:
         std::unique_ptr<odAnim::Skeleton> mSkeleton;
 
-        std::unique_ptr<odRfl::Spawnable> mRflInstance;
+        std::unique_ptr<odRfl::ClassBase> mRflClassInstance;
+        odRfl::SpawnableClass *mSpawnableClass; // downcast version of mRflClassInstance, so we don't have to cast for every call to Spawnable methods
 
     };
 

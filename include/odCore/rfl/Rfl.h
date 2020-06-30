@@ -55,11 +55,11 @@ namespace odRfl
 
 	protected:
 
-		template <typename _ClassBase>
+		template <typename _ClassDefinition>
 		void registerClass()
-		{
-		    ClassId id = ClassTraits<_ClassBase>::classId();
-		    ClassFactory &factory = ClassTraits<_ClassBase>::getFactory();
+		{        
+		    ClassId id = _ClassDefinition::classId();
+		    ClassFactory &factory = _ClassDefinition::getFactory();
 
 		    mRegisteredClasses.insert(std::make_pair(id, std::ref(factory)));
 		}

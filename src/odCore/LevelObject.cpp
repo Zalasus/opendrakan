@@ -93,16 +93,17 @@ namespace od
     , mLightingLayer(nullptr)
     , mFlags(0)
     , mInitialEventCount(0)
+    , mIsVisible(true)
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
-    , mIsVisible(true)
     , mAttachmentTarget(nullptr)
     , mIgnoreAttachmentTranslation(false)
     , mIgnoreAttachmentRotation(false)
     , mIgnoreAttachmentScale(false)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
+    , mSpawnableClass(nullptr)
     {
     }
 
@@ -162,17 +163,28 @@ namespace od
         }
 
         odRfl::ObjectBuilderProbe builder;
-        mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
-        mRflInstance = mClass->getFactory()
-        //mRflClassInstance = mClass->makeInstanceForLevelObject(mLevel.getEngine().getRflManager(), *this);
-        //if(mRflClassInstance == nullptr)
-        //{
-        //    throw Exception("Failed to instantiate class of level object");
-        //}
+        builder.readFieldRecord(dr);
 
-        // it is important that we probe the fields before reading the record for this one
-        //mRflClassInstance->probeFields(builder);
-        builder.readFieldRecord(dr); // this will read the field stuff and overwrite the fields in the class instance
+        // all fields loaded. now create class instance TODO: maybe move this to a second method so we don't invoke class behavior just by loading the fields?
+        mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
+        mRflClassInstance = mClass->makeInstance(mLevel.getEngine());
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->getFields().probeFields(builder);
+            mSpawnableClass = mRflClassInstance->asSpawnableClass();
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->setLevelObject(*this);
+
+            }else
+            {
+                Logger::warn() << "Level object has RFL class that is not spawnable. This object will probably not do much...";
+            }
+
+        }else
+        {
+            Logger::warn() << "Level object has umimplemented RFL class";
+        }
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
 
@@ -185,14 +197,16 @@ namespace od
 
         mIsVisible = mFlags & OD_OBJECT_FLAG_VISIBLE;
 
-        //if(mRflClassInstance != nullptr)
-        //{
-        //    mRflClassInstance->onLoaded(); // do this last! we want to pass a fully set up level object here
-        //}
+        if(mRflClassInstance != nullptr)
+        {
+            mRflClassInstance->onLoaded(); // do this last! it'd be better to pass a fully set up level object here
+        }
     }
 
     void LevelObject::spawned()
     {
+        Logger::debug() << "Object " << getObjectId() << " spawned";
+
         // if we haven't got an associated layer yet, search for it now.
         // TODO: add flag tracking this. might be possible we searched once, but found there is no layer to associate with
         if(mAssociatedLayer == nullptr)
@@ -201,7 +215,11 @@ namespace od
         }
 
         mState = LevelObjectState::Spawned;
-        Logger::debug() << "Object " << getObjectId() << " spawned";
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onSpawned();
+        }
     }
 
     void LevelObject::despawned()
@@ -213,6 +231,11 @@ namespace od
         _detachAllAttachedObjects();
 
         mState = LevelObjectState::Loaded;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onDespawned();
+        }
     }
 
     void LevelObject::destroyed()
@@ -220,6 +243,11 @@ namespace od
         Logger::verbose() << "Object " << getObjectId() << " destroyed";
 
         mState = LevelObjectState::Destroyed;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onDestroyed();
+        }
     }
 
     void LevelObject::messageReceived(LevelObject &sender, od::Message message)
@@ -230,6 +258,11 @@ namespace od
         }
 
         Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onMessageReceived(sender, message);
+        }
     }
 
     void LevelObject::setEnableUpdate(bool enable)
@@ -250,6 +283,11 @@ namespace od
         {
             return;
         }
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onUpdate(relTime);
+        }
     }
 
     void LevelObject::postUpdate()
@@ -266,6 +304,11 @@ namespace od
             updateAssociatedLayer(true);
         }
 
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onTranslated(prevPos, v);
+        }
+
         _onTransformChanged(this);
     }
 
@@ -273,6 +316,11 @@ namespace od
     {
         glm::quat prevRot = mRotation;
         mRotation = q;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onRotated(prevRot, q);
+        }
 
         _onTransformChanged(this);
     }
@@ -282,6 +330,11 @@ namespace od
         glm::vec3 prevScale = mScale;
         mScale = scale;
 
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onRotated(prevScale, scale);
+        }
+
         _onTransformChanged(this);
     }
 
@@ -290,6 +343,11 @@ namespace od
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
 
         mIsVisible = v;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onVisibilityChanged(v);
+        }
     }
 
     void LevelObject::setObjectType(LevelObjectType type)
@@ -444,10 +502,10 @@ namespace od
 
         mAssociatedLayer = newLayer;
 
-        //if(callChangedHook && mRflClassInstance != nullptr && oldLayer != newLayer)
-        //{
-        //    mRflClassInstance->onLayerChanged(oldLayer, newLayer);
-        //}
+        if(callChangedHook && mSpawnableClass != nullptr && oldLayer != newLayer)
+        {
+            mSpawnableClass->onLayerChanged(oldLayer, newLayer);
+        }
     }
 
     void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
@@ -455,6 +513,11 @@ namespace od
         for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
         {
             (*it)->_attachmentTargetsTransformUpdated(this);
+        }
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onTransformChanged();
         }
     }
 

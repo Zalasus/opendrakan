@@ -10,7 +10,7 @@
 namespace odRfl
 {
 
-    ClassRegistrar *Rfl::getRegistrarForClassId(ClassId id)
+    ClassFactory *Rfl::getFactoryForClassId(ClassId id)
     {
         auto it = mRegisteredClasses.find(id);
         if(it == mRegisteredClasses.end())
@@ -22,7 +22,3 @@ namespace odRfl
     }
 
 }
-
-
-
-

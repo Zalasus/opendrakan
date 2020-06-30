@@ -73,7 +73,7 @@ namespace dragonRfl
 
 
 
-    MainMenu::MainMenu(DragonGui &gui, UserInterfaceProperties *uiProps)
+    MainMenu::MainMenu(DragonGui &gui, UserInterfacePropertiesFields *uiProps)
     : odGui::Widget(gui)
     , mDragonGui(gui)
     {
@@ -96,22 +96,22 @@ namespace dragonRfl
         cont->setZIndex(-1);
         this->addChild(cont);
 
-        _addCrystal(gui, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
-        _addCrystal(gui, uiProps->mCrystalLeft.getAsset(), uiProps->mCrystalLeftNoteOffset, 57, 110, 195, uiProps, cont, BC_LOAD);
-        _addCrystal(gui, uiProps->mCrystalMiddle.getAsset(), uiProps->mCrystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
-        _addCrystal(gui, uiProps->mCrystalRight.getAsset(), uiProps->mCrystalRightNoteOffset, 57, 400, 195, uiProps, cont, BC_SAVE);
-        _addCrystal(gui, uiProps->mCrystalLowerLeft.getAsset(), uiProps->mCrystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
-        _addCrystal(gui, uiProps->mCrystalLowerRight.getAsset(), uiProps->mCrystalLowerRightNoteOffset, 35, 358, 292, uiProps, cont, BC_CREDITS);
-        _addCrystal(gui, uiProps->mCrystalBottom.getAsset(), uiProps->mCrystalBottomNoteOffset, 61, 255, 440, uiProps, cont, BC_QUIT);
+        _addCrystal(gui, uiProps->crystalTop.getAsset(), uiProps->crystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
+        _addCrystal(gui, uiProps->crystalLeft.getAsset(), uiProps->crystalLeftNoteOffset, 57, 110, 195, uiProps, cont, BC_LOAD);
+        _addCrystal(gui, uiProps->crystalMiddle.getAsset(), uiProps->crystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
+        _addCrystal(gui, uiProps->crystalRight.getAsset(), uiProps->crystalRightNoteOffset, 57, 400, 195, uiProps, cont, BC_SAVE);
+        _addCrystal(gui, uiProps->crystalLowerLeft.getAsset(), uiProps->crystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
+        _addCrystal(gui, uiProps->crystalLowerRight.getAsset(), uiProps->crystalLowerRightNoteOffset, 35, 358, 292, uiProps, cont, BC_CREDITS);
+        _addCrystal(gui, uiProps->crystalBottom.getAsset(), uiProps->crystalBottomNoteOffset, 61, 255, 440, uiProps, cont, BC_QUIT);
     }
 
     void MainMenu::_addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
-            UserInterfaceProperties *uiProps, odGui::Widget *cont, int buttonCode)
+            UserInterfacePropertiesFields *uiProps, odGui::Widget *cont, int buttonCode)
     {
         auto crystal = od::make_refd<CrystalRingButton>(gui, crystalModel,
-                uiProps->mInnerRing.getAsset(),
-                uiProps->mOuterRing.getAsset(),
-                uiProps->mHoverSoundLooped.getAsset(),
+                uiProps->innerRing.getAsset(),
+                uiProps->outerRing.getAsset(),
+                uiProps->hoverSoundLooped.getAsset(),
                 noteOffset);
         crystal->setDimensions(dia, dia, odGui::WidgetDimensionType::Pixels);
         crystal->setPosition(x/512, y/512);

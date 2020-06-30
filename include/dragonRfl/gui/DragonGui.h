@@ -18,6 +18,8 @@
 
 #include <odCore/gui/Gui.h>
 
+#include <dragonRfl/classes/UserInterfaceProperties.h>
+
 namespace od
 {
     class Client;
@@ -26,7 +28,6 @@ namespace od
 namespace dragonRfl
 {
 
-    class UserInterfaceProperties;
     class MainMenu;
 
     /**
@@ -40,7 +41,7 @@ namespace dragonRfl
         ~DragonGui();
 
         inline od::Client &getClient() { return mClient; }
-        inline UserInterfaceProperties *getUserInterfaceProperties() { return mUserInterfaceProperties.get(); }
+        inline const UserInterfacePropertiesFields &getUserInterfaceProperties() const { return mUserInterfaceProperties; }
 
         /**
          * @brief Localizes string with localization tag.
@@ -73,7 +74,7 @@ namespace dragonRfl
         odDb::TextureFactory mRrcTextureFactory;
         odDb::Database *mInterfaceDb;
 
-        std::unique_ptr<UserInterfaceProperties> mUserInterfaceProperties;
+        UserInterfacePropertiesFields mUserInterfaceProperties;
 
         std::map<od::RecordId, std::string> mLocalizedStringCache;
 

@@ -44,6 +44,7 @@ namespace odRfl
         virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
         virtual void onTransformChanged() override;
 
+        static std::unique_ptr<DefaultObjectClass> makeInstance();
 
     protected:
 

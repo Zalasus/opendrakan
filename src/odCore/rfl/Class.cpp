@@ -12,139 +12,72 @@
 namespace odRfl
 {
 
-    ClassBase::ClassBase()
-    : mRfl(nullptr)
+    FieldBundle::~FieldBundle()
     {
     }
 
-    void ClassBase::setRfl(Rfl &rfl)
+
+    ClassBase::~ClassBase()
     {
-        if(mRfl != nullptr)
-        {
-            throw od::Exception("RFL already assigned");
-        }
-
-        mRfl = &rfl;
-    }
-
-    Rfl &ClassBase::getRfl()
-    {
-        if(mRfl == nullptr)
-        {
-            throw od::Exception("No RFL assigned");
-        }
-
-        return *mRfl;
     }
 
     void ClassBase::onLoaded()
     {
     }
 
-    ClassBaseType ClassBase::getBaseType()
-    {
-        return ClassBaseType::DEFAULT;
-    }
 
-    LevelObjectClassBase *ClassBase::asLevelObjectBase()
-    {
-        return nullptr;
-    }
-
-    MaterialClassBase *ClassBase::asMaterialBase()
-    {
-        return nullptr;
-    }
-
-
-    LevelObjectClassBase::LevelObjectClassBase()
-    : mLevelObject(nullptr)
+    SpawnableClass::~SpawnableClass()
     {
     }
 
-    void LevelObjectClassBase::setLevelObject(od::LevelObject &obj)
-    {
-        if(mLevelObject != nullptr)
-        {
-            throw od::Exception("LevelObject already assigned");
-        }
-
-        mLevelObject = &obj;
-    }
-
-    od::LevelObject &LevelObjectClassBase::getLevelObject()
-    {
-        if(mLevelObject == nullptr)
-        {
-            throw od::Exception("No LevelObject assigned");
-        }
-
-        return *mLevelObject;
-    }
-
-    void LevelObjectClassBase::onSpawned()
+    void SpawnableClass::onSpawned()
     {
     }
 
-    void LevelObjectClassBase::onDespawned()
+    void SpawnableClass::onDespawned()
     {
     }
 
-    void LevelObjectClassBase::onUpdate(float relTime)
+    void SpawnableClass::onUpdate(float relTime)
     {
     }
 
-    void LevelObjectClassBase::onMessageReceived(od::LevelObject &sender, od::Message message)
+    void SpawnableClass::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
     }
 
-    void LevelObjectClassBase::onDestroyed()
+    void SpawnableClass::onDestroyed()
     {
     }
 
-    void LevelObjectClassBase::onVisibilityChanged()
+    void SpawnableClass::onVisibilityChanged(bool newVisibility)
     {
     }
 
-    void LevelObjectClassBase::onLayerChanged(od::Layer *from, od::Layer *to)
+    void SpawnableClass::onLayerChanged(od::Layer *from, od::Layer *to)
     {
     }
 
-    void LevelObjectClassBase::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
+    void SpawnableClass::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
     {
     }
 
-    void LevelObjectClassBase::onRotated(const glm::quat &from, const glm::quat &to)
+    void SpawnableClass::onRotated(const glm::quat &from, const glm::quat &to)
     {
     }
 
-    void LevelObjectClassBase::onScaled(const glm::vec3 &from, const glm::vec3 &to)
+    void SpawnableClass::onScaled(const glm::vec3 &from, const glm::vec3 &to)
     {
     }
 
-    void LevelObjectClassBase::onTransformChanged()
+    void SpawnableClass::onTransformChanged()
     {
     }
 
-    ClassBaseType LevelObjectClassBase::getBaseType()
+
+    ClassFactory::~ClassFactory()
     {
-        return ClassBaseType::LEVEL_OBJECT;
     }
 
-    LevelObjectClassBase *LevelObjectClassBase::asLevelObjectBase()
-    {
-        return this;
-    }
-
-
-    ClassBaseType MaterialClassBase::getBaseType()
-    {
-        return ClassBaseType::MATERIAL;
-    }
-
-    MaterialClassBase *MaterialClassBase::asMaterialBase()
-    {
-        return this;
-    }
 
 }

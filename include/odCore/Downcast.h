@@ -64,6 +64,46 @@ namespace od
 #endif
     }
 
+
+    namespace detail
+    {
+        template <typename _From, typename _To, bool>
+        struct StaticDowncastHelper
+        {
+            static _To *cast(_From *p);
+        };
+
+        template <typename _From, typename _To>
+        struct StaticDowncastHelper<_From, _To, true>
+        {
+            static _To *cast(_From *p)
+            {
+                return static_cast<_To*>(p);
+            }
+        };
+
+        template <typename _From, typename _To>
+        struct StaticDowncastHelper<_From, _To, false>
+        {
+            static _To *cast(_From *p)
+            {
+                ((void)p);
+                return nullptr;
+            }
+        };
+    }
+
+    /**
+     * Cast function template for a downcast that evaluates to nullptr if the conversion is statically deemed incorrect.
+     *
+     * TODO: this can probably be constexpr
+     */
+    template <typename _From, typename _To>
+    _To *static_downcast(_From *f)
+    {
+        return detail::StaticDowncastHelper<_From, _To, std::is_base_of<_To, _From>::value>::cast(f);
+    }
+
 }
 
 #endif /* INCLUDE_ODCORE_DOWNCAST_H_ */

@@ -19,6 +19,8 @@
 namespace odRfl
 {
 
+    // TODO: with our visitor pattern FieldProbe, most of these don't have to be virtual. devirtualize them!!!
+
     /**
      * Common parent to all Fields.
      */

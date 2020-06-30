@@ -12,20 +12,19 @@
 
 #include <odCore/db/Asset.h>
 #include <odCore/db/Model.h>
-#include <odCore/rfl/Rfl.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/ClassBuilderProbe.h>
 
 namespace od
 {
+    class Engine;
     class LevelObject;
 }
 
 namespace odRfl
 {
-	class ClassRegistrar;
+    class ClassFactory;
 	class ClassBase;
-	class LevelObjectClassBase;
-	class Rfl;
 	class RflManager;
 }
 
@@ -41,26 +40,38 @@ namespace odDb
 
 		inline bool hasModel() const { return mModel != nullptr; }
         inline od::RefPtr<Model> getModel() { return mModel; }
-        inline std::string getName() const { return mClassName; }
+        inline const std::string &getName() const { return mClassName; }
         inline odRfl::ClassId getRflClassId() const { return mRflClassId; }
 
         virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
-        std::unique_ptr<odRfl::ClassBase> makeInstance(odRfl::RflManager &rflManager);
-        std::unique_ptr<odRfl::LevelObjectClassBase> makeInstanceForLevelObject(odRfl::RflManager &rflManager, od::LevelObject &obj);
+        /**
+         * @brief Fills a provided field bundle with the values defined by this class.
+         */
+        void fillFields(odRfl::FieldBundle &fields);
 
         /**
-         * @brief Retrieves and
+         * @brief Queries a factory from the RFL that can be used to instantiate the class.
+         *
+         * If no RFL provides an implementation of the referenced class ID, this will return nullptr;
+         *
+         * The factory is cached internally. Once a valid factory has been obtained, this method
+         * will not query the RFL manager anymore and instead return the cached entry.
          */
-        odRfl::ClassFactory *getFactory(odRfl::RflManager &manager);
+        odRfl::ClassFactory *getRflClassFactory(odRfl::RflManager &rflManager);
+
+        /**
+         * @brief Obtains a factory, instanciates the class and fills it's fields.
+         *
+         * This is a convenience method.
+         *
+         * For now, this will return nullptr for an unimplemented class. Later, this
+         * might become an exceptin.
+         */
+        std::unique_ptr<odRfl::ClassBase> makeInstance(od::Engine &engine);
 
 
 	private:
-
-        /**
-         * @brief Returns cached registrar or attempts once to retrieve it from the RFL.
-         */
-        odRfl::ClassRegistrar *_getRegistrar(odRfl::RflManager &rflManager);
 
         ClassFactory &mClassFactory;
 
@@ -71,11 +82,9 @@ namespace odDb
         odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
 
-        bool mTriedToCacheRegistrar;
-        odRfl::ClassRegistrar *mCachedRflClassRegistrar;
-        odRfl::Rfl *mRfl;
-
+        odRfl::ClassFactory *mCachedRflClassFactory;
 	};
+
 
 	template <>
     struct AssetTraits<Class>
