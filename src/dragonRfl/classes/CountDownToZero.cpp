@@ -17,7 +17,7 @@
 namespace dragonRfl
 {
 
-    CountDownToZero::CountDownToZero()
+    CountDownToZeroFields::CountDownToZeroFields()
     : mInitialCounterValue(1)
     , mWhenTriggered(TimerTriggerMode::DependsOnMessage)
     , mMessageToSend(od::Message::On)
@@ -28,7 +28,7 @@ namespace dragonRfl
     {
     }
 
-    void CountDownToZero::probeFields(odRfl::FieldProbe &probe)
+    void CountDownToZeroFields::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Count Down To Zero")
                (mInitialCounterValue, "Initial Counter Value")
@@ -39,18 +39,24 @@ namespace dragonRfl
                (mResetMessage, "Reset Message");
     }
 
-    void CountDownToZero::onLoaded()
+
+    CountDownToZero_Sv::CountDownToZero_Sv()
+    : mCounterValue(0)
+    {
+    }
+
+    void CountDownToZero_Sv::onLoaded()
     {
         getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
         getLevelObject().setObjectType(od::LevelObjectType::Detector);
     }
 
-    void CountDownToZero::onSpawned()
+    void CountDownToZero_Sv::onSpawned()
     {
         mCounterValue = mInitialCounterValue;
     }
 
-    void CountDownToZero::onMessageReceived(od::LevelObject &sender, od::Message message)
+    void CountDownToZero_Sv::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         uint32_t newCounter = mCounterValue;
 
@@ -101,6 +107,3 @@ namespace dragonRfl
     }
 
 }
-
-
-

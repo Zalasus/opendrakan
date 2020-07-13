@@ -16,6 +16,8 @@
 
 #include <odCore/physics/PhysicsSystem.h>
 
+#include <odCore/render/Renderer.h>
+
 namespace dragonRfl
 {
 
@@ -77,6 +79,34 @@ namespace dragonRfl
 
     void Building_Sv::onDespawned()
     {
+    }
+
+
+    void Building_Cl::onSpawned()
+    {
+        auto &obj = getLevelObject();
+        auto dbClass = obj.getClass();
+        if(dbClass->hasModel())
+        {
+            auto &renderer = getClient().getRenderer();
+            auto dbModel = dbClass.getModel();
+            auto renderModel = dbModel.getOrCreateRenderModel(&renderer);
+
+            mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
+            mRenderHandle->setPosition(obj.getPosition());
+            mRenderHandle->setOrientation(obj.getOrientation());
+            mRenderHandle->setScale(obj.getScale());
+            mRenderHandle->setModel(renderModel);
+        }
+
+        /* just an idea for how prediction will work:
+        {
+            // all changes applied to the object after this line until the guard
+            //  dies will be stored as predictions for the next frame
+            //  (offset 0 = next frame. predicting for the current frame does not make sense).
+            auto predictGuard = obj.startPrediction(0);
+            obj.setPosition({ 10, 10, 2 });
+        }*/
     }
 
 }

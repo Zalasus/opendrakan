@@ -13,45 +13,70 @@
 
 namespace dragonRfl
 {
-
-    class DragonRfl;
-
     enum class TimerTriggerMode
     {
         DecrementOnAnyMessage,
         DependsOnMessage
     };
 
-    class CountDownToZero : public odRfl::LevelObjectClassBase
+    class CountDownToZeroFields final : public odRfl::FieldBundle
     {
     public:
 
-        CountDownToZero();
+        CountDownToZeroFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
+
+        odRfl::Integer                          initialCounterValue;
+        odRfl::EnumImpl<TimerTriggerMode, 0, 1> whenTriggered;
+        odRfl::EnumMessage                      messageToSend;
+        odRfl::EnumMessage                      incrementMessage;
+        odRfl::EnumMessage                      decrementMessage;
+        odRfl::EnumMessage                      resetMessage;
+
+    };
+
+    class CountDownToZero_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Sv>
+    {
+    public:
+
+        CountDownToZero_Sv();
+
+        virtual FieldBundle &getFields() override { return mFields; }
+
         virtual void onLoaded() override;
         virtual void onSpawned() override;
         virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
-    protected:
-
-        odRfl::Integer     mInitialCounterValue;
-        odRfl::EnumImpl<TimerTriggerMode, 0, 1> mWhenTriggered;
-        odRfl::EnumMessage mMessageToSend;
-        odRfl::EnumMessage mIncrementMessage;
-        odRfl::EnumMessage mDecrementMessage;
-        odRfl::EnumMessage mResetMessage;
-
-
     private:
+
+        CountDownToZeroFields mFields;
 
         uint32_t mCounterValue;
 
     };
 
+    // This is effectively a dummy class. In theory, we could add a dedicated Dummy class implementation for that purpose
+    class CountDownToZero_Cl final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Cl>
+    {
+    public:
+
+        CountDownToZero_Cl() = default;
+
+        virtual FieldBundle &getFields() override { return mFields; }
+
+
+    private:
+
+        CountDownToZeroFields mFields;
+
+    };
+
+    OD_DEFINE_CLASS(CountDownToZero, 0x0007, "System", "Count Down To Zero", odRfl::DefaultClassFactory<CountDownToZeroFields, CountDownToZero_Cl, CountDownToZero_Sv>);
+
 }
 
-ODRFL_DEFINE_CLASS_BASE(dragonRfl::CountDownToZero, 0x0007, "System", "Count Down To Zero");
+
 
 #endif /* INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_ */

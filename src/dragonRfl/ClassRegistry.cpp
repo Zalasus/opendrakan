@@ -9,7 +9,7 @@
 
 // #include <dragonRfl/classes/AnimationDemo.h>
 #include <dragonRfl/classes/Building.h>
-// #include <dragonRfl/classes/CountDownToZero.h>
+#include <dragonRfl/classes/CountDownToZero.h>
 // #include <dragonRfl/classes/Detector.h>
 // #include <dragonRfl/classes/DragonControl.h>
 // #include <dragonRfl/classes/DynamicLight.h>
@@ -33,7 +33,7 @@ namespace dragonRfl
     {
         //registerClass<AnimationDemo>();
         registerClass<Building>();
-        // registerClass<CountDownToZero>();
+        registerClass<CountDownToZero>();
         // registerClass<Detector>();
         // registerClass<DragonControl>();
         // registerClass<DynamicLight>();

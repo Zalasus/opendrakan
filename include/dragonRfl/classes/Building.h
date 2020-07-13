@@ -12,6 +12,8 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
+#include <odCore/render/Handle.h>
+
 namespace dragonRfl
 {
 
@@ -68,9 +70,14 @@ namespace dragonRfl
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
+        virtual void onSpawned() override;
+
+
     private:
 
         BuildingFields mFields;
+
+        od::RefPtr<odRender::Handle> mRenderHandle;
 
     };
 
