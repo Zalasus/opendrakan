@@ -33,18 +33,19 @@ namespace od
     {
     public:
 
-        Level(Engine &engine);
+        /**
+         * @brief Loads a level from the given file.
+         * @param levelPath  A path to the .lvl file.
+         * @param dbManager  A DbManager from which to load databases the level depends on.
+         */
+        Level(Engine engine);
         ~Level();
 
         inline Engine &getEngine() { return mEngine; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return mPhysicsSystem; }
         inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
 
-        /**
-         * @brief Loads a level from the given file.
-         * @param levelPath  A path to the .lvl file.
-         * @param dbManager  A DbManager from which to load databases the level depends on.
-         */
+
         void loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager);
 
         void requestLevelObjectDestruction(LevelObject *obj);
@@ -91,7 +92,7 @@ namespace od
         void _loadLayerGroups(SrscFile &file);
         void _loadObjects(SrscFile &file);
 
-        Engine &mEngine;
+        Engine mEngine;
         odPhysics::PhysicsSystem &mPhysicsSystem;
         odRender::Renderer *mRenderer;
 

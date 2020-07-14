@@ -28,6 +28,11 @@ namespace odPhysics
     class PhysicsSystem;
 }
 
+namespace odNet
+{
+    class ClientConnector;
+}
+
 namespace od
 {
     class Level;
@@ -45,9 +50,6 @@ namespace od
         Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager);
         ~Server();
 
-        inline bool hasInitialLevelOverride() const { return mHasInitialLevelOverride; }
-        inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
-        inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
         inline void setIsDone(bool b) { mIsDone.store(b, std::memory_order::memory_order_relaxed); }
         inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
         inline const od::FilePath &getEngineRootDir() const { return mEngineRoot; }
@@ -56,7 +58,9 @@ namespace od
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
 
-        void loadLevel(const od::FilePath &levelPath);
+        void addClientConnector(std::unique_ptr<odNet::ClientConnector> connector);
+
+        void loadLevel(const FilePath &path);
 
         void run();
 
@@ -71,9 +75,9 @@ namespace od
 
         FilePath mEngineRoot;
 
-        bool mHasInitialLevelOverride;
-        FilePath mInitialLevelOverride;
         std::atomic_bool mIsDone;
+
+        std::vector<std::unique_ptr<odNet::ClientConnector>> mClientConnectors;
 
     };
 

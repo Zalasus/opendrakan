@@ -34,7 +34,7 @@ namespace dragonRfl
 
         virtual const char *getName() const override;
         virtual void onLoaded() override;
-        virtual void onGameStartup(od::Server &localServer, od::Client &localClient) override;
+        virtual void onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel) override;
 
 
     private:

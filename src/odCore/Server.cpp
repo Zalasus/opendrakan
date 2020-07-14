@@ -12,6 +12,8 @@
 
 #include <odCore/Level.h>
 
+#include <odCore/net/ClientConnector.h>
+
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
 #include <odCore/rfl/RflManager.h>
@@ -22,7 +24,6 @@ namespace od
     Server::Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager)
     : mDbManager(dbManager)
     , mRflManager(rflManager)
-    , mHasInitialLevelOverride(false)
     , mIsDone(false)
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(nullptr);
@@ -32,9 +33,35 @@ namespace od
     {
     }
 
-    void Server::loadLevel(const od::FilePath &levelPath)
+    void Server::addClientConnector(std::unique_ptr<odNet::ClientConnector> connector)
     {
+        mClientConnectors.emplace_back(std::move(connector));
+    }
 
+    void Server::loadLevel(const FilePath &lvlPath)
+    {
+        Logger::verbose() << "Server loading level " << lvlPath;
+
+        Engine engine(*this);
+
+        mLevel = std::make_unique<Level>(engine);
+        mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
+        
+        mLevel->spawnAllObjects();
+
+        // in order for clients to be able to load the level, we have to give them
+        //  a level path that does not depend on the engine root. for levels that are
+        //  stored under the engine root, we can just trim off that part of the path.
+        //  for out-of-tree-levels (not under engine root) we have no way to tell the
+        //  client where they might find that particular file on their system, so we
+        //  fall back to providing the full path, which will work fine for local clients.
+        //  networked clients will probably not be used with out-of-tree-levels, anyway.
+        auto relLevelPath = lvlPath.removePrefix(getEngineRootDir()).str();
+
+        for(auto &client : mClientConnectors)
+        {
+            client->loadLevel(relLevelPath);
+        }
     }
 
     void Server::run()
@@ -77,6 +104,3 @@ namespace od
     }
 
 }
-
-
-

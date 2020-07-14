@@ -17,6 +17,8 @@
 #include <odCore/Exception.h>
 #include <odCore/FilePath.h>
 
+#include <odCore/net/ClientConnector.h>
+
 #include <odCore/physics/PhysicsSystem.h>
 
 #include <odCore/rfl/RflManager.h>
@@ -98,6 +100,7 @@ int main(int argc, char **argv)
     sClient = &client;
 
     od::Server server(dbManager, rflManager);
+    server.addClientConnector(client.createLocalConnector());
     sServer = &server;
 
     int c;
@@ -131,21 +134,27 @@ int main(int argc, char **argv)
     }
 
     od::FilePath engineRoot(".");
+    od::FilePath initialLevelOverride;
+    bool hasInitialLevelOverride = false;
     if(optind < argc)
     {
-        od::FilePath initialLevel(argv[optind]);
-        if(!initialLevel.exists())
+        initialLevelOverride = od::FilePath(argv[optind]);
+        if(!initialLevelOverride.exists())
         {
-            std::cerr << "Level file " << initialLevel << " does not exist" << std::endl;
+            std::cerr << "Level file " << initialLevelOverride << " does not exist" << std::endl;
+
+        }else
+        {
+            hasInitialLevelOverride = true;
         }
-        //engine.setInitialLevelOverride(initialLevel.adjustCase());
 
         // if we have been passed a level override, we need to find the engine root in that path.
         //  if not, assume the engine root is the current working directory. TODO: add option to explicitly specify engine root
-        engineRoot = findEngineRoot(initialLevel, "dragon.rrc");
+        engineRoot = findEngineRoot(initialLevelOverride, "dragon.rrc");
     }
 
     client.setEngineRootDir(engineRoot);
+    server.setEngineRootDir(engineRoot);
 
     osgRenderer.setFreeLook(freeLook);
 
@@ -156,7 +165,13 @@ int main(int argc, char **argv)
         inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManager());
     }
 
-    dragonRfl.onGameStartup(server, client);
+    bool loadIntroLevel = !hasInitialLevelOverride;
+    dragonRfl.onGameStartup(server, client, !loadIntroLevel);
+
+    if(hasInitialLevelOverride)
+    {
+        server.loadLevel(initialLevelOverride);
+    }
 
     if(physicsDebug)
     {
@@ -204,5 +219,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
-

@@ -48,7 +48,7 @@ namespace dragonRfl
         _registerClasses();
     }
 
-    void DragonRfl::onGameStartup(od::Server &localServer, od::Client &localClient)
+    void DragonRfl::onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel)
     {
         mGui = std::make_unique<DragonGui>(localClient);
         localClient.getInputManager().setGui(mGui.get());
@@ -60,10 +60,10 @@ namespace dragonRfl
             localClient.getSoundSystem()->playMusic(1);
         }
 
-        if(!localServer.hasInitialLevelOverride())
+        if(loadIntroLevel)
         {
-            od::FilePath initialLevel(mGui->getUserInterfaceProperties().introLevelFilename);
-            localServer.loadLevel(initialLevel.adjustCase());
+            od::FilePath levelPath(mGui->getUserInterfaceProperties().introLevelFilename, localServer.getEngineRootDir());
+            localServer.loadLevel(levelPath.adjustCase());
         }
 
         odInput::InputManager &im = localClient.getInputManager();

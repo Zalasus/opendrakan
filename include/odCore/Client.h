@@ -42,8 +42,14 @@ namespace odPhysics
     class PhysicsSystem;
 }
 
+namespace odNet
+{
+    class ClientConnector;
+}
+
 namespace od
 {
+    class Level;
 
     class Client
     {
@@ -63,6 +69,13 @@ namespace od
         inline odRender::Renderer &getRenderer() { return mRenderer; }
         inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
 
+        /**
+         * @brief Creates a connector to connect this client to a local server.
+         */
+        std::unique_ptr<odNet::ClientConnector> createLocalConnector();
+
+        void loadLevel(const FilePath &lvlPath);
+
         void run();
 
 
@@ -78,6 +91,8 @@ namespace od
         od::FilePath mEngineRoot;
 
         std::atomic_bool mIsDone;
+
+        std::unique_ptr<Level> mLevel;
 
     };
 

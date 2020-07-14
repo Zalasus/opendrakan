@@ -47,8 +47,13 @@ namespace odRfl
 		 * During the default startup procedure, the engine provides a local client and server which
 		 * allows to load the intro level and to create a GUI. If the player then selects multiplayer, the
 		 * local server can be swapped out for a remote one.
+         *
+         * The loadIntroLevel flag tells the RFL whether it should load an intro level or not. This is just for
+         * performance. If there is an initial level override (e.g. from the command line), the app will load that
+         * level regardless of whether the RFL already loaded an intro level. Honoring the flag will prevent
+         * unnecessary level loading.
 		 */
-		virtual void onGameStartup(od::Server &localServer, od::Client &localClient) = 0;
+		virtual void onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel) = 0;
 
 		ClassFactory *getFactoryForClassId(ClassId id);
 
@@ -57,7 +62,7 @@ namespace odRfl
 
 		template <typename _ClassDefinition>
 		void registerClass()
-		{        
+		{
 		    ClassId id = _ClassDefinition::classId();
 		    ClassFactory &factory = _ClassDefinition::getFactory();
 

@@ -26,7 +26,7 @@
 namespace od
 {
 
-    Level::Level(Engine &engine)
+    Level::Level(Engine engine)
     : mEngine(engine)
     , mPhysicsSystem(engine.getPhysicsSystem())
     , mRenderer(nullptr)
@@ -318,10 +318,10 @@ namespace od
             std::string dbPathStr;
             dr >> dbPathStr;
 
-            FilePath dbPath(dbPathStr, file.getFilePath());
-            odDb::Database &db = dbManager.loadDb(dbPath.adjustCase());
+            FilePath dbPath(dbPathStr, file.getFilePath().dir());
 
-            Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
+            Logger::debug() << "Gonna load level dependency index " << dbIndex << ": " << dbPath;
+            odDb::Database &db = dbManager.loadDb(dbPath.adjustCase());
 
             mDependencyMap.insert(std::make_pair(dbIndex, std::ref(db)));
         }

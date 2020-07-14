@@ -183,7 +183,14 @@ namespace od
 
         }else
         {
-            Logger::warn() << "Level object has umimplemented RFL class";
+            // atm, this really crowds out the console log. to keep things readable, we'll only log once for now
+            // Logger::warn() << "Level object has umimplemented RFL class";
+            static bool warnOnce = false;
+            if(warnOnce)
+            {
+                Logger::warn() << "Level object has umimplemented RFL class (not gonna warn again because of this)";
+                warnOnce = true;
+            }
         }
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
