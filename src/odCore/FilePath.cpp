@@ -36,29 +36,26 @@ namespace od
     }
 
 	FilePath::FilePath(const std::string &path)
-	: mOriginalPath(path)
-	, mRootStyle(PathRootStyle::RELATIVE)
+	: mRootStyle(PathRootStyle::RELATIVE)
 	, mAlreadyBuiltPath(false)
 	{
 	    _parsePath(path);
 	}
 
 	FilePath::FilePath(const std::string &path, const FilePath &relativeTo)
-	: mOriginalPath(path)
-	, mRootStyle(PathRootStyle::RELATIVE)
+	: mRootStyle(PathRootStyle::RELATIVE)
 	, mAlreadyBuiltPath(false)
 	{
 	    _parsePath(relativeTo.str() + OD_FILEPATH_SEPERATOR + path);
 	}
 
-	FilePath::FilePath(const FilePath &p, size_t omitLastNComponents)
-	: mOriginalPath(p.mOriginalPath)
-	, mRoot(p.mRoot)
-	, mRootStyle(p.mRootStyle)
-	, mPathComponents(p.mPathComponents.begin(), p.mPathComponents.begin() + (p.mPathComponents.size() - omitLastNComponents))
+    FilePath::FilePath(PathRootStyle rootStyle, const std::string &root, ComponentIterator begin, ComponentIterator end)
+    : mRoot(root)
+	, mRootStyle(rootStyle)
+	, mPathComponents(begin, end)
 	, mAlreadyBuiltPath(false)
-	{
-	}
+    {
+    }
 
 	FilePath FilePath::dir() const
 	{
@@ -67,7 +64,7 @@ namespace od
 	        throw Exception("Tried to ascend above path root with FilePath::dir()");
 	    }
 
-		return FilePath(*this, 1);
+		return FilePath(mRootStyle, mRoot, mPathComponents.begin(), mPathComponents.end()-1);
 	}
 
 	std::string FilePath::str() const
@@ -170,6 +167,26 @@ namespace od
 		std::ifstream in(this->str(), std::ios::in);
 		return !in.fail();
 	}
+
+    FilePath FilePath::removePrefix(const od::FilePath &prefixPath) const
+    {
+        bool rootsAreSame = (mRootStyle == prefixPath.mRootStyle) && (mRoot == prefixPath.mRoot);
+        if(!rootsAreSame)
+        {
+            return *this;
+        }
+
+        bool startsWith = std::equal(prefixPath.mPathComponents.begin(), prefixPath.mPathComponents.end(), mPathComponents.begin());
+
+        if(startsWith)
+        {
+            return FilePath(PathRootStyle::RELATIVE, "", mPathComponents.begin()+prefixPath.mPathComponents.size(), mPathComponents.end());
+
+        }else
+        {
+            return *this;
+        }
+    }
 
 	bool FilePath::operator==(const FilePath &right) const
     {
