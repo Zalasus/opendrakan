@@ -42,7 +42,7 @@ namespace dragonRfl
 
         CountDownToZero_Sv();
 
-        virtual FieldBundle &getFields() override { return mFields; }
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onLoaded() override;
         virtual void onSpawned() override;
@@ -58,13 +58,13 @@ namespace dragonRfl
     };
 
     // This is effectively a dummy class. In theory, we could add a dedicated Dummy class implementation for that purpose
-    class CountDownToZero_Cl final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Cl>
+    class CountDownToZero_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Cl>
     {
     public:
 
         CountDownToZero_Cl() = default;
 
-        virtual FieldBundle &getFields() override { return mFields; }
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 
     private:
@@ -73,7 +73,9 @@ namespace dragonRfl
 
     };
 
-    OD_DEFINE_CLASS(CountDownToZero, 0x0007, "System", "Count Down To Zero", odRfl::DefaultClassFactory<CountDownToZeroFields, CountDownToZero_Cl, CountDownToZero_Sv>);
+    using CountDownToZeroFactory = odRfl::DefaultClassFactory<CountDownToZeroFields, CountDownToZero_Cl, CountDownToZero_Sv>;
+
+    OD_DEFINE_CLASS(CountDownToZero, 0x0007, "System", "Count Down To Zero", CountDownToZeroFactory);
 
 }
 

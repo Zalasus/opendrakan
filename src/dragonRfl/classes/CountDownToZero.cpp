@@ -18,30 +18,29 @@ namespace dragonRfl
 {
 
     CountDownToZeroFields::CountDownToZeroFields()
-    : mInitialCounterValue(1)
-    , mWhenTriggered(TimerTriggerMode::DependsOnMessage)
-    , mMessageToSend(od::Message::On)
-    , mIncrementMessage(od::Message::Off)
-    , mDecrementMessage(od::Message::On)
-    , mResetMessage(od::Message::Triggered)
-    , mCounterValue(1)
+    : initialCounterValue(1)
+    , whenTriggered(TimerTriggerMode::DependsOnMessage)
+    , messageToSend(od::Message::On)
+    , incrementMessage(od::Message::Off)
+    , decrementMessage(od::Message::On)
+    , resetMessage(od::Message::Triggered)
     {
     }
 
     void CountDownToZeroFields::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Count Down To Zero")
-               (mInitialCounterValue, "Initial Counter Value")
-               (mWhenTriggered, "When Triggered?")
-               (mMessageToSend, "Message To Send")
-               (mIncrementMessage, "Increment (+1) Message")
-               (mDecrementMessage, "Decrement (-1) Message")
-               (mResetMessage, "Reset Message");
+               (initialCounterValue, "Initial Counter Value")
+               (whenTriggered, "When Triggered?")
+               (messageToSend, "Message To Send")
+               (incrementMessage, "Increment (+1) Message")
+               (decrementMessage, "Decrement (-1) Message")
+               (resetMessage, "Reset Message");
     }
 
 
     CountDownToZero_Sv::CountDownToZero_Sv()
-    : mCounterValue(0)
+    : mCounterValue(1)
     {
     }
 
@@ -53,14 +52,14 @@ namespace dragonRfl
 
     void CountDownToZero_Sv::onSpawned()
     {
-        mCounterValue = mInitialCounterValue;
+        mCounterValue = mFields.initialCounterValue;
     }
 
     void CountDownToZero_Sv::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         uint32_t newCounter = mCounterValue;
 
-        switch(mWhenTriggered)
+        switch(mFields.whenTriggered)
         {
         case TimerTriggerMode::DecrementOnAnyMessage:
             if(newCounter > 0)
@@ -70,23 +69,23 @@ namespace dragonRfl
             break;
 
         case TimerTriggerMode::DependsOnMessage:
-            if(message == mIncrementMessage)
+            if(message == mFields.incrementMessage)
             {
                 if(newCounter < std::numeric_limits<uint32_t>::max())
                 {
                     ++mCounterValue;
                 }
 
-            }else if(message == mDecrementMessage)
+            }else if(message == mFields.decrementMessage)
             {
                 if(newCounter > 0)
                 {
                     --newCounter;
                 }
 
-            }else if(message == mResetMessage)
+            }else if(message == mFields.resetMessage)
             {
-                newCounter = mInitialCounterValue;
+                newCounter = mFields.initialCounterValue;
             }
             break;
 
@@ -97,7 +96,7 @@ namespace dragonRfl
         // only trigger when we hit 0, not when we are already at zero when receiving message TODO: is this the right behaviour?
         if(mCounterValue != 0 && newCounter == 0)
         {
-            getLevelObject().messageAllLinkedObjects(mMessageToSend);
+            getLevelObject().messageAllLinkedObjects(mFields.messageToSend);
         }
 
         Logger::verbose() << "Counter " << getLevelObject().getObjectId() << " received message '" << message << "' from " << sender.getObjectId() << ". "

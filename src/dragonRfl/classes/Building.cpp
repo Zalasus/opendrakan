@@ -11,6 +11,7 @@
 
 #include <odCore/rfl/Rfl.h>
 
+#include <odCore/Client.h>
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 
@@ -86,15 +87,15 @@ namespace dragonRfl
     {
         auto &obj = getLevelObject();
         auto dbClass = obj.getClass();
-        if(dbClass->hasModel())
+        if(dbClass != nullptr && dbClass->hasModel())
         {
             auto &renderer = getClient().getRenderer();
-            auto dbModel = dbClass.getModel();
-            auto renderModel = dbModel.getOrCreateRenderModel(&renderer);
+            auto dbModel = dbClass->getModel();
+            auto renderModel = dbModel->getOrCreateRenderModel(&renderer);
 
             mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
             mRenderHandle->setPosition(obj.getPosition());
-            mRenderHandle->setOrientation(obj.getOrientation());
+            mRenderHandle->setOrientation(obj.getRotation());
             mRenderHandle->setScale(obj.getScale());
             mRenderHandle->setModel(renderModel);
         }
