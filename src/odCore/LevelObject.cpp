@@ -339,7 +339,7 @@ namespace od
 
         if(mSpawnableClass != nullptr)
         {
-            mSpawnableClass->onRotated(prevScale, scale);
+            mSpawnableClass->onScaled(prevScale, scale);
         }
 
         _onTransformChanged(this);
