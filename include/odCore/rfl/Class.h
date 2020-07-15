@@ -321,9 +321,11 @@ namespace odRfl
         static_assert(!std::is_abstract<_Fields>::value, "_Fields must not be abstract");
 
         static_assert(std::is_base_of<odRfl::ClientClass, _ClientClassImpl>::value, "_ClientClassImpl must implement odRfl::ClientClass");
+        static_assert(std::is_base_of<odRfl::ClassBase, _ClientClassImpl>::value, "_ClientClassImpl must implement odRfl::ClassBase (likely via odRfl::ClassImpl)");
         static_assert(!std::is_abstract<_ClientClassImpl>::value, "_ClientClassImpl must not be abstract");
 
         static_assert(std::is_base_of<odRfl::ServerClass, _ServerClassImpl>::value, "_ServerClassImpl must implement odRfl::ServerClass");
+        static_assert(std::is_base_of<odRfl::ClassBase, _ServerClassImpl>::value, "_ServerClassImpl must implement odRfl::ClassBase (likely via odRfl::ClassImpl)");
         static_assert(!std::is_abstract<_ServerClassImpl>::value, "_ServerClassImpl must not be abstract");
 
         virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
