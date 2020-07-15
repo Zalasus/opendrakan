@@ -339,13 +339,13 @@ namespace odRfl
             {
                 auto clientImpl = std::make_unique<_ClientClassImpl>();
                 clientImpl->setClient(engine.getClient());
-                return clientImpl;
+                return std::move(clientImpl);
 
             }else if(engine.isServer())
             {
                 auto serverImpl = std::make_unique<_ServerClassImpl>();
                 serverImpl->setServer(engine.getServer());
-                return serverImpl;
+                return std::move(serverImpl);
 
             }else
             {
