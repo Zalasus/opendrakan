@@ -3,6 +3,11 @@
 
 add_library(odCore STATIC "")
 
+set_target_properties(odCore PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO)
+
 target_sources(odCore PRIVATE
         "anim/Skeleton.cpp"
         "anim/SkeletonAnimationPlayer.cpp"

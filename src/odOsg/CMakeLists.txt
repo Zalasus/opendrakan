@@ -3,7 +3,12 @@ option(USE_FLUIDSYNTH "Whether to use FluidSynth subsystem to render music. (mig
 
 add_executable(odOsg "")
 
-target_sources(odOsg PRIVATE 
+set_target_properties(odOsg PROPERTIES
+        CXX_STANDARD 14
+        CXX_STANDARD_REQUIRED YES
+        CXX_EXTENSIONS NO)
+
+target_sources(odOsg PRIVATE
     "audio/Buffer.cpp"
     "audio/OpenAlContext.cpp"
     "audio/SoundSystem.cpp"
@@ -53,4 +58,3 @@ if(USE_FLUIDSYNTH)
         message("No pkgconfig found. pkgconfig is required to find FluidSynth. Disabling music.")
     endif()
 endif()
-

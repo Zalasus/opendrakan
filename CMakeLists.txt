@@ -4,8 +4,6 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(OpenDrakan CXX)
 
-set(CMAKE_CXX_STANDARD 14)
-
 if(NOT CMAKE_BUILD_TYPE)
     message("No CMAKE_BUILD_TYPE specified. Defaulting to Debug")
     set(CMAKE_BUILD_TYPE Debug)
@@ -56,4 +54,3 @@ foreach(f ${SHADER_SOURCES})
     # configure file creates dependencies between source and target
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/${f} COPYONLY)
 endforeach()
-
