@@ -10,6 +10,7 @@
 #include <chrono>
 
 #include <odCore/Level.h>
+#include <odCore/LevelObject.h>
 
 #include <odCore/render/Renderer.h>
 
@@ -18,6 +19,8 @@
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
 #include <odCore/net/ClientConnector.h>
+
+#include <odCore/state/StateManager.h>
 
 
 namespace od
@@ -49,13 +52,83 @@ namespace od
             return _makeFutureFor(odNet::CommandResult::ACK);
         }
 
-        virtual std::future<odNet::CommandResult> levelObjectTranformed(LevelObjectId id, const odNet::ObjectTransform &tf) override
+        virtual std::future<odNet::CommandResult> levelObjectTranformed(LevelObjectId id, const odState::ObjectTransform &tf) override
         {
+            od::LevelObject *obj = getObjectById(id);
+            if(obj != nullptr)
+            {
+                mClient.getStateManager().addObjectTransform(*obj, tf);
+                return _makeFutureFor(odNet::CommandResult::ACK);
+
+            }else
+            {
+                return _makeFutureFor(odNet::CommandResult::NACK);
+            }
+        }
+
+        virtual std::future<odNet::CommandResult> objectVisibilityChanged(od::LevelObjectId id, bool visible) override
+        {
+            od::LevelObject *obj = getObjectById(id);
+            if(obj != nullptr)
+            {
+                //mClient.getStateManager().addObjectVisibilityChange(*obj, visible);
+                return _makeFutureFor(odNet::CommandResult::ACK);
+
+            }else
+            {
+                return _makeFutureFor(odNet::CommandResult::NACK);
+            }
+        }
+
+        virtual std::future<odNet::CommandResult> spawnObject(od::LevelObjectId id)
+        {
+            od::LevelObject *obj = getObjectById(id);
+            if(obj != nullptr)
+            {
+                obj->spawned();
+                return _makeFutureFor(odNet::CommandResult::ACK);
+
+            }else
+            {
+                return _makeFutureFor(odNet::CommandResult::NACK);
+            }
+        }
+
+        virtual std::future<odNet::CommandResult> despawnObject(od::LevelObjectId id)
+        {
+            od::LevelObject *obj = getObjectById(id);
+            if(obj != nullptr)
+            {
+                obj->despawned();
+                return _makeFutureFor(odNet::CommandResult::ACK);
+
+            }else
+            {
+                return _makeFutureFor(odNet::CommandResult::NACK);
+            }
+        }
+
+        virtual std::future<odNet::CommandResult> destroyObject(od::LevelObjectId id)
+        {
+            od::LevelObject *obj = getObjectById(id);
+            if(obj != nullptr)
+            {
+                obj->requestDestruction();
+            }
+
+            // can't fail. a non-existing object is (technically) destroyed
             return _makeFutureFor(odNet::CommandResult::ACK);
         }
 
 
     private:
+
+        od::LevelObject *getObjectById(od::LevelObjectId id)
+        {
+            if(mClient.getLevel() == nullptr) return nullptr;
+
+            return mClient.getLevel()->getLevelObjectById(id);
+        }
 
         Client &mClient;
 
@@ -72,6 +145,7 @@ namespace od
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
         mInputManager = std::make_unique<odInput::InputManager>();
+        mStateManager = std::make_unique<odState::StateManager>();
     }
 
     Client::~Client()
@@ -91,7 +165,7 @@ namespace od
 
         mLevel = std::make_unique<Level>(engine);
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
-        
+
         mLevel->spawnAllObjects();
     }
 

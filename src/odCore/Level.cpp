@@ -17,6 +17,7 @@
 #include <odCore/Logger.h>
 #include <odCore/ZStream.h>
 #include <odCore/Exception.h>
+#include <odCore/Layer.h>
 #include <odCore/LevelObject.h>
 #include <odCore/BoundingBox.h>
 
@@ -71,6 +72,7 @@ namespace od
 
     Layer *Level::getLayerById(uint32_t id)
     {
+        // TODO: we can do better than O(n)
         auto pred = [id](std::unique_ptr<Layer> &l){ return l->getId() == id; };
 
         auto it = std::find_if(mLayers.begin(), mLayers.end(), pred);
@@ -177,6 +179,20 @@ namespace od
         }
 
         return mLevelObjects[index].get();
+    }
+
+    LevelObject *Level::getLevelObjectById(LevelObjectId id)
+    {
+        // TODO: we can do better than O(n)
+        auto pred = [id](std::unique_ptr<LevelObject> &l){ return l->getObjectId() == id; };
+
+        auto it = std::find_if(mLevelObjects.begin(), mLevelObjects.end(), pred);
+        if(it == mLevelObjects.end())
+        {
+            return nullptr;
+        }
+
+        return it->get();
     }
 
     LevelObject *Level::findObjectOfType(odRfl::ClassId id)

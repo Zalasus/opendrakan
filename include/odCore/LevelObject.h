@@ -16,6 +16,7 @@
 
 #include <odCore/BoundingBox.h>
 #include <odCore/BoundingSphere.h>
+#include <odCore/IdTypes.h>
 
 #include <odCore/db/Class.h>
 
@@ -41,8 +42,6 @@ namespace od
     class ObjectLightReceiver;
     class Level;
     class Layer;
-
-    typedef uint32_t LevelObjectId;
 
     enum class LevelObjectState
     {

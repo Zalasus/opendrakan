@@ -47,6 +47,11 @@ namespace odNet
     class ClientConnector;
 }
 
+namespace odState
+{
+    class StateManager;
+}
+
 namespace od
 {
     class Level;
@@ -68,6 +73,9 @@ namespace od
         inline odInput::InputManager &getInputManager() { return *mInputManager; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
         inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
+        inline odState::StateManager &getStateManager() { return *mStateManager; }
+
+        inline od::Level *getLevel() { return mLevel.get(); }
 
         /**
          * @brief Creates a connector to connect this client to a local server.
@@ -87,6 +95,7 @@ namespace od
 
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
         std::unique_ptr<odInput::InputManager> mInputManager;
+        std::unique_ptr<odState::StateManager> mStateManager;
 
         od::FilePath mEngineRoot;
 

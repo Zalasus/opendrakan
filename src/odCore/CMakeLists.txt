@@ -54,6 +54,8 @@ target_sources(odCore PRIVATE
         "rfl/Rfl.cpp"
         "rfl/Class.cpp"
         "rfl/RflManager.cpp"
+        "state/ObjectTransform.cpp"
+        "state/StateManager.cpp"
         "BoundingBox.cpp"
         "BoundingSphere.cpp"
         "Client.cpp"

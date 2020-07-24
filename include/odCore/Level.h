@@ -16,8 +16,9 @@
 #include <set>
 #include <glm/vec3.hpp>
 
+#include <odCore/IdTypes.h>
+#include <odCore/Engine.h>
 #include <odCore/FilePath.h>
-#include <odCore/Layer.h>
 
 #include <odCore/rfl/Class.h>
 
@@ -26,8 +27,8 @@
 
 namespace od
 {
-
-	class Engine;
+    class LevelObject;
+    class Layer;
 
     class Level : public odDb::AssetProvider
     {
@@ -49,7 +50,7 @@ namespace od
         void loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager);
 
         void requestLevelObjectDestruction(LevelObject *obj);
-        Layer *getLayerById(uint32_t id);
+        Layer *getLayerById(LayerId id);
         Layer *getLayerByIndex(uint16_t index);
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
 
@@ -66,6 +67,8 @@ namespace od
         void update(float relTime);
 
         LevelObject *getLevelObjectByIndex(uint16_t index);
+
+        LevelObject *getLevelObjectById(LevelObjectId id);
 
         /**
          * @brief Finds the first object with the given class type.

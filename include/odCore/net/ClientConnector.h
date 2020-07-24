@@ -8,54 +8,12 @@
 
 #include <future>
 
-#include <glm/vec3.hpp>
-#include <glm/gtc/quaternion.hpp>
+#include <odCore/IdTypes.h>
 
-#include <odCore/LevelObject.h>
+#include <odCore/state/ObjectTransform.h>
 
 namespace odNet
 {
-
-    /**
-     * @brief Class for encapsulating any combination of tranlation, rotation and scaling.
-     */
-    struct ObjectTransform
-    {
-        using TransformTypeMask = uint8_t;
-        static constexpr TransformTypeMask TRANSLATED = 1;
-        static constexpr TransformTypeMask ROTATED    = 2;
-        static constexpr TransformTypeMask SCALED     = 4;
-
-        TransformTypeMask type;
-        glm::vec3 position;
-        glm::quat rotation;
-        glm::vec3 scale;
-
-        ObjectTransform()
-        : type(0)
-        {
-        }
-
-        void setPosition(const glm::vec3 &p)
-        {
-            position = p;
-            type |= TRANSLATED;
-        }
-
-        void setRotation(const glm::quat &r)
-        {
-            rotation = r;
-            type |= ROTATED;
-        }
-
-        void setScale(const glm::vec3 &s)
-        {
-            scale = s;
-            type |= SCALED;
-        }
-
-    };
-
 
     enum class CommandResult
     {
@@ -64,7 +22,18 @@ namespace odNet
         TIMEOUT
     };
 
-
+    /**
+     * @brief Server-side interface for connecting a client to the server.
+     *
+     * This is an abstraction of the client-server tunnel, specifically of the
+     * server-to-client direction. Implementations could either use a network
+     * connection as a transport medium, or directly connect a local server to
+     * a local client with minimal overhead.
+     *
+     * Keep in mind that everything which passes through this interface will
+     * eventually have to pass through network packets, so keep passed data as
+     * simple as possible!
+     */
     class ClientConnector
     {
     public:
@@ -72,8 +41,13 @@ namespace odNet
         virtual ~ClientConnector() = default;
 
         virtual std::future<CommandResult> loadLevel(const std::string &path) = 0;
-        virtual std::future<CommandResult> levelObjectTranformed(od::LevelObjectId id, const ObjectTransform &tf) = 0;
 
+        virtual std::future<CommandResult> levelObjectTranformed(od::LevelObjectId id, const odState::ObjectTransform &tf) = 0;
+        virtual std::future<CommandResult> objectVisibilityChanged(od::LevelObjectId id, bool visible) = 0;
+
+        virtual std::future<CommandResult> spawnObject(od::LevelObjectId id) = 0;
+        virtual std::future<CommandResult> despawnObject(od::LevelObjectId id) = 0;
+        virtual std::future<CommandResult> destroyObject(od::LevelObjectId id) = 0;
     };
 
 }

@@ -12,6 +12,7 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include <odCore/IdTypes.h>
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
 #include <odCore/OdDefines.h>
@@ -84,7 +85,7 @@ namespace od
         virtual ~Layer();
 
         inline Level &getLevel() { return mLevel; }
-        inline uint32_t getId() const { return mId; };
+        inline LayerId getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
         inline std::vector<uint32_t> &getVisibleLayerIndices() { return mVisibleLayers; };
         inline uint32_t getOriginX() const { return mOriginX; }
@@ -160,7 +161,7 @@ namespace od
         void _calculateNormalsInternal();
 
         Level              	   &mLevel;
-        uint32_t                mId;
+        LayerId                 mId;
         uint32_t                mWidth;
         uint32_t                mHeight;
         LayerType               mType;

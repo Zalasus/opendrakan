@@ -12,6 +12,10 @@
 
 #include <odCore/input/Keys.h>
 
+#include <odCore/state/Event.h>
+#include <odCore/state/ObjectTransform.h>
+#include <odCore/state/Timeline.h>
+
 namespace od
 {
     class LevelObject;
@@ -19,33 +23,31 @@ namespace od
 
 namespace odState
 {
-    class StateHolder;
-    class Client;
-
     class StateManager
     {
     public:
 
-        void addClient();
+        StateManager();
 
-        void addKeyEvent(StateHolder &holder, odInput::Key key);
+        //void addClient();
 
-        void addLevelObjectMove(od::LevelObject &obj, const glm::vec3 &pos);
-        void addLevelObjectRotate(od::LevelObject &obj, const glm::quat &rot);
-        void addLevelObjectScale(od::LevelObject &obj, const glm::vec3 &scale);
-        void addLevelObjectStateTransition(od::LevelObject &obj);
+        void addKeyEvent(odInput::Key key, bool down);
+
+        void addObjectTransform(od::LevelObject &object, const ObjectTransform &tf);
 
         /**
          * @brief Commits all changes and events last pushed into one snapshot.
          */
-        void commit();
+        //void commit();
 
         /**
          * @brief Rolls back all tracked states to the given tick number.
          *
          * Will throw if the given tick number is no longer being held in memory.
          */
-        void rollback(uint32_t tickNumber);
+        //void rollback(TickNumber tick);
+
+        void apply(TickNumber tick);
 
         /**
          * @brief Calculates the total lag the given client probably has, then rolls back the world by that time.
@@ -55,19 +57,14 @@ namespace odState
          *
          * Make sure to call endLagCompensation() when you are finished to go back to the current world state.
          */
-        void beginLagCompensation(Client *c);
+        //void beginLagCompensation(Client *c);
 
-        void endLagCompensation();
+        //void endLagCompensation();
 
 
     private:
 
-        struct ObjectChange
-        {
-            glm::vec3 pos;
-            glm::quat rot;
-            glm::vec3 scale;
-        };
+        Timeline<EventVariant> mEvents;
 
     };
 
