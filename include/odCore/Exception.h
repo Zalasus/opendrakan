@@ -20,6 +20,7 @@ namespace od
 	{
 	public:
 
+        Exception();
 		Exception(const std::string &msg);
 
 		virtual const char *what() const noexcept;
@@ -61,7 +62,27 @@ namespace od
 		IoException(const std::string &msg);
 
 	};
+
+    class UreachableException: public Exception
+	{
+    public:
+
+        UreachableException(const char *file, const char *function, int line);
+
+    };
+
+    class UnimplementedException : public Exception
+	{
+    public:
+
+        UnimplementedException(const char *file, const char *function, int line);
+
+    };
 }
+
+#define OD_UNREACHABLE() throw od::UnreachableException(__FILE__, __func__, __LINE__)
+#define OD_UNIMPLEMENTED() throw od::UnimplementedException(__FILE__, __func__, __LINE__)
+#define OD_CHECK_ARG_NONNULL(arg) if((arg) == nullptr) throw od::IllegalArgumentException("Argument " #arg " was nullptr")
 
 
 #endif /* INCLUDE_EXCEPTION_H_ */
