@@ -22,15 +22,15 @@
 namespace dragonRfl
 {
 
-	TrackingCamera::TrackingCamera()
-	: mTrackingMode(1)
-	, mRubberBandStrength(2)
-	, mSpinSpeed(20)
-	, mCrosshairDistance(8)
+	TrackingCameraFields::TrackingCameraFields()
+	: trackingMode(1)
+	, rubberBandStrength(2)
+	, spinSpeed(20)
+	, crosshairDistance(8)
 	{
 	}
 
-	void TrackingCamera::probeFields(odRfl::FieldProbe &probe)
+	void TrackingCameraFields::probeFields(odRfl::FieldProbe &probe)
 	{
 	    probe.beginCategory("Camera Options");
 	    probe.registerField(mTrackingMode, "Tracking Mode");
@@ -39,17 +39,20 @@ namespace dragonRfl
 	    probe.registerField(mCrosshairDistance, "Cross-hair Distance (lu)");
 	}
 
-	void TrackingCamera::onLoaded()
+
+    TrackingCamera_Cl::TrackingCamera_Cl(od::LevelObject &objectToTrack)
+    : mObjectToTrack(objectToTrack)
+    {
+    }
+
+	void TrackingCamera_Cl::onLoaded()
 	{
 	    auto &obj = getLevelObject();
 
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
 
-	    odRender::Renderer *renderer = nullptr; //getRfl().getEngine().getRenderer();
-	    if(renderer != nullptr)
-	    {
-	        mRenderCamera = renderer->getCamera();
-	    }
+	    odRender::Renderer &renderer = getClient().getRenderer();
+	    mRenderCamera = renderer.getCamera();
 	}
 
 	void TrackingCamera::onSpawned()
@@ -60,12 +63,6 @@ namespace dragonRfl
 
 	    // set initial view matrix
 	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
-
-	    if(getRflAs<DragonRfl>().getLocalPlayer() == nullptr)
-	    {
-	        // no player to track~ however, the camera object is tracked by the sky, so it still should be present
-	        return;
-	    }
 
 	    obj.setEnableUpdate(true);
 	}

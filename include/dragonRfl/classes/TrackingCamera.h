@@ -19,13 +19,34 @@
 namespace dragonRfl
 {
 
-	class TrackingCamera : public odRfl::LevelObjectClassBase
+    enum class CameraTrackingMode
+    {
+        COCKPIT = 0,
+        RUBBER_BAND = 1,
+        CHASE_FIXED = 2
+    };
+
+
+    struct TrackingCameraFields final : public odRfl::FieldBundle
+    {
+        TrackingCameraFields();
+
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+
+        odRfl::EnumImpl<CameraTrackingMode> trackingMode;
+		odRfl::Float                        rubberBandStrength;
+		odRfl::Float                        spinSpeed;
+		odRfl::Float	                    crosshairDistance;
+    };
+
+
+	class TrackingCamera_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<TrackingCamera_Cl>
 	{
 	public:
 
-		TrackingCamera();
+        TrackingCamera_Cl(od::LevelObject &objectToTrack);
 
-		virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 		virtual void onLoaded() override;
 		virtual void onSpawned() override;
@@ -40,16 +61,33 @@ namespace dragonRfl
 
         void _setObjectPositionAndViewMatrix(const glm::vec3 &eyepoint, const glm::quat &lookDirection);
 
-		odRfl::Enum		mTrackingMode; // 0 = Cockpit, 1 = Rubber Band, 2 = Chase Fixed
-		odRfl::Float    mRubberBandStrength;
-		odRfl::Float    mSpinSpeed;
-		odRfl::Float	mCrosshairDistance;
+		TrackingCameraFields mFields;
+
+        od::LevelObject &mObjectToTrack;
 
 		od::RefPtr<odRender::Camera> mRenderCamera;
 	};
 
-}
+    class TrackingCameraFactory final : public odRfl::ClassFactory
+    {
+    public:
 
-ODRFL_DEFINE_CLASS_BASE(dragonRfl::TrackingCamera, 0x001b, "System", "Tracking Camera");
+        virtual std::unique_ptr<odRfl::FieldBundle> makeFieldBundle()
+        {
+            return std::make_unique<TrackingCameraFields>():
+        }
+
+        virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine)
+        {
+            // all cameras are instantiated as dummies initially. the RFL can decide to replace
+            //  or clone them for each player (if in multiplayer)
+            return std::make_unique<odRfl::DummyClass>();
+        }
+
+    };
+
+    OD_DEFINE_CLASS(TrackingCamera, 0x001b, "System", "Tracking Camera", TrackingCameraFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_TRACKINGCAMERA_H_ */
