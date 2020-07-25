@@ -56,24 +56,20 @@ namespace odGui
         }
     }
 
-    void Gui::addWidget(Widget *widget)
+    void Gui::addWidget(std::shared_ptr<Widget> widget)
     {
-        if(widget == nullptr)
+        if(widget != nullptr)
         {
-            return;
+            mRootWidget->addChild(widget);
         }
-
-        mRootWidget->addChild(widget);
     }
 
-    void Gui::removeWidget(Widget *widget)
+    void Gui::removeWidget(std::shared_ptr<Widget> widget)
     {
-        if(widget == nullptr)
+        if(widget != nullptr)
         {
-            return;
+            mRootWidget->removeChild(widget);
         }
-
-        mRootWidget->removeChild(widget);
     }
 
     void Gui::setMenuMode(bool b)
@@ -88,20 +84,24 @@ namespace odGui
         this->onMenuModeChanged();
     }
 
-    void Gui::setCursorWidget(Widget *cursor)
+    void Gui::setCursorWidget(std::shared_ptr<Widget> cursor)
     {
         if(mCursorWidget != nullptr)
         {
-            this->removeWidget(mCursorWidget);
+            this->removeWidget(mCursorWidget.get());
         }
 
         mCursorWidget = cursor;
-        mCursorWidget->setZIndex(-1000);
-        mCursorWidget->setVisible(mMenuMode);
-        this->addWidget(mCursorWidget);
 
-        glm::vec4 widgetToNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
-        mCursorPosInNdc = glm::vec2(widgetToNdc.x, widgetToNdc.y);
+        if(mCursorWidget != nullptr)
+        {
+            mCursorWidget->setZIndex(-1000);
+            mCursorWidget->setVisible(mMenuMode);
+            this->addWidget(mCursorWidget);
+
+            glm::vec4 widgetToNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
+            mCursorPosInNdc = glm::vec2(widgetToNdc.x, widgetToNdc.y);
+        }
     }
 
     void Gui::setCursorPosition(const glm::vec2 &pos)
@@ -143,7 +143,7 @@ namespace odGui
 
         // find unique widgets in joined list. NOTE: since the apparently is no nice way to do this via STL,
         //  we do it manually using a sort and by iterating over each widget.
-        auto pred = [](HitWidgetInfo &a, HitWidgetInfo &b){ return a.widget < b.widget; };
+        auto pred = [](HitWidgetInfo &a, HitWidgetInfo &b){ return a.widget.get() < b.widget.get(); };
         std::sort(mJoinedHitWidgets.begin(), mJoinedHitWidgets.end(), pred);
         for(auto it = mJoinedHitWidgets.begin(); it != mJoinedHitWidgets.end(); ++it)
         {
@@ -188,7 +188,7 @@ namespace odGui
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
-        mRootWidget = od::make_refd<Widget>(*this, mRenderer.getGuiRootNode());
+        mRootWidget = std::make_shared<Widget>(*this, mRenderer.getGuiRootNode());
         mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels); // FIXME: get actual dimensions here
         mRootWidget->update(0); // the root GuiNode has no reference to the root widget, so it can't trigger the initial update itself
     }

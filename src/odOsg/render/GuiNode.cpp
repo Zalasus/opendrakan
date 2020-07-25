@@ -11,8 +11,6 @@
 
 #include <odCore/Downcast.h>
 
-#include <odCore/gui/Widget.h>
-
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/GuiQuad.h>
 #include <odOsg/render/Handle.h>
@@ -24,7 +22,7 @@ namespace odOsg
     {
     public:
 
-        UpdateCallback(GuiNode *n)
+        UpdateCallback(GuiNode &n)
         : mNode(n)
         , mLastSimTime(0.0)
         , mFirstUpdate(true)
@@ -53,10 +51,7 @@ namespace odOsg
                 mFirstUpdate = false;
             }
 
-            if(mNode != nullptr)
-            {
-                mNode->update(simTime - mLastSimTime);
-            }
+            mNode.update(simTime - mLastSimTime);
 
             mLastSimTime = simTime;
 
@@ -66,20 +61,20 @@ namespace odOsg
 
     private:
 
-        GuiNode *mNode;
+        GuiNode &mNode;
         double mLastSimTime;
         bool mFirstUpdate;
     };
 
 
-    GuiNode::GuiNode(Renderer &renderer, std::shared_ptr<odGui::Widget> w)
+    GuiNode::GuiNode(Renderer &renderer)
     : mRenderer(renderer)
     , mWidget(w)
     , mTransform(new osg::MatrixTransform)
     {
         if(w != nullptr)
         {
-            mUpdateCallback = new UpdateCallback(this);
+            mUpdateCallback = new UpdateCallback(*this);
             mTransform->addUpdateCallback(mUpdateCallback);
         }
 
@@ -112,10 +107,10 @@ namespace odOsg
         mTransform->addChild(guiNode->getOsgNode());
     }
 
-    void GuiNode::removeChild(odRender::GuiNode *node)
+    void GuiNode::removeChild(std::shared_ptr<odRender::GuiNode> node)
     {
-        GuiNode *gn = static_cast<GuiNode*>(node); // static cast should suffice. we'll just use it to compare adresses anyway
-        auto it = std::find(mChildren.begin(), mChildren.end(), gn);
+        auto guiNode = od::confident_downcast<GuiNode>(node);
+        auto it = std::find(mChildren.begin(), mChildren.end(), guiNode);
         if(it != mChildren.end())
         {
             mTransform->removeChild((*it)->getOsgNode());
@@ -157,7 +152,7 @@ namespace odOsg
     {
     }
 
-    odRender::GuiQuad *GuiNode::createGuiQuad()
+    std::shared_ptr<odRender::GuiQuad> GuiNode::createGuiQuad()
     {
         if(mGeode == nullptr)
         {
@@ -169,24 +164,20 @@ namespace odOsg
 
         mGeode->addDrawable(mGuiQuads.back()->getOsgGeometry());
 
-        return mGuiQuads.back().get();
+        return mGuiQuads.back();
     }
 
-    void GuiNode::removeGuiQuad(odRender::GuiQuad *quad)
+    void GuiNode::removeGuiQuad(std::shared_ptr<odRender::GuiQuad> quad)
     {
-        if(mGeode == nullptr)
+        auto it = std::find(mGuiQuads.begin(), mGuiQuads.end(), quad);
+        if(it != mGuiQuads.end())
         {
-            return;
-        }
-
-        for(auto it = mGuiQuads.begin(); it != mGuiQuads.end(); ++it)
-        {
-            if((*it) == quad)
+            if(mGeode != nullptr)
             {
                 mGeode->removeDrawable((*it)->getOsgGeometry());
-                mGuiQuads.erase(it);
-                break;
             }
+
+            mGuiQuads.erase(it);
         }
     }
 
@@ -213,7 +204,7 @@ namespace odOsg
         mChildHandles.push_back(osgHandle);
     }
 
-    void GuiNode::removeChildHandle(odRender::Handle *handle)
+    void GuiNode::removeChildHandle(std::shared_ptr<odRender::Handle> handle)
     {
         if(handle == nullptr)
         {
@@ -233,10 +224,7 @@ namespace odOsg
 
     void GuiNode::update(float relTime)
     {
-        if(mWidget.isNonNull())
-        {
-            mWidget.aquire()->update(relTime);
-        }
+        // FIXME: need to somehow expose these updates to the widget (without taking a widget ourselves!)
     }
 
 }

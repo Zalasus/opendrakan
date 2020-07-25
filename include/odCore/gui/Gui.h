@@ -10,11 +10,10 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
-
-#include <odCore/RefCounted.h>
 
 #include <odCore/gui/WidgetIntersector.h>
 
@@ -42,8 +41,8 @@ namespace odGui
 
         void quit();
 
-        void addWidget(Widget *widget);
-        void removeWidget(Widget *widget);
+        void addWidget(std::shared_ptr<Widget> widget);
+        void removeWidget(std::shared_ptr<Widget> widget);
 
         void setMenuMode(bool b);
 
@@ -54,7 +53,7 @@ namespace odGui
          *
          * This is purely visual. The mouse picking functionality works without an assigned cursor widget.
          */
-        void setCursorWidget(Widget *cursor);
+        void setCursorWidget(std::shared_ptr<Widget> cursor);
 
         /**
          * @brief Positions cursor in NDC.
@@ -75,9 +74,9 @@ namespace odGui
 
         bool mMenuMode;
 
-        od::RefPtr<Widget> mRootWidget;
+        std::shared_ptr<Widget> mRootWidget;
         glm::vec2 mCursorPosInNdc;
-        od::RefPtr<Widget> mCursorWidget;
+        std::shared_ptr<Widget> mCursorWidget;
 
         glm::mat4 mWidgetSpaceToNdcTransform;
         glm::mat4 mNdcToWidgetSpaceTransform;

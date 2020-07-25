@@ -371,13 +371,12 @@ namespace odOsg
         OD_UNREACHABLE();
     }
 
-    std::shared_ptr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
+    std::shared_ptr<odRender::GuiNode> Renderer::createGuiNode()
     {
-        auto gn = std::make_shared<GuiNode>(this, widget);
-        return std::shared_ptr<odRender::GuiNode>(gn);
+        return std::make_shared<GuiNode>(this);
     }
 
-    odRender::GuiNode *Renderer::getGuiRootNode()
+    std::shared_ptr<odRender::GuiNode> Renderer::getGuiRootNode()
     {
         return mGuiRootNode;
     }
@@ -577,7 +576,7 @@ namespace odOsg
             addGeometry(geometry, lodIndex);*/
         }
 
-        return nullptr;
+        OD_UNREACHABLE();
     }
 
 }

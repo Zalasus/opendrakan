@@ -22,16 +22,7 @@
 namespace odGui
 {
 
-    Widget::Widget(Gui &gui)
-    : Widget(gui, nullptr)
-    {
-        // don't put this in the initializer list, especially not as an argument
-        //  to the other constructor. undefined evalutation order may fuck up the
-        //  weak reference created by the GuiNode
-        mRenderNode = mGui.getRenderer().createGuiNode(this);
-    }
-
-    Widget::Widget(Gui &gui, odRender::GuiNode *node)
+    Widget::Widget(Gui &gui, std::shared_ptr<odRender::GuiNode> node)
     : mGui(gui)
     , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
@@ -71,26 +62,26 @@ namespace odGui
     {
     }
 
-    void Widget::addChild(Widget *w)
+    void Widget::addChild(std::shared_ptr<Widget> w)
     {
-        if(w == nullptr || w == this)
+        if(w == nullptr || w.get() == this)
         {
             return;
         }
 
-        mChildWidgets.push_back(od::RefPtr<Widget>(w));
+        mChildWidgets.push_back(w);
 
         w->setParent(this);
 
-        if(mRenderNode != nullptr)
+        if(mRenderNode != nullptr && w->getRenderNode() != nullptr)
         {
             mRenderNode->addChild(w->getRenderNode());
         }
     }
 
-    void Widget::removeChild(Widget *w)
+    void Widget::removeChild(std::shared_ptr<Widget> w)
     {
-        if(w == nullptr || w == this)
+        if(w == nullptr || w.get() == this)
         {
             return;
         }
@@ -172,7 +163,7 @@ namespace odGui
 
     void Widget::reorderChildren()
     {
-        auto pred = [](od::RefPtr<Widget> &left, od::RefPtr<Widget> &right) { return left->getZIndex() < right->getZIndex(); };
+        auto pred = [](std::shared_ptr<Widget> &left, std::shared_ptr<Widget> &right) { return left->getZIndex() < right->getZIndex(); };
         std::sort(mChildWidgets.begin(), mChildWidgets.end(), pred);
 
         mChildOrderDirty = false;
@@ -214,11 +205,6 @@ namespace odGui
         }
 
         this->onUpdate(relTime);
-    }
-
-    odRender::GuiNode *Widget::getRenderNode()
-    {
-        return mRenderNode;
     }
 
     glm::vec2 Widget::_getOriginVector()

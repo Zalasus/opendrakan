@@ -57,8 +57,8 @@ namespace odOsg
 
         virtual std::shared_ptr<odRender::Image> createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture) override;
         virtual std::shared_ptr<odRender::Texture> createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot) override;
-        virtual std::shared_ptr<odRender::GuiNode> createGuiNode(odGui::Widget *widget) override;
-        virtual odRender::GuiNode *getGuiRootNode() override;
+        virtual std::shared_ptr<odRender::GuiNode> createGuiNode() override;
+        virtual std::shared_ptr<odRender::GuiNode> getGuiRootNode() override;
 
         virtual odRender::Camera *getCamera() override;
 

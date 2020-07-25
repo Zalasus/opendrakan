@@ -45,12 +45,12 @@ namespace odOsg
     {
     }
 
-    odRender::Texture *GuiQuad::getTexture()
+    std::shared_ptr<odRender::Texture> GuiQuad::getTexture()
     {
         return mTexture;
     }
 
-    void GuiQuad::setTexture(odRender::Texture *texture)
+    void GuiQuad::setTexture(std::shared_ptr<odRender::Texture> texture)
     {
         osg::StateSet *ss = mGeometry->getOrCreateStateSet();
 
@@ -59,12 +59,13 @@ namespace odOsg
             ss->setTextureAttribute(0, nullptr, osg::StateAttribute::ON);
             ss->removeDefine("TEXTURE");
             mTexture = nullptr;
-            return;
-        }
 
-        mTexture = od::confident_downcast<Texture>(texture);
-        ss->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
-        ss->setDefine("TEXTURE");
+        }else
+        {
+            mTexture = od::confident_downcast<Texture>(texture);
+            ss->setTextureAttribute(0, mTexture->getOsgTexture(), osg::StateAttribute::ON);
+            ss->setDefine("TEXTURE");
+        }
     }
 
     void GuiQuad::setTextureCoords(const glm::vec2 &tl, const glm::vec2 &br)

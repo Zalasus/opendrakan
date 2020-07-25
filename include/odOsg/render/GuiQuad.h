@@ -25,9 +25,9 @@ namespace odOsg
 
         inline osg::Geometry *getOsgGeometry() { return mGeometry; }
 
-        virtual odRender::Texture *getTexture() override;
+        virtual std::shared_ptr<odRender::Texture> getTexture() override;
 
-        virtual void setTexture(odRender::Texture *texture) override;
+        virtual void setTexture(std::shared_ptr<odRender::Texture> texture) override;
         virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
         virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) override;
@@ -42,7 +42,7 @@ namespace odOsg
         osg::ref_ptr<osg::Vec2Array> mTextureCoordArray;
         osg::ref_ptr<osg::Vec4Array> mColorArray;
 
-        od::RefPtr<Texture> mTexture;
+        std::shared_ptr<Texture> mTexture;
     };
 
 }

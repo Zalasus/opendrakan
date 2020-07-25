@@ -21,7 +21,7 @@ namespace odRender
     public:
 
         virtual void addChild(std::shared_ptr<GuiNode> node) = 0;
-        virtual void removeChild(GuiNode *node) = 0;
+        virtual void removeChild(std::shared_ptr<GuiNode> node) = 0;
 
         virtual void setMatrix(const glm::mat4 &m) = 0;
         virtual void setViewport(const glm::vec2 &offset, const glm::vec2 &size) = 0;
@@ -34,11 +34,11 @@ namespace odRender
         virtual void setZIndex(int32_t zIndex) = 0;
         virtual void reorderChildren() = 0;
 
-        virtual GuiQuad *createGuiQuad() = 0;
-        virtual void removeGuiQuad(GuiQuad *quad) = 0;
+        virtual std::shared_ptr<GuiQuad> createGuiQuad() = 0;
+        virtual void removeGuiQuad(std::shared_ptr<GuiQuad> quad) = 0;
 
         virtual void addChildHandle(std::shared_ptr<Handle> handle) = 0;
-        virtual void removeChildHandle(Handle *handle) = 0;
+        virtual void removeChildHandle(std::shared_ptr<Handle> handle) = 0;
 
     };
 

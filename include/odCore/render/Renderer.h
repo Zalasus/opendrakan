@@ -22,11 +22,6 @@ namespace odDb
     class Texture;
 }
 
-namespace odGui
-{
-    class Widget;
-}
-
 namespace odRender
 {
 
@@ -78,8 +73,8 @@ namespace odRender
         virtual std::shared_ptr<Image> createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture) = 0;
 
         virtual std::shared_ptr<Texture> createTexture(std::shared_ptr<Image> image, TextureReuseSlot reuseSlot) = 0;
-        virtual std::shared_ptr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;
-        virtual GuiNode *getGuiRootNode() = 0;
+        virtual std::shared_ptr<GuiNode> createGuiNode() = 0;
+        virtual std::shared_ptr<GuiNode> getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;
 

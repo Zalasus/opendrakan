@@ -22,7 +22,7 @@ namespace odRender
     {
     public:
 
-        virtual odRender::Texture *getTexture() = 0;
+        virtual std::shared_ptr<odRender::Texture> getTexture() = 0;
 
         /**
          * Convenience method. Fetches texture from an asset provider, sets up image and creates

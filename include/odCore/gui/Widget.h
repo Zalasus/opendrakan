@@ -9,11 +9,10 @@
 #define INCLUDE_GUI_WIDGET_H_
 
 #include <vector>
+#include <memory>
 
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
-
-#include <odCore/RefCounted.h>
 
 #include <odCore/gui/WidgetIntersector.h>
 
@@ -69,12 +68,11 @@ namespace odGui
      *
      * UI scaling is not yet implemented, but can be easily achieved by applying a scale factor to a widget's dimensions.
      */
-    class Widget : public od::RefCounted
+    class Widget
     {
     public:
 
-        Widget(Gui &gui);
-        Widget(Gui &gui, odRender::GuiNode *node);
+        Widget(Gui &gui, std::shared_ptr<odRender::GuiNode> node);
         virtual ~Widget();
 
         inline int32_t getZIndex() const { return mZIndex; }
@@ -92,8 +90,17 @@ namespace odGui
         inline void setOrigin(WidgetOrigin origin) { mOrigin = origin; mMatrixDirty = true; }
         inline void setPosition(const glm::vec2 &pos) { mPositionInParentSpace = pos; mMatrixDirty = true; }
         inline void setPosition(float x, float y) { setPosition(glm::vec2(x, y)); }
-        inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
         inline void setMouseOver(bool b) { mMouseOver = b; }
+        inline std::shared_ptr<odRender::GuiNode> getRenderNode() { return mRenderNode; }
+
+        /**
+         * @brief Assigns this widget's parent.
+         *
+         * This is handles via a bare pointer since this will be called by the parent when the current widget is added to it.
+         * But since I want to avoid std::enable_shared_from_this, the parent has no way to pass an owned reference to itself.
+         * Thus, instead of a weak_ptr, the non-owning reference is done using a bare pointer.
+         */
+        inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
 
         /**
          * @brief Returns true if \c pos lies within the logical widget bounds.
@@ -140,8 +147,8 @@ namespace odGui
          */
         virtual void onMouseLeave(const glm::vec2 &pos);
 
-        void addChild(Widget *w);
-        void removeChild(Widget *w);
+        void addChild(std::shared_ptr<Widget> w);
+        void removeChild(std::shared_ptr<Widget> w);
 
         /**
          * @brief Performs recursive intersection check, collecting all found widgets in a vector.
@@ -168,8 +175,6 @@ namespace odGui
          */
         void update(float relTime);
 
-        odRender::GuiNode *getRenderNode();
-
 
     protected:
 
@@ -191,17 +196,17 @@ namespace odGui
         glm::vec2 mDimensions;
         glm::vec2 mPositionInParentSpace;
         int32_t mZIndex;
-        Widget *mParentWidget;
+        Widget *mParentWidget; // yes, the bare pointer is intentional. this is supposed to be a weak ref. see explanation in doc of setParent()
         bool mMatrixDirty;
         glm::mat4 mParentSpaceToWidgetSpace;
         glm::mat4 mWidgetSpaceToParentSpace;
 
         bool mMouseOver;
 
-        std::vector<od::RefPtr<Widget>> mChildWidgets;
+        std::vector<std::shared_ptr<Widget>> mChildWidgets;
         bool mChildOrderDirty;
 
-        od::RefPtr<odRender::GuiNode> mRenderNode;
+        std::shared_ptr<odRender::GuiNode> mRenderNode;
     };
 
 }

@@ -11,14 +11,7 @@
 #include <osg/MatrixTransform>
 #include <osg/Geode>
 
-#include <odCore/WeakRefPtr.h>
-
 #include <odCore/render/GuiNode.h>
-
-namespace odGui
-{
-    class Widget;
-}
 
 namespace odOsg
 {
@@ -31,13 +24,13 @@ namespace odOsg
     {
     public:
 
-        GuiNode(Renderer &renderer, std::shared_ptr<odGui::Widget> widget);
+        GuiNode(Renderer &renderer);
         virtual ~GuiNode();
 
         inline osg::Node *getOsgNode() { return mTransform; }
 
         virtual void addChild(std::shared_ptr<odRender::GuiNode> node) override;
-        virtual void removeChild(odRender::GuiNode *node) override;
+        virtual void removeChild(std::shared_ptr<odRender::GuiNode> node) override;
 
         virtual void setMatrix(const glm::mat4 &m) override;
         virtual void setViewport(const glm::vec2 &offset, const glm::vec2 &size) override;
@@ -50,11 +43,12 @@ namespace odOsg
         virtual void setZIndex(int32_t zIndex) override;
         virtual void reorderChildren() override;
 
-        virtual odRender::GuiQuad *createGuiQuad() override;
-        virtual void removeGuiQuad(odRender::GuiQuad *quad) override;
+        virtual std::shared_ptr<odRender::GuiQuad> createGuiQuad() override;
+        virtual void removeGuiQuad(std::shared_ptr<odRender::GuiQuad> quad) override;
 
         virtual void addChildHandle(std::shared_ptr<odRender::Handle> handle) override;
-        virtual void removeChildHandle(odRender::Handle *handle) override;
+        virtual void removeChildHandle(std::shared_ptr<odRender::Handle> handle) override;
+
 
         void update(float relTime);
 
@@ -62,7 +56,6 @@ namespace odOsg
     private:
 
         Renderer &mRenderer;
-        std::weak_ptr<odGui::Widget> mWidget;
 
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;
