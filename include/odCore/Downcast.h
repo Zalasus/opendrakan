@@ -36,6 +36,26 @@ namespace od
     }
 
     /**
+     * @brief Overload of od::downcast for std::shared_ptr
+     */
+    template <typename _To, typename _From>
+    std::shared_ptr<_To> *downcast(std::shared_ptr<_From> f)
+    {
+        if(f == nullptr)
+        {
+            return nullptr;
+        }
+
+       _To *t = dynamic_cast<_To*>(f.get());
+       if(t == nullptr)
+       {
+           throw od::Exception("Bad downcast");
+       }
+
+       return std::shared_ptr<_To>(f, t); // aliasing constructor. returned pointer will own f but deref into t
+    }
+
+    /**
      * A style of downcast for when the caller is confident that it will always succeed,
      * such as when casting to implementations of interfaces of which only one should
      * exist in the application (e.g. renderer, physics system...).
@@ -62,6 +82,30 @@ namespace od
 
        return t;
 #endif
+    }
+
+    /**
+     * @brief Overload of od::confident_downcast for std::shared_ptr.
+     */
+    template <typename _To, typename _From>
+    std::shared_ptr<_To> confident_downcast(std::shared_ptr<_From> f)
+    {
+        if(f == nullptr)
+        {
+            return nullptr;
+        }
+
+        _To *t;
+#ifdef NDEBUG
+        t = static_cast<_To*>(f);
+#else
+        t = dynamic_cast<_To*>(f);
+        if(t == nullptr)
+        {
+            throw od::Exception("Bad confident_downcast");
+        }
+#endif
+        return std::shared_ptr<_To>(f, t); // aliasing constructor. returned pointer will own f but deref into t
     }
 
 
