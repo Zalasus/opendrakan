@@ -8,6 +8,8 @@
 #ifndef INCLUDE_RFL_DRAGON_BUILDING_H_
 #define INCLUDE_RFL_DRAGON_BUILDING_H_
 
+#include <odCore/ObjectLightReceiver.h>
+
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>

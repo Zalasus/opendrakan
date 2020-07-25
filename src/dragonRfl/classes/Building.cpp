@@ -14,6 +14,7 @@
 #include <odCore/Client.h>
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
+#include <odCore/Layer.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -98,6 +99,13 @@ namespace dragonRfl
             mRenderHandle->setOrientation(obj.getRotation());
             mRenderHandle->setScale(obj.getScale());
             mRenderHandle->setModel(renderModel);
+
+            od::Layer *lightSourceLayer = obj.getLightSourceLayer();
+            if(lightSourceLayer == nullptr) lightSourceLayer = obj.getAssociatedLayer();
+            if(lightSourceLayer != nullptr)
+            {
+                mRenderHandle->setGlobalLight(lightSourceLayer->getLightDirection(), lightSourceLayer->getLightColor(), lightSourceLayer->getAmbientColor());
+            }
         }
 
         /* just an idea for how prediction will work:
