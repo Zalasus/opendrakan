@@ -72,7 +72,7 @@ namespace odOsg
     };
 
 
-    GuiNode::GuiNode(Renderer *renderer, odGui::Widget *w)
+    GuiNode::GuiNode(Renderer &renderer, std::shared_ptr<odGui::Widget> w)
     : mRenderer(renderer)
     , mWidget(w)
     , mTransform(new osg::MatrixTransform)
@@ -99,14 +99,14 @@ namespace odOsg
         }
     }
 
-    void GuiNode::addChild(odRender::GuiNode *node)
+    void GuiNode::addChild(std::shared_ptr<odRender::GuiNode> node)
     {
         if(node == nullptr)
         {
             return;
         }
 
-        od::RefPtr<GuiNode> guiNode = od::confident_downcast<GuiNode>(node);
+        std::shared_ptr<GuiNode> guiNode = od::confident_downcast<GuiNode>(node);
         mChildren.push_back(guiNode);
 
         mTransform->addChild(guiNode->getOsgNode());
@@ -165,11 +165,11 @@ namespace odOsg
             mTransform->addChild(mGeode);
         }
 
-        mGuiQuads.push_back(od::make_refd<GuiQuad>());
+        mGuiQuads.push_back(std::make_shared<GuiQuad>());
 
         mGeode->addDrawable(mGuiQuads.back()->getOsgGeometry());
 
-        return mGuiQuads.back();
+        return mGuiQuads.back().get();
     }
 
     void GuiNode::removeGuiQuad(odRender::GuiQuad *quad)
@@ -190,7 +190,7 @@ namespace odOsg
         }
     }
 
-    void GuiNode::addChildHandle(odRender::Handle *handle)
+    void GuiNode::addChildHandle(std::shared_ptr<odRender::Handle> handle)
     {
         if(handle == nullptr)
         {
@@ -240,4 +240,3 @@ namespace odOsg
     }
 
 }
-

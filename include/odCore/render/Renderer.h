@@ -8,8 +8,6 @@
 #ifndef INCLUDE_ODCORE_RENDER_RENDERER_H_
 #define INCLUDE_ODCORE_RENDER_RENDERER_H_
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/render/Geometry.h>
 
 namespace od
@@ -47,6 +45,13 @@ namespace odRender
         GUI
     };
 
+    enum class TextureReuseSlot
+    {
+        NONE,
+        OBJECT,
+        LAYER
+    };
+
     /**
      * @brief Interface for a renderer implementation.
      */
@@ -63,16 +68,17 @@ namespace odRender
         virtual void setEnableLighting(bool b) = 0;
         virtual bool isLightingEnabled() const = 0;
 
-        virtual od::RefPtr<Handle> createHandle(RenderSpace space) = 0;
-        virtual od::RefPtr<Model> createModel() = 0;
-        virtual od::RefPtr<Geometry> createGeometry(PrimitiveType primitiveType, bool indexed) = 0;
+        virtual std::shared_ptr<Handle> createHandle(RenderSpace space) = 0;
+        virtual std::shared_ptr<Model> createModel() = 0;
+        virtual std::shared_ptr<Geometry> createGeometry(PrimitiveType primitiveType, bool indexed) = 0;
 
-        virtual od::RefPtr<Model> createModelFromDb(odDb::Model *model) = 0;
-        virtual od::RefPtr<Model> createModelFromLayer(od::Layer *layer) = 0;
+        virtual std::shared_ptr<Model> createModelFromDb(std::shared_ptr<odDb::Model> model) = 0;
+        virtual std::shared_ptr<Model> createModelFromLayer(od::Layer *layer) = 0;
 
-        virtual od::RefPtr<Image> createImage(odDb::Texture *dbTexture) = 0;
-        virtual od::RefPtr<Texture> createTexture(Image *image) = 0;
-        virtual od::RefPtr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;
+        virtual std::shared_ptr<Image> createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture) = 0;
+
+        virtual std::shared_ptr<Texture> createTexture(std::shared_ptr<Image> image, TextureReuseSlot reuseSlot) = 0;
+        virtual std::shared_ptr<GuiNode> createGuiNode(odGui::Widget *widget) = 0;
         virtual GuiNode *getGuiRootNode() = 0;
 
         virtual Camera *getCamera() = 0;
@@ -97,7 +103,7 @@ namespace odRender
          */
         virtual void frame(float relTime) = 0;
 
-        od::RefPtr<Handle> createHandleFromObject(od::LevelObject &obj);
+        std::shared_ptr<Handle> createHandleFromObject(od::LevelObject &obj);
 
     };
 

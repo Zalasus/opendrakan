@@ -15,8 +15,6 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/render/Array.h>
 
 namespace odRender
@@ -43,7 +41,7 @@ namespace odRender
      * In a split model, the vertex attributes can be shared among multiple geometries, so modifying
      * an array in one geometry might change it in all of the model's geometries.
      */
-    class Geometry : public od::RefCounted
+    class Geometry
     {
     public:
 

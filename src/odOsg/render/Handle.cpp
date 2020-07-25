@@ -86,7 +86,6 @@ namespace odOsg
     Handle::Handle(Renderer &renderer, osg::Group *parentGroup)
     : mRenderer(renderer)
     , mParentGroup(parentGroup)
-    , mModel(nullptr)
     , mFrameListener(nullptr)
     , mTransform(new osg::PositionAttitudeTransform)
     , mLightStateAttribute(new LightStateAttribute(&renderer, Constants::MAX_LIGHTS))
@@ -162,14 +161,14 @@ namespace odOsg
 
     odRender::Model *Handle::getModel()
     {
-        return mModel;
+        return mModel.get();
     }
 
-    void Handle::setModel(odRender::Model *model)
+    void Handle::setModel(std::shared_ptr<odRender::Model> model)
     {
         _assert_mutex_locked(mMutex);
 
-        auto *osgModel = od::confident_downcast<Model>(model);
+        auto osgModel = od::confident_downcast<Model>(model);
 
         if(mModel != nullptr)
         {
@@ -297,7 +296,7 @@ namespace odOsg
         return mRig.get();
     }
 
-    void Handle::addLight(od::Light *light)
+    void Handle::addLight(std::shared_ptr<od::Light> light)
     {
         _assert_mutex_locked(mMutex);
 
@@ -336,4 +335,3 @@ namespace odOsg
     }
 
 }
-

@@ -17,9 +17,9 @@
 namespace odRender
 {
 
-    od::RefPtr<Handle> Renderer::createHandleFromObject(od::LevelObject &obj)
+    std::shared_ptr<Handle> Renderer::createHandleFromObject(od::LevelObject &obj)
     {
-        auto handle = createHandle(RenderSpace::LEVEL);
+        auto handle = this->createHandle(RenderSpace::LEVEL);
 
         std::lock_guard<std::mutex> lock(handle->getMutex());
 
@@ -29,7 +29,7 @@ namespace odRender
 
         if(obj.getClass()->hasModel())
         {
-            auto model = obj.getClass()->getModel()->getOrCreateRenderModel(this);
+            auto model = this->createModelFromDb(obj.getClass()->getModel());
             handle->setModel(model);
         }
 
@@ -37,4 +37,3 @@ namespace odRender
     }
 
 }
-

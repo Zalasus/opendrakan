@@ -20,7 +20,7 @@
 namespace odOsg
 {
 
-    LightStateAttribute::LightStateAttribute(Renderer *renderer, size_t maxLightCount)
+    LightStateAttribute::LightStateAttribute(Renderer &renderer, size_t maxLightCount)
     : mRenderer(renderer)
     , mMaxLightCount(maxLightCount)
     {
@@ -65,7 +65,7 @@ namespace odOsg
         mLights.clear();
     }
 
-    void LightStateAttribute::addLight(od::Light *light)
+    void LightStateAttribute::addLight(std::shared_ptr<od::Light> light)
     {
         if(mLights.size() < mMaxLightCount)
         {
@@ -86,18 +86,18 @@ namespace odOsg
     {
         const osg::Matrix &viewMatrix = state.getInitialViewMatrix();
 
-        mRenderer->applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
+        mRenderer.applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
 
         for(size_t i = 0; i < mMaxLightCount; ++i)
         {
-            if(i < mLights.size() && mLights[i].isNonNull())
+            if(i < mLights.size() && !mLights[i].expired())
             {
-                auto light = mLights[i].aquire();
-                mRenderer->applyToLightUniform(viewMatrix, light, i);
+                auto light = mLights[i].lock();
+                mRenderer.applyToLightUniform(viewMatrix, light, i);
 
             }else
             {
-                mRenderer->applyNullLight(i);
+                mRenderer.applyNullLight(i);
             }
         }
     }

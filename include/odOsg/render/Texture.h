@@ -20,7 +20,7 @@ namespace odOsg
     {
     public:
 
-        explicit Texture(Image *image);
+        explicit Texture(std::shared_ptr<Image> image);
         virtual ~Texture();
 
         inline osg::Texture2D *getOsgTexture() { return mTexture; }
@@ -32,7 +32,7 @@ namespace odOsg
 
     private:
 
-        od::RefPtr<odOsg::Image> mImage;
+        std::shared_ptr<odOsg::Image> mImage;
 
         osg::ref_ptr<osg::Texture2D> mTexture;
 

@@ -15,7 +15,6 @@
 #include <osg/Uniform>
 #include <osgViewer/Viewer>
 
-#include <odCore/RefCounted.h>
 #include <odCore/BoundingSphere.h>
 
 #include <odCore/render/Renderer.h>
@@ -49,16 +48,16 @@ namespace odOsg
         virtual void setEnableLighting(bool b) override;
         virtual bool isLightingEnabled() const override;
 
-        virtual od::RefPtr<odRender::Handle> createHandle(odRender::RenderSpace space) override;
-        virtual od::RefPtr<odRender::Model> createModel() override;
-        virtual od::RefPtr<odRender::Geometry> createGeometry(odRender::PrimitiveType primitiveType, bool indexed) override;
+        virtual std::shared_ptr<odRender::Handle> createHandle(odRender::RenderSpace space) override;
+        virtual std::shared_ptr<odRender::Model> createModel() override;
+        virtual std::shared_ptr<odRender::Geometry> createGeometry(odRender::PrimitiveType primitiveType, bool indexed) override;
 
-        virtual od::RefPtr<odRender::Model> createModelFromDb(odDb::Model *model) override;
-        virtual od::RefPtr<odRender::Model> createModelFromLayer(od::Layer *layer) override;
+        virtual std::shared_ptr<odRender::Model> createModelFromDb(std::shared_ptr<odDb::Model> model) override;
+        virtual std::shared_ptr<odRender::Model> createModelFromLayer(od::Layer *layer) override;
 
-        virtual od::RefPtr<odRender::Image> createImage(odDb::Texture *dbTexture) override;
-        virtual od::RefPtr<odRender::Texture> createTexture(odRender::Image *image) override;
-        virtual od::RefPtr<odRender::GuiNode> createGuiNode(odGui::Widget *widget) override;
+        virtual std::shared_ptr<odRender::Image> createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture) override;
+        virtual std::shared_ptr<odRender::Texture> createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot) override;
+        virtual std::shared_ptr<odRender::GuiNode> createGuiNode(odGui::Widget *widget) override;
         virtual odRender::GuiNode *getGuiRootNode() override;
 
         virtual odRender::Camera *getCamera() override;
@@ -79,14 +78,14 @@ namespace odOsg
 
         void _setupGuiStuff();
 
-        od::RefPtr<Model> _buildSingleLodModelNode(odDb::Model *model);
-        od::RefPtr<Model> _buildMultiLodModelNode(odDb::Model *model);
+        std::shared_ptr<Model> _buildSingleLodModelNode(odDb::Model &model);
+        std::shared_ptr<Model> _buildMultiLodModelNode(odDb::Model &model);
 
         ShaderFactory mShaderFactory;
 
         odRender::RendererEventListener *mEventListener;
 
-        od::RefPtr<Camera> mCamera;
+        std::shared_ptr<Camera> mCamera;
 
         bool mFreeLook;
 
@@ -96,7 +95,7 @@ namespace odOsg
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group> mGuiRoot;
-        od::RefPtr<GuiNode> mGuiRootNode;
+        std::shared_ptr<GuiNode> mGuiRootNode;
 
         bool mLightingEnabled;
         osg::ref_ptr<osg::Uniform> mGlobalLightDiffuse;

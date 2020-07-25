@@ -14,7 +14,7 @@
 namespace odOsg
 {
 
-    Texture::Texture(odOsg::Image *image)
+    Texture::Texture(std::shared_ptr<Image> image)
     : mImage(image)
     {
         mTexture = new osg::Texture2D(mImage->getOsgImage());
@@ -55,7 +55,7 @@ namespace odOsg
 
     odRender::Image *Texture::getImage()
     {
-        return mImage;
+        return mImage.get();
     }
 
 }

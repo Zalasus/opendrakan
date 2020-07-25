@@ -8,13 +8,11 @@
 #ifndef INCLUDE_ODCORE_RENDER_TEXTURE_H_
 #define INCLUDE_ODCORE_RENDER_TEXTURE_H_
 
-#include <odCore/RefCounted.h>
-
 namespace odRender
 {
     class Image;
 
-    class Texture : public od::RefCounted
+    class Texture
     {
     public:
 

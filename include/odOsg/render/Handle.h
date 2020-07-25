@@ -43,7 +43,7 @@ namespace odOsg
         virtual void setScale(const glm::vec3 &scale) override;
 
         virtual odRender::Model *getModel() override;
-        virtual void setModel(odRender::Model *model) override;
+        virtual void setModel(std::shared_ptr<odRender::Model> model) override;
 
         virtual void setVisible(bool visible) override;
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
@@ -80,7 +80,7 @@ namespace odOsg
         osg::ref_ptr<osg::Group> mParentGroup;
 
         std::mutex mMutex;
-        Model *mModel;
+        std::shared_ptr<Model> mModel;
         odRender::FrameListener *mFrameListener;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;

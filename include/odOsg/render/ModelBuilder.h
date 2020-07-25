@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_RENDER_GEOMETRYUILDER_H_
 
 #include <vector>
+#include <memory>
 
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
@@ -44,7 +45,7 @@ namespace odOsg
         typedef std::vector<odDb::Model::Polygon>::const_iterator PolygonIterator;
         typedef std::vector<odDb::Model::BoneAffection>::const_iterator BoneAffectionIterator;
 
-		ModelBuilder(Renderer *renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider);
+		ModelBuilder(Renderer &renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setCWPolygonFlag(bool b) { mCWPolys = b; }
@@ -56,7 +57,7 @@ namespace odOsg
 		void setPolygonVector(PolygonIterator begin, PolygonIterator end);
 		void setBoneAffectionVector(BoneAffectionIterator begin, BoneAffectionIterator end);
 
-		od::RefPtr<Model> build();
+		std::shared_ptr<Model> build();
 		void buildAndAppend(Model *model);
 
 
@@ -80,7 +81,7 @@ namespace odOsg
 		void _makeIndicesUniqueAndGenerateUvs();
 		void _disambiguateAndGenerateUvs();
 
-		Renderer *mRenderer;
+		Renderer &mRenderer;
 
 		std::string mGeometryName;
 		odDb::AssetProvider &mAssetProvider;

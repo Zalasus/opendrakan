@@ -11,8 +11,6 @@
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/db/Asset.h>
 
 namespace odRender
@@ -20,7 +18,7 @@ namespace odRender
     class Texture;
     class Renderer;
 
-    class GuiQuad : public od::RefCounted
+    class GuiQuad
     {
     public:
 
@@ -36,7 +34,7 @@ namespace odRender
             setTextureFromDb(ap, odDb::AssetRef(textureId, 0), renderer);
         }
 
-        virtual void setTexture(odRender::Texture *texture) = 0;
+        virtual void setTexture(std::shared_ptr<odRender::Texture> texture) = 0;
         virtual void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
         virtual void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;
         virtual void setVertexCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight) = 0;

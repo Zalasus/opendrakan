@@ -18,7 +18,7 @@
 namespace odOsg
 {
 
-    Image::Image(odDb::Texture *dbTexture)
+    Image::Image(std::shared_ptr<odDb::Texture> dbTexture)
     : mDbTexture(dbTexture)
     {
         if(dbTexture == nullptr)
@@ -27,8 +27,8 @@ namespace odOsg
         }
 
         mOsgImage = new osg::Image;
-        mOsgImage->setImage(  mDbTexture->getWidth(), mDbTexture->getHeight(), 1, 4, GL_RGBA, GL_UNSIGNED_BYTE
-                            , mDbTexture->getRawR8G8B8A8Data(), osg::Image::NO_DELETE);
+        mOsgImage->setImage(  dbTexture->getWidth(), dbTexture->getHeight(), 1, 4, GL_RGBA, GL_UNSIGNED_BYTE
+                            , dbTexture->getRawR8G8B8A8Data(), osg::Image::NO_DELETE);
 
         if(dbTexture->isAnimation())
         {
@@ -62,12 +62,7 @@ namespace odOsg
         return glm::vec2(mDbTexture->getWidth(), mDbTexture->getHeight());
     }
 
-    od::RefPtr<odRender::Texture> Image::createTexture()
-    {
-        auto texture = od::make_refd<Texture>(this);
-        return od::RefPtr<odRender::Texture>(texture);
-    }
-
+    /*
     od::RefPtr<odRender::Texture> Image::getTextureForUsage(odRender::TextureUsage usage)
     {
         switch(usage)
@@ -95,8 +90,6 @@ namespace odOsg
         default:
             return createTexture();
         }
-    }
+    }*/
 
 }
-
-

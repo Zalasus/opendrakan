@@ -10,12 +10,10 @@
 
 #include <glm/vec3.hpp>
 
-#include <odCore/RefCounted.h>
-
 namespace odRender
 {
 
-    class Camera : public od::RefCounted
+    class Camera
     {
     public:
 

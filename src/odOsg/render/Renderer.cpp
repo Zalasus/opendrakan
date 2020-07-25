@@ -48,7 +48,7 @@ namespace odOsg
     {
         mViewer = new osgViewer::Viewer;
 
-        mCamera = od::make_refd<Camera>(mViewer->getCamera());
+        mCamera = std::make_shared<Camera>(mViewer->getCamera());
 
         osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
         statsHandler->setKeyEventPrintsOutStats(0);
@@ -119,60 +119,63 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    od::RefPtr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
+    std::shared_ptr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
     {
-        od::RefPtr<Handle> handle;
+        std::shared_ptr<Handle> handle;
 
         switch(space)
         {
         case odRender::RenderSpace::NONE:
-            handle = od::make_refd<Handle>(*this, nullptr);
+            handle = std::make_shared<Handle>(*this, nullptr);
             break;
 
         case odRender::RenderSpace::LEVEL:
-            handle = od::make_refd<Handle>(*this, mLevelRoot);
+            handle = std::make_shared<Handle>(*this, mLevelRoot);
             break;
 
         case odRender::RenderSpace::GUI:
-            handle = od::make_refd<Handle>(*this, mGuiRoot);
+            handle = std::make_shared<Handle>(*this, mGuiRoot);
             break;
 
         default:
             throw od::Exception("Unknown render space");
         }
 
-        return handle.get();
+        return handle;
     }
 
-    od::RefPtr<odRender::Model> Renderer::createModel()
+    std::shared_ptr<odRender::Model> Renderer::createModel()
     {
-        auto model = od::make_refd<Model>();
-
-        return model.get();
+        return std::make_shared<Model>();;
     }
 
-    od::RefPtr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
+    std::shared_ptr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
     {
-        auto newGeometry = od::make_refd<Geometry>(primitiveType, indexed);
+        auto newGeometry = std::make_shared<Geometry>(primitiveType, indexed);
 
         return newGeometry.get();
     }
 
-    od::RefPtr<odRender::Model> Renderer::createModelFromDb(odDb::Model *model)
+    std::shared_ptr<odRender::Model> Renderer::createModelFromDb(std::shared_ptr<odDb::Model> model)
     {
         if(model == nullptr)
         {
             throw od::InvalidArgumentException("Got null model");
         }
 
-        od::RefPtr<Model> renderModel;
+        if(!model->getCachedRenderModel().expired())
+        {
+            return std::shared_ptr<odRender::Model>(model->getCachedRenderModel());
+        }
+
+        std::shared_ptr<Model> renderModel;
         if(model->getLodInfoVector().empty())
         {
-            renderModel = _buildSingleLodModelNode(model);
+            renderModel = _buildSingleLodModelNode(*model);
 
         }else
         {
-            renderModel = _buildMultiLodModelNode(model);
+            renderModel = _buildMultiLodModelNode(*model);
         }
 
         // assign correct lighting modes. note that some of the shading types are baked into the geometry (flat shading)
@@ -194,10 +197,12 @@ namespace odOsg
         modelProgram->addBindAttribLocation("vertexWeights", Constants::ATTRIB_WEIGHT_LOCATION);
         renderModel->getGeode()->getOrCreateStateSet()->setAttribute(modelProgram, osg::StateAttribute::ON);
 
-        return renderModel.get();
+        model->getCachedRenderModel() = renderModel;
+
+        return renderModel;
     }
 
-    od::RefPtr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
+    std::shared_ptr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
     {
         ModelBuilder mb(this, "layer " + layer->getName(), layer->getLevel());
         mb.setCWPolygonFlag(false);
@@ -307,7 +312,7 @@ namespace odOsg
         }
         mb.setPolygonVector(polygons.begin(), polygons.end());
 
-        od::RefPtr<Model> builtModel = mb.build();
+        std::shared_ptr<Model> builtModel = mb.build();
 
         osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
         builtModel->getGeode()->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
@@ -315,23 +320,61 @@ namespace odOsg
         return builtModel.get();
     }
 
-    od::RefPtr<odRender::Image> Renderer::createImage(odDb::Texture *dbTexture)
+    std::shared_ptr<odRender::Image> Renderer::createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture)
     {
-        auto image = od::make_refd<Image>(dbTexture);
-        return od::RefPtr<odRender::Image>(image);
+        OD_CHECK_ARG_NONNULL(dbTexture);
+
+        if(!dbTexture->getCachedRenderImage().expired())
+        {
+            return std::shared_ptr<odRender::Image>(dbTexture->getCachedRenderImage());
+        }
+
+        auto image = std::make_shared<Image>(dbTexture);
+
+        dbTexture->getCachedRenderImage() = image;
+
+        return image;
     }
 
-    od::RefPtr<odRender::Texture> Renderer::createTexture(odRender::Image *image)
+    std::shared_ptr<odRender::Texture> Renderer::createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot)
     {
-        Image *odOsgImage = od::confident_downcast<Image>(image);
-        auto texture = od::make_refd<Texture>(odOsgImage);
-        return od::RefPtr<odRender::Texture>(texture);
+        OD_CHECK_ARG_NONNULL(image);
+
+        auto odOsgImage = od::confident_downcast<Image>(image);
+
+        switch(slot)
+        {
+        case odRender::TextureSlot::NONE:
+            return std::make_shared<Texture>(odOsgImage);
+
+        case odRender::TextureSlot::OBJECT:
+            if(odOsgImage->getSharedObjectTexture().expired())
+            {
+                auto newTexture = std::make_shared<Texture>(odOsgImage);
+                newTexture->setEnableWrapping(true);
+                odOsgImage->getSharedObjectTexture() = newTexture;
+                return newTexture;
+            }
+            return std::shared_ptr<odRender::Texture>(odOsgImage->getSharedObjectTexture());
+
+        case odRender::TextureReuseSlot::LAYER:
+            if(odOsgImage->getSharedLayerTexture().expired())
+            {
+                auto newTexture = std::make_shared<Texture>(odOsgImage);
+                newTexture->setEnableWrapping(false);
+                odOsgImage->getSharedLayerTexture() = newTexture;
+                return newTexture;
+            }
+            return std::shared_ptr<odRender::Texture>(odOsgImage->getSharedLayerTexture());
+        }
+
+        OD_UNREACHABLE();
     }
 
-    od::RefPtr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
+    std::shared_ptr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
     {
-        auto gn = od::make_refd<GuiNode>(this, widget);
-        return od::RefPtr<odRender::GuiNode>(gn);
+        auto gn = std::make_shared<GuiNode>(this, widget);
+        return std::shared_ptr<odRender::GuiNode>(gn);
     }
 
     odRender::GuiNode *Renderer::getGuiRootNode()
@@ -479,34 +522,34 @@ namespace odOsg
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
 
-        mGuiRootNode = od::make_refd<GuiNode>(this, nullptr);
+        mGuiRootNode = std::make_shared<GuiNode>(this, nullptr);
         mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 
-    od::RefPtr<Model> Renderer::_buildSingleLodModelNode(odDb::Model *model)
+    std::shared_ptr<Model> Renderer::_buildSingleLodModelNode(odDb::Model &model)
     {
-        ModelBuilder mb(this, model->getName(), model->getAssetProvider());
+        ModelBuilder mb(this, model.getName(), model.getAssetProvider());
 
         mb.setCWPolygonFlag(true);
-        mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
-        mb.setVertexVector(model->getVertexVector().begin(), model->getVertexVector().end());
-        mb.setPolygonVector(model->getPolygonVector().begin(), model->getPolygonVector().end());
+        mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
+        mb.setVertexVector(model.getVertexVector().begin(), model.getVertexVector().end());
+        mb.setPolygonVector(model.getPolygonVector().begin(), model.getPolygonVector().end());
 
         return mb.build();
     }
 
-    od::RefPtr<Model> Renderer::_buildMultiLodModelNode(odDb::Model *model)
+    std::shared_ptr<Model> Renderer::_buildMultiLodModelNode(odDb::Model &model)
     {
-        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model->getLodInfoVector();
-        const std::vector<glm::vec3> &vertices = model->getVertexVector();
-        const std::vector<odDb::Model::Polygon> &polygons = model->getPolygonVector();
+        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model.getLodInfoVector();
+        const std::vector<glm::vec3> &vertices = model.getVertexVector();
+        const std::vector<odDb::Model::Polygon> &polygons = model.getPolygonVector();
 
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
-            ModelBuilder mb(this, model->getName() + " (LOD '" + it->lodName + "')", model->getAssetProvider());
+            ModelBuilder mb(this, model.getName() + " (LOD '" + it->lodName + "')", model.getAssetProvider());
 
             mb.setCWPolygonFlag(true);
-            mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
+            mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
 
             // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
             //  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this

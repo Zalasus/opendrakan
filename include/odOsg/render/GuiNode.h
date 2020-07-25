@@ -31,12 +31,12 @@ namespace odOsg
     {
     public:
 
-        GuiNode(Renderer *renderer, odGui::Widget *widget);
+        GuiNode(Renderer &renderer, std::shared_ptr<odGui::Widget> widget);
         virtual ~GuiNode();
 
         inline osg::Node *getOsgNode() { return mTransform; }
 
-        virtual void addChild(odRender::GuiNode *node) override;
+        virtual void addChild(std::shared_ptr<odRender::GuiNode> node) override;
         virtual void removeChild(odRender::GuiNode *node) override;
 
         virtual void setMatrix(const glm::mat4 &m) override;
@@ -53,7 +53,7 @@ namespace odOsg
         virtual odRender::GuiQuad *createGuiQuad() override;
         virtual void removeGuiQuad(odRender::GuiQuad *quad) override;
 
-        virtual void addChildHandle(odRender::Handle *handle) override;
+        virtual void addChildHandle(std::shared_ptr<odRender::Handle> handle) override;
         virtual void removeChildHandle(odRender::Handle *handle) override;
 
         void update(float relTime);
@@ -61,17 +61,17 @@ namespace odOsg
 
     private:
 
-        Renderer *mRenderer;
-        od::WeakObserverRefPtr<odGui::Widget> mWidget;
+        Renderer &mRenderer;
+        std::weak_ptr<odGui::Widget> mWidget;
 
         osg::ref_ptr<osg::MatrixTransform> mTransform;
         osg::ref_ptr<osg::Geode> mGeode;
         osg::ref_ptr<osg::Callback> mUpdateCallback;
         osg::ref_ptr<osg::Group> mObjectGroup;
 
-        std::vector<od::RefPtr<GuiNode>> mChildren;
-        std::vector<od::RefPtr<GuiQuad>> mGuiQuads;
-        std::vector<od::RefPtr<Handle>> mChildHandles;
+        std::vector<std::shared_ptr<GuiNode>> mChildren;
+        std::vector<std::shared_ptr<GuiQuad>> mGuiQuads;
+        std::vector<std::shared_ptr<Handle>> mChildHandles;
     };
 
 }

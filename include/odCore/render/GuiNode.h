@@ -11,18 +11,16 @@
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
 
-#include <odCore/RefCounted.h>
-
 namespace odRender
 {
     class GuiQuad;
     class Handle;
 
-    class GuiNode : public od::RefCounted
+    class GuiNode
     {
     public:
 
-        virtual void addChild(GuiNode *node) = 0;
+        virtual void addChild(std::shared_ptr<GuiNode> node) = 0;
         virtual void removeChild(GuiNode *node) = 0;
 
         virtual void setMatrix(const glm::mat4 &m) = 0;
@@ -39,7 +37,7 @@ namespace odRender
         virtual GuiQuad *createGuiQuad() = 0;
         virtual void removeGuiQuad(GuiQuad *quad) = 0;
 
-        virtual void addChildHandle(Handle *handle) = 0;
+        virtual void addChildHandle(std::shared_ptr<Handle> handle) = 0;
         virtual void removeChildHandle(Handle *handle) = 0;
 
     };

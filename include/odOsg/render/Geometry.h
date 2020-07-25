@@ -46,7 +46,7 @@ namespace odOsg
 
         virtual std::unique_ptr<odRender::ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() override;
 
-        virtual void setTexture(odRender::Texture *texture) override;
+        virtual void setTexture(std::shared_ptr<odRender::Texture> texture) override;
 
         virtual bool usesIndexedRendering() override;
         virtual odRender::PrimitiveType getPrimitiveType() override;
@@ -70,7 +70,7 @@ namespace odOsg
 
         osg::ref_ptr<osg::PrimitiveSet> mPrimitiveSet;
 
-        od::RefPtr<Texture> mTexture;
+        std::shared_ptr<Texture> mTexture;
     };
 
 }

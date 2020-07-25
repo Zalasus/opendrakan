@@ -9,11 +9,10 @@
 #define INCLUDE_ODCORE_RENDER_HANDLE_H_
 
 #include <mutex>
+#include <memory>
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include <odCore/RefCounted.h>
 
 namespace od
 {
@@ -33,7 +32,7 @@ namespace odRender
         SKY
     };
 
-    class Handle : public od::RefCounted
+    class Handle
     {
     public:
 
@@ -53,7 +52,7 @@ namespace odRender
         virtual void setScale(const glm::vec3 &scale) = 0;
 
         virtual Model *getModel() = 0;
-        virtual void setModel(Model *model) = 0;
+        virtual void setModel(std::shared_ptr<Model> model) = 0;
 
         virtual void setVisible(bool visible) = 0;
         virtual void setModelPartVisible(size_t partIndex, bool visible) = 0;
@@ -68,8 +67,8 @@ namespace odRender
 
         virtual Rig *getRig() = 0;
 
-        virtual void addLight(od::Light *light) = 0;
-        virtual void removeLight(od::Light *light) = 0;
+        virtual void addLight(std::shared_ptr<od::Light> light) = 0;
+        virtual void removeLight(std::shared_ptr<od::Light> light) = 0;
         virtual void clearLightList() = 0;
         virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) = 0;
     };

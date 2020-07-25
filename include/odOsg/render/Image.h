@@ -8,9 +8,8 @@
 #ifndef INCLUDE_ODOSG_IMAGE_H_
 #define INCLUDE_ODOSG_IMAGE_H_
 
+#include <memory>
 #include <osg/Image>
-
-#include <odCore/WeakRefPtr.h>
 
 #include <odCore/render/Image.h>
 #include <odCore/render/Texture.h>
@@ -28,22 +27,22 @@ namespace odOsg
     {
     public:
 
-        explicit Image(odDb::Texture *dbTexture);
+        explicit Image(std::shared_ptr<odDb::Texture> dbTexture);
         virtual ~Image();
 
         inline osg::Image *getOsgImage() { return mOsgImage; }
 
-        virtual glm::vec2 getDimensionsUV() override;
+        inline std::weak_ptr<odRender::Texture> getSharedObjectTexture() { return mSharedObjectTexture; }
+        inline std::weak_ptr<odRender::Texture> getSharedLayerTexture() { return mSharedLayerTexture; }
 
-        virtual od::RefPtr<odRender::Texture> createTexture() override;
-        virtual od::RefPtr<odRender::Texture> getTextureForUsage(odRender::TextureUsage usage) override;
+        virtual glm::vec2 getDimensionsUV() override;
 
 
     private:
 
-        od::RefPtr<odDb::Texture> mDbTexture;
-        od::WeakObserverRefPtr<odRender::Texture> mModelRenderTexture;
-        od::WeakObserverRefPtr<odRender::Texture> mLayerRenderTexture;
+        std::shared_ptr<odDb::Texture> mDbTexture;
+        std::weak_ptr<odRender::Texture> mSharedObjectTexture;
+        std::weak_ptr<odRender::Texture> mSharedLayerTexture;
 
         osg::ref_ptr<osg::Image> mOsgImage;
 

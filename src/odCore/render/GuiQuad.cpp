@@ -18,8 +18,9 @@ namespace odRender
 
     void GuiQuad::setTextureFromDb(odDb::AssetProvider &ap, const odDb::AssetRef &textureRef, odRender::Renderer &renderer)
     {
-        od::RefPtr<odDb::Texture> dbTexture = ap.getAssetByRef<odDb::Texture>(textureRef);
-        od::RefPtr<odRender::Texture> texture = dbTexture->getRenderImage(&renderer)->createTexture();
+        std::shared_ptr<odDb::Texture> dbTexture = ap.getAssetByRef<odDb::Texture>(textureRef);
+        std::shared_ptr<odRender::Image> image = renderer.createImage(dbTexture);
+        std::shared_ptr<odRender::Texture> texture = image->createTexture();
         this->setTexture(texture);
     }
 
