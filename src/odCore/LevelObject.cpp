@@ -32,6 +32,35 @@
 namespace od
 {
 
+
+    class NonRecordingObjectStateHandle final : public odState::ObjectStateHandle
+    {
+    public:
+
+        virtual void setPosition(const glm::vec3 &v) override
+        {
+
+        }
+
+        virtual void setRotation(const glm::quat &q) override
+        {
+
+        }
+
+        virtual void setScale(const glm::vec3 &scale) override
+        {
+
+        }
+
+        virtual void setVisible(bool v) override
+        {
+
+        }
+
+    };
+
+
+
     /**
      * @brief Checks whether a translation from a to b crosses a triangle on the unit layer grid.
      *
@@ -210,6 +239,11 @@ namespace od
         }
     }
 
+    odState::ObjectStateHandle &LevelObject::getNonRecordingStateHandle()
+    {
+        throw UnsupportedException("not yet implemented");
+    }
+
     void LevelObject::spawned()
     {
         Logger::debug() << "Object " << getObjectId() << " spawned";
@@ -354,6 +388,17 @@ namespace od
         if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onVisibilityChanged(v);
+        }
+    }
+
+    void LevelObject::setAssociatedLayer(od::Layer *newLayer)
+    {
+        od::Layer *oldLayer = mAssociatedLayer;
+        mAssociatedLayer = newLayer;
+
+        if(/*callChangedHook && */mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onLayerChanged(oldLayer, newLayer);
         }
     }
 
@@ -507,11 +552,9 @@ namespace od
         od::Layer *oldLayer = mAssociatedLayer;
         od::Layer *newLayer = (hitResult.handle == nullptr) ? nullptr : &hitResult.handle->asLayerHandle()->getLayer();
 
-        mAssociatedLayer = newLayer;
-
-        if(callChangedHook && mSpawnableClass != nullptr && oldLayer != newLayer)
+        if(oldLayer != newLayer)
         {
-            mSpawnableClass->onLayerChanged(oldLayer, newLayer);
+            setAssociatedLayer(newLayer);
         }
     }
 

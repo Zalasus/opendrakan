@@ -17,10 +17,12 @@
 #include <odCore/BoundingBox.h>
 #include <odCore/BoundingSphere.h>
 #include <odCore/IdTypes.h>
+#include <odCore/Message.h>
+
+#include <odCore/state/ObjectState.h>
 
 #include <odCore/db/Class.h>
 
-#include <odCore/Message.h>
 
 namespace odAnim
 {
@@ -65,7 +67,7 @@ namespace od
         Always
     };
 
-    class LevelObject
+    class LevelObject final : public odState::ObjectStateHandle
     {
     public:
 
@@ -98,6 +100,16 @@ namespace od
         void messageReceived(LevelObject &sender, od::Message message);
 
         /**
+         * @brief Returns a state handle whose actions are guaranteed to trigger no other changes.
+         *
+         * E.g. using the setPosition() method of this handle will only affect the position of this object and
+         * it's render/physics/etc. handles, but will not cause attached objects to move, tell the RFLclass about it etc.
+         *
+         * Basically only to be used by StateManager.
+         */
+        odState::ObjectStateHandle &getNonRecordingStateHandle();
+
+        /**
          * @brief Enables or disables updates for this object.
          *
          * Changing this in the update hook will not prevent the postUpdate hook to be called. The change
@@ -122,10 +134,11 @@ namespace od
          */
         void postUpdate();
 
-        void setPosition(const glm::vec3 &v);
-        void setRotation(const glm::quat &q);
-        void setScale(const glm::vec3 &scale);
-        void setVisible(bool v);
+        virtual void setPosition(const glm::vec3 &v) override;
+        virtual void setRotation(const glm::quat &q) override;
+        virtual void setScale(const glm::vec3 &scale) override;
+        virtual void setVisible(bool v) override;
+        virtual void setAssociatedLayer(od::Layer *l) override;
 
         void setObjectType(LevelObjectType type);
 
@@ -197,6 +210,8 @@ namespace od
 
 
     private:
+
+        friend class NonRecordingObjectStateHandle;
 
         void _onTransformChanged(LevelObject *transformChangeSource);
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
