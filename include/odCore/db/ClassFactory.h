@@ -38,7 +38,7 @@ namespace odDb
     protected:
 
         // implement AssetFactory<Class>
-        virtual od::RefPtr<Class> createNewAsset(od::RecordId id) override;
+        virtual std::shared_ptr<Class> createNewAsset(od::RecordId id) override;
 
 
     private:

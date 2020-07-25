@@ -39,7 +39,7 @@ namespace odDb
         return false;
     }
 
-    Database &DbManager::loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth)
+    std::shared_ptr<Database> DbManager::loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth)
     {
     	if(dependencyDepth > OD_MAX_DEPENDENCY_DEPTH)
     	{
@@ -67,16 +67,16 @@ namespace odDb
 
         db->loadDbFileAndDependencies(dependencyDepth);
 
-        return *db;
+        return db;
     }
 
-    Database &DbManager::getDb(const od::FilePath &dbFilePath)
+    std::shared_ptr<Database> DbManager::getDb(const od::FilePath &dbFilePath)
     {
     	for(std::shared_ptr<Database> db : mRiotDbs)
         {
         	if(db->getDbFilePath() == dbFilePath)
         	{
-        		return *db;
+        		return db;
         	}
         }
 
@@ -84,5 +84,3 @@ namespace odDb
     }
 
 }
-
-

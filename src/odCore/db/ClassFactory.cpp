@@ -49,9 +49,9 @@ namespace odDb
 	    return AssetRef::NULL_REF.assetId;
     }
 
-    od::RefPtr<Class> ClassFactory::createNewAsset(od::RecordId id)
+    std::shared_ptr<Class> ClassFactory::createNewAsset(od::RecordId id)
     {
-        return od::make_refd<Class>(getAssetProvider(), id, *this);
+        return std::make_shared<Class>(getAssetProvider(), id, *this);
     }
 
     void ClassFactory::_loadRflRecord()

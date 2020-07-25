@@ -42,7 +42,6 @@ namespace odDb
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
-	, mRenderModel(nullptr)
 	{
 	}
 
@@ -50,7 +49,7 @@ namespace odDb
 	{
 	}
 
-	ModelBounds &Model::getModelBounds(size_t lodIndex)
+	const ModelBounds &Model::getModelBounds(size_t lodIndex)
 	{
 	    if(lodIndex >= mModelBounds.size())
 	    {
@@ -100,33 +99,6 @@ namespace odDb
             _loadBoundingData(cursor.getReader());
         }
 	}
-
-	odRender::Model *Model::getOrCreateRenderModel(odRender::Renderer *renderer)
-	{
-	    if(renderer == nullptr)
-	    {
-	        throw od::InvalidArgumentException("Got null renderer");
-	    }
-
-	    if(mRenderModel == nullptr)
-	    {
-	        mRenderModel = renderer->createModelFromDb(this);
-	    }
-
-        return mRenderModel;
-	}
-
-	od::RefPtr<odPhysics::ModelShape> Model::getOrCreateModelShape(odPhysics::PhysicsSystem &ps)
-    {
-	    if(!mPhysicsShape.isNull())
-	    {
-	        return mPhysicsShape.aquire();
-	    }
-
-	    od::RefPtr<odPhysics::ModelShape> shape = ps.createModelShape(*this);
-        mPhysicsShape = shape.get();
-        return shape;
-    }
 
 	void Model::_loadNameAndShading(od::DataReader dr)
     {
@@ -502,4 +474,3 @@ namespace odDb
         }
     }
 }
-

@@ -58,15 +58,6 @@ namespace odDb
     {
     }
 
-    void Texture::exportToPng(const od::FilePath &path)
-    {
-        Logger::verbose() << "Exporting texture " << std::hex << getAssetId() << std::dec
-                << " with dimensions " << mWidth << "x" << mHeight
-                << " to file '" << path.str() << "'";
-
-		throw od::UnsupportedException("PNG export is unsupported as of now");
-    }
-
     void Texture::load(od::SrscFile::RecordInputCursor cursor)
     {
         {
@@ -119,23 +110,6 @@ namespace odDb
         {
             mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
         }
-    }
-
-    od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
-    {
-        if(renderer == nullptr)
-        {
-            throw od::Exception("Passed nullptr as renderer to getRenderImage");
-        }
-
-        if(mRenderImage.isNull())
-        {
-            od::RefPtr<odRender::Image> image = renderer->createImage(this);
-            mRenderImage = image.get();
-            return image;
-        }
-
-        return mRenderImage.aquire();
     }
 
     void Texture::_loadFromRecord(od::DataReader &dr)

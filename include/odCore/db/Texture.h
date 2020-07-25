@@ -12,7 +12,6 @@
 #include <vector>
 
 #include <odCore/SrscFile.h>
-#include <odCore/WeakRefPtr.h>
 #include <odCore/SrscRecordTypes.h>
 
 #include <odCore/db/Asset.h>
@@ -38,7 +37,7 @@ namespace odDb
 
         inline uint32_t getWidth() const { return mWidth; }
         inline uint32_t getHeight() const { return mHeight; }
-        inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.get(); }
+        inline const uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.get(); }
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         /**
@@ -52,19 +51,13 @@ namespace odDb
         inline bool isAnimation() const { return mAnimFrameCount > 1; }
         inline size_t getAnimationFrameCount() const { return mAnimFrameCount; }
         inline int32_t getAnimationFPS() const { return mAnimationFps; }
-        inline const std::vector<od::RefPtr<Texture>> getNextAnimationFrames() const { return mNextAnimationFrames; }
+        inline const std::vector<std::shared_ptr<Texture>> getNextAnimationFrames() const { return mNextAnimationFrames; }
 
-        void exportToPng(const od::FilePath &path);
+        inline std::weak_ptr<odRender::Image> &getCachedRenderImage() { return mRenderImage; }
+
 
         virtual void load(od::SrscFile::RecordInputCursor cursor) override;
         virtual void postLoad() override;
-
-        /**
-         * Provides an odRender::Image object that can be used to create Texture objects.
-         *
-         * An Image encapsulates pixel data storage, so pixel data may be shared between multiple textures.
-         */
-        od::RefPtr<odRender::Image> getRenderImage(odRender::Renderer *renderer);
 
 
     private:
@@ -93,15 +86,15 @@ namespace odDb
         bool mIsNextFrame;
 
         size_t mAnimFrameCount;
-        std::vector<od::RefPtr<Texture>> mNextAnimationFrames; // not cyclic! these are always != this
+        std::vector<std::shared_ptr<Texture>> mNextAnimationFrames; // not cyclic! these are always != this
 
         bool mHasAlphaChannel;
-        od::RefPtr<Class> mMaterialClass;
+        std::shared_ptr<Class> mMaterialClass;
         std::unique_ptr<odRfl::ClassBase> mMaterialInstance;
 
         std::unique_ptr<uint8_t[]> mRgba8888Data;
 
-        od::WeakObserverRefPtr<odRender::Image> mRenderImage;
+        std::weak_ptr<odRender::Image> mRenderImage;
     };
 
     template <>

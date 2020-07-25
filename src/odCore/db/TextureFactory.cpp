@@ -33,9 +33,9 @@ namespace odDb
 		return mPalette[index];
 	}
 
-	od::RefPtr<Texture> TextureFactory::createNewAsset(od::RecordId id)
+	std::shared_ptr<Texture> TextureFactory::createNewAsset(od::RecordId id)
 	{
-		return od::make_refd<Texture>(getAssetProvider(), id, *this);
+		return std::make_shared<Texture>(getAssetProvider(), id, *this);
 	}
 
 	void TextureFactory::_loadPalette()

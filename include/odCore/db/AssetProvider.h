@@ -9,6 +9,7 @@
 #define INCLUDE_ASSETPROVIDER_H_
 
 #include <utility>
+#include <memory>
 
 #include <odCore/Exception.h>
 
@@ -39,7 +40,7 @@ namespace odDb
 		 * Gets a dependency of this provider with the given index. Implementers should override this if they
 		 * can have dependencies. Default behaviour is to throw.
 		 */
-	    virtual AssetProvider &getDependency(uint16_t index);
+	    virtual std::shared_ptr<AssetProvider> getDependency(uint16_t index);
 
 	    /**
 	     * Convenience method. This will redirect the call to getAsset() if the dbIndex in the passed reference is 0,
@@ -50,16 +51,16 @@ namespace odDb
 	     * dependencies or directly providing assets.
 	     */
 	    template <typename _AssetType>
-	    od::RefPtr<_AssetType> getAssetByRef(const AssetRef &ref)
+	    std::shared_ptr<_AssetType> getAssetByRef(const AssetRef &ref)
 	    {
 	        if(ref.dbIndex == 0)
 	        {
 	            return getAsset<_AssetType>(ref.assetId);
 	        }
 
-	        AssetProvider &provider = getDependency(ref.dbIndex);
+	        std::shared_ptr<AssetProvider> provider = getDependency(ref.dbIndex);
 
-	        return std::move(provider.getAsset<_AssetType>(ref.assetId));
+	        return std::move(provider->getAsset<_AssetType>(ref.assetId));
 	    }
 
 	    /**
@@ -69,7 +70,7 @@ namespace odDb
 	     * @note This might throw UnsupportedException if the \c _AssetType can't be loaded by this provider.
 	     */
 	    template <typename _AssetType>
-	    od::RefPtr<_AssetType> getAsset(od::RecordId id);
+	    std::shared_ptr<_AssetType> getAsset(od::RecordId id);
 
 
 	protected:
@@ -78,37 +79,37 @@ namespace odDb
          * Loads a texture synchronously without indirection. Implementing classes should override
          * this if they can provide textures. Default behaviour is to throw UnsupportedException.
          */
-        virtual od::RefPtr<Texture> getTexture(od::RecordId recordId);
+        virtual std::shared_ptr<Texture> getTexture(od::RecordId recordId);
 
         /**
          * Loads a class synchronously without indirection. Implementing classes should override
          * this if they can provide classes. Default behaviour is to throw UnsupportedException.
          */
-        virtual od::RefPtr<Class> getClass(od::RecordId recordId);
+        virtual std::shared_ptr<Class> getClass(od::RecordId recordId);
 
         /**
          * Loads a model synchronously without indirection. Implementing classes should override
          * this if they can provide models. Default behaviour is to throw UnsupportedException.
          */
-        virtual od::RefPtr<Model> getModel(od::RecordId recordId);
+        virtual std::shared_ptr<Model> getModel(od::RecordId recordId);
 
         /**
          * Loads a sequence synchronously without indirection. Implementing classes should override
          * this if they can provide sequences. Default behaviour is to throw UnsupportedException.
          */
-        virtual od::RefPtr<Sequence> getSequence(od::RecordId recordId);
+        virtual std::shared_ptr<Sequence> getSequence(od::RecordId recordId);
 
         /**
          * Loads a animation synchronously without indirection. Implementing classes should override
          * this if they can provide animations. Default behaviour is to throw UnsupportedException.
          */
-        virtual od::RefPtr<Animation> getAnimation(od::RecordId recordId);
+        virtual std::shared_ptr<Animation> getAnimation(od::RecordId recordId);
 
         /**
          * Loads a sound synchronously without indirection. Implementing classes should override
          * this if they can provide sounds. Default behaviour is to throw UnsupportedException.
          */
-        virtual od::RefPtr<Sound> getSound(od::RecordId recordId);
+        virtual std::shared_ptr<Sound> getSound(od::RecordId recordId);
 
 	};
 

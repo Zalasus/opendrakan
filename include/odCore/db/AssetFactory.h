@@ -9,12 +9,12 @@
 #define INCLUDE_ASSETFACTORY_H_
 
 #include <map>
+#include <memory>
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
-#include <odCore/WeakRefPtr.h>
 
 #include <odCore/db/Asset.h>
 
@@ -40,27 +40,27 @@ namespace odDb
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
 		inline od::SrscFile &getSrscFile() { return mSrscFile; }
 
-		od::RefPtr<_AssetType> getAsset(od::RecordId assetId)
+		od::shared_ptr<_AssetType> getAsset(od::RecordId assetId)
         {
             // we access the cache using the []-operator, so we create an entry for the asset if if not existed yet.
             //  since most of the time the assets we are looking for are either cached or can be loaded from the container,
             //  doing it this way will save us one traversal of the map, as we don't have to use insert() to add a newly loaded
             //  asset to the cache. for the rare case that we can not find an asset in the file, just erase the unnecessary entry.
-            od::WeakObserverRefPtr<_AssetType> &asset = mAssetCache[assetId];
-            if(!asset.isNull())
+            std::weak_ptr<_AssetType> &asset = mAssetCache[assetId];
+            if(!asset.expired())
             {
                 Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " found in cache";
-                return asset.aquire();
+                return asset.lock();
             }
 
             // asset was not cached or got deleted. let implementation handle loading
-            Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile.getFilePath().fileStr();
-            od::RefPtr<_AssetType> loaded = this->loadAsset(assetId);
+            Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile->getFilePath().fileStr();
+            std::shared_ptr<_AssetType> loaded = this->loadAsset(assetId);
             if(loaded == nullptr)
             {
                 mAssetCache.erase(assetId);
 
-                Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
+                Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile->getFilePath().fileStr();
                 throw od::NotFoundException("Asset not found in cache or asset container");
             }
 
@@ -87,11 +87,11 @@ namespace odDb
          *
          * Loading is handled by the parent AssetFactory.
          */
-		virtual od::RefPtr<_AssetType> createNewAsset(od::RecordId id) = 0;
+		virtual std::shared_ptr<_AssetType> createNewAsset(od::RecordId id) = 0;
 
-		od::RefPtr<_AssetType> loadAsset(od::RecordId id)
+		std::shared_ptr<_AssetType> loadAsset(od::RecordId id)
         {
-            auto cursor = mSrscFile.getFirstRecordOfTypeId(AssetTraits<_AssetType>::baseType(), id);
+            auto cursor = mSrscFile->getFirstRecordOfTypeId(AssetTraits<_AssetType>::baseType(), id);
             if(!cursor.isValid())
             {
                 return nullptr;
@@ -113,7 +113,7 @@ namespace odDb
 		AssetProvider &mAssetProvider;
 		od::SrscFile &mSrscFile;
 
-		std::map<od::RecordId, od::WeakObserverRefPtr<_AssetType>> mAssetCache;
+		std::map<od::RecordId, std::weak_ptr<_AssetType>> mAssetCache;
 	};
 
 
@@ -138,9 +138,9 @@ namespace odDb
 
 	protected:
 
-	    virtual od::RefPtr<_AssetType> createNewAsset(od::RecordId id) override
+	    virtual std::shared_ptr<_AssetType> createNewAsset(od::RecordId id) override
 	    {
-	        return od::make_refd<_AssetType>(AssetFactory<_AssetType>::getAssetProvider(), id);
+	        return std::make_shared<_AssetType>(AssetFactory<_AssetType>::getAssetProvider(), id);
 	    }
 
 	};

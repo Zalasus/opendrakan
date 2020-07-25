@@ -10,6 +10,7 @@
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
+
 #include <odCore/db/Asset.h>
 #include <odCore/db/AssetFactory.h>
 #include <odCore/db/Texture.h>
@@ -40,7 +41,7 @@ namespace odDb
 	protected:
 
 		// implement AssetFactory<Texture>
-		virtual od::RefPtr<Texture> createNewAsset(od::RecordId id) override;
+		virtual std::shared_ptr<Texture> createNewAsset(od::RecordId id) override;
 
 
 	private:

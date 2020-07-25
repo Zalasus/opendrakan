@@ -12,8 +12,6 @@
 #include <string>
 
 #include <odCore/SrscFile.h>
-#include <odCore/RefCounted.h>
-
 #include <odCore/RiffReader.h>
 #include <odCore/Guid.h>
 
@@ -35,7 +33,7 @@ namespace odDb
         od::RecordId getDlsRecordByGuid(const od::Guid &guid);
         od::SrscFile::RecordInputCursor getCursorForDls(const od::Guid &guid);
 
-        od::RefPtr<Segment> loadSegment(MusicId id);
+        std::shared_ptr<Segment> loadSegment(MusicId id);
 
 
     private:

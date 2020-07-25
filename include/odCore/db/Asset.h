@@ -9,14 +9,13 @@
 #define INCLUDE_ASSET_H_
 
 #include <odCore/SrscFile.h>
-#include <odCore/RefCounted.h>
 
 namespace odDb
 {
 
 	class AssetProvider;
 
-	class Asset : public od::RefCounted
+	class Asset
 	{
 	public:
 

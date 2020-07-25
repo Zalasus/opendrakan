@@ -17,6 +17,7 @@
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
+
 #include <odCore/db/Asset.h>
 #include <odCore/db/AssetProvider.h>
 #include <odCore/db/TextureFactory.h>
@@ -32,14 +33,11 @@ namespace odDb
 	class DbManager;
 	class Database;
 
-
-    typedef std::reference_wrapper<Database> DbRefWrapper;
-
 	class Database : public AssetProvider
 	{
 	public:
 
-		Database(od::FilePath dbFilePath, DbManager &dbManager);
+		Database(const od::FilePath &dbFilePath, DbManager &dbManager);
 		~Database();
 
 		inline od::FilePath getDbFilePath() const { return mDbFilePath; }
@@ -55,13 +53,13 @@ namespace odDb
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
 	    // override AssetProvider
-		virtual AssetProvider &getDependency(uint16_t index) override;
-        virtual od::RefPtr<Texture>   getTexture(od::RecordId recordId) override;
-        virtual od::RefPtr<Class>     getClass(od::RecordId recordId) override;
-        virtual od::RefPtr<Model>     getModel(od::RecordId recordId) override;
-        virtual od::RefPtr<Sequence>  getSequence(od::RecordId recordId) override;
-        virtual od::RefPtr<Animation> getAnimation(od::RecordId recordId) override;
-        virtual od::RefPtr<Sound>     getSound(od::RecordId recordId) override;
+		virtual std::shared_ptr<AssetProvider> getDependency(uint16_t index) override;
+        virtual std::shared_ptr<Texture>   getTexture(od::RecordId recordId) override;
+        virtual std::shared_ptr<Class>     getClass(od::RecordId recordId) override;
+        virtual std::shared_ptr<Model>     getModel(od::RecordId recordId) override;
+        virtual std::shared_ptr<Sequence>  getSequence(od::RecordId recordId) override;
+        virtual std::shared_ptr<Animation> getAnimation(od::RecordId recordId) override;
+        virtual std::shared_ptr<Sound>     getSound(od::RecordId recordId) override;
 
 
 	private:
@@ -74,7 +72,7 @@ namespace odDb
 		DbManager &mDbManager;
 
 		uint32_t mVersion;
-		std::map<uint16_t, DbRefWrapper> mDependencyMap;
+		std::map<uint16_t, std::shared_ptr<Database>> mDependencyMap; // TODO: we have to check for dependency loops to prevent leaks
 
 		std::unique_ptr<TextureFactory> mTextureFactory;
 		std::unique_ptr<od::SrscFile> mTextureContainer;

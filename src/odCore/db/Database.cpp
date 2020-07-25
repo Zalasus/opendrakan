@@ -21,7 +21,7 @@
 namespace odDb
 {
 
-	Database::Database(od::FilePath dbFilePath, DbManager &dbManager)
+	Database::Database(const od::FilePath &dbFilePath, DbManager &dbManager)
 	: mDbFilePath(dbFilePath)
 	, mDbManager(dbManager)
 	, mVersion(0)
@@ -112,7 +112,8 @@ namespace odDb
 				    continue;
 				}
 
-				Database &db = mDbManager.loadDb(depPath, dependencyDepth + 1);
+                // TODO: detect and prevent dependency cycles!!! since Databases now own their dependencies, cycles create leaks
+				std::shared_ptr<Database> db = mDbManager.loadDb(depPath, dependencyDepth + 1);
 
 				mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(depIndex, db));
 
@@ -138,7 +139,7 @@ namespace odDb
         _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
 	}
 
-	AssetProvider &Database::getDependency(uint16_t index)
+	std::shared_ptr<AssetProvider> Database::getDependency(uint16_t index)
 	{
 	    auto it = mDependencyMap.find(index);
 	    if(it == mDependencyMap.end())
@@ -150,7 +151,7 @@ namespace odDb
 	    return it->second;
 	}
 
-	od::RefPtr<Texture> Database::getTexture(od::RecordId recordId)
+	std::shared_ptr<Texture> Database::getTexture(od::RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
 		{
@@ -160,7 +161,7 @@ namespace odDb
 		return mTextureFactory->getAsset(recordId);
 	}
 
-	od::RefPtr<Class> Database::getClass(od::RecordId recordId)
+	std::shared_ptr<Class> Database::getClass(od::RecordId recordId)
 	{
 		if(mClassFactory == nullptr)
 		{
@@ -170,7 +171,7 @@ namespace odDb
 		return mClassFactory->getAsset(recordId);
 	}
 
-	od::RefPtr<Model> Database::getModel(od::RecordId recordId)
+	std::shared_ptr<Model> Database::getModel(od::RecordId recordId)
 	{
 		if(mModelFactory == nullptr)
 		{
@@ -180,7 +181,7 @@ namespace odDb
         return mModelFactory->getAsset(recordId);
 	}
 
-	od::RefPtr<Sequence> Database::getSequence(od::RecordId recordId)
+	std::shared_ptr<Sequence> Database::getSequence(od::RecordId recordId)
 	{
         if(mSequenceFactory == nullptr)
         {
@@ -190,7 +191,7 @@ namespace odDb
         return mSequenceFactory->getAsset(recordId);
 	}
 
-	od::RefPtr<Animation> Database::getAnimation(od::RecordId recordId)
+	std::shared_ptr<Animation> Database::getAnimation(od::RecordId recordId)
 	{
 		if(mAnimFactory == nullptr)
 		{
@@ -200,7 +201,7 @@ namespace odDb
 		return mAnimFactory->getAsset(recordId);
 	}
 
-	od::RefPtr<Sound> Database::getSound(od::RecordId recordId)
+	std::shared_ptr<Sound> Database::getSound(od::RecordId recordId)
     {
         if(mSoundFactory == nullptr)
         {

@@ -41,7 +41,7 @@ namespace odDb
         return mRrc.getFirstRecordOfTypeId(od::SrscRecordType::MUSIC, id);
     }
 
-    od::RefPtr<Segment> MusicContainer::loadSegment(MusicId id)
+    std::shared_ptr<Segment> MusicContainer::loadSegment(MusicId id)
     {
         if(id > std::numeric_limits<od::RecordId>::max())
         {
@@ -57,7 +57,7 @@ namespace odDb
         Logger::verbose() << "Loading music segment " << std::hex << id << std::dec;
 
         od::RiffReader rr(cursor.getReader());
-        auto segment = od::make_refd<Segment>(rr);
+        auto segment = std::make_shared<Segment>(rr);
         return segment;
     }
 

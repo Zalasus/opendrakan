@@ -13,8 +13,6 @@
 
 #include <odCore/db/Asset.h>
 
-#include <odCore/WeakRefPtr.h>
-
 #define OD_SOUND_FLAG_FLUSH_AFTER_PLAYING 	0x04
 #define OD_SOUND_FLAG_PLAY_LOOPING			0x08
 
@@ -40,11 +38,11 @@ namespace odDb
 		inline const std::vector<uint8_t> &getDataBuffer() const { return mDataBuffer; }
 		inline const std::string &getName() const { return mSoundName; }
 
+        inline std::weak_ptr<odAudio::Buffer> &getCachedSoundBuffer() { return mCachedSoundBuffer; }
+
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		float getLinearGain() const;
-
-		od::RefPtr<odAudio::Buffer> getOrCreateAudioBuffer(odAudio::SoundSystem *soundSystem);
 
 
 	private:
@@ -62,7 +60,7 @@ namespace odDb
 
         std::vector<uint8_t> mDataBuffer;
 
-        od::WeakObserverRefPtr<odAudio::Buffer> mSoundBuffer;
+        std::weak_ptr<odAudio::Buffer> mCachedSoundBuffer;
 	};
 
 	template <>

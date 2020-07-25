@@ -38,9 +38,9 @@ namespace odDb
          * @param[in]   dbFile              Path to the *.db file defining the database to be loaded. Extension is ignored.
          * @param[in]   dependencyDepth     Depth of dependency loading. Used to prevent undectected circular dependencies. Only used by RiotDb objects.
          */
-		Database &loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth = 0);
+		std::shared_ptr<Database> loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth = 0);
 
-		Database &getDb(const od::FilePath &dbFilePath);
+		std::shared_ptr<Database> getDb(const od::FilePath &dbFilePath);
 
 
 	private:

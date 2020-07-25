@@ -12,8 +12,6 @@
 #include <memory>
 #include <set>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/RiffReader.h>
 #include <odCore/Guid.h>
 
@@ -60,7 +58,7 @@ namespace odDb
      *
      * All tracks except MIDI events are sorted by (starting) time after being loaded.
      */
-    class Segment : public od::RefCounted
+    class Segment
     {
     public:
 

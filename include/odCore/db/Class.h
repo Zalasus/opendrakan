@@ -39,7 +39,7 @@ namespace odDb
 		Class(AssetProvider &ap, od::RecordId classId, ClassFactory &classFactory);
 
 		inline bool hasModel() const { return mModel != nullptr; }
-        inline od::RefPtr<Model> getModel() { return mModel; }
+        inline std::shared_ptr<Model> getModel() { return mModel; }
         inline const std::string &getName() const { return mClassName; }
         inline odRfl::ClassId getRflClassId() const { return mRflClassId; }
 
@@ -73,11 +73,11 @@ namespace odDb
 
 	private:
 
-        ClassFactory &mClassFactory;
+        ClassFactory &mClassFactory; // TODO: don't store references?
 
         std::string mClassName;
         AssetRef mModelRef;
-        od::RefPtr<Model> mModel;
+        std::shared_ptr<Model> mModel;
         uint16_t mRflClassId;
         odRfl::ClassBuilderProbe mClassBuilder;
         uint16_t mIconNumber;
