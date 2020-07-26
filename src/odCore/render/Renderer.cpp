@@ -11,6 +11,7 @@
 
 #include <odCore/db/Class.h>
 #include <odCore/db/Model.h>
+#include <odCore/db/Texture.h>
 
 #include <odCore/render/Handle.h>
 

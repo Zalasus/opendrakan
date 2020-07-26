@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 #define INCLUDE_ODCORE_RENDER_GUIQUAD_H_
 
+#include <memory>
 #include <glm/vec2.hpp>
 #include <glm/vec4.hpp>
 
