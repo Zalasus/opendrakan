@@ -148,14 +148,14 @@ namespace od
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
-        virtual void removeAffectingLight(od::Light *light) override;
-        virtual void addAffectingLight(od::Light *light) override;
+        virtual void removeAffectingLight(std::shared_ptr<od::Light> light) override;
+        virtual void addAffectingLight(std::shared_ptr<od::Light> light) override;
         virtual void clearLightList() override;
 
 
     private:
 
-        void _bakeStaticLight(od::Light *light);
+        void _bakeStaticLight(od::Light &light);
         void _bakeLocalLayerLight();
 
         void _calculateNormalsInternal();

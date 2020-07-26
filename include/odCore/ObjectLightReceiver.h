@@ -43,8 +43,8 @@ namespace od
         ObjectLightReceiver(odPhysics::PhysicsSystem &ps, std::shared_ptr<odPhysics::ObjectHandle> physicsHandle, std::shared_ptr<odRender::Handle> renderHandle);
         virtual ~ObjectLightReceiver();
 
-        virtual void removeAffectingLight(od::Light *light) override;
-        virtual void addAffectingLight(od::Light *light) override;
+        virtual void removeAffectingLight(std::shared_ptr<od::Light> light) override;
+        virtual void addAffectingLight(std::shared_ptr<od::Light> light) override;
         virtual void clearLightList() override;
 
         void updateAffectingLights();
@@ -56,7 +56,7 @@ namespace od
         std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::shared_ptr<odRender::Handle> mRenderHandle;
 
-        std::vector<std::shared_ptr<Light>> mAffectingLights;
+        std::vector<std::weak_ptr<Light>> mAffectingLights;
 
     };
 

@@ -102,7 +102,7 @@ namespace od
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::map<uint16_t, std::reference_wrapper<odDb::Database>> mDependencyMap;
+        std::map<uint16_t, std::shared_ptr<odDb::Database>> mDependencyMap;
         std::vector<std::unique_ptr<Layer>> mLayers;
         std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
 

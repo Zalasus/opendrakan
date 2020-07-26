@@ -35,7 +35,7 @@ namespace od
         mPhysicsHandle->setLightCallback(nullptr);
     }
 
-    void ObjectLightReceiver::removeAffectingLight(od::Light *light)
+    void ObjectLightReceiver::removeAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(mRenderHandle != nullptr)
         {
@@ -49,7 +49,7 @@ namespace od
         }
     }
 
-    void ObjectLightReceiver::addAffectingLight(od::Light *light)
+    void ObjectLightReceiver::addAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(mRenderHandle != nullptr)
         {

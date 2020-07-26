@@ -398,7 +398,7 @@ namespace od
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
-    void Layer::removeAffectingLight(od::Light *light)
+    void Layer::removeAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(light == nullptr)
         {
@@ -413,7 +413,7 @@ namespace od
         }
     }
 
-    void Layer::addAffectingLight(od::Light *light)
+    void Layer::addAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(light == nullptr)
         {
@@ -423,7 +423,7 @@ namespace od
         // static lights can be baked into the vertex colors. all others need to be passed to the renderer
         if(!light->isDynamic())
         {
-            _bakeStaticLight(light);
+            _bakeStaticLight(*light);
 
         }else
         {
@@ -439,9 +439,9 @@ namespace od
         mRenderHandle->clearLightList();
     }
 
-    void Layer::_bakeStaticLight(od::Light *light)
+    void Layer::_bakeStaticLight(od::Light &light)
     {
-        if(light == nullptr || mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
+        if(mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
         {
             return;
         }
@@ -453,10 +453,10 @@ namespace od
 
         odRender::Geometry *geometry = mRenderModel->getGeometry(0);
 
-        glm::vec3 relLightPosition = light->getPosition() - getOrigin(); // relative to layer origin
-        float lightRadius = light->getRadius();
-        float lightIntensity = light->getIntensityScaling();
-        glm::vec3 lightColor = light->getColor();
+        glm::vec3 relLightPosition = light.getPosition() - getOrigin(); // relative to layer origin
+        float lightRadius = light.getRadius();
+        float lightIntensity = light.getIntensityScaling();
+        glm::vec3 lightColor = light.getColor();
 
         // find maximum rectangular area that can possibly be intersected by the light so we can early-reject vertices
         //  without having to calculate the distance to the light everytime
@@ -676,4 +676,3 @@ namespace od
         }
     }
 }
-

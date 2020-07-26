@@ -217,7 +217,7 @@ namespace od
             throw NotFoundException("Database index not found in level dependencies");
         }
 
-        return it->second;
+        return *(it->second);
     }
 
     void Level::activateLayerPVS(Layer *layer)
@@ -279,7 +279,7 @@ namespace od
     void Level::calculateInitialLayerAssociations()
     {
         // create temporary physics handles for all layers (without lighting, etc.)
-        std::vector<od::RefPtr<odPhysics::LayerHandle>> layerHandles;
+        std::vector<std::shared_ptr<odPhysics::LayerHandle>> layerHandles;
         layerHandles.reserve(mLayers.size());
         for(auto &layer : mLayers)
         {
@@ -337,9 +337,9 @@ namespace od
             FilePath dbPath(dbPathStr, file.getFilePath().dir());
 
             Logger::debug() << "Gonna load level dependency index " << dbIndex << ": " << dbPath;
-            odDb::Database &db = dbManager.loadDb(dbPath.adjustCase());
+            auto db = dbManager.loadDb(dbPath.adjustCase());
 
-            mDependencyMap.insert(std::make_pair(dbIndex, std::ref(db)));
+            mDependencyMap.insert(std::make_pair(dbIndex, db));
         }
     }
 
