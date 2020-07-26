@@ -70,7 +70,7 @@ namespace odOsg
         }
     }
 
-    void StreamingSource::setSound(odDb::Sound *s)
+    void StreamingSource::setSound(std::shared_ptr<odDb::Sound> s)
     {
         throw od::UnsupportedException("Streaming sources can't play database sounds");
     }
@@ -126,4 +126,3 @@ namespace odOsg
         SoundSystem::doErrorCheck("Failed to push data from fill buffer to AL buffer");
     }
 }
-

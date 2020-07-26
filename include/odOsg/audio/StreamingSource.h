@@ -32,7 +32,7 @@ namespace odOsg
 
         void setBufferFillCallback(const BufferFillCallback &callback);
 
-        virtual void setSound(odDb::Sound *s) override;
+        virtual void setSound(std::shared_ptr<odDb::Sound> s) override;
         virtual void update(float relTime) override;
 
 

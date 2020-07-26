@@ -27,7 +27,7 @@ namespace odOsg
     public:
 
         Buffer(SoundSystem &ss);
-        Buffer(SoundSystem &ss, odDb::Sound *sound);
+        Buffer(SoundSystem &ss, std::shared_ptr<odDb::Sound> sound);
         virtual ~Buffer();
 
         inline ALuint getBufferId() const { return mBufferId; }
@@ -38,7 +38,7 @@ namespace odOsg
         SoundSystem &mSoundSystem;
         ALuint mBufferId;
 
-        od::RefPtr<odDb::Sound> mSound;
+        std::shared_ptr<odDb::Sound> mSound;
 
     };
 

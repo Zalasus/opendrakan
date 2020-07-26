@@ -34,7 +34,7 @@ namespace odAudio
     {
     }
 
-    void SegmentPlayer::setSegment(odDb::Segment *s)
+    void SegmentPlayer::setSegment(std::shared_ptr<odDb::Segment> s)
     {
         mSynth.allNotesOff();
 
@@ -245,5 +245,3 @@ namespace odAudio
         }
     }
 }
-
-

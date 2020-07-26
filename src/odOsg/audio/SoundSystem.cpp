@@ -42,6 +42,11 @@ namespace odOsg
 
     SoundSystem::~SoundSystem()
     {
+        if(mMusicSource != nullptr)
+        {
+            mMusicSource->setBufferFillCallback(nullptr);
+        }
+
         mTerminateFlag = true;
         if(mWorkerThread.joinable()) mWorkerThread.join();
     }
@@ -67,21 +72,23 @@ namespace odOsg
         doErrorCheck("Could not set listener velocity");
     }
 
-    od::RefPtr<odAudio::Source> SoundSystem::createSource()
+    std::shared_ptr<odAudio::Source> SoundSystem::createSource()
     {
-        auto source = od::make_refd<Source>(*this);
+        auto source = std::make_shared<Source>(*this);
 
         std::lock_guard<std::mutex> lock(mWorkerMutex);
-        mSources.emplace_back(source.get());
+        mSources.emplace_back(source);
 
-        return source.get();
+        return source;
     }
 
-    od::RefPtr<odAudio::Buffer> SoundSystem::createBuffer(odDb::Sound *sound)
+    std::shared_ptr<odAudio::Buffer> SoundSystem::createBuffer(std::shared_ptr<odDb::Sound> sound)
     {
-        auto buffer = od::make_refd<Buffer>(*this, sound);
+        auto buffer = std::make_shared<Buffer>(*this, sound);
 
-        return buffer.get();
+        sound->getCachedSoundBuffer() = buffer;
+
+        return buffer;
     }
 
     void SoundSystem::setEaxPreset(odAudio::EaxPreset preset)
@@ -103,7 +110,7 @@ namespace odOsg
 #endif
         mSegmentPlayer = std::make_unique<odAudio::SegmentPlayer>(*mSynth);
 
-        auto musicSource = od::make_refd<StreamingSource>(*this, 128, 64, true);
+        auto musicSource = std::make_shared<StreamingSource>(*this, 128, 64, true);
         auto fillCallback = [this](int16_t *buffer, size_t size)
         {
             assert(size % 2 == 0);
@@ -233,5 +240,3 @@ namespace odOsg
     }
 
 }
-
-

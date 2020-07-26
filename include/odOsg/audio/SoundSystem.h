@@ -15,8 +15,6 @@
 #include <vector>
 #include <memory>
 
-#include <odCore/WeakRefPtr.h>
-
 #include <odCore/audio/SoundSystem.h>
 
 #include <odOsg/audio/OpenAlContext.h>
@@ -49,8 +47,8 @@ namespace odOsg
         virtual void setListenerOrientation(const glm::vec3 &at, const glm::vec3 &up) override;
         virtual void setListenerVelocity(const glm::vec3 &v) override;
 
-        virtual od::RefPtr<odAudio::Source> createSource() override;
-        virtual od::RefPtr<odAudio::Buffer> createBuffer(odDb::Sound *sound) override;
+        virtual std::shared_ptr<odAudio::Source> createSource() override;
+        virtual std::shared_ptr<odAudio::Buffer> createBuffer(std::shared_ptr<odDb::Sound> sound) override;
 
         virtual void setEaxPreset(odAudio::EaxPreset preset) override;
 
@@ -73,11 +71,11 @@ namespace odOsg
         std::mutex mWorkerMutex;
 
         //std::vector<od::WeakObserverRefPtr<Source>> mWeakSources; // FIXME: broken due to weak refptr not being threadsafe
-        std::vector<od::RefPtr<Source>> mSources;
+        std::vector<std::shared_ptr<Source>> mSources;
 
         std::unique_ptr<odDb::MusicContainer> mMusicContainer;
 
-        od::RefPtr<odAudio::Source> mMusicSource;
+        std::shared_ptr<odAudio::Source> mMusicSource;
         std::unique_ptr<odAudio::MidiSynth> mSynth;
         std::unique_ptr<odAudio::SegmentPlayer> mSegmentPlayer;
     };

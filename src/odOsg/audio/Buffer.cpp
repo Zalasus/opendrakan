@@ -23,7 +23,7 @@ namespace odOsg
         SoundSystem::doErrorCheck("Could not generate buffer");
     }
 
-    Buffer::Buffer(SoundSystem &soundSystem, odDb::Sound *sound)
+    Buffer::Buffer(SoundSystem &soundSystem, std::shared_ptr<odDb::Sound> sound)
     : Buffer(soundSystem)
     {
         mSound = sound;

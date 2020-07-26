@@ -137,7 +137,7 @@ namespace odOsg
         _updateSourceGain_locked();
     }
 
-    void Source::setSound(odDb::Sound *s)
+    void Source::setSound(std::shared_ptr<odDb::Sound> s)
     {
         std::lock_guard<std::mutex> lock(getMutex());
 

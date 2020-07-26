@@ -12,8 +12,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <deque>
-
-#include <odCore/RefCounted.h>
+#include <memory>
 
 #include <odCore/db/Segment.h>
 
@@ -35,7 +34,7 @@ namespace odAudio
         SegmentPlayer(MidiSynth &synth);
         ~SegmentPlayer();
 
-        void setSegment(odDb::Segment *s);
+        void setSegment(std::shared_ptr<odDb::Segment> s);
 
         void play();
         void pause();
@@ -59,7 +58,7 @@ namespace odAudio
 
         MidiSynth &mSynth;
 
-        od::RefPtr<odDb::Segment> mSegment;
+        std::shared_ptr<odDb::Segment> mSegment;
         std::vector<NoteEvent> mNoteEvents;
 
         double mTempoBps; // beats per second

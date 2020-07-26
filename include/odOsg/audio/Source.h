@@ -47,7 +47,7 @@ namespace odOsg
         virtual void setLooping(bool looping) override;
         virtual void setGain(float gain) override;
 
-        virtual void setSound(odDb::Sound *s) override;
+        virtual void setSound(std::shared_ptr<odDb::Sound> s) override;
         virtual void play(float fadeInTime) override;
         virtual void stop(float fadeOutTime) override;
 
@@ -69,8 +69,8 @@ namespace odOsg
 
         void _updateSourceGain_locked(); // call only with worker mutex held
 
-        od::RefPtr<odDb::Sound> mCurrentSound;
-        od::RefPtr<Buffer> mCurrentBuffer;
+        std::shared_ptr<odDb::Sound> mCurrentSound;
+        std::shared_ptr<Buffer> mCurrentBuffer;
 
         float mSourceGain;
         float mSoundGain;

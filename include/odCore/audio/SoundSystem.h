@@ -8,9 +8,9 @@
 #ifndef SRC_ODCORE_AUDIO_SOUNDSYSTEM_H_
 #define SRC_ODCORE_AUDIO_SOUNDSYSTEM_H_
 
+#include <memory>
 #include <glm/vec3.hpp>
 
-#include <odCore/RefCounted.h>
 #include <odCore/FilePath.h>
 
 #include <odCore/audio/EaxPresets.h>
@@ -41,8 +41,8 @@ namespace odAudio
         virtual void setListenerOrientation(const glm::vec3 &at, const glm::vec3 &up) = 0;
         virtual void setListenerVelocity(const glm::vec3 &v) = 0;
 
-        virtual od::RefPtr<Source> createSource() = 0;
-        virtual od::RefPtr<Buffer> createBuffer(odDb::Sound *sound) = 0;
+        virtual std::shared_ptr<Source> createSource() = 0;
+        virtual std::shared_ptr<Buffer> createBuffer(std::shared_ptr<odDb::Sound> sound) = 0;
 
         virtual void setEaxPreset(EaxPreset preset) = 0;
 
