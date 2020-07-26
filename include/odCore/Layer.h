@@ -187,9 +187,9 @@ namespace od
         float mMaxHeight;
         AxisAlignedBoundingBox mBoundingBox;
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        od::RefPtr<odRender::Model> mRenderModel;
-        od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odRender::Model> mRenderModel;
+        std::shared_ptr<odPhysics::LayerHandle> mPhysicsHandle;
 
         std::vector<glm::vec3> mLocalNormals; // temporary array, unused right now
 

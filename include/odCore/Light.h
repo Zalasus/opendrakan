@@ -12,7 +12,6 @@
 
 #include <glm/vec3.hpp>
 
-#include <odCore/RefCounted.h>
 #include <odCore/BoundingSphere.h>
 #include <odCore/LightCallback.h>
 
@@ -28,7 +27,7 @@ namespace od
     class LevelObject;
     class Layer;
 
-    class Light : public od::RefCounted
+    class Light
     {
     public:
 
@@ -61,7 +60,7 @@ namespace od
     private:
 
         odPhysics::PhysicsSystem &mPhysicsSystem;
-        od::RefPtr<odPhysics::LightHandle> mLightHandle;
+        std::shared_ptr<odPhysics::LightHandle> mLightHandle;
 
         float mRadius;
         glm::vec3 mPosition;

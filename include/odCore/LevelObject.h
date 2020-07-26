@@ -75,7 +75,7 @@ namespace od
         virtual ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
-        inline odDb::Class *getClass() { return mClass; }
+        inline std::shared_ptr<odDb::Class> getClass() { return mClass; }
         inline odRfl::ClassBase *getClassInstance() { return mRflClassInstance.get(); }
         inline Level &getLevel() { return mLevel; }
         inline glm::vec3 getPosition() const { return mPosition; }
@@ -223,7 +223,7 @@ namespace od
         // loaded from the object record:
         LevelObjectId mId;
         odDb::AssetRef mClassRef;
-        od::RefPtr<odDb::Class> mClass;
+        std::shared_ptr<odDb::Class> mClass;
         uint32_t mLightingLayerId;
         Layer *mLightingLayer;
         uint32_t mFlags;

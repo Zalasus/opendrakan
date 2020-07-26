@@ -20,15 +20,12 @@
 
 namespace od
 {
-    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *physicsHandle, odRender::Handle *renderHandle)
+    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, std::shared_ptr<odPhysics::ObjectHandle> physicsHandle, std::shared_ptr<odRender::Handle> renderHandle)
     : mPhysicsSystem(ps)
     , mPhysicsHandle(physicsHandle)
     , mRenderHandle(renderHandle)
     {
-        if(mPhysicsHandle == nullptr)
-        {
-            throw od::InvalidArgumentException("Created ObjectLightReceiver with physics handle = nullptr");
-        }
+        OD_CHECK_ARG_NONNULL(phyiscsHandle);
 
         mPhysicsHandle->setLightCallback(this);
     }
@@ -100,4 +97,3 @@ namespace od
     }
 
 }
-
