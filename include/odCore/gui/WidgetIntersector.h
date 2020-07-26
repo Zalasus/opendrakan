@@ -18,7 +18,7 @@ namespace odGui
     struct HitWidgetInfo
     {
         glm::vec2 hitPointInWidget;
-        std::shared_ptr<Widget> widget;
+        Widget *widget; // FIXME: bare pointer, but the way widgets store themselves here makes a shared_ptr difficult
     };
 
 }

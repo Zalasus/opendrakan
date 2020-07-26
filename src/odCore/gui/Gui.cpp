@@ -88,7 +88,7 @@ namespace odGui
     {
         if(mCursorWidget != nullptr)
         {
-            this->removeWidget(mCursorWidget.get());
+            this->removeWidget(mCursorWidget);
         }
 
         mCursorWidget = cursor;
@@ -143,7 +143,7 @@ namespace odGui
 
         // find unique widgets in joined list. NOTE: since the apparently is no nice way to do this via STL,
         //  we do it manually using a sort and by iterating over each widget.
-        auto pred = [](HitWidgetInfo &a, HitWidgetInfo &b){ return a.widget.get() < b.widget.get(); };
+        auto pred = [](HitWidgetInfo &a, HitWidgetInfo &b){ return a.widget < b.widget; };
         std::sort(mJoinedHitWidgets.begin(), mJoinedHitWidgets.end(), pred);
         for(auto it = mJoinedHitWidgets.begin(); it != mJoinedHitWidgets.end(); ++it)
         {
