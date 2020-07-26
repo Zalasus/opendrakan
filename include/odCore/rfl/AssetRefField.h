@@ -144,7 +144,7 @@ namespace odRfl
             {
                 for(auto it = mReferences.begin(); it != mReferences.end(); ++it)
                 {
-                    od::RefPtr<_AssetType> asset = ap.getAssetByRef<_AssetType>(*it);
+                    auto asset = ap.getAssetByRef<_AssetType>(*it);
                     mReferencedAssets.push_back(asset);
                 }
 
