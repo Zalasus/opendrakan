@@ -11,13 +11,11 @@
 #include <map>
 #include <vector>
 #include <functional>
-
 #include <glm/vec2.hpp>
-#include <odCore/Downcast.h>
 
-#include <odCore/RefCounted.h>
-#include <odCore/WeakRefPtr.h>
+#include <odCore/Downcast.h>
 #include <odCore/Exception.h>
+
 #include <odCore/input/Action.h>
 #include <odCore/input/Keys.h>
 
@@ -49,7 +47,7 @@ namespace odInput
         void keyUp(Key key);
 
         template <typename _ActionEnum>
-        od::RefPtr<ActionHandle<_ActionEnum>> getOrCreateAction(_ActionEnum action)
+        std::shared_ptr<ActionHandle<_ActionEnum>> getOrCreateAction(_ActionEnum action)
         {
             int actionCode = static_cast<int>(action);
 
@@ -58,26 +56,26 @@ namespace odInput
                 throw od::InvalidArgumentException("Can't create actions whose int representation is 0");
             }
 
-            od::RefPtr<ActionHandle<_ActionEnum>> actionHandle;
+            std::shared_ptr<ActionHandle<_ActionEnum>> actionHandle;
             auto &weakRef = mActions[actionCode];
-            if(weakRef.isNull())
+            if(weakRef.expired())
             {
-                actionHandle = od::make_refd<ActionHandle<_ActionEnum>>(*this, action);
-                weakRef = actionHandle.get();
+                actionHandle = std::shared_ptr<ActionHandle<_ActionEnum>>(*this, action);
+                weakRef = actionHandle;
 
             }else
             {
-                auto ref = weakRef.aquire();
-                actionHandle = od::downcast<ActionHandle<_ActionEnum>>(ref.get());
+                std::shared_ptr<IAction> ref(weakRef);
+                actionHandle = od::downcast<ActionHandle<_ActionEnum>>(ref);
             }
 
             return actionHandle;
         }
 
-        void bindActionToKey(IAction *action, Key key);
-        void unbindActionFromKey(IAction *action, Key key);
+        void bindActionToKey(std::shared_ptr<IAction> action, Key key);
+        void unbindActionFromKey(std::shared_ptr<IAction> action, Key key);
 
-        od::RefPtr<CursorListener> createCursorListener();
+        std::shared_ptr<CursorListener> createCursorListener();
 
 
     private:
@@ -106,9 +104,9 @@ namespace odInput
         odGui::Gui *mGui;
         std::map<Key, Binding> mBindings;
 
-        std::map<int, od::WeakObserverRefPtr<IAction>> mActions;
+        std::map<int, std::weak_ptr<IAction>> mActions;
 
-        std::vector<od::WeakObserverRefPtr<CursorListener>> mCursorListeners;
+        std::vector<std::weak_ptr<CursorListener>> mCursorListeners;
     };
 
 }

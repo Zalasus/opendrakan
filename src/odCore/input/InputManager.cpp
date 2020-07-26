@@ -34,10 +34,13 @@ namespace odInput
 
         for(auto &cl : mCursorListeners)
         {
-            if(cl.isNonNull())
+            if(!cl.expired())
             {
-                auto listener = cl.aquire();
-                listener->triggerCallback(ndc);
+                auto listener = cl.lock();
+                if(listener != nullptr)
+                {
+                    listener->triggerCallback(ndc);
+                }
             }
         }
     }
@@ -101,7 +104,7 @@ namespace odInput
         }
     }
 
-    void InputManager::bindActionToKey(IAction *iaction, Key key)
+    void InputManager::bindActionToKey(std::shared_ptr<IAction> iaction, Key key)
     {
         Binding &binding = mBindings[key];
         for(auto &a : binding.actions)
@@ -116,7 +119,7 @@ namespace odInput
         throw od::Exception("Exceeded maximum of actions per key");
     }
 
-    void InputManager::unbindActionFromKey(IAction *iaction, Key key)
+    void InputManager::unbindActionFromKey(std::shared_ptr<IAction> iaction, Key key)
     {
         auto it = mBindings.find(key);
         if(it == mBindings.end())
@@ -133,9 +136,9 @@ namespace odInput
         }
     }
 
-    od::RefPtr<CursorListener> InputManager::createCursorListener()
+    std::shared_ptr<CursorListener> InputManager::createCursorListener()
     {
-        auto listener = od::make_refd<CursorListener>();
+        auto listener = std::make_shared<CursorListener>();
 
         mCursorListeners.emplace_back(listener.get());
 

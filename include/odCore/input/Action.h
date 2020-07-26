@@ -11,8 +11,6 @@
 #include <functional>
 #include <vector>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/input/Keys.h>
 
 namespace odInput
@@ -43,7 +41,7 @@ namespace odInput
      * Note: the only abstraction happening here is the type of the action enum. In theory, this whole abstract thing
      * could be omitted if we were willing to have the user either use unscoped enums or cast everything to int by himself.
      */
-    class IAction : public od::RefCounted
+    class IAction
     {
     public:
 

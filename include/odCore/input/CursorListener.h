@@ -12,12 +12,10 @@
 
 #include <glm/vec2.hpp>
 
-#include <odCore/RefCounted.h>
-
 namespace odInput
 {
 
-    class CursorListener : public od::RefCounted
+    class CursorListener
     {
     public:
 
