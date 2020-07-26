@@ -117,6 +117,8 @@ namespace odBulletPhysics
 
     std::shared_ptr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(std::shared_ptr<od::Light> light)
     {
+        OD_CHECK_ARG_NONNULL(light);
+
         auto lightHandle = std::make_shared<LightHandle>(light, mCollisionWorld.get());
 
         return lightHandle.get();
@@ -126,16 +128,7 @@ namespace odBulletPhysics
     {
         OD_CHECK_ARG_NONNULL(model);
 
-        if(!model->getCachedPhysicsShape().expired())
-        {
-            return std::shared_ptr<odPhysics::ModelShape>(model->getCachedPhysicsShape());
-        }
-
-        auto newShape = std::make_shared<ModelShape>(model.getModelBounds()); // TODO: do we really have to consider LODs here?
-
-        model->getCachedPhysicsShape() = newShape;
-
-        return newShape;
+        return std::make_shared<ModelShape>(model.getModelBounds()); // TODO: do we really have to consider LODs here?
     }
 
     void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)

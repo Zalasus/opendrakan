@@ -146,27 +146,17 @@ namespace odOsg
 
     std::shared_ptr<odRender::Model> Renderer::createModel()
     {
-        return std::make_shared<Model>();;
+        return std::make_shared<Model>();
     }
 
     std::shared_ptr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
     {
-        auto newGeometry = std::make_shared<Geometry>(primitiveType, indexed);
-
-        return newGeometry.get();
+        return std::make_shared<Geometry>(primitiveType, indexed);
     }
 
     std::shared_ptr<odRender::Model> Renderer::createModelFromDb(std::shared_ptr<odDb::Model> model)
     {
-        if(model == nullptr)
-        {
-            throw od::InvalidArgumentException("Got null model");
-        }
-
-        if(!model->getCachedRenderModel().expired())
-        {
-            return std::shared_ptr<odRender::Model>(model->getCachedRenderModel());
-        }
+        OD_CHECK_ARG_NONNULL(model);
 
         std::shared_ptr<Model> renderModel;
         if(model->getLodInfoVector().empty())
@@ -196,8 +186,6 @@ namespace odOsg
         modelProgram->addBindAttribLocation("influencingBones", Constants::ATTRIB_INFLUENCE_LOCATION);
         modelProgram->addBindAttribLocation("vertexWeights", Constants::ATTRIB_WEIGHT_LOCATION);
         renderModel->getGeode()->getOrCreateStateSet()->setAttribute(modelProgram, osg::StateAttribute::ON);
-
-        model->getCachedRenderModel() = renderModel;
 
         return renderModel;
     }
@@ -324,16 +312,7 @@ namespace odOsg
     {
         OD_CHECK_ARG_NONNULL(dbTexture);
 
-        if(!dbTexture->getCachedRenderImage().expired())
-        {
-            return std::shared_ptr<odRender::Image>(dbTexture->getCachedRenderImage());
-        }
-
-        auto image = std::make_shared<Image>(dbTexture);
-
-        dbTexture->getCachedRenderImage() = image;
-
-        return image;
+        return std::make_shared<Image>(dbTexture);;
     }
 
     std::shared_ptr<odRender::Texture> Renderer::createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot)

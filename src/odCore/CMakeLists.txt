@@ -43,6 +43,7 @@ target_sources(odCore PRIVATE
         "physics/bullet/ObjectHandleImpl.cpp"
         "physics/CharacterController.cpp"
         "physics/Handles.cpp"
+        "physics/PhysicsSystem.cpp"
         "render/GuiQuad.cpp"
         "render/Renderer.cpp"
         "rfl/ClassBuilderProbe.cpp"

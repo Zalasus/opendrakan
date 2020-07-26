@@ -90,6 +90,11 @@ namespace odPhysics
 
         virtual std::shared_ptr<ModelShape> createModelShape(std::shared_ptr<odDb::Model> model) = 0;
 
+        /**
+         * @brief Uses createModelShape() to create a ModelShape and caches it in model. Once the cache exists, no further calls to createModelShape() are needed.
+         */
+        std::shared_ptr<ModelShape> getOrCreateModelShape(std::shared_ptr<odDb::Model> model);
+
         virtual void setEnableDebugDrawing(bool enable) = 0;
         virtual bool isDebugDrawingEnabled() = 0;
         inline void toggleDebugDrawing() { setEnableDebugDrawing(!isDebugDrawingEnabled()); }
