@@ -7,6 +7,7 @@
 
 #include <odCore/physics/bullet/LightHandleImpl.h>
 
+#include <odCore/Exception.h>
 #include <odCore/Light.h>
 #include <odCore/LevelObject.h>
 
@@ -20,18 +21,21 @@ namespace odBulletPhysics
     : mLight(light)
     , mCollisionWorld(collisionWorld)
     {
-        mShape = std::make_unique<btSphereShape>(light.getRadius());
+        OD_CHECK_ARG_NONNULL(light);
+        OD_CHECK_ARG_NONNULL(collisionWorld);
+
+        mShape = std::make_unique<btSphereShape>(light->getRadius());
 
         mCollisionObject = std::make_unique<btCollisionObject>();
         mCollisionObject->setCollisionShape(mShape.get());
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
         mCollisionObject->setCustomDebugColor(btVector3(215.0/256, 221.0/256, 86.0/256));
 
-        btTransform worldTransform = BulletAdapter::makeBulletTransform(light.getPosition(), glm::quat(1, 0, 0, 0));
+        btTransform worldTransform = BulletAdapter::makeBulletTransform(light->getPosition(), glm::quat(1, 0, 0, 0));
         mCollisionObject->setWorldTransform(worldTransform);
 
         // FIXME: due to the nature of how we provide a getter and setter for the Light::dynamic state, this info is almost never accurate
-        auto flags = light.isDynamic() ? btCollisionObject::CF_KINEMATIC_OBJECT : btCollisionObject::CF_STATIC_OBJECT;
+        auto flags = light->isDynamic() ? btCollisionObject::CF_KINEMATIC_OBJECT : btCollisionObject::CF_STATIC_OBJECT;
         mCollisionObject->setCollisionFlags(flags);
 
         mCollisionWorld->addCollisionObject(mCollisionObject.get(), odPhysics::PhysicsTypeMasks::Light, odPhysics::PhysicsTypeMasks::All);

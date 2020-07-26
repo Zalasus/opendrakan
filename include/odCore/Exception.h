@@ -82,7 +82,7 @@ namespace od
 
 #define OD_UNREACHABLE() throw od::UnreachableException(__FILE__, __func__, __LINE__)
 #define OD_UNIMPLEMENTED() throw od::UnimplementedException(__FILE__, __func__, __LINE__)
-#define OD_CHECK_ARG_NONNULL(arg) if((arg) == nullptr) throw od::IllegalArgumentException("Argument " #arg " was nullptr")
+#define OD_CHECK_ARG_NONNULL(arg) if((arg) == nullptr) throw od::InvalidArgumentException("Argument " #arg " was nullptr")
 
 
 #endif /* INCLUDE_EXCEPTION_H_ */

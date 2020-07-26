@@ -103,32 +103,26 @@ namespace odBulletPhysics
 
     std::shared_ptr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj, bool isDetector)
     {
-        auto objectHandle = std::make_shared<ObjectHandle>(*this, obj, mCollisionWorld.get(), isDetector);
-
-        return objectHandle.get();
+        return std::make_shared<ObjectHandle>(*this, obj, mCollisionWorld.get(), isDetector);
     }
 
     std::shared_ptr<odPhysics::LayerHandle> BulletPhysicsSystem::createLayerHandle(od::Layer &layer)
     {
-        auto layerHandle = std::make_shared<LayerHandle>(layer, mCollisionWorld.get());
-
-        return layerHandle.get();
+        return std::make_shared<LayerHandle>(layer, mCollisionWorld.get());
     }
 
     std::shared_ptr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(std::shared_ptr<od::Light> light)
     {
         OD_CHECK_ARG_NONNULL(light);
 
-        auto lightHandle = std::make_shared<LightHandle>(light, mCollisionWorld.get());
-
-        return lightHandle.get();
+        return std::make_shared<LightHandle>(light, mCollisionWorld.get());
     }
 
     std::shared_ptr<odPhysics::ModelShape> BulletPhysicsSystem::createModelShape(std::shared_ptr<odDb::Model> model)
     {
         OD_CHECK_ARG_NONNULL(model);
 
-        return std::make_shared<ModelShape>(model.getModelBounds()); // TODO: do we really have to consider LODs here?
+        return std::make_shared<ModelShape>(model);
     }
 
     void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)

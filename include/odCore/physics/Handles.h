@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 #define INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 
+#include <memory>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 

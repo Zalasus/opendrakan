@@ -10,6 +10,9 @@
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 
+#include <odCore/Exception.h>
+
+#include <odCore/db/Model.h>
 #include <odCore/db/ModelBounds.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
@@ -23,7 +26,7 @@ namespace odBulletPhysics
     {
         OD_CHECK_ARG_NONNULL(model);
 
-        mSharedShape = _buildFromBounds(model->getModelBounds());
+        mSharedShape = _buildFromBounds(model->getModelBounds());  // TODO: do we have to consider LODs here?
     }
 
     btCollisionShape *ModelShape::getSharedShape()
@@ -33,7 +36,7 @@ namespace odBulletPhysics
 
     std::unique_ptr<btCollisionShape> ModelShape::createNewUniqueShape()
     {
-        return _buildFromBounds(mBounds);
+        return _buildFromBounds(mModel->getModelBounds());
     }
 
     std::unique_ptr<ManagedCompoundShape> ModelShape::_buildFromBounds(const odDb::ModelBounds &bounds) const

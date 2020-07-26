@@ -1,6 +1,10 @@
 
 #include <odCore/physics/PhysicsSystem.h>
 
+#include <odCore/Exception.h>
+
+#include <odCore/db/Model.h>
+
 namespace odPhysics
 {
 

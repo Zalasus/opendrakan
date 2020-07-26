@@ -56,7 +56,7 @@ namespace odPhysics
         float hitFraction;
         glm::vec3 hitPoint;
         glm::vec3 hitNormal;
-        std::shared_ptr<Handle> handle;
+        Handle *handle; // since bullet can't store owning refs in it's objects, this has to be a bare pointer
     };
 
     typedef std::vector<RayTestResult> RayTestResultVector;
@@ -64,7 +64,7 @@ namespace odPhysics
 
     struct ContactTestResult
     {
-        std::shared_ptr<Handle> handle;
+        Handle *handle; // since bullet can't store owning refs in it's objects, this has to be a bare pointer
     };
 
     typedef std::vector<ContactTestResult> ContactTestResultVector;
@@ -82,7 +82,7 @@ namespace odPhysics
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, RayTestResultVector &resultsOut) = 0;
         virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, PhysicsTypeMasks::Mask typeMask, std::shared_ptr<Handle> exclude, RayTestResult &resultOut) = 0;
 
-        virtual size_t contactTest(Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
+        virtual size_t contactTest(std::shared_ptr<Handle> handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
 
         virtual std::shared_ptr<ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) = 0;
         virtual std::shared_ptr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;

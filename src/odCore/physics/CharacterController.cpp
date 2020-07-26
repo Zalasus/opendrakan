@@ -19,7 +19,7 @@ namespace odPhysics
     static const float STEP_HEIGHT = 0.07f;
 
 
-	CharacterController::CharacterController(PhysicsSystem &physicsSystem, ObjectHandle *handle, od::LevelObject &charObject, float radius, float height)
+	CharacterController::CharacterController(PhysicsSystem &physicsSystem, std::shared_ptr<ObjectHandle> handle, od::LevelObject &charObject, float radius, float height)
 	: mPhysicsSystem(physicsSystem)
     , mCharObject(charObject)
 	, mObjectHandle(handle)
@@ -81,5 +81,3 @@ namespace odPhysics
 	}
 
 }
-
-

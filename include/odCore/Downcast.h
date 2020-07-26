@@ -99,9 +99,9 @@ namespace od
 
         _To *t;
 #ifdef NDEBUG
-        t = static_cast<_To*>(f);
+        t = static_cast<_To*>(f.get());
 #else
-        t = dynamic_cast<_To*>(f);
+        t = dynamic_cast<_To*>(f.get());
         if(t == nullptr)
         {
             throw od::Exception("Bad confident_downcast");

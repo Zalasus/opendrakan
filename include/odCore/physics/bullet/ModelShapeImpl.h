@@ -22,6 +22,7 @@
 namespace odDb
 {
     class Model;
+    class ModelBounds;
 }
 
 namespace odBulletPhysics
@@ -31,7 +32,7 @@ namespace odBulletPhysics
     {
     public:
 
-        explicit ModelShape(std::shared_ptr<odDb::Models> model);
+        explicit ModelShape(std::shared_ptr<odDb::Model> model);
 
         btCollisionShape *getSharedShape();
         std::unique_ptr<btCollisionShape> createNewUniqueShape();
