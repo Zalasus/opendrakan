@@ -18,7 +18,7 @@
 namespace odDb
 {
 
-    std::shared_ptr<AssetProvider> AssetProvider::getDependency(uint16_t index)
+    AssetProvider &AssetProvider::getDependency(uint16_t index)
     {
         throw od::UnsupportedException("This AssetProvider implementation can't have dependencies");
     }

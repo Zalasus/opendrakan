@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <vector>
 #include <queue>
+#include <memory>
 
 #include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
 #include <glm/gtx/dual_quaternion.hpp>
@@ -40,7 +41,7 @@ namespace odAnim
         inline Skeleton::Bone *getBone() { return mBone; }
         inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
         inline bool isPlaying() const { return mPlaying; }
-        inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
+        inline std::shared_ptr<odDb::Animation> getCurrentAnimation() { return mCurrentAnimation; }
 
         /**
          * @brief Sets whether to use linear interpolation (true) or sample frames by nearest-neighbour (false).

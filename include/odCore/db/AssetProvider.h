@@ -40,7 +40,7 @@ namespace odDb
 		 * Gets a dependency of this provider with the given index. Implementers should override this if they
 		 * can have dependencies. Default behaviour is to throw.
 		 */
-	    virtual std::shared_ptr<AssetProvider> getDependency(uint16_t index);
+	    virtual AssetProvider &getDependency(uint16_t index);
 
 	    /**
 	     * Convenience method. This will redirect the call to getAsset() if the dbIndex in the passed reference is 0,
@@ -58,9 +58,9 @@ namespace odDb
 	            return getAsset<_AssetType>(ref.assetId);
 	        }
 
-	        std::shared_ptr<AssetProvider> provider = getDependency(ref.dbIndex);
+	        AssetProvider &provider = getDependency(ref.dbIndex);
 
-	        return std::move(provider->getAsset<_AssetType>(ref.assetId));
+	        return std::move(provider.getAsset<_AssetType>(ref.assetId));
 	    }
 
 	    /**

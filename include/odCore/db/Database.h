@@ -53,7 +53,7 @@ namespace odDb
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
 	    // override AssetProvider
-		virtual std::shared_ptr<AssetProvider> getDependency(uint16_t index) override;
+		virtual AssetProvider &getDependency(uint16_t index) override;
         virtual std::shared_ptr<Texture>   getTexture(od::RecordId recordId) override;
         virtual std::shared_ptr<Class>     getClass(od::RecordId recordId) override;
         virtual std::shared_ptr<Model>     getModel(od::RecordId recordId) override;

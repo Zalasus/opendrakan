@@ -115,7 +115,7 @@ namespace odDb
                 // TODO: detect and prevent dependency cycles!!! since Databases now own their dependencies, cycles create leaks
 				std::shared_ptr<Database> db = mDbManager.loadDb(depPath, dependencyDepth + 1);
 
-				mDependencyMap.insert(std::pair<uint16_t, DbRefWrapper>(depIndex, db));
+				mDependencyMap.insert(std::make_pair(depIndex, db));
 
 				++dependenciesRead;
 
@@ -139,7 +139,7 @@ namespace odDb
         _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
 	}
 
-	std::shared_ptr<AssetProvider> Database::getDependency(uint16_t index)
+	AssetProvider &Database::getDependency(uint16_t index)
 	{
 	    auto it = mDependencyMap.find(index);
 	    if(it == mDependencyMap.end())
@@ -148,7 +148,7 @@ namespace odDb
 	        throw od::NotFoundException("Database has no dependency with given index");
 	    }
 
-	    return it->second;
+	    return *(it->second);
 	}
 
 	std::shared_ptr<Texture> Database::getTexture(od::RecordId recordId)

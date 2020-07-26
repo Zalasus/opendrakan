@@ -51,8 +51,7 @@ namespace odDb
 
     	try
     	{
-    	    Database &db = getDb(actualFilePath);
-    	    return db;
+    	    return getDb(actualFilePath);
 
     	}catch(od::NotFoundException &e)
     	{

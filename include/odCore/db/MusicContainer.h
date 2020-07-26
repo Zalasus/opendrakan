@@ -10,6 +10,7 @@
 
 #include <map>
 #include <string>
+#include <memory>
 
 #include <odCore/SrscFile.h>
 #include <odCore/RiffReader.h>

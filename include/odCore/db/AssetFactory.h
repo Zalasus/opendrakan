@@ -40,7 +40,7 @@ namespace odDb
 		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
 		inline od::SrscFile &getSrscFile() { return mSrscFile; }
 
-		od::shared_ptr<_AssetType> getAsset(od::RecordId assetId)
+		std::shared_ptr<_AssetType> getAsset(od::RecordId assetId)
         {
             // we access the cache using the []-operator, so we create an entry for the asset if if not existed yet.
             //  since most of the time the assets we are looking for are either cached or can be loaded from the container,
@@ -54,13 +54,13 @@ namespace odDb
             }
 
             // asset was not cached or got deleted. let implementation handle loading
-            Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile->getFilePath().fileStr();
+            Logger::debug() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " not found in cache. Loading from container " << mSrscFile.getFilePath().fileStr();
             std::shared_ptr<_AssetType> loaded = this->loadAsset(assetId);
             if(loaded == nullptr)
             {
                 mAssetCache.erase(assetId);
 
-                Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile->getFilePath().fileStr();
+                Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
                 throw od::NotFoundException("Asset not found in cache or asset container");
             }
 
@@ -91,7 +91,7 @@ namespace odDb
 
 		std::shared_ptr<_AssetType> loadAsset(od::RecordId id)
         {
-            auto cursor = mSrscFile->getFirstRecordOfTypeId(AssetTraits<_AssetType>::baseType(), id);
+            auto cursor = mSrscFile.getFirstRecordOfTypeId(AssetTraits<_AssetType>::baseType(), id);
             if(!cursor.isValid())
             {
                 return nullptr;
