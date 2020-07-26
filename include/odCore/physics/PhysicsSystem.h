@@ -58,7 +58,7 @@ namespace odPhysics
         float hitFraction;
         glm::vec3 hitPoint;
         glm::vec3 hitNormal;
-        Handle *handle; // since bullet can't store owning refs in it's objects, this has to be a bare pointer
+        std::shared_ptr<Handle> handle;
     };
 
     typedef std::vector<RayTestResult> RayTestResultVector;
@@ -66,7 +66,7 @@ namespace odPhysics
 
     struct ContactTestResult
     {
-        Handle *handle; // since bullet can't store owning refs in it's objects, this has to be a bare pointer
+        std::shared_ptr<Handle> handle;
     };
 
     typedef std::vector<ContactTestResult> ContactTestResultVector;

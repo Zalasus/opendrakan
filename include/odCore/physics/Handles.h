@@ -28,7 +28,12 @@ namespace odPhysics
     class LayerHandle;
     class LightHandle;
 
-    class Handle
+    /*
+     * Note: This inherits from std::enable_shared_from_this because the Bullet implementation gives us no option to
+     * directly store a weak_ptr in a btCollisionObject, but callbacks need to get owned references to the associated handle.
+     * Unfortunately, that shortcoming forces us to make all handles inherit this. This will hopefully change in the future.
+     */
+    class Handle : public std::enable_shared_from_this<Handle>
     {
     public:
 
