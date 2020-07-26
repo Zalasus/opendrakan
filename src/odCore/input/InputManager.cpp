@@ -140,7 +140,7 @@ namespace odInput
     {
         auto listener = std::make_shared<CursorListener>();
 
-        mCursorListeners.emplace_back(listener.get());
+        mCursorListeners.emplace_back(listener);
 
         return listener;
     }
@@ -153,9 +153,9 @@ namespace odInput
             return;
         }
 
-        if(it->second.isNonNull())
+        if(!it->second.expired())
         {
-            auto action = it->second.aquire();
+            std::shared_ptr<IAction> action(it->second);
 
             if(event.type == InputEvent::Type::Repeat && !action->isRepeatable())
             {

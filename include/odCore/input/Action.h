@@ -65,9 +65,6 @@ namespace odInput
          */
         void setIgnoreUpEvents(bool b);
 
-        void bindToKey(Key key);
-        void unbindFromKey(Key key);
-
         virtual void triggerCallback(InputEvent) = 0;
 
 
@@ -82,7 +79,7 @@ namespace odInput
 
 
     template <typename _ActionEnum>
-    class ActionHandle : public IAction
+    class ActionHandle final : public IAction
     {
     public:
 

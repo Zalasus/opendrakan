@@ -29,15 +29,5 @@ namespace odInput
     {
         mIgnoreUpEvents = b;
     }
-
-    void IAction::bindToKey(Key key)
-    {
-        mInputManager.bindActionToKey(this, key);
-    }
-
-    void IAction::unbindFromKey(Key key)
-    {
-        mInputManager.unbindActionFromKey(this, key);
-    }
-
+    
 }

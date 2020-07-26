@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_DOWNCAST_H_
 #define INCLUDE_ODCORE_DOWNCAST_H_
 
+#include <memory>
+
 #include <odCore/Exception.h>
 
 namespace od
