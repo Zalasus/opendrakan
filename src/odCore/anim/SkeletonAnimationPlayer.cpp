@@ -45,7 +45,7 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier)
+    void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier)
     {
         if(animation == nullptr)
         {
@@ -71,7 +71,7 @@ namespace odAnim
         mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
     }
 
-    void BoneAnimator::pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier)
+    void BoneAnimator::pushAnimationToQueue(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier)
     {
         if(mCurrentAnimation == nullptr)
         {
@@ -268,7 +268,7 @@ namespace odAnim
     {
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim,  PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim,  PlaybackType type, float speedMultiplier)
     {
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {
@@ -278,12 +278,12 @@ namespace odAnim
         mPlaying = true;
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
     {
         throw od::UnsupportedException("Partial skeleton animation not implemented yet");
     }
 
-    void SkeletonAnimationPlayer::pushAnimationToQueue(odDb::Animation *anim, PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::pushAnimationToQueue(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier)
     {
         for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
         {

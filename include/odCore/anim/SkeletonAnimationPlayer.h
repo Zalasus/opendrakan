@@ -15,8 +15,6 @@
 #include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
 #include <glm/gtx/dual_quaternion.hpp>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/db/Animation.h>
 
 #include <odCore/anim/Skeleton.h>
@@ -68,12 +66,12 @@ namespace odAnim
          * @param type             The type of playback to use (normal, looping, pingpong)
          * @param speedMultiplier  Speed factor. 1.0 is normal playback speed. May be negative for reverse playback.
          */
-        void playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+        void playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
 
         /**
          * Pushes to queue, animation will start after loop point yada yada documentation is fun!
          */
-        void pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+        void pushAnimationToQueue(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Advances animation and performs necessary updates to the skeleton.
@@ -92,7 +90,7 @@ namespace odAnim
 
         Skeleton::Bone *mBone;
 
-        od::RefPtr<odDb::Animation> mCurrentAnimation;
+        std::shared_ptr<odDb::Animation> mCurrentAnimation;
         PlaybackType mPlaybackType;
         float mSpeedMultiplier;
         odDb::Animation::KfIterator mFirstFrame;
@@ -100,14 +98,14 @@ namespace odAnim
 
         struct AnimationQueueEntry
         {
-            AnimationQueueEntry(odDb::Animation *pAnim, PlaybackType pType, float pSpeed)
+            AnimationQueueEntry(std::shared_ptr<odDb::Animation> pAnim, PlaybackType pType, float pSpeed)
             : animation(pAnim)
             , type(pType)
             , speedMultiplier(pSpeed)
             {
             }
 
-            od::RefPtr<odDb::Animation> animation;
+            std::shared_ptr<odDb::Animation> animation;
             PlaybackType type;
             float speedMultiplier;
         };
@@ -139,7 +137,7 @@ namespace odAnim
         inline bool isPlaying() const { return mPlaying; }
 
         /// @brief Plays animation on whole skeleton.
-        void playAnimation(odDb::Animation *anim, PlaybackType type, float speedMultiplier);
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Plays animation on skeleton subtree, starting at \c jointIndex.
@@ -148,9 +146,9 @@ namespace odAnim
          * animations this way, e.g. playing walking animation on whole skeleton, then playing
          * talking animation on neck joint to make the character talk while walking.
          */
-        void playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
 
-        void pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+        void pushAnimationToQueue(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Sets accumulator for a root node.
