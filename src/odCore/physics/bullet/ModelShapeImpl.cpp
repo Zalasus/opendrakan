@@ -18,10 +18,12 @@
 namespace odBulletPhysics
 {
 
-    ModelShape::ModelShape(const odDb::ModelBounds &bounds)
-    : mBounds(bounds)
-    , mSharedShape(_buildFromBounds(bounds))
+    ModelShape::ModelShape(std::shared_ptr<odDb::Model> model)
+    : mModel(model)
     {
+        OD_CHECK_ARG_NONNULL(model);
+
+        mSharedShape = _buildFromBounds(model->getModelBounds());
     }
 
     btCollisionShape *ModelShape::getSharedShape()

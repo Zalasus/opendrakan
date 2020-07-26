@@ -10,8 +10,6 @@
 
 #include <memory>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/anim/MotionAccumulator.h>
 
 namespace od
@@ -29,7 +27,7 @@ namespace odPhysics
 	{
 	public:
 
-		CharacterController(PhysicsSystem &physicsSystem, ObjectHandle *handle, od::LevelObject &charObject, float radius, float height);
+		CharacterController(PhysicsSystem &physicsSystem, std::shared_ptr<ObjectHandle> handle, od::LevelObject &charObject, float radius, float height);
 
 		// implement odAnim::MotionAccumulator
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
@@ -43,7 +41,7 @@ namespace odPhysics
 
         PhysicsSystem &mPhysicsSystem;
 		od::LevelObject &mCharObject;
-		od::RefPtr<ObjectHandle> mObjectHandle;
+		std::shared_ptr<ObjectHandle> mObjectHandle;
 		glm::vec3 mCurrentPosition;
 		glm::vec3 mUp;
 		glm::vec3 mRelativeLowPoint;

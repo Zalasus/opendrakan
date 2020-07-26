@@ -51,7 +51,7 @@ namespace odBulletPhysics
     }
 
 
-    ClosestRayCallback::ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result)
+    ClosestRayCallback::ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &result)
     : mResult(result)
     , mStart(start)
     , mEnd(end)
@@ -73,7 +73,7 @@ namespace odBulletPhysics
         if(mExclude != nullptr)
         {
             odPhysics::Handle *userPointerAsHandle = static_cast<odPhysics::Handle*>(rayResult.m_collisionObject->getUserPointer());
-            if(mExclude == userPointerAsHandle)
+            if(mExclude.get() == userPointerAsHandle)
             {
                 return 1.0;
             }
@@ -144,7 +144,7 @@ namespace odBulletPhysics
     }
 
 
-    ContactResultCallback::ContactResultCallback(odPhysics::Handle *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
+    ContactResultCallback::ContactResultCallback(std::shared_ptr<odPhysics::Handle> me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
     : mMe(me)
     , mResults(results)
     , mContactCount(0)
@@ -166,12 +166,12 @@ namespace odBulletPhysics
         odPhysics::ContactTestResult result;
         odPhysics::Handle *handle0 = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
         odPhysics::Handle *handle1 = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
-        if(handle0 == mMe)
+        if(handle0 == mMe.get())
         {
             result.handle = handle1;
             mLastObject = colObj1Wrap->m_collisionObject;
 
-        }else if(handle1 == mMe)
+        }else if(handle1 == mMe.get())
         {
             result.handle = handle0;
             mLastObject = colObj0Wrap->m_collisionObject;
@@ -189,5 +189,3 @@ namespace odBulletPhysics
     }
 
 }
-
-

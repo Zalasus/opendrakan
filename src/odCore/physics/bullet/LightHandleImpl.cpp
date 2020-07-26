@@ -16,18 +16,18 @@
 namespace odBulletPhysics
 {
 
-    LightHandle::LightHandle(od::Light &light, btCollisionWorld *collisionWorld)
+    LightHandle::LightHandle(std::shared_ptr<od::Light> light, btCollisionWorld *collisionWorld)
     : mLight(light)
     , mCollisionWorld(collisionWorld)
     {
-        mShape = std::make_unique<btSphereShape>(mLight.getRadius());
+        mShape = std::make_unique<btSphereShape>(light.getRadius());
 
         mCollisionObject = std::make_unique<btCollisionObject>();
         mCollisionObject->setCollisionShape(mShape.get());
         mCollisionObject->setUserPointer(static_cast<odPhysics::Handle*>(this));
         mCollisionObject->setCustomDebugColor(btVector3(215.0/256, 221.0/256, 86.0/256));
 
-        btTransform worldTransform = BulletAdapter::makeBulletTransform(mLight.getPosition(), glm::quat(1, 0, 0, 0));
+        btTransform worldTransform = BulletAdapter::makeBulletTransform(light.getPosition(), glm::quat(1, 0, 0, 0));
         mCollisionObject->setWorldTransform(worldTransform);
 
         // FIXME: due to the nature of how we provide a getter and setter for the Light::dynamic state, this info is almost never accurate
@@ -58,9 +58,9 @@ namespace odBulletPhysics
         mCollisionWorld->updateSingleAabb(mCollisionObject.get());
     }
 
-    od::Light &LightHandle::getLight()
+    std::shared_ptr<od::Light> LightHandle::getLight()
     {
-        return mLight;
+        return mLight.lock();
     }
 
 }

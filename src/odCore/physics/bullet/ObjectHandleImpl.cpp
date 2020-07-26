@@ -8,9 +8,10 @@
 #include <odCore/physics/bullet/ObjectHandleImpl.h>
 
 #include <odCore/LevelObject.h>
+#include <odCore/Downcast.h>
+
 #include <odCore/db/Class.h>
 #include <odCore/db/Model.h>
-#include <odCore/Downcast.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
@@ -27,13 +28,13 @@ namespace odBulletPhysics
         mCollisionObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
         // TODO: decide on static/kinematic object depending on user choice/ object type
 
-        odDb::Model *model = obj.getClass()->getModel();
+        std::shared_ptr<odDb::Model> model = obj.getClass()->getModel();
         if(model == nullptr)
         {
             throw od::Exception("Created physics handle for object without model");
         }
-        od::RefPtr<odPhysics::ModelShape> shapeIface = model->getOrCreateModelShape(ps);
-        mModelShape = od::confident_downcast<ModelShape>(shapeIface.get());
+        std::shared_ptr<odPhysics::ModelShape> shapeIface = ps.createModelShape(model);
+        mModelShape = od::confident_downcast<ModelShape>(shapeIface);
 
         btCollisionShape *bulletShape;
         if(mLevelObject.isScaled())
@@ -127,5 +128,3 @@ namespace odBulletPhysics
     }
 
 }
-
-

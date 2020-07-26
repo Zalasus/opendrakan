@@ -22,9 +22,8 @@
 namespace odBulletPhysics
 {
 
-    DebugDrawer::DebugDrawer(odRender::Renderer *renderer, btCollisionWorld *collisionWorld)
-    : mRenderer(renderer)
-    , mCollisionWorld(collisionWorld)
+    DebugDrawer::DebugDrawer(odRender::Renderer &renderer, btCollisionWorld *collisionWorld)
+    : mCollisionWorld(collisionWorld)
     , mDebugMode(0)
     , mVertexArray(nullptr)
     , mColorArray(nullptr)
@@ -36,13 +35,13 @@ namespace odBulletPhysics
             throw od::Exception("Created Bullet debug drawer without a collision world");
         }
 
-        mGeometry = renderer->createGeometry(odRender::PrimitiveType::LINES, false);
+        mGeometry = renderer.createGeometry(odRender::PrimitiveType::LINES, false);
         mVertexArray = mGeometry->getVertexArrayAccessHandler();
         mColorArray = mGeometry->getColorArrayAccessHandler();
 
-        mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
+        mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
 
-        auto model = renderer->createModel();
+        auto model = renderer.createModel();
         model->addGeometry(mGeometry);
 
         {

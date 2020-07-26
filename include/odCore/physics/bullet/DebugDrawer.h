@@ -15,8 +15,6 @@
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 #include <LinearMath/btIDebugDraw.h>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/render/Array.h>
 
 namespace odRender
@@ -33,7 +31,7 @@ namespace odBulletPhysics
     {
     public:
 
-        DebugDrawer(odRender::Renderer *renderer, btCollisionWorld *collisionWorld);
+        DebugDrawer(odRender::Renderer &renderer, btCollisionWorld *collisionWorld);
         virtual ~DebugDrawer();
 
         virtual void drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color) override;
@@ -52,12 +50,11 @@ namespace odBulletPhysics
 
     private:
 
-        odRender::Renderer *mRenderer;
         btCollisionWorld *mCollisionWorld;
         int mDebugMode;
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        od::RefPtr<odRender::Geometry> mGeometry;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odRender::Geometry> mGeometry;
 
         std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> mVertexArray;
         std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> mColorArray;

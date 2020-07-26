@@ -34,7 +34,7 @@ namespace odBulletPhysics
     {
     public:
 
-        ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result);
+        ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &result);
 
         virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) override;
 
@@ -44,7 +44,7 @@ namespace odBulletPhysics
         odPhysics::RayTestResult &mResult;
         btVector3 mStart;
         btVector3 mEnd;
-        od::RefPtr<odPhysics::Handle> mExclude;
+        std::shared_ptr<odPhysics::Handle> mExclude;
     };
 
 
@@ -72,7 +72,7 @@ namespace odBulletPhysics
     {
     public:
 
-        ContactResultCallback(odPhysics::Handle *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
+        ContactResultCallback(std::shared_ptr<odPhysics::Handle> me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
 
         inline size_t getContactCount() const { return mContactCount; }
 
@@ -81,7 +81,7 @@ namespace odBulletPhysics
 
     private:
 
-        odPhysics::Handle *mMe;
+        std::shared_ptr<odPhysics::Handle> mMe;
         odPhysics::ContactTestResultVector &mResults;
         size_t mContactCount;
 

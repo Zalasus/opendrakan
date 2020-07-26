@@ -39,7 +39,7 @@ namespace odBulletPhysics
 
         if(renderer != nullptr)
         {
-            mDebugDrawer = std::make_unique<DebugDrawer>(renderer, mCollisionWorld.get());
+            mDebugDrawer = std::make_unique<DebugDrawer>(*renderer, mCollisionWorld.get());
         }
     }
 
@@ -58,7 +58,7 @@ namespace odBulletPhysics
         return callback.getHitCount();
     }
 
-    bool BulletPhysicsSystem::rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut)
+    bool BulletPhysicsSystem::rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &resultOut)
     {
         btVector3 bStart = BulletAdapter::toBullet(from);
         btVector3 bEnd =  BulletAdapter::toBullet(to);
@@ -69,7 +69,7 @@ namespace odBulletPhysics
         return callback.hasHit();
     }
 
-    size_t BulletPhysicsSystem::contactTest(odPhysics::Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
+    size_t BulletPhysicsSystem::contactTest(std::shared_ptr<odPhysics::Handle> handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
     {
         btCollisionObject *bulletObject;
         switch(handle->getHandleType())
@@ -101,31 +101,41 @@ namespace odBulletPhysics
         return callback.getContactCount();
     }
 
-    od::RefPtr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj, bool isDetector)
+    std::shared_ptr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj, bool isDetector)
     {
-        auto objectHandle = od::make_refd<ObjectHandle>(*this, obj, mCollisionWorld.get(), isDetector);
+        auto objectHandle = std::make_shared<ObjectHandle>(*this, obj, mCollisionWorld.get(), isDetector);
 
         return objectHandle.get();
     }
 
-    od::RefPtr<odPhysics::LayerHandle> BulletPhysicsSystem::createLayerHandle(od::Layer &layer)
+    std::shared_ptr<odPhysics::LayerHandle> BulletPhysicsSystem::createLayerHandle(od::Layer &layer)
     {
-        auto layerHandle = od::make_refd<LayerHandle>(layer, mCollisionWorld.get());
+        auto layerHandle = std::make_shared<LayerHandle>(layer, mCollisionWorld.get());
 
         return layerHandle.get();
     }
 
-    od::RefPtr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(od::Light &light)
+    std::shared_ptr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(std::shared_ptr<od::Light> light)
     {
-        auto lightHandle = od::make_refd<LightHandle>(light, mCollisionWorld.get());
+        auto lightHandle = std::make_shared<LightHandle>(light, mCollisionWorld.get());
 
         return lightHandle.get();
     }
 
-    od::RefPtr<odPhysics::ModelShape> BulletPhysicsSystem::createModelShape(odDb::Model &model)
+    std::shared_ptr<odPhysics::ModelShape> BulletPhysicsSystem::createModelShape(std::shared_ptr<odDb::Model> model)
     {
-        auto mb = od::make_refd<ModelShape>(model.getModelBounds()); // TODO: do we really have to consider LODs here?
-        return mb.get();
+        OD_CHECK_ARG_NONNULL(model);
+
+        if(!model->getCachedPhysicsShape().expired())
+        {
+            return std::shared_ptr<odPhysics::ModelShape>(model->getCachedPhysicsShape());
+        }
+
+        auto newShape = std::make_shared<ModelShape>(model.getModelBounds()); // TODO: do we really have to consider LODs here?
+
+        model->getCachedPhysicsShape() = newShape;
+
+        return newShape;
     }
 
     void BulletPhysicsSystem::setEnableDebugDrawing(bool enable)

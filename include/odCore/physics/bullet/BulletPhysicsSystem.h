@@ -16,8 +16,6 @@
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
 
-#include <odCore/WeakRefPtr.h>
-
 #include <odCore/physics/PhysicsSystem.h>
 
 namespace odRender
@@ -48,15 +46,15 @@ namespace odBulletPhysics
         virtual ~BulletPhysicsSystem();
 
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::RayTestResultVector &resultsOut) override;
-        virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut) override;
+        virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &resultOut) override;
 
-        virtual size_t contactTest(odPhysics::Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
+        virtual size_t contactTest(std::shared_ptr<odPhysics::Handle> handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
 
-        virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
-        virtual od::RefPtr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
-        virtual od::RefPtr<odPhysics::LightHandle>  createLightHandle(od::Light &light) override;
+        virtual std::shared_ptr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
+        virtual std::shared_ptr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
+        virtual std::shared_ptr<odPhysics::LightHandle>  createLightHandle(std::shared_ptr<od::Light> light) override;
 
-        virtual od::RefPtr<odPhysics::ModelShape> createModelShape(odDb::Model &model) override;
+        virtual std::shared_ptr<odPhysics::ModelShape> createModelShape(std::shared_ptr<odDb::Model> model) override;
 
         virtual void setEnableDebugDrawing(bool enable) override;
         virtual bool isDebugDrawingEnabled() override;

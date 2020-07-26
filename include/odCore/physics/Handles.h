@@ -11,8 +11,6 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <odCore/RefCounted.h>
-
 namespace od
 {
     class LevelObject;
@@ -28,7 +26,7 @@ namespace odPhysics
     class LayerHandle;
     class LightHandle;
 
-    class Handle : public od::RefCounted
+    class Handle
     {
     public:
 
@@ -122,7 +120,7 @@ namespace odPhysics
         virtual void setRadius(float radius) = 0;
         virtual void setPosition(const glm::vec3 &pos) = 0;
 
-        virtual od::Light &getLight() = 0;
+        virtual std::shared_ptr<od::Light> getLight() = 0;
 
     };
 
