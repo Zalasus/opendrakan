@@ -73,7 +73,7 @@ namespace odRfl
             mReferencedAsset = nullptr;
         }
 
-        _AssetType *getOrFetchAsset(odDb::AssetProvider &ap)
+        std::shared_ptr<_AssetType> getOrFetchAsset(odDb::AssetProvider &ap)
         {
             if(mReferencedAsset == nullptr)
             {
@@ -83,17 +83,18 @@ namespace odRfl
             return mReferencedAsset;
         }
 
-        _AssetType *getAsset() const
+        std::shared_ptr<_AssetType> getAsset() const
         {
             return mReferencedAsset;
         }
 
         odDb::AssetRef getAssetRef() const { return mReference; }
 
+
     protected:
 
         odDb::AssetRef mReference;
-        od::RefPtr<_AssetType> mReferencedAsset;
+        std::shared_ptr<_AssetType> mReferencedAsset;
 
     };
 
@@ -170,7 +171,7 @@ namespace odRfl
             return mReferencedAssets.size();
         }
 
-        _AssetType *getAsset(size_t i)
+        std::shared_ptr<_AssetType> getAsset(size_t i)
         {
             if(i >= mReferencedAssets.size())
             {
@@ -184,7 +185,7 @@ namespace odRfl
     protected:
 
         std::vector<odDb::AssetRef> mReferences;
-        std::vector<od::RefPtr<_AssetType>> mReferencedAssets;
+        std::vector<std::shared_ptr<_AssetType>> mReferencedAssets;
 
     };
 

@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include <odCore/RefCounted.h>
 #include <odCore/ObjectLightReceiver.h>
 
 #include <odCore/render/Handle.h>
@@ -48,8 +47,8 @@ namespace odRfl
 
     protected:
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
 
         std::unique_ptr<od::ObjectLightReceiver> mLightReceiver;
 
@@ -65,7 +64,7 @@ namespace odRfl
 
     private:
 
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
 
     };
 
@@ -87,8 +86,8 @@ namespace odRfl
 
     private:
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::unique_ptr<od::ObjectLightReceiver> mLightReceiver;
 
     };
