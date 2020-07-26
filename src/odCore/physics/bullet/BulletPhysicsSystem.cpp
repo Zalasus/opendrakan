@@ -111,10 +111,8 @@ namespace odBulletPhysics
         return std::make_shared<LayerHandle>(layer, mCollisionWorld.get());
     }
 
-    std::shared_ptr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(std::shared_ptr<od::Light> light)
+    std::shared_ptr<odPhysics::LightHandle> BulletPhysicsSystem::createLightHandle(const od::Light &light)
     {
-        OD_CHECK_ARG_NONNULL(light);
-
         return std::make_shared<LightHandle>(light, mCollisionWorld.get());
     }
 

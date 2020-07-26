@@ -30,20 +30,20 @@ namespace odBulletPhysics
     {
     public:
 
-        LightHandle(std::shared_ptr<od::Light> light, btCollisionWorld *collisionWorld);
+        LightHandle(const od::Light &light, btCollisionWorld *collisionWorld);
         virtual ~LightHandle();
 
         inline btCollisionObject *getBulletObject() { return mCollisionObject.get(); }
 
-        virtual void setRadius(float radius) override;
-        virtual void setPosition(const glm::vec3 &pos) override;
+        virtual void setRadius(float radius, bool modifyLight) override;
+        virtual void setPosition(const glm::vec3 &pos, bool modifyLight) override;
 
         virtual std::shared_ptr<od::Light> getLight() override;
 
 
     private:
 
-        std::weak_ptr<od::Light> mLight;
+        std::shared_ptr<od::Light> mLight;
         btCollisionWorld *mCollisionWorld;
 
         std::unique_ptr<btSphereShape> mShape;

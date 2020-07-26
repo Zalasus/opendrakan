@@ -52,7 +52,7 @@ namespace odBulletPhysics
 
         virtual std::shared_ptr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
         virtual std::shared_ptr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
-        virtual std::shared_ptr<odPhysics::LightHandle>  createLightHandle(std::shared_ptr<od::Light> light) override;
+        virtual std::shared_ptr<odPhysics::LightHandle>  createLightHandle(const od::Light &light) override;
 
         virtual std::shared_ptr<odPhysics::ModelShape> createModelShape(std::shared_ptr<odDb::Model> model) override;
 

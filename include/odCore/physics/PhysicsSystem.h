@@ -13,6 +13,8 @@
 
 #include <glm/vec3.hpp>
 
+#include <odCore/Light.h>
+
 #include <odCore/physics/Handles.h>
 
 namespace od
@@ -86,7 +88,7 @@ namespace odPhysics
 
         virtual std::shared_ptr<ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) = 0;
         virtual std::shared_ptr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;
-        virtual std::shared_ptr<LightHandle>  createLightHandle(std::shared_ptr<od::Light> light) = 0;
+        virtual std::shared_ptr<LightHandle>  createLightHandle(const od::Light &light) = 0;
 
         virtual std::shared_ptr<ModelShape> createModelShape(std::shared_ptr<odDb::Model> model) = 0;
 
@@ -94,6 +96,15 @@ namespace odPhysics
          * @brief Uses createModelShape() to create a ModelShape and caches it in model. Once the cache exists, no further calls to createModelShape() are needed.
          */
         std::shared_ptr<ModelShape> getOrCreateModelShape(std::shared_ptr<odDb::Model> model);
+
+        /**
+         * @brief Recalculates affected lights/affecting objects for the given handle.
+         *
+         * If handle is a LightHandle, this will search for layers and objects that intersect the light and
+         * update them accordingly. If handle is something different, this will search all lights intersecting
+         * the handle and update the handle accordingly.
+         */
+        void dispatchLighting(std::shared_ptr<Handle> handle);
 
         virtual void setEnableDebugDrawing(bool enable) = 0;
         virtual bool isDebugDrawingEnabled() = 0;
