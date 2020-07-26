@@ -7,6 +7,8 @@
 
 #include <odCore/Light.h>
 
+#include <glm/glm.hpp>
+
 namespace od
 {
 

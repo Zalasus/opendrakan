@@ -25,7 +25,7 @@ namespace od
     , mPhysicsHandle(physicsHandle)
     , mRenderHandle(renderHandle)
     {
-        OD_CHECK_ARG_NONNULL(phyiscsHandle);
+        OD_CHECK_ARG_NONNULL(physicsHandle);
 
         mPhysicsHandle->setLightCallback(this);
     }
@@ -76,24 +76,7 @@ namespace od
 
     void ObjectLightReceiver::updateAffectingLights()
     {
-        this->clearLightList();
-
-        odPhysics::ContactTestResultVector results;
-
-        static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Light;
-
-        mPhysicsSystem.contactTest(mPhysicsHandle, mask, results);
-
-        for(auto &r : results)
-        {
-            odPhysics::LightHandle *handle = r.handle->asLightHandle();
-            if(handle != nullptr)
-            {
-                Light &light = handle->getLight();
-                this->addAffectingLight(&light);
-                light.addAffected(handle);
-            }
-        }
+        mPhysicsSystem.dispatchLighting(mPhysicsHandle);
     }
 
 }

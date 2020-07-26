@@ -56,7 +56,7 @@ namespace od
         std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::shared_ptr<odRender::Handle> mRenderHandle;
 
-        std::vector<std::weak_ptr<Light>> mAffectingLights;
+        std::vector<std::shared_ptr<Light>> mAffectingLights;
 
     };
 
