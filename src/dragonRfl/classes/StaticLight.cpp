@@ -7,13 +7,8 @@
 
 #include <dragonRfl/classes/StaticLight.h>
 
-#include <dragonRfl/RflDragon.h>
-
-#include <odCore/rfl/Rfl.h>
-
 #include <odCore/Client.h>
 #include <odCore/LevelObject.h>
-#include <odCore/Level.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -43,9 +38,7 @@ namespace dragonRfl
 
     void StaticLight_Cl::onLoaded()
     {
-        auto &obj = getLevelObject();
-
-        obj.setObjectType(od::LevelObjectType::Light);
+        getLevelObject().setObjectType(od::LevelObjectType::Light);
     }
 
     void StaticLight_Cl::onSpawned()
@@ -60,6 +53,7 @@ namespace dragonRfl
         lightPrototype.setIntensityScaling(mFields.intensityScaling);
         lightPrototype.setRequiredQualityLevel(mFields.qualityLevelRequired);
         lightPrototype.setPosition(obj.getPosition());
+        lightPrototype.setDynamic(false);
 
         mLightHandle = getClient().getPhysicsSystem().createLightHandle(lightPrototype);
         getClient().getPhysicsSystem().dispatchLighting(mLightHandle);

@@ -12,7 +12,7 @@
 #include <dragonRfl/classes/CountDownToZero.h>
 // #include <dragonRfl/classes/Detector.h>
 // #include <dragonRfl/classes/DragonControl.h>
-// #include <dragonRfl/classes/DynamicLight.h>
+#include <dragonRfl/classes/DynamicLight.h>
 // #include <dragonRfl/classes/HealthPack.h>
 // #include <dragonRfl/classes/HumanControl.h>
 // #include <dragonRfl/classes/Key.h>
@@ -36,7 +36,7 @@ namespace dragonRfl
         registerClass<CountDownToZero>();
         // registerClass<Detector>();
         // registerClass<DragonControl>();
-        // registerClass<DynamicLight>();
+        registerClass<DynamicLight>();
         // registerClass<HealthPack>();
         // registerClass<HumanControl>();
         // registerClass<Key>();

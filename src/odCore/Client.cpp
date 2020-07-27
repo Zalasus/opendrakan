@@ -183,6 +183,14 @@ namespace od
         {
             auto duration = duration_cast<microseconds>(high_resolution_clock::now() - lastTime);
             float relTime = duration.count() * 1e-6;
+
+            if(mLevel != nullptr)
+            {
+                mLevel->update(relTime);
+            }
+
+            mPhysicsSystem->update(relTime);
+
             mRenderer.frame(relTime);
         }
 

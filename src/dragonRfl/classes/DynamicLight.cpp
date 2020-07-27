@@ -7,65 +7,91 @@
 
 #include <dragonRfl/classes/DynamicLight.h>
 
-#include <dragonRfl/RflDragon.h>
+#include <odCore/Client.h>
 #include <odCore/LevelObject.h>
+
+#include <odCore/physics/PhysicsSystem.h>
 
 namespace dragonRfl
 {
 
-    DynamicLight::DynamicLight()
-    : mIntensityEffect(IntensityEffect::Off)
-    , mEffectTime(1.0)
-    , mEffectAmplitude(1.0)
-    , mStartEffect(EffectStartType::WhenCreated)
-    , mLightIsOn(true)
+    DynamicLightFields::DynamicLightFields()
+    : intensityEffect(IntensityEffect::Off)
+    , effectTime(1.0)
+    , effectAmplitude(1.0)
+    , startEffect(EffectStartType::WhenCreated)
+    {
+    }
+
+    void DynamicLightFields::probeFields(odRfl::FieldProbe &probe)
+    {
+        StaticLightFields::probeFields(probe);
+
+        probe("Lighting Effects")
+                (intensityEffect, "Intensity Effect")
+                (effectTime, "Effect Time (s)")
+                (effectAmplitude, "Effect Amplitude")
+                (startEffect, "Start Effect..");
+
+        // this should prevent dividing by zero
+        if(effectTime <= 0.0)
+        {
+            effectTime = std::numeric_limits<float>::epsilon();
+        }
+    }
+
+    DynamicLight_Cl::DynamicLight_Cl()
+    : mLightIsOn(true)
     , mStarted(false)
     , mColorFactor(1.0)
     , mPulseRising(false)
     {
     }
 
-    void DynamicLight::probeFields(odRfl::FieldProbe &probe)
+    void DynamicLight_Cl::onLoaded()
     {
-        StaticLight::probeFields(probe);
-
-        probe("Lighting Effects")
-                (mIntensityEffect, "Intensity Effect")
-                (mEffectTime, "Effect Time (s)")
-                (mEffectAmplitude, "Effect Amplitude")
-                (mStartEffect, "Start Effect..");
-
-        // this should prevent dividing by zero
-        if(mEffectTime <= 0.0)
-        {
-            mEffectTime = std::numeric_limits<float>::epsilon();
-        }
+        getLevelObject().setObjectType(od::LevelObjectType::Light);
     }
 
-    void DynamicLight::onSpawned()
+    void DynamicLight_Cl::onSpawned()
     {
-        StaticLight::onSpawned();
+        auto &obj = getLevelObject();
 
-        mLight->setDynamic(true);
+        glm::vec4 color = mFields.color.asColorVector();
+        mLightColorVector = {color.r, color.g, color.b};
 
-        getLevelObject().setEnableUpdate(true);
+        od::Light lightPrototype;
+        lightPrototype.setRadius(mFields.radius);
+        lightPrototype.setColor(mLightColorVector);
+        lightPrototype.setIntensityScaling(mFields.intensityScaling);
+        lightPrototype.setRequiredQualityLevel(mFields.qualityLevelRequired);
+        lightPrototype.setPosition(obj.getPosition());
+        lightPrototype.setDynamic(true);
 
-        mStarted = (mStartEffect == EffectStartType::WhenCreated);
+        mLightHandle = getClient().getPhysicsSystem().createLightHandle(lightPrototype);
+        getClient().getPhysicsSystem().dispatchLighting(mLightHandle);
+
+        obj.setEnableUpdate(true);
+
+        mStarted = (mFields.startEffect == DynamicLightFields::EffectStartType::WhenCreated);
     }
 
-    void DynamicLight::onUpdate(float relTime)
+    void DynamicLight_Cl::onDespawned()
     {
-        StaticLight::onUpdate(relTime);
+        mLightHandle = nullptr;
+    }
 
-        if(mLight == nullptr || !mStarted)
+    void DynamicLight_Cl::onUpdate(float relTime)
+    {
+        if(mLightHandle == nullptr || !mStarted)
         {
             return;
         }
 
-        switch(mIntensityEffect)
+        switch(mFields.intensityEffect)
         {
-        case IntensityEffect::Pulse:
-            mColorFactor += (mPulseRising ? 1.0 : -1.0) * relTime/mEffectTime;
+        case DynamicLightFields::IntensityEffect::Pulse:
+            mColorFactor += (mPulseRising ? 1.0 : -1.0) * relTime/mFields.effectTime;
             if(mPulseRising && mColorFactor > 1.0)
             {
                 mColorFactor = 1.0;
@@ -78,10 +104,10 @@ namespace dragonRfl
             }
             break;
 
-        case IntensityEffect::Fade:
+        case DynamicLightFields::IntensityEffect::Fade:
             if(mColorFactor > 0.0)
             {
-                mColorFactor -= relTime/mEffectTime;
+                mColorFactor -= relTime/mFields.effectTime;
                 if(mColorFactor < 0.0)
                 {
                     mColorFactor = 0.0;
@@ -89,32 +115,32 @@ namespace dragonRfl
             }
             break;
 
-        case IntensityEffect::Off:
+        case DynamicLightFields::IntensityEffect::Off:
         default:
             break;
         }
 
         if(mLightIsOn)
         {
-            mLight->setColor(mLightColorVector*mColorFactor);
+            mLightHandle->getLight()->setColor(mLightColorVector*mColorFactor);
 
         }else
         {
-            mLight->setColor(glm::vec3(0.0, 0.0, 0.0)); // TODO: lights need an off-flag. an off-state light could free up one light slot
+            mLightHandle->getLight()->setColor(glm::vec3(0.0, 0.0, 0.0)); // TODO: lights need an off-flag. an off-state light could free up one light slot
         }
     }
 
-    void DynamicLight::onTransformChanged()
+    void DynamicLight_Cl::onTransformChanged()
     {
-        getLevelObject().setEnableUpdate(true);
+        getClient().getPhysicsSystem().dispatchLighting(mLightHandle);
     }
 
-    void DynamicLight::onMessageReceived(od::LevelObject &sender, od::Message message)
+    void DynamicLight_Cl::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         switch(message)
         {
         case od::Message::Triggered:
-            if(mStartEffect == EffectStartType::WhenEnabled)
+            if(mFields.startEffect == DynamicLightFields::EffectStartType::WhenEnabled)
             {
                 mStarted = true;
             }

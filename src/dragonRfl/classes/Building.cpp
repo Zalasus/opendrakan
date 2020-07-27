@@ -106,6 +106,11 @@ namespace dragonRfl
             {
                 mRenderHandle->setGlobalLight(lightSourceLayer->getLightDirection(), lightSourceLayer->getLightColor(), lightSourceLayer->getAmbientColor());
             }
+
+            mPhysicsHandle = getClient().getPhysicsSystem().createObjectHandle(obj, false);
+
+            mObjectLightReceiver = std::make_unique<od::ObjectLightReceiver>(getClient().getPhysicsSystem(), mPhysicsHandle, mRenderHandle);
+            mObjectLightReceiver->updateAffectingLights();
         }
 
         /* just an idea for how prediction will work:
@@ -116,6 +121,13 @@ namespace dragonRfl
             auto predictGuard = obj.startPrediction(0);
             obj.setPosition({ 10, 10, 2 });
         }*/
+    }
+
+    void Building_Cl::onDespawned()
+    {
+        mObjectLightReceiver = nullptr;
+        mPhysicsHandle = nullptr;
+        mRenderHandle = nullptr;
     }
 
 }

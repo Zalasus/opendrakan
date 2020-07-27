@@ -13,10 +13,8 @@
 namespace dragonRfl
 {
 
-    class DynamicLight : public StaticLight
+    struct DynamicLightFields : public StaticLightFields
     {
-    public:
-
         enum class IntensityEffect
         {
             Off,
@@ -32,31 +30,50 @@ namespace dragonRfl
             WhenEnabled
         };
 
-        DynamicLight();
+        DynamicLightFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
+        odRfl::EnumImpl<IntensityEffect, 0, 4>  intensityEffect;
+        odRfl::Float                            effectTime;
+        odRfl::Float                            effectAmplitude;
+        odRfl::EnumImpl<EffectStartType, 0, 1>  startEffect;
+    };
+
+
+    class DynamicLight_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<DynamicLight_Cl>
+    {
+    public:
+
+        DynamicLight_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+        virtual void onLoaded() override;
         virtual void onSpawned() override;
-        virtual void onUpdate(float relTime);
+        virtual void onDespawned() override;
+        virtual void onUpdate(float relTime) override;
         virtual void onTransformChanged() override;
         virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
-    protected:
+    private:
 
-        odRfl::EnumImpl<IntensityEffect, 0, 4>  mIntensityEffect;
-        odRfl::Float                            mEffectTime;
-        odRfl::Float                            mEffectAmplitude;
-        odRfl::EnumImpl<EffectStartType, 0, 1>  mStartEffect;
+        DynamicLightFields mFields;
 
-        bool mLightIsOn;
-        bool mStarted;
+        std::shared_ptr<odPhysics::LightHandle> mLightHandle;
+
+        glm::vec3 mLightColorVector;
+        bool  mLightIsOn;
+        bool  mStarted;
         float mColorFactor;
-        bool mPulseRising;
+        bool  mPulseRising;
     };
 
-}
+    using DynamicLightFactory = odRfl::DefaultClassFactory<DynamicLightFields, DynamicLight_Cl, odRfl::DummyClass>;
 
-ODRFL_DEFINE_CLASS_BASE(dragonRfl::DynamicLight, 0x0085, "Light Source", "Dynamic Light");
+    OD_DEFINE_CLASS(DynamicLight, 0x0085, "Light Source", "Dynamic Light", DynamicLightFactory);
+
+}
 
 #endif /* INCLUDE_DRAGONRFL_DYNAMICLIGHT_H_ */

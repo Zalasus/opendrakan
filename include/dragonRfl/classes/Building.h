@@ -15,6 +15,7 @@
 #include <odCore/rfl/AssetRefField.h>
 
 #include <odCore/render/Handle.h>
+#include <odCore/physics/Handles.h>
 
 namespace dragonRfl
 {
@@ -73,6 +74,7 @@ namespace dragonRfl
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onSpawned() override;
+        virtual void onDespawned() override;
 
 
     private:
@@ -80,6 +82,8 @@ namespace dragonRfl
         BuildingFields mFields;
 
         std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::unique_ptr<od::ObjectLightReceiver> mObjectLightReceiver;
 
     };
 

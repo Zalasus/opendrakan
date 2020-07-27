@@ -14,7 +14,7 @@ target_sources(dragonRfl PRIVATE
     "classes/CountDownToZero.cpp"
     #"classes/Detector.cpp"
     #"classes/DragonControl.cpp"
-    #"classes/DynamicLight.cpp"
+    "classes/DynamicLight.cpp"
     #"classes/HealthPack.cpp"
     #"classes/HumanControl.cpp"
     #"classes/HumanControlFields.cpp"
