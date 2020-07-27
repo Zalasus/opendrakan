@@ -85,8 +85,6 @@ namespace dragonRfl
 
     using BuildingFactory = odRfl::DefaultClassFactory<BuildingFields, Building_Cl, Building_Sv>;
 
-    //using Building = odRfl::ClassDefinition<, BuildingFactory>;
-
     OD_DEFINE_CLASS(Building, 0x0011, "Ground Object", "Building", BuildingFactory);
 
 }

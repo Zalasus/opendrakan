@@ -20,7 +20,7 @@
 // #include <dragonRfl/classes/PushableObject.h>
 // #include <dragonRfl/classes/Sky.h>
 // #include <dragonRfl/classes/SoundEffect.h>
-// #include <dragonRfl/classes/StaticLight.h>
+#include <dragonRfl/classes/StaticLight.h>
 // #include <dragonRfl/classes/Timer.h>
 // #include <dragonRfl/classes/TrackingCamera.h>
 // #include <dragonRfl/classes/UserInterfaceProperties.h>
@@ -45,7 +45,7 @@ namespace dragonRfl
         // registerClass<PushableObject>();
         // registerClass<DomedSky>();
         // registerClass<SoundEffect>();
-        // registerClass<StaticLight>();
+        registerClass<StaticLight>();
         // registerClass<Timer>();
         // registerClass<TrackingCamera>();
         // registerClass<UserInterfaceProperties>();

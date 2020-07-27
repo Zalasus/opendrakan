@@ -23,7 +23,7 @@ target_sources(dragonRfl PRIVATE
     #"classes/PushableObject.cpp"
     #"classes/Sky.cpp"
     #"classes/SoundEffect.cpp"
-    #"classes/StaticLight.cpp"
+    "classes/StaticLight.cpp"
     #"classes/Timer.cpp"
     #"classes/TrackingCamera.cpp"
     "classes/UserInterfaceProperties.cpp"

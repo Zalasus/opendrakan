@@ -21,7 +21,7 @@ namespace odRfl
     /**
      * @brief Dummy class that does nothing, has no fields and can be used everywhere.
      */
-    class DummyClass final : public ServerClass, public ClientClass, public SpawnableClass, public ClassImpl<TrackingCamera_Cl>
+    class DummyClass final : public ServerClass, public ClientClass, public SpawnableClass, public ClassImpl<DummyClass>
     {
     public:
 
@@ -34,7 +34,7 @@ namespace odRfl
 
     };
 
-    
+
     using DummyClassFactory = odRfl::DefaultClassFactory<DummyFields, DummyClass, DummyClass>;
 
 }
