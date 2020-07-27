@@ -63,11 +63,11 @@ namespace od
 
 	};
 
-    class UreachableException: public Exception
+    class UnreachableException: public Exception
 	{
     public:
 
-        UreachableException(const char *file, const char *function, int line);
+        UnreachableException(const char *file, const char *function, int line);
 
     };
 

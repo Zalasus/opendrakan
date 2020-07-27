@@ -37,7 +37,7 @@ namespace odDb
 
         inline uint32_t getWidth() const { return mWidth; }
         inline uint32_t getHeight() const { return mHeight; }
-        inline const uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.get(); }
+        inline uint8_t *getRawR8G8B8A8Data() { return mRgba8888Data.get(); } // can't be const right now because OSG is dumb
         inline bool hasAlpha() const { return mHasAlphaChannel; };
 
         /**

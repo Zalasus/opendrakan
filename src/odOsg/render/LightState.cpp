@@ -67,15 +67,17 @@ namespace odOsg
 
     void LightStateAttribute::addLight(std::shared_ptr<od::Light> light)
     {
+        // TODO: replace light if the new one fits better (like is closer or something)
         if(mLights.size() < mMaxLightCount)
         {
             mLights.emplace_back(light);
         }
     }
 
-    void LightStateAttribute::removeLight(od::Light *light)
+    void LightStateAttribute::removeLight(std::shared_ptr<od::Light> light)
     {
-        auto it = std::find(mLights.begin(), mLights.end(), light);
+        auto pred = [&light](std::weak_ptr<od::Light> &p){ return p.lock() == light; };
+        auto it = std::find_if(mLights.begin(), mLights.end(), pred);
         if(it != mLights.end())
         {
             mLights.erase(it);
@@ -93,7 +95,10 @@ namespace odOsg
             if(i < mLights.size() && !mLights[i].expired())
             {
                 auto light = mLights[i].lock();
-                mRenderer.applyToLightUniform(viewMatrix, light, i);
+                if(light != nullptr)
+                {
+                    mRenderer.applyToLightUniform(viewMatrix, *light, i);
+                }
 
             }else
             {

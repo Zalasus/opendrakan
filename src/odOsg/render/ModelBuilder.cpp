@@ -296,11 +296,11 @@ namespace odOsg
                 osgGeometry->addPrimitiveSet(drawElements);
 
                 // FIXME: rename property (or change interface to directly expose this)
-                odRender::TextureReuseSlot reuseSlot = mUseClampedTextures ? odRender::TextureReuseSlot::Layer : odRender::TextureReuseSlot::Model;
+                odRender::TextureReuseSlot reuseSlot = mUseClampedTextures ? odRender::TextureReuseSlot::LAYER : odRender::TextureReuseSlot::OBJECT;
 
                 auto dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
                 auto renderImage = mRenderer.createImageFromDb(dbTexture);
-                auto renderTexture = mRenderer.createTexture(textureUsage, reuseSlot);
+                auto renderTexture = mRenderer.createTexture(renderImage, reuseSlot);
 
                 if(dbTexture->hasAlpha())
                 {

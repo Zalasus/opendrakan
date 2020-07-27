@@ -69,14 +69,13 @@ namespace odOsg
 
     GuiNode::GuiNode(Renderer &renderer)
     : mRenderer(renderer)
-    , mWidget(w)
     , mTransform(new osg::MatrixTransform)
     {
-        if(w != nullptr)
+        /*if(w != nullptr)
         {
             mUpdateCallback = new UpdateCallback(*this);
             mTransform->addUpdateCallback(mUpdateCallback);
-        }
+        }*/
 
         mTransform->getOrCreateStateSet()->setNestRenderBins(true);
     }

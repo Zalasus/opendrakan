@@ -28,9 +28,9 @@ namespace odRender
     public:
 
         virtual size_t getGeometryCount() = 0;
-        virtual Geometry *getGeometry(size_t index) = 0;
+        virtual std::shared_ptr<Geometry> getGeometry(size_t index) = 0;
         virtual void addGeometry(std::shared_ptr<Geometry> g) = 0;
-        virtual void removeGeometry(Geometry *g) = 0;
+        virtual void removeGeometry(std::shared_ptr<Geometry> g) = 0;
 
         virtual bool hasSharedVertexArrays() = 0;
 

@@ -8,9 +8,10 @@
 #ifndef INCLUDE_ODOSG_AUDIO_BUFFER_H_
 #define INCLUDE_ODOSG_AUDIO_BUFFER_H_
 
-#include <odCore/audio/Buffer.h>
-
+#include <memory>
 #include <AL/al.h>
+
+#include <odCore/audio/Buffer.h>
 
 namespace odDb
 {

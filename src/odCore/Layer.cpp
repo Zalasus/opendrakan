@@ -451,7 +451,7 @@ namespace od
             throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
         }
 
-        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
+        std::shared_ptr<odRender::Geometry> geometry = mRenderModel->getGeometry(0);
 
         glm::vec3 relLightPosition = light.getPosition() - getOrigin(); // relative to layer origin
         float lightRadius = light.getRadius();
@@ -511,7 +511,7 @@ namespace od
             throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
         }
 
-        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
+        std::shared_ptr<odRender::Geometry> geometry = mRenderModel->getGeometry(0);
         odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());

@@ -44,6 +44,8 @@ namespace odAudio
         virtual std::shared_ptr<Source> createSource() = 0;
         virtual std::shared_ptr<Buffer> createBuffer(std::shared_ptr<odDb::Sound> sound) = 0;
 
+        std::shared_ptr<Buffer> getOrCreateBuffer(std::shared_ptr<odDb::Sound> sound);
+
         virtual void setEaxPreset(EaxPreset preset) = 0;
 
         virtual void loadMusicContainer(const od::FilePath &rrcPath) = 0;

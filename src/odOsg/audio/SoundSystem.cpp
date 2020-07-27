@@ -11,6 +11,7 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/db/Sound.h>
 #include <odCore/db/MusicContainer.h>
 #include <odCore/db/Segment.h>
 
@@ -84,11 +85,7 @@ namespace odOsg
 
     std::shared_ptr<odAudio::Buffer> SoundSystem::createBuffer(std::shared_ptr<odDb::Sound> sound)
     {
-        auto buffer = std::make_shared<Buffer>(*this, sound);
-
-        sound->getCachedSoundBuffer() = buffer;
-
-        return buffer;
+        return std::make_shared<Buffer>(*this, sound);
     }
 
     void SoundSystem::setEaxPreset(odAudio::EaxPreset preset)

@@ -154,8 +154,8 @@ namespace odOsg
 
         if(mCurrentSound != nullptr)
         {
-            auto buffer = mCurrentSound->getOrCreateAudioBuffer(&mSoundSystem);
-            mCurrentBuffer = od::confident_downcast<Buffer>(buffer.get());
+            auto buffer = mSoundSystem.getOrCreateBuffer(mCurrentSound);
+            mCurrentBuffer = od::confident_downcast<Buffer>(buffer);
 
             alSourcei(mSourceId, AL_BUFFER, mCurrentBuffer->getBufferId());
             SoundSystem::doErrorCheck("Could not attach sound buffer to source");

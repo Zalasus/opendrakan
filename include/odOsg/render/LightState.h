@@ -9,6 +9,7 @@
 #define INCLUDE_ODOSG_LIGHTSTATE_H_
 
 #include <vector>
+#include <memory>
 
 #include <osg/Vec3>
 #include <osg/StateAttribute>
@@ -58,14 +59,14 @@ namespace odOsg
          */
         void addLight(std::shared_ptr<od::Light> light);
 
-        void removeLight(od::Light *light);
+        void removeLight(std::shared_ptr<od::Light> light);
 
 
     private:
 
         Renderer &mRenderer;
         size_t mMaxLightCount;
-        std::vector<std::weak_ptr<od::Light>> mLights;
+        std::vector<std::weak_ptr<od::Light>> mLights; // weak pointers so lights that get removed will stop being rendered
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;
         osg::Vec3 mLayerLightDirection;

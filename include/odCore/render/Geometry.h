@@ -57,7 +57,7 @@ namespace odRender
 
         virtual std::unique_ptr<ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() = 0;
 
-        virtual void setTexture(Texture *texture) = 0;
+        virtual void setTexture(std::shared_ptr<Texture> texture) = 0;
 
         virtual bool usesIndexedRendering() = 0;
         virtual PrimitiveType getPrimitiveType() = 0;

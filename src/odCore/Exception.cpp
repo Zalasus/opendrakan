@@ -50,7 +50,7 @@ namespace od
 	}
 
 
-    UreachableException::UreachableException(const char *file, const char *function, int line)
+    UnreachableException::UnreachableException(const char *file, const char *function, int line)
     {
         std::ostringstream oss;
         oss << "Reached supposedly unreachable code in function " << function

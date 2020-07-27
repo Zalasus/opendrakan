@@ -88,7 +88,7 @@ namespace odOsg
     , mParentGroup(parentGroup)
     , mFrameListener(nullptr)
     , mTransform(new osg::PositionAttitudeTransform)
-    , mLightStateAttribute(new LightStateAttribute(&renderer, Constants::MAX_LIGHTS))
+    , mLightStateAttribute(new LightStateAttribute(renderer, Constants::MAX_LIGHTS))
     {
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
 
@@ -303,7 +303,7 @@ namespace odOsg
         mLightStateAttribute->addLight(light);
     }
 
-    void Handle::removeLight(od::Light *light)
+    void Handle::removeLight(std::shared_ptr<od::Light> light)
     {
         _assert_mutex_locked(mMutex);
 

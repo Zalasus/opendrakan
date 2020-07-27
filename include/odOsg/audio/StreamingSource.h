@@ -38,12 +38,12 @@ namespace odOsg
 
     private:
 
-        void _fillBuffer_locked(Buffer *buffer, const StreamingSource::BufferFillCallback &callback);
+        void _fillBuffer_locked(Buffer &buffer, const StreamingSource::BufferFillCallback &callback);
 
         size_t mSamplesPerBuffer;
         bool mIsStereo;
         std::unique_ptr<int16_t[]> mTempFillBuffer;
-        std::deque<od::RefPtr<Buffer>> mBuffers;
+        std::deque<std::shared_ptr<Buffer>> mBuffers;
         std::vector<ALuint> mBufferIds;
 
         BufferFillCallback mFillCallback;

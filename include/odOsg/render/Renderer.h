@@ -68,7 +68,7 @@ namespace odOsg
         virtual void frame(float relTime) override;
 
         void applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction);
-        void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index);
+        void applyToLightUniform(const osg::Matrix &viewMatrix, od::Light &light, size_t index);
         void applyNullLight(size_t index);
 
         void setFreeLook(bool f);

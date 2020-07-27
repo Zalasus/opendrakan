@@ -192,7 +192,7 @@ namespace odOsg
 
     std::shared_ptr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
     {
-        ModelBuilder mb(this, "layer " + layer->getName(), layer->getLevel());
+        ModelBuilder mb(*this, "layer " + layer->getName(), layer->getLevel());
         mb.setCWPolygonFlag(false);
         mb.setUseClampedTextures(true);
 
@@ -305,7 +305,7 @@ namespace odOsg
         osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
         builtModel->getGeode()->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
 
-        return builtModel.get();
+        return builtModel;
     }
 
     std::shared_ptr<odRender::Image> Renderer::createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture)
@@ -321,12 +321,12 @@ namespace odOsg
 
         auto odOsgImage = od::confident_downcast<Image>(image);
 
-        switch(slot)
+        switch(reuseSlot)
         {
-        case odRender::TextureSlot::NONE:
+        case odRender::TextureReuseSlot::NONE:
             return std::make_shared<Texture>(odOsgImage);
 
-        case odRender::TextureSlot::OBJECT:
+        case odRender::TextureReuseSlot::OBJECT:
             if(odOsgImage->getSharedObjectTexture().expired())
             {
                 auto newTexture = std::make_shared<Texture>(odOsgImage);
@@ -352,7 +352,7 @@ namespace odOsg
 
     std::shared_ptr<odRender::GuiNode> Renderer::createGuiNode()
     {
-        return std::make_shared<GuiNode>(this);
+        return std::make_shared<GuiNode>(*this);
     }
 
     std::shared_ptr<odRender::GuiNode> Renderer::getGuiRootNode()
@@ -362,7 +362,7 @@ namespace odOsg
 
     odRender::Camera *Renderer::getCamera()
     {
-        return mCamera;
+        return mCamera.get();
     }
 
     void Renderer::setup()
@@ -423,16 +423,11 @@ namespace odOsg
         mGlobalLightDirection->set(osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
-    void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index)
+    void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, od::Light &light, size_t index)
     {
         if(index >= mLocalLightsColor->getNumElements())
         {
             throw od::InvalidArgumentException("Tried to apply light at out-of-bounds index");
-        }
-
-        if(light == nullptr)
-        {
-            throw od::InvalidArgumentException("Passed nullptr light to renderer");
         }
 
         if(!mLightingEnabled)
@@ -440,11 +435,11 @@ namespace odOsg
             return;
         }
 
-        mLocalLightsColor->setElement(index, GlmAdapter::toOsg(light->getColor()));
-        mLocalLightsIntensity->setElement(index, light->getIntensityScaling());
-        mLocalLightsRadius->setElement(index, light->getRadius());
+        mLocalLightsColor->setElement(index, GlmAdapter::toOsg(light.getColor()));
+        mLocalLightsIntensity->setElement(index, light.getIntensityScaling());
+        mLocalLightsRadius->setElement(index, light.getRadius());
 
-        osg::Vec3 posWs = GlmAdapter::toOsg(light->getPosition());
+        osg::Vec3 posWs = GlmAdapter::toOsg(light.getPosition());
         osg::Vec4 dirCs = osg::Vec4(posWs, 1.0) * viewMatrix;
         mLocalLightsPosition->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
@@ -500,13 +495,13 @@ namespace odOsg
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
 
-        mGuiRootNode = std::make_shared<GuiNode>(this, nullptr);
+        mGuiRootNode = std::make_shared<GuiNode>(*this);
         mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 
     std::shared_ptr<Model> Renderer::_buildSingleLodModelNode(odDb::Model &model)
     {
-        ModelBuilder mb(this, model.getName(), model.getAssetProvider());
+        ModelBuilder mb(*this, model.getName(), model.getAssetProvider());
 
         mb.setCWPolygonFlag(true);
         mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
@@ -524,7 +519,7 @@ namespace odOsg
 
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
-            ModelBuilder mb(this, model.getName() + " (LOD '" + it->lodName + "')", model.getAssetProvider());
+            ModelBuilder mb(*this, model.getName() + " (LOD '" + it->lodName + "')", model.getAssetProvider());
 
             mb.setCWPolygonFlag(true);
             mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);

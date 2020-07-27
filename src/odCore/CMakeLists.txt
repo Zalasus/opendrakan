@@ -12,6 +12,7 @@ target_sources(odCore PRIVATE
         "anim/Skeleton.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
         "audio/music/SegmentPlayer.cpp"
+        "audio/SoundSystem.cpp"
         "db/Animation.cpp"
         "db/Asset.cpp"
         "db/AssetProvider.cpp"

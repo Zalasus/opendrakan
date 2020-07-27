@@ -36,9 +36,9 @@ namespace odOsg
         mBufferIds.resize(bufferCount, 0);
         for(size_t i = 0; i < bufferCount; ++i)
         {
-            mBuffers[i] = od::make_refd<Buffer>(ss);
+            mBuffers[i] = std::make_shared<Buffer>(ss);
             mBufferIds[i] = mBuffers[i]->getBufferId();
-            _fillBuffer_locked(mBuffers[i], FILL_WITH_SILENCE);
+            _fillBuffer_locked(*mBuffers[i], FILL_WITH_SILENCE);
         }
 
         alSourceQueueBuffers(mSourceId, bufferCount, mBufferIds.data());
@@ -107,7 +107,7 @@ namespace odOsg
             alSourceUnqueueBuffers(mSourceId, 1, &bufferId);
             SoundSystem::doErrorCheck("Could not unqueue buffer from streaming source");
 
-            _fillBuffer_locked(buffer, mFillCallback);
+            _fillBuffer_locked(*buffer, mFillCallback);
 
             alSourceQueueBuffers(mSourceId, 1, &bufferId);
             SoundSystem::doErrorCheck("Could not queue buffer into streaming source");
@@ -115,14 +115,14 @@ namespace odOsg
         }
     }
 
-    void StreamingSource::_fillBuffer_locked(Buffer *buffer, const StreamingSource::BufferFillCallback &callback)
+    void StreamingSource::_fillBuffer_locked(Buffer &buffer, const StreamingSource::BufferFillCallback &callback)
     {
         mFillCallback(mTempFillBuffer.get(), mSamplesPerBuffer);
 
         ALenum format = mIsStereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
         ALsizei size = mSamplesPerBuffer*sizeof(int16_t);
 
-        alBufferData(buffer->getBufferId(), format, mTempFillBuffer.get(), size, mSoundSystem.getContext().getOutputFrequency());
+        alBufferData(buffer.getBufferId(), format, mTempFillBuffer.get(), size, mSoundSystem.getContext().getOutputFrequency());
         SoundSystem::doErrorCheck("Failed to push data from fill buffer to AL buffer");
     }
 }

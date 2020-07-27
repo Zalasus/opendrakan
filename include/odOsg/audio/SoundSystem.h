@@ -33,6 +33,7 @@ namespace odAudio
 namespace odOsg
 {
     class Source;
+    class StreamingSource;
 
     class SoundSystem : public odAudio::SoundSystem
     {
@@ -75,7 +76,7 @@ namespace odOsg
 
         std::unique_ptr<odDb::MusicContainer> mMusicContainer;
 
-        std::shared_ptr<odAudio::Source> mMusicSource;
+        std::shared_ptr<odOsg::StreamingSource> mMusicSource;
         std::unique_ptr<odAudio::MidiSynth> mSynth;
         std::unique_ptr<odAudio::SegmentPlayer> mSegmentPlayer;
     };

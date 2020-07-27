@@ -29,9 +29,9 @@ namespace odOsg
         inline void setHasSharedVertexArrays(bool b) { mHasSharedVertexArrays = b; }
 
         virtual size_t getGeometryCount() override;
-        virtual odRender::Geometry *getGeometry(size_t index) override;
+        virtual std::shared_ptr<odRender::Geometry> getGeometry(size_t index) override;
         virtual void addGeometry(std::shared_ptr<odRender::Geometry> g) override;
-        virtual void removeGeometry(odRender::Geometry *g) override;
+        virtual void removeGeometry(std::shared_ptr<odRender::Geometry> g) override;
 
         virtual bool hasSharedVertexArrays() override;
 

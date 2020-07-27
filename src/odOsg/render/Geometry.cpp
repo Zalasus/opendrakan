@@ -290,7 +290,7 @@ namespace odOsg
         return std::make_unique<OsgVec4ArrayAccessHandler>(mOsgBoneWeightArray);
     }
 
-    void Geometry::setTexture(odRender::Texture *texture)
+    void Geometry::setTexture(std::shared_ptr<odRender::Texture> texture)
     {
         mTexture = od::confident_downcast<Texture>(texture);
 

@@ -8,6 +8,8 @@
 #ifndef INCLUDE_ODCORE_AUDIO_SOURCE_H_
 #define INCLUDE_ODCORE_AUDIO_SOURCE_H_
 
+#include <memory>
+
 #include <glm/vec3.hpp>
 
 namespace odDb

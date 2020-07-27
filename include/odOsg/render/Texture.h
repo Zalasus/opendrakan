@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ODOSG_TEXTURE_H_
 #define INCLUDE_ODOSG_TEXTURE_H_
 
+#include <memory>
 #include <osg/Texture2D>
 
 #include <odCore/render/Texture.h>
