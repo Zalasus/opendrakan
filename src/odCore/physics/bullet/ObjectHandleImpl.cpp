@@ -33,7 +33,7 @@ namespace odBulletPhysics
         {
             throw od::Exception("Created physics handle for object without model");
         }
-        std::shared_ptr<odPhysics::ModelShape> shapeIface = ps.createModelShape(model);
+        std::shared_ptr<odPhysics::ModelShape> shapeIface = ps.getOrCreateModelShape(model);
         mModelShape = od::confident_downcast<ModelShape>(shapeIface);
 
         btCollisionShape *bulletShape;
