@@ -33,7 +33,7 @@ namespace dragonRfl
     , mInterfaceDb(nullptr)
     {
         od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
-        mInterfaceDb = &client.getDbManager().loadDb(interfaceDbPath.adjustCase());
+        mInterfaceDb = client.getDbManager().loadDb(interfaceDbPath.adjustCase());
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb->getClassFactory() == nullptr)
@@ -48,24 +48,24 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
         }
 
-        od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
+        std::shared_ptr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
         assert(uiPropsClass != nullptr); // this should not be null, given that the DB just gave us the ID
         uiPropsClass->fillFields(mUserInterfaceProperties);
 
         odRfl::PrefetchProbe probe(*mInterfaceDb);
         mUserInterfaceProperties.probeFields(probe);
 
-        auto cursor = od::make_refd<Cursor>(*this);
+        auto cursor = std::make_shared<Cursor>(*this);
         setCursorWidget(cursor);
 
         setCursorPosition(glm::vec2(0, 0));
 
-        auto healthIndicator = od::make_refd<HealthIndicator>(*this);
+        auto healthIndicator = std::make_shared<HealthIndicator>(*this);
         healthIndicator->setOrigin(odGui::WidgetOrigin::BottomLeft);
         healthIndicator->setPosition(0, 1);
         addWidget(healthIndicator);
 
-        mMainMenu = od::make_refd<MainMenu>(*this, &mUserInterfaceProperties);
+        mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);
 
         setMenuMode(false);
@@ -146,7 +146,7 @@ namespace dragonRfl
         return std::move(decryptedString);
     }
 
-    od::RefPtr<odDb::Texture> DragonGui::getTexture(od::RecordId recordId)
+    std::shared_ptr<odDb::Texture> DragonGui::getTexture(od::RecordId recordId)
     {
         return mRrcTextureFactory.getAsset(recordId);
     }

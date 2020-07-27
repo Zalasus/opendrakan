@@ -79,7 +79,7 @@ namespace dragonRfl
 
         BuildingFields mFields;
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
 
     };
 

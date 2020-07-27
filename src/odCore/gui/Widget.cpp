@@ -21,6 +21,11 @@
 
 namespace odGui
 {
+    Widget::Widget(Gui &gui)
+    : Widget(gui, nullptr)
+    {
+        mRenderNode = gui.getRenderer().createGuiNode();
+    }
 
     Widget::Widget(Gui &gui, std::shared_ptr<odRender::GuiNode> node)
     : mGui(gui)

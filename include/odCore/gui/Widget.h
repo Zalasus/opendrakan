@@ -72,6 +72,7 @@ namespace odGui
     {
     public:
 
+        Widget(Gui &gui);
         Widget(Gui &gui, std::shared_ptr<odRender::GuiNode> node);
         virtual ~Widget();
 

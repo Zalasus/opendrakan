@@ -41,8 +41,8 @@ namespace dragonRfl
             BC_QUIT
         };
 
-        void _addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
-            UserInterfacePropertiesFields *uiProps, odGui::Widget *cont, int buttonCode);
+        void _addCrystal(DragonGui &gui, std::shared_ptr<odDb::Model> crystalModel, float noteOffset, float dia, float x, float y,
+            UserInterfacePropertiesFields *uiProps, std::shared_ptr<odGui::Widget> cont, int buttonCode);
 
         void _buttonClicked(int buttonCode);
 

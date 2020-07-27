@@ -92,7 +92,7 @@ namespace dragonRfl
         {
             auto &renderer = getClient().getRenderer();
             auto dbModel = dbClass->getModel();
-            auto renderModel = dbModel->getOrCreateRenderModel(&renderer);
+            auto renderModel = renderer.getOrCreateModelFromDb(dbModel);
 
             mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
             mRenderHandle->setPosition(obj.getPosition());

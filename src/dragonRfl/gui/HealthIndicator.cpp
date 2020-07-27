@@ -131,11 +131,11 @@ namespace dragonRfl
 
     private:
 
-        od::RefPtr<odRender::GuiQuad> mOrbQuad_Left;
+        std::shared_ptr<odRender::GuiQuad> mOrbQuad_Left;
         glm::vec2 mTopLeftPx_Left;
         glm::vec2 mBottomRightPx_Left;
 
-        od::RefPtr<odRender::GuiQuad> mOrbQuad_Right;
+        std::shared_ptr<odRender::GuiQuad> mOrbQuad_Right;
         glm::vec2 mTopLeftPx_Right;
         glm::vec2 mBottomRightPx_Right;
 
@@ -168,14 +168,14 @@ namespace dragonRfl
         glm::vec2 healthBR_right(36, 63);
         glm::vec2 healthTL_left(93, 65);
         glm::vec2 healthBR_left(128, 127);
-        mHealthOrb = od::make_refd<Orb>(gui, GuiTextures::HudOrbs_1, healthTL_left, healthBR_left, healthTL_right, healthBR_right, true);
+        mHealthOrb = std::make_shared<Orb>(gui, GuiTextures::HudOrbs_1, healthTL_left, healthBR_left, healthTL_right, healthBR_right, true);
         mHealthOrb->setZIndex(2);
         mHealthOrb->setPosition(orbOffset/size);
         this->addChild(mHealthOrb);
 
         glm::vec2 flashTL(122, 142);
         glm::vec2 flashBR(193, 205);
-        mFlashOrb = od::make_refd<Orb>(gui, GuiTextures::HudElements, flashTL, flashBR, true);
+        mFlashOrb = std::make_shared<Orb>(gui, GuiTextures::HudElements, flashTL, flashBR, true);
         mFlashOrb->setZIndex(1);
         mFlashOrb->setPosition(orbOffset/size);
         this->addChild(mFlashOrb);
@@ -216,5 +216,3 @@ namespace dragonRfl
     }
 
 }
-
-

@@ -34,7 +34,10 @@ namespace dragonRfl
     {
     public:
 
-        CrystalRingButton(DragonGui &gui, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel, odDb::Sound *hoverSound, float noteOffset);
+        CrystalRingButton(DragonGui &gui, std::shared_ptr<odDb::Model> crystalModel,
+                                          std::shared_ptr<odDb::Model> innerRingModel,
+                                          std::shared_ptr<odDb::Model> outerRingModel,
+                                          std::shared_ptr<odDb::Sound> hoverSound, float noteOffset);
         CrystalRingButton(const CrystalRingButton &c) = delete;
         virtual ~CrystalRingButton();
 
@@ -51,9 +54,9 @@ namespace dragonRfl
 
     private:
 
-        od::RefPtr<odRender::Handle> mCrystalHandle;
-        od::RefPtr<odRender::Handle> mInnerRingHandle;
-        od::RefPtr<odRender::Handle> mOuterRingHandle;
+        std::shared_ptr<odRender::Handle> mCrystalHandle;
+        std::shared_ptr<odRender::Handle> mInnerRingHandle;
+        std::shared_ptr<odRender::Handle> mOuterRingHandle;
         glm::vec4 mCrystalColorInactive;
         glm::vec4 mCrystalColorActive;
         glm::vec4 mRingColorInactive;
@@ -68,7 +71,7 @@ namespace dragonRfl
         odAnim::Interpolated<glm::vec4> mCrystalColor;
         odAnim::Interpolated<glm::vec4> mRingColor;
 
-        od::RefPtr<odAudio::Source> mSoundSource;
+        std::shared_ptr<odAudio::Source> mSoundSource;
     };
 
 }

@@ -47,8 +47,8 @@ namespace dragonRfl
         LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
 
-        od::RefPtr<odInput::IAction> mMenuAction;
-        od::RefPtr<odInput::IAction> mPhysicsDebugAction;
+        std::shared_ptr<odInput::IAction> mMenuAction;
+        std::shared_ptr<odInput::IAction> mPhysicsDebugAction;
     };
 
 }

@@ -35,8 +35,10 @@
 namespace dragonRfl
 {
 
-    CrystalRingButton::CrystalRingButton(DragonGui &gui, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel,
-            odDb::Sound *hoverSound, float noteOffset)
+    CrystalRingButton::CrystalRingButton(DragonGui &gui, std::shared_ptr<odDb::Model> crystalModel,
+                                      std::shared_ptr<odDb::Model> innerRingModel,
+                                      std::shared_ptr<odDb::Model> outerRingModel,
+                                      std::shared_ptr<odDb::Sound> hoverSound, float noteOffset)
     : odGui::Widget(gui)
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
@@ -50,7 +52,7 @@ namespace dragonRfl
     , mRingColor(mRingColorInactive)
     {
         // select whatever model is not null for bounds calculation, starting with outer ring
-        od::RefPtr<odDb::Model> modelForBounds =
+        std::shared_ptr<odDb::Model> modelForBounds =
                 (outerRingModel != nullptr) ? outerRingModel : ((innerRingModel != nullptr) ? innerRingModel : crystalModel);
 
         if(modelForBounds == nullptr)
@@ -73,7 +75,7 @@ namespace dragonRfl
 
         if(crystalModel != nullptr)
         {
-            od::RefPtr<odRender::Model> mn = crystalModel->getOrCreateRenderModel(&getGui().getRenderer());
+            std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(crystalModel);
 
             mCrystalHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
@@ -89,7 +91,7 @@ namespace dragonRfl
 
         if(innerRingModel != nullptr)
         {
-            od::RefPtr<odRender::Model> mn = innerRingModel->getOrCreateRenderModel(&getGui().getRenderer());
+            std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(innerRingModel);
 
             mInnerRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
@@ -105,7 +107,7 @@ namespace dragonRfl
 
         if(outerRingModel != nullptr)
         {
-            od::RefPtr<odRender::Model> mn = outerRingModel->getOrCreateRenderModel(&getGui().getRenderer());
+            std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(outerRingModel);
 
             mOuterRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 

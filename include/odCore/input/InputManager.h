@@ -60,7 +60,7 @@ namespace odInput
             auto &weakRef = mActions[actionCode];
             if(weakRef.expired())
             {
-                actionHandle = std::shared_ptr<ActionHandle<_ActionEnum>>(*this, action);
+                actionHandle = std::make_shared<ActionHandle<_ActionEnum>>(*this, action);
                 weakRef = actionHandle;
 
             }else

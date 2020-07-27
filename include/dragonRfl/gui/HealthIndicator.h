@@ -49,8 +49,8 @@ namespace dragonRfl
 
         odAnim::Interpolated<float, odAnim::SineInterpolator<float>> mHealthLevel;
 
-        od::RefPtr<Orb> mHealthOrb;
-        od::RefPtr<Orb> mFlashOrb;
+        std::shared_ptr<Orb> mHealthOrb;
+        std::shared_ptr<Orb> mFlashOrb;
     };
 
 }

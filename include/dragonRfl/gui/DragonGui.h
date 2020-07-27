@@ -62,7 +62,7 @@ namespace dragonRfl
 
     protected:
 
-        virtual od::RefPtr<odDb::Texture> getTexture(od::RecordId recordId) override;
+        virtual std::shared_ptr<odDb::Texture> getTexture(od::RecordId recordId) override;
 
 
     private:
@@ -72,13 +72,13 @@ namespace dragonRfl
         od::Client &mClient;
         od::SrscFile mRrcFile;
         odDb::TextureFactory mRrcTextureFactory;
-        odDb::Database *mInterfaceDb;
+        std::shared_ptr<odDb::Database> mInterfaceDb;
 
         UserInterfacePropertiesFields mUserInterfaceProperties;
 
         std::map<od::RecordId, std::string> mLocalizedStringCache;
 
-        od::RefPtr<MainMenu> mMainMenu;
+        std::shared_ptr<MainMenu> mMainMenu;
     };
 
 }

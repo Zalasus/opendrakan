@@ -69,22 +69,22 @@ namespace dragonRfl
         odInput::InputManager &im = localClient.getInputManager();
 
         auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
-        auto mmAction = im.getOrCreateAction(Action::Main_Menu);
-        mmAction->setRepeatable(false);
-        mmAction->setIgnoreUpEvents(true);
-        mmAction->addCallback(actionHandler);
-        mmAction->bindToKey(odInput::Key::Return);
-        mMenuAction = mmAction;
+        auto menuAction = im.getOrCreateAction(Action::Main_Menu);
+        menuAction->setRepeatable(false);
+        menuAction->setIgnoreUpEvents(true);
+        menuAction->addCallback(actionHandler);
+        im.bindActionToKey(menuAction, odInput::Key::Return);
+        mMenuAction = menuAction;
 
         auto physicsDebugAction = im.getOrCreateAction(Action::PhysicsDebug_Toggle);
         physicsDebugAction->setRepeatable(false);
         physicsDebugAction->setIgnoreUpEvents(true);
-        physicsDebugAction->bindToKey(odInput::Key::F3);
         auto physDebugCallback = [&localClient](odInput::ActionHandle<Action> *action, odInput::InputEvent event)
         {
             localClient.getPhysicsSystem().toggleDebugDrawing();
         };
         physicsDebugAction->addCallback(physDebugCallback);
+        im.bindActionToKey(physicsDebugAction, odInput::Key::F3);
         mPhysicsDebugAction = physicsDebugAction;
     }
 

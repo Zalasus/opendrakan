@@ -22,9 +22,10 @@ namespace dragonRfl
     Cursor::Cursor(DragonGui &gui)
     : Widget(gui)
     {
-        od::RefPtr<odRender::GuiQuad> cursorQuad = this->getRenderNode()->createGuiQuad();
-        od::RefPtr<odDb::Texture> cursorDbTexture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor);
-        od::RefPtr<odRender::Texture> texture = cursorDbTexture->getRenderImage(&gui.getRenderer())->createTexture();
+        std::shared_ptr<odRender::GuiQuad> cursorQuad = this->getRenderNode()->createGuiQuad();
+        auto cursorDbTexture = gui.getAsset<odDb::Texture>(GuiTextures::Cursor);
+        auto cursorImage = gui.getRenderer().getOrCreateImageFromDb(cursorDbTexture);
+        auto texture = gui.getRenderer().createTexture(cursorImage, odRender::TextureReuseSlot::NONE);
         cursorQuad->setTexture(texture);
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping

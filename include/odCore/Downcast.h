@@ -41,7 +41,7 @@ namespace od
      * @brief Overload of od::downcast for std::shared_ptr
      */
     template <typename _To, typename _From>
-    std::shared_ptr<_To> *downcast(std::shared_ptr<_From> f)
+    std::shared_ptr<_To> downcast(std::shared_ptr<_From> f)
     {
         if(f == nullptr)
         {
