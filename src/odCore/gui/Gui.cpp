@@ -25,12 +25,16 @@ namespace odGui
     Gui::Gui(odRender::Renderer &renderer)
     : mRenderer(renderer)
     , mMenuMode(false)
+    , mDepthDirty(false)
     {
         _setupGui();
+
+        mRenderer.addGuiCallback(this);
     }
 
     Gui::~Gui()
     {
+        mRenderer.removeGuiCallback(this);
     }
 
     void Gui::quit()
@@ -119,7 +123,7 @@ namespace odGui
 
         if(mCursorWidget != nullptr)
         {
-            mCursorWidget->setPosition(posWs.x, posWs.y);
+            mCursorWidget->setPosition({posWs.x, posWs.y});
         }
 
         if(!mMenuMode)
@@ -180,6 +184,36 @@ namespace odGui
     {
     }
 
+    void Gui::rebuild()
+    {
+        if(mDepthDirty)
+        {
+            mRootWidget->flattenDepth();
+        }
+
+        if(mMeasurementsDirty)
+        {
+            mRootWidget->measure(mRenderer.getFramebufferDimensions());
+        }
+
+        if(mTransformsDirty)
+        {
+            mRootWidget->flattenTransform();
+        }
+    }
+
+    void Gui::onUpdate(float relTime)
+    {
+        rebuild();
+
+        mRootWidget->update(relTime);
+    }
+
+    void Gui::onFramebufferResize(glm::vec2 dimensionsPx)
+    {
+        mRootWidget->measure(dimensionsPx);
+    }
+
     void Gui::_setupGui()
     {
         mWidgetSpaceToNdcTransform = glm::mat4(1.0);
@@ -188,9 +222,8 @@ namespace odGui
 
         mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
 
-        mRootWidget = std::make_shared<Widget>(*this, mRenderer.getGuiRootNode());
-        mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels); // FIXME: get actual dimensions here
-        mRootWidget->update(0); // the root GuiNode has no reference to the root widget, so it can't trigger the initial update itself
+        mRootWidget = std::make_shared<Widget>(*this);
+        mRootWidget->setDimensions(glm::vec2(1.0, 1.0), WidgetDimensionType::ParentRelative);
     }
 
 }

@@ -19,87 +19,35 @@
 namespace odOsg
 {
 
-    /**
-     * @brief Custom array accessor, adjusting the binding of color attributes.
-     *
-     * This will set the color array's binding to overall if it contains only one vector.
-     */
-    class ColorArrayAccessor : public OsgVec4ArrayAccessHandler
+    ColorArrayAccessHandler::ColorArrayAccessHandler(osg::Vec4Array *array)
+    : OsgVec4ArrayAccessHandler(array)
     {
-    public:
+    }
 
-        ColorArrayAccessor(osg::Vec4Array *array)
-        : OsgVec4ArrayAccessHandler(array)
-        {
-        }
-
-        virtual void release() override
-        {
-            OsgVec4ArrayAccessHandler::release();
-
-            osg::Array::Binding binding = mOsgArray->size() == 1 ? osg::Array::BIND_OVERALL : osg::Array::BIND_PER_VERTEX;
-            mOsgArray->setBinding(binding);
-        }
-
-    };
-
-    class IndexArrayAccessHandler : public odRender::ArrayAccessHandler<int32_t>
+    void ColorArrayAccessHandler::release(bool writeback)
     {
-    public:
+        OsgVec4ArrayAccessHandler::release(writeback);
 
-        IndexArrayAccessHandler(osg::DrawElements *de)
-        {
-
-        }
-
-        virtual odRender::Array<_ElementType> &getArray() override
-        {
-            return mArray;
-        }
-
-        virtual void acquire() override
-        {
-
-        }
-
-        virtual void release() override
-        {
-
-        }
+        osg::Array::Binding binding = mOsgArray->size() == 1 ? osg::Array::BIND_OVERALL : osg::Array::BIND_PER_VERTEX;
+        mOsgArray->setBinding(binding);
+    }
 
 
-    private:
-
-        odRender::Array<_ElementType> mArray;
-
-    };
-
-    /**
-     * @brief Custom access handler for the vertex array. Will update element count if not using indexed rendering.
-     */
-    class DAVertexArrayAccessHandler : public OsgVec3ArrayAccessHandler
+    VertexArrayAccessHandler::VertexArrayAccessHandler(osg::Vec3Array *array, osg::DrawArrays *drawArrays)
+    : OsgVec3ArrayAccessHandler(array)
+    , mDrawArrays(drawArrays)
     {
-    public:
+    }
 
-        DAVertexArrayAccessHandler(osg::Vec3Array *array, osg::DrawArrays *drawArrays)
-        : OsgVec3ArrayAccessHandler(array)
-        , mDrawArrays(drawArrays)
+    void VertexArrayAccessHandler::release(bool writeback)
+    {
+        OsgVec3ArrayAccessHandler::release(writeback);
+
+        if(mDrawArrays != nullptr)
         {
-        }
-
-        virtual void release() override
-        {
-            OsgVec3ArrayAccessHandler::release();
-
             mDrawArrays->setCount(mOsgArray->size());
         }
-
-
-    private:
-
-        osg::ref_ptr<osg::DrawArrays> mDrawArrays;
-
-    };
+    }
 
 
     Geometry::Geometry(odRender::PrimitiveType primitiveType, bool indexed)
@@ -110,6 +58,12 @@ namespace odOsg
     , mOsgColorArray(new osg::Vec4Array)
     , mOsgNormalArray(new osg::Vec3Array)
     , mOsgTextureCoordArray(new osg::Vec2Array)
+    , mVertexArrayAccessHandler(mOsgVertexArray, nullptr)
+    , mColorArrayAccessHandler(mOsgColorArray)
+    , mNormalArrayAccessHandler(mOsgNormalArray)
+    , mTextureCoordArrayAccessHandler(mOsgTextureCoordArray)
+    , mBoneIndexArrayAccessHandler(nullptr)
+    , mBoneWeightArrayAccessHandler(nullptr)
     {
         mGeometry->setUseDisplayList(false);
         mGeometry->setUseVertexBufferObjects(true);
@@ -140,7 +94,9 @@ namespace odOsg
 
         }else
         {
-            mPrimitiveSet = new osg::DrawArrays(glPrimitiveType);
+            osg::ref_ptr<osg::DrawArrays> drawArrays = new osg::DrawArrays(glPrimitiveType);
+            mVertexArrayAccessHandler.setDrawArrays(drawArrays);
+            mPrimitiveSet = drawArrays;
         }
         mGeometry->addPrimitiveSet(mPrimitiveSet);
 
@@ -149,35 +105,42 @@ namespace odOsg
 
     Geometry::Geometry(osg::Geometry *geometry)
     : mGeometry(geometry)
+    , mVertexArrayAccessHandler(nullptr, nullptr)
+    , mColorArrayAccessHandler(nullptr)
+    , mNormalArrayAccessHandler(nullptr)
+    , mTextureCoordArrayAccessHandler(nullptr)
+    , mBoneIndexArrayAccessHandler(nullptr)
+    , mBoneWeightArrayAccessHandler(nullptr)
     {
-        if(mGeometry == nullptr)
-        {
-            throw od::Exception("Got nullptr geometry");
-        }
+        OD_CHECK_ARG_NONNULL(geometry);
 
         mOsgVertexArray = dynamic_cast<osg::Vec3Array*>(mGeometry->getVertexArray());
         if(mOsgVertexArray == nullptr)
         {
             throw od::Exception("Passed geometry had no valid vertex array");
         }
+        mVertexArrayAccessHandler.setArray(mOsgVertexArray);
 
         mOsgColorArray = dynamic_cast<osg::Vec4Array*>(mGeometry->getColorArray());
         if(mOsgColorArray == nullptr)
         {
             throw od::Exception("Passed geometry had no valid color array");
         }
+        mColorArrayAccessHandler.setArray(mOsgColorArray);
 
         mOsgNormalArray = dynamic_cast<osg::Vec3Array*>(mGeometry->getNormalArray());
         if(mOsgNormalArray == nullptr)
         {
             throw od::Exception("Passed geometry had no valid normal array");
         }
+        mNormalArrayAccessHandler.setArray(mOsgNormalArray);
 
         mOsgTextureCoordArray = dynamic_cast<osg::Vec2Array*>(mGeometry->getTexCoordArray(0));
         if(mOsgTextureCoordArray == nullptr)
         {
             throw od::Exception("Passed geometry had no valid texture coordinate array");
         }
+        mTextureCoordArrayAccessHandler.setArray(mOsgTextureCoordArray);
 
         mOsgBoneIndexArray = dynamic_cast<osg::Vec4Array*>(mGeometry->getVertexAttribArray(Constants::ATTRIB_INFLUENCE_LOCATION));
         mOsgBoneWeightArray = dynamic_cast<osg::Vec4Array*>(mGeometry->getVertexAttribArray(Constants::ATTRIB_WEIGHT_LOCATION));
@@ -185,12 +148,18 @@ namespace odOsg
         {
             throw od::Exception("Passed geometry had one of weight/index array, but not the other. Must have either none or both");
         }
+        mBoneIndexArrayAccessHandler.setArray(mOsgBoneIndexArray);
+        mBoneWeightArrayAccessHandler.setArray(mOsgBoneWeightArray);
 
         if(mGeometry->getNumPrimitiveSets() == 0)
         {
             throw od::Exception("Passed geometry had no primitive set");
         }
         mPrimitiveSet = mGeometry->getPrimitiveSet(0);
+
+        auto drawArrays = dynamic_cast<osg::DrawArrays*>(mPrimitiveSet.get());
+        mVertexArrayAccessHandler.setDrawArrays(drawArrays);
+        mIndexed = (drawArrays == nullptr);
 
         switch(mPrimitiveSet->getMode())
         {
@@ -205,8 +174,6 @@ namespace odOsg
         default:
             throw od::UnsupportedException("Unsupported or unknown primitive type");
         }
-
-        mIndexed = (dynamic_cast<osg::DrawElements*>(mPrimitiveSet.get()) != nullptr); // ugh...
     }
 
     void Geometry::setHasBoneInfo(bool b)
@@ -221,6 +188,9 @@ namespace odOsg
             mOsgBoneWeightArray->setBinding(osg::Array::BIND_PER_VERTEX);
             mGeometry->setVertexAttribArray(Constants::ATTRIB_WEIGHT_LOCATION, mOsgBoneWeightArray);
 
+            mBoneIndexArrayAccessHandler.setArray(mOsgBoneIndexArray);
+            mBoneWeightArrayAccessHandler.setArray(mOsgBoneWeightArray);
+
         }else if(!b && hasBoneInfo())
         {
             mGeometry->setVertexAttribArray(Constants::ATTRIB_INFLUENCE_LOCATION, nullptr);
@@ -228,6 +198,9 @@ namespace odOsg
 
             mGeometry->setVertexAttribArray(Constants::ATTRIB_WEIGHT_LOCATION, nullptr);
             mOsgBoneWeightArray = nullptr;
+
+            mBoneIndexArrayAccessHandler.setArray(nullptr);
+            mBoneWeightArrayAccessHandler.setArray(nullptr);
         }
     }
 
@@ -236,58 +209,39 @@ namespace odOsg
         return mOsgBoneIndexArray != nullptr && mOsgBoneWeightArray != nullptr;
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> Geometry::getVertexArrayAccessHandler()
+    odRender::ArrayAccessHandler<glm::vec3> &Geometry::getVertexArrayAccessHandler()
     {
-        if(!mIndexed)
-        {
-            osg::DrawArrays *drawArrays = od::confident_downcast<osg::DrawArrays>(mPrimitiveSet.get());
-
-            return std::make_unique<DAVertexArrayAccessHandler>(mOsgVertexArray, drawArrays);
-
-        }else
-        {
-            return std::make_unique<OsgVec3ArrayAccessHandler>(mOsgVertexArray);
-        }
+        return mVertexArrayAccessHandler;
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> Geometry::getColorArrayAccessHandler()
+    odRender::ArrayAccessHandler<glm::vec4> &Geometry::getColorArrayAccessHandler()
     {
-        return std::make_unique<ColorArrayAccessor>(mOsgColorArray);
+        return mColorArrayAccessHandler;
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> Geometry::getNormalArrayAccessHandler()
+    odRender::ArrayAccessHandler<glm::vec3> &Geometry::getNormalArrayAccessHandler()
     {
-        return std::make_unique<OsgVec3ArrayAccessHandler>(mOsgNormalArray);
+        return mNormalArrayAccessHandler;
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<glm::vec2>> Geometry::getTextureCoordArrayAccessHandler()
+    odRender::ArrayAccessHandler<glm::vec2> &Geometry::getTextureCoordArrayAccessHandler()
     {
-        return std::make_unique<OsgVec2ArrayAccessHandler>(mOsgTextureCoordArray);
+        return mTextureCoordArrayAccessHandler;
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<int32_t>> Geometry::getIndexArrayAccessHandler()
+    odRender::ArrayAccessHandler<int32_t> &Geometry::getIndexArrayAccessHandler()
     {
         throw od::UnsupportedException("Accessing index array is unsupported right now");
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> Geometry::getBoneIndexArrayAccessHandler()
+    odRender::ArrayAccessHandler<glm::vec4> &Geometry::getBoneIndexArrayAccessHandler()
     {
-        if(mOsgBoneIndexArray == nullptr)
-        {
-            return nullptr;
-        }
-
-        return std::make_unique<OsgVec4ArrayAccessHandler>(mOsgBoneIndexArray);
+        return mBoneIndexArrayAccessHandler;
     }
 
-    std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> Geometry::getBoneWeightArrayAccessHandler()
+    odRender::ArrayAccessHandler<glm::vec4> &Geometry::getBoneWeightArrayAccessHandler()
     {
-        if(mOsgBoneWeightArray == nullptr)
-        {
-            return nullptr;
-        }
-
-        return std::make_unique<OsgVec4ArrayAccessHandler>(mOsgBoneWeightArray);
+        return mBoneWeightArrayAccessHandler;
     }
 
     void Geometry::setTexture(std::shared_ptr<odRender::Texture> texture)

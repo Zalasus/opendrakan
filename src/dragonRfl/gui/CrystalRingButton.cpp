@@ -12,7 +12,6 @@
 #include <odCore/Exception.h>
 #include <odCore/Client.h>
 
-#include <odCore/render/GuiNode.h>
 #include <odCore/render/Renderer.h>
 
 #include <odCore/audio/SoundSystem.h>
@@ -63,11 +62,10 @@ namespace dragonRfl
         od::AxisAlignedBoundingBox aabb = modelForBounds->getCalculatedBoundingBox();
         float diameter = aabb.max().x - aabb.min().x;
 
-        glm::vec3 extends = aabb.max() - aabb.min();
-        float aspectRatio = extends.x/extends.y;
-
-        float fovDegrees = 70;
-        getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
+        //glm::vec3 extends = aabb.max() - aabb.min();
+        //float aspectRatio = extends.x/extends.y;
+        //float fovDegrees = 70;
+        //getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
 
         glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
         glm::vec3 lightAmbient(0.15, 0.15, 0.15);
@@ -77,7 +75,7 @@ namespace dragonRfl
         {
             std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(crystalModel);
 
-            mCrystalHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
+            mCrystalHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::GUI);
 
             mCrystalHandle->setModel(mn);
             mCrystalHandle->setScale(glm::vec3(0.58/diameter));
@@ -86,14 +84,14 @@ namespace dragonRfl
             mCrystalHandle->setEnableColorModifier(true);
             mCrystalHandle->setColorModifier(mCrystalColor);
 
-            getRenderNode()->addChildHandle(mCrystalHandle);
+            this->addRenderHandle(mCrystalHandle);
         }
 
         if(innerRingModel != nullptr)
         {
             std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(innerRingModel);
 
-            mInnerRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
+            mInnerRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::GUI);
 
             mInnerRingHandle->setModel(mn);
             mInnerRingHandle->setScale(glm::vec3(1/diameter));
@@ -102,14 +100,14 @@ namespace dragonRfl
             mInnerRingHandle->setEnableColorModifier(true);
             mInnerRingHandle->setColorModifier(mRingColor);
 
-            getRenderNode()->addChildHandle(mInnerRingHandle);
+            this->addRenderHandle(mInnerRingHandle);
         }
 
         if(outerRingModel != nullptr)
         {
             std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(outerRingModel);
 
-            mOuterRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
+            mOuterRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::GUI);
 
             mOuterRingHandle->setModel(mn);
             mOuterRingHandle->setScale(glm::vec3(1/diameter));
@@ -118,7 +116,7 @@ namespace dragonRfl
             mOuterRingHandle->setEnableColorModifier(true);
             mOuterRingHandle->setColorModifier(mRingColor);
 
-            getRenderNode()->addChildHandle(mOuterRingHandle);
+            this->addRenderHandle(mOuterRingHandle);
         }
 
         if(hoverSound != nullptr && gui.getClient().getSoundSystem() != nullptr)

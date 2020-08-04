@@ -20,6 +20,7 @@
 #include <odCore/Downcast.h>
 
 #include <odCore/render/RendererEventListener.h>
+#include <odCore/render/GuiCallback.h>
 
 #include <odCore/db/Model.h>
 
@@ -30,7 +31,6 @@
 #include <odOsg/render/Image.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Camera.h>
-#include <odOsg/render/GuiNode.h>
 #include <odOsg/render/Handle.h>
 #include <odOsg/render/Model.h>
 #include <odOsg/render/ModelBuilder.h>
@@ -350,14 +350,30 @@ namespace odOsg
         OD_UNREACHABLE();
     }
 
-    std::shared_ptr<odRender::GuiNode> Renderer::createGuiNode()
+    void Renderer::addGuiCallback(odRender::GuiCallback *callback)
     {
-        return std::make_shared<GuiNode>(*this);
+        OD_CHECK_ARG_NONNULL(callback);
+
+        mGuiCallbacks.push_back(callback);
     }
 
-    std::shared_ptr<odRender::GuiNode> Renderer::getGuiRootNode()
+    void Renderer::removeGuiCallback(odRender::GuiCallback *callback)
     {
-        return mGuiRootNode;
+        OD_CHECK_ARG_NONNULL(callback);
+
+        auto it = std::find(mGuiCallbacks.begin(), mGuiCallbacks.end(), callback);
+        if(it != mGuiCallbacks.end())
+        {
+            mGuiCallbacks.erase(it);
+        }
+    }
+
+    glm::vec2 Renderer::getFramebufferDimensions()
+    {
+        int x, y, width, height;
+        mWindow->getWindowRectangle(x, y, width, height);
+
+        return { width, height };
     }
 
     odRender::Camera *Renderer::getCamera()
@@ -372,18 +388,17 @@ namespace odOsg
         osgViewer::Viewer::Windows windows;
         mViewer->getWindows(windows, true);
         if(windows.empty()) throw od::Exception("Viewer created no windows");
-        for(osgViewer::GraphicsWindow *window: windows)
-        {
-            window->setWindowName("OpenDrakan (OSG)");
+        mWindow = windows[0];
 
-            if(!mFreeLook)
-            {
-                window->setCursor(osgViewer::GraphicsWindow::NoCursor);
-            }
+        mWindow->setWindowName("OpenDrakan (OSG)");
+
+        if(!mFreeLook)
+        {
+            mWindow->setCursor(osgViewer::GraphicsWindow::NoCursor);
         }
 
         int x, y, width, height;
-        windows[0]->getWindowRectangle(x, y, width, height);
+        mWindow->getWindowRectangle(x, y, width, height);
         double aspect = static_cast<double>(width)/height;
         mViewer->getCamera()->setProjectionMatrixAsPerspective(45, aspect, 1, 10000);
     }
@@ -406,6 +421,10 @@ namespace odOsg
         mViewer->advance(mSimTime);
         mViewer->eventTraversal();
         mViewer->updateTraversal();
+        for(auto guiCallback : mGuiCallbacks)
+        {
+            guiCallback->onUpdate(relTime);
+        }
         mViewer->renderingTraversals();
     }
 
@@ -494,9 +513,6 @@ namespace odOsg
         ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
         ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
-
-        mGuiRootNode = std::make_shared<GuiNode>(*this);
-        mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 
     std::shared_ptr<Model> Renderer::_buildSingleLodModelNode(odDb::Model &model)

@@ -12,6 +12,7 @@
 #include <memory>
 
 #include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 namespace od
@@ -51,6 +52,13 @@ namespace odRender
         virtual void setOrientation(const glm::quat &orientation) = 0;
         virtual void setScale(const glm::vec3 &scale) = 0;
 
+        /**
+         * @brief Sets a transformation matrix that is applied *before* the position/rotation/scale set via setPosition() etc.
+         *
+         * By default, this is set to be an identity matrix, so it does not affect anything.
+         */
+        virtual void setMatrix(const glm::mat4 &m) = 0;
+
         virtual Model *getModel() = 0;
         virtual void setModel(std::shared_ptr<Model> model) = 0;
 
@@ -58,6 +66,14 @@ namespace odRender
         virtual void setModelPartVisible(size_t partIndex, bool visible) = 0;
 
         virtual void setRenderBin(RenderBin rm) = 0;
+
+        /**
+         * @brief Sets a hint for the render in which order to render handles.
+         *
+         * This might be ignored depending on the render space. Currently, this
+         * is only required for the GUI space, where it controls widget stacking.
+         */
+        virtual void setDrawOrderHint(size_t i) = 0;
 
         virtual void addFrameListener(FrameListener *listener) = 0;
         virtual void removeFrameListener(FrameListener *listener) = 0;

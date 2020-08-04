@@ -41,6 +41,7 @@ namespace odOsg
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;
+        virtual void setMatrix(const glm::mat4 &m) override;
 
         virtual odRender::Model *getModel() override;
         virtual void setModel(std::shared_ptr<odRender::Model> model) override;
@@ -49,6 +50,7 @@ namespace odOsg
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
 
         virtual void setRenderBin(odRender::RenderBin rm) override;
+        virtual void setDrawOrderHint(size_t i) override;
 
         virtual void addFrameListener(odRender::FrameListener *listener) override;
         virtual void removeFrameListener(odRender::FrameListener *listener) override;
@@ -88,10 +90,6 @@ namespace odOsg
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
         osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
         std::unique_ptr<Rig> mRig;
-
-        glm::vec3 mNextUpdatePosition;
-        glm::quat mNextUpdateRotation;
-        glm::vec3 mNextUpdateScale;
     };
 
 }

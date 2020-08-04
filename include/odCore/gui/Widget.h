@@ -13,12 +13,13 @@
 
 #include <glm/vec2.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <odCore/gui/WidgetIntersector.h>
 
 namespace odRender
 {
-    class GuiNode;
+    class Handle;
 }
 
 namespace odGui
@@ -48,6 +49,25 @@ namespace odGui
         AlwaysOnBottom
     };
 
+    class WidgetRenderable
+    {
+    public:
+
+        WidgetRenderable(std::shared_ptr<odRender::Handle> h);
+
+        void setPosition(const glm::vec3 &p);
+        void setRotation(const glm::quat &q);
+        void setScale(const glm::vec3 &s);
+
+        void setMatrix(const glm::mat4 &m);
+
+
+    private:
+
+        std::shared_ptr<odRender::Handle> mHandle;
+
+    };
+
     /**
      * Base class for UI elements. Widgets can group together other Widgets and/or define their own geometry.
      *
@@ -73,7 +93,6 @@ namespace odGui
     public:
 
         Widget(Gui &gui);
-        Widget(Gui &gui, std::shared_ptr<odRender::GuiNode> node);
         virtual ~Widget();
 
         inline int32_t getZIndex() const { return mZIndex; }
@@ -81,27 +100,15 @@ namespace odGui
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline glm::vec2 getDimensions() const { return mDimensions; }
         inline const glm::mat4 &getParentToWidgetSpaceMatrix() const { return mParentSpaceToWidgetSpace; }
-        inline bool isMatrixDirty() const { return mMatrixDirty; }
         inline bool isMouseOver() const { return mMouseOver; }
-        inline void setDimensions(const glm::vec2 &dim) { mDimensions = dim; mMatrixDirty = true; }
-        inline void setDimensions(const glm::vec2 &dim, WidgetDimensionType type) { mDimensions = dim; mDimensionType = type; mMatrixDirty = true; }
-        inline void setDimensions(float x, float y) { setDimensions(glm::vec2(x, y)); }
-        inline void setDimensions(float x, float y, WidgetDimensionType type) { setDimensions(glm::vec2(x, y), type); }
-        inline void setDimensionType(WidgetDimensionType type) { mDimensionType = type; mMatrixDirty = true; }
-        inline void setOrigin(WidgetOrigin origin) { mOrigin = origin; mMatrixDirty = true; }
-        inline void setPosition(const glm::vec2 &pos) { mPositionInParentSpace = pos; mMatrixDirty = true; }
-        inline void setPosition(float x, float y) { setPosition(glm::vec2(x, y)); }
         inline void setMouseOver(bool b) { mMouseOver = b; }
-        inline std::shared_ptr<odRender::GuiNode> getRenderNode() { return mRenderNode; }
 
-        /**
-         * @brief Assigns this widget's parent.
-         *
-         * This is handles via a bare pointer since this will be called by the parent when the current widget is added to it.
-         * But since I want to avoid std::enable_shared_from_this, the parent has no way to pass an owned reference to itself.
-         * Thus, instead of a weak_ptr, the non-owning reference is done using a bare pointer.
-         */
-        inline void setParent(Widget *p) { mParentWidget = p; mMatrixDirty = true; }
+        void setPosition(const glm::vec2 &pos);
+        void setDimensions(const glm::vec2 &dim);
+        void setDimensions(const glm::vec2 &dim, WidgetDimensionType type);
+        void setDimensionType(WidgetDimensionType type);
+        void setOrigin(WidgetOrigin origin);
+
 
         /**
          * @brief Returns true if \c pos lies within the logical widget bounds.
@@ -152,12 +159,25 @@ namespace odGui
         void removeChild(std::shared_ptr<Widget> w);
 
         /**
+         * @brief Adds a render handle to be drawn in this widget's render space.
+         *
+         * Handles that are added first are also drawn first, so appear below those that are added later.
+         */
+        void addRenderHandle(std::shared_ptr<odRender::Handle> r);
+        void removeRenderHandle(std::shared_ptr<odRender::Handle> r);
+
+        /**
          * @brief Performs recursive intersection check, collecting all found widgets in a vector.
          * @param parentMatrix  The matrix representing a transformation from parent space to widget space of the parent recursion level
          */
         void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets);
 
-        glm::vec2 getDimensionsInPixels();
+        /**
+         * @brief Returns the measured dimensions of this widget in pixels.
+         *
+         * This is only valid after the measure-pass of the GUI rebuild.
+         */
+        inline glm::vec2 getMeasuredDimensions() const { return mMeasuredDimensionsPx; }
 
         void setVisible(bool b);
 
@@ -165,31 +185,59 @@ namespace odGui
          * This affects stacking inside the parent widget. A widget with a lower Z index is always on top of other widgets
          * with higher Z indices.
          *
-         * A widgets own rendered elements (if available) are always rendered at Z index 0.
+         * A widget's render handles have an implicit Z index which is determined by the order in which they are added.
+         * Handles that are added first are also drawn first, so appear below those that are added later.
          */
         void setZIndex(int32_t zIndex);
-        void reorderChildren();
+
+        void setNeedsUpdate(bool b);
 
         /**
-         * @brief Performs necessary updates and flattens GUI tree, then calls onUpdate() hook.
-         * @note Call this from your GuiNode implementation. Don't call onUpdate() directly.
+         * @brief Periodic update. Calls the onUpdate() hook, then propagates to all children that explicitly request the periodic update.
          */
         void update(float relTime);
 
+        /**
+         * @brief Pushes measurements down the widget hierarchy recursively.
+         *
+         * This terminology is borrowed from Android, and except for the fact
+         * that our system is far less complex, essentially works the same way.
+         */
+        void measure(glm::vec2 parentDimensionsPx);
+
+        /**
+         * @brief Updates the widget transforms if necessary and flattens this and it's children.
+         *
+         * It really only makes sense to call this on the root widget. Partially flattening the widget tree does not
+         * yield correct results as of now.
+         */
+        void flattenTransform();
+
+        /**
+         * @brief Walks the GUI tree and turns the hierachical widget stack into a linear draw order for the renderer.
+         *
+         * It really only makes sense to call this on the root widget. Partially flattening the widget tree does not
+         * yield correct results as of now.
+         */
+        void flattenDepth();
+
 
     protected:
-
-        void updateMatrix();
 
         inline Gui &getGui() { return mGui; }
 
 
     private:
 
+        void _recalculateMatrix();
+        void _flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex);
+        void _flattenTransformRecursive(glm::mat4 parentMatrix);
         glm::vec2 _getOriginVector();
 
-        void _dirty();
-        void _markThisAndParentsAsNeedingFlattening();
+        /**
+         * @brief Propagates the transform-dirty state up the widget hierarchy.
+         */
+        void _dirtyTransform();
 
         Gui &mGui;
         WidgetOrigin mOrigin;
@@ -198,6 +246,13 @@ namespace odGui
         glm::vec2 mPositionInParentSpace;
         int32_t mZIndex;
         Widget *mParentWidget; // yes, the bare pointer is intentional. this is supposed to be a weak ref. see explanation in doc of setParent()
+
+        // number of child widgets (of any depth) that requested an periodic update. if this is 0, the update() method does not have to propagate down
+        size_t mChildrenInNeedOfUpdate;
+        bool mNeedsUpdate;
+
+        glm::vec2 mMeasuredDimensionsPx;
+
         bool mMatrixDirty;
         glm::mat4 mParentSpaceToWidgetSpace;
         glm::mat4 mWidgetSpaceToParentSpace;
@@ -205,9 +260,7 @@ namespace odGui
         bool mMouseOver;
 
         std::vector<std::shared_ptr<Widget>> mChildWidgets;
-        bool mChildOrderDirty;
-
-        std::shared_ptr<odRender::GuiNode> mRenderNode;
+        std::vector<std::shared_ptr<odRender::Handle>> mRenderHandles;
     };
 
 }

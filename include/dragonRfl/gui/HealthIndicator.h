@@ -10,8 +10,6 @@
 
 #include <odCore/gui/Widget.h>
 
-#include <odCore/render/GuiQuad.h>
-
 #include <odCore/anim/Interpolator.h>
 
 namespace dragonRfl

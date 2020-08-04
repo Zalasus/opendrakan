@@ -17,17 +17,11 @@
 #include <odCore/gui/Gui.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/GuiNode.h>
+#include <odCore/render/Handle.h>
 
 namespace odGui
 {
     Widget::Widget(Gui &gui)
-    : Widget(gui, nullptr)
-    {
-        mRenderNode = gui.getRenderer().createGuiNode();
-    }
-
-    Widget::Widget(Gui &gui, std::shared_ptr<odRender::GuiNode> node)
     : mGui(gui)
     , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
@@ -35,15 +29,59 @@ namespace odGui
     , mPositionInParentSpace(0.0, 0.0)
     , mZIndex(0)
     , mParentWidget(nullptr)
-    , mMatrixDirty(true)
+    , mChildrenInNeedOfUpdate(0)
+    , mNeedsUpdate(false)
+    , mMatrixDirty(false)
     , mMouseOver(false)
-    , mChildOrderDirty(false)
-    , mRenderNode(node)
     {
     }
 
     Widget::~Widget()
     {
+    }
+
+    void Widget::setPosition(const glm::vec2 &pos)
+    {
+        mPositionInParentSpace = pos;
+        mMatrixDirty = true;
+
+        mGui.markTransformsDirty();
+    }
+
+    void Widget::setDimensions(const glm::vec2 &dim)
+    {
+        mDimensions = dim;
+        mMatrixDirty = true;
+
+        mGui.markMeasurementsDirty();
+        mGui.markTransformsDirty();
+    }
+
+    void Widget::setDimensions(const glm::vec2 &dim, WidgetDimensionType type)
+    {
+        mDimensions = dim;
+        mDimensionType = type;
+        mMatrixDirty = true;
+
+        mGui.markMeasurementsDirty();
+        mGui.markTransformsDirty();
+    }
+
+    void Widget::setDimensionType(WidgetDimensionType type)
+    {
+        mDimensionType = type;
+        mMatrixDirty = true;
+
+        mGui.markMeasurementsDirty();
+        mGui.markTransformsDirty();
+    }
+
+    void Widget::setOrigin(WidgetOrigin origin)
+    {
+        mOrigin = origin;
+        mMatrixDirty = true;
+
+        mGui.markTransformsDirty();
     }
 
     bool Widget::liesWithinLogicalArea(const glm::vec2 &pos)
@@ -69,40 +107,49 @@ namespace odGui
 
     void Widget::addChild(std::shared_ptr<Widget> w)
     {
-        if(w == nullptr || w.get() == this)
-        {
-            return;
-        }
+        OD_CHECK_ARG_NONNULL(w);
 
         mChildWidgets.push_back(w);
-
-        w->setParent(this);
-
-        if(mRenderNode != nullptr && w->getRenderNode() != nullptr)
-        {
-            mRenderNode->addChild(w->getRenderNode());
-        }
+        w->mParentWidget = this;
+        mGui.markDepthDirty();
+        mGui.markTransformsDirty();
+        mGui.markMeasurementsDirty();
     }
 
     void Widget::removeChild(std::shared_ptr<Widget> w)
     {
-        if(w == nullptr || w.get() == this)
-        {
-            return;
-        }
+        OD_CHECK_ARG_NONNULL(w);
 
         auto it = std::find(mChildWidgets.begin(), mChildWidgets.end(), w);
         if(it != mChildWidgets.end())
         {
             mChildWidgets.erase(it);
-
-            if(mRenderNode != nullptr)
-            {
-                mRenderNode->removeChild(w->getRenderNode());
-            }
+            w->mParentWidget = nullptr;
         }
 
-        w->setParent(nullptr);
+        // removing a widget from the tree does not invalidate the flattened hierarchy!
+    }
+
+    void Widget::addRenderHandle(std::shared_ptr<odRender::Handle> r)
+    {
+        OD_CHECK_ARG_NONNULL(r);
+
+        mRenderHandles.push_back(r);
+        mGui.markDepthDirty();
+        mGui.markTransformsDirty();
+    }
+
+    void Widget::removeRenderHandle(std::shared_ptr<odRender::Handle> r)
+    {
+        OD_CHECK_ARG_NONNULL(r);
+
+        auto it = std::find(mRenderHandles.begin(), mRenderHandles.end(), r);
+        if(it != mRenderHandles.end())
+        {
+            mRenderHandles.erase(it);
+        }
+
+        // removing a handle from the tree does not invalidate the flattened hierarchy!
     }
 
     void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets)
@@ -126,90 +173,186 @@ namespace odGui
         }
     }
 
-    glm::vec2 Widget::getDimensionsInPixels()
-    {
-        if(this->getDimensionType() == WidgetDimensionType::Pixels)
-        {
-            return this->getDimensions();
-
-        }else
-        {
-            if(mParentWidget == nullptr)
-            {
-                throw od::Exception("Widget without parent asked to translate parent-relative dimensions to pixels. Is the GuiManager's root widget configured properly?");
-            }
-
-            return mParentWidget->getDimensionsInPixels() * this->getDimensions();
-        }
-    }
-
     void Widget::setVisible(bool b)
     {
-        if(mRenderNode != nullptr)
+        for(auto &handle : mRenderHandles)
         {
-            mRenderNode->setVisible(b);
+            handle->setVisible(b);
         }
     }
 
     void Widget::setZIndex(int32_t zIndex)
     {
         mZIndex = zIndex;
-
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setZIndex(zIndex);
-        }
-
-        if(mParentWidget != nullptr)
-        {
-            mParentWidget->mChildOrderDirty = true;
-        }
+        mGui.markDepthDirty();
     }
 
-    void Widget::reorderChildren()
+    void Widget::setNeedsUpdate(bool needsUpdate)
     {
-        auto pred = [](std::shared_ptr<Widget> &left, std::shared_ptr<Widget> &right) { return left->getZIndex() < right->getZIndex(); };
-        std::sort(mChildWidgets.begin(), mChildWidgets.end(), pred);
+        if(needsUpdate == mNeedsUpdate)
+        {
+            // important! if this would not change anything, we must also not change the parent's need-update count
+            return;
+        }
 
-        mChildOrderDirty = false;
+        mNeedsUpdate = needsUpdate;
+
+        Widget *parent = mParentWidget;
+        while(parent != nullptr)
+        {
+            if(needsUpdate)
+            {
+                parent->mChildrenInNeedOfUpdate++;
+
+            }else
+            {
+                if(parent->mChildrenInNeedOfUpdate <= 0)
+                {
+                    throw od::Exception("Invalid child-update-needed count decrement past zero. This widget tree seems broken");
+                }
+
+                parent->mChildrenInNeedOfUpdate--;
+            }
+
+            parent = parent->mParentWidget;
+        }
     }
 
-    void Widget::updateMatrix()
+    void Widget::update(float relTime)
+    {
+        if(mNeedsUpdate)
+        {
+            this->onUpdate(relTime);
+        }
+
+        if(mChildrenInNeedOfUpdate > 0)
+        {
+            for(auto &child : mChildWidgets)
+            {
+                child->update(relTime);
+            }
+        }
+    }
+
+    void Widget::measure(glm::vec2 parentDimensionsPx)
+    {
+        switch(mDimensionType)
+        {
+        case WidgetDimensionType::ParentRelative:
+            mMeasuredDimensionsPx = parentDimensionsPx * mDimensions;
+            break;
+
+        case WidgetDimensionType::Pixels:
+            mMeasuredDimensionsPx = mDimensions;
+            break;
+        }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->measure(mMeasuredDimensionsPx);
+        }
+    }
+
+    void Widget::flattenTransform()
+    {
+        glm::mat4 m(1.0);
+        _flattenTransformRecursive(m);
+    }
+
+    void Widget::flattenDepth()
+    {
+        size_t nextGlobalRenderOrderIndex = 0;
+        _flattenDepthRecursive(nextGlobalRenderOrderIndex);
+    }
+
+    void Widget::_recalculateMatrix()
     {
         if(mParentWidget == nullptr)
         {
-            mParentSpaceToWidgetSpace = mGui.getNdcToWidgetSpaceTransform();
             mWidgetSpaceToParentSpace = mGui.getWidgetSpaceToNdcTransform();
+            mParentSpaceToWidgetSpace = mGui.getNdcToWidgetSpaceTransform();
 
         }else
         {
             mWidgetSpaceToParentSpace = glm::mat4(1.0);
             mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(mPositionInParentSpace, 0.0));
-            glm::vec2 widgetSizeInParentSpace =
-                    (mDimensionType == WidgetDimensionType::ParentRelative) ?
-                      mDimensions : (getDimensionsInPixels() / mParentWidget->getDimensionsInPixels());
+
+            glm::vec2 widgetSizeInParentSpace;
+            if(mDimensionType == WidgetDimensionType::ParentRelative)
+            {
+                widgetSizeInParentSpace = mDimensions;
+
+            }else
+            {
+                widgetSizeInParentSpace = getMeasuredDimensions() / mParentWidget->getMeasuredDimensions();
+            }
+
             mWidgetSpaceToParentSpace = glm::scale(mWidgetSpaceToParentSpace, glm::vec3(widgetSizeInParentSpace, 1.0));
             mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(-_getOriginVector(), 0.0));
 
             mParentSpaceToWidgetSpace = glm::inverse(mWidgetSpaceToParentSpace);
         }
 
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setMatrix(glm::transpose(mWidgetSpaceToParentSpace));
-        }
-
         mMatrixDirty = false;
     }
 
-    void Widget::update(float relTime)
+    void Widget::_flattenTransformRecursive(glm::mat4 parentMatrix)
     {
         if(mMatrixDirty)
         {
-            updateMatrix();
+            _recalculateMatrix();
         }
 
-        this->onUpdate(relTime);
+        glm::mat4 currentMatrix = parentMatrix * mParentSpaceToWidgetSpace;
+        for(auto &handle : mRenderHandles)
+        {
+            handle->setMatrix(currentMatrix);
+        }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->_flattenTransformRecursive(currentMatrix);
+        }
+    }
+
+    void Widget::_flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex)
+    {
+        // algorithm for flattening the GUI depth:
+        // walk through widget tree in pre-order:
+        //      sort render handles by z-index
+        //      for each handle:
+        //          if prev_handle.z_index != handle.z_index: ++z
+        //          handle.z_coord = z
+        //      sort child widgets by z-index
+        //      for each child:
+        //          if last child's z-index != current child's z-index: ++z
+        //          descend into child
+
+        //auto renderSortPred = [](auto &left, auto &right){ return left.zIndex < right.zIndex; };
+        //std::sort(mRenderables.begin(), mRenderables.end(), renderSortPred);
+
+        for(size_t i = 0; i < mRenderHandles.size(); ++i)
+        {
+            //if(i > 0 && mRenderHandles[i].zIndex != mRenderHandles[i-1].zIndex)
+            {
+                ++nextGlobalRenderOrderIndex;
+            }
+
+            mRenderHandles[i]->setDrawOrderHint(nextGlobalRenderOrderIndex);
+        }
+
+        auto childPred = [](auto &left, auto &right) { return left->getZIndex() < right->getZIndex(); };
+        std::sort(mChildWidgets.begin(), mChildWidgets.end(), childPred);
+
+        for(size_t i = 0; i < mChildWidgets.size(); ++i)
+        {
+            if(i > 0 && mChildWidgets[i]->getZIndex() != mChildWidgets[i-1]->getZIndex())
+            {
+                ++nextGlobalRenderOrderIndex;
+            }
+
+            mChildWidgets[i]->_flattenDepthRecursive(nextGlobalRenderOrderIndex);
+        }
     }
 
     glm::vec2 Widget::_getOriginVector()

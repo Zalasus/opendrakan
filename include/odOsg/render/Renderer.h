@@ -30,7 +30,6 @@ namespace odOsg
 {
     class Texture;
     class Camera;
-    class GuiNode;
     class Model;
 
     class Renderer : public odRender::Renderer
@@ -57,8 +56,10 @@ namespace odOsg
 
         virtual std::shared_ptr<odRender::Image> createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture) override;
         virtual std::shared_ptr<odRender::Texture> createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot) override;
-        virtual std::shared_ptr<odRender::GuiNode> createGuiNode() override;
-        virtual std::shared_ptr<odRender::GuiNode> getGuiRootNode() override;
+
+        virtual void addGuiCallback(odRender::GuiCallback *callback) override;
+        virtual void removeGuiCallback(odRender::GuiCallback *callback) override;
+        virtual glm::vec2 getFramebufferDimensions() override;
 
         virtual odRender::Camera *getCamera() override;
 
@@ -90,12 +91,12 @@ namespace odOsg
         bool mFreeLook;
 
         osg::ref_ptr<osgViewer::Viewer> mViewer;
+        osg::ref_ptr<osgViewer::GraphicsWindow> mWindow;
         osg::ref_ptr<osg::Group> mSceneRoot;
         osg::ref_ptr<osg::Group> mLevelRoot;
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group> mGuiRoot;
-        std::shared_ptr<GuiNode> mGuiRootNode;
 
         bool mLightingEnabled;
         osg::ref_ptr<osg::Uniform> mGlobalLightDiffuse;
@@ -107,6 +108,8 @@ namespace odOsg
         osg::ref_ptr<osg::Uniform> mLocalLightsPosition;
 
         double mSimTime;
+
+        std::vector<odRender::GuiCallback*> mGuiCallbacks;
     };
 
 }

@@ -62,8 +62,8 @@ namespace dragonRfl
 
         auto healthIndicator = std::make_shared<HealthIndicator>(*this);
         healthIndicator->setOrigin(odGui::WidgetOrigin::BottomLeft);
-        healthIndicator->setPosition(0, 1);
-        //addWidget(healthIndicator);
+        healthIndicator->setPosition({0, 1});
+        addWidget(healthIndicator);
 
         mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);

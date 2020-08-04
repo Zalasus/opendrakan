@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_PHYSICS_BULLET_DEBUGDRAWER_H_
 
 #include <vector>
+#include <memory>
 
 #include <glm/vec3.hpp>
 
@@ -55,9 +56,6 @@ namespace odBulletPhysics
 
         std::shared_ptr<odRender::Handle> mRenderHandle;
         std::shared_ptr<odRender::Geometry> mGeometry;
-
-        std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> mVertexArray;
-        std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> mColorArray;
 
         bool mSingleShotUpdate;
         size_t mLastMaxVertexCount;

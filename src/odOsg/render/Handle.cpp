@@ -10,6 +10,7 @@
 #include <osg/Callback>
 
 #include <odCore/Downcast.h>
+#include <odCore/Logger.h>
 
 #include <odCore/render/FrameListener.h>
 
@@ -140,7 +141,6 @@ namespace odOsg
     {
         _assert_mutex_locked(mMutex);
 
-        mNextUpdatePosition = pos;
         mTransform->setPosition(GlmAdapter::toOsg(pos));
     }
 
@@ -148,7 +148,6 @@ namespace odOsg
     {
         _assert_mutex_locked(mMutex);
 
-        mNextUpdateRotation = orientation;
         mTransform->setAttitude(GlmAdapter::toOsg(orientation));
     }
 
@@ -157,6 +156,11 @@ namespace odOsg
         _assert_mutex_locked(mMutex);
 
         mTransform->setScale(GlmAdapter::toOsg(scale));
+    }
+
+    void Handle::setMatrix(const glm::mat4 &m)
+    {
+        Logger::info() << "set matrix:";
     }
 
     odRender::Model *Handle::getModel()
@@ -237,6 +241,11 @@ namespace odOsg
         default:
             break;
         }
+    }
+
+    void Handle::setDrawOrderHint(size_t i)
+    {
+        Logger::info() << "Set draw order hint";
     }
 
     void Handle::addFrameListener(odRender::FrameListener *listener)

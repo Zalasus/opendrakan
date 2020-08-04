@@ -16,8 +16,7 @@
 
 #include <odCore/db/Model.h>
 
-#include <odCore/render/GuiNode.h>
-#include <odCore/render/GuiQuad.h>
+#include <odCore/gui/Quad.h>
 
 namespace dragonRfl
 {
@@ -29,29 +28,31 @@ namespace dragonRfl
         MainMenuImage(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            auto node = getRenderNode();
+            odGui::Quad topLeft(gui.getRenderer());
+            topLeft.setTextureFromDb(gui, GuiTextures::MainMenu_TopLeft, gui.getRenderer());
+            topLeft.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            topLeft.setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
+            this->addRenderHandle(topLeft.getHandle());
 
-            std::shared_ptr<odRender::GuiQuad> topLeft = node->createGuiQuad();
-            topLeft->setTextureFromDb(gui, GuiTextures::MainMenu_TopLeft, gui.getRenderer());
-            topLeft->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            topLeft->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
+            odGui::Quad topRight(gui.getRenderer());
+            topRight.setTextureFromDb(gui, GuiTextures::MainMenu_TopRight, gui.getRenderer());
+            topRight.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            topRight.setVertexCoords(glm::vec2(0.5, 0.0), glm::vec2(1, 0.5));
+            this->addRenderHandle(topRight.getHandle());
 
-            std::shared_ptr<odRender::GuiQuad> topRight = node->createGuiQuad();
-            topRight->setTextureFromDb(gui, GuiTextures::MainMenu_TopRight, gui.getRenderer());
-            topRight->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            topRight->setVertexCoords(glm::vec2(0.5, 0.0), glm::vec2(1, 0.5));
+            odGui::Quad bottomLeft(gui.getRenderer());
+            bottomLeft.setTextureFromDb(gui, GuiTextures::MainMenu_BottomLeft, gui.getRenderer());
+            bottomLeft.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            bottomLeft.setVertexCoords(glm::vec2(0.0, 0.5), glm::vec2(0.5, 1));
+            this->addRenderHandle(bottomLeft.getHandle());
 
-            std::shared_ptr<odRender::GuiQuad> bottomLeft = node->createGuiQuad();
-            bottomLeft->setTextureFromDb(gui, GuiTextures::MainMenu_BottomLeft, gui.getRenderer());
-            bottomLeft->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            bottomLeft->setVertexCoords(glm::vec2(0.0, 0.5), glm::vec2(0.5, 1));
+            odGui::Quad bottomRight(gui.getRenderer());
+            bottomRight.setTextureFromDb(gui, GuiTextures::MainMenu_BottomRight, gui.getRenderer());
+            bottomRight.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            bottomRight.setVertexCoords(glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
+            this->addRenderHandle(bottomRight.getHandle());
 
-            std::shared_ptr<odRender::GuiQuad> bottomRight = node->createGuiQuad();
-            bottomRight->setTextureFromDb(gui, GuiTextures::MainMenu_BottomRight, gui.getRenderer());
-            bottomRight->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            bottomRight->setVertexCoords(glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
-
-            this->setDimensions(512.0, 512.0, odGui::WidgetDimensionType::Pixels);
+            this->setDimensions({512.0, 512.0}, odGui::WidgetDimensionType::Pixels);
         }
 
     };
@@ -63,11 +64,12 @@ namespace dragonRfl
         MainMenuBackground(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            std::shared_ptr<odRender::GuiQuad> bg = getRenderNode()->createGuiQuad();
-            bg->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1.0, 1.0));
-            bg->setColor(glm::vec4(0.0, 0.0, 0.0, 0.5));
+            odGui::Quad bg(gui.getRenderer());
+            bg.setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1.0, 1.0));
+            bg.setColor(glm::vec4(0.0, 0.0, 0.0, 0.5));
+            this->addRenderHandle(bg.getHandle());
 
-            this->setDimensions(1.0, 1.0, odGui::WidgetDimensionType::ParentRelative);
+            this->setDimensions({1.0, 1.0}, odGui::WidgetDimensionType::ParentRelative);
         }
     };
 
@@ -87,12 +89,12 @@ namespace dragonRfl
         bgWidget->setZIndex(1);
         this->addChild(bgWidget);
 
-        this->setDimensions(1.0, 1.0, odGui::WidgetDimensionType::ParentRelative);
+        this->setDimensions({1.0, 1.0}, odGui::WidgetDimensionType::ParentRelative);
 
         auto cont = std::make_shared<Widget>(gui);
-        cont->setDimensions(512, 512, odGui::WidgetDimensionType::Pixels);
+        cont->setDimensions({512, 512}, odGui::WidgetDimensionType::Pixels);
         cont->setOrigin(odGui::WidgetOrigin::Center);
-        cont->setPosition(0.5, 0.5);
+        cont->setPosition({0.5, 0.5});
         cont->setZIndex(-1);
         this->addChild(cont);
 
@@ -113,8 +115,8 @@ namespace dragonRfl
                 uiProps->outerRing.getAsset(),
                 uiProps->hoverSoundLooped.getAsset(),
                 noteOffset);
-        crystal->setDimensions(dia, dia, odGui::WidgetDimensionType::Pixels);
-        crystal->setPosition(x/512, y/512);
+        crystal->setDimensions({dia, dia}, odGui::WidgetDimensionType::Pixels);
+        crystal->setPosition({x/512, y/512});
         crystal->setOrigin(odGui::WidgetOrigin::Center);
         crystal->setClickedCallback(std::bind(&MainMenu::_buttonClicked, this, std::placeholders::_1), buttonCode);
         cont->addChild(crystal);

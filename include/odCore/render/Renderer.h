@@ -29,15 +29,21 @@ namespace odRender
     class Texture;
     class Image;
     class RendererEventListener;
-    class GuiNode;
     class Handle;
     class Model;
+    class GuiCallback;
 
+    /**
+     * @brief Used when creating a handle. Determines where and how that handle is to be rendered.
+     *
+     * GUI render space uses orthogonal projection, depth-sorted drawing order and a simplified coordinate
+     * system where the top-left of the screen is 0/0 and the bottom right is 1/1.
+     */
     enum class RenderSpace
     {
-        NONE,
-        LEVEL,
-        GUI
+        NONE, ///< Handle will not be rendered
+        LEVEL, ///< Handle will be rendered normally in the level relative to the level origin
+        GUI ///< Handle will be rendered as part of the HUD, with enforced depth sorting and orthogonal projection
     };
 
     enum class TextureReuseSlot
@@ -84,8 +90,10 @@ namespace odRender
         std::shared_ptr<Image> getOrCreateImageFromDb(std::shared_ptr<odDb::Texture> dbTexture);
 
         virtual std::shared_ptr<Texture> createTexture(std::shared_ptr<Image> image, TextureReuseSlot reuseSlot) = 0;
-        virtual std::shared_ptr<GuiNode> createGuiNode() = 0;
-        virtual std::shared_ptr<GuiNode> getGuiRootNode() = 0;
+
+        virtual void addGuiCallback(GuiCallback *callback) = 0;
+        virtual void removeGuiCallback(GuiCallback *callback) = 0;
+        virtual glm::vec2 getFramebufferDimensions() = 0;
 
         virtual Camera *getCamera() = 0;
 

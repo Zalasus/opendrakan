@@ -32,7 +32,7 @@ namespace odOsg
 
         virtual ~OsgTVecArrayAccessHandler()
         {
-            release();
+            release(false);
         }
 
         virtual odRender::Array<_OdType> &getArray() override
@@ -45,43 +45,64 @@ namespace odOsg
             return mArray;
         }
 
-        virtual void acquire() override
+        virtual void acquire(bool readback) override
         {
             if(mAcquired)
             {
                 return;
             }
 
+            if(mOsgArray == nullptr)
+            {
+                throw od::Exception("Tried to acquire access handler with no array set");
+            }
+
             mArray.resize(mOsgArray->size());
 
-            for(size_t i = 0; i < mOsgArray->size(); ++i)
+            if(readback)
             {
-                mArray[i] = GlmAdapter::toGlm((*mOsgArray)[i]);
+                for(size_t i = 0; i < mOsgArray->size(); ++i)
+                {
+                    mArray[i] = GlmAdapter::toGlm((*mOsgArray)[i]);
+                }
             }
 
             mAcquired = true;
         }
 
-        virtual void release() override
+        virtual void release(bool writeback) override
         {
             if(!mAcquired)
             {
                 return;
             }
 
-            mOsgArray->resize(mArray.size());
-
-            for(size_t i = 0; i < mArray.size(); ++i)
+            if(writeback)
             {
-                (*mOsgArray)[i] = GlmAdapter::toOsg(mArray[i]);
+                mOsgArray->resize(mArray.size());
+
+                for(size_t i = 0; i < mArray.size(); ++i)
+                {
+                    (*mOsgArray)[i] = GlmAdapter::toOsg(mArray[i]);
+                }
+
+                mOsgArray->dirty();
             }
 
             mArray.clear();
             mArray.shrink_to_fit();
 
-            mOsgArray->dirty();
-
             mAcquired = false;
+        }
+
+        void setArray(_OsgArrayType *array)
+        {
+            if(mAcquired)
+            {
+                throw od::Exception("Tried to replace array while still acquired");
+            }
+
+            mOsgArray = array;
         }
 
 

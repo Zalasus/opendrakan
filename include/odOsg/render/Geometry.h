@@ -14,9 +14,44 @@
 #include <osg/Geometry>
 
 #include <odOsg/render/Texture.h>
+#include <odOsg/render/OsgArrayAccessHandler.h>
 
 namespace odOsg
 {
+    /**
+     * @brief Custom array access handler, adjusting the binding of color attributes.
+     *
+     * This will set the color array's binding to overall if it contains only one vector.
+     */
+    class ColorArrayAccessHandler : public OsgVec4ArrayAccessHandler
+    {
+    public:
+
+        explicit ColorArrayAccessHandler(osg::Vec4Array *array);
+
+        virtual void release(bool writeback) override;
+    };
+
+    /**
+     * @brief Custom access handler for the vertex array. Will update element count if not using indexed rendering.
+     */
+    class VertexArrayAccessHandler : public OsgVec3ArrayAccessHandler
+    {
+    public:
+
+        VertexArrayAccessHandler(osg::Vec3Array *array, osg::DrawArrays *drawArrays);
+
+        inline void setDrawArrays(osg::DrawArrays *drawArrays) { mDrawArrays = drawArrays; }
+
+        virtual void release(bool writeback) override;
+
+
+    private:
+
+        osg::ref_ptr<osg::DrawArrays> mDrawArrays;
+
+    };
+
 
     class Geometry : public odRender::Geometry
     {
@@ -36,15 +71,15 @@ namespace odOsg
 
         virtual void setHasBoneInfo(bool b) override;
         virtual bool hasBoneInfo() const override;
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> getBoneIndexArrayAccessHandler() override;
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> getBoneWeightArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<glm::vec4> &getBoneIndexArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<glm::vec4> &getBoneWeightArrayAccessHandler() override;
 
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> getVertexArrayAccessHandler() override;
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec4>> getColorArrayAccessHandler() override;
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec3>> getNormalArrayAccessHandler() override;
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<glm::vec3> &getVertexArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<glm::vec4> &getColorArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<glm::vec3> &getNormalArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<glm::vec2> &getTextureCoordArrayAccessHandler() override;
 
-        virtual std::unique_ptr<odRender::ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() override;
+        virtual odRender::ArrayAccessHandler<int32_t> &getIndexArrayAccessHandler() override;
 
         virtual void setTexture(std::shared_ptr<odRender::Texture> texture) override;
 
@@ -71,6 +106,13 @@ namespace odOsg
         osg::ref_ptr<osg::PrimitiveSet> mPrimitiveSet;
 
         std::shared_ptr<Texture> mTexture;
+
+        VertexArrayAccessHandler  mVertexArrayAccessHandler;
+        ColorArrayAccessHandler   mColorArrayAccessHandler;
+        OsgVec3ArrayAccessHandler mNormalArrayAccessHandler;
+        OsgVec2ArrayAccessHandler mTextureCoordArrayAccessHandler;
+        OsgVec4ArrayAccessHandler mBoneIndexArrayAccessHandler;
+        OsgVec4ArrayAccessHandler mBoneWeightArrayAccessHandler;
     };
 
 }

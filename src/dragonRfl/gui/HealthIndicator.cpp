@@ -11,7 +11,7 @@
 
 #include <glm/common.hpp>
 
-#include <odCore/render/GuiNode.h>
+#include <odCore/gui/Quad.h>
 #include <odCore/render/Texture.h>
 
 #include <dragonRfl/gui/DragonGui.h>
@@ -29,6 +29,7 @@ namespace dragonRfl
         , mTopLeftPx_Left(topLeft)
         , mBottomRightPx_Left(bottomRight)
         , mHeightPx(glm::abs(mTopLeftPx_Left.y - mBottomRightPx_Left.y))
+        , mOrbQuad_Left(gui.getRenderer())
         {
             float width = glm::abs(mTopLeftPx_Left.x - mBottomRightPx_Left.x);
 
@@ -38,12 +39,13 @@ namespace dragonRfl
                 mBottomRightPx_Left.x -= width;
             }
 
-            mOrbQuad_Left = this->getRenderNode()->createGuiQuad();
-            mOrbQuad_Left->setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
-            mOrbQuad_Left->getTexture()->setEnableWrapping(false);
+            mOrbQuad_Left.setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
+            mOrbQuad_Left.getTexture()->setEnableWrapping(false);
+            this->addRenderHandle(mOrbQuad_Left.getHandle());
+
             setFillRatio(1.0);
 
-            this->setDimensions(glm::vec2(width, mHeightPx), odGui::WidgetDimensionType::Pixels);
+            this->setDimensions({ width, mHeightPx }, odGui::WidgetDimensionType::Pixels);
         }
 
         Orb(DragonGui &gui, od::RecordId bubbleTexture, const glm::vec2 &topLeft1, const glm::vec2 &bottomRight1
@@ -54,6 +56,8 @@ namespace dragonRfl
         , mTopLeftPx_Right(topLeft2)
         , mBottomRightPx_Right(bottomRight2)
         , mHeightPx(glm::abs(mTopLeftPx_Left.y - mBottomRightPx_Left.y))
+        , mOrbQuad_Left(gui.getRenderer())
+        , mOrbQuad_Right(gui.getRenderer())
         {
             if(flip)
             {
@@ -69,12 +73,14 @@ namespace dragonRfl
                 std::swap(mBottomRightPx_Left, mBottomRightPx_Right);
             }
 
-            mOrbQuad_Left = this->getRenderNode()->createGuiQuad();
-            mOrbQuad_Left->setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
-            mOrbQuad_Left->getTexture()->setEnableWrapping(false);
-            mOrbQuad_Right = this->getRenderNode()->createGuiQuad();
-            mOrbQuad_Right->setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
-            mOrbQuad_Right->getTexture()->setEnableWrapping(false);
+            mOrbQuad_Left.setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
+            mOrbQuad_Left.getTexture()->setEnableWrapping(false);
+            this->addRenderHandle(mOrbQuad_Left.getHandle());
+
+            mOrbQuad_Right.setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
+            mOrbQuad_Right.getTexture()->setEnableWrapping(false);
+            this->addRenderHandle(mOrbQuad_Right.getHandle());
+
             setFillRatio(1.0);
 
             float width = glm::abs(mTopLeftPx_Left.x - mBottomRightPx_Left.x) + glm::abs(mTopLeftPx_Right.x - mBottomRightPx_Right.x);
@@ -88,58 +94,59 @@ namespace dragonRfl
             float invRatio = 1 - ratio;
             glm::vec2 topOffset(0, mHeightPx*invRatio);
 
-            if(mOrbQuad_Left != nullptr)
+            if(!mOrbQuad_Left.empty())
             {
-                mOrbQuad_Left->setTextureCoordsFromPixels(mTopLeftPx_Left+topOffset, mBottomRightPx_Left);
-                if(mOrbQuad_Right == nullptr)
+                mOrbQuad_Left.setTextureCoordsFromPixels(mTopLeftPx_Left+topOffset, mBottomRightPx_Left);
+                if(mOrbQuad_Right.empty())
                 {
-                    mOrbQuad_Left->setVertexCoords(glm::vec2(0, invRatio), glm::vec2(1,1));
+                    mOrbQuad_Left.setVertexCoords(glm::vec2(0, invRatio), glm::vec2(1,1));
 
                 }else
                 {
-                    mOrbQuad_Left->setVertexCoords(glm::vec2(0, invRatio), glm::vec2(0.5,1));
+                    mOrbQuad_Left.setVertexCoords(glm::vec2(0, invRatio), glm::vec2(0.5,1));
                 }
             }
 
-            if(mOrbQuad_Right != nullptr)
+            if(!mOrbQuad_Right.empty())
             {
-                mOrbQuad_Right->setTextureCoordsFromPixels(mTopLeftPx_Right+topOffset, mBottomRightPx_Right);
-                if(mOrbQuad_Left == nullptr)
+                mOrbQuad_Right.setTextureCoordsFromPixels(mTopLeftPx_Right+topOffset, mBottomRightPx_Right);
+                if(mOrbQuad_Left.empty())
                 {
-                    mOrbQuad_Right->setVertexCoords(glm::vec2(0, invRatio), glm::vec2(1,1));
+                    mOrbQuad_Right.setVertexCoords(glm::vec2(0, invRatio), glm::vec2(1,1));
 
                 }else
                 {
-                    mOrbQuad_Right->setVertexCoords(glm::vec2(0.5, invRatio), glm::vec2(1,1));
+                    mOrbQuad_Right.setVertexCoords(glm::vec2(0.5, invRatio), glm::vec2(1,1));
                 }
             }
         }
 
         void setColor(const glm::vec4 &color)
         {
-            if(mOrbQuad_Left != nullptr)
+            if(!mOrbQuad_Left.empty())
             {
-                mOrbQuad_Left->setColor(color);
+                mOrbQuad_Left.setColor(color);
             }
 
-            if(mOrbQuad_Right != nullptr)
+            if(!mOrbQuad_Right.empty())
             {
-                mOrbQuad_Left->setColor(color);
+                mOrbQuad_Left.setColor(color);
             }
         }
 
 
     private:
 
-        std::shared_ptr<odRender::GuiQuad> mOrbQuad_Left;
         glm::vec2 mTopLeftPx_Left;
         glm::vec2 mBottomRightPx_Left;
 
-        std::shared_ptr<odRender::GuiQuad> mOrbQuad_Right;
         glm::vec2 mTopLeftPx_Right;
         glm::vec2 mBottomRightPx_Right;
 
         float mHeightPx;
+
+        odGui::Quad mOrbQuad_Left;
+        odGui::Quad mOrbQuad_Right;
     };
 
 
@@ -148,18 +155,17 @@ namespace dragonRfl
     , mDragonGui(gui)
     , mHealthLevel(1.0)
     {
-        auto node = this->getRenderNode();
-
         glm::vec2 borderTL(0, 130);
         glm::vec2 borderBR(95, 220);
         glm::vec2 size = borderBR - borderTL;
 
         this->setDimensions(size, odGui::WidgetDimensionType::Pixels);
 
-        auto border = node->createGuiQuad();
-        border->setTextureFromDb(gui, GuiTextures::HudElements, gui.getRenderer());
-        border->setTextureCoordsFromPixels(glm::vec2(0, 130), glm::vec2(95, 220));
-        border->setVertexCoords(glm::vec2(0, 0), glm::vec2(1, 1));
+        odGui::Quad border(gui.getRenderer());
+        border.setTextureFromDb(gui, GuiTextures::HudElements, gui.getRenderer());
+        border.setTextureCoordsFromPixels(glm::vec2(0, 130), glm::vec2(95, 220));
+        border.setVertexCoords(glm::vec2(0, 0), glm::vec2(1, 1));
+        this->addRenderHandle(border.getHandle());
 
         glm::vec2 orbOffset(10, 13);
 
@@ -183,6 +189,8 @@ namespace dragonRfl
         mHealthLevel.move(0.8, 0.8);
         mHealthOrb->setFillRatio(mHealthLevel);
         mFlashOrb->setFillRatio(mHealthLevel);
+
+        this->setNeedsUpdate(true);
     }
 
     HealthIndicator::~HealthIndicator()

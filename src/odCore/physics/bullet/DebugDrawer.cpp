@@ -25,8 +25,6 @@ namespace odBulletPhysics
     DebugDrawer::DebugDrawer(odRender::Renderer &renderer, btCollisionWorld *collisionWorld)
     : mCollisionWorld(collisionWorld)
     , mDebugMode(0)
-    , mVertexArray(nullptr)
-    , mColorArray(nullptr)
     , mSingleShotUpdate(false)
     , mLastMaxVertexCount(0)
     {
@@ -36,8 +34,6 @@ namespace odBulletPhysics
         }
 
         mGeometry = renderer.createGeometry(odRender::PrimitiveType::LINES, false);
-        mVertexArray = mGeometry->getVertexArrayAccessHandler();
-        mColorArray = mGeometry->getColorArrayAccessHandler();
 
         mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
 
@@ -59,11 +55,8 @@ namespace odBulletPhysics
 
     void DebugDrawer::drawLine(const btVector3 &from, const btVector3 &to, const btVector3 &color)
     {
-        assert(mVertexArray != nullptr);
-        assert(mColorArray != nullptr);
-
-        odRender::Array<glm::vec3> &vertices = mVertexArray->getArray();
-        odRender::Array<glm::vec4> &colors = mColorArray->getArray();
+        odRender::Array<glm::vec3> &vertices = mGeometry->getVertexArrayAccessHandler().getArray();
+        odRender::Array<glm::vec4> &colors = mGeometry->getColorArrayAccessHandler().getArray();
 
         vertices.push_back(BulletAdapter::toGlm(from));
         vertices.push_back(BulletAdapter::toGlm(to));
@@ -94,14 +87,11 @@ namespace odBulletPhysics
         {
             mSingleShotUpdate = false;
 
-            mVertexArray->acquire();
-            mColorArray->acquire();
+            odRender::ArrayAccessor<glm::vec3> vertices(mGeometry->getVertexArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE);
+            odRender::ArrayAccessor<glm::vec4> colors(mGeometry->getColorArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE);
 
-            mVertexArray->getArray().clear();
-            mColorArray->getArray().clear();
-
-            mVertexArray->release();
-            mColorArray->release();
+            vertices.clear();
+            colors.clear();
 
         }else
         {
@@ -123,19 +113,22 @@ namespace odBulletPhysics
             }
             mSingleShotUpdate = true;
 
-            mVertexArray->acquire();
-            mColorArray->acquire();
+            auto &vertexArray = mGeometry->getVertexArrayAccessHandler();
+            auto &colorArray = mGeometry->getColorArrayAccessHandler();
 
-            mVertexArray->getArray().reserve(mLastMaxVertexCount);
-            mColorArray->getArray().reserve(mLastMaxVertexCount);
+            vertexArray.acquire(false);
+            colorArray.acquire(false);
+
+            vertexArray.getArray().reserve(mLastMaxVertexCount);
+            colorArray.getArray().reserve(mLastMaxVertexCount);
 
             mCollisionWorld->debugDrawWorld();
 
-            size_t vertCount = mVertexArray->getArray().size();
+            size_t vertCount = vertexArray.getArray().size();
             mLastMaxVertexCount = std::max(vertCount, mLastMaxVertexCount);
 
-            mVertexArray->release();
-            mColorArray->release();
+            vertexArray.release(true);
+            colorArray.release(true);
         }
     }
 
