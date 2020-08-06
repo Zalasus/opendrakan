@@ -158,11 +158,6 @@ namespace odOsg
         mTransform->setScale(GlmAdapter::toOsg(scale));
     }
 
-    void Handle::setMatrix(const glm::mat4 &m)
-    {
-        Logger::info() << "set matrix:";
-    }
-
     odRender::Model *Handle::getModel()
     {
         return mModel.get();

@@ -13,8 +13,10 @@
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
 #include <osg/Uniform>
+#include <osg/Viewport>
 
 #include <odCore/render/Handle.h>
+#include <odCore/render/Renderer.h>
 
 #include <odOsg/render/LightState.h>
 
@@ -41,7 +43,6 @@ namespace odOsg
         virtual void setPosition(const glm::vec3 &pos) override;
         virtual void setOrientation(const glm::quat &orientation) override;
         virtual void setScale(const glm::vec3 &scale) override;
-        virtual void setMatrix(const glm::mat4 &m) override;
 
         virtual odRender::Model *getModel() override;
         virtual void setModel(std::shared_ptr<odRender::Model> model) override;
@@ -89,6 +90,8 @@ namespace odOsg
         osg::ref_ptr<osg::Depth> mDepth;
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
         osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
+        osg::ref_ptr<osg::Viewport> mViewport;
+
         std::unique_ptr<Rig> mRig;
     };
 

@@ -38,8 +38,6 @@ namespace odGui
 
         inline bool isMenuMode() const { return mMenuMode; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
-        inline const glm::mat4 &getWidgetSpaceToNdcTransform() const { return mWidgetSpaceToNdcTransform; }
-        inline const glm::mat4 &getNdcToWidgetSpaceTransform() const { return mNdcToWidgetSpaceTransform; }
         inline void markDepthDirty() { mDepthDirty = true; }
         inline void markTransformsDirty() { mTransformsDirty = true; }
         inline void markMeasurementsDirty() { mMeasurementsDirty = true; }
@@ -61,9 +59,9 @@ namespace odGui
         void setCursorWidget(std::shared_ptr<Widget> cursor);
 
         /**
-         * @brief Positions cursor in NDC.
+         * @brief Positions cursor in GUI space (top-left is 0/0, bottom-right is 1/1)
          */
-        void setCursorPosition(const glm::vec2 &pos);
+        void setCursorPosition(const glm::vec2 &posInGuiSpace);
 
         /**
          * @brief Hook for child classes to react when menu mode is enabled/disabled. Does nothing by default.
@@ -117,11 +115,8 @@ namespace odGui
         bool mTransformsDirty;
 
         std::shared_ptr<Widget> mRootWidget;
-        glm::vec2 mCursorPosInNdc;
+        glm::vec2 mCursorPos; // in GUI space!
         std::shared_ptr<Widget> mCursorWidget;
-
-        glm::mat4 mWidgetSpaceToNdcTransform;
-        glm::mat4 mNdcToWidgetSpaceTransform;
 
         std::vector<HitWidgetInfo> mCurrentHitWidgets;
         std::vector<HitWidgetInfo> mLastHitWidgets;

@@ -50,6 +50,7 @@ namespace odOsg
         virtual std::shared_ptr<odRender::Handle> createHandle(odRender::RenderSpace space) override;
         virtual std::shared_ptr<odRender::Model> createModel() override;
         virtual std::shared_ptr<odRender::Geometry> createGeometry(odRender::PrimitiveType primitiveType, bool indexed) override;
+        virtual std::shared_ptr<odRender::Group> createGroup(odRender::RenderSpace space) override;
 
         virtual std::shared_ptr<odRender::Model> createModelFromDb(std::shared_ptr<odDb::Model> model) override;
         virtual std::shared_ptr<odRender::Model> createModelFromLayer(od::Layer *layer) override;
@@ -78,6 +79,7 @@ namespace odOsg
     private:
 
         void _setupGuiStuff();
+        osg::Group *_getOsgGroupForRenderSpace(odRender::RenderSpace space);
 
         std::shared_ptr<Model> _buildSingleLodModelNode(odDb::Model &model);
         std::shared_ptr<Model> _buildMultiLodModelNode(odDb::Model &model);

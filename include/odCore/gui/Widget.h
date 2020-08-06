@@ -19,6 +19,7 @@
 
 namespace odRender
 {
+    class Group;
     class Handle;
 }
 
@@ -47,25 +48,6 @@ namespace odGui
         Normal,
         AlwaysOnTop,
         AlwaysOnBottom
-    };
-
-    class WidgetRenderable
-    {
-    public:
-
-        WidgetRenderable(std::shared_ptr<odRender::Handle> h);
-
-        void setPosition(const glm::vec3 &p);
-        void setRotation(const glm::quat &q);
-        void setScale(const glm::vec3 &s);
-
-        void setMatrix(const glm::mat4 &m);
-
-
-    private:
-
-        std::shared_ptr<odRender::Handle> mHandle;
-
     };
 
     /**
@@ -99,7 +81,7 @@ namespace odGui
         inline glm::vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline glm::vec2 getDimensions() const { return mDimensions; }
-        inline const glm::mat4 &getParentToWidgetSpaceMatrix() const { return mParentSpaceToWidgetSpace; }
+        //inline const glm::mat4 &getParentToWidgetSpaceMatrix() const { return mParentSpaceToWidgetSpace; }
         inline bool isMouseOver() const { return mMouseOver; }
         inline void setMouseOver(bool b) { mMouseOver = b; }
 
@@ -168,9 +150,9 @@ namespace odGui
 
         /**
          * @brief Performs recursive intersection check, collecting all found widgets in a vector.
-         * @param parentMatrix  The matrix representing a transformation from parent space to widget space of the parent recursion level
+         * @param pointInWidgetSpace  The point to check, using *this* Widget's space
          */
-        void intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets);
+        void intersect(const glm::vec2 &point, std::vector<HitWidgetInfo> &hitWidgets);
 
         /**
          * @brief Returns the measured dimensions of this widget in pixels.
@@ -231,7 +213,8 @@ namespace odGui
 
         void _recalculateMatrix();
         void _flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex);
-        void _flattenTransformRecursive(glm::mat4 parentMatrix);
+        void _flattenTransformRecursive(glm::mat4 parentToRoot);
+        void _intersectRecursive(const glm::vec2 &point, const glm::mat4 &parentToRoot, std::vector<HitWidgetInfo> &hitWidgets);
         glm::vec2 _getOriginVector();
 
         /**
@@ -245,6 +228,7 @@ namespace odGui
         glm::vec2 mDimensions;
         glm::vec2 mPositionInParentSpace;
         int32_t mZIndex;
+        bool mVisible;
         Widget *mParentWidget; // yes, the bare pointer is intentional. this is supposed to be a weak ref. see explanation in doc of setParent()
 
         // number of child widgets (of any depth) that requested an periodic update. if this is 0, the update() method does not have to propagate down
@@ -254,13 +238,14 @@ namespace odGui
         glm::vec2 mMeasuredDimensionsPx;
 
         bool mMatrixDirty;
-        glm::mat4 mParentSpaceToWidgetSpace;
-        glm::mat4 mWidgetSpaceToParentSpace;
+        glm::mat4 mParentSpaceToMySpace;
+        glm::mat4 mMySpaceToParentSpace;
 
         bool mMouseOver;
 
         std::vector<std::shared_ptr<Widget>> mChildWidgets;
-        std::vector<std::shared_ptr<odRender::Handle>> mRenderHandles;
+
+        std::shared_ptr<odRender::Group> mRenderGroup;
     };
 
 }

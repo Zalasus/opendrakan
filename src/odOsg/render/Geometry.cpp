@@ -84,6 +84,14 @@ namespace odOsg
             glPrimitiveType = GL_TRIANGLES;
             break;
 
+        case odRender::PrimitiveType::TRIANGLE_FAN:
+            glPrimitiveType = GL_TRIANGLE_FAN;
+            break;
+
+        case odRender::PrimitiveType::TRIANGLE_STRIP:
+            glPrimitiveType = GL_TRIANGLE_STRIP;
+            break;
+
         default:
             throw od::UnsupportedException("Unsupported or unknown primitive type");
         }
@@ -169,6 +177,14 @@ namespace odOsg
 
         case GL_TRIANGLES:
             mPrimitiveType = odRender::PrimitiveType::TRIANGLES;
+            break;
+
+        case GL_TRIANGLE_FAN:
+            mPrimitiveType = odRender::PrimitiveType::TRIANGLE_FAN;
+            break;
+
+        case GL_TRIANGLE_STRIP:
+            mPrimitiveType = odRender::PrimitiveType::TRIANGLE_STRIP;
             break;
 
         default:

@@ -49,8 +49,7 @@ namespace odGui
         }
 
         mCurrentHitWidgets.clear();
-        glm::mat4 eye(1.0);
-        mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
+        mRootWidget->intersect(mCursorPos, mCurrentHitWidgets);
 
         Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
 
@@ -103,27 +102,23 @@ namespace odGui
             mCursorWidget->setVisible(mMenuMode);
             this->addWidget(mCursorWidget);
 
-            glm::vec4 widgetToNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
-            mCursorPosInNdc = glm::vec2(widgetToNdc.x, widgetToNdc.y);
+            mCursorPos = mCursorWidget->getPosition();
         }
     }
 
     void Gui::setCursorPosition(const glm::vec2 &pos)
     {
-        if(mCursorPosInNdc == pos)
+        if(mCursorPos == pos)
         {
             // no change -> no need to perform costly update
             return;
         }
 
-        mCursorPosInNdc = pos;
-
-        // pos is in NDC, we need it in widget space
-        glm::vec4 posWs = mNdcToWidgetSpaceTransform * glm::vec4(pos, 0.0, 1.0);
+        mCursorPos = pos;
 
         if(mCursorWidget != nullptr)
         {
-            mCursorWidget->setPosition({posWs.x, posWs.y});
+            mCursorWidget->setPosition({mCursorPos.x, mCursorPos.y});
         }
 
         if(!mMenuMode)
@@ -138,8 +133,7 @@ namespace odGui
         //  happened can be determined from the mouse-over state that is stored in those widgets.
         //  FIXME: this only works if every widget in the scenegraph is unique
         mCurrentHitWidgets.clear();
-        glm::mat4 eye(1.0);
-        mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
+        mRootWidget->intersect(mCursorPos, mCurrentHitWidgets);
 
         mJoinedHitWidgets.clear();
         mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), mCurrentHitWidgets.begin(), mCurrentHitWidgets.end());
@@ -189,16 +183,19 @@ namespace odGui
         if(mDepthDirty)
         {
             mRootWidget->flattenDepth();
+            mDepthDirty = false;
         }
 
         if(mMeasurementsDirty)
         {
             mRootWidget->measure(mRenderer.getFramebufferDimensions());
+            mMeasurementsDirty = false;
         }
 
         if(mTransformsDirty)
         {
             mRootWidget->flattenTransform();
+            mTransformsDirty = false;
         }
     }
 
@@ -216,14 +213,7 @@ namespace odGui
 
     void Gui::_setupGui()
     {
-        mWidgetSpaceToNdcTransform = glm::mat4(1.0);
-        mWidgetSpaceToNdcTransform = glm::scale(mWidgetSpaceToNdcTransform, glm::vec3(2.0, -2.0, -1.0));
-        mWidgetSpaceToNdcTransform = glm::translate(mWidgetSpaceToNdcTransform, glm::vec3(-0.5, -0.5, 0.0));
-
-        mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
-
         mRootWidget = std::make_shared<Widget>(*this);
-        mRootWidget->setDimensions(glm::vec2(1.0, 1.0), WidgetDimensionType::ParentRelative);
     }
 
 }

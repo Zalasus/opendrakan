@@ -52,13 +52,6 @@ namespace odRender
         virtual void setOrientation(const glm::quat &orientation) = 0;
         virtual void setScale(const glm::vec3 &scale) = 0;
 
-        /**
-         * @brief Sets a transformation matrix that is applied *before* the position/rotation/scale set via setPosition() etc.
-         *
-         * By default, this is set to be an identity matrix, so it does not affect anything.
-         */
-        virtual void setMatrix(const glm::mat4 &m) = 0;
-
         virtual Model *getModel() = 0;
         virtual void setModel(std::shared_ptr<Model> model) = 0;
 

@@ -56,7 +56,7 @@ namespace dragonRfl
         mUserInterfaceProperties.probeFields(probe);
 
         auto cursor = std::make_shared<Cursor>(*this);
-        setCursorWidget(cursor);
+        //setCursorWidget(cursor);
 
         setCursorPosition(glm::vec2(0, 0));
 
@@ -66,7 +66,7 @@ namespace dragonRfl
         addWidget(healthIndicator);
 
         mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
-        addWidget(mMainMenu);
+        //addWidget(mMainMenu);
 
         setMenuMode(false);
     }

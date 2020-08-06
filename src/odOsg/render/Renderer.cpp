@@ -31,6 +31,7 @@
 #include <odOsg/render/Image.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Camera.h>
+#include <odOsg/render/Group.h>
 #include <odOsg/render/Handle.h>
 #include <odOsg/render/Model.h>
 #include <odOsg/render/ModelBuilder.h>
@@ -121,27 +122,7 @@ namespace odOsg
 
     std::shared_ptr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
     {
-        std::shared_ptr<Handle> handle;
-
-        switch(space)
-        {
-        case odRender::RenderSpace::NONE:
-            handle = std::make_shared<Handle>(*this, nullptr);
-            break;
-
-        case odRender::RenderSpace::LEVEL:
-            handle = std::make_shared<Handle>(*this, mLevelRoot);
-            break;
-
-        case odRender::RenderSpace::GUI:
-            handle = std::make_shared<Handle>(*this, mGuiRoot);
-            break;
-
-        default:
-            throw od::Exception("Unknown render space");
-        }
-
-        return handle;
+        return std::make_shared<Handle>(*this, _getOsgGroupForRenderSpace(space));
     }
 
     std::shared_ptr<odRender::Model> Renderer::createModel()
@@ -152,6 +133,11 @@ namespace odOsg
     std::shared_ptr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
     {
         return std::make_shared<Geometry>(primitiveType, indexed);
+    }
+
+    std::shared_ptr<odRender::Group> Renderer::createGroup(odRender::RenderSpace space)
+    {
+        return std::make_shared<Group>(_getOsgGroupForRenderSpace(space));
     }
 
     std::shared_ptr<odRender::Model> Renderer::createModelFromDb(std::shared_ptr<odDb::Model> model)
@@ -370,10 +356,17 @@ namespace odOsg
 
     glm::vec2 Renderer::getFramebufferDimensions()
     {
-        int x, y, width, height;
-        mWindow->getWindowRectangle(x, y, width, height);
+        if(mWindow == nullptr)
+        {
+             // no window created yet. return a default size. a resize event will fix this later
+            return { 640, 480 };
 
-        return { width, height };
+        }else
+        {
+            int x, y, width, height;
+            mWindow->getWindowRectangle(x, y, width, height);
+            return { width, height };
+        }
     }
 
     odRender::Camera *Renderer::getCamera()
@@ -399,6 +392,12 @@ namespace odOsg
 
         int x, y, width, height;
         mWindow->getWindowRectangle(x, y, width, height);
+
+        for(auto guiCallback : mGuiCallbacks)
+        {
+            guiCallback->onFramebufferResize({width, height});
+        }
+
         double aspect = static_cast<double>(width)/height;
         mViewer->getCamera()->setProjectionMatrixAsPerspective(45, aspect, 1, 10000);
     }
@@ -495,11 +494,30 @@ namespace odOsg
         }
     }
 
+    osg::Group *Renderer::_getOsgGroupForRenderSpace(odRender::RenderSpace space)
+    {
+        switch(space)
+        {
+        case odRender::RenderSpace::NONE:
+            return nullptr;
+
+        case odRender::RenderSpace::LEVEL:
+            return mLevelRoot;
+
+        case odRender::RenderSpace::GUI:
+            return mGuiRoot;
+        }
+
+        OD_UNREACHABLE();
+    }
+
     void Renderer::_setupGuiStuff()
     {
+        auto guiSpaceToNdc = osg::Matrix::ortho2D(0, 1, 1, 0);
+
         mGuiCamera = new osg::Camera;
         mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-        mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
+        mGuiCamera->setProjectionMatrix(guiSpaceToNdc);
         mGuiCamera->setViewMatrix(osg::Matrix::identity());
         mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
         mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);

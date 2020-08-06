@@ -31,6 +31,7 @@ namespace odRender
     class RendererEventListener;
     class Handle;
     class Model;
+    class Group;
     class GuiCallback;
 
     /**
@@ -38,6 +39,9 @@ namespace odRender
      *
      * GUI render space uses orthogonal projection, depth-sorted drawing order and a simplified coordinate
      * system where the top-left of the screen is 0/0 and the bottom right is 1/1.
+     *
+     * You can choose not to add a handle to a render space. This can be useful when you intend
+     * to add it to a Group, for instance.
      */
     enum class RenderSpace
     {
@@ -72,6 +76,9 @@ namespace odRender
         virtual std::shared_ptr<Handle> createHandle(RenderSpace space) = 0;
         virtual std::shared_ptr<Model> createModel() = 0;
         virtual std::shared_ptr<Geometry> createGeometry(PrimitiveType primitiveType, bool indexed) = 0;
+        virtual std::shared_ptr<Group> createGroup(RenderSpace space) = 0;
+
+        std::shared_ptr<Handle> createHandleFromObject(od::LevelObject &obj);
 
         virtual std::shared_ptr<Model> createModelFromDb(std::shared_ptr<odDb::Model> model) = 0;
 
@@ -116,8 +123,6 @@ namespace odRender
          * @param relTime  Time passed since last frame was rendered, in seconds.
          */
         virtual void frame(float relTime) = 0;
-
-        std::shared_ptr<Handle> createHandleFromObject(od::LevelObject &obj);
 
     };
 

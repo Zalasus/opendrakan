@@ -18,6 +18,7 @@ target_sources(odOsg PRIVATE
     "audio/music/StupidSineSynth.cpp"
     "render/Camera.cpp"
     "render/Geometry.cpp"
+    "render/Group.cpp"
     "render/Handle.cpp"
     "render/Image.cpp"
     "render/LightState.cpp"
