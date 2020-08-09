@@ -40,6 +40,10 @@ namespace odGui
         odRender::ArrayAccessor<glm::vec3>(mGeometry->getVertexArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE).resize(4);
         odRender::ArrayAccessor<glm::vec2>(mGeometry->getTextureCoordArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE).resize(4);
         odRender::ArrayAccessor<glm::vec4>(mGeometry->getColorArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE).resize(4);
+
+        setVertexCoords({0.0, 0.0}, {1.0, 1.0});
+        setTextureCoords({0.0, 0.0}, {1.0, 1.0});
+        setColor({1.0, 1.0, 1.0, 1.0});
     }
 
     void Quad::setTexture(std::shared_ptr<odRender::Texture> texture)
