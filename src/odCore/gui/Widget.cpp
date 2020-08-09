@@ -177,6 +177,11 @@ namespace odGui
         {
             mRenderGroup->setVisible(mVisible);
         }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->setVisible(b);
+        }
     }
 
     void Widget::setZIndex(int32_t zIndex)
@@ -312,7 +317,7 @@ namespace odGui
             _recalculateMatrix();
         }
 
-        glm::mat4 thisToRoot = parentToRoot * mMySpaceToParentSpace; // TODO: order???
+        glm::mat4 thisToRoot = parentToRoot * mMySpaceToParentSpace;
         if(mRenderGroup != nullptr)
         {
             mRenderGroup->setMatrix(thisToRoot);

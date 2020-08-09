@@ -41,6 +41,7 @@ namespace odOsg
 
         inline ShaderFactory &getShaderFactory() { return mShaderFactory; }
         inline osgViewer::Viewer *getViewer() { return mViewer; }
+        inline const osg::Matrix &getNdcToGuiSpaceTransform() const { return mNdcToGuiSpaceTransform; }
 
         virtual void setRendererEventListener(odRender::RendererEventListener *listener) override;
 
@@ -102,6 +103,7 @@ namespace odOsg
 
         osg::ref_ptr<osg::Camera> mGuiCamera;
         osg::ref_ptr<osg::Group> mGuiRoot;
+        osg::Matrix mNdcToGuiSpaceTransform;
 
         bool mLightingEnabled;
         osg::ref_ptr<osg::Uniform> mGlobalLightDiffuse;

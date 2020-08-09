@@ -95,7 +95,10 @@ namespace odOsg
         float x = ea.getXnormalized();
         float y = ea.getYnormalized();
 
-        mInputManager.mouseMoved(x, y);
+        osg::Vec4 posNdc(x, y, 0, 1);
+        osg::Vec4 posGui = posNdc * mRenderer.getNdcToGuiSpaceTransform();
+
+        mInputManager.mouseMoved(posGui.x(), posGui.y());
 
         // wrap cursor when hitting left or right border
         float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel

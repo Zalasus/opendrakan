@@ -561,6 +561,7 @@ namespace odOsg
     {
         osg::Matrix guiSpaceToNdc = osg::Matrix::scale(2.0, -2.0, -1.0);
         guiSpaceToNdc.setTrans(-1.0, 1.0, 0.0);
+        mNdcToGuiSpaceTransform.invert(guiSpaceToNdc);
 
         mGuiCamera = new osg::Camera;
         mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
