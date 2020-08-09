@@ -39,6 +39,11 @@ namespace odInput
         /// @brief Sets GUI to which to report cursor updates. May be nullptr.
         inline void setGui(odGui::Gui *gui) { mGui = gui; }
 
+        /**
+         * @brief Tells the engine that the mouse moved.
+         *
+         * Coordinates are in GUI space (top-left is 0/0, bottom-right is 1/1).
+         */
         void mouseMoved(float absX, float absY);
         void mouseButtonDown(int buttonCode);
         void mouseButtonUp(int buttonCode);

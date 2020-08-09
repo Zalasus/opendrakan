@@ -190,7 +190,7 @@ namespace dragonRfl
         mHealthOrb->setFillRatio(mHealthLevel);
         mFlashOrb->setFillRatio(mHealthLevel);
 
-        this->setNeedsUpdate(true);
+        this->setEnableUpdate(true);
     }
 
     HealthIndicator::~HealthIndicator()

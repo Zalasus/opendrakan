@@ -25,11 +25,11 @@ namespace odInput
 
     void InputManager::mouseMoved(float absX, float absY)
     {
-        glm::vec2 ndc(absX, absY);
+        glm::vec2 pos(absX, absY);
 
         if(mGui != nullptr)
         {
-            mGui->setCursorPosition(ndc);
+            mGui->setCursorPosition(pos);
         }
 
         for(auto &cl : mCursorListeners)
@@ -39,7 +39,7 @@ namespace odInput
                 auto listener = cl.lock();
                 if(listener != nullptr)
                 {
-                    listener->triggerCallback(ndc);
+                    listener->triggerCallback(pos);
                 }
             }
         }

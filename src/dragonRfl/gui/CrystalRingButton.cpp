@@ -135,6 +135,8 @@ namespace dragonRfl
             float soundPitch = std::pow(halfTonePitch, noteOffset) / resamplingFactor;
             mSoundSource->setPitch(soundPitch);
         }
+
+        this->setEnableUpdate(true);
     }
 
     CrystalRingButton::~CrystalRingButton()

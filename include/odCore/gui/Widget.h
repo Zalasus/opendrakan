@@ -171,7 +171,10 @@ namespace odGui
          */
         void setZIndex(int32_t zIndex);
 
-        void setNeedsUpdate(bool b);
+        /**
+         * @brief Set to true if your subclass needs periodic calling of the onUpdate() hook.
+         */
+        void setEnableUpdate(bool b);
 
         /**
          * @brief Periodic update. Calls the onUpdate() hook, then propagates to all children that explicitly request the periodic update.
@@ -214,7 +217,7 @@ namespace odGui
         void _recalculateMatrix();
         void _flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex);
         void _flattenTransformRecursive(const glm::mat4 &parentToRoot);
-        void _intersectRecursive(const glm::vec2 &point, const glm::mat4 &rootToParent, std::vector<HitWidgetInfo> &hitWidgets);
+        void _intersectRecursive(const glm::vec2 &pointInParent, std::vector<HitWidgetInfo> &hitWidgets);
         glm::vec2 _getOriginVector();
 
         /**
@@ -231,8 +234,6 @@ namespace odGui
         bool mVisible;
         Widget *mParentWidget; // yes, the bare pointer is intentional. this is supposed to be a weak ref. see explanation in doc of setParent()
 
-        // number of child widgets (of any depth) that requested an periodic update. if this is 0, the update() method does not have to propagate down
-        size_t mChildrenInNeedOfUpdate;
         bool mNeedsUpdate;
 
         glm::vec2 mMeasuredDimensionsPx;

@@ -31,7 +31,6 @@ namespace odGui
     , mZIndex(0)
     , mVisible(true)
     , mParentWidget(nullptr)
-    , mChildrenInNeedOfUpdate(0)
     , mNeedsUpdate(false)
     , mMatrixDirty(true)
     , mMouseOver(false)
@@ -165,8 +164,7 @@ namespace odGui
 
     void Widget::intersect(const glm::vec2 &point, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::mat4 m(1.0);
-        _intersectRecursive(point, m, hitWidgets);
+        _intersectRecursive(point, hitWidgets);
     }
 
     void Widget::setVisible(bool b)
@@ -190,35 +188,9 @@ namespace odGui
         mGui.markDepthDirty();
     }
 
-    void Widget::setNeedsUpdate(bool needsUpdate)
+    void Widget::setEnableUpdate(bool needsUpdate)
     {
-        if(needsUpdate == mNeedsUpdate)
-        {
-            // important! if this would not change anything, we must also not change the parent's need-update count
-            return;
-        }
-
         mNeedsUpdate = needsUpdate;
-
-        Widget *parent = mParentWidget;
-        while(parent != nullptr)
-        {
-            if(needsUpdate)
-            {
-                parent->mChildrenInNeedOfUpdate++;
-
-            }else
-            {
-                if(parent->mChildrenInNeedOfUpdate <= 0)
-                {
-                    throw od::Exception("Invalid child-update-needed count decrement past zero. This widget tree seems broken");
-                }
-
-                parent->mChildrenInNeedOfUpdate--;
-            }
-
-            parent = parent->mParentWidget;
-        }
     }
 
     void Widget::update(float relTime)
@@ -228,12 +200,9 @@ namespace odGui
             this->onUpdate(relTime);
         }
 
-        if(mChildrenInNeedOfUpdate > 0)
+        for(auto &child : mChildWidgets)
         {
-            for(auto &child : mChildWidgets)
-            {
-                child->update(relTime);
-            }
+            child->update(relTime);
         }
     }
 
@@ -363,23 +332,21 @@ namespace odGui
         }
     }
 
-    void Widget::_intersectRecursive(const glm::vec2 &point, const glm::mat4 &rootToParent, std::vector<HitWidgetInfo> &hitWidgets)
+    void Widget::_intersectRecursive(const glm::vec2 &pointInParent, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::mat4 rootToThis = mParentSpaceToMySpace * rootToParent;
+        glm::vec4 pointInThis = mParentSpaceToMySpace * glm::vec4(pointInParent, 0.0, 1.0);
 
-        glm::vec4 pointInWidget = rootToThis * glm::vec4(point, 0.0, 1.0);
-
-        if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
+        if(this->liesWithinLogicalArea(glm::vec2(pointInThis)))
         {
             HitWidgetInfo info;
-            info.hitPointInWidget.x = pointInWidget.x;
-            info.hitPointInWidget.y = pointInWidget.y;
+            info.hitPointInWidget.x = pointInThis.x;
+            info.hitPointInWidget.y = pointInThis.y;
             info.widget = this;
             hitWidgets.push_back(info);
 
             for(auto &child : mChildWidgets)
             {
-                child->_intersectRecursive(point, rootToThis, hitWidgets);
+                child->_intersectRecursive(pointInThis, hitWidgets);
             }
         }
     }
