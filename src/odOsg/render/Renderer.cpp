@@ -122,7 +122,11 @@ namespace odOsg
 
     std::shared_ptr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
     {
-        return std::make_shared<Handle>(*this, _getOsgGroupForRenderSpace(space));
+        auto newHandle = std::make_shared<Handle>(*this);
+
+        moveToRenderSpace(newHandle, space);
+
+        return newHandle;
     }
 
     std::shared_ptr<odRender::Model> Renderer::createModel()
@@ -137,7 +141,11 @@ namespace odOsg
 
     std::shared_ptr<odRender::Group> Renderer::createGroup(odRender::RenderSpace space)
     {
-        return std::make_shared<Group>(_getOsgGroupForRenderSpace(space));
+        auto newGroup = std::make_shared<Group>();
+
+        moveToRenderSpace(newGroup, space);
+
+        return newGroup;
     }
 
     std::shared_ptr<odRender::Model> Renderer::createModelFromDb(std::shared_ptr<odDb::Model> model)
@@ -334,6 +342,44 @@ namespace odOsg
         }
 
         OD_UNREACHABLE();
+    }
+
+    void Renderer::moveToRenderSpace(std::shared_ptr<odRender::Handle> handle, odRender::RenderSpace space)
+    {
+        OD_CHECK_ARG_NONNULL(handle);
+
+        auto myHandle = od::confident_downcast<Handle>(handle);
+
+        if(myHandle->getParentOsgGroup() != nullptr)
+        {
+            myHandle->getParentOsgGroup()->removeChild(myHandle->getOsgNode());
+        }
+
+        auto newParentGroup = _getOsgGroupForRenderSpace(space);
+        myHandle->setParentOsgGroup(newParentGroup);
+        if(newParentGroup != nullptr)
+        {
+            newParentGroup->addChild(myHandle->getOsgNode());
+        }
+    }
+
+    void Renderer::moveToRenderSpace(std::shared_ptr<odRender::Group> group, odRender::RenderSpace space)
+    {
+        OD_CHECK_ARG_NONNULL(group);
+
+        auto myGroup = od::confident_downcast<Group>(group);
+
+        if(myGroup->getParentOsgGroup() != nullptr)
+        {
+            myGroup->getParentOsgGroup()->removeChild(myGroup->getOsgNode());
+        }
+
+        auto newParentGroup = _getOsgGroupForRenderSpace(space);
+        myGroup->setParentOsgGroup(newParentGroup);
+        if(newParentGroup != nullptr)
+        {
+            newParentGroup->addChild(myGroup->getOsgNode());
+        }
     }
 
     void Renderer::addGuiCallback(odRender::GuiCallback *callback)

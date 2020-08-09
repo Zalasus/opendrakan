@@ -98,6 +98,9 @@ namespace odRender
 
         virtual std::shared_ptr<Texture> createTexture(std::shared_ptr<Image> image, TextureReuseSlot reuseSlot) = 0;
 
+        virtual void moveToRenderSpace(std::shared_ptr<Handle> handle, RenderSpace space) = 0;
+        virtual void moveToRenderSpace(std::shared_ptr<Group> group, RenderSpace space) = 0;
+
         virtual void addGuiCallback(GuiCallback *callback) = 0;
         virtual void removeGuiCallback(GuiCallback *callback) = 0;
         virtual glm::vec2 getFramebufferDimensions() = 0;

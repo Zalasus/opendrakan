@@ -84,19 +84,13 @@ namespace odOsg
     };
 
 
-    Handle::Handle(Renderer &renderer, osg::Group *parentGroup)
-    : mRenderer(renderer)
-    , mParentGroup(parentGroup)
+    Handle::Handle(Renderer &renderer)
+    : mParentGroup(nullptr)
     , mFrameListener(nullptr)
     , mTransform(new osg::PositionAttitudeTransform)
     , mLightStateAttribute(new LightStateAttribute(renderer, Constants::MAX_LIGHTS))
     {
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
-
-        if(mParentGroup != nullptr)
-        {
-            mParentGroup->addChild(mTransform);
-        }
 
         // TODO: maybe allow to designate static objects that don't need this?
         //mUpdateCallback = new HandleUpdateCallback(*this);

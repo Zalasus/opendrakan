@@ -112,6 +112,11 @@ namespace odGui
     {
         OD_CHECK_ARG_NONNULL(w);
 
+        if(w->mParentWidget != nullptr)
+        {
+            throw od::Exception("Tried to add Widget that already had a parent");
+        }
+
         mChildWidgets.push_back(w);
         w->mParentWidget = this;
         mGui.markDepthDirty();
@@ -126,8 +131,9 @@ namespace odGui
         auto it = std::find(mChildWidgets.begin(), mChildWidgets.end(), w);
         if(it != mChildWidgets.end())
         {
-            mChildWidgets.erase(it);
             w->mParentWidget = nullptr;
+            w->_moveToNoneRenderSpaceRecursive();
+            mChildWidgets.erase(it);
         }
 
         // removing a widget from the tree does not invalidate the flattened hierarchy!
@@ -139,7 +145,8 @@ namespace odGui
 
         if(mRenderGroup == nullptr)
         {
-            mRenderGroup = mGui.getRenderer().createGroup(odRender::RenderSpace::GUI);
+            // create without renderspace. will be moved to GUI space once encountered during flattening
+            mRenderGroup = mGui.getRenderer().createGroup(odRender::RenderSpace::NONE);
             mRenderGroup->setVisible(mVisible);
         }
 
@@ -256,6 +263,16 @@ namespace odGui
         _flattenDepthRecursive(nextGlobalRenderOrderIndex);
     }
 
+    void Widget::_moveToNoneRenderSpaceRecursive()
+    {
+        mGui.getRenderer().moveToRenderSpace(mRenderGroup, odRender::RenderSpace::NONE);
+
+        for(auto &child : mChildWidgets)
+        {
+            child->_moveToNoneRenderSpaceRecursive();
+        }
+    }
+
     void Widget::_recalculateMatrix()
     {
         if(mParentWidget == nullptr)
@@ -309,6 +326,13 @@ namespace odGui
 
     void Widget::_flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex)
     {
+        // if this gets called, we are connected to the root widget and thus
+        //  can move our render group (if any) to the GUI space
+        if(mRenderGroup != nullptr)
+        {
+            mGui.getRenderer().moveToRenderSpace(mRenderGroup, odRender::RenderSpace::GUI);
+        }
+
         // algorithm for flattening the GUI depth:
         // walk through widget tree in pre-order:
         //      sort render handles by z-index

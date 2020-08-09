@@ -12,14 +12,10 @@
 namespace odOsg
 {
 
-    Group::Group(osg::Group *parent)
-    : mParentGroup(parent)
+    Group::Group()
+    : mParentGroup(nullptr)
     , mTransform(new osg::MatrixTransform())
     {
-        if(mParentGroup != nullptr)
-        {
-            mParentGroup->addChild(mTransform);
-        }
     }
 
     Group::~Group()

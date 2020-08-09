@@ -14,10 +14,12 @@ namespace odOsg
     {
     public:
 
-        Group(osg::Group *parent);
+        Group();
         virtual ~Group() override;
 
         inline osg::Group *getOsgNode() { return mTransform; }
+        inline osg::Group *getParentOsgGroup() { return mParentGroup; }
+        inline void setParentOsgGroup(osg::Group *p) { mParentGroup = p; }
 
         virtual void addHandle(std::shared_ptr<odRender::Handle> handle) override;
         virtual void removeHandle(std::shared_ptr<odRender::Handle> handle) override;

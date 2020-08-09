@@ -68,6 +68,8 @@ namespace odGui
 
     private:
 
+        void _check();
+
         std::shared_ptr<odRender::Handle> mHandle;
         std::shared_ptr<odRender::Model> mModel;
         std::shared_ptr<odRender::Geometry> mGeometry;

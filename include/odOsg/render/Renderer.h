@@ -58,6 +58,9 @@ namespace odOsg
         virtual std::shared_ptr<odRender::Image> createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture) override;
         virtual std::shared_ptr<odRender::Texture> createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot) override;
 
+        virtual void moveToRenderSpace(std::shared_ptr<odRender::Handle> handle, odRender::RenderSpace space) override;
+        virtual void moveToRenderSpace(std::shared_ptr<odRender::Group> group, odRender::RenderSpace space) override;
+
         virtual void addGuiCallback(odRender::GuiCallback *callback) override;
         virtual void removeGuiCallback(odRender::GuiCallback *callback) override;
         virtual glm::vec2 getFramebufferDimensions() override;

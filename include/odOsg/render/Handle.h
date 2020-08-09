@@ -30,10 +30,12 @@ namespace odOsg
     {
     public:
 
-        Handle(Renderer &renderer, osg::Group *parent);
+        Handle(Renderer &renderer);
         virtual ~Handle();
 
         inline osg::Group *getOsgNode() { return mTransform; }
+        inline osg::Group *getParentOsgGroup() { return mParentGroup; }
+        inline void setParentOsgGroup(osg::Group *p) { mParentGroup = p; }
 
         virtual std::mutex &getMutex() override;
 
@@ -79,7 +81,6 @@ namespace odOsg
 
     private:
 
-        Renderer &mRenderer;
         osg::ref_ptr<osg::Group> mParentGroup;
 
         std::mutex mMutex;
