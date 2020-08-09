@@ -318,7 +318,7 @@ namespace odGui
         //          if last child's z-index != current child's z-index: ++z
         //          descend into child
 
-        auto childPred = [](auto &left, auto &right) { return left->getZIndex() < right->getZIndex(); };
+        auto childPred = [](auto &left, auto &right) { return left->getZIndex() > right->getZIndex(); };
         std::sort(mChildWidgets.begin(), mChildWidgets.end(), childPred);
 
         for(size_t i = 0; i < mChildWidgets.size(); ++i)

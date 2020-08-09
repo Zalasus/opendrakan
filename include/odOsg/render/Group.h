@@ -25,7 +25,7 @@ namespace odOsg
         virtual void removeHandle(std::shared_ptr<odRender::Handle> handle) override;
 
         virtual void setMatrix(const glm::mat4 &m) override;
-
+        virtual void setRenderOrderHint(size_t i) override;
         virtual void setVisible(bool visible) override;
 
 

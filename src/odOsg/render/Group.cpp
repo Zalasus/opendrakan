@@ -56,6 +56,11 @@ namespace odOsg
         mTransform->setMatrix(osgMatrix);
     }
 
+    void Group::setRenderOrderHint(size_t i)
+    {
+        mTransform->getOrCreateStateSet()->setBinNumber(i);
+    }
+
     void Group::setVisible(bool visible)
     {
         int mask = visible ? -1 : 0;
