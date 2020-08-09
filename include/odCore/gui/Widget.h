@@ -81,7 +81,6 @@ namespace odGui
         inline glm::vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline glm::vec2 getDimensions() const { return mDimensions; }
-        //inline const glm::mat4 &getParentToWidgetSpaceMatrix() const { return mParentSpaceToWidgetSpace; }
         inline bool isMouseOver() const { return mMouseOver; }
         inline void setMouseOver(bool b) { mMouseOver = b; }
 
@@ -211,10 +210,11 @@ namespace odGui
 
     private:
 
+        void _moveToNoneRenderSpaceRecursive();
         void _recalculateMatrix();
         void _flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex);
-        void _flattenTransformRecursive(glm::mat4 parentToRoot);
-        void _intersectRecursive(const glm::vec2 &point, const glm::mat4 &parentToRoot, std::vector<HitWidgetInfo> &hitWidgets);
+        void _flattenTransformRecursive(const glm::mat4 &parentToRoot);
+        void _intersectRecursive(const glm::vec2 &point, const glm::mat4 &rootToParent, std::vector<HitWidgetInfo> &hitWidgets);
         glm::vec2 _getOriginVector();
 
         /**

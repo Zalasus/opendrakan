@@ -186,13 +186,13 @@ namespace odGui
             mDepthDirty = false;
         }
 
-        if(mMeasurementsDirty)
+        //if(mMeasurementsDirty)
         {
             mRootWidget->measure(mRenderer.getFramebufferDimensions());
             mMeasurementsDirty = false;
         }
 
-        if(mTransformsDirty)
+        //if(mTransformsDirty)
         {
             mRootWidget->flattenTransform();
             mTransformsDirty = false;

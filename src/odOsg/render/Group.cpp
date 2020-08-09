@@ -52,7 +52,7 @@ namespace odOsg
 
     void Group::setMatrix(const glm::mat4 &m)
     {
-        osg::Matrix osgMatrix = GlmAdapter::toOsg(m);
+        osg::Matrix osgMatrix = GlmAdapter::toOsg(glm::transpose(m)); // FIXME: this transpose is suspicios...
         mTransform->setMatrix(osgMatrix);
     }
 

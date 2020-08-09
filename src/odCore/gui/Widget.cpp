@@ -33,7 +33,7 @@ namespace odGui
     , mParentWidget(nullptr)
     , mChildrenInNeedOfUpdate(0)
     , mNeedsUpdate(false)
-    , mMatrixDirty(false)
+    , mMatrixDirty(true)
     , mMouseOver(false)
     {
     }
@@ -277,42 +277,42 @@ namespace odGui
     {
         if(mParentWidget == nullptr)
         {
-            mMySpaceToParentSpace = glm::mat4(1.0);
             mParentSpaceToMySpace = glm::mat4(1.0);
+            mMySpaceToParentSpace = glm::mat4(1.0);
 
         }else
         {
-            // TODO: build the inverse and we can eliminate this direction
-            mMySpaceToParentSpace = glm::mat4(1.0);
-            mMySpaceToParentSpace = glm::translate(mMySpaceToParentSpace, glm::vec3(mPositionInParentSpace, 0.0));
-
-            glm::vec2 widgetSizeInParentSpace;
-            if(mDimensionType == WidgetDimensionType::ParentRelative)
+            glm::vec2 mySizeInParentSpace;
+            switch(mDimensionType)
             {
-                widgetSizeInParentSpace = mDimensions;
+            case WidgetDimensionType::ParentRelative:
+                mySizeInParentSpace = mDimensions;
+                break;
 
-            }else
-            {
-                widgetSizeInParentSpace = getMeasuredDimensions() / mParentWidget->getMeasuredDimensions();
+            case WidgetDimensionType::Pixels:
+                mySizeInParentSpace = getMeasuredDimensions() / mParentWidget->getMeasuredDimensions();
+                break;
             }
 
-            mMySpaceToParentSpace = glm::scale(mMySpaceToParentSpace, glm::vec3(widgetSizeInParentSpace, 1.0));
-            mMySpaceToParentSpace = glm::translate(mMySpaceToParentSpace, glm::vec3(-_getOriginVector(), 0.0));
+            mParentSpaceToMySpace = glm::mat4(1.0);
+            auto offsetOfCoordinateOrigin = mPositionInParentSpace - _getOriginVector()*mySizeInParentSpace;
+            mParentSpaceToMySpace = glm::scale(mParentSpaceToMySpace, {1.0/mySizeInParentSpace.x, 1.0/mySizeInParentSpace.y, 1.0});
+            mParentSpaceToMySpace = glm::translate(mParentSpaceToMySpace, {-offsetOfCoordinateOrigin, 0.0});
 
-            mParentSpaceToMySpace = glm::inverse(mMySpaceToParentSpace);
+            mMySpaceToParentSpace = glm::inverse(mParentSpaceToMySpace);
         }
 
         mMatrixDirty = false;
     }
 
-    void Widget::_flattenTransformRecursive(glm::mat4 parentToRoot)
+    void Widget::_flattenTransformRecursive(const glm::mat4 &parentToRoot)
     {
         if(mMatrixDirty)
         {
             _recalculateMatrix();
         }
 
-        glm::mat4 thisToRoot = mParentSpaceToMySpace * parentToRoot;
+        glm::mat4 thisToRoot = parentToRoot * mMySpaceToParentSpace; // TODO: order???
         if(mRenderGroup != nullptr)
         {
             mRenderGroup->setMatrix(thisToRoot);
@@ -358,11 +358,11 @@ namespace odGui
         }
     }
 
-    void Widget::_intersectRecursive(const glm::vec2 &point, const glm::mat4 &parentToRoot, std::vector<HitWidgetInfo> &hitWidgets)
+    void Widget::_intersectRecursive(const glm::vec2 &point, const glm::mat4 &rootToParent, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::mat4 thisToRoot = mParentSpaceToMySpace * parentToRoot;
+        glm::mat4 rootToThis = mParentSpaceToMySpace * rootToParent;
 
-        glm::vec4 pointInWidget = thisToRoot * glm::vec4(point, 0.0, 1.0);
+        glm::vec4 pointInWidget = rootToThis * glm::vec4(point, 0.0, 1.0);
 
         if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
         {
@@ -374,7 +374,7 @@ namespace odGui
 
             for(auto &child : mChildWidgets)
             {
-                child->_intersectRecursive(point, thisToRoot, hitWidgets);
+                child->_intersectRecursive(point, rootToThis, hitWidgets);
             }
         }
     }

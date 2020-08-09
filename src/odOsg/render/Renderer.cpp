@@ -559,12 +559,13 @@ namespace odOsg
 
     void Renderer::_setupGuiStuff()
     {
-        auto guiSpaceToNdc = osg::Matrix::ortho2D(0, 1, 1, 0);
+        osg::Matrix guiSpaceToNdc = osg::Matrix::scale(2.0, -2.0, -1.0);
+        guiSpaceToNdc.setTrans(-1.0, 1.0, 0.0);
 
         mGuiCamera = new osg::Camera;
         mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
-        mGuiCamera->setProjectionMatrix(guiSpaceToNdc);
-        mGuiCamera->setViewMatrix(osg::Matrix::identity());
+        mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
+        mGuiCamera->setViewMatrix(guiSpaceToNdc);
         mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
         mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
         mGuiCamera->setAllowEventFocus(false);
