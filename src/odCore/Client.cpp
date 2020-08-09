@@ -181,7 +181,9 @@ namespace od
         auto lastTime = high_resolution_clock::now();
         while(!mIsDone.load(std::memory_order_relaxed))
         {
-            auto duration = duration_cast<microseconds>(high_resolution_clock::now() - lastTime);
+            auto now = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(now - lastTime);
+            lastTime = now;
             float relTime = duration.count() * 1e-6;
 
             if(mLevel != nullptr)
