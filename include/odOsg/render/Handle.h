@@ -53,7 +53,6 @@ namespace odOsg
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
 
         virtual void setRenderBin(odRender::RenderBin rm) override;
-        virtual void setDrawOrderHint(size_t i) override;
 
         virtual void addFrameListener(odRender::FrameListener *listener) override;
         virtual void removeFrameListener(odRender::FrameListener *listener) override;

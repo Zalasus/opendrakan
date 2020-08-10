@@ -38,8 +38,7 @@ namespace odGui
 
         inline bool isMenuMode() const { return mMenuMode; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
-        inline void markDepthDirty() { mDepthDirty = true; }
-        inline void markTransformsDirty() { mTransformsDirty = true; }
+        inline void markNeedsFlattening() { mNeedsFlattening = true; }
         inline void markMeasurementsDirty() { mMeasurementsDirty = true; }
 
         void quit();
@@ -110,9 +109,8 @@ namespace odGui
 
         bool mMenuMode;
 
-        bool mDepthDirty;
         bool mMeasurementsDirty;
-        bool mTransformsDirty;
+        bool mNeedsFlattening;
 
         std::shared_ptr<Widget> mRootWidget;
         glm::vec2 mCursorPos; // in GUI space!

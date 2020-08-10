@@ -77,7 +77,8 @@ namespace odGui
         Widget(Gui &gui);
         virtual ~Widget();
 
-        inline int32_t getZIndex() const { return mZIndex; }
+        inline float getZPosition() const { return mZPositionInParentSpace; }
+        inline float getDepth() const { return mDepthInParentSpace; }
         inline glm::vec2 getPosition() const { return mPositionInParentSpace; }
         inline WidgetDimensionType getDimensionType() const { return mDimensionType; }
         inline glm::vec2 getDimensions() const { return mDimensions; }
@@ -90,6 +91,23 @@ namespace odGui
         void setDimensionType(WidgetDimensionType type);
         void setOrigin(WidgetOrigin origin);
 
+        /**
+         * @brief Sets the depth of this Widget relative to it's parent.
+         *
+         * A depth of 1 means this is exactly as deep as it's parent. This is the default.
+         *
+         * You can ignore this for 2D-only widgets. Do not set it to 0, because that will mess up the transforms.
+         */
+        void setDepth(float d);
+
+        /**
+         * @brief Sets this widget's Z position inside it's parent.
+         *
+         * This is 0 by default.
+         *
+         * The Widget Space's Z axis points *into* the screen.
+         */
+        void setZPosition(float z);
 
         /**
          * @brief Returns true if \c pos lies within the logical widget bounds.
@@ -141,8 +159,6 @@ namespace odGui
 
         /**
          * @brief Adds a render handle to be drawn in this widget's render space.
-         *
-         * Handles that are added first are also drawn first, so appear below those that are added later.
          */
         void addRenderHandle(std::shared_ptr<odRender::Handle> r);
         void removeRenderHandle(std::shared_ptr<odRender::Handle> r);
@@ -163,13 +179,16 @@ namespace odGui
         void setVisible(bool b);
 
         /**
-         * This affects stacking inside the parent widget. A widget with a lower Z index is always on top of other widgets
-         * with higher Z indices.
-         *
-         * A widget's render handles have an implicit Z index which is determined by the order in which they are added.
-         * Handles that are added first are also drawn first, so appear below those that are added later.
+         * @brief Sets this Widget's render mode to perspective.
          */
-        void setZIndex(int32_t zIndex);
+        void setPerspectiveMode(float aspect, float fov);
+
+        /**
+         * @brief Sets this Widget's render mode to orthogonal projection.
+         *
+         * This is the default for new widgets.
+         */
+        void setOrthogonalMode();
 
         /**
          * @brief Set to true if your subclass needs periodic calling of the onUpdate() hook.
@@ -195,15 +214,7 @@ namespace odGui
          * It really only makes sense to call this on the root widget. Partially flattening the widget tree does not
          * yield correct results as of now.
          */
-        void flattenTransform();
-
-        /**
-         * @brief Walks the GUI tree and turns the hierachical widget stack into a linear draw order for the renderer.
-         *
-         * It really only makes sense to call this on the root widget. Partially flattening the widget tree does not
-         * yield correct results as of now.
-         */
-        void flattenDepth();
+        void flatten();
 
 
     protected:
@@ -215,22 +226,17 @@ namespace odGui
 
         void _moveToNoneRenderSpaceRecursive();
         void _recalculateMatrix();
-        void _flattenDepthRecursive(size_t &nextGlobalRenderOrderIndex);
-        void _flattenTransformRecursive(const glm::mat4 &parentToRoot);
+        void _flattenRecursive(const glm::mat4 &parentToRoot);
         void _intersectRecursive(const glm::vec2 &pointInParent, std::vector<HitWidgetInfo> &hitWidgets);
         glm::vec2 _getOriginVector();
-
-        /**
-         * @brief Propagates the transform-dirty state up the widget hierarchy.
-         */
-        void _dirtyTransform();
 
         Gui &mGui;
         WidgetOrigin mOrigin;
         WidgetDimensionType mDimensionType;
         glm::vec2 mDimensions;
         glm::vec2 mPositionInParentSpace;
-        int32_t mZIndex;
+        float mDepthInParentSpace;
+        float mZPositionInParentSpace;
         bool mVisible;
         Widget *mParentWidget; // yes, the bare pointer is intentional. this is supposed to be a weak ref. see explanation in doc of setParent()
 

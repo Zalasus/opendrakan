@@ -206,6 +206,7 @@ namespace odOsg
                 mDepth = nullptr;
             }
             ss->setRenderBinDetails(0, "RenderBin");
+            ss->setMode(GL_BLEND, osg::StateAttribute::OFF);
             break;
 
         case odRender::RenderBin::SKY:
@@ -216,6 +217,7 @@ namespace odOsg
             }
             ss->setAttribute(mDepth, osg::StateAttribute::ON);
             ss->setRenderBinDetails(-1, "RenderBin");
+            ss->setMode(GL_BLEND, osg::StateAttribute::OFF);
             break;
 
         case odRender::RenderBin::TRANSPARENT:
@@ -225,16 +227,12 @@ namespace odOsg
                 mDepth = nullptr;
             }
             ss->setRenderBinDetails(1, "DepthSortedBin");
+            ss->setMode(GL_BLEND, osg::StateAttribute::ON);
             break;
 
         default:
             break;
         }
-    }
-
-    void Handle::setDrawOrderHint(size_t i)
-    {
-        Logger::info() << "Set draw order hint";
     }
 
     void Handle::addFrameListener(odRender::FrameListener *listener)

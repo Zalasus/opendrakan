@@ -80,13 +80,13 @@ namespace dragonRfl
     , mDragonGui(gui)
     {
         auto imageWidget = std::make_shared<MainMenuImage>(gui);
-        imageWidget->setZIndex(0);
         imageWidget->setOrigin(odGui::WidgetOrigin::Center);
         imageWidget->setPosition(glm::vec2(0.5, 0.5));
+        imageWidget->setZPosition(0.5);
         this->addChild(imageWidget);
 
         auto bgWidget = std::make_shared<MainMenuBackground>(gui);
-        bgWidget->setZIndex(1);
+        bgWidget->setZPosition(1.0);
         this->addChild(bgWidget);
 
         this->setDimensions({1.0, 1.0}, odGui::WidgetDimensionType::ParentRelative);
@@ -95,7 +95,6 @@ namespace dragonRfl
         cont->setDimensions({512, 512}, odGui::WidgetDimensionType::Pixels);
         cont->setOrigin(odGui::WidgetOrigin::Center);
         cont->setPosition({0.5, 0.5});
-        cont->setZIndex(-1);
         this->addChild(cont);
 
         _addCrystal(gui, uiProps->crystalTop.getAsset(), uiProps->crystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);

@@ -60,14 +60,6 @@ namespace odRender
 
         virtual void setRenderBin(RenderBin rm) = 0;
 
-        /**
-         * @brief Sets a hint for the render in which order to render handles.
-         *
-         * This might be ignored depending on the render space. Currently, this
-         * is only required for the GUI space, where it controls widget stacking.
-         */
-        virtual void setDrawOrderHint(size_t i) = 0;
-
         virtual void addFrameListener(FrameListener *listener) = 0;
         virtual void removeFrameListener(FrameListener *listener) = 0;
 
@@ -80,6 +72,7 @@ namespace odRender
         virtual void removeLight(std::shared_ptr<od::Light> light) = 0;
         virtual void clearLightList() = 0;
         virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) = 0;
+
     };
 
 }

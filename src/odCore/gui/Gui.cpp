@@ -25,7 +25,8 @@ namespace odGui
     Gui::Gui(odRender::Renderer &renderer)
     : mRenderer(renderer)
     , mMenuMode(false)
-    , mDepthDirty(false)
+    , mMeasurementsDirty(false)
+    , mNeedsFlattening(false)
     {
         _setupGui();
 
@@ -98,7 +99,7 @@ namespace odGui
 
         if(mCursorWidget != nullptr)
         {
-            mCursorWidget->setZIndex(-1000);
+            mCursorWidget->setZPosition(-0.1);
             mCursorWidget->setVisible(mMenuMode);
             this->addWidget(mCursorWidget);
 
@@ -180,22 +181,16 @@ namespace odGui
 
     void Gui::rebuild()
     {
-        if(mDepthDirty)
-        {
-            mRootWidget->flattenDepth();
-            mDepthDirty = false;
-        }
-
         if(mMeasurementsDirty)
         {
             mRootWidget->measure(mRenderer.getFramebufferDimensions());
             mMeasurementsDirty = false;
         }
 
-        if(mTransformsDirty)
+        if(mNeedsFlattening)
         {
-            mRootWidget->flattenTransform();
-            mTransformsDirty = false;
+            mRootWidget->flatten();
+            mNeedsFlattening = false;
         }
     }
 
@@ -214,6 +209,8 @@ namespace odGui
     void Gui::_setupGui()
     {
         mRootWidget = std::make_shared<Widget>(*this);
+        mRootWidget->setDepth(0.5);
+        mRootWidget->setZPosition(0.5);
     }
 
 }

@@ -50,7 +50,7 @@ namespace odOsg
         }
     }
 
-    size_t Group::getHandleCount()
+    size_t Group::getHandleCount() const
     {
         return mHandles.size();
     }
@@ -64,11 +64,6 @@ namespace odOsg
     {
         osg::Matrix osgMatrix = GlmAdapter::toOsg(glm::transpose(m)); // FIXME: this transpose is suspicios...
         mTransform->setMatrix(osgMatrix);
-    }
-
-    void Group::setRenderOrderHint(size_t i)
-    {
-        mTransform->getOrCreateStateSet()->setBinNumber(i);
     }
 
     void Group::setVisible(bool visible)

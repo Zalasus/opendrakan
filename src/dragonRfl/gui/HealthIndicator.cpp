@@ -175,14 +175,14 @@ namespace dragonRfl
         glm::vec2 healthTL_left(93, 65);
         glm::vec2 healthBR_left(128, 127);
         mHealthOrb = std::make_shared<Orb>(gui, GuiTextures::HudOrbs_1, healthTL_left, healthBR_left, healthTL_right, healthBR_right, true);
-        mHealthOrb->setZIndex(2);
+        mHealthOrb->setZPosition(1.0);
         mHealthOrb->setPosition(orbOffset/size);
         this->addChild(mHealthOrb);
 
         glm::vec2 flashTL(122, 142);
         glm::vec2 flashBR(193, 205);
         mFlashOrb = std::make_shared<Orb>(gui, GuiTextures::HudElements, flashTL, flashBR, true);
-        mFlashOrb->setZIndex(1);
+        mFlashOrb->setZPosition(0.5);
         mFlashOrb->setPosition(orbOffset/size);
         this->addChild(mFlashOrb);
 

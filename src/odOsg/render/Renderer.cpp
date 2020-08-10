@@ -574,9 +574,9 @@ namespace odOsg
 
         mGuiRoot = new osg::Group;
         mGuiRoot->setCullingActive(false);
-        osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
-        ss->setMode(GL_BLEND, osg::StateAttribute::ON);
-        ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+        //osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
+        //ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+        //ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
         //ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
     }
