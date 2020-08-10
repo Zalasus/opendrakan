@@ -50,6 +50,16 @@ namespace odOsg
         }
     }
 
+    size_t Group::getHandleCount()
+    {
+        return mHandles.size();
+    }
+
+    std::shared_ptr<odRender::Handle> Group::getHandle(int index)
+    {
+        return mHandles.at(index);
+    }
+
     void Group::setMatrix(const glm::mat4 &m)
     {
         osg::Matrix osgMatrix = GlmAdapter::toOsg(glm::transpose(m)); // FIXME: this transpose is suspicios...

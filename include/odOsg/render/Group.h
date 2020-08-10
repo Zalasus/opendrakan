@@ -23,6 +23,8 @@ namespace odOsg
 
         virtual void addHandle(std::shared_ptr<odRender::Handle> handle) override;
         virtual void removeHandle(std::shared_ptr<odRender::Handle> handle) override;
+        virtual size_t getHandleCount() override;
+        virtual std::shared_ptr<odRender::Handle> getHandle(int index) override;
 
         virtual void setMatrix(const glm::mat4 &m) override;
         virtual void setRenderOrderHint(size_t i) override;

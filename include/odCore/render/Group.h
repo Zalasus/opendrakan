@@ -17,6 +17,8 @@ namespace odRender
 
         virtual void addHandle(std::shared_ptr<Handle> handle) = 0;
         virtual void removeHandle(std::shared_ptr<Handle> handle) = 0;
+        virtual size_t getHandleCount() = 0;
+        virtual std::shared_ptr<Handle> getHandle(int index) = 0;
 
         virtual void setMatrix(const glm::mat4 &m) = 0;
         virtual void setRenderOrderHint(size_t i) = 0;
