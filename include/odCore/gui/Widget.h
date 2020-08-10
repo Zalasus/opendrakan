@@ -181,7 +181,7 @@ namespace odGui
         /**
          * @brief Sets this Widget's render mode to perspective.
          */
-        void setPerspectiveMode(float aspect, float fov);
+        void setPerspectiveMode(float fov, float aspect);
 
         /**
          * @brief Sets this Widget's render mode to orthogonal projection.

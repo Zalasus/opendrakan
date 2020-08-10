@@ -62,10 +62,13 @@ namespace dragonRfl
         od::AxisAlignedBoundingBox aabb = modelForBounds->getCalculatedBoundingBox();
         float diameter = aabb.max().x - aabb.min().x;
 
-        //glm::vec3 extends = aabb.max() - aabb.min();
-        //float aspectRatio = extends.x/extends.y;
-        //float fovDegrees = 70;
-        //getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
+        glm::vec3 extends = aabb.max() - aabb.min();
+        float aspectRatio = extends.x/extends.y;
+        float fovDegrees = 70;
+        this->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
+
+        float depth = aabb.max().z - aabb.min().z;
+        this->setDepth(1/depth);
 
         glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
         glm::vec3 lightAmbient(0.15, 0.15, 0.15);

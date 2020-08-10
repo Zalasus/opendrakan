@@ -30,6 +30,8 @@ namespace odGui
 
         mHandle = renderer.createHandle(odRender::RenderSpace::NONE);
 
+        mHandle->setRenderBin(odRender::RenderBin::TRANSPARENT);
+
         mModel = renderer.createModel();
         mHandle->setModel(mModel);
 
@@ -63,15 +65,6 @@ namespace odGui
         std::shared_ptr<odRender::Image> image = renderer.getOrCreateImageFromDb(dbTexture);
         std::shared_ptr<odRender::Texture> texture = renderer.createTexture(image, odRender::TextureReuseSlot::NONE);
         this->setTexture(texture);
-
-        if(dbTexture->hasAlpha())
-        {
-            mHandle->setRenderBin(odRender::RenderBin::TRANSPARENT);
-
-        }else
-        {
-            mHandle->setRenderBin(odRender::RenderBin::NORMAL);
-        }
     }
 
     void Quad::setTextureFromDb(odDb::AssetProvider &ap, const od::RecordId &textureId, odRender::Renderer &renderer)
@@ -130,15 +123,6 @@ namespace odGui
         colorArray[1] = color;
         colorArray[2] = color;
         colorArray[3] = color;
-
-        if(color.a < 1.0)
-        {
-            mHandle->setRenderBin(odRender::RenderBin::TRANSPARENT);
-
-        }else
-        {
-            mHandle->setRenderBin(odRender::RenderBin::NORMAL);
-        }
     }
 
     void Quad::_check()

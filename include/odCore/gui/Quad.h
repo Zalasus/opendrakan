@@ -39,6 +39,10 @@ namespace odGui
      * objects around forever. You can use this as a sort of builder for a quad
      * render handle and let it die once you've passed the finished handle to
      * the widget.
+     *
+     * Since basically any Quad in a GUI tends to be transparent in some way,
+     * the handle is put into the transparency bin by default. If you do not
+     * want that, you have to change it yourself.
      */
     class Quad
     {
