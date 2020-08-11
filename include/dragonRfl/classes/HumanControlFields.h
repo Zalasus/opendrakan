@@ -96,7 +96,7 @@ namespace dragonRfl
         odRfl::AnimRef          slideForward;
         odRfl::AnimRef          slideBackward;
         odRfl::AnimRef          balancing;
-        odRfl::AnimRef          throw;
+        odRfl::AnimRef          _throw;
         odRfl::AnimRef          shootGun;
         odRfl::AnimRef          reloadGun;
         odRfl::AnimRef          archerMedium;
@@ -162,7 +162,7 @@ namespace dragonRfl
         odRfl::SoundRefArray    hitRxnOSLSound;
         odRfl::SoundRefArray    hitRxnOSHSound;
         odRfl::SoundRefArray    hitRxnFSLSound;
-        odRfl::SoundRefArray    HitRxnFSHSound;
+        odRfl::SoundRefArray    hitRxnFSHSound;
         odRfl::AnimRef          walkStrafeL;
         odRfl::AnimRef          walkStrafeR;
         odRfl::AnimRef          slowWalk;

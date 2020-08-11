@@ -26,11 +26,19 @@ namespace odInput
             Both
         };
 
+        /**
+         * @brief Callback for when the cursor moved.
+         * The first parameter is the cursor position in GUI space (top-left is 0/0, bottom-right is 1/1)
+         */
         typedef std::function<void(const glm::vec2&)> CallbackType;
 
         inline void setCallback(const CallbackType &callback) { mCallback = callback; }
 
-        void triggerCallback(const glm::vec2 &ndc);
+        /**
+         * @brief Triggers the callback.
+         * @param cursorPos Cursor position in GUI space
+         */
+        void triggerCallback(const glm::vec2 &cursorPos);
 
 
     private:

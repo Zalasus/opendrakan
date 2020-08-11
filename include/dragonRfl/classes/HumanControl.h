@@ -21,7 +21,6 @@
 #include <odCore/render/Handle.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
-#include <dragonRfl/classes/common/PlayerCommon.h>
 #include <dragonRfl/LocalPlayer.h>
 #include <dragonRfl/Actions.h>
 
@@ -29,14 +28,31 @@ namespace dragonRfl
 {
     class DragonRfl;
 
-	class HumanControl : public PlayerCommon, public LocalPlayer
+
+	class HumanControl_Sv : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Sv>
 	{
 	public:
 
-		HumanControl();
-		virtual ~HumanControl();
+		HumanControl_Sv();
+		virtual ~HumanControl_Sv();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+	 private:
+
+		HumanControlFields mFields;
+
+	};
+
+
+    class HumanControl_Cl : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Cl>, public LocalPlayer
+	{
+	public:
+
+		HumanControl_Cl();
+		virtual ~HumanControl_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 		virtual void onLoaded() override;
 		virtual void onSpawned() override;
@@ -49,7 +65,7 @@ namespace dragonRfl
 		virtual void setPitch(float f) override { mPitch = f; }
 		virtual glm::vec3 getPosition() override;
 		virtual od::LevelObject &getLevelObject() override;
-		virtual odPhysics::Handle *getPhysicsHandle() override;
+		virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() override;
 
 
 	 private:
@@ -64,7 +80,7 @@ namespace dragonRfl
 		};
 
 		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
-		void _handleCursorMovement(const glm::vec2 &posNdc);
+		void _handleCursorMovement(const glm::vec2 &cursorPos);
 		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
 
 		HumanControlFields mFields;
@@ -77,18 +93,20 @@ namespace dragonRfl
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
-		od::RefPtr<odRender::Handle> mRenderHandle;
-		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+		std::shared_ptr<odRender::Handle> mRenderHandle;
+		std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
-		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
-		od::RefPtr<odInput::ActionHandle<Action>> mBackwardAction;
-		od::RefPtr<odInput::CursorListener> mCursorListener;
+		std::shared_ptr<odInput::ActionHandle<Action>> mForwardAction;
+		std::shared_ptr<odInput::ActionHandle<Action>> mBackwardAction;
+		std::shared_ptr<odInput::CursorListener> mCursorListener;
 
 	};
 
-}
+    using HumanControlFactory = odRfl::DefaultClassFactory<HumanControlFields, HumanControl_Cl, HumanControl_Sv>;
 
-ODRFL_DEFINE_CLASS_BASE(dragonRfl::HumanControl, 0x0009, "Player", "Human Control");
+    OD_DEFINE_CLASS(HumanControl, 0x0009, "Player", "Human Control", HumanControlFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_HUMANCONTROL_H_ */

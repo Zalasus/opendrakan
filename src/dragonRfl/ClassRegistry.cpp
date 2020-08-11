@@ -14,7 +14,7 @@
 // #include <dragonRfl/classes/DragonControl.h>
 #include <dragonRfl/classes/DynamicLight.h>
 // #include <dragonRfl/classes/HealthPack.h>
-// #include <dragonRfl/classes/HumanControl.h>
+#include <dragonRfl/classes/HumanControl.h>
 // #include <dragonRfl/classes/Key.h>
 // #include <dragonRfl/classes/Material.h>
 // #include <dragonRfl/classes/PushableObject.h>
@@ -38,7 +38,7 @@ namespace dragonRfl
         // registerClass<DragonControl>();
         registerClass<DynamicLight>();
         // registerClass<HealthPack>();
-        // registerClass<HumanControl>();
+        registerClass<HumanControl>();
         // registerClass<Key>();
         // registerClass<Material>();
         // registerClass<BlendedMaterial>();

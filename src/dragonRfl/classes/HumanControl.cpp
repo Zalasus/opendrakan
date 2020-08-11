@@ -7,8 +7,11 @@
 
 #include <dragonRfl/classes/HumanControl.h>
 
+#include <glm/gtc/constants.hpp>
+
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
+#include <odCore/Client.h>
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
@@ -22,12 +25,19 @@
 
 #include <odCore/render/Renderer.h>
 
-#include <dragonRfl/RflDragon.h>
-
 namespace dragonRfl
 {
 
-    HumanControl::HumanControl()
+    HumanControl_Sv::HumanControl_Sv()
+    {
+    }
+
+    HumanControl_Sv::~HumanControl_Sv()
+    {
+    }
+
+
+    HumanControl_Cl::HumanControl_Cl()
     : mYaw(0)
 	, mPitch(0)
     , mState(State::Idling)
@@ -35,58 +45,36 @@ namespace dragonRfl
     {
     }
 
-    HumanControl::~HumanControl()
+    HumanControl_Cl::~HumanControl_Cl()
     {
     }
 
-    void HumanControl::probeFields(odRfl::FieldProbe &probe)
+    void HumanControl_Cl::onLoaded()
     {
-        PlayerCommon::probeFields(probe);
-        mFields.probeFields(probe);
-    }
-
-    void HumanControl::onLoaded()
-    {
-        auto &obj = getLevelObject();
-        auto &rfl = getRflAs<DragonRfl>();
-
-        if(rfl.getLocalPlayer() != nullptr)
-        {
-            Logger::warn() << "Duplicate HumanControl objects found in level. Destroying duplicate";
-            obj.requestDestruction();
-            return;
-        }
-
-        obj.setSpawnStrategy(od::SpawnStrategy::Always);
-
-        rfl.setLocalPlayer(this);
+        getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
 
         // prefetch referenced assets
         odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
-        this->probeFields(probe);
+        mFields.probeFields(probe);
 
         // configure controls
-        odInput::InputManager *im = nullptr; //obj.getLevel().getEngine().getInputManager();
-        if(im != nullptr)
-        {
-            auto actionHandler = std::bind(&HumanControl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
+        auto actionHandler = std::bind(&HumanControl_Cl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
 
-            mForwardAction = im->getOrCreateAction(Action::Forward);
-            mForwardAction->setRepeatable(false);
-            mForwardAction->addCallback(actionHandler);
-            mForwardAction->bindToKey(odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
+        mForwardAction = getClient().getInputManager().getOrCreateAction(Action::Forward);
+        mForwardAction->setRepeatable(false);
+        mForwardAction->addCallback(actionHandler);
+        getClient().getInputManager().bindActionToKey(mForwardAction, odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
 
-            mBackwardAction = im->getOrCreateAction(Action::Backward);
-            mBackwardAction->setRepeatable(false);
-            mBackwardAction->addCallback(actionHandler);
-            mBackwardAction->bindToKey(odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
+        mBackwardAction = getClient().getInputManager().getOrCreateAction(Action::Backward);
+        mBackwardAction->setRepeatable(false);
+        mBackwardAction->addCallback(actionHandler);
+        getClient().getInputManager().bindActionToKey(mBackwardAction, odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
 
-            mCursorListener = im->createCursorListener();
-            mCursorListener->setCallback(std::bind(&HumanControl::_handleCursorMovement, this, std::placeholders::_1));
-        }
+        mCursorListener = getClient().getInputManager().createCursorListener();
+        mCursorListener->setCallback(std::bind(&HumanControl_Cl::_handleCursorMovement, this, std::placeholders::_1));
     }
 
-    void HumanControl::onSpawned()
+    void HumanControl_Cl::onSpawned()
     {
         auto &obj = getLevelObject();
 
@@ -99,17 +87,12 @@ namespace dragonRfl
     	mPitch = playerLookDirection.x;
     	mYaw = playerLookDirection.y;
 
-    	odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
-    	if(renderer == nullptr)
-    	{
-    	    return;
-    	}
-    	mRenderHandle = renderer->createHandleFromObject(obj);
+    	mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
 
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton != nullptr)
         {
-            //mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj);
+            mPhysicsHandle = getClient().getPhysicsSystem().createObjectHandle(obj, false);
             //mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
 
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
@@ -120,7 +103,7 @@ namespace dragonRfl
                                                                          odAnim::AccumulationMode::Bone
                                                                        });
 
-            mAnimPlayer->playAnimation(mReadyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
+            mAnimPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
 
         }else
         {
@@ -130,9 +113,9 @@ namespace dragonRfl
     	obj.setEnableUpdate(true);
     }
 
-    void HumanControl::onUpdate(float relTime)
+    void HumanControl_Cl::onUpdate(float relTime)
     {
-        static const float turnAnimThreshold = M_PI/2; // angular yaw speed at which turn animation is triggered (in rad/sec)
+        static const float turnAnimThreshold = glm::half_pi<float>(); // angular yaw speed at which turn animation is triggered (in rad/sec)
 
         getLevelObject().setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
 
@@ -147,12 +130,12 @@ namespace dragonRfl
         case State::TurningRight:
             if(yawSpeed >= turnAnimThreshold)
             {
-                _playAnim(mFields.mTurnLeft, true, false);
+                _playAnim(mFields.turnLeft, true, false);
                 mState = State::TurningLeft;
 
             }else if(yawSpeed <= -turnAnimThreshold)
             {
-                _playAnim(mFields.mTurnRight, true, false);
+                _playAnim(mFields.turnRight, true, false);
                 mState = State::TurningRight;
 
             }else if(mState != State::Idling)
@@ -162,7 +145,7 @@ namespace dragonRfl
                     break; // wait till turn anim is done
                 }
 
-                _playAnim(mReadyAnim, true, false);
+                _playAnim(mFields.readyAnim, true, false);
                 mState = State::Idling;
             }
             break;
@@ -187,11 +170,11 @@ namespace dragonRfl
         }
     }
 
-    void HumanControl::onTransformChanged()
+    void HumanControl_Cl::onTransformChanged()
     {
         auto &obj = getLevelObject();
 
-        odAudio::SoundSystem *soundSystem = nullptr; //obj.getLevel().getEngine().getSoundSystem();
+        odAudio::SoundSystem *soundSystem = getClient().getSoundSystem();
         if(soundSystem != nullptr)
         {
             glm::vec3 pos = obj.getPosition();
@@ -214,34 +197,34 @@ namespace dragonRfl
         }
     }
 
-	glm::vec3 HumanControl::getPosition()
+	glm::vec3 HumanControl_Cl::getPosition()
     {
     	return getLevelObject().getPosition();
     }
 
-	od::LevelObject &HumanControl::getLevelObject()
+	od::LevelObject &HumanControl_Cl::getLevelObject()
 	{
-	    return LevelObjectClassBase::getLevelObject();
+	    return SpawnableClass::getLevelObject();
 	}
 
-	odPhysics::Handle *HumanControl::getPhysicsHandle()
+	std::shared_ptr<odPhysics::Handle> HumanControl_Cl::getPhysicsHandle()
 	{
-	    return nullptr;
+	    return mPhysicsHandle;
 	}
 
-    void HumanControl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
+    void HumanControl_Cl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
     {
         if(event.type == odInput::InputEvent::Type::Down)
         {
             switch(action->getAction())
             {
             case Action::Forward:
-                _playAnim(mRunAnim, false, true);
+                _playAnim(mFields.runAnim, false, true);
                 mState = State::RunningForward;
                 break;
 
             case Action::Backward:
-                _playAnim(mFields.mRunBackwards, false, true);
+                _playAnim(mFields.runBackwards, false, true);
                 mState = State::RunningBackward;
                 break;
 
@@ -251,18 +234,20 @@ namespace dragonRfl
 
         }else
         {
-            _playAnim(mReadyAnim, true, true);
+            _playAnim(mFields.readyAnim, true, true);
             mState = State::Idling;
         }
     }
 
-    void HumanControl::_handleCursorMovement(const glm::vec2 &posNdc)
+    void HumanControl_Cl::_handleCursorMovement(const glm::vec2 &cursorPos)
     {
-        mPitch = ( M_PI/2) * posNdc.y;
-        mYaw   = (-M_PI) * posNdc.x;
+        // the tranlation to pitch/yaw is easier in NDC. convert from GUI space
+        glm::vec2 posNdc(2*cursorPos.x - 1, 1 - 2*cursorPos.y);
+        mPitch =  glm::half_pi<float>()*posNdc.y;
+        mYaw   = -glm::pi<float>()*posNdc.x;
     }
 
-    void HumanControl::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping)
+    void HumanControl_Cl::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping)
     {
         static const odAnim::AxesModes walkAccum{  odAnim::AccumulationMode::Accumulate,
                                                    odAnim::AccumulationMode::Bone,

@@ -8,7 +8,7 @@ set_target_properties(dragonRfl PROPERTIES
 
 target_sources(dragonRfl PRIVATE
     #"classes/common/ItemCommon.cpp"
-    #"classes/common/PlayerCommon.cpp"
+    "classes/common/PlayerCommon.cpp"
     #"classes/AnimationDemo.cpp"
     "classes/Building.cpp"
     "classes/CountDownToZero.cpp"
@@ -16,8 +16,8 @@ target_sources(dragonRfl PRIVATE
     #"classes/DragonControl.cpp"
     "classes/DynamicLight.cpp"
     #"classes/HealthPack.cpp"
-    #"classes/HumanControl.cpp"
-    #"classes/HumanControlFields.cpp"
+    "classes/HumanControl.cpp"
+    "classes/HumanControlFields.cpp"
     #"classes/Key.cpp"
     #"classes/Material.cpp"
     #"classes/PushableObject.cpp"
