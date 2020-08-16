@@ -4,6 +4,8 @@
 namespace odState
 {
 
+    static const TickNumber MAX_BACKLOG = 64;
+
     class ApplyEventsVisitor
     {
     public:
@@ -25,9 +27,9 @@ namespace odState
     {
     }
 
-    void StateManager::addKeyEvent(odInput::Key key, bool down)
+    void StateManager::addActionEvent(odInput::ActionCode actionCode, bool down)
     {
-        mEvents.push(KeyEvent(key, down));
+        mEvents.push(ActionEvent(actionCode, down));
     }
 
     void StateManager::addObjectTransform(od::LevelObject &object, const ObjectTransform &tf)

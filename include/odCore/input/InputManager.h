@@ -28,6 +28,12 @@ namespace odInput
 {
     class CursorListener;
 
+  /*
+   the server needs an inputmanager which does the same dispatch-to-subscribers as this one,
+   but lacks the keybinding facilities. the server creates one of these for every connected client and the class in question can subscribe to the one
+   of the relevant player. 
+  */
+
     class InputManager
     {
     public:
@@ -50,11 +56,28 @@ namespace odInput
         void keyDown(Key key);
         void keyUp(Key key);
 
+        void injectAction(ActionCode actionCode, ActionState state)
+        {
+            if(actionCode == 0)
+            {
+                throw od::InvalidArgumentException("Can't inject actions whose integer representation is 0");
+            }
+
+            auto &weakRef = mActions[actionCode];
+            if(!weakRef.expired())
+            {
+                auto actionHandle = weakRef.lock();
+                if(actionHandle != nullptr)
+                {
+                    actionHandle->triggerCallback(state);
+                }
+            }
+        }
+
         template <typename _ActionEnum>
         std::shared_ptr<ActionHandle<_ActionEnum>> getOrCreateAction(_ActionEnum action)
         {
             ActionCode actionCode = static_cast<ActionCode>(action);
-
             if(actionCode == 0)
             {
                 throw od::InvalidArgumentException("Can't create actions whose integer representation is 0");
@@ -84,7 +107,7 @@ namespace odInput
 
     private:
 
-        void _triggerCallbackOnAction(ActionCode action, InputEvent event);
+        void _triggerCallbackOnAction(ActionCode action, ActionState state);
 
         struct Binding
         {

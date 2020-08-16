@@ -57,18 +57,25 @@ namespace dragonRfl
         odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
         mFields.probeFields(probe);
 
-        // configure controls
+        // configure controls FIXME: this handler is not memory safe
         auto actionHandler = std::bind(&HumanControl_Cl::_handleMovementAction, this, std::placeholders::_1, std::placeholders::_2);
 
-        mForwardAction = getClient().getInputManager().getOrCreateAction(Action::Forward);
+        auto &inputManager = getClient().getInputManager();
+        mForwardAction = inputManager.getOrCreateAction(Action::Forward);
         mForwardAction->setRepeatable(false);
         mForwardAction->addCallback(actionHandler);
-        getClient().getInputManager().bindActionToKey(mForwardAction, odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
+        inputManager.bindActionToKey(mForwardAction, odInput::Key::W); // for testing only. we want to do this via the Drakan.cfg parser later
 
-        mBackwardAction = getClient().getInputManager().getOrCreateAction(Action::Backward);
+        mBackwardAction = inputManager.getOrCreateAction(Action::Backward);
         mBackwardAction->setRepeatable(false);
         mBackwardAction->addCallback(actionHandler);
-        getClient().getInputManager().bindActionToKey(mBackwardAction, odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
+        inputManager.bindActionToKey(mBackwardAction, odInput::Key::S); // for testing only. we want to do this via the Drakan.cfg parser later
+
+        mAttackAction = inputManager.getOrCreateAction(Action::Attack_Primary);
+        mAttackAction->setRepeatable(false);
+        mAttackAction->addCallback(actionHandler);
+        mAttackAction->setIgnoreUpEvents(true);
+        inputManager.bindActionToKey(mAttackAction, odInput::Key::E); // for testing only. we want to do this via the Drakan.cfg parser later. also: mouse!!!
 
         mCursorListener = getClient().getInputManager().createCursorListener();
         mCursorListener->setCallback(std::bind(&HumanControl_Cl::_handleCursorMovement, this, std::placeholders::_1));
@@ -212,11 +219,11 @@ namespace dragonRfl
 	    return mPhysicsHandle;
 	}
 
-    void HumanControl_Cl::_handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
+    void HumanControl_Cl::_handleMovementAction(Action action, odInput::ActionState state)
     {
-        if(event.type == odInput::InputEvent::Type::Down)
+        if(state == odInput::ActionState::END)
         {
-            switch(action->getAction())
+            switch(action)
             {
             case Action::Forward:
                 _playAnim(mFields.runAnim, false, true);

@@ -79,7 +79,7 @@ namespace dragonRfl
         auto physicsDebugAction = im.getOrCreateAction(Action::PhysicsDebug_Toggle);
         physicsDebugAction->setRepeatable(false);
         physicsDebugAction->setIgnoreUpEvents(true);
-        auto physDebugCallback = [&localClient](odInput::ActionHandle<Action> *action, odInput::InputEvent event)
+        auto physDebugCallback = [&localClient](Action action, odInput::ActionState state)
         {
             localClient.getPhysicsSystem().toggleDebugDrawing();
         };
@@ -88,9 +88,9 @@ namespace dragonRfl
         mPhysicsDebugAction = physicsDebugAction;
     }
 
-    void DragonRfl::_handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event)
+    void DragonRfl::_handleAction(Action action, odInput::ActionState state)
     {
-        switch(action->getAction())
+        switch(action)
         {
         case Action::Main_Menu:
             mGui->setMenuMode(!mGui->isMenuMode());

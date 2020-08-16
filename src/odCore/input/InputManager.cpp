@@ -66,9 +66,7 @@ namespace odInput
             return; // no bindings for this key
         }
 
-        InputEvent event;
-        event.key = key;
-        event.type = it->second.down ? InputEvent::Type::Repeat : InputEvent::Type::Down;
+        ActionState state = it->second.down ? ActionState::REPEAT : ActionState::BEGIN;
 
         it->second.down = true;
 
@@ -76,7 +74,7 @@ namespace odInput
         {
             if(a != 0)
             {
-                _triggerCallbackOnAction(a, event);
+                _triggerCallbackOnAction(a, state);
             }
         }
     }
@@ -89,17 +87,13 @@ namespace odInput
             return; // no bindings for this key
         }
 
-        InputEvent event;
-        event.key = key;
-        event.type = InputEvent::Type::Up;
-
         it->second.down = false;
 
         for(auto &a : it->second.actions)
         {
             if(a != 0)
             {
-                _triggerCallbackOnAction(a, event);
+                _triggerCallbackOnAction(a, ActionState::END);
             }
         }
     }
@@ -145,7 +139,7 @@ namespace odInput
         return listener;
     }
 
-    void InputManager::_triggerCallbackOnAction(ActionCode action, InputEvent event)
+    void InputManager::_triggerCallbackOnAction(ActionCode action, ActionState state)
     {
         auto it = mActions.find(action);
         if(it == mActions.end())
@@ -155,18 +149,22 @@ namespace odInput
 
         if(!it->second.expired())
         {
-            std::shared_ptr<IAction> action(it->second);
-
-            if(event.type == InputEvent::Type::Repeat && !action->isRepeatable())
-            {
-                return;
-
-            }else if(event.type == InputEvent::Type::Up && action->ignoresUpEvents())
+            std::shared_ptr<IAction> action = it->second.lock();
+            if(action == nullptr)
             {
                 return;
             }
 
-            action->triggerCallback(event);
+            if(state == ActionState::REPEAT && !action->isRepeatable())
+            {
+                return;
+
+            }else if(state == ActionState::END && action->ignoresUpEvents())
+            {
+                return;
+            }
+
+            action->triggerCallback(state);
         }
     }
 

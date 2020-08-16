@@ -79,7 +79,7 @@ namespace dragonRfl
 		    RunningBackward
 		};
 
-		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
+		void _handleMovementAction(Action action, odInput::ActionState state);
 		void _handleCursorMovement(const glm::vec2 &cursorPos);
 		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
 
@@ -97,13 +97,14 @@ namespace dragonRfl
 		std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
-		std::shared_ptr<odInput::ActionHandle<Action>> mForwardAction;
-		std::shared_ptr<odInput::ActionHandle<Action>> mBackwardAction;
+		std::shared_ptr<ActionHandle> mForwardAction;
+		std::shared_ptr<ActionHandle> mBackwardAction;
+        std::shared_ptr<ActionHandle> mAttackAction;
 		std::shared_ptr<odInput::CursorListener> mCursorListener;
 
 	};
 
-    using HumanControlFactory = odRfl::DefaultClassFactory<HumanControlFields, HumanControl_Cl, HumanControl_Sv>;
+    using HumanControlFactory = odRfl::DefaultClassFactory<HumanControlFields, HumanControl_Cl, odRfl::DummyClass>;
 
     OD_DEFINE_CLASS(HumanControl, 0x0009, "Player", "Human Control", HumanControlFactory);
 

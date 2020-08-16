@@ -19,18 +19,11 @@ namespace odInput
 
     using ActionCode = int;
 
-    struct InputEvent
+    enum class ActionState
     {
-        enum class Type
-        {
-            Down,
-            Repeat,
-            Up
-        };
-
-        Key key;
-        float time;
-        Type type;
+        BEGIN,
+        END,
+        REPEAT
     };
 
     /**
@@ -66,7 +59,7 @@ namespace odInput
          */
         void setIgnoreUpEvents(bool b);
 
-        virtual void triggerCallback(InputEvent) = 0;
+        virtual void triggerCallback(ActionState state) = 0;
 
 
     protected:
@@ -87,7 +80,7 @@ namespace odInput
     {
     public:
 
-        typedef std::function<void(ActionHandle<_ActionEnum>*, InputEvent)> CallbackType;
+        typedef std::function<void(_ActionEnum, ActionState)> CallbackType;
 
         ActionHandle(InputManager &im, _ActionEnum action)
         : IAction(im, static_cast<ActionCode>(action))
@@ -101,11 +94,11 @@ namespace odInput
             mCallbacks.push_back(callback);
         }
 
-        virtual void triggerCallback(InputEvent event) override
+        virtual void triggerCallback(ActionState state) override
         {
             for(auto &cb : mCallbacks)
             {
-                cb(this, event);
+                cb(getAction(), state);
             }
         }
 

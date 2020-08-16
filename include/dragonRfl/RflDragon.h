@@ -39,7 +39,7 @@ namespace dragonRfl
 
     private:
 
-        void _handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
+        void _handleAction(Action action, odInput::ActionState state);
 
         // note: this is defined in ClassRegistry.cpp, as to avoid having to include all the class headers in the main RFL logic code
         void _registerClasses();
