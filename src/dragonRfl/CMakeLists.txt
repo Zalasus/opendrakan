@@ -36,6 +36,7 @@ target_sources(dragonRfl PRIVATE
     "gui/MainMenu.cpp"
     "Actions.cpp"
     "ClassRegistry.cpp"
+    "Damage.cpp"
     "RflDragon.cpp")
 
 target_link_libraries(dragonRfl odCore)

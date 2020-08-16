@@ -17,6 +17,8 @@
 #include <odCore/render/Handle.h>
 #include <odCore/physics/Handles.h>
 
+#include <dragonRfl/Damage.h>
+
 namespace dragonRfl
 {
 
@@ -67,14 +69,20 @@ namespace dragonRfl
 	};
 
 
-	class Building_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Building_Cl>
+	class Building_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Building_Cl>, public Damageable
     {
     public:
 
+        Building_Cl();
+
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+        virtual void onLoaded() override;
 
         virtual void onSpawned() override;
         virtual void onDespawned() override;
+
+        virtual DamageResult onAttackHit(od::LevelObject &attacker, const Damage &damage) override;
 
 
     private:
@@ -84,6 +92,8 @@ namespace dragonRfl
         std::shared_ptr<odRender::Handle> mRenderHandle;
         std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::unique_ptr<od::ObjectLightReceiver> mObjectLightReceiver;
+
+        float mHealth;
 
     };
 

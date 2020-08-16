@@ -84,6 +84,16 @@ namespace dragonRfl
     }
 
 
+    Building_Cl::Building_Cl()
+    : mHealth(0.0)
+    {
+    }
+
+    void Building_Cl::onLoaded()
+    {
+        mHealth = mFields.initialHealth;
+    }
+
     void Building_Cl::onSpawned()
     {
         auto &obj = getLevelObject();
@@ -128,6 +138,14 @@ namespace dragonRfl
         mObjectLightReceiver = nullptr;
         mPhysicsHandle = nullptr;
         mRenderHandle = nullptr;
+    }
+
+    DamageResult Building_Cl::onAttackHit(od::LevelObject &attacker, const Damage &damage)
+    {
+        mHealth -= damage.strength;
+        if(mHealth < 0) mHealth = 0;
+        
+        return DamageResult::HIT;
     }
 
 }
