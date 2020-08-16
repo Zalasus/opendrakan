@@ -238,7 +238,7 @@ namespace dragonRfl
 
     void HumanControl_Cl::_handleMovementAction(Action action, odInput::ActionState state)
     {
-        if(state == odInput::ActionState::END)
+        if(state == odInput::ActionState::BEGIN)
         {
             switch(action)
             {
