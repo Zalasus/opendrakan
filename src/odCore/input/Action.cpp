@@ -12,9 +12,9 @@
 namespace odInput
 {
 
-    IAction::IAction(InputManager &im, int actionCode)
-    : mInputManager(im)
-    , mActionCode(actionCode)
+    IAction::IAction(InputManager &im, ActionCode actionCode)
+    : mActionCode(actionCode)
+    , mInputManager(im)
     , mRepeatable(false)
     , mIgnoreUpEvents(false)
     {
@@ -29,5 +29,5 @@ namespace odInput
     {
         mIgnoreUpEvents = b;
     }
-    
+
 }

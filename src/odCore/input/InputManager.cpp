@@ -111,7 +111,7 @@ namespace odInput
         {
             if(a == 0)
             {
-                a = iaction->getActionAsInt();
+                a = iaction->getActionCode();
                 return;
             }
         }
@@ -129,7 +129,7 @@ namespace odInput
 
         for(auto &a : it->second.actions)
         {
-            if(a == iaction->getActionAsInt())
+            if(a == iaction->getActionCode())
             {
                 a = 0;
             }
@@ -145,7 +145,7 @@ namespace odInput
         return listener;
     }
 
-    void InputManager::_triggerCallbackOnAction(int action, InputEvent event)
+    void InputManager::_triggerCallbackOnAction(ActionCode action, InputEvent event)
     {
         auto it = mActions.find(action);
         if(it == mActions.end())

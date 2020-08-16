@@ -15,8 +15,9 @@
 
 namespace odInput
 {
-
     class InputManager;
+
+    using ActionCode = int;
 
     struct InputEvent
     {
@@ -48,7 +49,7 @@ namespace odInput
         IAction(InputManager &im, int actionCode);
         virtual ~IAction() = default;
 
-        inline int getActionAsInt() const { return mActionCode; }
+        inline ActionCode getActionCode() const { return mActionCode; }
         inline bool isRepeatable() const { return mRepeatable; }
         inline bool ignoresUpEvents() const { return mIgnoreUpEvents; }
 
@@ -68,10 +69,13 @@ namespace odInput
         virtual void triggerCallback(InputEvent) = 0;
 
 
+    protected:
+
+        ActionCode mActionCode;
+
     private:
 
         InputManager &mInputManager;
-        int mActionCode;
         bool mRepeatable;
         bool mIgnoreUpEvents;
 
@@ -86,12 +90,11 @@ namespace odInput
         typedef std::function<void(ActionHandle<_ActionEnum>*, InputEvent)> CallbackType;
 
         ActionHandle(InputManager &im, _ActionEnum action)
-        : IAction(im, static_cast<int>(action))
-        , mAction(action)
+        : IAction(im, static_cast<ActionCode>(action))
         {
         }
 
-        inline _ActionEnum getAction() const { return mAction; }
+        inline _ActionEnum getAction() const { return static_cast<_ActionEnum>(mActionCode); }
 
         void addCallback(const CallbackType &callback)
         {
@@ -109,7 +112,6 @@ namespace odInput
 
     private:
 
-        _ActionEnum mAction;
         std::vector<CallbackType> mCallbacks;
 
     };
