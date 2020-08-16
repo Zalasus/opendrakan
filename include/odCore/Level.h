@@ -72,10 +72,16 @@ namespace od
 
         /**
          * @brief Finds the first object with the given class type.
-         *
+         * TODO: change LevelObject storage to shared_ptr and replace these pointers
          * @return The first object of class type \c id or nullptr if none found.
          */
-        LevelObject *findObjectOfType(odRfl::ClassId id);
+        LevelObject *findFirstObjectOfType(odRfl::ClassId id);
+
+        /**
+         * @brief Finds all objects with the given class type and adds them to the provided vector.
+         * TODO: change LevelObject storage to shared_ptr and replace these pointers
+         */
+        void findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results);
 
         // override AssetProvider
         virtual AssetProvider &getDependency(uint16_t index) override;

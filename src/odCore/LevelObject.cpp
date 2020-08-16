@@ -196,19 +196,11 @@ namespace od
 
         // all fields loaded. now create class instance TODO: maybe move this to a second method so we don't invoke class behavior just by loading the fields?
         mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
-        mRflClassInstance = mClass->makeInstance(mLevel.getEngine());
-        if(mRflClassInstance != nullptr)
+        auto instance = mClass->makeInstance(mLevel.getEngine());
+        if(instance != nullptr)
         {
-            mRflClassInstance->getFields().probeFields(builder);
-            mSpawnableClass = mRflClassInstance->asSpawnableClass();
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->setLevelObject(*this);
-
-            }else
-            {
-                Logger::warn() << "Level object has RFL class that is not spawnable. This object will probably not do much...";
-            }
+            instance->getFields().probeFields(builder);
+            this->replaceRflClassInstance(std::move(instance));
 
         }else
         {
@@ -555,6 +547,21 @@ namespace od
         if(oldLayer != newLayer)
         {
             setAssociatedLayer(newLayer);
+        }
+    }
+
+    void LevelObject::replaceRflClassInstance(std::unique_ptr<odRfl::ClassBase> i)
+    {
+        // TODO: maybe signal the class instance that's being replaced? like, add onInstanceReplaced() to spawnable
+        mRflClassInstance = std::move(i);
+        mSpawnableClass = mRflClassInstance->asSpawnableClass();
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->setLevelObject(*this);
+
+        }else
+        {
+            Logger::warn() << "Level object has RFL class that is not spawnable. This object will probably not do much...";
         }
     }
 

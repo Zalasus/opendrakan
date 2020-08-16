@@ -42,6 +42,12 @@ namespace odState
 
     /**
      * @brief Empty base for event classes so a visitor can implement a catch-all functor.
+     *
+     * These are not supposed to be virtual. Dispatch should be static based on a variant over all event types.
+     * Make sure to keep these as lightweigt as possible.
+     *
+     * These are only used locally, so host-dependent info like pointers is okay. The net submodule later translates
+     * them into host-independet packets.
      */
     struct Event
     {

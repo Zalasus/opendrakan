@@ -208,6 +208,16 @@ namespace od
 
         void updateAssociatedLayer(bool callChangedHook = true);
 
+        /**
+         * @brief Replaces the current RFL class instance (if any).
+         *
+         * Use this carefully. If the class that's being replaced is not a Dummy
+         * or null, the class must handle it's being replaced explicitly. No
+         * despawned, destroyed etc. hooks will be called because the object is
+         * not despawned or destroid during this process!
+         */
+        void replaceRflClassInstance(std::unique_ptr<odRfl::ClassBase> i);
+
 
     private:
 

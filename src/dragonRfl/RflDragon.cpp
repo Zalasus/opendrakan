@@ -9,6 +9,8 @@
 
 #include <odCore/Client.h>
 #include <odCore/Server.h>
+#include <odCore/Level.h>
+#include <odCore/LevelObject.h>
 
 #include <odCore/audio/SoundSystem.h>
 
@@ -23,8 +25,8 @@
 #include <odCore/physics/PhysicsSystem.h>
 
 #include <dragonRfl/Actions.h>
-
 #include <dragonRfl/gui/DragonGui.h>
+#include <dragonRfl/classes/HumanControl.h>
 
 namespace dragonRfl
 {
@@ -36,6 +38,42 @@ namespace dragonRfl
 
     DragonRfl::~DragonRfl()
     {
+    }
+
+    void DragonRfl::spawnHumanControlForPlayer(od::Server &localServer, odNet::ClientId client)
+    {
+        if(localServer.getLevel() == nullptr)
+        {
+            throw od::Exception("Tried to spawn human control on server without level");
+        }
+
+        // TODO: spawning behaviour is different between SP and MP. do the switch here!
+        // in case of SP: locate HumanControl-dummy in level and replace it with a HumanControl_Sv instance
+
+        std::vector<od::LevelObject*> foundObjects;
+        localServer.getLevel()->findObjectsOfType(HumanControl::classId(), foundObjects);
+        if(foundObjects.empty())
+        {
+            // TODO: intro level excepted
+            Logger::error() << "Found no Human Control in level! This could be an error in level design.";
+
+        }else
+        {
+            if(foundObjects.size() > 1)
+            {
+                Logger::warn() << "More than one Human Control found in level! Ignoring all but one";
+            }
+
+            auto &obj = *foundObjects.back();
+
+             // i kinda dislike that we need to set everything up ourselves
+            auto newHumanControl = std::make_unique<HumanControl_Sv>(client);
+            newHumanControl->setServer(localServer);
+            obj.getClass()->fillFields(newHumanControl->getFields());
+            newHumanControl->onLoaded();
+
+            obj.replaceRflClassInstance(std::move(newHumanControl));
+        }
     }
 
     const char *DragonRfl::getName() const

@@ -195,7 +195,7 @@ namespace od
         return it->get();
     }
 
-    LevelObject *Level::findObjectOfType(odRfl::ClassId id)
+    LevelObject *Level::findFirstObjectOfType(odRfl::ClassId id)
     {
         for(auto &obj : mLevelObjects)
         {
@@ -206,6 +206,17 @@ namespace od
         }
 
         return nullptr;
+    }
+
+    void Level::findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results)
+    {
+        for(auto &obj : mLevelObjects)
+        {
+            if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
+            {
+                results.push_back(obj.get());
+            }
+        }
     }
 
     odDb::AssetProvider &Level::getDependency(uint16_t index)

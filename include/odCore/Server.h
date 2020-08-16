@@ -55,6 +55,7 @@ namespace od
         inline void setIsDone(bool b) { mIsDone.store(b, std::memory_order::memory_order_relaxed); }
         inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
         inline const od::FilePath &getEngineRootDir() const { return mEngineRoot; }
+        inline Level *getLevel() { return mLevel.get(); }
 
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }

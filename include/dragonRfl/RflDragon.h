@@ -12,6 +12,8 @@
 
 #include <odCore/input/Action.h>
 
+#include <odCore/net/ClientConnector.h>
+
 #include <odCore/rfl/Rfl.h>
 
 #include <dragonRfl/Actions.h>
@@ -31,6 +33,11 @@ namespace dragonRfl
 
         inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
         inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
+
+        /**
+         * @brief Spawns a controller for the given client.
+         */
+        void spawnHumanControlForPlayer(od::Server &localServer, odNet::ClientId client);
 
         virtual const char *getName() const override;
         virtual void onLoaded() override;

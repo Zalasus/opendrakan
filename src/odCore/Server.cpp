@@ -38,6 +38,9 @@ namespace od
     void Server::addClientConnector(std::unique_ptr<odNet::ClientConnector> connector)
     {
         mClientConnectors.emplace_back(std::move(connector));
+        mClientInputManagers.resize(mClientConnectors.size());
+
+        // TODO: signal rfl that we have a new client!
     }
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
@@ -45,6 +48,11 @@ namespace od
         if(id < 0 || id >= mClientInputManagers.size())
         {
             throw od::NotFoundException("Invalid client ID");
+        }
+
+        if(mClientInputManagers[id] == nullptr)
+        {
+            mClientInputManagers[id] = std::make_unique<odInput::InputManager>();
         }
 
         return *mClientInputManagers[id];
