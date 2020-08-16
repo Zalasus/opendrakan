@@ -9,6 +9,7 @@
 #define INCLUDE_ODCORE_INPUT_INPUTMANAGER_H_
 
 #include <map>
+#include <mutex>
 #include <vector>
 #include <functional>
 #include <glm/vec2.hpp>
@@ -28,12 +29,6 @@ namespace odInput
 {
     class CursorListener;
 
-  /*
-   the server needs an inputmanager which does the same dispatch-to-subscribers as this one,
-   but lacks the keybinding facilities. the server creates one of these for every connected client and the class in question can subscribe to the one
-   of the relevant player. 
-  */
-
     class InputManager
     {
     public:
@@ -48,12 +43,53 @@ namespace odInput
          * @brief Tells the engine that the mouse moved.
          *
          * Coordinates are in GUI space (top-left is 0/0, bottom-right is 1/1).
+         *
+         * Call this from your input listener (if applicable). This method is
+         * fully synchronized, so it is safe to call this from an asynchronous
+         * input listener or a different thread.
          */
         void mouseMoved(float absX, float absY);
+
+        /**
+         * @brief Tells the engine that a mouse button was pressed.
+         *
+         * TODO: buttonCode is yet to be defined as an enum. stay tuned!
+         *
+         * Call this from your input listener (if applicable). This method is
+         * fully synchronized, so it is safe to call this from an asynchronous
+         * input listener or a different thread.
+         */
         void mouseButtonDown(int buttonCode);
+
+        /**
+         * @brief Tells the engine that a mouse button was released.
+         *
+         * TODO: buttonCode is yet to be defined as an enum. stay tuned!
+         *
+         * Call this from your input listener (if applicable). This method is
+         * fully synchronized, so it is safe to call this from an asynchronous
+         * input listener or a different thread.
+         */
         void mouseButtonUp(int buttonCode);
 
+        /**
+         * @brief Tells the engine that a keyboard key was pressed.
+         *
+         * It is okay to call this repeatedly if the key is being held down.
+         *
+         * Call this from your input listener (if applicable). This method is
+         * fully synchronized, so it is safe to call this from an asynchronous
+         * input listener or a different thread.
+         */
         void keyDown(Key key);
+
+        /**
+         * @brief Tells the engine that a keyboard key was released.
+         *
+         * Call this from your input listener (if applicable). This method is
+         * fully synchronized, so it is safe to call this from an asynchronous
+         * input listener or a different thread.
+         */
         void keyUp(Key key);
 
         void injectAction(ActionCode actionCode, ActionState state)
@@ -104,8 +140,16 @@ namespace odInput
 
         std::shared_ptr<CursorListener> createCursorListener();
 
+        void update(float relTime);
+
 
     private:
+
+        void _processMouseMove(glm::vec2 pos);
+        void _processMouseDown(int buttonCode);
+        void _processMouseUp(int buttonCode);
+        void _processKeyDown(Key key);
+        void _processKeyUp(Key key);
 
         void _triggerCallbackOnAction(ActionCode action, ActionState state);
 
@@ -127,6 +171,13 @@ namespace odInput
             //  TODO: now that we have a weakptr that uses a control block instead of observers we might want to fix this
             std::array<ActionCode, MAX_BINDINGS> actions;
         };
+
+        // TODO: combine into a single queue of a variant
+        std::vector<std::pair<Key, bool>> mKeyQueue; // second = button up
+        std::vector<std::pair<int, bool>> mMouseButtonQueue;
+        glm::vec2 mMouseMoveTarget;
+        bool mMouseMoved;
+        std::mutex mInputEventQueueMutex;
 
         odGui::Gui *mGui;
         std::map<Key, Binding> mBindings;

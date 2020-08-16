@@ -192,6 +192,7 @@ namespace od
             }
 
             mPhysicsSystem->update(relTime);
+            mInputManager->update(relTime);
 
             mRenderer.frame(relTime);
         }
