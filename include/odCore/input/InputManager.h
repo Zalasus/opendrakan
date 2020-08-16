@@ -151,7 +151,7 @@ namespace odInput
         void _processKeyDown(Key key);
         void _processKeyUp(Key key);
 
-        void _triggerCallbackOnAction(ActionCode action, ActionState state);
+        void _triggerCallbackOnAction(IAction &action, ActionState state);
 
         struct Binding
         {
@@ -159,17 +159,12 @@ namespace odInput
 
             Binding()
             : down(false)
-            , actions({0})
             {
             }
 
             bool down;
 
-            // NOTE: storing direct references to the actions here is faster, but may overflow the max
-            //  amount of observers per action very quickly
-            //  FIXME: however, using an int here will prevent bindings from getting removed automatically
-            //  TODO: now that we have a weakptr that uses a control block instead of observers we might want to fix this
-            std::array<ActionCode, MAX_BINDINGS> actions;
+            std::array<std::weak_ptr<IAction>, MAX_BINDINGS> actions;
         };
 
         // TODO: combine into a single queue of a variant

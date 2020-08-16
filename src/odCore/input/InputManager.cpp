@@ -54,22 +54,22 @@ namespace odInput
         mKeyQueue.push_back(std::make_pair(key, true));
     }
 
-    void InputManager::bindActionToKey(std::shared_ptr<IAction> iaction, Key key)
+    void InputManager::bindActionToKey(std::shared_ptr<IAction> action, Key key)
     {
         Binding &binding = mBindings[key];
         for(auto &a : binding.actions)
         {
-            if(a == 0)
+            if(a.expired())
             {
-                a = iaction->getActionCode();
+                a = action;
                 return;
             }
         }
 
-        throw od::Exception("Exceeded maximum of actions per key");
+        throw od::Exception("Exceeded maximum number of actions per key");
     }
 
-    void InputManager::unbindActionFromKey(std::shared_ptr<IAction> iaction, Key key)
+    void InputManager::unbindActionFromKey(std::shared_ptr<IAction> action, Key key)
     {
         auto it = mBindings.find(key);
         if(it == mBindings.end())
@@ -79,9 +79,10 @@ namespace odInput
 
         for(auto &a : it->second.actions)
         {
-            if(a == iaction->getActionCode())
+            auto boundAction = a.lock();
+            if(boundAction == action)
             {
-                a = 0;
+                a.reset();
             }
         }
     }
@@ -176,11 +177,15 @@ namespace odInput
 
         it->second.down = true;
 
-        for(auto &a : it->second.actions)
+        for(auto &boundAction : it->second.actions)
         {
-            if(a != 0)
+            if(!boundAction.expired())
             {
-                _triggerCallbackOnAction(a, state);
+                auto action = boundAction.lock();
+                if(action != nullptr)
+                {
+                    _triggerCallbackOnAction(*action, state);
+                }
             }
         }
     }
@@ -195,42 +200,31 @@ namespace odInput
 
         it->second.down = false;
 
-        for(auto &a : it->second.actions)
+        for(auto &boundAction : it->second.actions)
         {
-            if(a != 0)
+            if(!boundAction.expired())
             {
-                _triggerCallbackOnAction(a, ActionState::END);
+                auto action = boundAction.lock();
+                if(action != nullptr)
+                {
+                    _triggerCallbackOnAction(*action, ActionState::END);
+                }
             }
         }
     }
 
-    void InputManager::_triggerCallbackOnAction(ActionCode action, ActionState state)
+    void InputManager::_triggerCallbackOnAction(IAction &action, ActionState state)
     {
-        auto it = mActions.find(action);
-        if(it == mActions.end())
+        if(state == ActionState::REPEAT && !action.isRepeatable())
+        {
+            return;
+
+        }else if(state == ActionState::END && action.ignoresUpEvents())
         {
             return;
         }
 
-        if(!it->second.expired())
-        {
-            std::shared_ptr<IAction> action = it->second.lock();
-            if(action == nullptr)
-            {
-                return;
-            }
-
-            if(state == ActionState::REPEAT && !action->isRepeatable())
-            {
-                return;
-
-            }else if(state == ActionState::END && action->ignoresUpEvents())
-            {
-                return;
-            }
-
-            action->triggerCallback(state);
-        }
+        action.triggerCallback(state);
     }
 
 }
