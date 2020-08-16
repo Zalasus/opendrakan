@@ -31,7 +31,7 @@ namespace odState
 
         //void addClient();
 
-        void addKeyEvent(odInput::Key key, bool down);
+        void addActionEvent(odInput::ActionCode actionCode, bool down);
 
         void addObjectTransform(od::LevelObject &object, const ObjectTransform &tf);
 

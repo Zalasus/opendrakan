@@ -17,7 +17,7 @@
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
 
-#include <odCore/input/Keys.h>
+#include <odCore/input/Action.h>
 
 #include <odCore/state/ObjectTransform.h>
 
@@ -31,7 +31,7 @@ namespace odState
 
     enum class EventType
     {
-        KEY,
+        ACTION,
         OBJECT_TRANSFORMED,
         OBJECT_ANIM_STARTED,
         OBJECT_ANIM_STOPPED,
@@ -48,20 +48,21 @@ namespace odState
     };
 
 
-    struct KeyEvent : public Event
+    struct ActionEvent final : public Event
     {
-        KeyEvent(odInput::Key k, bool down)
-        : key(k)
+
+        ActionEvent(odInput::ActionCode code, bool down)
+        : actionCode(code)
         , keyDown(down)
         {
         }
 
-        odInput::Key key;
+        odInput::ActionCode actionCode;
         bool keyDown;
     };
 
 
-    struct ObjectTransformEvent : public Event
+    struct ObjectTransformEvent final : public Event
     {
 
         ObjectTransformEvent(od::LevelObject &obj, const ObjectTransform &tf)
@@ -75,7 +76,7 @@ namespace odState
     };
 
 
-    struct ObjectMessageReceivedEvent : public Event
+    struct ObjectMessageReceivedEvent final : public Event
     {
         ObjectMessageReceivedEvent(od::LevelObject &sender, od::LevelObject &receiver, const od::Message &msg)
         : senderObject(sender)
@@ -90,7 +91,7 @@ namespace odState
     };
 
 
-    struct ObjectVisibilityChangedEvent : public Event
+    struct ObjectVisibilityChangedEvent final : public Event
     {
         ObjectVisibilityChangedEvent(od::LevelObject &obj, bool v)
         : object(obj)
@@ -112,9 +113,9 @@ namespace odState
     {
     public:
 
-        EventVariant(const KeyEvent &e)
-        : mKeyEvent(e)
-        , mVariantType(EventType::KEY)
+        EventVariant(const ActionEvent &e)
+        : mActionEvent(e)
+        , mVariantType(EventType::ACTION)
         {
         }
 
@@ -143,8 +144,8 @@ namespace odState
         {
             switch(mVariantType)
             {
-            case EventType::KEY:
-                visitor(mKeyEvent);
+            case EventType::ACTION:
+                visitor(mActionEvent);
                 break;
 
             case EventType::OBJECT_TRANSFORMED:
@@ -169,7 +170,7 @@ namespace odState
 
         union
         {
-            KeyEvent mKeyEvent;
+            ActionEvent mActionEvent;
             ObjectTransformEvent mTransformEvent;
             ObjectMessageReceivedEvent mMessageReceivedEvent;
             ObjectVisibilityChangedEvent mVisibilityEvent;
