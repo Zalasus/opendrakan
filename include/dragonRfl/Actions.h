@@ -12,6 +12,8 @@
 
 #include <odCore/SrscFile.h>
 
+#include <odCore/input/Action.h>
+
 namespace dragonRfl
 {
 
@@ -68,6 +70,8 @@ namespace dragonRfl
         // these are our own, additional actions
         PhysicsDebug_Toggle
     };
+
+    using ActionHandle = odInput::ActionHandle<Action>;
 
     // TODO: move this out of global scope
     const extern std::map<Action, od::RecordId> sActionNameMap;
