@@ -72,7 +72,7 @@ namespace odBulletPhysics
     {
     public:
 
-        ContactResultCallback(std::shared_ptr<odPhysics::Handle> me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
+        ContactResultCallback(btCollisionObject *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
 
         inline size_t getContactCount() const { return mContactCount; }
 
@@ -81,7 +81,7 @@ namespace odBulletPhysics
 
     private:
 
-        std::shared_ptr<odPhysics::Handle> mMe;
+        btCollisionObject *mMe;
         odPhysics::ContactTestResultVector &mResults;
         size_t mContactCount;
 

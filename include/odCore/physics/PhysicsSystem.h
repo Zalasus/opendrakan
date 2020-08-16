@@ -86,6 +86,13 @@ namespace odPhysics
 
         virtual size_t contactTest(std::shared_ptr<Handle> handle, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
 
+        /**
+         * @brief Finds all collision objects within a sphere of given radius around a given point.
+         *
+         * Uses the contactTest result vector because this basically is a convenience wrapper around a contact test.
+         */
+        virtual void sphereTest(const glm::vec3 &position, float radius, odPhysics::PhysicsTypeMasks::Mask typeMask, ContactTestResultVector &resultsOut) = 0;
+
         virtual std::shared_ptr<ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) = 0;
         virtual std::shared_ptr<LayerHandle>  createLayerHandle(od::Layer &layer) = 0;
         virtual std::shared_ptr<LightHandle>  createLightHandle(const od::Light &light) = 0;

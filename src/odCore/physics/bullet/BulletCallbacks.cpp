@@ -151,7 +151,7 @@ namespace odBulletPhysics
     }
 
 
-    ContactResultCallback::ContactResultCallback(std::shared_ptr<odPhysics::Handle> me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
+    ContactResultCallback::ContactResultCallback(btCollisionObject *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
     : mMe(me)
     , mResults(results)
     , mContactCount(0)
@@ -171,16 +171,14 @@ namespace odBulletPhysics
         }
 
         odPhysics::ContactTestResult result;
-        auto handle0 = _handlePtrFromObject(colObj0Wrap->m_collisionObject);
-        auto handle1 = _handlePtrFromObject(colObj1Wrap->m_collisionObject);
-        if(handle0 == mMe)
+        if(colObj0Wrap->m_collisionObject == mMe)
         {
-            result.handle = handle1;
+            result.handle = _handlePtrFromObject(colObj1Wrap->m_collisionObject);
             mLastObject = colObj1Wrap->m_collisionObject;
 
-        }else if(handle1 == mMe)
+        }else if(colObj1Wrap->m_collisionObject == mMe)
         {
-            result.handle = handle0;
+            result.handle = _handlePtrFromObject(colObj0Wrap->m_collisionObject);;
             mLastObject = colObj0Wrap->m_collisionObject;
 
         }else

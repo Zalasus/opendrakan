@@ -9,6 +9,7 @@
 
 #include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
+#include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <odCore/Downcast.h>
 
 #include <odCore/LevelObject.h>
@@ -95,10 +96,29 @@ namespace odBulletPhysics
             throw od::Exception("Handle for contact test contained nullptr bullet object");
         }
 
-        ContactResultCallback callback(handle, typeMask, resultsOut);
+        ContactResultCallback callback(bulletObject, typeMask, resultsOut);
         mCollisionWorld->contactTest(bulletObject, callback);
 
         return callback.getContactCount();
+    }
+
+    void BulletPhysicsSystem::sphereTest(const glm::vec3 &position, float radius, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut)
+    {
+        if(mSphereObject == nullptr || mSphereShape == nullptr)
+        {
+            mSphereObject = std::make_unique<btCollisionObject>();
+            mSphereObject->setCollisionFlags(btCollisionObject::CF_STATIC_OBJECT);
+            mSphereShape = std::make_unique<btSphereShape>(1.0);
+            mSphereObject->setCollisionShape(mSphereShape.get());
+        }
+
+        auto tf = BulletAdapter::makeBulletTransform(position, glm::quat(0,0,0,1));
+        mSphereObject->setWorldTransform(tf);
+
+        mSphereShape->setLocalScaling(btVector3(radius, radius, radius));
+
+        ContactResultCallback callback(mSphereObject.get(), typeMask, resultsOut);
+        mCollisionWorld->contactTest(mSphereObject.get(), callback);
     }
 
     std::shared_ptr<odPhysics::ObjectHandle> BulletPhysicsSystem::createObjectHandle(od::LevelObject &obj, bool isDetector)

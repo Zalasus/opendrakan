@@ -15,6 +15,7 @@
 #include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
+#include <BulletCollision/CollisionShapes/btSphereShape.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -50,6 +51,8 @@ namespace odBulletPhysics
 
         virtual size_t contactTest(std::shared_ptr<odPhysics::Handle> handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
 
+        virtual void sphereTest(const glm::vec3 &position, float radius, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
+
         virtual std::shared_ptr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
         virtual std::shared_ptr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
         virtual std::shared_ptr<odPhysics::LightHandle>  createLightHandle(const od::Light &light) override;
@@ -71,6 +74,10 @@ namespace odBulletPhysics
         std::unique_ptr<btCollisionDispatcher> mDispatcher; // depends on mCollisionConfiguration. init after that
         std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btCollisionWorld> mCollisionWorld;
+
+        // a sphere object that is used for all sphere tests
+        std::unique_ptr<btCollisionObject> mSphereObject;
+        std::unique_ptr<btSphereShape> mSphereShape;
 
         std::unique_ptr<DebugDrawer> mDebugDrawer;
     };
