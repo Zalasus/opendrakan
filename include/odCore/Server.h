@@ -13,6 +13,8 @@
 
 #include <odCore/FilePath.h>
 
+#include <odCore/net/ClientConnector.h>
+
 namespace odDb
 {
     class DbManager;
@@ -28,9 +30,9 @@ namespace odPhysics
     class PhysicsSystem;
 }
 
-namespace odNet
+namespace odInput
 {
-    class ClientConnector;
+    class InputManager;
 }
 
 namespace od
@@ -60,6 +62,14 @@ namespace od
 
         void addClientConnector(std::unique_ptr<odNet::ClientConnector> connector);
 
+        /**
+         * @brief Returns the input manager for the given client.
+         *
+         * On the server, every connected client has it's own input manager.
+         * If the given client ID is not registered, this will throw.
+         */
+        odInput::InputManager &getInputManagerForClient(odNet::ClientId id);
+
         void loadLevel(const FilePath &path);
 
         void run();
@@ -78,6 +88,7 @@ namespace od
         std::atomic_bool mIsDone;
 
         std::vector<std::unique_ptr<odNet::ClientConnector>> mClientConnectors;
+        std::vector<std::unique_ptr<odInput::InputManager>> mClientInputManagers;
 
     };
 

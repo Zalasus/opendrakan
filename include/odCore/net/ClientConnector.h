@@ -15,6 +15,11 @@
 namespace odNet
 {
 
+    /**
+     * @brief A client ID that uniquely identifies a client
+     */
+    using ClientId = uint32_t;
+
     enum class CommandResult
     {
         ACK,

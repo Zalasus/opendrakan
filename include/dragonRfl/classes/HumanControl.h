@@ -16,9 +16,13 @@
 #include <odCore/input/Action.h>
 #include <odCore/input/CursorListener.h>
 
+#include <odCore/net/ClientConnector.h>
+
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
 #include <odCore/render/Handle.h>
+
+#include <odCore/rfl/DummyClass.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
 #include <dragonRfl/LocalPlayer.h>
@@ -33,14 +37,23 @@ namespace dragonRfl
 	{
 	public:
 
-		HumanControl_Sv();
+		HumanControl_Sv(odNet::ClientId clientId);
 		virtual ~HumanControl_Sv();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
+        virtual void onLoaded() override;
+
+
 	 private:
 
+        void _handleAction(Action action, odInput::ActionState state);
+
+        odNet::ClientId mClientId;
+
 		HumanControlFields mFields;
+
+        std::shared_ptr<ActionHandle> mAttackAction;
 
 	};
 

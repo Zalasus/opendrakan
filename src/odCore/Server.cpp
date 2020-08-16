@@ -18,6 +18,8 @@
 
 #include <odCore/rfl/RflManager.h>
 
+#include <odCore/input/InputManager.h>
+
 namespace od
 {
 
@@ -38,6 +40,16 @@ namespace od
         mClientConnectors.emplace_back(std::move(connector));
     }
 
+    odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
+    {
+        if(id < 0 || id >= mClientInputManagers.size())
+        {
+            throw od::NotFoundException("Invalid client ID");
+        }
+
+        return *mClientInputManagers[id];
+    }
+
     void Server::loadLevel(const FilePath &lvlPath)
     {
         Logger::verbose() << "Server loading level " << lvlPath;
@@ -46,7 +58,7 @@ namespace od
 
         mLevel = std::make_unique<Level>(engine);
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
-        
+
         mLevel->spawnAllObjects();
 
         // in order for clients to be able to load the level, we have to give them

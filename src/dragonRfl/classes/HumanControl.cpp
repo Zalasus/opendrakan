@@ -12,6 +12,7 @@
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Client.h>
+#include <odCore/Server.h>
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
@@ -28,7 +29,8 @@
 namespace dragonRfl
 {
 
-    HumanControl_Sv::HumanControl_Sv()
+    HumanControl_Sv::HumanControl_Sv(odNet::ClientId clientId)
+    : mClientId(clientId)
     {
     }
 
@@ -36,6 +38,21 @@ namespace dragonRfl
     {
     }
 
+    void HumanControl_Sv::onLoaded()
+    {
+        auto &im = getServer().getInputManagerForClient(mClientId);
+        mAttackAction = im.getOrCreateAction(Action::Attack_Primary);
+        mAttackAction->addCallback(
+                [this](Action action, odInput::ActionState state)
+                {
+                    this->_handleAction(action, state);
+                }
+            );
+    }
+
+    void HumanControl_Sv::_handleAction(Action action, odInput::ActionState state)
+    {
+    }
 
     HumanControl_Cl::HumanControl_Cl()
     : mYaw(0)
