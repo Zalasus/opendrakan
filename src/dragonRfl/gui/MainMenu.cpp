@@ -14,6 +14,8 @@
 #include <dragonRfl/gui/CrystalRingButton.h>
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
+#include <odCore/Client.h>
+
 #include <odCore/db/Model.h>
 
 #include <odCore/gui/Quad.h>
@@ -136,7 +138,7 @@ namespace dragonRfl
 
         case BC_QUIT:
             Logger::info() << "Exit button clicked. Quitting game";
-            getGui().quit();
+            mDragonGui.getClient().setIsDone(true);
             break;
         }
     }

@@ -47,8 +47,6 @@ namespace odGui
         inline void markNeedsFlattening() { mNeedsFlattening = true; }
         inline void markMeasurementsDirty() { mMeasurementsDirty = true; }
 
-        void quit();
-
         void addWidget(std::shared_ptr<Widget> widget);
         void removeWidget(std::shared_ptr<Widget> widget);
 

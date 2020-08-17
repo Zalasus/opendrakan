@@ -45,10 +45,6 @@ namespace odGui
         mRenderer.removeGuiCallback(this);
     }
 
-    void Gui::quit()
-    {
-    }
-
     void Gui::mouseDown(int buttonCode)
     {
         (void)buttonCode;
