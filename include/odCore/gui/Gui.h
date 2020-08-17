@@ -24,6 +24,12 @@ namespace odRender
     class Renderer;
 }
 
+namespace odInput
+{
+    class InputManager;
+    class InputListener;
+}
+
 namespace odGui
 {
 
@@ -33,7 +39,7 @@ namespace odGui
     {
     public:
 
-        Gui(odRender::Renderer &renderer);
+        Gui(odRender::Renderer &renderer, odInput::InputManager &inputManager);
         virtual ~Gui();
 
         inline bool isMenuMode() const { return mMenuMode; }
@@ -48,7 +54,7 @@ namespace odGui
 
         void setMenuMode(bool b);
 
-        void mouseDown();
+        void mouseDown(int buttonCode);
 
         /**
          * @brief Sets the widget to be used as a cursor.
@@ -106,6 +112,7 @@ namespace odGui
         void _setupGui();
 
         odRender::Renderer &mRenderer;
+        std::shared_ptr<odInput::InputListener> mInputListener;
 
         bool mMenuMode;
 
@@ -119,7 +126,6 @@ namespace odGui
         std::vector<HitWidgetInfo> mCurrentHitWidgets;
         std::vector<HitWidgetInfo> mLastHitWidgets;
         std::vector<HitWidgetInfo> mJoinedHitWidgets; // vector for combining last and current hits
-
     };
 
 }

@@ -89,7 +89,6 @@ namespace dragonRfl
     void DragonRfl::onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel)
     {
         mGui = std::make_unique<DragonGui>(localClient);
-        localClient.getInputManager().setGui(mGui.get());
 
         if(localClient.getSoundSystem() != nullptr)
         {

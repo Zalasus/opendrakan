@@ -15,6 +15,9 @@
 #include <odCore/Logger.h>
 #include <odCore/SrscRecordTypes.h>
 
+#include <odCore/input/InputManager.h>
+#include <odCore/input/InputListener.h>
+
 #include <odCore/render/Renderer.h>
 
 #include <odCore/gui/Widget.h>
@@ -22,7 +25,7 @@
 namespace odGui
 {
 
-    Gui::Gui(odRender::Renderer &renderer)
+    Gui::Gui(odRender::Renderer &renderer, odInput::InputManager &inputManager)
     : mRenderer(renderer)
     , mMenuMode(false)
     , mMeasurementsDirty(false)
@@ -31,6 +34,10 @@ namespace odGui
         _setupGui();
 
         mRenderer.addGuiCallback(this);
+
+        mInputListener = inputManager.createInputListener();
+        mInputListener->setMouseMoveCallback(std::bind(&Gui::setCursorPosition, this, std::placeholders::_1));
+        mInputListener->setMouseButtonDownCallback(std::bind(&Gui::mouseDown, this, std::placeholders::_1));
     }
 
     Gui::~Gui()
@@ -42,8 +49,10 @@ namespace odGui
     {
     }
 
-    void Gui::mouseDown()
+    void Gui::mouseDown(int buttonCode)
     {
+        (void)buttonCode;
+
         if(!mMenuMode)
         {
             return;
