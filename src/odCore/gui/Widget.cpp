@@ -277,8 +277,8 @@ namespace odGui
 
         mParentSpaceToMySpace = glm::mat4(1.0);
         auto offsetOfCoordinateOrigin = mPositionInParentSpace - _getOriginVector()*mySizeInParentSpace;
-        mParentSpaceToMySpace = glm::scale(mParentSpaceToMySpace, {1.0/mySizeInParentSpace.x, 1.0/mySizeInParentSpace.y, 1.0/mDepthInParentSpace});
-        mParentSpaceToMySpace = glm::translate(mParentSpaceToMySpace, {-offsetOfCoordinateOrigin, -mZPositionInParentSpace});
+        mParentSpaceToMySpace = glm::scale(mParentSpaceToMySpace, glm::vec3(1.0/mySizeInParentSpace.x, 1.0/mySizeInParentSpace.y, 1.0/mDepthInParentSpace));
+        mParentSpaceToMySpace = glm::translate(mParentSpaceToMySpace, glm::vec3(-offsetOfCoordinateOrigin, -mZPositionInParentSpace));
 
         mMySpaceToParentSpace = glm::inverse(mParentSpaceToMySpace);
 
@@ -310,9 +310,9 @@ namespace odGui
 
     void Widget::_intersectRecursive(const glm::vec2 &pointInParent, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        glm::vec4 pointInThis = mParentSpaceToMySpace * glm::vec4(pointInParent, 0.0, 1.0);
+        glm::vec2 pointInThis(mParentSpaceToMySpace * glm::vec4(pointInParent, 0.0, 1.0));
 
-        if(this->liesWithinLogicalArea(glm::vec2(pointInThis)))
+        if(this->liesWithinLogicalArea(pointInThis))
         {
             HitWidgetInfo info;
             info.hitPointInWidget.x = pointInThis.x;
