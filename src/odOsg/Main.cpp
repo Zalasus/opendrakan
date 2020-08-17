@@ -164,7 +164,7 @@ int main(int argc, char **argv)
     inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManager(), consumeEvents);
 
     bool loadIntroLevel = !hasInitialLevelOverride;
-    dragonRfl.onGameStartup(server, client, !loadIntroLevel);
+    dragonRfl.onGameStartup(server, client, loadIntroLevel);
 
     if(hasInitialLevelOverride)
     {
