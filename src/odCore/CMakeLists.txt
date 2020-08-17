@@ -33,7 +33,7 @@ target_sources(odCore PRIVATE
         "gui/Quad.cpp"
         "gui/Widget.cpp"
         "input/Action.cpp"
-        "input/CursorListener.cpp"
+        "input/InputListener.cpp"
         "input/InputManager.cpp"
         "physics/bullet/BulletCallbacks.cpp"
         "physics/bullet/BulletPhysicsSystem.cpp"

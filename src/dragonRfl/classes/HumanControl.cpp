@@ -94,8 +94,8 @@ namespace dragonRfl
         mAttackAction->setIgnoreUpEvents(true);
         inputManager.bindActionToKey(mAttackAction, odInput::Key::E); // for testing only. we want to do this via the Drakan.cfg parser later. also: mouse!!!
 
-        mCursorListener = getClient().getInputManager().createCursorListener();
-        mCursorListener->setCallback(std::bind(&HumanControl_Cl::_handleCursorMovement, this, std::placeholders::_1));
+        mInputListener = getClient().getInputManager().createInputListener();
+        mInputListener->setMouseMoveCallback(std::bind(&HumanControl_Cl::_handleCursorMovement, this, std::placeholders::_1));
     }
 
     void HumanControl_Cl::onSpawned()
@@ -117,7 +117,7 @@ namespace dragonRfl
         if(skeleton != nullptr)
         {
             mPhysicsHandle = getClient().getPhysicsSystem().createObjectHandle(obj, false);
-            //mCharacterController = std::make_unique<odPhysics::CharacterController>(mPhysicsHandle, obj, 0.05, 0.3);
+            mCharacterController = std::make_unique<odPhysics::CharacterController>(getClient().getPhysicsSystem(), mPhysicsHandle, obj, 0.05, 0.3);
 
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());

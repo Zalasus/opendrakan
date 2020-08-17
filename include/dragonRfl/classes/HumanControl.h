@@ -14,7 +14,7 @@
 #include <odCore/physics/CharacterController.h>
 
 #include <odCore/input/Action.h>
-#include <odCore/input/CursorListener.h>
+#include <odCore/input/InputListener.h>
 
 #include <odCore/net/ClientConnector.h>
 
@@ -113,7 +113,7 @@ namespace dragonRfl
 		std::shared_ptr<ActionHandle> mForwardAction;
 		std::shared_ptr<ActionHandle> mBackwardAction;
         std::shared_ptr<ActionHandle> mAttackAction;
-		std::shared_ptr<odInput::CursorListener> mCursorListener;
+		std::shared_ptr<odInput::InputListener> mInputListener;
 
 	};
 

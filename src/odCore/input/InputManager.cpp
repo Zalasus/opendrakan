@@ -9,13 +9,13 @@
 
 #include <odCore/gui/Gui.h>
 
-#include <odCore/input/CursorListener.h>
+#include <odCore/input/InputListener.h>
 
 namespace odInput
 {
 
     InputManager::InputManager()
-    : mGui(nullptr)
+    : mMouseMoved(false)
     {
     }
 
@@ -87,12 +87,10 @@ namespace odInput
         }
     }
 
-    std::shared_ptr<CursorListener> InputManager::createCursorListener()
+    std::shared_ptr<InputListener> InputManager::createInputListener()
     {
-        auto listener = std::make_shared<CursorListener>();
-
-        mCursorListeners.emplace_back(listener);
-
+        auto listener = std::make_shared<InputListener>();
+        mInputListeners.emplace_back(listener);
         return listener;
     }
 
@@ -135,38 +133,23 @@ namespace odInput
 
     void InputManager::_processMouseMove(glm::vec2 pos)
     {
-        if(mGui != nullptr)
-        {
-            mGui->setCursorPosition(pos);
-        }
-
-        for(auto &cl : mCursorListeners)
-        {
-            if(!cl.expired())
-            {
-                auto listener = cl.lock();
-                if(listener != nullptr)
-                {
-                    listener->triggerCallback(pos);
-                }
-            }
-        }
+        _forEachInputListener([=](auto listener){ listener.mouseMoveEvent(pos); });
     }
 
     void InputManager::_processMouseDown(int buttonCode)
     {
-        if(mGui != nullptr)
-        {
-            mGui->mouseDown();
-        }
+        _forEachInputListener([=](auto listener){ listener.mouseButtonEvent(buttonCode, false); });
     }
 
     void InputManager::_processMouseUp(int buttonCode)
     {
+        _forEachInputListener([=](auto listener){ listener.mouseButtonEvent(buttonCode, true); });
     }
 
     void InputManager::_processKeyDown(Key key)
     {
+        _forEachInputListener([=](auto listener){ listener.keyEvent(key, false); });
+
         auto it = mBindings.find(key);
         if(it == mBindings.end())
         {
@@ -192,6 +175,8 @@ namespace odInput
 
     void InputManager::_processKeyUp(Key key)
     {
+        _forEachInputListener([=](auto listener){ listener.keyEvent(key, true); });
+
         auto it = mBindings.find(key);
         if(it == mBindings.end())
         {

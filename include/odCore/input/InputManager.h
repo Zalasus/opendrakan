@@ -20,14 +20,9 @@
 #include <odCore/input/Action.h>
 #include <odCore/input/Keys.h>
 
-namespace odGui
-{
-    class Gui;
-}
-
 namespace odInput
 {
-    class CursorListener;
+    class InputListener;
 
     class InputManager
     {
@@ -35,9 +30,6 @@ namespace odInput
 
         InputManager();
         ~InputManager();
-
-        /// @brief Sets GUI to which to report cursor updates. May be nullptr.
-        inline void setGui(odGui::Gui *gui) { mGui = gui; }
 
         /**
          * @brief Tells the engine that the mouse moved.
@@ -138,7 +130,7 @@ namespace odInput
         void bindActionToKey(std::shared_ptr<IAction> action, Key key);
         void unbindActionFromKey(std::shared_ptr<IAction> action, Key key);
 
-        std::shared_ptr<CursorListener> createCursorListener();
+        std::shared_ptr<InputListener> createInputListener();
 
         void update(float relTime);
 
@@ -152,6 +144,22 @@ namespace odInput
         void _processKeyUp(Key key);
 
         void _triggerCallbackOnAction(IAction &action, ActionState state);
+
+        template <typename T>
+        void _forEachInputListener(const T &functor)
+        {
+            for(auto &l : mInputListeners)
+            {
+                if(!l.expired())
+                {
+                    auto listener = l.lock();
+                    if(listener != nullptr)
+                    {
+                        functor(*listener);
+                    }
+                }
+            }
+        }
 
         struct Binding
         {
@@ -174,12 +182,13 @@ namespace odInput
         bool mMouseMoved;
         std::mutex mInputEventQueueMutex;
 
-        odGui::Gui *mGui;
         std::map<Key, Binding> mBindings;
 
         std::map<ActionCode, std::weak_ptr<IAction>> mActions;
 
-        std::vector<std::weak_ptr<CursorListener>> mCursorListeners;
+        std::vector<std::weak_ptr<InputListener>> mInputListeners;
+
+        //std::vector<std::weak_ptr<ActionListener>> mRawActionListener;
     };
 
 }
