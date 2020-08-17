@@ -28,12 +28,11 @@ namespace odNet
     };
 
     /**
-     * @brief Server-side interface for connecting a client to the server.
+     * @brief Server-side interface for connecting a client to the local server.
      *
-     * This is an abstraction of the client-server tunnel, specifically of the
-     * server-to-client direction. Implementations could either use a network
-     * connection as a transport medium, or directly connect a local server to
-     * a local client with minimal overhead.
+     * This is an abstraction of the server-to-client tunnel. Implementations
+     * could either use a network connection as a transport medium, or directly
+     * connect a local server to a local client with minimal overhead.
      *
      * Keep in mind that everything which passes through this interface will
      * eventually have to pass through network packets, so keep passed data as
