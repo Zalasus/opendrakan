@@ -20,6 +20,7 @@ namespace odDb
 namespace odInput
 {
     class InputManager;
+    class RawActionListener;
 }
 
 namespace odRfl
@@ -110,6 +111,8 @@ namespace od
         std::unique_ptr<Level> mLevel;
 
         std::unique_ptr<odNet::ServerConnector> mServerConnector;
+
+        std::shared_ptr<odInput::RawActionListener> mActionListener;
 
     };
 

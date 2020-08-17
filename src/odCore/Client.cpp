@@ -15,6 +15,7 @@
 #include <odCore/render/Renderer.h>
 
 #include <odCore/input/InputManager.h>
+#include <odCore/input/RawActionListener.h>
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
@@ -147,6 +148,15 @@ namespace od
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
         mInputManager = std::make_unique<odInput::InputManager>();
         mStateManager = std::make_unique<odState::StateManager>();
+
+        mActionListener = mInputManager->createRawActionListener();
+        mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
+        {
+            if(this->mServerConnector != nullptr)
+            {
+                this->mServerConnector->actionTriggered(code, state);
+            }
+        };
     }
 
     Client::~Client()

@@ -36,7 +36,7 @@ namespace od
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override
         {
-
+            mServer.getInputManagerForClient(mClientId).injectAction(code, state);
         }
 
 
