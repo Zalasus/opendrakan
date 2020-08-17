@@ -36,6 +36,11 @@ namespace odInput
     class InputManager;
 }
 
+namespace odNet
+{
+    class ServerConnector;
+}
+
 namespace od
 {
     class Level;
@@ -61,6 +66,11 @@ namespace od
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
+
+        /**
+         * @brief Creates a ServerConnector to connect this server to a given local client without a network inbetween.
+         */
+        std::unique_ptr<odNet::ServerConnector> createLocalConnector(odNet::ClientId clientId);
 
         /**
          * @brief Adds a client and assigns a new client ID to it.

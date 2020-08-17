@@ -18,6 +18,7 @@
 #include <odCore/FilePath.h>
 
 #include <odCore/net/ClientConnector.h>
+#include <odCore/net/ServerConnector.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -100,8 +101,10 @@ int main(int argc, char **argv)
     sClient = &client;
 
     od::Server server(dbManager, rflManager);
-    server.addClientConnector(client.createLocalConnector());
+    auto clientId = server.addClientConnector(client.createLocalConnector());
     sServer = &server;
+
+    client.setServerConnector(server.createLocalConnector(clientId));
 
     int c;
     bool freeLook = false;

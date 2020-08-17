@@ -19,6 +19,7 @@
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
 #include <odCore/net/ClientConnector.h>
+#include <odCore/net/ServerConnector.h>
 
 #include <odCore/state/StateManager.h>
 
@@ -155,6 +156,11 @@ namespace od
     std::unique_ptr<odNet::ClientConnector> Client::createLocalConnector()
     {
         return std::make_unique<LocalClientConnector>(*this);
+    }
+
+    void Client::setServerConnector(std::unique_ptr<odNet::ServerConnector> connector)
+    {
+        mServerConnector = std::move(connector);
     }
 
     void Client::loadLevel(const FilePath &lvlPath)

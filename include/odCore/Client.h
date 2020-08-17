@@ -45,6 +45,7 @@ namespace odPhysics
 namespace odNet
 {
     class ClientConnector;
+    class ServerConnector;
 }
 
 namespace odState
@@ -82,6 +83,11 @@ namespace od
          */
         std::unique_ptr<odNet::ClientConnector> createLocalConnector();
 
+        /**
+         * @brief Assigns a server connector to which this client will report local changes and events.
+         */
+        void setServerConnector(std::unique_ptr<odNet::ServerConnector> connector);
+
         void loadLevel(const FilePath &lvlPath);
 
         void run();
@@ -102,6 +108,8 @@ namespace od
         std::atomic_bool mIsDone;
 
         std::unique_ptr<Level> mLevel;
+
+        std::unique_ptr<odNet::ServerConnector> mServerConnector;
 
     };
 

@@ -12,7 +12,7 @@
 
 #include <odCore/Level.h>
 
-#include <odCore/net/ClientConnector.h>
+#include <odCore/net/ServerConnector.h>
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
@@ -23,6 +23,30 @@
 
 namespace od
 {
+
+    class LocalServerConnector : public odNet::ServerConnector
+    {
+    public:
+
+        LocalServerConnector(Server &server, odNet::ClientId client)
+        : mServer(server)
+        , mClientId(client)
+        {
+        }
+
+        virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override
+        {
+
+        }
+
+
+    private:
+
+        Server &mServer;
+        odNet::ClientId mClientId;
+
+    };
+
 
     Server::Server(odDb::DbManager &dbManager, odRfl::RflManager &rflManager)
     : mDbManager(dbManager)
@@ -35,6 +59,11 @@ namespace od
 
     Server::~Server()
     {
+    }
+
+    std::unique_ptr<odNet::ServerConnector> Server::createLocalConnector(odNet::ClientId clientId)
+    {
+        return std::make_unique<LocalServerConnector>(*this, clientId);
     }
 
     odNet::ClientId Server::addClientConnector(std::unique_ptr<odNet::ClientConnector> connector)
