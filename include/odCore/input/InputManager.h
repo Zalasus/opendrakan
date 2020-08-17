@@ -23,6 +23,7 @@
 namespace odInput
 {
     class InputListener;
+    class RawActionListener;
 
     class InputManager
     {
@@ -132,6 +133,14 @@ namespace odInput
 
         std::shared_ptr<InputListener> createInputListener();
 
+        /**
+         * @brief Creates a raw action listener that reports every action that's being triggered.
+         *
+         * This does not have much use for game mechanics. It's main use is for the engine subsystems to
+         * be notfied when an action needs to be dispatched somewhere.
+         */
+        std::shared_ptr<RawActionListener> createRawActionListener();
+
         void update(float relTime);
 
 
@@ -187,8 +196,7 @@ namespace odInput
         std::map<ActionCode, std::weak_ptr<IAction>> mActions;
 
         std::vector<std::weak_ptr<InputListener>> mInputListeners;
-
-        //std::vector<std::weak_ptr<ActionListener>> mRawActionListener;
+        std::vector<std::weak_ptr<RawActionListener>> mRawActionListeners;
     };
 
 }

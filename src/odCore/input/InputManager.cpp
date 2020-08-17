@@ -10,6 +10,7 @@
 #include <odCore/gui/Gui.h>
 
 #include <odCore/input/InputListener.h>
+#include <odCore/input/RawActionListener.h>
 
 namespace odInput
 {
@@ -91,6 +92,13 @@ namespace odInput
     {
         auto listener = std::make_shared<InputListener>();
         mInputListeners.emplace_back(listener);
+        return listener;
+    }
+
+    std::shared_ptr<RawActionListener> InputManager::createRawActionListener()
+    {
+        auto listener = std::make_shared<RawActionListener>();
+        mRawActionListeners.emplace_back(listener);
         return listener;
     }
 
@@ -200,6 +208,18 @@ namespace odInput
 
     void InputManager::_triggerCallbackOnAction(IAction &action, ActionState state)
     {
+        for(auto &l : mRawActionListeners)
+        {
+            if(!l.expired())
+            {
+                auto listener = l.lock();
+                if(listener != nullptr && listener->callback != nullptr)
+                {
+                    listener->callback(action.getActionCode(), state);
+                }
+            }
+        }
+
         if(state == ActionState::REPEAT && !action.isRepeatable())
         {
             return;
