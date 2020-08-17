@@ -159,11 +159,9 @@ int main(int argc, char **argv)
     osgRenderer.setFreeLook(freeLook);
 
     std::unique_ptr<odOsg::InputListener> inputListener;
-    if(!freeLook)
-    {
-        // only create listener if freelook mode is not forced. else we might catch input events the manipulator needs
-        inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManager());
-    }
+    // if we use freelook mode, the input listener should not consume it's input events so the trackball can handle them, too
+    bool consumeEvents = !freeLook;
+    inputListener = std::make_unique<odOsg::InputListener>(osgRenderer, client.getInputManager(), consumeEvents);
 
     bool loadIntroLevel = !hasInitialLevelOverride;
     dragonRfl.onGameStartup(server, client, !loadIntroLevel);

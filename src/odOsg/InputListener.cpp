@@ -38,9 +38,10 @@ namespace odOsg
     };
 
 
-    InputListener::InputListener(Renderer &renderer, odInput::InputManager &inputManager)
+    InputListener::InputListener(Renderer &renderer, odInput::InputManager &inputManager, bool consumeEvents)
     : mRenderer(renderer)
     , mInputManager(inputManager)
+    , mConsumeEvents(consumeEvents)
     , mMouseWarped(false)
     {
         assert(mRenderer.getViewer() != nullptr);
@@ -63,24 +64,24 @@ namespace odOsg
         {
         case osgGA::GUIEventAdapter::KEYDOWN:
             mInputManager.keyDown(_osgKeyToOdKey(ea.getKey()));
-            return true;
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::KEYUP:
             mInputManager.keyUp(_osgKeyToOdKey(ea.getKey()));
-            return true;
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::PUSH:
             mInputManager.mouseButtonDown(ea.getButton());
-            return true;
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::RELEASE:
             mInputManager.mouseButtonUp(ea.getButton());
-            return true;
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::MOVE:
         case osgGA::GUIEventAdapter::DRAG:
             _handleMouseMove(ea, aa);
-            return true;
+            return mConsumeEvents;
 
         default:
             break;
