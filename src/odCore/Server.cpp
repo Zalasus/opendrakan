@@ -16,6 +16,7 @@
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
+#include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/RflManager.h>
 
 #include <odCore/input/InputManager.h>
@@ -27,6 +28,7 @@ namespace od
     : mDbManager(dbManager)
     , mRflManager(rflManager)
     , mIsDone(false)
+    , mNextClientId(1)
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(nullptr);
     }
@@ -35,27 +37,28 @@ namespace od
     {
     }
 
-    void Server::addClientConnector(std::unique_ptr<odNet::ClientConnector> connector)
+    odNet::ClientId Server::addClientConnector(std::unique_ptr<odNet::ClientConnector> connector)
     {
-        mClientConnectors.emplace_back(std::move(connector));
-        mClientInputManagers.resize(mClientConnectors.size());
+        odNet::ClientId newClientId = mNextClientId++;
 
-        // TODO: signal rfl that we have a new client!
+        Client client;
+        client.connector = std::move(connector);
+        client.inputManager = std::make_unique<odInput::InputManager>();
+
+        mClients.insert(std::make_pair(newClientId, std::move(client)));
+
+        return newClientId;
     }
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
     {
-        if(id < 0 || id >= mClientInputManagers.size())
+        auto it = mClients.find(id);
+        if(it == mClients.end())
         {
             throw od::NotFoundException("Invalid client ID");
         }
 
-        if(mClientInputManagers[id] == nullptr)
-        {
-            mClientInputManagers[id] = std::make_unique<odInput::InputManager>();
-        }
-
-        return *mClientInputManagers[id];
+        return *(it->second.inputManager);
     }
 
     void Server::loadLevel(const FilePath &lvlPath)
@@ -78,10 +81,12 @@ namespace od
         //  networked clients will probably not be used with out-of-tree-levels, anyway.
         auto relLevelPath = lvlPath.removePrefix(getEngineRootDir()).str();
 
-        for(auto &client : mClientConnectors)
+        for(auto &client : mClients)
         {
-            client->loadLevel(relLevelPath);
+            client.second.connector->loadLevel(relLevelPath);
         }
+
+        mRflManager.forEachLoadedRfl([this](odRfl::Rfl &rfl){ rfl.onLevelLoaded(*this); });
     }
 
     void Server::run()

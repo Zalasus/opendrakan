@@ -14,6 +14,8 @@
 
 #include <odCore/rfl/Class.h>
 
+#include <odCore/net/ClientConnector.h>
+
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
@@ -54,6 +56,12 @@ namespace odRfl
          * unnecessary level loading.
 		 */
 		virtual void onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel) = 0;
+
+        /**
+         * @brief Called on the server when a new level was loaded.
+         */
+        virtual void onLevelLoaded(od::Server &localServer) = 0;
+
 
 		ClassFactory *getFactoryForClassId(ClassId id);
 

@@ -61,6 +61,18 @@ namespace odRfl
          */
         Rfl &loadDynamicRfl(const od::FilePath &libPath);
 
+        size_t getLoadedRflCount() const { return mLoadedRfls.size(); }
+        Rfl &getLoadedRflByIndex(size_t i) { return *mLoadedRfls[i]; }
+
+        template <typename T>
+        void forEachLoadedRfl(const T &functor)
+        {
+            for(auto &rfl : mLoadedRfls)
+            {
+                functor(*rfl);
+            }
+        }
+
 
     private:
 

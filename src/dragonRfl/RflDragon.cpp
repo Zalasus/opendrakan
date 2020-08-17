@@ -126,6 +126,11 @@ namespace dragonRfl
         mPhysicsDebugAction = physicsDebugAction;
     }
 
+    void DragonRfl::onLevelLoaded(od::Server &localServer)
+    {
+        Logger::info() << "onlevelloaded";
+    }
+
     void DragonRfl::_handleAction(Action action, odInput::ActionState state)
     {
         switch(action)

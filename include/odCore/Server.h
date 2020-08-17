@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <atomic>
+#include <unordered_map>
 
 #include <odCore/FilePath.h>
 
@@ -61,7 +62,11 @@ namespace od
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
 
-        void addClientConnector(std::unique_ptr<odNet::ClientConnector> connector);
+        /**
+         * @brief Adds a client and assigns a new client ID to it.
+         * @return the new client ID assigned to the client.
+         */
+        odNet::ClientId addClientConnector(std::unique_ptr<odNet::ClientConnector> connector);
 
         /**
          * @brief Returns the input manager for the given client.
@@ -71,12 +76,27 @@ namespace od
          */
         odInput::InputManager &getInputManagerForClient(odNet::ClientId id);
 
+        template <typename T>
+        void forEachClient(const T &functor)
+        {
+            for(auto &client : mClients)
+            {
+                functor(client.first);
+            }
+        }
+
         void loadLevel(const FilePath &path);
 
         void run();
 
 
     private:
+
+        struct Client
+        {
+            std::unique_ptr<odNet::ClientConnector> connector;
+            std::unique_ptr<odInput::InputManager> inputManager;
+        };
 
         odDb::DbManager &mDbManager;
         odRfl::RflManager &mRflManager;
@@ -88,8 +108,8 @@ namespace od
 
         std::atomic_bool mIsDone;
 
-        std::vector<std::unique_ptr<odNet::ClientConnector>> mClientConnectors;
-        std::vector<std::unique_ptr<odInput::InputManager>> mClientInputManagers;
+        odNet::ClientId mNextClientId;
+        std::unordered_map<odNet::ClientId, Client> mClients;
 
     };
 
