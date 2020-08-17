@@ -48,6 +48,7 @@ namespace dragonRfl
 	 private:
 
         void _handleAction(Action action, odInput::ActionState state);
+        void _attack();
 
         odNet::ClientId mClientId;
 

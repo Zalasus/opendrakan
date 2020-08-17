@@ -127,7 +127,10 @@ namespace dragonRfl
 
     void DragonRfl::onLevelLoaded(od::Server &localServer)
     {
-        Logger::info() << "onlevelloaded";
+        localServer.forEachClient([this, &localServer](odNet::ClientId id)
+        {
+            this->spawnHumanControlForPlayer(localServer, id);
+        });
     }
 
     void DragonRfl::_handleAction(Action action, odInput::ActionState state)

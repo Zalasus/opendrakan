@@ -52,7 +52,36 @@ namespace dragonRfl
 
     void HumanControl_Sv::_handleAction(Action action, odInput::ActionState state)
     {
+        switch(action)
+        {
+        case Action::Attack_Primary:
+            _attack();
+            break;
+
+        default:
+            break;
+        }
     }
+
+    void HumanControl_Sv::_attack()
+    {
+        Logger::info() << "Trying to attack...";
+
+        auto &obj = getLevelObject();
+        auto pos = obj.getPosition();
+        odPhysics::ContactTestResultVector results;
+        getServer().getPhysicsSystem().sphereTest(pos, 1.0, odPhysics::PhysicsTypeMasks::LevelObject, results);
+
+        for(auto &result : results)
+        {
+            odPhysics::ObjectHandle *objectHandle = result.handle->asObjectHandle();
+            if(objectHandle != nullptr)
+            {
+                Logger::info() << "I, " << obj.getObjectId() << ", attacked " << objectHandle->getLevelObject().getObjectId();
+            }
+        }
+    }
+
 
     HumanControl_Cl::HumanControl_Cl()
     : mYaw(0)
@@ -250,6 +279,9 @@ namespace dragonRfl
             case Action::Backward:
                 _playAnim(mFields.runBackwards, false, true);
                 mState = State::RunningBackward;
+                break;
+
+            case Action::Attack_Primary:
                 break;
 
             default:
