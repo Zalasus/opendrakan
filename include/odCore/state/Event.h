@@ -33,8 +33,8 @@ namespace odState
     {
         ACTION,
         OBJECT_TRANSFORMED,
-        OBJECT_ANIM_STARTED,
-        OBJECT_ANIM_STOPPED,
+        OBJECT_ANIM_STARTSTOP,
+        OBJECT_ANIM_FRAME,
         OBJECT_MESSAGE_RECEIVED,
         OBJECT_VISIBILITY_CHANGED
     };
@@ -54,9 +54,23 @@ namespace odState
     };
 
 
+    /**
+     * @brief An event that directly relates to a level state change.
+     *
+     * This includes object movement, animation frames, visibility change etc.
+     *
+     * When rolling back the level to a certain point in time, the state manager
+     * only has to consider these type of events.
+     *
+     * Every event of this type must be invertible.
+     */
+    struct StateEvent : public Event
+    {
+    };
+
+
     struct ActionEvent final : public Event
     {
-
         ActionEvent(odInput::ActionCode code, bool down)
         : actionCode(code)
         , keyDown(down)
@@ -68,17 +82,49 @@ namespace odState
     };
 
 
-    struct ObjectTransformEvent final : public Event
+    struct ObjectTransformEvent final : public StateEvent
     {
-
         ObjectTransformEvent(od::LevelObject &obj, const ObjectTransform &tf)
         : object(obj)
         , transform(tf)
         {
         }
 
+        ObjectTransformEvent invert() const
+        {
+            return ObjectTransformEvent(object, transform.invert());
+        }
+
         od::LevelObject &object;
         ObjectTransform transform;
+    };
+
+
+    struct ObjectAnimStartStopEvent final : public Event
+    {
+        ObjectAnimStartStopEvent(od::LevelObject &obj, odDb::AssetRef anim, bool start)
+        : object(obj)
+        , animRef(anim)
+        , started(start)
+        {
+        }
+
+        od::LevelObject &object;
+        odDb::AssetRef animRef;
+        bool started;
+    };
+
+
+    struct ObjectAnimFrameEvent final : public StateEvent
+    {
+        ObjectAnimStartStopEvent(od::LevelObject &obj, float frame)
+        : object(obj)
+        , frameTime(frame)
+        {
+        }
+
+        od::LevelObject &object;
+        float frameTime;
     };
 
 
@@ -97,12 +143,17 @@ namespace odState
     };
 
 
-    struct ObjectVisibilityChangedEvent final : public Event
+    struct ObjectVisibilityChangedEvent final : public StateEvent
     {
         ObjectVisibilityChangedEvent(od::LevelObject &obj, bool v)
         : object(obj)
         , visible(v)
         {
+        }
+
+        ObjectVisibilityChangedEvent invert() const
+        {
+            return ObjectVisibilityChangedEvent(object, !visible);
         }
 
         od::LevelObject &object;
@@ -184,6 +235,25 @@ namespace odState
 
         EventType mVariantType;
 
+    };
+
+
+
+    struct ObjectEventSet
+    {
+        bool transformed;
+        bool visibilityChanged;
+        bool animationFrame;
+
+        ObjectTransform transform;
+        bool visibility;
+        float animFrameTime;
+    };
+
+
+    struct LevelEventSet
+    {
+        std::unordered_map<od::LevelObjectId, ObjectEventSet> objectEvents;
     };
 
 }
