@@ -157,6 +157,7 @@ namespace od
             }
         }
 
+        // TODO: could we handle this more efficiently using a swap?
         mTempObjectUpdateQueue.clear();
         mTempObjectUpdateQueue.assign(mObjectUpdateQueue.begin(), mObjectUpdateQueue.end());
 
