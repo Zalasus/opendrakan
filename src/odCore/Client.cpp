@@ -28,13 +28,6 @@
 namespace od
 {
 
-    static std::future<odNet::CommandResult> _makeFutureFor(odNet::CommandResult r)
-    {
-        auto task = [r](){ return r; };
-        return std::async(std::launch::deferred, task);
-    }
-
-
     /**
      * @brief ClientConnector for connecting a local client to the server.
      */
@@ -47,89 +40,56 @@ namespace od
         {
         }
 
-        virtual std::future<odNet::CommandResult> loadLevel(const std::string &path) override
+        virtual void loadLevel(const std::string &path) override
         {
             od::FilePath lvlPath(path, mClient.getEngineRootDir());
             mClient.loadLevel(lvlPath);
-            return _makeFutureFor(odNet::CommandResult::ACK);
         }
 
-        virtual std::future<odNet::CommandResult> levelObjectTranformed(LevelObjectId id, const od::ObjectTransform &tf) override
+        virtual void objectTransformed(odState::TickNumber tick, LevelObjectId id, const od::ObjectTransform &tf) override
         {
-            od::LevelObject *obj = getObjectById(id);
-            if(obj != nullptr)
-            {
-                //mClient.getStateManager().addObjectTransform(*obj, tf);
-                return _makeFutureFor(odNet::CommandResult::ACK);
-
-            }else
-            {
-                return _makeFutureFor(odNet::CommandResult::NACK);
-            }
+            auto &obj = _getObjectById(id);
+            mClient.getStateManager().objectTransformed(obj, tf, tick);
         }
 
-        virtual std::future<odNet::CommandResult> objectVisibilityChanged(od::LevelObjectId id, bool visible) override
+        virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) override
         {
-            od::LevelObject *obj = getObjectById(id);
-            if(obj != nullptr)
-            {
-                //mClient.getStateManager().addObjectVisibilityChange(*obj, visible);
-                return _makeFutureFor(odNet::CommandResult::ACK);
-
-            }else
-            {
-                return _makeFutureFor(odNet::CommandResult::NACK);
-            }
+            auto &obj = _getObjectById(id);
+            mClient.getStateManager().objectVisibilityChanged(obj, visible, tick);
         }
 
-        virtual std::future<odNet::CommandResult> spawnObject(od::LevelObjectId id)
+        virtual void spawnObject(od::LevelObjectId id)
         {
-            od::LevelObject *obj = getObjectById(id);
-            if(obj != nullptr)
-            {
-                obj->spawned();
-                return _makeFutureFor(odNet::CommandResult::ACK);
-
-            }else
-            {
-                return _makeFutureFor(odNet::CommandResult::NACK);
-            }
+            _getObjectById(id).spawned();
         }
 
-        virtual std::future<odNet::CommandResult> despawnObject(od::LevelObjectId id)
+        virtual void despawnObject(od::LevelObjectId id)
         {
-            od::LevelObject *obj = getObjectById(id);
-            if(obj != nullptr)
-            {
-                obj->despawned();
-                return _makeFutureFor(odNet::CommandResult::ACK);
-
-            }else
-            {
-                return _makeFutureFor(odNet::CommandResult::NACK);
-            }
+            _getObjectById(id).despawned();
         }
 
-        virtual std::future<odNet::CommandResult> destroyObject(od::LevelObjectId id)
+        virtual void destroyObject(od::LevelObjectId id)
         {
-            od::LevelObject *obj = getObjectById(id);
-            if(obj != nullptr)
-            {
-                obj->requestDestruction();
-            }
-
-            // can't fail. a non-existing object is (technically) destroyed
-            return _makeFutureFor(odNet::CommandResult::ACK);
+             _getObjectById(id).requestDestruction();
         }
 
 
     private:
 
-        od::LevelObject *getObjectById(od::LevelObjectId id)
+        od::LevelObject &_getObjectById(od::LevelObjectId id)
         {
-            if(mClient.getLevel() == nullptr) return nullptr;
+            if(mClient.getLevel() == nullptr)
+            {
+                throw od::Exception("No level loaded");
+            }
 
-            return mClient.getLevel()->getLevelObjectById(id);
+            auto object = mClient.getLevel()->getLevelObjectById(id);
+            if(object == nullptr)
+            {
+                throw od::Exception("Invalid level object ID");
+            }
+
+            return *object;
         }
 
         Client &mClient;
@@ -210,6 +170,8 @@ namespace od
 
             mPhysicsSystem->update(relTime);
             mInputManager->update(relTime);
+
+            // do not call mStateManager->commit() here! the client does not tick by itself, but rather waits for the server to tell it to tick
 
             mRenderer.frame(relTime);
         }

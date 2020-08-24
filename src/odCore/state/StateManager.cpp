@@ -61,7 +61,7 @@ namespace odState
         mEvents.push(ActionEvent(actionCode, down));
     }*/
 
-    void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf)
+    void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick)
     {
         if(mIgnoreStateUpdates) return;
 
@@ -70,7 +70,7 @@ namespace odState
         objEvent.transform = tf;
     }
 
-    void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
+    void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick)
     {
         if(mIgnoreStateUpdates) return;
 

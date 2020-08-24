@@ -11,8 +11,9 @@
 namespace odState
 {
 
-    // TODO: at least network-wise, 32 bit seems to be a better choice, also when keeping a drakan-classic-port in mind
-    using TickNumber = std::uint64_t;
+    using TickNumber = std::int64_t;
+
+    constexpr TickNumber CURRENT_TICK = -1;
 
     /**
      * @brief A kind of vector that ties together blocks of elements based on a time value.

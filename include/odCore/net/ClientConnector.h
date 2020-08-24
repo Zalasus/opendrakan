@@ -6,11 +6,10 @@
 #ifndef INCLUDE_ODCORE_NET_CLIENTCONNECTOR_H_
 #define INCLUDE_ODCORE_NET_CLIENTCONNECTOR_H_
 
-#include <future>
-
 #include <odCore/IdTypes.h>
-
 #include <odCore/ObjectTransform.h>
+
+#include <odCore/state/Timeline.h>
 
 namespace odNet
 {
@@ -19,13 +18,6 @@ namespace odNet
      * @brief A client ID that uniquely identifies a client
      */
     using ClientId = uint32_t;
-
-    enum class CommandResult
-    {
-        ACK,
-        NACK,
-        TIMEOUT
-    };
 
     /**
      * @brief Server-side interface for connecting a client to the local server.
@@ -44,14 +36,14 @@ namespace odNet
 
         virtual ~ClientConnector() = default;
 
-        virtual std::future<CommandResult> loadLevel(const std::string &path) = 0;
+        virtual void loadLevel(const std::string &path) = 0;
 
-        virtual std::future<CommandResult> levelObjectTranformed(od::LevelObjectId id, const od::ObjectTransform &tf) = 0;
-        virtual std::future<CommandResult> objectVisibilityChanged(od::LevelObjectId id, bool visible) = 0;
+        virtual void objectTransformed(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectTransform &tf) = 0;
+        virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) = 0;
 
-        virtual std::future<CommandResult> spawnObject(od::LevelObjectId id) = 0;
-        virtual std::future<CommandResult> despawnObject(od::LevelObjectId id) = 0;
-        virtual std::future<CommandResult> destroyObject(od::LevelObjectId id) = 0;
+        virtual void spawnObject(od::LevelObjectId id) = 0;
+        virtual void despawnObject(od::LevelObjectId id) = 0;
+        virtual void destroyObject(od::LevelObjectId id) = 0;
     };
 
 }
