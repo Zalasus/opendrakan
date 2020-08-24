@@ -110,7 +110,7 @@ namespace dragonRfl
         menuAction->setRepeatable(false);
         menuAction->setIgnoreUpEvents(true);
         menuAction->addCallback(actionHandler);
-        im.bindActionToKey(menuAction, odInput::Key::Return);
+        im.bindActionToKey(menuAction, odInput::Key::Escape);
         mMenuAction = menuAction;
 
         auto physicsDebugAction = im.getOrCreateAction(Action::PhysicsDebug_Toggle);

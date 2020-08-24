@@ -56,7 +56,8 @@ namespace odOsg
         statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
         mViewer->addEventHandler(statsHandler);
 
-        mViewer->setKeyEventSetsDone(osgGA::GUIEventAdapter::KEY_Escape);
+        //mViewer->setKeyEventSetsDone(osgGA::GUIEventAdapter::KEY_Escape);
+        mViewer->setKeyEventSetsDone(0); // TODO: report closing of render window back to the engine somehow (or let Main.cpp trigger the shutdown)
 
         mSceneRoot = new osg::Group;
         mViewer->setSceneData(mSceneRoot);
