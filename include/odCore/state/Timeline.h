@@ -7,13 +7,14 @@
 #define INCLUDE_ODCORE_STATE_TIMELINE_H_
 
 #include <deque>
+#include <type_traits>
 
 namespace odState
 {
 
     using TickNumber = std::int64_t;
 
-    constexpr TickNumber CURRENT_TICK = -1;
+    static_assert(std::is_signed<TickNumber>::value, "TickNumber must be of a signed type");
 
     /**
      * @brief A kind of vector that ties together blocks of elements based on a time value.

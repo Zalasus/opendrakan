@@ -207,13 +207,19 @@ namespace od
     void LevelObject::transform(const ObjectTransform &tf)
     {
         _applyTransform(tf, this);
-        mLevel.getEngine().getStateManager().objectTransformed(*this, tf);
+
+        auto &sm = mLevel.getEngine().getStateManager();
+        auto currentTick = sm.getCurrentTick();
+        sm.objectTransformed(*this, tf, currentTick);
     }
 
     void LevelObject::setVisible(bool v)
     {
         _applyVisibility(v);
-        mLevel.getEngine().getStateManager().objectVisibilityChanged(*this, v);
+
+        auto &sm = mLevel.getEngine().getStateManager();
+        auto currentTick = sm.getCurrentTick();
+        sm.objectVisibilityChanged(*this, v, currentTick);
     }
 
     void LevelObject::spawned()

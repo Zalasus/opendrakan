@@ -23,6 +23,11 @@ namespace od
     class LevelObject;
 }
 
+namespace odNet
+{
+    class ClientConnector;
+}
+
 namespace odState
 {
     class StateManager
@@ -43,14 +48,23 @@ namespace odState
             StateManager *mStateManager;
         };
 
+        using StateTransitionMap = std::unordered_map<od::LevelObjectId, ObjectStateTransition>;
+
 
         StateManager(od::Level &level);
 
-        //void addClient();
+        /**
+         * @brief Returns the latest tick that is managed by this and can be written to.
+         */
+        TickNumber getMaxTick() const;
 
-        //void addActionEvent(odInput::ActionCode actionCode, bool down);
-        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick = CURRENT_TICK);
-        void objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick = CURRENT_TICK);
+        /**
+         * @brief Returns the latest tick not yet committed.
+         */
+        TickNumber getCurrentTick() const;
+
+        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick);
+        void objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick);
 
         /**
          * @brief Commits all changes and events last pushed into one snapshot.
@@ -64,24 +78,13 @@ namespace odState
          */
         RollbackGuard rollback(TickNumber tick);
 
-        /**
-         * @brief Calculates the total lag the given client probably has, then rolls back the world by that time.
-         *
-         * After this returns, the world is in approximately the same state as the client experienced it during it's last update.
-         * Thus, target checks etc. can be performed in a lag-compensated manner.
-         *
-         * Make sure to call endLagCompensation() when you are finished to go back to the current world state.
-         */
-        //void beginLagCompensation(Client *c);
-
-        //void endLagCompensation();
-
-        using StateTransitionMap = std::unordered_map<od::LevelObjectId, ObjectStateTransition>;
-
-        void combine(TickNumber begin, TickNumber end, StateTransitionMap &set);
+        void sendToClient(TickNumber tick, odNet::ClientConnector &c);
 
 
     private:
+
+        StateTransitionMap &_getTransitionMapForTick(TickNumber tick);
+        StateTransitionMap &_getCurrentTransitionMap();
 
         friend class RollbackGuard;
 
@@ -98,14 +101,11 @@ namespace odState
          */
         StateTransitionMap mBaseStateTransitionMap;
 
-        /**
-         * A set of state events that represents the tick currently being
-         * calculated. Incoming changes of the current update loop are gathered
-         * here before being moved to the timeline upon the next commit.
-         */
-        StateTransitionMap mNextStateTransitionMap;
+        size_t mOldestTickIndex;
+        TickNumber mOldestTick;
+        std::vector<StateTransitionMap> mStateTransitions;
 
-        // TODO: there should probably just be a ring buffer of StateTransitionMaps and a separate timeline just for non-state events
+        // TODO: this timeline's tick management is kinda redundant to the one the SM does itself. unify this, plz 
         Timeline<EventVariant> mEvents;
 
     };

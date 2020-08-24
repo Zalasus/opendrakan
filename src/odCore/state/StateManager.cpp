@@ -4,26 +4,13 @@
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 
+#include <odCore/net/ClientConnector.h>
+
 namespace odState
 {
 
-    static const TickNumber MAX_BACKLOG = 64;
-
-    class ApplyEventsVisitor
-    {
-    public:
-
-        void operator()(const Event &event)
-        {
-            (void)event;
-            // catch-all, doesn't do anything
-        }
-
-        void operator()(const ObjectTransformEvent &event)
-        {
-        }
-
-    };
+    static const TickNumber BACKLOG_TICKS = 16;
+    static const TickNumber FUTURE_TICKS = 3; // this includes the tick currently built, so it should at least be 1 TODO: on server, this *can* be 1. make dynamic
 
 
     StateManager::RollbackGuard::RollbackGuard(StateManager &sm)
@@ -52,20 +39,29 @@ namespace odState
     StateManager::StateManager(od::Level &level)
     : mLevel(level)
     , mIgnoreStateUpdates(false)
+    , mOldestTickIndex(0)
+    , mOldestTick(0)
     , mEvents(0)
     {
+        mStateTransitions.resize(BACKLOG_TICKS + FUTURE_TICKS);
     }
 
-    /*void StateManager::addActionEvent(odInput::ActionCode actionCode, bool down)
+    TickNumber StateManager::getMaxTick() const
     {
-        mEvents.push(ActionEvent(actionCode, down));
-    }*/
+        return mOldestTick + mStateTransitions.size() - 1;
+    }
+
+    TickNumber StateManager::getCurrentTick() const
+    {
+        return mOldestTick + BACKLOG_TICKS;
+    }
 
     void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick)
     {
         if(mIgnoreStateUpdates) return;
 
-        auto &objEvent = mNextStateTransitionMap[object.getObjectId()];
+        auto &transitionMap = _getTransitionMapForTick(tick);
+        auto &objEvent = transitionMap[object.getObjectId()];
         objEvent.transformed = true;
         objEvent.transform = tf;
     }
@@ -74,7 +70,8 @@ namespace odState
     {
         if(mIgnoreStateUpdates) return;
 
-        auto &objEvent = mNextStateTransitionMap[object.getObjectId()];
+        auto &transitionMap = _getTransitionMapForTick(tick);
+        auto &objEvent = transitionMap[object.getObjectId()];
         objEvent.visibilityChanged = true;
         objEvent.visibility = visible;
     }
@@ -83,110 +80,54 @@ namespace odState
     {
         RollbackGuard guard(*this);
 
-        auto begin = mEvents.getTickframeBegin(tick);
-        auto end = mEvents.getTickframeEnd(tick);
-        if(begin == end)
-        {
-            throw od::Exception("Tick is out of range/not stored");
-        }
-
-        ApplyEventsVisitor visitor;
-
-        for(auto it = begin; it != end; ++it)
-        {
-            it->visit(visitor);
-        }
+        // TODO: implement
 
         return std::move(guard);
     }
 
     void StateManager::commit()
     {
-        // turn state transition map into a list of events and push it onto the timeline
-        for(auto &stateTransition : mNextStateTransitionMap)
+        // apply all new changes to the base state map
+        for(auto &stateTransition : _getCurrentTransitionMap())
         {
-            od::LevelObject *obj = mLevel.getLevelObjectById(stateTransition.first);
-            if(obj == nullptr) continue;
-            if(stateTransition.second.transformed) mEvents.push(ObjectTransformEvent(*obj, stateTransition.second.transform));
-            if(stateTransition.second.visibilityChanged) mEvents.push(ObjectVisibilityChangedEvent(*obj, stateTransition.second.visibility));
-            if(stateTransition.second.animationFrame) mEvents.push(ObjectAnimFrameEvent(*obj, stateTransition.second.animFrameTime));
-
-            // apply these changes to the base state map, too
             auto &baseStateTransition = mBaseStateTransitionMap[stateTransition.first];
             baseStateTransition.merge(stateTransition.second);
         }
+
+        mOldestTickIndex = (mOldestTickIndex + 1) % mStateTransitions.size();
+        ++mOldestTick;
+
+        // since the currentTransitionMap has now wrapped around to an old one, clear that so the new tick starts fresh
+        _getCurrentTransitionMap().clear();
     }
 
-    /**
-     * Applied on timeline in reverse.
-     */
-    class CombineEventsVisitor
+    void StateManager::sendToClient(TickNumber tick, odNet::ClientConnector &c)
     {
-    public:
-
-        CombineEventsVisitor()
+        for(auto &stateTransition : _getTransitionMapForTick(tick))
         {
+            if(stateTransition.second.transformed) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+            if(stateTransition.second.visibilityChanged) c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.visibility);
+            //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
         }
+    }
 
-        void operator()(const Event &event)
-        {
-            (void)event; // non-state events are universally ignored
-        }
-
-        void operator()(const StateEvent &event)
-        {
-            throw od::Exception("CombineEventsVisitor is missing a handler for at least one state event type");
-        }
-
-        void operator()(const ObjectTransformEvent &event)
-        {
-            auto &objectEventSet = mTransitionMap[event.object.getObjectId()];
-            if(!objectEventSet.transformed) // only want to record the newest transform
-            {
-                objectEventSet.transformed = true;
-                objectEventSet.transform = event.transform;
-            }
-        }
-
-        void operator()(const ObjectVisibilityChangedEvent &event)
-        {
-            auto &objectEventSet = mTransitionMap[event.object.getObjectId()];
-            if(!objectEventSet.visibilityChanged)
-            {
-                objectEventSet.visibilityChanged = true;
-                objectEventSet.visibility = event.visible;
-            }
-        }
-
-        void operator()(const ObjectAnimFrameEvent &event)
-        {
-            auto &objectEventSet = mTransitionMap[event.object.getObjectId()];
-            if(!objectEventSet.animationFrame)
-            {
-                objectEventSet.animationFrame = true;
-                objectEventSet.animFrameTime = event.frameTime;
-            }
-        }
-
-    private:
-
-        StateManager::StateTransitionMap mTransitionMap;
-
-    };
-
-    void StateManager::combine(TickNumber begin, TickNumber end, StateTransitionMap &map)
+    StateManager::StateTransitionMap &StateManager::_getTransitionMapForTick(TickNumber tick)
     {
-        CombineEventsVisitor combineVisitor;
-
-        auto tickCount = (end - begin);
-        for(size_t i = 0; i < tickCount; ++i)
+        auto offset = tick - mOldestTick;
+        if(offset < 0 || offset >= static_cast<decltype(offset)>(mStateTransitions.size()))
         {
-            auto tick = end - i;
-            for(auto event : mEvents.getTickframe(tick))
-            {
-                event.visit(combineVisitor);
-            }
+            throw od::Exception("Invalid tick number");
         }
+
+        auto baseOffset = (offset + mOldestTickIndex) % mStateTransitions.size();
+
+        return mStateTransitions[baseOffset];
+    }
+
+    StateManager::StateTransitionMap &StateManager::_getCurrentTransitionMap()
+    {
+        auto baseOffset = (BACKLOG_TICKS + mOldestTickIndex) % mStateTransitions.size();
+        return mStateTransitions[baseOffset];
     }
 
 }
