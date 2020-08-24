@@ -145,7 +145,7 @@ namespace od
 
             mPhysicsSystem->update(relTime);
 
-            mStateManager->commit();
+            _commitUpdate();
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
             auto loopTime = loopEnd - loopStart;
@@ -163,6 +163,18 @@ namespace od
         }
 
         Logger::info() << "Shutting down server gracefully";
+    }
+
+    void Server::_commitUpdate()
+    {
+        auto committedTick = mStateManager->getCurrentTick();
+
+        mStateManager->commit();
+
+        for(auto &client : mClients)
+        {
+            mStateManager->sendToClient(committedTick, *client.second.connector);
+        }
     }
 
 }

@@ -114,6 +114,8 @@ namespace od
             std::unique_ptr<odInput::InputManager> inputManager;
         };
 
+        void _commitUpdate();
+
         odDb::DbManager &mDbManager;
         odRfl::RflManager &mRflManager;
 
