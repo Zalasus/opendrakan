@@ -12,8 +12,8 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <list>
-#include <set>
+#include <unordered_set>
+#include <unordered_map>
 #include <glm/vec3.hpp>
 
 #include <odCore/IdTypes.h>
@@ -51,7 +51,7 @@ namespace od
 
         void requestLevelObjectDestruction(LevelObject *obj);
         Layer *getLayerById(LayerId id);
-        Layer *getLayerByIndex(uint16_t index);
+        Layer *getLayerByIndex(uint16_t index); // FIXME: this should be removed (if possible). the index is really only correct during loading
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
 
         /**
@@ -66,6 +66,7 @@ namespace od
 
         void update(float relTime);
 
+         // FIXME: this should be removed (if possible). the index is really only correct during loading. we could even make the map own the objects and eliminate the mapping altogether
         LevelObject *getLevelObjectByIndex(uint16_t index);
 
         LevelObject *getLevelObjectById(LevelObjectId id);
@@ -112,19 +113,21 @@ namespace od
         std::vector<std::unique_ptr<Layer>> mLayers;
         std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
 
-		std::list<LevelObject*> mDestructionQueue;
+        std::unordered_map<LevelObjectId, size_t> mLevelObjectIdMap; // maps IDs to indices in array
+
+		std::unordered_set<LevelObject*> mDestructionQueue;
 
 		float mVerticalExtent;
 
 		Layer *mCurrentActivePvsLayer;
 
-		std::set<LevelObject*> mObjectUpdateQueue;
+		std::unordered_set<LevelObject*> mObjectUpdateQueue;
 
 		// since an object could add/remove itself from the update queue during the update phase,
         // we have to consider that any iterators of mObjectUpdateQueue might become invalid while
 		// performing the update. thus, we copy the queue into this temporary vector during update
 		// so no invalidation can occur.
-        std::vector<LevelObject*> mTempObjectUpdateQueue;
+        std::unordered_set<LevelObject*> mTempObjectUpdateQueue;
     };
 
 

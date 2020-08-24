@@ -67,7 +67,7 @@ namespace od
 
     void Level::requestLevelObjectDestruction(LevelObject *obj)
     {
-        mDestructionQueue.push_back(obj);
+        mDestructionQueue.insert(obj);
     }
 
     Layer *Level::getLayerById(uint32_t id)
@@ -145,21 +145,17 @@ namespace od
 
     void Level::update(float relTime)
     {
-        if(!mDestructionQueue.empty())
+        for(auto obj : mDestructionQueue)
         {
-            auto it = mDestructionQueue.begin();
-            while(it != mDestructionQueue.end())
-            {
-                (*it)->despawned();
-                (*it)->destroyed();
-
-                it = mDestructionQueue.erase(it);
-            }
+            obj->despawned();
+            obj->destroyed();
+            // TODO: actually free the memory here! don't forget to update the ID mappings after queue is cleared
         }
+        mDestructionQueue.clear();
 
         // TODO: could we handle this more efficiently using a swap?
         mTempObjectUpdateQueue.clear();
-        mTempObjectUpdateQueue.assign(mObjectUpdateQueue.begin(), mObjectUpdateQueue.end());
+        mTempObjectUpdateQueue = mObjectUpdateQueue;
 
         for(auto obj : mTempObjectUpdateQueue)
         {
@@ -184,16 +180,13 @@ namespace od
 
     LevelObject *Level::getLevelObjectById(LevelObjectId id)
     {
-        // TODO: we can do better than O(n)
-        auto pred = [id](std::unique_ptr<LevelObject> &l){ return l->getObjectId() == id; };
-
-        auto it = std::find_if(mLevelObjects.begin(), mLevelObjects.end(), pred);
-        if(it == mLevelObjects.end())
+        auto it = mLevelObjectIdMap.find(id);
+        if(it == mLevelObjectIdMap.end())
         {
             return nullptr;
         }
 
-        return it->get();
+        return mLevelObjects[it->second].get();
     }
 
     LevelObject *Level::findFirstObjectOfType(odRfl::ClassId id)
@@ -427,7 +420,6 @@ namespace od
     			uint32_t layer;
     			dr >> layer;
     		}
-
     	}
     }
 
@@ -454,6 +446,8 @@ namespace od
     	{
     		std::unique_ptr<od::LevelObject> object = std::make_unique<od::LevelObject>(*this);
     		object->loadFromRecord(dr);
+
+            mLevelObjectIdMap[object->getObjectId()] = mLevelObjects.size(); // TODO: check for ID uniqueness here
 
     		mLevelObjects.push_back(std::move(object));
     	}
