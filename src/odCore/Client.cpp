@@ -54,7 +54,7 @@ namespace od
             return _makeFutureFor(odNet::CommandResult::ACK);
         }
 
-        virtual std::future<odNet::CommandResult> levelObjectTranformed(LevelObjectId id, const odState::ObjectTransform &tf) override
+        virtual std::future<odNet::CommandResult> levelObjectTranformed(LevelObjectId id, const od::ObjectTransform &tf) override
         {
             od::LevelObject *obj = getObjectById(id);
             if(obj != nullptr)

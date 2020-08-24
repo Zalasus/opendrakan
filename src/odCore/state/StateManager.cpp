@@ -25,8 +25,33 @@ namespace odState
 
     };
 
+
+    StateManager::RollbackGuard::RollbackGuard(StateManager &sm)
+    : mStateManager(&sm)
+    {
+        mStateManager->mIgnoreStateUpdates = true;
+    }
+
+    StateManager::RollbackGuard::RollbackGuard(RollbackGuard &&g)
+    : mStateManager(g.mStateManager)
+    {
+        g.mStateManager = nullptr;
+    }
+
+    StateManager::RollbackGuard::~RollbackGuard()
+    {
+        if(mStateManager != nullptr)
+        {
+            mStateManager->mIgnoreStateUpdates = false;
+
+            // TODO: reverse rollback here
+        }
+    }
+
+
     StateManager::StateManager(od::Level &level)
     : mLevel(level)
+    , mIgnoreStateUpdates(false)
     , mEvents(0)
     {
     }
@@ -36,8 +61,10 @@ namespace odState
         mEvents.push(ActionEvent(actionCode, down));
     }*/
 
-    void StateManager::objectTransformed(od::LevelObject &object, const ObjectTransform &tf)
+    void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf)
     {
+        if(mIgnoreStateUpdates) return;
+
         auto &objEvent = mNextStateTransitionMap[object.getObjectId()];
         objEvent.transformed = true;
         objEvent.transform = tf;
@@ -45,13 +72,17 @@ namespace odState
 
     void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
     {
+        if(mIgnoreStateUpdates) return;
+
         auto &objEvent = mNextStateTransitionMap[object.getObjectId()];
         objEvent.visibilityChanged = true;
         objEvent.visibility = visible;
     }
 
-    void StateManager::apply(TickNumber tick)
+    StateManager::RollbackGuard StateManager::rollback(TickNumber tick)
     {
+        RollbackGuard guard(*this);
+
         auto begin = mEvents.getTickframeBegin(tick);
         auto end = mEvents.getTickframeEnd(tick);
         if(begin == end)
@@ -65,6 +96,8 @@ namespace odState
         {
             it->visit(visitor);
         }
+
+        return std::move(guard);
     }
 
     /**

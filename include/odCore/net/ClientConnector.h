@@ -10,7 +10,7 @@
 
 #include <odCore/IdTypes.h>
 
-#include <odCore/state/ObjectTransform.h>
+#include <odCore/ObjectTransform.h>
 
 namespace odNet
 {
@@ -46,7 +46,7 @@ namespace odNet
 
         virtual std::future<CommandResult> loadLevel(const std::string &path) = 0;
 
-        virtual std::future<CommandResult> levelObjectTranformed(od::LevelObjectId id, const odState::ObjectTransform &tf) = 0;
+        virtual std::future<CommandResult> levelObjectTranformed(od::LevelObjectId id, const od::ObjectTransform &tf) = 0;
         virtual std::future<CommandResult> objectVisibilityChanged(od::LevelObjectId id, bool visible) = 0;
 
         virtual std::future<CommandResult> spawnObject(od::LevelObjectId id) = 0;

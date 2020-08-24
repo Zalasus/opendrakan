@@ -88,24 +88,6 @@ namespace od
     }
 
 
-
-    NonRecordingObjectStateHandle::NonRecordingObjectStateHandle(LevelObject &obj)
-    : mObj(obj)
-    {
-    }
-
-    void NonRecordingObjectStateHandle::transform(const odState::ObjectTransform &tf)
-    {
-        mObj._applyTransform(tf, &mObj);
-    }
-
-    void NonRecordingObjectStateHandle::setVisible(bool v)
-    {
-        mObj._applyVisibility(v);
-    }
-
-
-
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
@@ -114,7 +96,6 @@ namespace od
     , mFlags(0)
     , mInitialEventCount(0)
     , mIsVisible(true)
-    , mNonRecordingStateHandle(*this)
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
@@ -223,12 +204,7 @@ namespace od
         }
     }
 
-    NonRecordingObjectStateHandle &LevelObject::getNonRecordingStateHandle()
-    {
-        return mNonRecordingStateHandle;
-    }
-
-    void LevelObject::transform(const odState::ObjectTransform &tf)
+    void LevelObject::transform(const ObjectTransform &tf)
     {
         _applyTransform(tf, this);
         mLevel.getEngine().getStateManager().objectTransformed(*this, tf);
@@ -513,7 +489,7 @@ namespace od
         }
     }
 
-    void LevelObject::_applyTransform(const odState::ObjectTransform &tf, LevelObject *transformChangeSource)
+    void LevelObject::_applyTransform(const ObjectTransform &tf, LevelObject *transformChangeSource)
     {
         if(tf.isTranslation())
         {
@@ -594,7 +570,7 @@ namespace od
 
         // note: don't call this->setPosition etc. here. it would falsely call _applyTransform using this as argument and notify the StateManager
 
-        odState::ObjectTransform tf;
+        ObjectTransform tf;
 
         if(!mIgnoreAttachmentTranslation)
         {

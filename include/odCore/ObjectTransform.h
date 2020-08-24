@@ -3,20 +3,14 @@
  * @author zal
  */
 
-#ifndef INCLUDE_ODCORE_STATE_OBJECTTRANSFORM_H_
-#define INCLUDE_ODCORE_STATE_OBJECTTRANSFORM_H_
+#ifndef INCLUDE_ODCORE_OBJECTTRANSFORM_H_
+#define INCLUDE_ODCORE_OBJECTTRANSFORM_H_
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 namespace od
 {
-    class LevelObject;
-}
-
-namespace odState
-{
-
     /**
      * @brief Class for encapsulating any combination of tranlation, rotation and scaling.
      *
@@ -57,8 +51,6 @@ namespace odState
 
         ObjectTransform merge(const ObjectTransform &tf) const;
         ObjectTransform invert() const;
-
-        void applyTo(od::LevelObject &obj) const;
 
 
     private:

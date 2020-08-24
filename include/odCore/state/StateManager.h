@@ -10,10 +10,11 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/ObjectTransform.h>
+
 #include <odCore/input/Keys.h>
 
 #include <odCore/state/Event.h>
-#include <odCore/state/ObjectTransform.h>
 #include <odCore/state/Timeline.h>
 
 namespace od
@@ -28,12 +29,26 @@ namespace odState
     {
     public:
 
+        class RollbackGuard
+        {
+        public:
+
+            RollbackGuard(StateManager &sm);
+            RollbackGuard(RollbackGuard &&g);
+            ~RollbackGuard();
+
+        private:
+
+            StateManager *mStateManager;
+        };
+
+
         StateManager(od::Level &level);
 
         //void addClient();
 
         //void addActionEvent(odInput::ActionCode actionCode, bool down);
-        void objectTransformed(od::LevelObject &object, const ObjectTransform &tf);
+        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf);
         void objectVisibilityChanged(od::LevelObject &object, bool visible);
 
         /**
@@ -46,7 +61,7 @@ namespace odState
          *
          * Will throw if the given tick number is no longer being held in memory.
          */
-        void apply(TickNumber tick);
+        RollbackGuard rollback(TickNumber tick);
 
         /**
          * @brief Calculates the total lag the given client probably has, then rolls back the world by that time.
@@ -67,7 +82,11 @@ namespace odState
 
     private:
 
+        friend class RollbackGuard;
+
         od::Level &mLevel;
+
+        bool mIgnoreStateUpdates;
 
         /**
          * A set of state events that can take the level as loaded from the file

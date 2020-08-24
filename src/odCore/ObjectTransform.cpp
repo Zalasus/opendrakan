@@ -1,9 +1,7 @@
 
-#include <odCore/state/ObjectTransform.h>
+#include <odCore/ObjectTransform.h>
 
-#include <odCore/LevelObject.h>
-
-namespace odState
+namespace od
 {
 
     ObjectTransform::ObjectTransform()
@@ -94,13 +92,6 @@ namespace odState
         }
 
         return tf;
-    }
-
-    void ObjectTransform::applyTo(od::LevelObject &obj) const
-    {
-        if(isTranslation()) obj.setPosition(getPosition());
-        if(isRotation()) obj.setRotation(getRotation());
-        if(isScaling()) obj.setScale(getScale());
     }
 
 }

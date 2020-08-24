@@ -19,12 +19,11 @@
 #include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
+#include <odCore/ObjectTransform.h>
 
 #include <odCore/db/Asset.h>
 
 #include <odCore/input/Action.h>
-
-#include <odCore/state/ObjectTransform.h>
 
 namespace od
 {
@@ -89,7 +88,7 @@ namespace odState
 
     struct ObjectTransformEvent final : public StateEvent
     {
-        ObjectTransformEvent(od::LevelObject &obj, const ObjectTransform &tf)
+        ObjectTransformEvent(od::LevelObject &obj, const od::ObjectTransform &tf)
         : object(obj)
         , transform(tf)
         {
@@ -101,7 +100,7 @@ namespace odState
         }
 
         od::LevelObject &object;
-        ObjectTransform transform;
+        od::ObjectTransform transform;
     };
 
 
@@ -249,7 +248,7 @@ namespace odState
         bool visibilityChanged;
         bool animationFrame;
 
-        ObjectTransform transform;
+        od::ObjectTransform transform;
         bool visibility;
         float animFrameTime;
     };

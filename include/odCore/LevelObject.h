@@ -18,9 +18,7 @@
 #include <odCore/BoundingSphere.h>
 #include <odCore/IdTypes.h>
 #include <odCore/Message.h>
-
-#include <odCore/state/ObjectState.h>
-#include <odCore/state/ObjectTransform.h>
+#include <odCore/ObjectTransform.h>
 
 #include <odCore/db/Class.h>
 
@@ -67,26 +65,8 @@ namespace od
         Always
     };
 
-    class LevelObject;
 
-    // TODO: in theory we could eliminate this by just letting the StateManager access the private _apply... methods. But would that also be cleaner?
-    // NOTE: or, even better, eliminate this completely and just let StateManager ignore update calls when it performs a rollback!
-    class NonRecordingObjectStateHandle final : public odState::ObjectStateHandle
-    {
-    public:
-
-        NonRecordingObjectStateHandle(LevelObject &obj);
-
-        virtual void transform(const odState::ObjectTransform &tf) override;
-        virtual void setVisible(bool v) override;
-
-    private:
-
-        LevelObject &mObj;
-
-    };
-
-    class LevelObject final : public odState::ObjectStateHandle
+    class LevelObject
     {
     public:
 
@@ -118,22 +98,30 @@ namespace od
         void destroyed();
         void messageReceived(LevelObject &sender, od::Message message);
 
-        /**
-         * @brief Returns a state handle whose actions are guaranteed to trigger no other changes.
-         *
-         * E.g. using the setPosition() method of this handle will only affect the position of this object and
-         * it's render/physics/etc. handles, but will not cause attached objects to move, tell the RFLclass about it etc.
-         *
-         * Basically only to be used by StateManager.
-         *
-         * Note that a level object is itself a state handle, the methods of which directly affect level state but also
-         * report the change to the StateManager.
-         */
-        NonRecordingObjectStateHandle &getNonRecordingStateHandle();
+        void transform(const ObjectTransform &tf);
+        void setVisible(bool v);
 
-        // recording state handle (a.k.a. this)
-        virtual void transform(const odState::ObjectTransform &tf) override;
-        virtual void setVisible(bool v) override;
+        // convenience methods. these just call transform() with a specially constructed ObjectTransform
+        inline void setPosition(const glm::vec3 &v)
+        {
+            ObjectTransform tf;
+            tf.setPosition(v);
+            transform(tf);
+        }
+
+        inline void setRotation(const glm::quat &q)
+        {
+            ObjectTransform tf;
+            tf.setRotation(q);
+            transform(tf);
+        }
+
+        inline void setScale(const glm::vec3 &s)
+        {
+            ObjectTransform tf;
+            tf.setScale(s);
+            transform(tf);
+        }
 
         /**
          * @brief Enables or disables updates for this object.
@@ -244,9 +232,7 @@ namespace od
 
     private:
 
-        friend class NonRecordingObjectStateHandle;
-
-        void _applyTransform(const odState::ObjectTransform &tf, LevelObject *transformChangeSource);
+        void _applyTransform(const ObjectTransform &tf, LevelObject *transformChangeSource);
         void _applyVisibility(bool v);
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
@@ -271,7 +257,6 @@ namespace od
         glm::quat mRotation;
         glm::vec3 mScale;
         bool mIsVisible;
-        NonRecordingObjectStateHandle mNonRecordingStateHandle;
 
         LevelObjectState mState;
         LevelObjectType mObjectType;
