@@ -100,6 +100,23 @@ namespace odState
         return std::move(guard);
     }
 
+    void StateManager::commit()
+    {
+        // turn state transition map into a list of events and push it onto the timeline
+        for(auto &stateTransition : mNextStateTransitionMap)
+        {
+            od::LevelObject *obj = mLevel.getLevelObjectById(stateTransition.first);
+            if(obj == nullptr) continue;
+            if(stateTransition.second.transformed) mEvents.push(ObjectTransformEvent(*obj, stateTransition.second.transform));
+            if(stateTransition.second.visibilityChanged) mEvents.push(ObjectVisibilityChangedEvent(*obj, stateTransition.second.visibility));
+            if(stateTransition.second.animationFrame) mEvents.push(ObjectAnimFrameEvent(*obj, stateTransition.second.animFrameTime));
+
+            // apply these changes to the base state map, too
+            auto &baseStateTransition = mBaseStateTransitionMap[stateTransition.first];
+            baseStateTransition.merge(stateTransition.second);
+        }
+    }
+
     /**
      * Applied on timeline in reverse.
      */
@@ -156,22 +173,6 @@ namespace odState
         StateManager::StateTransitionMap mTransitionMap;
 
     };
-
-    void StateManager::commit()
-    {
-        auto firstTick = mEvents.getFirstTick();
-        combine(firstTick, firstTick+1, mBaseStateTransitionMap);
-
-        // turn state transition map into a list of events and push it onto the timeline
-        for(auto &objEvent : mNextStateTransitionMap)
-        {
-            od::LevelObject *obj = mLevel.getLevelObjectById(objEvent.first);
-            if(obj == nullptr) continue;
-            if(objEvent.second.transformed) mEvents.push(ObjectTransformEvent(*obj, objEvent.second.transform));
-            //if(objEvent.second.visibilityChanged) mEvents.push(ObjectVisibilityChangedEvent(*obj, obj.second.visibility);
-            //if(objEvent.second.animationFrame) mEvents.push(ObjectAnimFrameEvent(*obj, obj.second.transform));
-        }
-    }
 
     void StateManager::combine(TickNumber begin, TickNumber end, StateTransitionMap &map)
     {

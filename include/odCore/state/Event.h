@@ -198,6 +198,12 @@ namespace odState
         {
         }
 
+        EventVariant(const ObjectAnimFrameEvent &e)
+        : mAnimFrameEvent(e)
+        , mVariantType(EventType::OBJECT_ANIM_FRAME)
+        {
+        }
+
         inline EventType getEventType() const { return mVariantType; }
 
         template <typename T>
@@ -235,6 +241,7 @@ namespace odState
             ObjectTransformEvent mTransformEvent;
             ObjectMessageReceivedEvent mMessageReceivedEvent;
             ObjectVisibilityChangedEvent mVisibilityEvent;
+            ObjectAnimFrameEvent mAnimFrameEvent;
         };
 
         EventType mVariantType;
@@ -251,6 +258,31 @@ namespace odState
         od::ObjectTransform transform;
         bool visibility;
         float animFrameTime;
+
+        /**
+         * @brief Applies the transition t on top of this one. States unaffected by t will retain their original value.
+         */
+        void merge(const ObjectStateTransition &t)
+        {
+            if(t.transformed)
+            {
+                transformed = true;
+                transform = t.transform;
+            }
+
+            if(t.visibilityChanged)
+            {
+                visibilityChanged = true;
+                visibility = t.visibility;
+            }
+
+            if(t.animationFrame)
+            {
+                animationFrame = true;
+                animFrameTime = t.animFrameTime;
+            }
+        }
+
     };
 
 

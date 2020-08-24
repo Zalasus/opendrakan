@@ -145,6 +145,8 @@ namespace od
 
             mPhysicsSystem->update(relTime);
 
+            mStateManager->commit();
+
             auto loopEnd = std::chrono::high_resolution_clock::now();
             auto loopTime = loopEnd - loopStart;
             if(loopTime < targetUpdateInterval)
@@ -155,6 +157,8 @@ namespace od
             {
                 float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
                 Logger::warn() << "Server tick took too long (" << loopTimeMs << "ms, target was " << (targetUpdateIntervalUs*1e-3) << "ms)";
+
+                // TODO: this clock skip probably has to be reported to the clients somehow
             }
         }
 

@@ -37,6 +37,7 @@ namespace odState
             RollbackGuard(RollbackGuard &&g);
             ~RollbackGuard();
 
+
         private:
 
             StateManager *mStateManager;
@@ -48,8 +49,8 @@ namespace odState
         //void addClient();
 
         //void addActionEvent(odInput::ActionCode actionCode, bool down);
-        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf);
-        void objectVisibilityChanged(od::LevelObject &object, bool visible);
+        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick = CURRENT_TICK);
+        void objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick = CURRENT_TICK);
 
         /**
          * @brief Commits all changes and events last pushed into one snapshot.
@@ -90,7 +91,10 @@ namespace odState
 
         /**
          * A set of state events that can take the level as loaded from the file
-         * to the first tick stored in the timeline.
+         * to the most recent committed tick. This is useful for new joining
+         * clients as well as for creating savegames.
+         *
+         * This is basically the union of all state transitions that happened so far.
          */
         StateTransitionMap mBaseStateTransitionMap;
 
@@ -101,6 +105,7 @@ namespace odState
          */
         StateTransitionMap mNextStateTransitionMap;
 
+        // TODO: there should probably just be a ring buffer of StateTransitionMaps and a separate timeline just for non-state events
         Timeline<EventVariant> mEvents;
 
     };
