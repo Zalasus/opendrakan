@@ -14,8 +14,6 @@
 #ifndef INCLUDE_ODCORE_STATE_EVENT_H_
 #define INCLUDE_ODCORE_STATE_EVENT_H_
 
-#include <unordered_map>
-
 #include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
@@ -36,11 +34,8 @@ namespace odState
     enum class EventType
     {
         ACTION,
-        OBJECT_TRANSFORMED,
-        OBJECT_ANIM_STARTSTOP,
-        OBJECT_ANIM_FRAME,
-        OBJECT_MESSAGE_RECEIVED,
-        OBJECT_VISIBILITY_CHANGED
+        OBJECT_ANIM,
+        OBJECT_MESSAGE_RECEIVED
     };
 
 
@@ -58,21 +53,6 @@ namespace odState
     };
 
 
-    /**
-     * @brief An event that directly relates to a level state change.
-     *
-     * This includes object movement, animation frames, visibility change etc.
-     *
-     * When rolling back the level to a certain point in time, the state manager
-     * only has to consider these type of events.
-     *
-     * Every event of this type must be invertible.
-     */
-    struct StateEvent : public Event
-    {
-    };
-
-
     struct ActionEvent final : public Event
     {
         ActionEvent(odInput::ActionCode code, bool down)
@@ -86,27 +66,9 @@ namespace odState
     };
 
 
-    struct ObjectTransformEvent final : public StateEvent
+    struct ObjectAnimEvent final : public Event
     {
-        ObjectTransformEvent(od::LevelObject &obj, const od::ObjectTransform &tf)
-        : object(obj)
-        , transform(tf)
-        {
-        }
-
-        ObjectTransformEvent invert() const
-        {
-            return ObjectTransformEvent(object, transform.invert());
-        }
-
-        od::LevelObject &object;
-        od::ObjectTransform transform;
-    };
-
-
-    struct ObjectAnimStartStopEvent final : public Event
-    {
-        ObjectAnimStartStopEvent(od::LevelObject &obj, odDb::AssetRef anim, bool start)
+        ObjectAnimEvent(od::LevelObject &obj, odDb::AssetRef anim, bool start)
         : object(obj)
         , animRef(anim)
         , started(start)
@@ -116,19 +78,6 @@ namespace odState
         od::LevelObject &object;
         odDb::AssetRef animRef;
         bool started;
-    };
-
-
-    struct ObjectAnimFrameEvent final : public StateEvent
-    {
-        ObjectAnimFrameEvent(od::LevelObject &obj, float frame)
-        : object(obj)
-        , frameTime(frame)
-        {
-        }
-
-        od::LevelObject &object;
-        float frameTime;
     };
 
 
@@ -147,24 +96,6 @@ namespace odState
     };
 
 
-    struct ObjectVisibilityChangedEvent final : public StateEvent
-    {
-        ObjectVisibilityChangedEvent(od::LevelObject &obj, bool v)
-        : object(obj)
-        , visible(v)
-        {
-        }
-
-        ObjectVisibilityChangedEvent invert() const
-        {
-            return ObjectVisibilityChangedEvent(object, !visible);
-        }
-
-        od::LevelObject &object;
-        bool visible;
-    };
-
-
     /**
      * @brief Variant that can contain any event type.
      *
@@ -180,27 +111,15 @@ namespace odState
         {
         }
 
-        EventVariant(const ObjectTransformEvent &e)
-        : mTransformEvent(e)
-        , mVariantType(EventType::OBJECT_TRANSFORMED)
-        {
-        }
-
         EventVariant(const ObjectMessageReceivedEvent &e)
         : mMessageReceivedEvent(e)
         , mVariantType(EventType::OBJECT_MESSAGE_RECEIVED)
         {
         }
 
-        EventVariant(const ObjectVisibilityChangedEvent &e)
-        : mVisibilityEvent(e)
-        , mVariantType(EventType::OBJECT_VISIBILITY_CHANGED)
-        {
-        }
-
-        EventVariant(const ObjectAnimFrameEvent &e)
-        : mAnimFrameEvent(e)
-        , mVariantType(EventType::OBJECT_ANIM_FRAME)
+        EventVariant(const ObjectAnimEvent &e)
+        : mAnimEvent(e)
+        , mVariantType(EventType::OBJECT_ANIM)
         {
         }
 
@@ -215,16 +134,12 @@ namespace odState
                 visitor(mActionEvent);
                 break;
 
-            case EventType::OBJECT_TRANSFORMED:
-                visitor(mTransformEvent);
-                break;
-
             case EventType::OBJECT_MESSAGE_RECEIVED:
                 visitor(mMessageReceivedEvent);
                 break;
 
-            case EventType::OBJECT_VISIBILITY_CHANGED:
-                visitor(mVisibilityEvent);
+            case EventType::OBJECT_ANIM:
+                visitor(mAnimEvent);
                 break;
 
             default:
@@ -238,10 +153,8 @@ namespace odState
         union
         {
             ActionEvent mActionEvent;
-            ObjectTransformEvent mTransformEvent;
             ObjectMessageReceivedEvent mMessageReceivedEvent;
-            ObjectVisibilityChangedEvent mVisibilityEvent;
-            ObjectAnimFrameEvent mAnimFrameEvent;
+            ObjectAnimEvent mAnimEvent;
         };
 
         EventType mVariantType;

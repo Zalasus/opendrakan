@@ -7,6 +7,7 @@
 #ifndef INCLUDE_ODCORE_STATE_STATEMANAGER_H_
 #define INCLUDE_ODCORE_STATE_STATEMANAGER_H_
 
+#include <unordered_map>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
