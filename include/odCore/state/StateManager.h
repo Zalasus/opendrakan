@@ -35,13 +35,13 @@ namespace odState
     {
     public:
 
-        class RollbackGuard
+        class CheckoutGuard
         {
         public:
 
-            RollbackGuard(StateManager &sm);
-            RollbackGuard(RollbackGuard &&g);
-            ~RollbackGuard();
+            CheckoutGuard(StateManager &sm);
+            CheckoutGuard(CheckoutGuard &&g);
+            ~CheckoutGuard();
 
 
         private:
@@ -73,13 +73,29 @@ namespace odState
         void commit();
 
         /**
-         * @brief Moves the world into the state it had during the given tick.
+         * @brief Applies the given tick to the level.
          *
-         * Will throw if the given tick number is no longer being held in memory.
+         * Use this carefully! The applied state will stay forever. Most likely,
+         * checkout(...) is what you want to do instead.
+         *
+         * Will throw if the given tick number is not being held in memory.
          */
-        RollbackGuard rollback(TickNumber tick);
+        void apply(TickNumber tick);
 
-        void sendToClient(TickNumber tick, odNet::ClientConnector &c);
+        /**
+         * @brief Moves the world into the state it had/will have in the given tick.
+         *
+         * The level will remain in that state as long as the returned CheckoutGuard lives.
+         *
+         * Will throw if the given tick number is not being held in memory.
+         */
+        CheckoutGuard checkout(TickNumber tick);
+
+        /**
+         * @brief Sends all actions and state transitions of the given tick to the client connector.
+         * @return The number of state transitions and events sent this way.
+         */
+        size_t sendToClient(TickNumber tick, odNet::ClientConnector &c);
 
 
     private:
@@ -87,7 +103,8 @@ namespace odState
         StateTransitionMap &_getTransitionMapForTick(TickNumber tick);
         StateTransitionMap &_getCurrentTransitionMap();
 
-        friend class RollbackGuard;
+        friend class CheckoutGuard;
+        friend class ApplyGuard;
 
         od::Level &mLevel;
 
@@ -106,7 +123,7 @@ namespace odState
         TickNumber mOldestTick;
         std::vector<StateTransitionMap> mStateTransitions;
 
-        // TODO: this timeline's tick management is kinda redundant to the one the SM does itself. unify this, plz 
+        // TODO: this timeline's tick management is kinda redundant to the one the SM does itself. unify this, plz
         Timeline<EventVariant> mEvents;
 
     };

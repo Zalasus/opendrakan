@@ -13,25 +13,49 @@ namespace odState
     static const TickNumber FUTURE_TICKS = 3; // this includes the tick currently built, so it should at least be 1 TODO: on server, this *can* be 1. make dynamic
 
 
-    StateManager::RollbackGuard::RollbackGuard(StateManager &sm)
+    /**
+     * @brief An RAII object that disables state updates on the StateManager as long as it lives
+     */
+    class ApplyGuard
+    {
+    public:
+
+        ApplyGuard(StateManager &sm)
+        : mStateManager(sm)
+        {
+            mStateManager.mIgnoreStateUpdates = true;
+        }
+
+        ApplyGuard(const ApplyGuard &g) = delete;
+
+        ~ApplyGuard()
+        {
+            mStateManager.mIgnoreStateUpdates = false;
+        }
+
+
+    private:
+
+        StateManager &mStateManager;
+    };
+
+
+    StateManager::CheckoutGuard::CheckoutGuard(StateManager &sm)
     : mStateManager(&sm)
     {
-        mStateManager->mIgnoreStateUpdates = true;
     }
 
-    StateManager::RollbackGuard::RollbackGuard(RollbackGuard &&g)
+    StateManager::CheckoutGuard::CheckoutGuard(CheckoutGuard &&g)
     : mStateManager(g.mStateManager)
     {
         g.mStateManager = nullptr;
     }
 
-    StateManager::RollbackGuard::~RollbackGuard()
+    StateManager::CheckoutGuard::~CheckoutGuard()
     {
         if(mStateManager != nullptr)
         {
-            mStateManager->mIgnoreStateUpdates = false;
-
-            // TODO: reverse rollback here
+            // TODO: reverse checkout here
         }
     }
 
@@ -76,9 +100,24 @@ namespace odState
         objEvent.visibility = visible;
     }
 
-    StateManager::RollbackGuard StateManager::rollback(TickNumber tick)
+    void StateManager::apply(TickNumber tick)
     {
-        RollbackGuard guard(*this);
+        ApplyGuard guard(*this);
+
+        for(auto &stateTransition : _getTransitionMapForTick(tick))
+        {
+            auto obj = mLevel.getLevelObjectById(stateTransition.first); // TODO: maybe store this pointer in the transition object? would spare us lots of unnecessary updates.
+            if(obj == nullptr) continue;
+
+            if(stateTransition.second.transformed) obj->transform(stateTransition.second.transform);
+            if(stateTransition.second.visibilityChanged) obj->setVisible(stateTransition.second.visibility);
+            //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+        }
+    }
+
+    StateManager::CheckoutGuard StateManager::checkout(TickNumber tick)
+    {
+        CheckoutGuard guard(*this);
 
         // TODO: implement
 
@@ -97,18 +136,31 @@ namespace odState
         mOldestTickIndex = (mOldestTickIndex + 1) % mStateTransitions.size();
         ++mOldestTick;
 
-        // since the currentTransitionMap has now wrapped around to an old one, clear that so the new tick starts fresh
-        _getCurrentTransitionMap().clear();
+        // since the latest tick has now wrapped around to an old one, clear that so it starts fresh
+        _getTransitionMapForTick(getMaxTick()).clear();
     }
 
-    void StateManager::sendToClient(TickNumber tick, odNet::ClientConnector &c)
+    size_t StateManager::sendToClient(TickNumber tick, odNet::ClientConnector &c)
     {
+        size_t count = 0;
         for(auto &stateTransition : _getTransitionMapForTick(tick))
         {
-            if(stateTransition.second.transformed) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
-            if(stateTransition.second.visibilityChanged) c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.visibility);
+            if(stateTransition.second.transformed)
+            {
+                c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+                ++count;
+            }
+
+            if(stateTransition.second.visibilityChanged)
+            {
+                c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.visibility);
+                ++count;
+            }
+
             //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
         }
+
+        return count;
     }
 
     StateManager::StateTransitionMap &StateManager::_getTransitionMapForTick(TickNumber tick)
