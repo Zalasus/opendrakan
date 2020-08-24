@@ -25,6 +25,11 @@ namespace odPhysics
     class PhysicsSystem;
 }
 
+namespace odState
+{
+    class StateManager;
+}
+
 namespace od
 {
     class Client;
@@ -59,6 +64,7 @@ namespace od
         odDb::DbManager &getDbManager();
         odRfl::RflManager &getRflManager();
         odPhysics::PhysicsSystem &getPhysicsSystem();
+        odState::StateManager &getStateManager();
 
 
     private:

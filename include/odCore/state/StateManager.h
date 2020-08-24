@@ -18,6 +18,7 @@
 
 namespace od
 {
+    class Level;
     class LevelObject;
 }
 
@@ -27,26 +28,24 @@ namespace odState
     {
     public:
 
-        StateManager();
+        StateManager(od::Level &level);
 
         //void addClient();
 
-        void addActionEvent(odInput::ActionCode actionCode, bool down);
-
-        void addObjectTransform(od::LevelObject &object, const ObjectTransform &tf);
+        //void addActionEvent(odInput::ActionCode actionCode, bool down);
+        void objectTransformed(od::LevelObject &object, const ObjectTransform &tf);
+        void objectVisibilityChanged(od::LevelObject &object, bool visible);
 
         /**
          * @brief Commits all changes and events last pushed into one snapshot.
          */
-        //void commit();
+        void commit();
 
         /**
-         * @brief Rolls back all tracked states to the given tick number.
+         * @brief Moves the world into the state it had during the given tick.
          *
          * Will throw if the given tick number is no longer being held in memory.
          */
-        //void rollback(TickNumber tick);
-
         void apply(TickNumber tick);
 
         /**
@@ -61,8 +60,27 @@ namespace odState
 
         //void endLagCompensation();
 
+        using StateTransitionMap = std::unordered_map<od::LevelObjectId, ObjectStateTransition>;
+
+        void combine(TickNumber begin, TickNumber end, StateTransitionMap &set);
+
 
     private:
+
+        od::Level &mLevel;
+
+        /**
+         * A set of state events that can take the level as loaded from the file
+         * to the first tick stored in the timeline.
+         */
+        StateTransitionMap mBaseStateTransitionMap;
+
+        /**
+         * A set of state events that represents the tick currently being
+         * calculated. Incoming changes of the current update loop are gathered
+         * here before being moved to the timeline upon the next commit.
+         */
+        StateTransitionMap mNextStateTransitionMap;
 
         Timeline<EventVariant> mEvents;
 

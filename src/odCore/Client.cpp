@@ -59,7 +59,7 @@ namespace od
             od::LevelObject *obj = getObjectById(id);
             if(obj != nullptr)
             {
-                mClient.getStateManager().addObjectTransform(*obj, tf);
+                //mClient.getStateManager().addObjectTransform(*obj, tf);
                 return _makeFutureFor(odNet::CommandResult::ACK);
 
             }else
@@ -147,7 +147,6 @@ namespace od
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
         mInputManager = std::make_unique<odInput::InputManager>();
-        mStateManager = std::make_unique<odState::StateManager>();
 
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
@@ -181,6 +180,8 @@ namespace od
 
         mLevel = std::make_unique<Level>(engine);
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
+
+        mStateManager = std::make_unique<odState::StateManager>(*mLevel);
 
         mLevel->spawnAllObjects();
     }

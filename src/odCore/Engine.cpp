@@ -45,11 +45,9 @@ namespace od
         }else if(mServer != nullptr)
         {
             return mServer->getEngineRootDir();
-
-        }else
-        {
-            throw Exception("Engine was invalid");
         }
+
+        OD_UNREACHABLE();
     }
 
     odDb::DbManager &Engine::getDbManager()
@@ -63,11 +61,9 @@ namespace od
         }else if(mServer != nullptr)
         {
             return mServer->getDbManager();
-
-        }else
-        {
-            throw Exception("Engine was invalid");
         }
+
+        OD_UNREACHABLE();
     }
 
     odRfl::RflManager &Engine::getRflManager()
@@ -81,11 +77,9 @@ namespace od
         }else if(mServer != nullptr)
         {
             return mServer->getRflManager();
-
-        }else
-        {
-            throw Exception("Engine was invalid");
         }
+
+        OD_UNREACHABLE();
     }
 
     odPhysics::PhysicsSystem &Engine::getPhysicsSystem()
@@ -99,11 +93,25 @@ namespace od
         }else if(mServer != nullptr)
         {
             return mServer->getPhysicsSystem();
-
-        }else
-        {
-            throw Exception("Engine was invalid");
         }
+
+        OD_UNREACHABLE();
+    }
+
+    odState::StateManager &Engine::getStateManager()
+    {
+        _assertValid();
+
+        if(mClient != nullptr)
+        {
+            return mClient->getStateManager();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getStateManager();
+        }
+
+        OD_UNREACHABLE();
     }
 
 }

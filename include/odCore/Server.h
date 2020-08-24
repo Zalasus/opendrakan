@@ -41,6 +41,11 @@ namespace odNet
     class ServerConnector;
 }
 
+namespace odState
+{
+    class StateManager;
+}
+
 namespace od
 {
     class Level;
@@ -66,6 +71,7 @@ namespace od
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
+        inline odState::StateManager &getStateManager() { return *mStateManager; }
 
         /**
          * @brief Creates a ServerConnector to connect this server to a given local client without a network inbetween.
@@ -113,6 +119,7 @@ namespace od
 
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
         std::unique_ptr<Level> mLevel;
+        std::unique_ptr<odState::StateManager> mStateManager;
 
         FilePath mEngineRoot;
 

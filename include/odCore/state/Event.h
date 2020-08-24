@@ -14,8 +14,13 @@
 #ifndef INCLUDE_ODCORE_STATE_EVENT_H_
 #define INCLUDE_ODCORE_STATE_EVENT_H_
 
+#include <unordered_map>
+
+#include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
+
+#include <odCore/db/Asset.h>
 
 #include <odCore/input/Action.h>
 
@@ -117,7 +122,7 @@ namespace odState
 
     struct ObjectAnimFrameEvent final : public StateEvent
     {
-        ObjectAnimStartStopEvent(od::LevelObject &obj, float frame)
+        ObjectAnimFrameEvent(od::LevelObject &obj, float frame)
         : object(obj)
         , frameTime(frame)
         {
@@ -238,8 +243,7 @@ namespace odState
     };
 
 
-
-    struct ObjectEventSet
+    struct ObjectStateTransition
     {
         bool transformed;
         bool visibilityChanged;
@@ -250,11 +254,6 @@ namespace odState
         float animFrameTime;
     };
 
-
-    struct LevelEventSet
-    {
-        std::unordered_map<od::LevelObjectId, ObjectEventSet> objectEvents;
-    };
 
 }
 

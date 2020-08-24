@@ -144,6 +144,32 @@ namespace odState
         }
 
 
+        class Tickframe
+        {
+        public:
+
+            Tickframe(Iterator begin, Iterator end)
+            : mBegin(begin)
+            , mEnd(end)
+            {
+            }
+
+            inline Iterator begin() const { return mBegin; }
+            inline Iterator end() const { return mEnd; }
+
+        private:
+
+            Iterator mBegin;
+            Iterator mEnd;
+
+        };
+
+        Tickframe getTickframe(TickNumber tick)
+        {
+            return Tickframe(getTickframeBegin(tick), getTickframeEnd(tick));
+        }
+
+
     private:
 
 

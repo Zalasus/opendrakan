@@ -26,40 +26,13 @@
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
 
+#include <odCore/state/StateManager.h>
+
 #define OD_OBJECT_FLAG_VISIBLE 0x001
 #define OD_OBJECT_FLAG_SCALED  0x100
 
 namespace od
 {
-
-
-    class NonRecordingObjectStateHandle final : public odState::ObjectStateHandle
-    {
-    public:
-
-        virtual void setPosition(const glm::vec3 &v) override
-        {
-
-        }
-
-        virtual void setRotation(const glm::quat &q) override
-        {
-
-        }
-
-        virtual void setScale(const glm::vec3 &scale) override
-        {
-
-        }
-
-        virtual void setVisible(bool v) override
-        {
-
-        }
-
-    };
-
-
 
     /**
      * @brief Checks whether a translation from a to b crosses a triangle on the unit layer grid.
@@ -115,6 +88,24 @@ namespace od
     }
 
 
+
+    NonRecordingObjectStateHandle::NonRecordingObjectStateHandle(LevelObject &obj)
+    : mObj(obj)
+    {
+    }
+
+    void NonRecordingObjectStateHandle::transform(const odState::ObjectTransform &tf)
+    {
+        mObj._applyTransform(tf, &mObj);
+    }
+
+    void NonRecordingObjectStateHandle::setVisible(bool v)
+    {
+        mObj._applyVisibility(v);
+    }
+
+
+
     LevelObject::LevelObject(Level &level)
     : mLevel(level)
     , mId(0)
@@ -123,6 +114,7 @@ namespace od
     , mFlags(0)
     , mInitialEventCount(0)
     , mIsVisible(true)
+    , mNonRecordingStateHandle(*this)
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
@@ -231,9 +223,21 @@ namespace od
         }
     }
 
-    odState::ObjectStateHandle &LevelObject::getNonRecordingStateHandle()
+    NonRecordingObjectStateHandle &LevelObject::getNonRecordingStateHandle()
     {
-        throw UnsupportedException("not yet implemented");
+        return mNonRecordingStateHandle;
+    }
+
+    void LevelObject::transform(const odState::ObjectTransform &tf)
+    {
+        _applyTransform(tf, this);
+        mLevel.getEngine().getStateManager().objectTransformed(*this, tf);
+    }
+
+    void LevelObject::setVisible(bool v)
+    {
+        _applyVisibility(v);
+        mLevel.getEngine().getStateManager().objectVisibilityChanged(*this, v);
     }
 
     void LevelObject::spawned()
@@ -325,62 +329,6 @@ namespace od
 
     void LevelObject::postUpdate()
     {
-    }
-
-    void LevelObject::setPosition(const glm::vec3 &v)
-    {
-        glm::vec3 prevPos = mPosition;
-        mPosition = v;
-
-        if(_hasCrossedTriangle(prevPos, v))
-        {
-            updateAssociatedLayer(true);
-        }
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onTranslated(prevPos, v);
-        }
-
-        _onTransformChanged(this);
-    }
-
-    void LevelObject::setRotation(const glm::quat &q)
-    {
-        glm::quat prevRot = mRotation;
-        mRotation = q;
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onRotated(prevRot, q);
-        }
-
-        _onTransformChanged(this);
-    }
-
-    void LevelObject::setScale(const glm::vec3 &scale)
-    {
-        glm::vec3 prevScale = mScale;
-        mScale = scale;
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onScaled(prevScale, scale);
-        }
-
-        _onTransformChanged(this);
-    }
-
-    void LevelObject::setVisible(bool v)
-    {
-        Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
-
-        mIsVisible = v;
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onVisibilityChanged(v);
-        }
     }
 
     void LevelObject::setAssociatedLayer(od::Layer *newLayer)
@@ -565,8 +513,46 @@ namespace od
         }
     }
 
-    void LevelObject::_onTransformChanged(LevelObject *transformChangeSource)
+    void LevelObject::_applyTransform(const odState::ObjectTransform &tf, LevelObject *transformChangeSource)
     {
+        if(tf.isTranslation())
+        {
+            auto prevPos = getPosition();
+            mPosition = tf.getPosition();
+
+            if(_hasCrossedTriangle(prevPos, mPosition))
+            {
+                updateAssociatedLayer(true);
+            }
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onTranslated(prevPos, mPosition);
+            }
+        }
+
+        if(tf.isRotation())
+        {
+            glm::quat prevRot = mRotation;
+            mRotation = tf.getRotation();
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onRotated(prevRot, mRotation);
+            }
+        }
+
+        if(tf.isScaling())
+        {
+            glm::vec3 prevScale = mScale;
+            mScale = tf.getScale();
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onScaled(prevScale, mScale);
+            }
+        }
+
         for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
         {
             (*it)->_attachmentTargetsTransformUpdated(this);
@@ -575,6 +561,18 @@ namespace od
         if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onTransformChanged();
+        }
+    }
+
+    void LevelObject::_applyVisibility(bool v)
+    {
+        Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
+
+        mIsVisible = v;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onVisibilityChanged(v);
         }
     }
 
@@ -594,12 +592,13 @@ namespace od
             return;
         }
 
-        // note: don't call this->setPosition etc. here. it would call _onTransformChanged using this as argument, but we want
-        //  to pass along transformChangeSource so we can detect circular attachments
+        // note: don't call this->setPosition etc. here. it would falsely call _applyTransform using this as argument and notify the StateManager
+
+        odState::ObjectTransform tf;
 
         if(!mIgnoreAttachmentTranslation)
         {
-            mPosition = mAttachmentTarget->getPosition() + mAttachmentTranslationOffset;
+            tf.setPosition(mAttachmentTarget->getPosition() + mAttachmentTranslationOffset);
         }
 
         if(!mIgnoreAttachmentRotation)
@@ -609,10 +608,10 @@ namespace od
 
         if(!mIgnoreAttachmentScale)
         {
-            mScale = mAttachmentTarget->getScale() * mAttachmentScaleRatio;
+            tf.setScale(mAttachmentTarget->getScale() * mAttachmentScaleRatio);
         }
 
-        _onTransformChanged(transformChangeSource);
+        _applyTransform(tf, transformChangeSource);
     }
 
     void LevelObject::_detachAllAttachedObjects()

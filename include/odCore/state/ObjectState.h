@@ -5,6 +5,8 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/state/ObjectTransform.h>
+
 namespace od
 {
     class Layer;
@@ -35,13 +37,30 @@ namespace odState
 
         virtual ~ObjectStateHandle() = default;
 
-        virtual void setPosition(const glm::vec3 &v) = 0;
-        virtual void setRotation(const glm::quat &q) = 0;
-        virtual void setScale(const glm::vec3 &scale) = 0;
-
+        virtual void transform(const ObjectTransform &tf) = 0;
         virtual void setVisible(bool v) = 0;
 
-        virtual void setAssociatedLayer(od::Layer *l) = 0;
+        // convenience methods. these just call transform() with a specially constructed ObjectTransform
+        inline void setPosition(const glm::vec3 &v)
+        {
+            ObjectTransform tf;
+            tf.setPosition(v);
+            transform(tf);
+        }
+
+        inline void setRotation(const glm::quat &q)
+        {
+            ObjectTransform tf;
+            tf.setRotation(q);
+            transform(tf);
+        }
+
+        inline void setScale(const glm::vec3 &s)
+        {
+            ObjectTransform tf;
+            tf.setScale(s);
+            transform(tf);
+        }
 
     };
 

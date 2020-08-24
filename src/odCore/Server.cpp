@@ -19,6 +19,8 @@
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/RflManager.h>
 
+#include <odCore/state/StateManager.h>
+
 #include <odCore/input/InputManager.h>
 
 namespace od
@@ -98,6 +100,8 @@ namespace od
 
         mLevel = std::make_unique<Level>(engine);
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
+
+        mStateManager = std::make_unique<odState::StateManager>(*mLevel);
 
         mLevel->spawnAllObjects();
 

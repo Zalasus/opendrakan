@@ -20,9 +20,9 @@
 #include <odCore/Message.h>
 
 #include <odCore/state/ObjectState.h>
+#include <odCore/state/ObjectTransform.h>
 
 #include <odCore/db/Class.h>
-
 
 namespace odAnim
 {
@@ -67,6 +67,25 @@ namespace od
         Always
     };
 
+    class LevelObject;
+
+    // TODO: in theory we could eliminate this by just letting the StateManager access the private _apply... methods. But would that also be cleaner?
+    // NOTE: or, even better, eliminate this completely and just let StateManager ignore update calls when it performs a rollback!
+    class NonRecordingObjectStateHandle final : public odState::ObjectStateHandle
+    {
+    public:
+
+        NonRecordingObjectStateHandle(LevelObject &obj);
+
+        virtual void transform(const odState::ObjectTransform &tf) override;
+        virtual void setVisible(bool v) override;
+
+    private:
+
+        LevelObject &mObj;
+
+    };
+
     class LevelObject final : public odState::ObjectStateHandle
     {
     public:
@@ -106,8 +125,15 @@ namespace od
          * it's render/physics/etc. handles, but will not cause attached objects to move, tell the RFLclass about it etc.
          *
          * Basically only to be used by StateManager.
+         *
+         * Note that a level object is itself a state handle, the methods of which directly affect level state but also
+         * report the change to the StateManager.
          */
-        odState::ObjectStateHandle &getNonRecordingStateHandle();
+        NonRecordingObjectStateHandle &getNonRecordingStateHandle();
+
+        // recording state handle (a.k.a. this)
+        virtual void transform(const odState::ObjectTransform &tf) override;
+        virtual void setVisible(bool v) override;
 
         /**
          * @brief Enables or disables updates for this object.
@@ -134,11 +160,7 @@ namespace od
          */
         void postUpdate();
 
-        virtual void setPosition(const glm::vec3 &v) override;
-        virtual void setRotation(const glm::quat &q) override;
-        virtual void setScale(const glm::vec3 &scale) override;
-        virtual void setVisible(bool v) override;
-        virtual void setAssociatedLayer(od::Layer *l) override;
+        void setAssociatedLayer(od::Layer *l);
 
         void setObjectType(LevelObjectType type);
 
@@ -219,14 +241,15 @@ namespace od
         void replaceRflClassInstance(std::unique_ptr<odRfl::ClassBase> i);
 
 
+
     private:
 
         friend class NonRecordingObjectStateHandle;
 
-        void _onTransformChanged(LevelObject *transformChangeSource);
+        void _applyTransform(const odState::ObjectTransform &tf, LevelObject *transformChangeSource);
+        void _applyVisibility(bool v);
         void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
         void _detachAllAttachedObjects();
-
 
         Level &mLevel;
 
@@ -242,11 +265,13 @@ namespace od
         glm::vec3 mInitialPosition;
         glm::quat mInitialRotation;
         glm::vec3 mInitialScale;
-        bool mIsVisible;
 
+        // state:
         glm::vec3 mPosition;
         glm::quat mRotation;
         glm::vec3 mScale;
+        bool mIsVisible;
+        NonRecordingObjectStateHandle mNonRecordingStateHandle;
 
         LevelObjectState mState;
         LevelObjectType mObjectType;

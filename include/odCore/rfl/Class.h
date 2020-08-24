@@ -248,6 +248,14 @@ namespace odRfl
         /**
          * @brief Called when the object has changed it's position.
          *
+         * Note that the engine will never cause transformation by itself. Transformation is a game mechanics thing and as such
+         * should only be triggered by an RFL class. The engine will, however, transform an object if it needs to roll back the
+         * level to a previous state and will use this hook for that. You should not assume that sequential calls to this hook
+         * represent a sequence in game mechanics.
+         *
+         * Use this only to make your RFL class reflect this object's state, like moving your physics or render handles. Do **not**
+         * trigger game mechanics from here.
+         *
          * @param from  The object's previous position
          * @param to    The object's new position
          */
