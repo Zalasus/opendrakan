@@ -173,7 +173,8 @@ namespace od
 
         for(auto &client : mClients)
         {
-            mStateManager->sendToClient(committedTick, *client.second.connector);
+            size_t count = mStateManager->sendToClient(committedTick, *client.second.connector);
+            client.second.connector->commitTick(committedTick, count);
         }
     }
 

@@ -73,6 +73,17 @@ namespace od
              _getObjectById(id).requestDestruction();
         }
 
+        virtual void commitTick(odState::TickNumber tick, size_t eventAndStateTransitionCount) override
+        {
+            // since out-of-order transport is not possible on a local connection,
+            //  we can safely assume this always happens after all transitions have been sent
+            //if(tick == mClient.getStateManager().getCurrentTick())
+            {
+                mClient.getStateManager().commit();
+                mClient.getStateManager().apply(tick);
+            }
+        }
+
 
     private:
 
@@ -172,6 +183,7 @@ namespace od
             mInputManager->update(relTime);
 
             // do not call mStateManager->commit() here! the client does not tick by itself, but rather waits for the server to tell it to tick
+            //   EDIT: maybe that's not so smart after all. gotta keep thinking about that
 
             mRenderer.frame(relTime);
         }
