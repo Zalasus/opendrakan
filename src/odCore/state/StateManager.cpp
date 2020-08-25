@@ -86,8 +86,7 @@ namespace odState
 
         auto &transitionMap = _getTransitionMapForTick(tick);
         auto &objEvent = transitionMap[object.getObjectId()];
-        objEvent.transformed = true;
-        objEvent.transform = tf;
+        objEvent.setTransform(tf);
     }
 
     void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick)
@@ -96,8 +95,7 @@ namespace odState
 
         auto &transitionMap = _getTransitionMapForTick(tick);
         auto &objEvent = transitionMap[object.getObjectId()];
-        objEvent.visibilityChanged = true;
-        objEvent.visibility = visible;
+        objEvent.setVisibility(visible);
     }
 
     void StateManager::apply(TickNumber tick)
@@ -106,11 +104,11 @@ namespace odState
 
         for(auto &stateTransition : _getTransitionMapForTick(tick))
         {
-            auto obj = mLevel.getLevelObjectById(stateTransition.first); // TODO: maybe store this pointer in the transition object? would spare us lots of unnecessary updates.
+            auto obj = mLevel.getLevelObjectById(stateTransition.first); // TODO: maybe store this pointer in the transition object? would spare us lots of unnecessary lookups.
             if(obj == nullptr) continue;
 
-            if(stateTransition.second.transformed) obj->transform(stateTransition.second.transform);
-            if(stateTransition.second.visibilityChanged) obj->setVisible(stateTransition.second.visibility);
+            if(stateTransition.second.transformed()) obj->transform(stateTransition.second.getTransform());
+            if(stateTransition.second.visibilityChanged()) obj->setVisible(stateTransition.second.getVisibility());
             //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
         }
     }
@@ -145,15 +143,15 @@ namespace odState
         size_t count = 0;
         for(auto &stateTransition : _getTransitionMapForTick(tick))
         {
-            if(stateTransition.second.transformed)
+            if(stateTransition.second.transformed())
             {
-                c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+                c.objectTransformed(tick, stateTransition.first, stateTransition.second.getTransform());
                 ++count;
             }
 
-            if(stateTransition.second.visibilityChanged)
+            if(stateTransition.second.visibilityChanged())
             {
-                c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.visibility);
+                c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.getVisibility());
                 ++count;
             }
 

@@ -17,7 +17,6 @@
 #include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
-#include <odCore/ObjectTransform.h>
 
 #include <odCore/db/Asset.h>
 
@@ -160,44 +159,6 @@ namespace odState
         EventType mVariantType;
 
     };
-
-
-    struct ObjectStateTransition
-    {
-        bool transformed;
-        bool visibilityChanged;
-        bool animationFrame;
-
-        od::ObjectTransform transform;
-        bool visibility;
-        float animFrameTime;
-
-        /**
-         * @brief Applies the transition t on top of this one. States unaffected by t will retain their original value.
-         */
-        void merge(const ObjectStateTransition &t)
-        {
-            if(t.transformed)
-            {
-                transformed = true;
-                transform = t.transform;
-            }
-
-            if(t.visibilityChanged)
-            {
-                visibilityChanged = true;
-                visibility = t.visibility;
-            }
-
-            if(t.animationFrame)
-            {
-                animationFrame = true;
-                animFrameTime = t.animFrameTime;
-            }
-        }
-
-    };
-
 
 }
 

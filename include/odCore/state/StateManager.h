@@ -16,6 +16,7 @@
 #include <odCore/input/Keys.h>
 
 #include <odCore/state/Event.h>
+#include <odCore/state/State.h>
 #include <odCore/state/Timeline.h>
 
 namespace od
