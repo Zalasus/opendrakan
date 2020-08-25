@@ -98,6 +98,10 @@ namespace odState
         objEvent.setVisibility(visible);
     }
 
+    void StateManager::objectCustomStateChanged(od::LevelObject &object, TickNumber tick)
+    {
+    }
+
     void StateManager::apply(TickNumber tick)
     {
         ApplyGuard guard(*this);

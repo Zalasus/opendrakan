@@ -26,6 +26,8 @@ namespace od
     class Server;
     class LevelObject;
     class Layer;
+    class DataReader;
+    class DataWriter;
 }
 
 namespace odRfl
@@ -283,6 +285,10 @@ namespace odRfl
          * This is called right after the respective specific hook has been called.
          */
         virtual void onTransformChanged();
+
+        virtual void readCustomState(od::DataReader &dr);
+        virtual void writeCustomState(od::DataWriter &dw);
+        //virtual void lerpCustomState(od::DataReader &left, od::DataReader &right, float delta);
 
 
     private:

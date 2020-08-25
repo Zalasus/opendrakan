@@ -67,6 +67,7 @@ namespace odState
 
         void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick);
         void objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick);
+        void objectCustomStateChanged(od::LevelObject &object, TickNumber tick);
 
         /**
          * @brief Commits all changes and events last pushed into one snapshot.

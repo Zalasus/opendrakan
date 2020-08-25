@@ -123,6 +123,9 @@ namespace od
             transform(tf);
         }
 
+        void customStateDirty() {}
+        void setCustomStateModes(bool networked, bool lerped) {}
+
         /**
          * @brief Enables or disables updates for this object.
          *
