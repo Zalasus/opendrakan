@@ -69,6 +69,7 @@ namespace dragonRfl
              // i kinda dislike that we need to set everything up ourselves
             auto newHumanControl = std::make_unique<HumanControl_Sv>(client);
             newHumanControl->setServer(localServer);
+            newHumanControl->setLevelObject(obj);
             obj.getClass()->fillFields(newHumanControl->getFields());
             newHumanControl->onLoaded();
 

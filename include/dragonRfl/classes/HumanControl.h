@@ -43,23 +43,46 @@ namespace dragonRfl
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onLoaded() override;
+		virtual void onSpawned() override;
+		virtual void onUpdate(float relTime) override;
 
 
 	 private:
 
+        enum class State
+        {
+            Idling,
+            TurningLeft,
+            TurningRight,
+            RunningForward,
+            RunningBackward
+        };
+
         void _handleAction(Action action, odInput::ActionState state);
         void _attack();
-
-        odNet::ClientId mClientId;
+		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
 
 		HumanControlFields mFields;
 
-        std::shared_ptr<ActionHandle> mAttackAction;
+        odNet::ClientId mClientId;
+        float mYaw;
+		float mPitch;
+		State mState;
+        float mLastUpdatedYaw;
 
+		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
+
+		std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
+		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
+
+		std::shared_ptr<ActionHandle> mForwardAction;
+		std::shared_ptr<ActionHandle> mBackwardAction;
+        std::shared_ptr<ActionHandle> mAttackAction;
+		std::shared_ptr<odInput::InputListener> mInputListener;
 	};
 
 
-    class HumanControl_Cl : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Cl>, public LocalPlayer
+    class HumanControl_Cl : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Cl>
 	{
 	public:
 
@@ -70,50 +93,19 @@ namespace dragonRfl
 
 		virtual void onLoaded() override;
 		virtual void onSpawned() override;
-		virtual void onUpdate(float relTime) override;
 		virtual void onTransformChanged() override;
-
-		virtual float getYaw() const override { return mYaw; }
-		virtual void setYaw(float f) override { mYaw = f; }
-		virtual float getPitch() const override { return mPitch; }
-		virtual void setPitch(float f) override { mPitch = f; }
-		virtual glm::vec3 getPosition() override;
-		virtual od::LevelObject &getLevelObject() override;
-		virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() override;
 
 
 	 private:
 
-		enum class State
-		{
-		    Idling,
-		    TurningLeft,
-		    TurningRight,
-		    RunningForward,
-		    RunningBackward
-		};
-
-		void _handleMovementAction(Action action, odInput::ActionState state);
 		void _handleCursorMovement(const glm::vec2 &cursorPos);
-		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
 
 		HumanControlFields mFields;
 
 		float mYaw;
 		float mPitch;
 
-		State mState;
-		float mLastUpdatedYaw;
-
-		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
-
 		std::shared_ptr<odRender::Handle> mRenderHandle;
-		std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
-		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
-
-		std::shared_ptr<ActionHandle> mForwardAction;
-		std::shared_ptr<ActionHandle> mBackwardAction;
-        std::shared_ptr<ActionHandle> mAttackAction;
 		std::shared_ptr<odInput::InputListener> mInputListener;
 
 	};
