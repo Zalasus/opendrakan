@@ -2,6 +2,7 @@
 #include <odOsg/render/Group.h>
 
 #include <algorithm>
+#include <glm/glm.hpp>
 
 #include <odCore/Exception.h>
 #include <odCore/Downcast.h>
