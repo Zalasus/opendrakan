@@ -177,14 +177,11 @@ namespace od
 
         }else
         {
-            // atm, this really crowds out the console log. to keep things readable, we'll only log once for now
-            // Logger::warn() << "Level object has umimplemented RFL class";
-            static bool warnOnce = false;
-            if(warnOnce)
-            {
-                Logger::warn() << "Level object has umimplemented RFL class (not gonna warn again because of this)";
-                warnOnce = true;
-            }
+            // object has unimplemented RFL class. this could mean it is a client-only class on a server (or vice versa)
+            //  since an object without a class just sits there uselessly, just let it die.
+            // TODO: this will likely accumulate a big queue at the beginning of level loading everytime. maybe let level handle this, bypassing the queue
+            requestDestruction();
+            return;
         }
 
         mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
