@@ -128,14 +128,14 @@ namespace od
 
         Logger::info() << "Server set up. Starting main server loop";
 
-        float targetUpdateIntervalUs = (1e6/60.0);
-        auto targetUpdateInterval = std::chrono::microseconds((int64_t)targetUpdateIntervalUs);
+        double targetUpdateIntervalNs = (1e9/60.0);
+        auto targetUpdateInterval = std::chrono::nanoseconds((int64_t)targetUpdateIntervalNs);
         auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
         while(!mIsDone.load(std::memory_order_relaxed))
         {
             auto loopStart = std::chrono::high_resolution_clock::now();
 
-            double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
+            double relTime = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(loopStart - lastUpdateStartTime).count();
             lastUpdateStartTime = loopStart;
 
             if(mLevel != nullptr)
@@ -156,7 +156,7 @@ namespace od
             }else
             {
                 float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
-                Logger::warn() << "Server tick took too long (" << loopTimeMs << "ms, target was " << (targetUpdateIntervalUs*1e-3) << "ms)";
+                Logger::warn() << "Server tick took too long (" << loopTimeMs << "ms, target was " << (targetUpdateIntervalNs*1e-6) << "ms)";
 
                 // TODO: this clock skip probably has to be reported to the clients somehow
             }
@@ -170,7 +170,7 @@ namespace od
         auto tickToSend = mStateManager->getLatestTick();
 
         mStateManager->advance();
-        Logger::info() << "server tick: " << tickToSend;
+        //Logger::verbose() << "server tick: " << tickToSend;
 
         for(auto &client : mClients)
         {

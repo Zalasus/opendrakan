@@ -159,19 +159,21 @@ namespace od
 
         Logger::info() << "Client set up. Starting render loop";
 
-        using namespace std::chrono;
-        auto lastTime = high_resolution_clock::now();
         float tickInterval = (1.0/60.0);
         float lerpTime = 0.1;
-        odState::TickNumber currentTick = 0;
-        float tickTimeOffset = 0;
+        int idealTickOffset = std::ceil(lerpTime/tickInterval);
+        float idealTickTimeOffset = idealTickOffset*tickInterval - lerpTime;
+
+        odState::TickNumber currentTick = mStateManager->getLatestTick() - idealTickOffset;
+        float currentTickTimeOffset = idealTickTimeOffset;
+        auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
         while(!mIsDone.load(std::memory_order_relaxed))
         {
-            auto now = high_resolution_clock::now();
-            auto duration = duration_cast<microseconds>(now - lastTime);
-            lastTime = now;
-            float relTime = duration.count() * 1e-6;
-            tickTimeOffset += relTime;
+            auto loopStart = std::chrono::high_resolution_clock::now();
+            double relTime = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(loopStart - lastUpdateStartTime).count();
+            lastUpdateStartTime = loopStart;
+
+            currentTickTimeOffset += relTime;
 
             if(mLevel != nullptr)
             {
@@ -181,26 +183,32 @@ namespace od
             mPhysicsSystem->update(relTime);
             mInputManager->update(relTime);
 
-            // if our tick value has gone out of reach of the state manager (because of clock skew, for instance),
-            //  reset it using the target lerp time
-            if(currentTick < mStateManager->getOldestTick() || currentTick > mStateManager->getLatestTick())
+            // advance currentTick based on the passed time, but never go farther than the latest tick in the SM
+            if(currentTickTimeOffset >= tickInterval)
             {
-                int ticksToMoveBack = std::ceil(lerpTime/tickInterval);
-                tickTimeOffset = ticksToMoveBack*tickInterval - lerpTime;
-                currentTick = mStateManager->getLatestTick() - ticksToMoveBack;
-
-            }else
-            {
-                while(tickTimeOffset >= tickInterval)
+                int ticksToAdd = currentTickTimeOffset/tickInterval;
+                if(currentTick + ticksToAdd > mStateManager->getLatestTick())
                 {
-                    ++currentTick;
-                    tickTimeOffset -= tickInterval;
+                    ticksToAdd = mStateManager->getLatestTick() - currentTick;
                 }
+
+                currentTick += ticksToAdd;
+                currentTickTimeOffset -= ticksToAdd*tickInterval;
             }
 
-            float tickLerp = tickTimeOffset/tickInterval;
-            Logger::info() << "client tick: " << currentTick << " + " << tickLerp;
-            mStateManager->apply(currentTick, tickLerp);
+            // can be greater than 1 if we run out of server ticks and need to extrapolate
+            float tickFraction = currentTickTimeOffset/tickInterval;
+
+            // we allow *some* extrapolation, but when thing get out of hand, it is better to just glitch out a bit
+            if(tickFraction >= 1.5)
+            {
+                currentTick = mStateManager->getLatestTick() - idealTickOffset;
+                currentTickTimeOffset = idealTickTimeOffset;
+                Logger::warn() << "Client time ran out of valid tick range";
+            }
+
+            //Logger::verbose() << "client tick: " << currentTick << " + " << tickFraction;
+            mStateManager->apply(currentTick, tickFraction);
 
             mRenderer.frame(relTime);
         }
