@@ -49,7 +49,8 @@ namespace od
 
         void loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager);
 
-        void requestLevelObjectDestruction(LevelObject *obj);
+        void addToDestructionQueue(LevelObjectId objId);
+        
         Layer *getLayerById(LayerId id);
         Layer *getLayerByIndex(uint16_t index); // FIXME: this should be removed (if possible). the index is really only correct during loading
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
@@ -65,9 +66,6 @@ namespace od
         void spawnAllObjects();
 
         void update(float relTime);
-
-         // FIXME: this should be removed (if possible). the index is really only correct during loading. we could even make the map own the objects and eliminate the mapping altogether
-        LevelObject *getLevelObjectByIndex(uint16_t index);
 
         LevelObject *getLevelObjectById(LevelObjectId id);
 
@@ -111,11 +109,9 @@ namespace od
         uint32_t mMaxHeight;
         std::map<uint16_t, std::shared_ptr<odDb::Database>> mDependencyMap;
         std::vector<std::unique_ptr<Layer>> mLayers;
-        std::vector<std::unique_ptr<LevelObject>> mLevelObjects;
+        std::unordered_map<LevelObjectId, std::unique_ptr<LevelObject>> mLevelObjects;
 
-        std::unordered_map<LevelObjectId, size_t> mLevelObjectIdMap; // maps IDs to indices in array
-
-		std::unordered_set<LevelObject*> mDestructionQueue;
+		std::unordered_set<LevelObjectId> mDestructionQueue;
 
 		float mVerticalExtent;
 

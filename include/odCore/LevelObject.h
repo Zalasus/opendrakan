@@ -9,7 +9,7 @@
 #define OBJECT_H_
 
 #include <memory>
-#include <list>
+#include <array>
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -84,7 +84,7 @@ namespace od
         inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
-        inline const std::vector<uint16_t> &getLinkedObjectIndices() const { return mLinkedObjectIndices; }
+        inline const std::vector<LevelObjectId> &getLinkedObjects() const { return mLinkedObjects; }
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mIsVisible; }
         inline bool isScaled() const { return (mScale != glm::vec3(1,1,1)); }
@@ -92,6 +92,7 @@ namespace od
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
         void loadFromRecord(DataReader dr);
+        void translateLinkIndices(const std::array<LevelObjectId, 0x10000> &idMap);
 
         void spawned();
         void despawned();
@@ -250,7 +251,7 @@ namespace od
         Layer *mLightingLayer;
         uint32_t mFlags;
         uint16_t mInitialEventCount;
-        std::vector<uint16_t> mLinkedObjectIndices;
+        std::vector<LevelObjectId> mLinkedObjects; // this is sorta abused, since during load it stores the indices instead. those are later translated
         glm::vec3 mInitialPosition;
         glm::quat mInitialRotation;
         glm::vec3 mInitialScale;
@@ -266,7 +267,7 @@ namespace od
         SpawnStrategy mSpawnStrategy;
 
         od::LevelObject *mAttachmentTarget;
-        std::list<od::LevelObject*> mAttachedObjects;
+        std::vector<od::LevelObject*> mAttachedObjects;
         glm::vec3 mAttachmentTranslationOffset;
         glm::quat mAttachmentRotationOffset;
         glm::vec3 mAttachmentScaleRatio;

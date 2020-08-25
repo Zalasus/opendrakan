@@ -45,9 +45,9 @@ namespace od
     Level::~Level()
     {
     	// despawn all remaining objects
-    	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+    	for(auto &objMap : mLevelObjects)
     	{
-    		(*it)->despawned();
+    		objMap.second->despawned();
     	}
     }
 
@@ -65,9 +65,9 @@ namespace od
         Logger::info() << "Level loaded successfully";
     }
 
-    void Level::requestLevelObjectDestruction(LevelObject *obj)
+    void Level::addToDestructionQueue(LevelObjectId objId)
     {
-        mDestructionQueue.insert(obj);
+        mDestructionQueue.insert(objId);
     }
 
     Layer *Level::getLayerById(uint32_t id)
@@ -119,8 +119,9 @@ namespace od
 
     void Level::initialSpawn()
     {
-        for(auto &obj : mLevelObjects)
+        for(auto &objMap : mLevelObjects)
         {
+            auto &obj = objMap.second;
             if(obj->getSpawnStrategy() == SpawnStrategy::Always)
             {
                 obj->spawned();
@@ -137,21 +138,28 @@ namespace od
             (*it)->spawn(mPhysicsSystem, mRenderer);
         }
 
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        for(auto &objMap : mLevelObjects)
         {
-            (*it)->spawned();
+            objMap.second->spawned();
         }
     }
 
     void Level::update(float relTime)
     {
-        for(auto obj : mDestructionQueue)
+        if(!mDestructionQueue.empty())
         {
-            obj->despawned();
-            obj->destroyed();
-            // TODO: actually free the memory here! don't forget to update the ID mappings after queue is cleared
+            for(auto objId : mDestructionQueue)
+            {
+                auto it = mLevelObjects.find(objId);
+                if(it == mLevelObjects.end()) continue;
+
+                it->second->despawned();
+                it->second->destroyed();
+
+                // TODO: actually free the memory here!
+            }
+            mDestructionQueue.clear();
         }
-        mDestructionQueue.clear();
 
         // TODO: could we handle this more efficiently using a swap?
         mTempObjectUpdateQueue.clear();
@@ -168,31 +176,22 @@ namespace od
         }
     }
 
-    LevelObject *Level::getLevelObjectByIndex(uint16_t index)
-    {
-        if(index >= mLevelObjects.size())
-        {
-            return nullptr;
-        }
-
-        return mLevelObjects[index].get();
-    }
-
     LevelObject *Level::getLevelObjectById(LevelObjectId id)
     {
-        auto it = mLevelObjectIdMap.find(id);
-        if(it == mLevelObjectIdMap.end())
+        auto it = mLevelObjects.find(id);
+        if(it == mLevelObjects.end())
         {
             return nullptr;
         }
 
-        return mLevelObjects[it->second].get();
+        return it->second.get();
     }
 
     LevelObject *Level::findFirstObjectOfType(odRfl::ClassId id)
     {
-        for(auto &obj : mLevelObjects)
+        for(auto &objMap : mLevelObjects)
         {
+            auto &obj = objMap.second;
             if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
             {
                 return obj.get();
@@ -204,8 +203,9 @@ namespace od
 
     void Level::findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results)
     {
-        for(auto &obj : mLevelObjects)
+        for(auto &objMap : mLevelObjects)
         {
+            auto &obj = objMap.second;
             if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
             {
                 results.push_back(obj.get());
@@ -298,7 +298,7 @@ namespace od
 
         for(auto &obj : mLevelObjects)
         {
-            obj->updateAssociatedLayer(false);
+            obj.second->updateAssociatedLayer(false);
         }
     }
 
@@ -438,8 +438,9 @@ namespace od
 
     	uint16_t objectCount;
     	dr >> objectCount;
-
     	Logger::verbose() << "Level has " << objectCount << " objects";
+
+        std::array<LevelObjectId, 0x10000> indexToIdMapping;
 
     	mLevelObjects.reserve(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)
@@ -447,9 +448,21 @@ namespace od
     		std::unique_ptr<od::LevelObject> object = std::make_unique<od::LevelObject>(*this);
     		object->loadFromRecord(dr);
 
-            mLevelObjectIdMap[object->getObjectId()] = mLevelObjects.size(); // TODO: check for ID uniqueness here
+            auto id = object->getObjectId();
 
-    		mLevelObjects.push_back(std::move(object));
+            auto &ptrInMap = mLevelObjects[id];
+            if(ptrInMap != nullptr)
+            {
+                throw od::Exception("Level contains non-unique object IDs (this might actually be an error in our level file interpretation)");
+            }
+
+    		ptrInMap = std::move(object);
+            indexToIdMapping[i] = id;
     	}
+
+        for(auto &objMap : mLevelObjects)
+        {
+            objMap.second->translateLinkIndices(indexToIdMapping);
+        }
     }
 }

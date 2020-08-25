@@ -144,11 +144,15 @@ namespace od
             }
         }
 
-        // TODO: finally write a deserializer for vectors of things!
-        mLinkedObjectIndices.resize(linkCount);
+        // the mLinkedObjects vector contains IDs, but the engine stores the object's indices in the file.
+        //  to avoid having to store an additional array (either in the level or here) we abuse the mLinkedObjects
+        //  vector by storing the indices in it until translateLinkIndices() is called.
+        mLinkedObjects.resize(linkCount);
         for(size_t i = 0; i < linkCount; ++i)
         {
-            dr >> mLinkedObjectIndices[i];
+            uint16_t linkedIndex = 0;
+            dr >> linkedIndex;
+            mLinkedObjects[i] = linkedIndex;
         }
 
         dr >> xRot
@@ -198,6 +202,23 @@ namespace od
         if(mRflClassInstance != nullptr)
         {
             mRflClassInstance->onLoaded(); // do this last! it'd be better to pass a fully set up level object here
+        }
+    }
+
+    void LevelObject::translateLinkIndices(const std::array<LevelObjectId, 0x10000> &idMap)
+    {
+        for(auto &link : mLinkedObjects)
+        {
+            uint16_t linkIndex = static_cast<uint16_t>(link);
+            if(linkIndex >= idMap.size())
+            {
+                Logger::error() << "Object " << mId << " linked to invalid object index " << linkIndex;
+                link = -1; // TODO: add constant for a guaranteed-invalid ID
+
+            }else
+            {
+                link = idMap[linkIndex];
+            }
         }
     }
 
@@ -412,9 +433,9 @@ namespace od
 
     void LevelObject::messageAllLinkedObjects(od::Message message)
     {
-        for(auto linkedIndex : mLinkedObjectIndices)
+        for(auto linkedId : mLinkedObjects)
         {
-            od::LevelObject *obj = mLevel.getLevelObjectByIndex(linkedIndex);
+            od::LevelObject *obj = mLevel.getLevelObjectById(linkedId);
             if(obj != nullptr)
             {
                 obj->messageReceived(*this, message);
@@ -424,7 +445,7 @@ namespace od
 
     void LevelObject::requestDestruction()
     {
-        mLevel.requestLevelObjectDestruction(this);
+        mLevel.addToDestructionQueue(getObjectId());
     }
 
     AxisAlignedBoundingBox LevelObject::getBoundingBox()
