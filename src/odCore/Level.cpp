@@ -156,7 +156,7 @@ namespace od
                 it->second->despawned();
                 it->second->destroyed();
 
-                // TODO: actually free the memory here!
+                mLevelObjects.erase(it);
             }
             mDestructionQueue.clear();
         }
