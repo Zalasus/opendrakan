@@ -230,8 +230,7 @@ namespace od
         _applyTransform(tf, this);
 
         auto &sm = mLevel.getEngine().getStateManager();
-        auto currentTick = sm.getCurrentTick();
-        sm.objectTransformed(*this, tf, currentTick);
+        sm.objectTransformed(*this, tf, sm.getLatestTick());
     }
 
     void LevelObject::setVisible(bool v)
@@ -239,8 +238,7 @@ namespace od
         _applyVisibility(v);
 
         auto &sm = mLevel.getEngine().getStateManager();
-        auto currentTick = sm.getCurrentTick();
-        sm.objectVisibilityChanged(*this, v, currentTick);
+        sm.objectVisibilityChanged(*this, v, sm.getLatestTick());
     }
 
     void LevelObject::spawned()

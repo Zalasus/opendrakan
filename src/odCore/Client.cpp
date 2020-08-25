@@ -8,6 +8,7 @@
 #include <odCore/Client.h>
 
 #include <chrono>
+#include <cmath>
 
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
@@ -48,12 +49,16 @@ namespace od
 
         virtual void objectTransformed(odState::TickNumber tick, LevelObjectId id, const od::ObjectTransform &tf) override
         {
+            mClient.getStateManager().advanceUntil(tick);
+
             auto &obj = _getObjectById(id);
             mClient.getStateManager().objectTransformed(obj, tf, tick);
         }
 
         virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) override
         {
+            mClient.getStateManager().advanceUntil(tick);
+
             auto &obj = _getObjectById(id);
             mClient.getStateManager().objectVisibilityChanged(obj, visible, tick);
         }
@@ -71,17 +76,6 @@ namespace od
         virtual void destroyObject(od::LevelObjectId id)
         {
              _getObjectById(id).requestDestruction();
-        }
-
-        virtual void commitTick(odState::TickNumber tick, size_t eventAndStateTransitionCount) override
-        {
-            // since out-of-order transport is not possible on a local connection,
-            //  we can safely assume this always happens after all transitions have been sent
-            //if(tick == mClient.getStateManager().getCurrentTick())
-            {
-                mClient.getStateManager().commit();
-                mClient.getStateManager().apply(tick);
-            }
         }
 
 
@@ -167,12 +161,17 @@ namespace od
 
         using namespace std::chrono;
         auto lastTime = high_resolution_clock::now();
+        float tickInterval = (1.0/60.0);
+        float lerpTime = 0.1;
+        odState::TickNumber currentTick = 0;
+        float tickTimeOffset = 0;
         while(!mIsDone.load(std::memory_order_relaxed))
         {
             auto now = high_resolution_clock::now();
             auto duration = duration_cast<microseconds>(now - lastTime);
             lastTime = now;
             float relTime = duration.count() * 1e-6;
+            tickTimeOffset += relTime;
 
             if(mLevel != nullptr)
             {
@@ -182,8 +181,26 @@ namespace od
             mPhysicsSystem->update(relTime);
             mInputManager->update(relTime);
 
-            // do not call mStateManager->commit() here! the client does not tick by itself, but rather waits for the server to tell it to tick
-            //   EDIT: maybe that's not so smart after all. gotta keep thinking about that
+            // if our tick value has gone out of reach of the state manager (because of clock skew, for instance),
+            //  reset it using the target lerp time
+            if(currentTick < mStateManager->getOldestTick() || currentTick > mStateManager->getLatestTick())
+            {
+                int ticksToMoveBack = std::ceil(lerpTime/tickInterval);
+                tickTimeOffset = ticksToMoveBack*tickInterval - lerpTime;
+                currentTick = mStateManager->getLatestTick() - ticksToMoveBack;
+
+            }else
+            {
+                while(tickTimeOffset >= tickInterval)
+                {
+                    ++currentTick;
+                    tickTimeOffset -= tickInterval;
+                }
+            }
+
+            float tickLerp = tickTimeOffset/tickInterval;
+            Logger::info() << "client tick: " << currentTick << " + " << tickLerp;
+            mStateManager->apply(currentTick, tickLerp);
 
             mRenderer.frame(relTime);
         }

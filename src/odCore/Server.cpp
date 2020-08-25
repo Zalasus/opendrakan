@@ -167,14 +167,14 @@ namespace od
 
     void Server::_commitUpdate()
     {
-        auto committedTick = mStateManager->getCurrentTick();
+        auto tickToSend = mStateManager->getLatestTick();
 
-        mStateManager->commit();
+        mStateManager->advance();
+        Logger::info() << "server tick: " << tickToSend;
 
         for(auto &client : mClients)
         {
-            size_t count = mStateManager->sendToClient(committedTick, *client.second.connector);
-            client.second.connector->commitTick(committedTick, count);
+            mStateManager->sendToClient(tickToSend, *client.second.connector);
         }
     }
 

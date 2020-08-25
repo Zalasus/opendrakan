@@ -44,8 +44,6 @@ namespace odNet
         virtual void spawnObject(od::LevelObjectId id) = 0;
         virtual void despawnObject(od::LevelObjectId id) = 0;
         virtual void destroyObject(od::LevelObjectId id) = 0;
-
-        virtual void commitTick(odState::TickNumber tick, size_t eventAndStateTransitionCount) = 0;
     };
 
 }

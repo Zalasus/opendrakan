@@ -9,8 +9,7 @@
 namespace odState
 {
 
-    static const TickNumber BACKLOG_TICKS = 16;
-    static const TickNumber FUTURE_TICKS = 3; // this includes the tick currently built, so it should at least be 1 TODO: on server, this *can* be 1. make dynamic
+    static const TickNumber TICK_CAPACITY = 16;
 
 
     /**
@@ -22,6 +21,7 @@ namespace odState
 
         ApplyGuard(StateManager &sm)
         : mStateManager(sm)
+        , mLock(sm.mUpdateMutex)
         {
             mStateManager.mIgnoreStateUpdates = true;
         }
@@ -37,6 +37,7 @@ namespace odState
     private:
 
         StateManager &mStateManager;
+        std::lock_guard<std::mutex> mLock;
     };
 
 
@@ -67,22 +68,24 @@ namespace odState
     , mOldestTick(0)
     , mEvents(0)
     {
-        mStateTransitions.resize(BACKLOG_TICKS + FUTURE_TICKS);
+        mStateTransitions.resize(TICK_CAPACITY);
     }
 
-    TickNumber StateManager::getMaxTick() const
+    TickNumber StateManager::getLatestTick() const
     {
         return mOldestTick + mStateTransitions.size() - 1;
     }
 
-    TickNumber StateManager::getCurrentTick() const
+    TickNumber StateManager::getOldestTick() const
     {
-        return mOldestTick + BACKLOG_TICKS;
+        return mOldestTick;
     }
 
     void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick)
     {
         if(mIgnoreStateUpdates) return;
+
+        std::lock_guard<std::mutex> lock(mUpdateMutex);
 
         auto &transitionMap = _getTransitionMapForTick(tick);
         auto &objEvent = transitionMap[object.getObjectId()];
@@ -93,6 +96,8 @@ namespace odState
     {
         if(mIgnoreStateUpdates) return;
 
+        std::lock_guard<std::mutex> lock(mUpdateMutex);
+
         auto &transitionMap = _getTransitionMapForTick(tick);
         auto &objEvent = transitionMap[object.getObjectId()];
         objEvent.setVisibility(visible);
@@ -102,18 +107,27 @@ namespace odState
     {
     }
 
-    void StateManager::apply(TickNumber tick)
+    void StateManager::apply(TickNumber tick, float lerp)
     {
         ApplyGuard guard(*this);
 
-        for(auto &stateTransition : _getTransitionMapForTick(tick))
-        {
-            auto obj = mLevel.getLevelObjectById(stateTransition.first); // TODO: maybe store this pointer in the transition object? would spare us lots of unnecessary lookups.
-            if(obj == nullptr) continue;
+        lerp = 0.0;
 
-            if(stateTransition.second.transformed()) obj->transform(stateTransition.second.getTransform());
-            if(stateTransition.second.visibilityChanged()) obj->setVisible(stateTransition.second.getVisibility());
-            //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+        if(lerp == 0.0) // TODO: epsilon
+        {
+            for(auto &stateTransition : _getTransitionMapForTick(tick))
+            {
+                auto obj = mLevel.getLevelObjectById(stateTransition.first); // TODO: maybe store this pointer in the transition object? would spare us lots of unnecessary lookups.
+                if(obj == nullptr) continue;
+
+                if(stateTransition.second.transformed()) obj->transform(stateTransition.second.getTransform());
+                if(stateTransition.second.visibilityChanged()) obj->setVisible(stateTransition.second.getVisibility());
+                //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+            }
+
+        }else
+        {
+            OD_UNIMPLEMENTED();
         }
     }
 
@@ -126,10 +140,12 @@ namespace odState
         return std::move(guard);
     }
 
-    void StateManager::commit()
+    void StateManager::advance()
     {
+        std::lock_guard<std::mutex> lock(mUpdateMutex);
+
         // apply all new changes to the base state map
-        for(auto &stateTransition : _getCurrentTransitionMap())
+        for(auto &stateTransition : _getTransitionMapForTick(getLatestTick()))
         {
             auto &baseStateTransition = mBaseStateTransitionMap[stateTransition.first];
             baseStateTransition.merge(stateTransition.second);
@@ -139,30 +155,38 @@ namespace odState
         ++mOldestTick;
 
         // since the latest tick has now wrapped around to an old one, clear that so it starts fresh
-        _getTransitionMapForTick(getMaxTick()).clear();
+        _getTransitionMapForTick(getLatestTick()).clear();
     }
 
-    size_t StateManager::sendToClient(TickNumber tick, odNet::ClientConnector &c)
+    void StateManager::advanceUntil(TickNumber tick)
     {
-        size_t count = 0;
+        if(tick < getOldestTick())
+        {
+            throw od::Exception("Tick is out of reach");
+        }
+        
+        while(getLatestTick() < tick)
+        {
+            advance();
+        }
+    }
+
+    void StateManager::sendToClient(TickNumber tick, odNet::ClientConnector &c)
+    {
         for(auto &stateTransition : _getTransitionMapForTick(tick))
         {
             if(stateTransition.second.transformed())
             {
                 c.objectTransformed(tick, stateTransition.first, stateTransition.second.getTransform());
-                ++count;
             }
 
             if(stateTransition.second.visibilityChanged())
             {
                 c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.getVisibility());
-                ++count;
             }
 
             //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
         }
-
-        return count;
     }
 
     StateManager::StateTransitionMap &StateManager::_getTransitionMapForTick(TickNumber tick)
@@ -175,12 +199,6 @@ namespace odState
 
         auto baseOffset = (offset + mOldestTickIndex) % mStateTransitions.size();
 
-        return mStateTransitions[baseOffset];
-    }
-
-    StateManager::StateTransitionMap &StateManager::_getCurrentTransitionMap()
-    {
-        auto baseOffset = (BACKLOG_TICKS + mOldestTickIndex) % mStateTransitions.size();
         return mStateTransitions[baseOffset];
     }
 
