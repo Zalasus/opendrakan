@@ -118,7 +118,7 @@ namespace od
             despawned();
         }
 
-        Logger::verbose() << "Object " << getObjectId() << " destroyed";
+        Logger::debug() << "Object " << getObjectId() << " destroyed";
 
         setEnableUpdate(false);
     }
