@@ -22,7 +22,7 @@
 // #include <dragonRfl/classes/SoundEffect.h>
 #include <dragonRfl/classes/StaticLight.h>
 // #include <dragonRfl/classes/Timer.h>
-// #include <dragonRfl/classes/TrackingCamera.h>
+#include <dragonRfl/classes/TrackingCamera.h>
 // #include <dragonRfl/classes/UserInterfaceProperties.h>
 // #include <dragonRfl/classes/VisibilityToggler.h>
 
@@ -47,7 +47,7 @@ namespace dragonRfl
         // registerClass<SoundEffect>();
         registerClass<StaticLight>();
         // registerClass<Timer>();
-        // registerClass<TrackingCamera>();
+        registerClass<TrackingCamera>();
         // registerClass<UserInterfaceProperties>();
         // registerClass<VisibilityToggler>();
     }

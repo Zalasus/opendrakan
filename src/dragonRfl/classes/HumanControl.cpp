@@ -9,6 +9,8 @@
 
 #include <glm/gtc/constants.hpp>
 
+#include <dragonRfl/classes/TrackingCamera.h> // for cursor->yaw/pitch calculation
+
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
 #include <odCore/Client.h>
@@ -297,10 +299,9 @@ namespace dragonRfl
 
     void HumanControl_Cl::_handleCursorMovement(const glm::vec2 &cursorPos)
     {
-        // the tranlation to pitch/yaw is easier in NDC. convert from GUI space
-        glm::vec2 posNdc(2*cursorPos.x - 1, 1 - 2*cursorPos.y);
-        mPitch =  glm::half_pi<float>()*posNdc.y;
-        mYaw   = -glm::pi<float>()*posNdc.x;
+        glm::vec2 yawPitch = TrackingCamera_Cl::cursorPosToYawPitch(cursorPos);
+        mYaw = yawPitch.x;
+        mPitch = yawPitch.y;
     }
 
     void HumanControl_Cl::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping)
