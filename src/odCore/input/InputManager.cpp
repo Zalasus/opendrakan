@@ -7,6 +7,8 @@
 
 #include <odCore/input/InputManager.h>
 
+#include <odCore/Exception.h>
+
 #include <odCore/gui/Gui.h>
 
 #include <odCore/input/InputListener.h>
@@ -24,67 +26,25 @@ namespace odInput
     {
     }
 
-    void InputManager::mouseMoved(float absX, float absY)
+    void InputManager::injectMouseMovement(float absX, float absY)
     {
         std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
         mMouseMoveTarget = {absX, absY};
         mMouseMoved = true;
     }
 
-    void InputManager::mouseButtonDown(int buttonCode)
+    void InputManager::injectKey(Key key, bool pressed)
     {
         std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
-        mMouseButtonQueue.push_back(std::make_pair(buttonCode, false));
+        mKeyQueue.push_back(std::make_pair(key, pressed));
     }
 
-    void InputManager::mouseButtonUp(int buttonCode)
+    void InputManager::injectAction(ActionCode actionCode, ActionState state)
     {
-        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
-        mMouseButtonQueue.push_back(std::make_pair(buttonCode, true));
-    }
-
-    void InputManager::keyDown(Key key)
-    {
-        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
-        mKeyQueue.push_back(std::make_pair(key, false));
-    }
-
-    void InputManager::keyUp(Key key)
-    {
-        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
-        mKeyQueue.push_back(std::make_pair(key, true));
-    }
-
-    void InputManager::bindActionToKey(std::shared_ptr<IAction> action, Key key)
-    {
-        Binding &binding = mBindings[key];
-        for(auto &a : binding.actions)
+        auto it = mActions.find(actionCode);
+        if(it != mActions.end())
         {
-            if(a.expired())
-            {
-                a = action;
-                return;
-            }
-        }
-
-        throw od::Exception("Exceeded maximum number of actions per key");
-    }
-
-    void InputManager::unbindActionFromKey(std::shared_ptr<IAction> action, Key key)
-    {
-        auto it = mBindings.find(key);
-        if(it == mBindings.end())
-        {
-            return;
-        }
-
-        for(auto &a : it->second.actions)
-        {
-            auto boundAction = a.lock();
-            if(boundAction == action)
-            {
-                a.reset();
-            }
+            it->second->triggerCallback(state);
         }
     }
 
@@ -114,29 +74,51 @@ namespace odInput
 
         for(auto &key : mKeyQueue)
         {
-            if(key.second)
-            {
-                _processKeyUp(key.first);
-
-            }else
-            {
-                _processKeyDown(key.first);
-            }
+            _processKey(key.first, key.second);
         }
         mKeyQueue.clear();
+    }
 
-        for(auto &button : mMouseButtonQueue)
+    void InputManager::_bind(ActionHandleBase &action, Key key)
+    {
+        KeyBinding &binding = mKeyBindings[key];
+        for(auto &a : binding.actions)
         {
-            if(button.second)
+            if(a == nullptr)
             {
-                _processMouseUp(button.first);
-
-            }else
-            {
-                _processMouseDown(button.first);
+                a = &action;
+                return;
             }
         }
-        mMouseButtonQueue.clear();
+
+        throw od::Exception("Exceeded maximum number of actions per key");
+    }
+
+    void InputManager::_unbind(ActionHandleBase &action, Key key)
+    {
+        auto it = mKeyBindings.find(key);
+        if(it == mKeyBindings.end())
+        {
+            return;
+        }
+
+        bool inUse = false;
+        for(auto &a : it->second.actions)
+        {
+            if(a == &action)
+            {
+                a = nullptr;
+
+            }else if(a != nullptr)
+            {
+                inUse = true;
+            }
+        }
+
+        if(!inUse)
+        {
+            mKeyBindings.erase(it);
+        }
     }
 
     void InputManager::_processMouseMove(glm::vec2 pos)
@@ -144,69 +126,36 @@ namespace odInput
         _forEachInputListener([=](auto listener){ listener.mouseMoveEvent(pos); });
     }
 
-    void InputManager::_processMouseDown(int buttonCode)
+    void InputManager::_processKey(Key key, bool pressed)
     {
-        _forEachInputListener([=](auto listener){ listener.mouseButtonEvent(buttonCode, false); });
-    }
+        _forEachInputListener([=](auto listener){ listener.keyEvent(key, pressed); });
 
-    void InputManager::_processMouseUp(int buttonCode)
-    {
-        _forEachInputListener([=](auto listener){ listener.mouseButtonEvent(buttonCode, true); });
-    }
-
-    void InputManager::_processKeyDown(Key key)
-    {
-        _forEachInputListener([=](auto listener){ listener.keyEvent(key, false); });
-
-        auto it = mBindings.find(key);
-        if(it == mBindings.end())
+        auto it = mKeyBindings.find(key);
+        if(it != mKeyBindings.end())
         {
-            return; // no bindings for this key
-        }
-
-        ActionState state = it->second.down ? ActionState::REPEAT : ActionState::BEGIN;
-
-        it->second.down = true;
-
-        for(auto &boundAction : it->second.actions)
-        {
-            if(!boundAction.expired())
+            ActionState state;
+            if(pressed)
             {
-                auto action = boundAction.lock();
-                if(action != nullptr)
+                state = it->second.down ? ActionState::REPEAT : ActionState::BEGIN;
+                it->second.down = true;
+
+            }else
+            {
+                state = ActionState::END;
+                it->second.down = false;
+            }
+
+            for(auto &boundAction : it->second.actions)
+            {
+                if(boundAction != nullptr)
                 {
-                    _triggerCallbackOnAction(*action, state);
+                    _triggerCallbackOnAction(*boundAction, state);
                 }
             }
         }
     }
 
-    void InputManager::_processKeyUp(Key key)
-    {
-        _forEachInputListener([=](auto listener){ listener.keyEvent(key, true); });
-
-        auto it = mBindings.find(key);
-        if(it == mBindings.end())
-        {
-            return; // no bindings for this key
-        }
-
-        it->second.down = false;
-
-        for(auto &boundAction : it->second.actions)
-        {
-            if(!boundAction.expired())
-            {
-                auto action = boundAction.lock();
-                if(action != nullptr)
-                {
-                    _triggerCallbackOnAction(*action, ActionState::END);
-                }
-            }
-        }
-    }
-
-    void InputManager::_triggerCallbackOnAction(IAction &action, ActionState state)
+    void InputManager::_triggerCallbackOnAction(ActionHandleBase &action, ActionState state)
     {
         for(auto &l : mRawActionListeners)
         {

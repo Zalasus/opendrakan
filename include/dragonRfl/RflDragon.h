@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include <odCore/input/Action.h>
+#include <odCore/input/InputManager.h>
 
 #include <odCore/net/ClientConnector.h>
 
@@ -47,6 +47,7 @@ namespace dragonRfl
 
     private:
 
+        void _bindActions(odInput::InputManager &im);
         void _handleAction(Action action, odInput::ActionState state);
 
         // note: this is defined in ClassRegistry.cpp, as to avoid having to include all the class headers in the main RFL logic code
@@ -54,9 +55,6 @@ namespace dragonRfl
 
         LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
-
-        std::shared_ptr<odInput::IAction> mMenuAction;
-        std::shared_ptr<odInput::IAction> mPhysicsDebugAction;
     };
 
 }

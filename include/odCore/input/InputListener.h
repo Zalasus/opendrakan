@@ -21,26 +21,19 @@ namespace odInput
          */
         using MouseMovedCallback = std::function<void(const glm::vec2&)>;
 
-        using MouseButtonCallback = std::function<void(int code)>;
-
         using KeyCallback = std::function<void(Key key)>;
 
         inline void setMouseMoveCallback(const MouseMovedCallback &callback) { mMouseMovedCallback = callback; }
-        inline void setMouseButtonDownCallback(const MouseButtonCallback &callback) { mMouseButtonDownCallback = callback; }
-        inline void setMouseButtonUpCallback(const MouseButtonCallback &callback) { mMouseButtonUpCallback = callback; }
         inline void setKeyDownCallback(const KeyCallback &callback) { mKeyDownCallback = callback; }
         inline void setKeyUpCallback(const KeyCallback &callback) { mKeyUpCallback = callback; }
 
-        void keyEvent(Key key, bool up);
-        void mouseButtonEvent(int button, bool up);
+        void keyEvent(Key key, bool pressed);
         void mouseMoveEvent(const glm::vec2 &pos);
 
 
     private:
 
         MouseMovedCallback mMouseMovedCallback;
-        MouseButtonCallback mMouseButtonDownCallback;
-        MouseButtonCallback mMouseButtonUpCallback;
         KeyCallback mKeyDownCallback;
         KeyCallback mKeyUpCallback;
 

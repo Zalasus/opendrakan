@@ -74,11 +74,6 @@ namespace dragonRfl
 
 		std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
-
-		std::shared_ptr<ActionHandle> mForwardAction;
-		std::shared_ptr<ActionHandle> mBackwardAction;
-        std::shared_ptr<ActionHandle> mAttackAction;
-		std::shared_ptr<odInput::InputListener> mInputListener;
 	};
 
 

@@ -8,14 +8,13 @@
 #ifndef INCLUDE_ODCORE_INPUT_INPUTMANAGER_H_
 #define INCLUDE_ODCORE_INPUT_INPUTMANAGER_H_
 
-#include <map>
+#include <unordered_map>
 #include <mutex>
 #include <vector>
 #include <functional>
 #include <glm/vec2.hpp>
 
 #include <odCore/Downcast.h>
-#include <odCore/Exception.h>
 
 #include <odCore/input/Action.h>
 #include <odCore/input/Keys.h>
@@ -41,97 +40,58 @@ namespace odInput
          * fully synchronized, so it is safe to call this from an asynchronous
          * input listener or a different thread.
          */
-        void mouseMoved(float absX, float absY);
+        void injectMouseMovement(float absX, float absY);
 
         /**
-         * @brief Tells the engine that a mouse button was pressed.
+         * @brief Tells the engine that a keyboard or mouse key was pressed or released.
          *
-         * TODO: buttonCode is yet to be defined as an enum. stay tuned!
+         * It is okay to call this repeatedly if the key is being held down (though
+         * this is not necessary to get repeated action).
          *
          * Call this from your input listener (if applicable). This method is
          * fully synchronized, so it is safe to call this from an asynchronous
          * input listener or a different thread.
+         *
+         * @param pressed  true if button was pressed
          */
-        void mouseButtonDown(int buttonCode);
+        void injectKey(Key key, bool pressed);
 
         /**
-         * @brief Tells the engine that a mouse button was released.
+         * @brief Injects an action state without need for a keypress.
          *
-         * TODO: buttonCode is yet to be defined as an enum. stay tuned!
-         *
-         * Call this from your input listener (if applicable). This method is
-         * fully synchronized, so it is safe to call this from an asynchronous
-         * input listener or a different thread.
+         * This is useful for servers, where an InputManager exists for each
+         * client and basically serves as a dispatch mechanism for the callbacks.
          */
-        void mouseButtonUp(int buttonCode);
+        void injectAction(ActionCode actionCode, ActionState state);
 
-        /**
-         * @brief Tells the engine that a keyboard key was pressed.
-         *
-         * It is okay to call this repeatedly if the key is being held down.
-         *
-         * Call this from your input listener (if applicable). This method is
-         * fully synchronized, so it is safe to call this from an asynchronous
-         * input listener or a different thread.
-         */
-        void keyDown(Key key);
-
-        /**
-         * @brief Tells the engine that a keyboard key was released.
-         *
-         * Call this from your input listener (if applicable). This method is
-         * fully synchronized, so it is safe to call this from an asynchronous
-         * input listener or a different thread.
-         */
-        void keyUp(Key key);
-
-        void injectAction(ActionCode actionCode, ActionState state)
+        template <typename _ActionEnum>
+        ActionHandle<_ActionEnum> &getAction(_ActionEnum action)
         {
-            if(actionCode == 0)
+            ActionCode actionCode = static_cast<ActionCode>(action);
+
+            auto &actionPtr = mActions[actionCode];
+            if(actionPtr == nullptr)
             {
-                throw od::InvalidArgumentException("Can't inject actions whose integer representation is 0");
+                auto newAction = std::make_unique<ActionHandle<_ActionEnum>>(*this, action);
+                auto &result = *newAction;
+                actionPtr = std::move(newAction);
+                return result;
             }
 
-            auto &weakRef = mActions[actionCode];
-            if(!weakRef.expired())
-            {
-                auto actionHandle = weakRef.lock();
-                if(actionHandle != nullptr)
-                {
-                    actionHandle->triggerCallback(state);
-                }
-            }
+            return *od::downcast<ActionHandle<_ActionEnum>>(actionPtr.get());
         }
 
         template <typename _ActionEnum>
-        std::shared_ptr<ActionHandle<_ActionEnum>> getOrCreateAction(_ActionEnum action)
+        void bindAction(_ActionEnum action, Key key)
         {
-            ActionCode actionCode = static_cast<ActionCode>(action);
-            if(actionCode == 0)
-            {
-                throw od::InvalidArgumentException("Can't create actions whose integer representation is 0");
-            }
-
-            std::shared_ptr<ActionHandle<_ActionEnum>> actionHandle;
-            auto &weakRef = mActions[actionCode];
-            if(weakRef.expired())
-            {
-                actionHandle = std::make_shared<ActionHandle<_ActionEnum>>(*this, action);
-                weakRef = actionHandle;
-
-            }else
-            {
-                std::shared_ptr<IAction> ref(weakRef);
-                actionHandle = od::downcast<ActionHandle<_ActionEnum>>(ref);
-            }
-
-            return actionHandle;
+            _bind(getAction(action), key);
         }
 
-        void bindActionToKey(std::shared_ptr<IAction> action, Key key);
-        void unbindActionFromKey(std::shared_ptr<IAction> action, Key key);
-
-        std::shared_ptr<InputListener> createInputListener();
+        template <typename _ActionEnum>
+        void unbindAction(_ActionEnum action, Key key)
+        {
+            _unbind(getAction(action), key);
+        }
 
         /**
          * @brief Creates a raw action listener that reports every action that's being triggered.
@@ -141,18 +101,26 @@ namespace odInput
          */
         std::shared_ptr<RawActionListener> createRawActionListener();
 
+        /**
+         * @brief Creates an input listener which reports raw input events, but within the update loop.
+         *
+         * This is useful for the GUI, which needs no Action-based abstraction because it's events are
+         * never sent over the network.
+         */
+        std::shared_ptr<InputListener> createInputListener();
+
         void update(float relTime);
 
 
     private:
 
-        void _processMouseMove(glm::vec2 pos);
-        void _processMouseDown(int buttonCode);
-        void _processMouseUp(int buttonCode);
-        void _processKeyDown(Key key);
-        void _processKeyUp(Key key);
+        void _bind(ActionHandleBase &action, Key key);
+        void _unbind(ActionHandleBase &action, Key key);
 
-        void _triggerCallbackOnAction(IAction &action, ActionState state);
+        void _processMouseMove(glm::vec2 pos);
+        void _processKey(Key key, bool pressed);
+
+        void _triggerCallbackOnAction(ActionHandleBase &action, ActionState state);
 
         template <typename T>
         void _forEachInputListener(const T &functor)
@@ -170,30 +138,29 @@ namespace odInput
             }
         }
 
-        struct Binding
+        struct KeyBinding
         {
             static const size_t MAX_BINDINGS = 4;
 
-            Binding()
+            KeyBinding()
             : down(false)
+            , actions({nullptr})
             {
             }
 
             bool down;
 
-            std::array<std::weak_ptr<IAction>, MAX_BINDINGS> actions;
+            // raw pointers are okay here because we never deallocate the actions as long as the IM lives
+            std::array<ActionHandleBase*, MAX_BINDINGS> actions;
         };
 
-        // TODO: combine into a single queue of a variant
-        std::vector<std::pair<Key, bool>> mKeyQueue; // second = button up
-        std::vector<std::pair<int, bool>> mMouseButtonQueue;
+        std::vector<std::pair<Key, bool>> mKeyQueue; // second = button pressed
         glm::vec2 mMouseMoveTarget;
         bool mMouseMoved;
         std::mutex mInputEventQueueMutex;
 
-        std::map<Key, Binding> mBindings;
-
-        std::map<ActionCode, std::weak_ptr<IAction>> mActions;
+        std::unordered_map<ActionCode, std::unique_ptr<ActionHandleBase>> mActions;
+        std::unordered_map<Key, KeyBinding> mKeyBindings;
 
         std::vector<std::weak_ptr<InputListener>> mInputListeners;
         std::vector<std::weak_ptr<RawActionListener>> mRawActionListeners;

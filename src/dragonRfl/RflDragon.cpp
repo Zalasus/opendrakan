@@ -75,6 +75,24 @@ namespace dragonRfl
 
             obj.replaceRflClassInstance(std::move(newHumanControl));
         }
+
+        /*
+        foundObjects.clear();
+        localServer.getLevel()->findObjectsOfType(TrackingCamera::classId(), foundObjects);
+        if(foundObjects.empty())
+        {
+            // TODO: intro level excepted
+            Logger::error() << "Found no Tracking Camera in level! This could be an error in level design.";
+
+        }else
+        {
+            if(foundObjects.size() > 1)
+            {
+                Logger::warn() << "More than one Tracking Camera found in level! Ignoring all but one";
+            }
+
+            auto &obj = *foundObjects.back();
+        }*/
     }
 
     const char *DragonRfl::getName() const
@@ -106,24 +124,23 @@ namespace dragonRfl
 
         odInput::InputManager &im = localClient.getInputManager();
 
-        auto actionHandler = std::bind(&DragonRfl::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
-        auto menuAction = im.getOrCreateAction(Action::Main_Menu);
-        menuAction->setRepeatable(false);
-        menuAction->setIgnoreUpEvents(true);
-        menuAction->addCallback(actionHandler);
-        im.bindActionToKey(menuAction, odInput::Key::Escape);
-        mMenuAction = menuAction;
+        _bindActions(im);
 
-        auto physicsDebugAction = im.getOrCreateAction(Action::PhysicsDebug_Toggle);
-        physicsDebugAction->setRepeatable(false);
-        physicsDebugAction->setIgnoreUpEvents(true);
-        auto physDebugCallback = [&localClient](Action action, odInput::ActionState state)
+        auto &menuAction = im.getAction(Action::Main_Menu);
+        menuAction.setRepeatable(false);
+        menuAction.setIgnoreUpEvents(true);
+        menuAction.addCallback([this](auto action, auto state)
+        {
+            mGui->setMenuMode(!mGui->isMenuMode());
+        });
+
+        auto &physicsDebugAction = im.getAction(Action::PhysicsDebug_Toggle);
+        physicsDebugAction.setRepeatable(false);
+        physicsDebugAction.setIgnoreUpEvents(true);
+        physicsDebugAction.addCallback([&localClient](Action action, odInput::ActionState state)
         {
             localClient.getPhysicsSystem().toggleDebugDrawing();
-        };
-        physicsDebugAction->addCallback(physDebugCallback);
-        im.bindActionToKey(physicsDebugAction, odInput::Key::F3);
-        mPhysicsDebugAction = physicsDebugAction;
+        });
     }
 
     void DragonRfl::onLevelLoaded(od::Server &localServer)
@@ -134,12 +151,26 @@ namespace dragonRfl
         });
     }
 
+    void DragonRfl::_bindActions(odInput::InputManager &im)
+    {
+        // these actions stay hardcoded:
+        im.bindAction(Action::Main_Menu,           odInput::Key::Escape);
+        im.bindAction(Action::PhysicsDebug_Toggle, odInput::Key::F3);
+
+        // later, these are to be read from the Drakan.cfg. For now, we hardcode them here for testing reasons
+        im.bindAction(Action::Forward,          odInput::Key::W);
+        im.bindAction(Action::Backward,         odInput::Key::S);
+        im.bindAction(Action::Attack_Primary,   odInput::Key::Mouse_Left);
+        im.bindAction(Action::Attack_Secondary, odInput::Key::Mouse_Middle);
+        im.bindAction(Action::Attack_Secondary, odInput::Key::KP_1);
+    }
+
     void DragonRfl::_handleAction(Action action, odInput::ActionState state)
     {
         switch(action)
         {
         case Action::Main_Menu:
-            mGui->setMenuMode(!mGui->isMenuMode());
+
             break;
 
         case Action::PhysicsDebug_Toggle:

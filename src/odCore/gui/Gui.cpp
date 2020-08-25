@@ -37,7 +37,7 @@ namespace odGui
 
         mInputListener = inputManager.createInputListener();
         mInputListener->setMouseMoveCallback(std::bind(&Gui::setCursorPosition, this, std::placeholders::_1));
-        mInputListener->setMouseButtonDownCallback(std::bind(&Gui::mouseDown, this, std::placeholders::_1));
+        mInputListener->setKeyDownCallback(std::bind(&Gui::keyDown, this, std::placeholders::_1));
     }
 
     Gui::~Gui()
@@ -45,23 +45,24 @@ namespace odGui
         mRenderer.removeGuiCallback(this);
     }
 
-    void Gui::mouseDown(int buttonCode)
+    void Gui::keyDown(odInput::Key key)
     {
-        (void)buttonCode;
-
-        if(!mMenuMode)
+        if(key == odInput::Key::Mouse_Left)
         {
-            return;
-        }
+            if(!mMenuMode)
+            {
+                return;
+            }
 
-        mCurrentHitWidgets.clear();
-        mRootWidget->intersect(mCursorPos, mCurrentHitWidgets);
+            mCurrentHitWidgets.clear();
+            mRootWidget->intersect(mCursorPos, mCurrentHitWidgets);
 
-        Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
+            Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
 
-        for(auto it = mCurrentHitWidgets.begin(); it != mCurrentHitWidgets.end(); ++it)
-        {
-            it->widget->onMouseDown(it->hitPointInWidget, 0);
+            for(auto it = mCurrentHitWidgets.begin(); it != mCurrentHitWidgets.end(); ++it)
+            {
+                it->widget->onMouseDown(it->hitPointInWidget, 0);
+            }
         }
     }
 

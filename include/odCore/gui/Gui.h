@@ -17,6 +17,8 @@
 
 #include <odCore/gui/WidgetIntersector.h>
 
+#include <odCore/input/Keys.h>
+
 #include <odCore/render/GuiCallback.h>
 
 namespace odRender
@@ -52,7 +54,7 @@ namespace odGui
 
         void setMenuMode(bool b);
 
-        void mouseDown(int buttonCode);
+        void keyDown(odInput::Key key);
 
         /**
          * @brief Sets the widget to be used as a cursor.

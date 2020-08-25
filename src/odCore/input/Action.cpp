@@ -12,7 +12,7 @@
 namespace odInput
 {
 
-    IAction::IAction(InputManager &im, ActionCode actionCode)
+    ActionHandleBase::ActionHandleBase(InputManager &im, ActionCode actionCode)
     : mActionCode(actionCode)
     , mInputManager(im)
     , mRepeatable(false)
@@ -20,12 +20,12 @@ namespace odInput
     {
     }
 
-    void IAction::setRepeatable(bool b)
+    void ActionHandleBase::setRepeatable(bool b)
     {
         mRepeatable = b;
     }
 
-    void IAction::setIgnoreUpEvents(bool b)
+    void ActionHandleBase::setIgnoreUpEvents(bool b)
     {
         mIgnoreUpEvents = b;
     }

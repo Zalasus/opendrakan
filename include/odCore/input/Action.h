@@ -27,20 +27,20 @@ namespace odInput
     };
 
     /**
-     * Interface for a registration of a input action. It allows configuration of the action and manages
-     * a set of callbacks. The InputManager keeps weak references to actions, so if all references to an action
+     * Interface for a registration of an input action. It allows configuration of the action and manages
+     * a set of listeners. The InputManager keeps weak references to actions, so if all references to an action
      * outside of the InputManager are destroyed, the action itself will be cleanly deallocated and no longer considered
      * by the InputManager. Thus, ActionHandles require no registration and unregistration mechanism
      *
      * Note: the only abstraction happening here is the type of the action enum. In theory, this whole abstract thing
      * could be omitted if we were willing to have the user either use unscoped enums or cast everything to int by himself.
      */
-    class IAction
+    class ActionHandleBase
     {
     public:
 
-        IAction(InputManager &im, int actionCode);
-        virtual ~IAction() = default;
+        ActionHandleBase(InputManager &im, int actionCode);
+        virtual ~ActionHandleBase() = default;
 
         inline ActionCode getActionCode() const { return mActionCode; }
         inline bool isRepeatable() const { return mRepeatable; }
@@ -76,14 +76,14 @@ namespace odInput
 
 
     template <typename _ActionEnum>
-    class ActionHandle final : public IAction
+    class ActionHandle final : public ActionHandleBase
     {
     public:
 
         typedef std::function<void(_ActionEnum, ActionState)> CallbackType;
 
         ActionHandle(InputManager &im, _ActionEnum action)
-        : IAction(im, static_cast<ActionCode>(action))
+        : ActionHandleBase(im, static_cast<ActionCode>(action))
         {
         }
 

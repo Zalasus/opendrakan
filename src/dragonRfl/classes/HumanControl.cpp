@@ -54,21 +54,19 @@ namespace dragonRfl
         auto actionHandler = std::bind(&HumanControl_Sv::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
 
         auto &inputManager = getServer().getInputManagerForClient(mClientId);
-        mForwardAction = inputManager.getOrCreateAction(Action::Forward);
-        mForwardAction->setRepeatable(false);
-        mForwardAction->addCallback(actionHandler);
 
-        mBackwardAction = inputManager.getOrCreateAction(Action::Backward);
-        mBackwardAction->setRepeatable(false);
-        mBackwardAction->addCallback(actionHandler);
+        auto &forwardAction = inputManager.getAction(Action::Forward);
+        forwardAction.setRepeatable(false);
+        forwardAction.addCallback(actionHandler);
 
-        mAttackAction = inputManager.getOrCreateAction(Action::Attack_Primary);
-        mAttackAction->setRepeatable(false);
-        mAttackAction->addCallback(actionHandler);
-        mAttackAction->setIgnoreUpEvents(true);
+        auto &backwardAction = inputManager.getAction(Action::Backward);
+        backwardAction.setRepeatable(false);
+        backwardAction.addCallback(actionHandler);
 
-        mAttackAction = inputManager.getOrCreateAction(Action::Attack_Primary);
-        mAttackAction->addCallback(actionHandler);
+        auto &attackAction = inputManager.getAction(Action::Attack_Primary);
+        attackAction.setRepeatable(false);
+        attackAction.addCallback(actionHandler);
+        attackAction.setIgnoreUpEvents(true);
     }
 
     void HumanControl_Sv::onSpawned()

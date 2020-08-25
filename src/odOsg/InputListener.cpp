@@ -63,19 +63,23 @@ namespace odOsg
         switch(ea.getEventType())
         {
         case osgGA::GUIEventAdapter::KEYDOWN:
-            mInputManager.keyDown(_osgKeyToOdKey(ea.getKey()));
+            mInputManager.injectKey(_osgKeyToOdKey(ea.getKey()), true);
             return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::KEYUP:
-            mInputManager.keyUp(_osgKeyToOdKey(ea.getKey()));
+            mInputManager.injectKey(_osgKeyToOdKey(ea.getKey()), false);
             return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::PUSH:
-            mInputManager.mouseButtonDown(ea.getButton());
+            if(ea.getButton() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Left, true);
+            if(ea.getButton() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Right, true);
+            if(ea.getButton() & osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Middle, true);
             return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::RELEASE:
-            mInputManager.mouseButtonUp(ea.getButton());
+            if(ea.getButton() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Left, false);
+            if(ea.getButton() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Right, false);
+            if(ea.getButton() & osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Middle, false);
             return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::MOVE:
@@ -99,7 +103,7 @@ namespace odOsg
         osg::Vec4 posNdc(x, y, 0, 1);
         osg::Vec4 posGui = posNdc * mRenderer.getNdcToGuiSpaceTransform();
 
-        mInputManager.mouseMoved(posGui.x(), posGui.y());
+        mInputManager.injectMouseMovement(posGui.x(), posGui.y());
 
         // wrap cursor when hitting left or right border
         float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel

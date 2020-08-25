@@ -4,27 +4,15 @@
 namespace odInput
 {
 
-    void InputListener::keyEvent(Key key, bool up)
+    void InputListener::keyEvent(Key key, bool pressed)
     {
-        if(up && mKeyUpCallback != nullptr)
-        {
-            mKeyUpCallback(key);
-
-        }else if(mKeyDownCallback != nullptr)
+        if(pressed && mKeyDownCallback != nullptr)
         {
             mKeyDownCallback(key);
-        }
-    }
 
-    void InputListener::mouseButtonEvent(int button, bool up)
-    {
-        if(up && mMouseButtonUpCallback != nullptr)
+        }else if(mKeyUpCallback != nullptr)
         {
-            mMouseButtonUpCallback(button);
-
-        }else if(mMouseButtonDownCallback != nullptr)
-        {
-            mMouseButtonDownCallback(button);
+            mKeyUpCallback(key);
         }
     }
 
