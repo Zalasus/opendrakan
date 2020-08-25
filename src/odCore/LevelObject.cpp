@@ -115,9 +115,12 @@ namespace od
         if(mState == LevelObjectState::Spawned)
         {
             Logger::warn() << "Level object deleted while still spawned";
-
             despawned();
         }
+
+        Logger::verbose() << "Object " << getObjectId() << " destroyed";
+
+        setEnableUpdate(false);
     }
 
     void LevelObject::loadFromRecord(DataReader dr)
@@ -275,25 +278,8 @@ namespace od
         }
     }
 
-    void LevelObject::destroyed()
-    {
-        Logger::verbose() << "Object " << getObjectId() << " destroyed";
-
-        mState = LevelObjectState::Destroyed;
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onDestroyed();
-        }
-    }
-
     void LevelObject::messageReceived(LevelObject &sender, od::Message message)
     {
-        if(mState == LevelObjectState::Destroyed)
-        {
-            return;
-        }
-
         Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
 
         if(mSpawnableClass != nullptr)

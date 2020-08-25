@@ -154,7 +154,6 @@ namespace od
                 if(it == mLevelObjects.end()) continue;
 
                 it->second->despawned();
-                it->second->destroyed();
 
                 mLevelObjects.erase(it);
             }
@@ -165,14 +164,27 @@ namespace od
         mTempObjectUpdateQueue.clear();
         mTempObjectUpdateQueue = mObjectUpdateQueue;
 
-        for(auto obj : mTempObjectUpdateQueue)
+        for(auto objId : mTempObjectUpdateQueue)
         {
-            obj->update(relTime);
+            auto obj = getLevelObjectById(objId);
+            if(obj != nullptr)
+            {
+                obj->update(relTime);
+
+            }else
+            {
+                Logger::warn() << "Stale object in update queue: " << objId;
+                mObjectUpdateQueue.erase(objId);
+            }
         }
 
-        for(auto obj : mTempObjectUpdateQueue)
+        for(auto objId : mTempObjectUpdateQueue)
         {
-            obj->postUpdate();
+            auto obj = getLevelObjectById(objId);
+            if(obj != nullptr)
+            {
+                obj->postUpdate();
+            }
         }
     }
 
@@ -304,12 +316,12 @@ namespace od
 
     void Level::addToUpdateQueue(LevelObject &obj)
     {
-        mObjectUpdateQueue.insert(&obj);
+        mObjectUpdateQueue.insert(obj.getObjectId());
     }
 
     void Level::removeFromUpdateQueue(LevelObject &obj)
     {
-        auto it = mObjectUpdateQueue.find(&obj);
+        auto it = mObjectUpdateQueue.find(obj.getObjectId());
         if(it != mObjectUpdateQueue.end())
         {
             mObjectUpdateQueue.erase(it);

@@ -46,10 +46,6 @@ namespace odRfl
     {
     }
 
-    void SpawnableClass::onDestroyed()
-    {
-    }
-
     void SpawnableClass::onVisibilityChanged(bool newVisibility)
     {
     }

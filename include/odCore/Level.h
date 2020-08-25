@@ -50,7 +50,7 @@ namespace od
         void loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager);
 
         void addToDestructionQueue(LevelObjectId objId);
-        
+
         Layer *getLayerById(LayerId id);
         Layer *getLayerByIndex(uint16_t index); // FIXME: this should be removed (if possible). the index is really only correct during loading
         void findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results);
@@ -108,22 +108,21 @@ namespace od
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
         std::map<uint16_t, std::shared_ptr<odDb::Database>> mDependencyMap;
-        std::vector<std::unique_ptr<Layer>> mLayers;
-        std::unordered_map<LevelObjectId, std::unique_ptr<LevelObject>> mLevelObjects;
-
-		std::unordered_set<LevelObjectId> mDestructionQueue;
 
 		float mVerticalExtent;
-
 		Layer *mCurrentActivePvsLayer;
 
-		std::unordered_set<LevelObject*> mObjectUpdateQueue;
+        std::unordered_set<LevelObjectId> mDestructionQueue;
 
 		// since an object could add/remove itself from the update queue during the update phase,
         // we have to consider that any iterators of mObjectUpdateQueue might become invalid while
-		// performing the update. thus, we copy the queue into this temporary vector during update
+		// performing the update. thus, we copy the queue into a second, temporary vector during update
 		// so no invalidation can occur.
-        std::unordered_set<LevelObject*> mTempObjectUpdateQueue;
+        std::unordered_set<LevelObjectId> mObjectUpdateQueue;
+        std::unordered_set<LevelObjectId> mTempObjectUpdateQueue;
+
+        std::vector<std::unique_ptr<Layer>> mLayers;
+        std::unordered_map<LevelObjectId, std::unique_ptr<LevelObject>> mLevelObjects;
     };
 
 

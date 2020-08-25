@@ -47,8 +47,7 @@ namespace od
     {
         NotLoaded,
         Loaded,
-        Spawned,
-        Destroyed
+        Spawned
     };
 
     enum class LevelObjectType
@@ -96,7 +95,6 @@ namespace od
 
         void spawned();
         void despawned();
-        void destroyed();
         void messageReceived(LevelObject &sender, od::Message message);
 
         void transform(const ObjectTransform &tf);

@@ -225,14 +225,6 @@ namespace odRfl
         virtual void onMessageReceived(od::LevelObject &sender, od::Message message);
 
         /**
-         * @brief Called when this object was destroyed.
-         *
-         * After this call returns, the RFL class instance might get deallocated. No further hooks will be called.
-         * The LevelObject will stay valid even after this returns, however.
-         */
-        virtual void onDestroyed();
-
-        /**
          * @brief Called when the objects visibility state changed.
          */
         virtual void onVisibilityChanged(bool newVisibility);
