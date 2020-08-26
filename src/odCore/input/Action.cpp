@@ -12,9 +12,8 @@
 namespace odInput
 {
 
-    ActionHandleBase::ActionHandleBase(InputManager &im, ActionCode actionCode)
+    ActionHandleBase::ActionHandleBase(ActionCode actionCode)
     : mActionCode(actionCode)
-    , mInputManager(im)
     , mRepeatable(false)
     , mIgnoreUpEvents(false)
     {

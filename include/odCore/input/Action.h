@@ -39,7 +39,7 @@ namespace odInput
     {
     public:
 
-        ActionHandleBase(InputManager &im, int actionCode);
+        ActionHandleBase(int actionCode);
         virtual ~ActionHandleBase() = default;
 
         inline ActionCode getActionCode() const { return mActionCode; }
@@ -68,7 +68,6 @@ namespace odInput
 
     private:
 
-        InputManager &mInputManager;
         bool mRepeatable;
         bool mIgnoreUpEvents;
 
@@ -82,8 +81,8 @@ namespace odInput
 
         typedef std::function<void(_ActionEnum, ActionState)> CallbackType;
 
-        ActionHandle(InputManager &im, _ActionEnum action)
-        : ActionHandleBase(im, static_cast<ActionCode>(action))
+        ActionHandle(_ActionEnum action)
+        : ActionHandleBase(static_cast<ActionCode>(action))
         {
         }
 
