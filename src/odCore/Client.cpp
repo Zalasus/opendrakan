@@ -121,6 +121,14 @@ namespace od
                 this->mServerConnector->actionTriggered(code, state);
             }
         };
+
+        mActionListener->analogCallback = [this](odInput::ActionCode code, const glm::vec2 &axes)
+        {
+            if(this->mServerConnector != nullptr)
+            {
+                this->mServerConnector->analogActionTriggered(code, axes);
+            }
+        };
     }
 
     Client::~Client()

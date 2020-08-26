@@ -41,6 +41,11 @@ namespace od
             mServer.getInputManagerForClient(mClientId).injectAction(code, state);
         }
 
+        virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override
+        {
+            mServer.getInputManagerForClient(mClientId).injectAnalogAction(code, axes);
+        }
+
 
     private:
 

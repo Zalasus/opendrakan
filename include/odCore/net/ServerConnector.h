@@ -29,6 +29,7 @@ namespace odNet
         virtual ~ServerConnector() = default;
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) = 0;
+        virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) = 0;
 
     };
 
