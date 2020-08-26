@@ -27,6 +27,7 @@ namespace odInput
 
         AnalogActionHandleBase(ActionCode code)
         : mActionCode(code)
+        , mFlipYAxis(false)
         {
         }
 
