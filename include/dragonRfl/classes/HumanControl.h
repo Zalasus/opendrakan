@@ -30,8 +30,6 @@
 
 namespace dragonRfl
 {
-    class DragonRfl;
-
 
 	class HumanControl_Sv : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Sv>
 	{
@@ -90,19 +88,13 @@ namespace dragonRfl
 		virtual void onLoaded() override;
 		virtual void onSpawned() override;
 		virtual void onTransformChanged() override;
-
+        
 
 	 private:
 
-		void _handleCursorMovement(const glm::vec2 &cursorPos);
-
 		HumanControlFields mFields;
 
-		float mYaw;
-		float mPitch;
-
 		std::shared_ptr<odRender::Handle> mRenderHandle;
-		std::shared_ptr<odInput::InputListener> mInputListener;
 
 	};
 

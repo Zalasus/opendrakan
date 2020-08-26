@@ -246,8 +246,6 @@ namespace dragonRfl
 
 
     HumanControl_Cl::HumanControl_Cl()
-    : mYaw(0)
-	, mPitch(0)
     {
     }
 
@@ -258,9 +256,6 @@ namespace dragonRfl
     void HumanControl_Cl::onLoaded()
     {
         getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
-
-        mInputListener = getClient().getInputManager().createInputListener();
-        mInputListener->setMouseMoveCallback(std::bind(&HumanControl_Cl::_handleCursorMovement, this, std::placeholders::_1));
     }
 
     void HumanControl_Cl::onSpawned()
@@ -296,12 +291,4 @@ namespace dragonRfl
             mRenderHandle->setScale(obj.getScale());
         }
     }
-
-    void HumanControl_Cl::_handleCursorMovement(const glm::vec2 &cursorPos)
-    {
-        glm::vec2 yawPitch = TrackingCamera_Cl::cursorPosToYawPitch(cursorPos);
-        mYaw = yawPitch.x;
-        mPitch = yawPitch.y;
-    }
-
 }
