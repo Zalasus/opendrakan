@@ -163,6 +163,8 @@ namespace dragonRfl
         im.bindAction(Action::Attack_Primary,   odInput::Key::Mouse_Left);
         im.bindAction(Action::Attack_Secondary, odInput::Key::Mouse_Middle);
         im.bindAction(Action::Attack_Secondary, odInput::Key::KP_1);
+
+        im.bindAnalogAction(Action::Look, odInput::AnalogSource::MOUSE_POSITION);
     }
 
     void DragonRfl::_handleAction(Action action, odInput::ActionState state)

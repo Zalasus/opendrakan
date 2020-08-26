@@ -7,6 +7,8 @@
 
 #include <odCore/input/InputManager.h>
 
+#include <algorithm>
+
 #include <odCore/Exception.h>
 
 #include <odCore/gui/Gui.h>
@@ -41,11 +43,14 @@ namespace odInput
 
     void InputManager::injectAction(ActionCode actionCode, ActionState state)
     {
-        auto it = mActions.find(actionCode);
-        if(it != mActions.end())
-        {
-            it->second->triggerCallback(state);
-        }
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+        mInjectedActionQueue.push_back(std::make_pair(actionCode, state));
+    }
+
+    void InputManager::injectAnalogAction(ActionCode actionCode, const glm::vec2 &axisData)
+    {
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+        mInjectedAnalogActionQueue.push_back(std::make_pair(actionCode, axisData));
     }
 
     std::shared_ptr<InputListener> InputManager::createInputListener()
@@ -77,6 +82,26 @@ namespace odInput
             _processKey(key.first, key.second);
         }
         mKeyQueue.clear();
+
+        for(auto &action : mInjectedActionQueue)
+        {
+            auto it = mActions.find(action.first);
+            if(it != mActions.end())
+            {
+                _triggerAction(*(it->second), action.second);
+            }
+        }
+        mInjectedActionQueue.clear();
+
+        for(auto &analogAction : mInjectedAnalogActionQueue)
+        {
+            auto it = mAnalogActions.find(analogAction.first);
+            if(it != mAnalogActions.end())
+            {
+                _triggerAnalogAction(*(it->second), analogAction.second);
+            }
+        }
+        mInjectedAnalogActionQueue.clear();
     }
 
     void InputManager::_bind(ActionHandleBase &action, Key key)
@@ -121,9 +146,35 @@ namespace odInput
         }
     }
 
+    void InputManager::_bind(AnalogActionHandleBase &action, AnalogSource source)
+    {
+        if(source != AnalogSource::MOUSE_POSITION)
+        {
+            throw od::Exception("Only mouse position is implemented at the moment");
+        }
+
+        mAnalogActionsBoundToMousePos.push_back(&action);
+    }
+
+    void InputManager::_unbind(AnalogActionHandleBase &action, AnalogSource source)
+    {
+        auto it = std::find(mAnalogActionsBoundToMousePos.begin(), mAnalogActionsBoundToMousePos.end(), &action);
+        if(it != mAnalogActionsBoundToMousePos.end())
+        {
+            mAnalogActionsBoundToMousePos.erase(it);
+        }
+    }
+
     void InputManager::_processMouseMove(glm::vec2 pos)
     {
         _forEachInputListener([=](auto listener){ listener.mouseMoveEvent(pos); });
+
+        for(auto analogAction : mAnalogActionsBoundToMousePos)
+        {
+            glm::vec2 axis = pos;
+            if(analogAction->flipYAxis()) axis.y *= -1;
+            _triggerAnalogAction(*analogAction, axis);
+        }
     }
 
     void InputManager::_processKey(Key key, bool pressed)
@@ -149,13 +200,22 @@ namespace odInput
             {
                 if(boundAction != nullptr)
                 {
-                    _triggerCallbackOnAction(*boundAction, state);
+                    if(state == ActionState::REPEAT && !boundAction->isRepeatable())
+                    {
+                        continue;
+
+                    }else if(state == ActionState::END && boundAction->ignoresUpEvents())
+                    {
+                        continue;
+                    }
+
+                    _triggerAction(*boundAction, state);
                 }
             }
         }
     }
 
-    void InputManager::_triggerCallbackOnAction(ActionHandleBase &action, ActionState state)
+    void InputManager::_triggerAction(ActionHandleBase &action, ActionState state)
     {
         for(auto &l : mRawActionListeners)
         {
@@ -169,16 +229,24 @@ namespace odInput
             }
         }
 
-        if(state == ActionState::REPEAT && !action.isRepeatable())
-        {
-            return;
+        action.triggerCallback(state);
+    }
 
-        }else if(state == ActionState::END && action.ignoresUpEvents())
+    void InputManager::_triggerAnalogAction(AnalogActionHandleBase &analogAction, const glm::vec2 &axisData)
+    {
+        for(auto &l : mRawActionListeners)
         {
-            return;
+            if(!l.expired())
+            {
+                auto listener = l.lock();
+                if(listener != nullptr && listener->analogCallback != nullptr)
+                {
+                    listener->analogCallback(analogAction.getActionCode(), axisData);
+                }
+            }
         }
 
-        action.triggerCallback(state);
+        analogAction.triggerCallback(axisData);
     }
 
 }

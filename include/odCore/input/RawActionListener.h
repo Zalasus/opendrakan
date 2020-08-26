@@ -14,6 +14,10 @@ namespace odInput
         using Callback = std::function<void(ActionCode, ActionState)>;
 
         Callback callback;
+
+        using AnalogCallback = std::function<void(ActionCode, const glm::vec2&)>;
+
+        AnalogCallback analogCallback;
     };
 
 }
