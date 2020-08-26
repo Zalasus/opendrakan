@@ -50,8 +50,9 @@ namespace dragonRfl
         odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
         mFields.probeFields(probe);
 
-        // configure controls FIXME: this handler is not memory safe because actions are not uniquely owned!
+        // configure controls FIXME: these handlers are not memory safe because actions are not uniquely owned!
         auto actionHandler = std::bind(&HumanControl_Sv::_handleAction, this, std::placeholders::_1, std::placeholders::_2);
+        auto analogActionHandler = std::bind(&HumanControl_Sv::_handleAnalogAction, this, std::placeholders::_1, std::placeholders::_2);
 
         auto &inputManager = getServer().getInputManagerForClient(mClientId);
 
@@ -67,6 +68,9 @@ namespace dragonRfl
         attackAction.setRepeatable(false);
         attackAction.addCallback(actionHandler);
         attackAction.setIgnoreUpEvents(true);
+
+        auto &lookAction = inputManager.getAnalogAction(Action::Look);
+        lookAction.addCallback(analogActionHandler);
     }
 
     void HumanControl_Sv::onSpawned()
@@ -187,6 +191,16 @@ namespace dragonRfl
         {
             _playAnim(mFields.readyAnim, true, true);
             mState = State::Idling;
+        }
+    }
+
+    void HumanControl_Sv::_handleAnalogAction(Action action, const glm::vec2 &pos)
+    {
+        if(action == Action::Look)
+        {
+            glm::vec2 yawPitch = TrackingCamera_Cl::cursorPosToYawPitch(pos);
+            mYaw = yawPitch.x;
+            mPitch = yawPitch.y;
         }
     }
 
