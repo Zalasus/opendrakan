@@ -150,6 +150,11 @@ namespace od
 
             mPhysicsSystem->update(relTime);
 
+            for(auto &client : mClients)
+            {
+                client.second.inputManager->update(relTime);
+            }
+
             _commitUpdate();
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
