@@ -66,7 +66,10 @@ namespace dragonRfl
 
             auto &obj = *foundObjects.back();
 
-             // i kinda dislike that we need to set everything up ourselves
+            obj.despawned();
+
+            // i kinda dislike that we need to set everything up ourselves
+            // FIXME: also, this does not override the fields from the object data
             auto newHumanControl = std::make_unique<HumanControl_Sv>(client);
             newHumanControl->setServer(localServer);
             newHumanControl->setLevelObject(obj);
@@ -74,6 +77,8 @@ namespace dragonRfl
             newHumanControl->onLoaded();
 
             obj.replaceRflClassInstance(std::move(newHumanControl));
+
+            obj.spawned();
         }
 
         /*
