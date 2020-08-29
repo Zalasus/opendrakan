@@ -136,12 +136,15 @@ namespace od
         double targetUpdateIntervalNs = (1e9/60.0);
         auto targetUpdateInterval = std::chrono::nanoseconds((int64_t)targetUpdateIntervalNs);
         auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
+        double serverTime = 0.0;
         while(!mIsDone.load(std::memory_order_relaxed))
         {
             auto loopStart = std::chrono::high_resolution_clock::now();
 
             double relTime = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(loopStart - lastUpdateStartTime).count();
             lastUpdateStartTime = loopStart;
+
+            serverTime += relTime;
 
             if(mLevel != nullptr)
             {
@@ -155,7 +158,12 @@ namespace od
                 client.second.inputManager->update(relTime);
             }
 
-            _commitUpdate();
+            // commit update
+            mStateManager->commit(serverTime);
+            for(auto &client : mClients)
+            {
+                mStateManager->sendLatestSnapshotToClient(*client.second.connector);
+            }
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
             auto loopTime = loopEnd - loopStart;
@@ -167,25 +175,10 @@ namespace od
             {
                 float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
                 Logger::warn() << "Server tick took too long (" << loopTimeMs << "ms, target was " << (targetUpdateIntervalNs*1e-6) << "ms)";
-
-                // TODO: this clock skip probably has to be reported to the clients somehow
             }
         }
 
         Logger::info() << "Shutting down server gracefully";
-    }
-
-    void Server::_commitUpdate()
-    {
-        auto tickToSend = mStateManager->getLatestTick();
-
-        mStateManager->advance();
-        //Logger::verbose() << "server tick: " << tickToSend;
-
-        for(auto &client : mClients)
-        {
-            mStateManager->sendToClient(tickToSend, *client.second.connector);
-        }
     }
 
 }

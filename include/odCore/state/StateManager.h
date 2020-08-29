@@ -33,58 +33,38 @@ namespace odNet
 
 namespace odState
 {
+
     class StateManager
     {
     public:
 
-        class CheckoutGuard
-        {
-        public:
-
-            CheckoutGuard(StateManager &sm);
-            CheckoutGuard(CheckoutGuard &&g);
-            ~CheckoutGuard();
-
-
-        private:
-
-            StateManager *mStateManager;
-        };
-
-        using StateTransitionMap = std::unordered_map<od::LevelObjectId, ObjectStateTransition>;
-
-
         StateManager(od::Level &level);
 
+        //ChangeSet &getUpdateLoopChangeSet();
+        //ChangeSet &getIncomingChangeSet(TickNumber tick);
+
+        // these modify the update loop changeset (for server)
+        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf);
+        void objectVisibilityChanged(od::LevelObject &object, bool visible);
+        void objectCustomStateChanged(od::LevelObject &object);
+
+        // these modify the incoming changeset with the given tick (for client)
+        void incomingObjectTransformed(TickNumber tick, od::LevelObject &object, const od::ObjectTransform &tf);
+        void incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible);
+        void incomingObjectCustomStateChanged(TickNumber tick, od::LevelObject &object);
+        void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount);
+
         /**
-         * @brief Returns the latest tick this state manager knows about.
+         * @brief Finalizes the staging snapshot, merges it into the base state and moves it into the timeline.
          *
-         * This is where the server should insert it's updates.
+         * Server only.
          */
-        TickNumber getLatestTick() const;
+        void commit(double realtime);
+
+        void apply(double realtime);
 
         /**
-         * @brief Returns the oldest tick this state manager knows about.
-         */
-        TickNumber getOldestTick() const;
-
-        // note: these are synchronized internally. that might not be the correct place to to that
-        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick);
-        void objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick);
-        void objectCustomStateChanged(od::LevelObject &object, TickNumber tick);
-
-        /**
-         * @brief Advances to the next tick and merges the current one with the base state.
-         */
-        void advance();
-
-        /**
-         * @brief Advances until the given tick is stored in the timeline.
-         */
-        void advanceUntil(TickNumber tick);
-
-        /**
-         * @brief Applies the given tick to the level with optional interpolation.
+         * @brief Applies the given tick to the level with optional forward interpolation.
          *
          * Use this carefully! The applied state will stay forever. Most likely,
          * checkout(...) is what you want to do instead.
@@ -99,28 +79,50 @@ namespace odState
         void apply(TickNumber tick, float lerp = 0.0);
 
         /**
-         * @brief Moves the world into the state it had/will have in the given tick.
+         * @brief Sends all actions and state transitions of the latest snapshot to the client connector.
          *
-         * The level will remain in that state as long as the returned CheckoutGuard lives.
-         *
-         * Will throw if the given tick number is not being held in memory.
+         * Will throw if there is no commited snapshot in the timeline.
          */
-        CheckoutGuard checkout(TickNumber tick);
-
-        /**
-         * @brief Sends all actions and state transitions of the given tick to the client connector.
-         *
-         * TODO: unify with apply() using a "StateApplier whatever" interface
-         */
-        void sendToClient(TickNumber tick, odNet::ClientConnector &c);
+        void sendLatestSnapshotToClient(odNet::ClientConnector &c);
 
 
     private:
 
-        StateTransitionMap &_getTransitionMapForTick(TickNumber tick);
-
-        friend class CheckoutGuard;
         friend class ApplyGuard;
+
+        using ChangeMap = std::unordered_map<od::LevelObjectId, ObjectStateChange>;
+
+        struct Snapshot
+        {
+            Snapshot(TickNumber t)
+            : tick(t)
+            , realtime(0.0)
+            , discreteChangeCount(0)
+            , targetDiscreteChangeCount(0)
+            , confirmed(false)
+            {
+            }
+
+            Snapshot(Snapshot &&s) = default;
+            Snapshot(const Snapshot &s) = delete;
+            Snapshot &operator=(Snapshot &&) = default;
+
+            ChangeMap changesSinceLastSnapshot;
+            TickNumber tick;
+            double realtime;
+            size_t discreteChangeCount;
+
+            size_t targetDiscreteChangeCount;
+            bool confirmed;
+        };
+
+        using SnapshotIterator = std::deque<Snapshot>::iterator;
+
+        /**
+         * @brief Searches for a snapshot with the given tick. If none exists, creates one at the appropriate position.
+         */
+        SnapshotIterator _getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots);
+        void _commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot);
 
         od::Level &mLevel;
 
@@ -128,22 +130,19 @@ namespace odState
 
         /**
          * A set of state events that can take the level as loaded from the file
-         * to the most recent committed tick. This is useful for new joining
+         * to the most recent committed snapshot. This is useful for new joining
          * clients as well as for creating savegames.
          *
-         * This is basically the union of all state transitions that happened so far.
+         * This is basically a union of all state changes that happened so far.
          */
-        StateTransitionMap mBaseStateTransitionMap;
+        ChangeMap mBaseStateChangeMap;
 
-        size_t mOldestTickIndex;
-        TickNumber mOldestTick;
-        std::vector<StateTransitionMap> mStateTransitions;
+        ChangeMap mCurrentUpdateChangeMap;
 
-        // TODO: this timeline's tick management is kinda redundant to the one the SM does itself. unify this, plz
-        Timeline<EventVariant> mEvents;
+        std::deque<Snapshot> mSnapshots;
+        std::mutex mSnapshotMutex; // this synchronized accesses to mSnapshots
 
-        std::mutex mUpdateMutex;
-
+        std::deque<Snapshot> mIncomingSnapshots;
     };
 
 }

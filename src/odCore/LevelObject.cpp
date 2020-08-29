@@ -229,16 +229,14 @@ namespace od
     {
         _applyTransform(tf, this);
 
-        auto &sm = mLevel.getEngine().getStateManager();
-        sm.objectTransformed(*this, tf, sm.getLatestTick());
+        mLevel.getEngine().getStateManager().objectTransformed(*this, tf);
     }
 
     void LevelObject::setVisible(bool v)
     {
         _applyVisibility(v);
 
-        auto &sm = mLevel.getEngine().getStateManager();
-        sm.objectVisibilityChanged(*this, v, sm.getLatestTick());
+        mLevel.getEngine().getStateManager().objectVisibilityChanged(*this, v);
     }
 
     void LevelObject::spawned()

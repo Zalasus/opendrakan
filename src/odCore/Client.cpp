@@ -49,33 +49,34 @@ namespace od
 
         virtual void objectTransformed(odState::TickNumber tick, LevelObjectId id, const od::ObjectTransform &tf) override
         {
-            mClient.getStateManager().advanceUntil(tick);
-
             auto &obj = _getObjectById(id);
-            mClient.getStateManager().objectTransformed(obj, tf, tick);
+            mClient.getStateManager().incomingObjectTransformed(tick, obj, tf);
         }
 
         virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) override
         {
-            mClient.getStateManager().advanceUntil(tick);
-
             auto &obj = _getObjectById(id);
-            mClient.getStateManager().objectVisibilityChanged(obj, visible, tick);
+            mClient.getStateManager().incomingObjectVisibilityChanged(tick, obj, visible);
         }
 
-        virtual void spawnObject(od::LevelObjectId id)
+        virtual void spawnObject(od::LevelObjectId id) override
         {
             _getObjectById(id).spawned();
         }
 
-        virtual void despawnObject(od::LevelObjectId id)
+        virtual void despawnObject(od::LevelObjectId id) override
         {
             _getObjectById(id).despawned();
         }
 
-        virtual void destroyObject(od::LevelObjectId id)
+        virtual void destroyObject(od::LevelObjectId id) override
         {
              _getObjectById(id).requestDestruction();
+        }
+
+        virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) override
+        {
+            mClient.getStateManager().confirmIncomingSnapshot(tick, realtime, discreteChangeCount);
         }
 
 
@@ -172,8 +173,7 @@ namespace od
         int idealTickOffset = std::ceil(lerpTime/tickInterval);
         float idealTickTimeOffset = idealTickOffset*tickInterval - lerpTime;
 
-        odState::TickNumber currentTick = mStateManager->getLatestTick() - idealTickOffset;
-        float currentTickTimeOffset = idealTickTimeOffset;
+        double clientTime = 0;
         auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
         while(!mIsDone.load(std::memory_order_relaxed))
         {
@@ -181,7 +181,7 @@ namespace od
             double relTime = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(loopStart - lastUpdateStartTime).count();
             lastUpdateStartTime = loopStart;
 
-            currentTickTimeOffset += relTime;
+            clientTime += relTime;
 
             if(mLevel != nullptr)
             {
@@ -191,32 +191,7 @@ namespace od
             mPhysicsSystem->update(relTime);
             mInputManager->update(relTime);
 
-            // advance currentTick based on the passed time, but never go farther than the latest tick in the SM
-            if(currentTickTimeOffset >= tickInterval)
-            {
-                int ticksToAdd = currentTickTimeOffset/tickInterval;
-                if(currentTick + ticksToAdd > mStateManager->getLatestTick())
-                {
-                    ticksToAdd = mStateManager->getLatestTick() - currentTick;
-                }
-
-                currentTick += ticksToAdd;
-                currentTickTimeOffset -= ticksToAdd*tickInterval;
-            }
-
-            // can be greater than 1 if we run out of server ticks and need to extrapolate
-            float tickFraction = currentTickTimeOffset/tickInterval;
-
-            // we allow *some* extrapolation, but when thing get out of hand, it is better to just glitch out a bit
-            if(tickFraction >= 1.5)
-            {
-                currentTick = mStateManager->getLatestTick() - idealTickOffset;
-                currentTickTimeOffset = idealTickTimeOffset;
-                Logger::warn() << "Client time ran out of valid tick range";
-            }
-
-            //Logger::verbose() << "client tick: " << currentTick << " + " << tickFraction;
-            mStateManager->apply(currentTick, tickFraction);
+            mStateManager->apply(clientTime);
 
             mRenderer.frame(relTime);
         }

@@ -1,6 +1,8 @@
 
 #include <odCore/state/StateManager.h>
 
+#include <algorithm>
+
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 
@@ -13,7 +15,7 @@ namespace odState
 
 
     /**
-     * @brief An RAII object that disables state updates on the StateManager as long as it lives
+     * @brief An RAII object that disables state updates on the StateManager as long as it lives.
      */
     class ApplyGuard
     {
@@ -21,7 +23,6 @@ namespace odState
 
         ApplyGuard(StateManager &sm)
         : mStateManager(sm)
-        , mLock(sm.mUpdateMutex)
         {
             mStateManager.mIgnoreStateUpdates = true;
         }
@@ -37,169 +38,177 @@ namespace odState
     private:
 
         StateManager &mStateManager;
-        std::lock_guard<std::mutex> mLock;
     };
-
-
-    StateManager::CheckoutGuard::CheckoutGuard(StateManager &sm)
-    : mStateManager(&sm)
-    {
-    }
-
-    StateManager::CheckoutGuard::CheckoutGuard(CheckoutGuard &&g)
-    : mStateManager(g.mStateManager)
-    {
-        g.mStateManager = nullptr;
-    }
-
-    StateManager::CheckoutGuard::~CheckoutGuard()
-    {
-        if(mStateManager != nullptr)
-        {
-            // TODO: reverse checkout here
-        }
-    }
 
 
     StateManager::StateManager(od::Level &level)
     : mLevel(level)
     , mIgnoreStateUpdates(false)
-    , mOldestTickIndex(0)
-    , mOldestTick(0)
-    , mEvents(0)
     {
-        mStateTransitions.resize(TICK_CAPACITY);
     }
 
-    TickNumber StateManager::getLatestTick() const
-    {
-        return mOldestTick + mStateTransitions.size() - 1;
-    }
-
-    TickNumber StateManager::getOldestTick() const
-    {
-        return mOldestTick;
-    }
-
-    void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf, TickNumber tick)
+    void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf)
     {
         if(mIgnoreStateUpdates) return;
 
-        std::lock_guard<std::mutex> lock(mUpdateMutex);
-
-        auto &transitionMap = _getTransitionMapForTick(tick);
-        auto &objEvent = transitionMap[object.getObjectId()];
-        objEvent.setTransform(tf);
+        auto &objectChanges = mCurrentUpdateChangeMap[object.getObjectId()];
+        objectChanges.setTransform(tf);
     }
 
-    void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible, TickNumber tick)
+    void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
     {
         if(mIgnoreStateUpdates) return;
 
-        std::lock_guard<std::mutex> lock(mUpdateMutex);
-
-        auto &transitionMap = _getTransitionMapForTick(tick);
-        auto &objEvent = transitionMap[object.getObjectId()];
-        objEvent.setVisibility(visible);
+        auto &objectChanges = mCurrentUpdateChangeMap[object.getObjectId()];
+        objectChanges.setVisibility(visible);
     }
 
-    void StateManager::objectCustomStateChanged(od::LevelObject &object, TickNumber tick)
+    void StateManager::objectCustomStateChanged(od::LevelObject &object)
     {
+        OD_UNIMPLEMENTED();
+    }
+
+    void StateManager::incomingObjectTransformed(TickNumber tick, od::LevelObject &object, const od::ObjectTransform &tf)
+    {
+        if(mIgnoreStateUpdates) return;
+        auto snapshot = _getSnapshot(tick, mIncomingSnapshots);
+        auto &objectChanges = snapshot->changesSinceLastSnapshot[object.getObjectId()];
+
+        if(!objectChanges.transformed()) snapshot->discreteChangeCount++;
+        objectChanges.setTransform(tf);
+
+        _commitIncomingIfComplete(tick, snapshot);
+    }
+
+    void StateManager::incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible)
+    {
+        if(mIgnoreStateUpdates) return;
+        auto snapshot = _getSnapshot(tick, mIncomingSnapshots);
+        auto &objectChanges = snapshot->changesSinceLastSnapshot[object.getObjectId()];
+
+        if(!objectChanges.visibilityChanged()) snapshot->discreteChangeCount++;
+        objectChanges.setVisibility(visible);
+
+        _commitIncomingIfComplete(tick, snapshot);
+    }
+
+    void StateManager::incomingObjectCustomStateChanged(TickNumber tick, od::LevelObject &object)
+    {
+        OD_UNIMPLEMENTED();
+    }
+
+    void StateManager::confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount)
+    {
+        auto stagedSnapshot = _getSnapshot(tick, mIncomingSnapshots);
+        stagedSnapshot->realtime = time;
+        stagedSnapshot->targetDiscreteChangeCount = changeCount;
+        stagedSnapshot->confirmed = true;
+
+        _commitIncomingIfComplete(tick, stagedSnapshot);
+    }
+
+    void StateManager::commit(double realtime)
+    {
+        // apply all new changes to the base state map and count total discrete changes
+        size_t discreteChangeCount = 0;
+        for(auto &stateChange : mCurrentUpdateChangeMap)
+        {
+            auto &baseStateChange = mCurrentUpdateChangeMap[stateChange.first];
+            baseStateChange.merge(stateChange.second);
+
+            discreteChangeCount += stateChange.second.getDiscreteChangeCount();
+        }
+
+        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+
+        if(mSnapshots.size() >= TICK_CAPACITY)
+        {
+            mSnapshots.pop_front();
+        }
+
+        TickNumber nextTick = mSnapshots.empty() ? 0 : mSnapshots.back().tick + 1;
+        mSnapshots.emplace_back(nextTick);
+        auto &newSnapshot = mSnapshots.back();
+        newSnapshot.changesSinceLastSnapshot.swap(mCurrentUpdateChangeMap);
+        newSnapshot.realtime = realtime;
+        newSnapshot.discreteChangeCount = discreteChangeCount;
+    }
+
+    void StateManager::apply(double realtime)
+    {
+        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+        ApplyGuard applyGuard(*this);
+
+        auto pred = [](Snapshot &snapshot, double realtime) { return snapshot.realtime < realtime; };
+        auto it = std::lower_bound(mSnapshots.begin(), mSnapshots.end(), realtime, pred);
     }
 
     void StateManager::apply(TickNumber tick, float lerp)
     {
-        ApplyGuard guard(*this);
+        OD_UNIMPLEMENTED();
+    }
 
-        lerp = 0.0;
-
-        if(lerp == 0.0) // TODO: epsilon
+    void StateManager::sendLatestSnapshotToClient(odNet::ClientConnector &c)
+    {
+        if(mSnapshots.empty())
         {
-            for(auto &stateTransition : _getTransitionMapForTick(tick))
-            {
-                auto obj = mLevel.getLevelObjectById(stateTransition.first); // TODO: maybe store this pointer in the transition object? would spare us lots of unnecessary lookups.
-                if(obj == nullptr) continue;
+            throw od::Exception("No snapshot available for sending");
+        }
 
-                if(stateTransition.second.transformed()) obj->transform(stateTransition.second.getTransform());
-                if(stateTransition.second.visibilityChanged()) obj->setVisible(stateTransition.second.getVisibility());
-                //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+        auto &snapshot = mSnapshots.back();
+
+        for(auto &stateChange : snapshot.changesSinceLastSnapshot)
+        {
+            if(stateChange.second.transformed())
+            {
+                c.objectTransformed(snapshot.tick, stateChange.first, stateChange.second.getTransform());
             }
 
-        }else
-        {
-            OD_UNIMPLEMENTED();
-        }
-    }
-
-    StateManager::CheckoutGuard StateManager::checkout(TickNumber tick)
-    {
-        CheckoutGuard guard(*this);
-
-        // TODO: implement
-
-        return std::move(guard);
-    }
-
-    void StateManager::advance()
-    {
-        std::lock_guard<std::mutex> lock(mUpdateMutex);
-
-        // apply all new changes to the base state map
-        for(auto &stateTransition : _getTransitionMapForTick(getLatestTick()))
-        {
-            auto &baseStateTransition = mBaseStateTransitionMap[stateTransition.first];
-            baseStateTransition.merge(stateTransition.second);
-        }
-
-        mOldestTickIndex = (mOldestTickIndex + 1) % mStateTransitions.size();
-        ++mOldestTick;
-
-        // since the latest tick has now wrapped around to an old one, clear that so it starts fresh
-        _getTransitionMapForTick(getLatestTick()).clear();
-    }
-
-    void StateManager::advanceUntil(TickNumber tick)
-    {
-        if(tick < getOldestTick())
-        {
-            throw od::Exception("Tick is out of reach");
-        }
-        
-        while(getLatestTick() < tick)
-        {
-            advance();
-        }
-    }
-
-    void StateManager::sendToClient(TickNumber tick, odNet::ClientConnector &c)
-    {
-        for(auto &stateTransition : _getTransitionMapForTick(tick))
-        {
-            if(stateTransition.second.transformed())
+            if(stateChange.second.visibilityChanged())
             {
-                c.objectTransformed(tick, stateTransition.first, stateTransition.second.getTransform());
-            }
-
-            if(stateTransition.second.visibilityChanged())
-            {
-                c.objectVisibilityChanged(tick, stateTransition.first, stateTransition.second.getVisibility());
+                c.objectVisibilityChanged(snapshot.tick, stateChange.first, stateChange.second.getVisibility());
             }
 
             //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
         }
+
+        c.confirmSnapshot(snapshot.tick, snapshot.realtime, snapshot.discreteChangeCount);
     }
 
-    StateManager::StateTransitionMap &StateManager::_getTransitionMapForTick(TickNumber tick)
+    StateManager::SnapshotIterator StateManager::_getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots)
     {
-        auto offset = tick - mOldestTick;
-        if(offset < 0 || offset >= static_cast<decltype(offset)>(mStateTransitions.size()))
+        auto pred = [](Snapshot &snapshot, TickNumber tick) { return snapshot.tick == tick; };
+        auto it = std::lower_bound(snapshots.begin(), snapshots.end(), tick, pred);
+        if(it == snapshots.end())
         {
-            throw od::Exception("Invalid tick number");
+            return snapshots.emplace(snapshots.begin(), tick);
+
+        }else if(it->tick == tick)
+        {
+            return it;
+
+        }else
+        {
+            return snapshots.emplace(it, tick);
         }
+    }
 
-        auto baseOffset = (offset + mOldestTickIndex) % mStateTransitions.size();
+    void StateManager::_commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot)
+    {
+        if(incomingSnapshot->confirmed && (incomingSnapshot->discreteChangeCount == incomingSnapshot->targetDiscreteChangeCount))
+        {
+            std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
-        return mStateTransitions[baseOffset];
+            if(mSnapshots.size() >= TICK_CAPACITY)
+            {
+                mSnapshots.pop_front();
+            }
+
+            auto snapshot = _getSnapshot(tick, mSnapshots);
+            if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
+            *snapshot = std::move(*incomingSnapshot);
+            mIncomingSnapshots.erase(incomingSnapshot);
+        }
     }
 
 }

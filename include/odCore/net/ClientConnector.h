@@ -44,6 +44,8 @@ namespace odNet
         virtual void spawnObject(od::LevelObjectId id) = 0;
         virtual void despawnObject(od::LevelObjectId id) = 0;
         virtual void destroyObject(od::LevelObjectId id) = 0;
+
+        virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) = 0;
     };
 
 }

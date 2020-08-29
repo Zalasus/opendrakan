@@ -7,11 +7,11 @@
 namespace odState
 {
 
-    class ObjectStateTransition
+    class ObjectStateChange
     {
     public:
 
-        ObjectStateTransition();
+        ObjectStateChange();
 
         inline bool transformed() const { return mFlags & TRANSFORMED; }
         inline bool visibilityChanged() const { return mFlags & VISIBILITY_CHANGED; }
@@ -28,7 +28,15 @@ namespace odState
         /**
          * @brief Applies the transition t on top of this one. States unaffected by t will retain their original value.
          */
-        void merge(const ObjectStateTransition &t);
+        void merge(const ObjectStateChange &t);
+
+        /**
+         * @brief Returns the number of discrete state changes in this object.
+         *
+         * Transform, visibility change, animation etc. each count as one
+         * discrete change. 
+         */
+        size_t getDiscreteChangeCount() const;
 
 
     private:
