@@ -54,3 +54,18 @@ foreach(f ${SHADER_SOURCES})
     # configure file creates dependencies between source and target
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f} ${CMAKE_CURRENT_BINARY_DIR}/${f} COPYONLY)
 endforeach()
+
+# version header generation
+find_package(Git)
+if(Git_FOUND)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Version.h.in ${CMAKE_CURRENT_BINARY_DIR}/Version.h.in COPYONLY)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/VersionCache.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/VersionCache.cmake.in COPYONLY)
+    add_custom_target(GenerateVersion ALL
+                      COMMAND ${CMAKE_COMMAND} -DGIT_EXECUTABLE=${GIT_EXECUTABLE} -P ${CMAKE_CURRENT_SOURCE_DIR}/GenerateVersion.cmake
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+else()
+    set(VERSION_COMMIT n/a)
+    set(VERSION_TAG n/a)
+    set(VERSION_BRANCH n/a)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Version.h.in ${CMAKE_CURRENT_BINARY_DIR}/Version.h)
+endif()
