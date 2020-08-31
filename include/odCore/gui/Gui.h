@@ -48,6 +48,7 @@ namespace odGui
         inline odRender::Renderer &getRenderer() { return mRenderer; }
         inline void markNeedsFlattening() { mNeedsFlattening = true; }
         inline void markMeasurementsDirty() { mMeasurementsDirty = true; }
+        inline const glm::vec2 &getCursorPosition() const { return mCursorPos; }
 
         void addWidget(std::shared_ptr<Widget> widget);
         void removeWidget(std::shared_ptr<Widget> widget);

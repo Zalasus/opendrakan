@@ -186,6 +186,19 @@ namespace dragonRfl
 
     void CrystalRingButton::onUpdate(float relTime)
     {
+        /*
+        for experimenting with different crystal light directions:
+        auto cursor = getGui().getCursorPosition();
+        float theta = (glm::pi<float>()/2)*cursor.y;
+        float phi = 2*glm::pi<float>()*cursor.x;
+        glm::vec3 lightDirection(std::sin(theta)*std::cos(phi), std::sin(theta)*std::sin(phi), std::cos(theta));
+        glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
+        glm::vec3 lightAmbient(0.15, 0.15, 0.15);
+        if(mInnerRingHandle != nullptr) mInnerRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+        if(mOuterRingHandle != nullptr) mOuterRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+        if(mCrystalHandle != nullptr) mCrystalHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+        */
+
         if(mClicked)
         {
             if(mRingAnimPercent < 1.0)
