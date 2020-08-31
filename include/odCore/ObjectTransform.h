@@ -51,14 +51,18 @@ namespace od
 
         ObjectTransform merge(const ObjectTransform &tf) const;
         ObjectTransform invert() const;
+        ObjectTransform lerp(const ObjectTransform &rhs, float delta) const;
 
 
     private:
 
         using TransformTypeMask = uint8_t;
-        static constexpr TransformTypeMask TRANSLATED = 1;
-        static constexpr TransformTypeMask ROTATED    = 2;
-        static constexpr TransformTypeMask SCALED     = 4;
+        static constexpr TransformTypeMask TRANSLATED           = (1 << 0);
+        static constexpr TransformTypeMask ROTATED              = (1 << 1);
+        static constexpr TransformTypeMask SCALED               = (1 << 2);
+        static constexpr TransformTypeMask TRANSLATION_RELATIVE = (1 << 3);
+        static constexpr TransformTypeMask ROTATATION_RELATIVE  = (1 << 4);
+        static constexpr TransformTypeMask SCALING_RELATIVE     = (1 << 5);
 
         TransformTypeMask mTypeMask;
         glm::vec3 mPosition;

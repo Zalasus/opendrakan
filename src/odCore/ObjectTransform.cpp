@@ -94,4 +94,47 @@ namespace od
         return tf;
     }
 
+    ObjectTransform ObjectTransform::lerp(const ObjectTransform &rhs, float delta) const
+    {
+        ObjectTransform tf;
+
+        if(isTranslation())
+        {
+            if(rhs.isTranslation())
+            {
+                tf.setPosition(glm::mix(getPosition(), rhs.getPosition(), delta));
+
+            }else
+            {
+                tf.setPosition(getPosition());
+            }
+        }
+
+        if(isRotation())
+        {
+            if(rhs.isRotation())
+            {
+                tf.setRotation(glm::slerp(getRotation(), rhs.getRotation(), delta));
+
+            }else
+            {
+                tf.setRotation(getRotation());
+            }
+        }
+
+        if(isScaling())
+        {
+            if(rhs.isScaling())
+            {
+                tf.setScale(glm::mix(getScale(), rhs.getScale(), delta));
+
+            }else
+            {
+                tf.setScale(getScale());
+            }
+        }
+
+        return tf;
+    }
+
 }
