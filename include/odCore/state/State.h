@@ -2,12 +2,8 @@
 #ifndef INCLUDE_ODCORE_STATE_STATE_H_
 #define INCLUDE_ODCORE_STATE_STATE_H_
 
-#include <odCore/ObjectTransform.h>
-
-namespace od
-{
-    class LevelObject;
-}
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 namespace odState
 {
@@ -18,15 +14,31 @@ namespace odState
 
         ObjectStateChange();
 
-        inline bool transformed() const { return mFlags & TRANSFORMED; }
-        inline bool visibilityChanged() const { return mFlags & VISIBILITY_CHANGED; }
-        inline bool animationFrame() const { return mFlags & ANIMATION_FRAME; }
+        inline bool isTranslated() const { return mFlags & TRANSLATION; }
+        inline bool isRotated() const { return mFlags & ROTATION; }
+        inline bool isScaled() const { return mFlags & SCALE; }
+        inline bool isVisibilityChanged() const { return mFlags & VISIBILITY; }
+        inline bool isAnimationFrameChanged() const { return mFlags & ANIMATION_FRAME; }
 
-        inline const od::ObjectTransform &getTransform() const { return mTransform; }
+        inline glm::vec3 getTranslation() const { return mTranslation; }
+        inline glm::quat getRotation() const { return mRotation; }
+        inline glm::vec3 getScale() const { return mScale; }
         inline bool getVisibility() const { return mVisibility; }
         inline float getAnimationFrameTime() const { return mAnimationFrameTime; }
 
-        void setTransform(const od::ObjectTransform &tf);
+        template <typename T>
+        void visit(T &t) const
+        {
+            if(isTranslated()) t.translated(mTranslation);
+            if(isRotated()) t.rotated(mRotation);
+            if(isScaled()) t.scaled(mScale);
+            if(isVisibilityChanged()) t.visibilityChanged(mVisibility);
+            if(isAnimationFrameChanged()) t.animationFrameChanged(mAnimationFrameTime);
+        }
+
+        void setTranslation(const glm::vec3 &p);
+        void setRotation(const glm::quat &r);
+        void setScale(const glm::vec3 &s);
         void setVisibility(bool b);
         void setAnimationFrame(float t);
 
@@ -43,17 +55,15 @@ namespace odState
          */
         size_t getDiscreteChangeCount() const;
 
-        void apply(od::LevelObject &obj);
-
         /**
-         * @brief Applies to the object a linear interpolation between this and another state.
+         * @bried Creates a new ObjectStateChange where states appearing in both this and rhs are linearly interpolated.
          *
-         * States present in this but not in rhs will be applied without
-         * interpolation. State present in rhs but not in this will be ignored.
+         * States that only appear in this and not in rhs are added to the result without interpolation. States present
+         * in rhs but not in this will be ignored.
          *
          * @param delta  A value between 0.0 and 1.0 (not enforced).
          */
-        void applyInterpolated(od::LevelObject &obj, const ObjectStateChange &rhs, float delta);
+        ObjectStateChange lerp(const ObjectStateChange &rhs, float delta) const;
 
         /**
          * @brief Removes from this all states that are the same in this and rhs.
@@ -63,14 +73,18 @@ namespace odState
 
     private:
 
-        static constexpr uint32_t TRANSFORMED        = (1 << 0);
-        static constexpr uint32_t VISIBILITY_CHANGED = (1 << 1);
-        static constexpr uint32_t ANIMATION_FRAME    = (1 << 2);
-        static constexpr uint32_t CUSTOM             = (1 << 3);
+        static constexpr uint32_t TRANSLATION        = (1 << 0);
+        static constexpr uint32_t ROTATION           = (1 << 1);
+        static constexpr uint32_t SCALE              = (1 << 2);
+        static constexpr uint32_t VISIBILITY         = (1 << 3);
+        static constexpr uint32_t ANIMATION_FRAME    = (1 << 4);
+        static constexpr uint32_t CUSTOM             = (1 << 5);
 
         uint32_t mFlags;
 
-        od::ObjectTransform mTransform;
+        glm::vec3 mTranslation;
+        glm::quat mRotation;
+        glm::vec3 mScale;
         bool mVisibility;
         float mAnimationFrameTime;
 

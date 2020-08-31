@@ -14,6 +14,69 @@ namespace odState
     static const TickNumber TICK_CAPACITY = 16;
 
 
+    struct ApplyChangeToObjectVisitor
+    {
+        od::LevelObject &obj;
+
+        ApplyChangeToObjectVisitor(od::LevelObject &o)
+        : obj(o)
+        {
+        }
+
+        void translated(const glm::vec3 &p)
+        {
+            obj.setPosition(p);
+        }
+
+        void rotated(const glm::quat &r)
+        {
+            obj.setRotation(r);
+        }
+
+        void scaled(const glm::vec3 &s)
+        {
+            obj.setScale(s);
+        }
+
+        void visibilityChanged(bool b)
+        {
+            obj.setVisible(b);
+        }
+
+        void animationFrameChanged(float t)
+        {
+        }
+    };
+
+
+    struct ApplyChangeToClientConnectorVisitor
+    {
+        ApplyChangeToClientConnectorVisitor(TickNumber tick, odNet::ClientConnector &c)
+        {
+        }
+
+        void translated(const glm::vec3 &p)
+        {
+        }
+
+        void rotated(const glm::quat &r)
+        {
+        }
+
+        void scaled(const glm::vec3 &s)
+        {
+        }
+
+        void visibilityChanged(bool b)
+        {
+        }
+
+        void animationFrameChanged(float t)
+        {
+        }
+    };
+
+
     /**
      * @brief An RAII object that disables state updates on the StateManager as long as it lives.
      */
@@ -59,7 +122,9 @@ namespace odState
         if(mIgnoreStateUpdates) return;
 
         auto &objectChanges = mCurrentUpdateChangeMap[object.getObjectId()];
-        objectChanges.setTransform(tf);
+        if(tf.isTranslation()) objectChanges.setTranslation(tf.getPosition());
+        if(tf.isRotation()) objectChanges.setRotation(tf.getRotation());
+        if(tf.isScaling()) objectChanges.setScale(tf.getScale());
     }
 
     void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
@@ -81,8 +146,9 @@ namespace odState
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
         auto &objectChanges = snapshot->changes[object.getObjectId()];
 
-        if(!objectChanges.transformed()) snapshot->discreteChangeCount++;
-        objectChanges.setTransform(tf);
+        // TODO: aaa
+        //if(!objectChanges.isTransformed()) snapshot->discreteChangeCount++;
+        //objectChanges.setTransform(tf);
 
         _commitIncomingIfComplete(tick, snapshot);
     }
@@ -93,7 +159,7 @@ namespace odState
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
         auto &objectChanges = snapshot->changes[object.getObjectId()];
 
-        if(!objectChanges.visibilityChanged()) snapshot->discreteChangeCount++;
+        if(!objectChanges.isVisibilityChanged()) snapshot->discreteChangeCount++;
         objectChanges.setVisibility(visible);
 
         _commitIncomingIfComplete(tick, snapshot);
@@ -155,7 +221,9 @@ namespace odState
             {
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
-                objChange.second.apply(*obj);
+
+                ApplyChangeToObjectVisitor applyVisitor(*obj);
+                objChange.second.visit(applyVisitor);
             }
 
         }else if(it == mSnapshots.begin())
@@ -166,7 +234,9 @@ namespace odState
             {
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
-                objChange.second.apply(*obj);
+
+                ApplyChangeToObjectVisitor applyVisitor(*obj);
+                objChange.second.visit(applyVisitor);
             }
 
         }else
@@ -181,19 +251,22 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
+                ApplyChangeToObjectVisitor applyVisitor(*obj);
+
                 auto changeInB = b.changes.find(objChange.first);
                 if(changeInB == b.changes.end())
                 {
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
-                    objChange.second.apply(*obj);
+                    objChange.second.visit(applyVisitor);
 
                 }else
                 {
-                    // TODO: a flag indicating that a state has not changed since the last snapshot might improve performance a tiny bit
-                    //  by ommitting the lerp. we still have to store full snapshots, as we must move through the timeline arbitrarily, and
-                    //  for every missing state, we'd have to search previous and intermediate snapshots to recover the original state
-                    objChange.second.applyInterpolated(*obj, changeInB->second, delta);
+                    // TODO: a flag indicating that a state has not changed since the last snapshot might improve performance a tiny bit by ommitting the lerp.
+                    //  we still have to store full snapshots, as we must move through the timeline arbitrarily, and for every missing state, we'd have to
+                    //  search previous and intermediate snapshots to recover the original state
+                    auto lerped = objChange.second.lerp(changeInB->second, delta);
+                    lerped.visit(applyVisitor);
                 }
             }
         }
@@ -210,52 +283,25 @@ namespace odState
         }
 
         size_t discreteChangeCount = 0;
+        ApplyChangeToClientConnectorVisitor applyVisitor(tickToSend, c);
 
         auto lastSent = _getSnapshot(lastSentSnapshot, mSnapshots, false);
-        if(lastSent == mSnapshots.end())
+
+        for(auto &stateChange : toSend->changes)
         {
-            // last sent snapshot does not exist (anymore). send full snapshot
-            for(auto &stateChange : toSend->changes)
+            ObjectStateChange filteredChange = stateChange.second;
+            if(lastSent != mSnapshots.end())
             {
-                if(stateChange.second.transformed())
-                {
-                    c.objectTransformed(tickToSend, stateChange.first, stateChange.second.getTransform());
-                }
-
-                if(stateChange.second.visibilityChanged())
-                {
-                    c.objectVisibilityChanged(tickToSend, stateChange.first, stateChange.second.getVisibility());
-                }
-
-                //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
-
-                discreteChangeCount += stateChange.second.getDiscreteChangeCount();
-            }
-
-        }else
-        {
-            // last sent snapshot does exist. only send states that changed
-            for(auto &stateChange : toSend->changes)
-            {
-                ObjectStateChange filteredChange = stateChange.second;
                 auto prevChange = lastSent->changes.find(stateChange.first);
                 if(prevChange != lastSent->changes.end())
                 {
                     filteredChange.removeSteadyStates(prevChange->second);
                 }
-
-                if(filteredChange.transformed())
-                {
-                    c.objectTransformed(tickToSend, stateChange.first, filteredChange.getTransform());
-                }
-
-                if(filteredChange.visibilityChanged())
-                {
-                    c.objectVisibilityChanged(tickToSend, stateChange.first, filteredChange.getVisibility());
-                }
-
-                discreteChangeCount += filteredChange.getDiscreteChangeCount();
             }
+
+            filteredChange.visit(applyVisitor);
+
+            discreteChangeCount += filteredChange.getDiscreteChangeCount();
         }
 
         c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount);
@@ -305,7 +351,7 @@ namespace odState
                 mSnapshots.pop_front();
             }
 
-            // merge incoming with previous full snapshot
+            // TODO: merge incoming with previous full snapshot
             //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
 
             auto snapshot = _getSnapshot(tick, mSnapshots, true);

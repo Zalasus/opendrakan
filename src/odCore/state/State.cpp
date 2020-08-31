@@ -1,8 +1,6 @@
 
 #include <odCore/state/State.h>
 
-#include <odCore/LevelObject.h>
-
 namespace odState
 {
 
@@ -11,16 +9,28 @@ namespace odState
     {
     }
 
-    void ObjectStateChange::setTransform(const od::ObjectTransform &tf)
+    void ObjectStateChange::setTranslation(const glm::vec3 &p)
     {
-        mTransform = tf;
-        mFlags |= TRANSFORMED;
+        mTranslation = p;
+        mFlags |= TRANSLATION;
+    }
+
+    void ObjectStateChange::setRotation(const glm::quat &r)
+    {
+        mRotation = r;
+        mFlags |= ROTATION;
+    }
+
+    void ObjectStateChange::setScale(const glm::vec3 &s)
+    {
+        mScale = s;
+        mFlags |= SCALE;
     }
 
     void ObjectStateChange::setVisibility(bool b)
     {
         mVisibility = b;
-        mFlags |= VISIBILITY_CHANGED;
+        mFlags |= VISIBILITY;
     }
 
     void ObjectStateChange::setAnimationFrame(float t)
@@ -29,102 +39,156 @@ namespace odState
         mFlags |= ANIMATION_FRAME;
     }
 
-    /**
-     * @brief Applies the transition t on top of this one. States unaffected by t will retain their original value.
-     */
     void ObjectStateChange::merge(const ObjectStateChange &t)
     {
-        if(t.transformed())
+        // NOTE: by implementing all these operations as visitors, we get compile errors when we add states but don't account for them in all operations. neato!
+        struct MergeVisitor
         {
-            setTransform(t.mTransform);
-        }
+            ObjectStateChange &me;
 
-        if(t.visibilityChanged())
-        {
-            setVisibility(t.mVisibility);
-        }
+            MergeVisitor(ObjectStateChange &_me)
+            : me(_me)
+            {
+            }
 
-        if(t.animationFrame())
-        {
-            setAnimationFrame(t.mAnimationFrameTime);
-        }
+            void translated(const glm::vec3 &p) { me.setTranslation(p); }
+            void rotated(const glm::quat &r) { me.setRotation(r); }
+            void scaled(const glm::vec3 &s) { me.setScale(s); }
+            void visibilityChanged(bool b) { me.setVisibility(b); }
+            void animationFrameChanged(float t) { me.setAnimationFrame(t); }
+        };
+
+        MergeVisitor visitor(*this);
+        t.visit(visitor);
     }
 
     size_t ObjectStateChange::getDiscreteChangeCount() const
     {
-        return transformed() + visibilityChanged() + animationFrame();
+        // hackish bit-twiddling for counting one-bits in flag field.
+        //  source: https://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
+        uint32_t v = mFlags;
+        v = v - ((v >> 1) & 0x55555555);
+        v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+        return (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
     }
 
-    void ObjectStateChange::apply(od::LevelObject &obj)
+    ObjectStateChange ObjectStateChange::lerp(const ObjectStateChange &rhs, float delta) const
     {
-        if(transformed())
+        struct LerpVisitor
         {
-            obj.transform(mTransform);
-        }
+            const ObjectStateChange &rhs;
+            ObjectStateChange result;
+            float delta;
 
-        if(visibilityChanged())
-        {
-            obj.setVisible(mVisibility);
-        }
-
-        /*if(animationFrame())
-        {
-            obj.setAnimationFrame(mAnimationFrameTime);
-        }*/
-    }
-
-    void ObjectStateChange::applyInterpolated(od::LevelObject &obj, const ObjectStateChange &rhs, float delta)
-    {
-        if(transformed())
-        {
-            if(rhs.transformed())
+            LerpVisitor(const ObjectStateChange &_rhs, float _delta)
+            : rhs(_rhs)
+            , delta(_delta)
             {
-                obj.transform(mTransform.lerp(rhs.mTransform, delta));
-
-            }else
-            {
-                obj.transform(mTransform);
-            }
-        }
-
-        if(visibilityChanged())
-        {
-            obj.setVisible(mVisibility);
-        }
-
-        if(animationFrame())
-        {
-            if(rhs.transformed())
-            {
-                float lerpedTime = glm::mix(mAnimationFrameTime, rhs.mAnimationFrameTime, delta);
-                //obj.setAnimationFrame(lerpedTime);
-
-            }else
-            {
-                //obj.setAnimationFrame(mAnimationFrameTime);
             }
 
-        }
+            void translated(const glm::vec3 &p)
+            {
+                if(rhs.isTranslated())
+                {
+                    result.setTranslation(glm::mix(p, rhs.mTranslation, delta));
+
+                }else
+                {
+                    result.setTranslation(p);
+                }
+            }
+
+            void rotated(const glm::quat &r)
+            {
+                if(rhs.isRotated())
+                {
+                    result.setRotation(glm::slerp(r, rhs.mRotation, delta));
+
+                }else
+                {
+                    result.setRotation(r);
+                }
+            }
+
+            void scaled(const glm::vec3 &s)
+            {
+                if(rhs.isScaled())
+                {
+                    result.setScale(glm::mix(s, rhs.mScale, delta));
+
+                }else
+                {
+                    result.setScale(s);
+                }
+            }
+
+            void visibilityChanged(bool b)
+            {
+                // can't interpolate this
+                result.setVisibility(b);
+            }
+
+            void animationFrameChanged(float t)
+            {
+                if(rhs.isAnimationFrameChanged())
+                {
+                    float lerpedTime = glm::mix(t, rhs.mAnimationFrameTime, delta);
+                    result.setAnimationFrame(lerpedTime);
+
+                }else
+                {
+                    result.setAnimationFrame(t);
+                }
+            }
+        };
+
+        LerpVisitor visitor(rhs, delta);
+        this->visit(visitor);
+
+        return visitor.result;
     }
 
     void ObjectStateChange::removeSteadyStates(const ObjectStateChange &rhs)
     {
         // TODO: epsilon
-        
-        if(transformed() && rhs.transformed() && mTransform == rhs.mTransform)
-        {
-            mFlags &= ~TRANSFORMED;
-        }
 
-        if(visibilityChanged() && rhs.visibilityChanged() && mVisibility == rhs.mVisibility)
+        struct RemoveSteadyStatesVisitor
         {
-            mFlags &= ~VISIBILITY_CHANGED;
-        }
+            ObjectStateChange &me;
 
-        if(animationFrame() && rhs.animationFrame() && mAnimationFrameTime == rhs.mAnimationFrameTime)
-        {
-            mFlags &= ~ANIMATION_FRAME;
-        }
+            RemoveSteadyStatesVisitor(ObjectStateChange &_me)
+            : me(_me)
+            {
+            }
+
+            void translated(const glm::vec3 &p)
+            {
+                if(me.isTranslated() && me.mTranslation == p) me.mFlags &= ~TRANSLATION;
+            }
+
+            void rotated(const glm::quat &r)
+            {
+                if(me.isRotated() && me.mRotation == r) me.mFlags &= ~ROTATION;
+            }
+
+            void scaled(const glm::vec3 &s)
+            {
+                 if(me.isScaled() && me.mScale == s) me.mFlags &= ~SCALE;
+            }
+
+            void visibilityChanged(bool b)
+            {
+                if(me.isVisibilityChanged() && me.mVisibility == b) me.mFlags &= ~VISIBILITY;
+            }
+
+            void animationFrameChanged(float t)
+            {
+                if(me.isAnimationFrameChanged() && me.mAnimationFrameTime == t) me.mFlags &= ~ANIMATION_FRAME;
+            }
+        };
+
+        RemoveSteadyStatesVisitor visitor(*this);
+        rhs.visit(visitor);
     }
 
 }
