@@ -6,8 +6,10 @@
 #ifndef INCLUDE_ODCORE_NET_CLIENTCONNECTOR_H_
 #define INCLUDE_ODCORE_NET_CLIENTCONNECTOR_H_
 
+#include <glm/vec3.hpp>
+#include <glm/gtc/quaternion.hpp>
+
 #include <odCore/IdTypes.h>
-#include <odCore/ObjectTransform.h>
 
 #include <odCore/state/Timeline.h>
 
@@ -38,7 +40,9 @@ namespace odNet
 
         virtual void loadLevel(const std::string &path) = 0;
 
-        virtual void objectTransformed(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectTransform &tf) = 0;
+        virtual void objectTranslated(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &p) = 0;
+        virtual void objectRotated(odState::TickNumber tick, od::LevelObjectId id, const glm::quat &q) = 0;
+        virtual void objectScaled(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &s) = 0;
         virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) = 0;
 
         virtual void spawnObject(od::LevelObjectId id) = 0;

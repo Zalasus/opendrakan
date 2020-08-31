@@ -99,10 +99,6 @@ namespace od
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
-    , mAttachmentTarget(nullptr)
-    , mIgnoreAttachmentTranslation(false)
-    , mIgnoreAttachmentRotation(false)
-    , mIgnoreAttachmentScale(false)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
     , mSpawnableClass(nullptr)
@@ -225,11 +221,22 @@ namespace od
         }
     }
 
-    void LevelObject::transform(const ObjectTransform &tf)
+    void LevelObject::setPosition(const glm::vec3 &v)
     {
-        _applyTransform(tf, this);
+        _applyTranslation(v);
+        mLevel.getEngine().getStateManager().objectTranslated(*this, v);
+    }
 
-        mLevel.getEngine().getStateManager().objectTransformed(*this, tf);
+    void LevelObject::setRotation(const glm::quat &q)
+    {
+        _applyRotation(q);
+        mLevel.getEngine().getStateManager().objectRotated(*this, q);
+    }
+
+    void LevelObject::setScale(const glm::vec3 &s)
+    {
+        _applyScale(s);
+        mLevel.getEngine().getStateManager().objectScaled(*this, s);
     }
 
     void LevelObject::setVisible(bool v)
@@ -261,10 +268,6 @@ namespace od
     void LevelObject::despawned()
     {
         Logger::debug() << "Object " << getObjectId() << " despawned";
-
-        // detach this from any object it may be attached to, and detach all objects attached to this
-        detach();
-        _detachAllAttachedObjects();
 
         mState = LevelObjectState::Loaded;
 
@@ -359,58 +362,17 @@ namespace od
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale)
     {
-        if(target == nullptr || mAttachmentTarget != nullptr)
-        {
-            detach();
-
-            if(target == nullptr)
-            {
-                return;
-            }
-        }
-
-        if(!ignoreRotation)
-        {
-            throw UnsupportedException("Attachment with rotation is unimplemented");
-        }
-
-        mAttachmentTarget = target;
-        target->mAttachedObjects.push_back(this);
-
-        mIgnoreAttachmentTranslation = ignoreTranslation;
-        mIgnoreAttachmentRotation = ignoreRotation;
-        mIgnoreAttachmentScale = ignoreScale;
-
-        mAttachmentTranslationOffset = getPosition() - target->getPosition();
-        mAttachmentRotationOffset = glm::inverse(getRotation()) * target->getRotation();
-        mAttachmentScaleRatio = getScale() / target->getScale();
+        OD_UNIMPLEMENTED();
     }
 
     void LevelObject::attachToChannel(LevelObject *target, size_t channelIndex, bool clearOffset)
     {
-        // TODO: implement
-
-        throw UnsupportedException("Attaching to channels not yet implemented.");
+        OD_UNIMPLEMENTED();
     }
 
     void LevelObject::detach()
     {
-        if(mAttachmentTarget == nullptr)
-        {
-            return;
-        }
-
-        auto it = std::find(mAttachmentTarget->mAttachedObjects.begin(), mAttachmentTarget->mAttachedObjects.end(), this);
-        if(it != mAttachmentTarget->mAttachedObjects.end())
-        {
-            mAttachmentTarget->mAttachedObjects.erase(it);
-
-        }else
-        {
-            Logger::warn() << "Inconsistency when detaching object: Attachment target didn't have attached object in it's list of attached objects";
-        }
-
-        mAttachmentTarget = nullptr;
+        OD_UNIMPLEMENTED();
     }
 
     void LevelObject::messageAllLinkedObjects(od::Message message)
@@ -495,53 +457,43 @@ namespace od
         }
     }
 
-    void LevelObject::_applyTransform(const ObjectTransform &tf, LevelObject *transformChangeSource)
+    void LevelObject::_applyTranslation(const glm::vec3 &p)
     {
-        if(tf.isTranslation())
+        auto prevPos = getPosition();
+        mPosition = p;
+
+        if(_hasCrossedTriangle(prevPos, mPosition))
         {
-            auto prevPos = getPosition();
-            mPosition = tf.getPosition();
-
-            if(_hasCrossedTriangle(prevPos, mPosition))
-            {
-                updateAssociatedLayer(true);
-            }
-
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onTranslated(prevPos, mPosition);
-            }
-        }
-
-        if(tf.isRotation())
-        {
-            glm::quat prevRot = mRotation;
-            mRotation = tf.getRotation();
-
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onRotated(prevRot, mRotation);
-            }
-        }
-
-        if(tf.isScaling())
-        {
-            glm::vec3 prevScale = mScale;
-            mScale = tf.getScale();
-
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onScaled(prevScale, mScale);
-            }
-        }
-
-        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
-        {
-            (*it)->_attachmentTargetsTransformUpdated(this);
+            updateAssociatedLayer(true);
         }
 
         if(mSpawnableClass != nullptr)
         {
+            mSpawnableClass->onTranslated(prevPos, mPosition);
+            mSpawnableClass->onTransformChanged();
+        }
+    }
+
+    void LevelObject::_applyRotation(const glm::quat &r)
+    {
+        glm::quat prevRot = mRotation;
+        mRotation = r;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onRotated(prevRot, mRotation);
+            mSpawnableClass->onTransformChanged();
+        }
+    }
+
+    void LevelObject::_applyScale(const glm::vec3 &s)
+    {
+        glm::vec3 prevScale = mScale;
+        mScale = s;
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onScaled(prevScale, mScale);
             mSpawnableClass->onTransformChanged();
         }
     }
@@ -556,56 +508,6 @@ namespace od
         {
             mSpawnableClass->onVisibilityChanged(v);
         }
-    }
-
-    void LevelObject::_attachmentTargetsTransformUpdated(LevelObject *transformChangeSource)
-    {
-        if(transformChangeSource == this)
-        {
-            Logger::warn() << "Circular attachment detected! Will try to fix this by detaching one object in the loop";
-            detach();
-            return;
-        }
-
-        if(mAttachmentTarget == nullptr)
-        {
-            // uhmm.... wat?
-            Logger::error() << "Attachment inconsistency: Level object that was not attached to anything was asked to update to attachment target position";
-            return;
-        }
-
-        // note: don't call this->setPosition etc. here. it would falsely call _applyTransform using this as argument and notify the StateManager
-
-        ObjectTransform tf;
-
-        if(!mIgnoreAttachmentTranslation)
-        {
-            tf.setPosition(mAttachmentTarget->getPosition() + mAttachmentTranslationOffset);
-        }
-
-        if(!mIgnoreAttachmentRotation)
-        {
-            // TODO: implement
-        }
-
-        if(!mIgnoreAttachmentScale)
-        {
-            tf.setScale(mAttachmentTarget->getScale() * mAttachmentScaleRatio);
-        }
-
-        _applyTransform(tf, transformChangeSource);
-    }
-
-    void LevelObject::_detachAllAttachedObjects()
-    {
-        // note: we don't call detach() on all attached objects here, as that would cause every single one of them
-        //  to search itself in mAttachedObjects, unecessarily making this O(n^2)
-        for(auto it = mAttachedObjects.begin(); it != mAttachedObjects.end(); ++it)
-        {
-            (*it)->mAttachmentTarget = nullptr;
-        }
-
-        mAttachedObjects.clear();
     }
 
 }

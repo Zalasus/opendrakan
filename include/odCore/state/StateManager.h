@@ -12,8 +12,6 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <odCore/ObjectTransform.h>
-
 #include <odCore/input/Keys.h>
 
 #include <odCore/state/Event.h>
@@ -46,12 +44,16 @@ namespace odState
         TickNumber getLatestTick();
 
         // these modify the update loop changeset (for server)
-        void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf);
+        void objectTranslated(od::LevelObject &object, const glm::vec3 &p);
+        void objectRotated(od::LevelObject &object, const glm::quat &q);
+        void objectScaled(od::LevelObject &object, const glm::vec3 &s);
         void objectVisibilityChanged(od::LevelObject &object, bool visible);
         void objectCustomStateChanged(od::LevelObject &object);
 
         // these modify the incoming changeset with the given tick (for client)
-        void incomingObjectTransformed(TickNumber tick, od::LevelObject &object, const od::ObjectTransform &tf);
+        void incomingObjectTranslated(TickNumber tick, od::LevelObject &object, const glm::vec3 &p);
+        void incomingObjectRotated(TickNumber tick, od::LevelObject &object, const glm::quat &r);
+        void incomingObjectScaled(TickNumber tick, od::LevelObject &object, const glm::vec3 &s);
         void incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible);
         void incomingObjectCustomStateChanged(TickNumber tick, od::LevelObject &object);
         void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount);
@@ -88,7 +90,6 @@ namespace odState
             Snapshot(TickNumber t)
             : tick(t)
             , realtime(0.0)
-            , discreteChangeCount(0)
             , targetDiscreteChangeCount(0)
             , confirmed(false)
             {
@@ -104,7 +105,6 @@ namespace odState
 
             // bookkeeping for incoming snapshots
             //  TODO: move out of this struct, as they are only ever valid for incoming snapshots
-            size_t discreteChangeCount;
             size_t targetDiscreteChangeCount;
             bool confirmed;
         };

@@ -74,7 +74,6 @@ target_sources(odCore PRIVATE
         "Message.cpp"
         "NuLogger.cpp"
         "ObjectLightReceiver.cpp"
-        "ObjectTransform.cpp"
         "RiffReader.cpp"
         "GlmSerializers.cpp"
         "Server.cpp"

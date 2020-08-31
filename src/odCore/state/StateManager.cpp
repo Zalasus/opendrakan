@@ -117,22 +117,28 @@ namespace odState
         return mSnapshots.empty() ? FIRST_TICK - 1 : mSnapshots.back().tick;
     }
 
-    void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf)
+    void StateManager::objectTranslated(od::LevelObject &object, const glm::vec3 &p)
     {
         if(mIgnoreStateUpdates) return;
+        mCurrentUpdateChangeMap[object.getObjectId()].setTranslation(p);
+    }
 
-        auto &objectChanges = mCurrentUpdateChangeMap[object.getObjectId()];
-        if(tf.isTranslation()) objectChanges.setTranslation(tf.getPosition());
-        if(tf.isRotation()) objectChanges.setRotation(tf.getRotation());
-        if(tf.isScaling()) objectChanges.setScale(tf.getScale());
+    void StateManager::objectRotated(od::LevelObject &object, const glm::quat &q)
+    {
+        if(mIgnoreStateUpdates) return;
+        mCurrentUpdateChangeMap[object.getObjectId()].setRotation(q);
+    }
+
+    void StateManager::objectScaled(od::LevelObject &object, const glm::vec3 &s)
+    {
+        if(mIgnoreStateUpdates) return;
+        mCurrentUpdateChangeMap[object.getObjectId()].setScale(s);
     }
 
     void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
     {
         if(mIgnoreStateUpdates) return;
-
-        auto &objectChanges = mCurrentUpdateChangeMap[object.getObjectId()];
-        objectChanges.setVisibility(visible);
+        mCurrentUpdateChangeMap[object.getObjectId()].setVisibility(visible);
     }
 
     void StateManager::objectCustomStateChanged(od::LevelObject &object)
@@ -140,28 +146,31 @@ namespace odState
         OD_UNIMPLEMENTED();
     }
 
-    void StateManager::incomingObjectTransformed(TickNumber tick, od::LevelObject &object, const od::ObjectTransform &tf)
+    void StateManager::incomingObjectTranslated(TickNumber tick, od::LevelObject &object, const glm::vec3 &p)
     {
-        if(mIgnoreStateUpdates) return;
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        auto &objectChanges = snapshot->changes[object.getObjectId()];
+        snapshot->changes[object.getObjectId()].setTranslation(p);
+        _commitIncomingIfComplete(tick, snapshot);
+    }
 
-        // TODO: aaa
-        //if(!objectChanges.isTransformed()) snapshot->discreteChangeCount++;
-        //objectChanges.setTransform(tf);
+    void StateManager::incomingObjectRotated(TickNumber tick, od::LevelObject &object, const glm::quat &r)
+    {
+        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
+        snapshot->changes[object.getObjectId()].setRotation(r);
+        _commitIncomingIfComplete(tick, snapshot);
+    }
 
+    void StateManager::incomingObjectScaled(TickNumber tick, od::LevelObject &object, const glm::vec3 &s)
+    {
+        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
+        snapshot->changes[object.getObjectId()].setScale(s);
         _commitIncomingIfComplete(tick, snapshot);
     }
 
     void StateManager::incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible)
     {
-        if(mIgnoreStateUpdates) return;
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        auto &objectChanges = snapshot->changes[object.getObjectId()];
-
-        if(!objectChanges.isVisibilityChanged()) snapshot->discreteChangeCount++;
-        objectChanges.setVisibility(visible);
-
+        snapshot->changes[object.getObjectId()].setVisibility(visible);
         _commitIncomingIfComplete(tick, snapshot);
     }
 
@@ -342,23 +351,39 @@ namespace odState
 
     void StateManager::_commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot)
     {
-        if(incomingSnapshot->confirmed && (incomingSnapshot->discreteChangeCount == incomingSnapshot->targetDiscreteChangeCount))
+        if(!incomingSnapshot->confirmed)
         {
-            std::lock_guard<std::mutex> lock(mSnapshotMutex);
-
-            if(mSnapshots.size() >= TICK_CAPACITY)
-            {
-                mSnapshots.pop_front();
-            }
-
-            // TODO: merge incoming with previous full snapshot
-            //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
-
-            auto snapshot = _getSnapshot(tick, mSnapshots, true);
-            if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
-            *snapshot = std::move(*incomingSnapshot);
-            mIncomingSnapshots.erase(incomingSnapshot);
+            return;
         }
+
+        // even though we might count the total discrete changes more than once here, this
+        //  should happen only rarely in case a confirmation packet arrives earlier than a change.
+        //  however, doing it this way reduces the amount of dependent states in our program, which is a plus
+        size_t discreteChangeCount = 0;
+        for(auto &change : incomingSnapshot->changes)
+        {
+            discreteChangeCount += change.second.getDiscreteChangeCount();
+        }
+
+        if(incomingSnapshot->targetDiscreteChangeCount != discreteChangeCount)
+        {
+            return;
+        }
+
+        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+
+        if(mSnapshots.size() >= TICK_CAPACITY)
+        {
+            mSnapshots.pop_front();
+        }
+
+        // TODO: merge incoming with previous full snapshot
+        //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
+
+        auto snapshot = _getSnapshot(tick, mSnapshots, true);
+        if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
+        *snapshot = std::move(*incomingSnapshot);
+        mIncomingSnapshots.erase(incomingSnapshot);
     }
 
 }

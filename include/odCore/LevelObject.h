@@ -18,7 +18,6 @@
 #include <odCore/BoundingSphere.h>
 #include <odCore/IdTypes.h>
 #include <odCore/Message.h>
-#include <odCore/ObjectTransform.h>
 
 #include <odCore/db/Class.h>
 
@@ -97,30 +96,10 @@ namespace od
         void despawned();
         void messageReceived(LevelObject &sender, od::Message message);
 
-        void transform(const ObjectTransform &tf);
+        void setPosition(const glm::vec3 &v);
+        void setRotation(const glm::quat &q);
+        void setScale(const glm::vec3 &s);
         void setVisible(bool v);
-
-        // convenience methods. these just call transform() with a specially constructed ObjectTransform
-        inline void setPosition(const glm::vec3 &v)
-        {
-            ObjectTransform tf;
-            tf.setPosition(v);
-            transform(tf);
-        }
-
-        inline void setRotation(const glm::quat &q)
-        {
-            ObjectTransform tf;
-            tf.setRotation(q);
-            transform(tf);
-        }
-
-        inline void setScale(const glm::vec3 &s)
-        {
-            ObjectTransform tf;
-            tf.setScale(s);
-            transform(tf);
-        }
 
         void customStateDirty() {}
         void setCustomStateModes(bool networked, bool lerped) {}
@@ -231,13 +210,12 @@ namespace od
         void replaceRflClassInstance(std::unique_ptr<odRfl::ClassBase> i);
 
 
-
     private:
 
-        void _applyTransform(const ObjectTransform &tf, LevelObject *transformChangeSource);
+        void _applyTranslation(const glm::vec3 &p);
+        void _applyRotation(const glm::quat &r);
+        void _applyScale(const glm::vec3 &s);
         void _applyVisibility(bool v);
-        void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
-        void _detachAllAttachedObjects();
 
         Level &mLevel;
 
@@ -263,15 +241,6 @@ namespace od
         LevelObjectState mState;
         LevelObjectType mObjectType;
         SpawnStrategy mSpawnStrategy;
-
-        od::LevelObject *mAttachmentTarget;
-        std::vector<od::LevelObject*> mAttachedObjects;
-        glm::vec3 mAttachmentTranslationOffset;
-        glm::quat mAttachmentRotationOffset;
-        glm::vec3 mAttachmentScaleRatio;
-        bool mIgnoreAttachmentTranslation;
-        bool mIgnoreAttachmentRotation;
-        bool mIgnoreAttachmentScale;
 
         Layer *mAssociatedLayer;
         bool mAssociateWithCeiling;
