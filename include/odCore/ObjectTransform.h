@@ -40,6 +40,11 @@ namespace od
         inline const glm::quat &getRotation() const { return mRotation; }
         inline const glm::vec3 &getScale() const { return mScale; }
 
+        /**
+         * @brief Full equality operation. Pretty useless without epsilon ATM.
+         */
+        bool operator==(const ObjectTransform &rhs) const;
+
         void setPosition(const glm::vec3 &p);
         void addPosition(const glm::vec3 &p);
 

@@ -47,6 +47,13 @@ namespace odState
     {
     }
 
+    TickNumber StateManager::getLatestTick()
+    {
+        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+
+        return mSnapshots.empty() ? FIRST_TICK - 1 : mSnapshots.back().tick;
+    }
+
     void StateManager::objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf)
     {
         if(mIgnoreStateUpdates) return;
@@ -71,8 +78,8 @@ namespace odState
     void StateManager::incomingObjectTransformed(TickNumber tick, od::LevelObject &object, const od::ObjectTransform &tf)
     {
         if(mIgnoreStateUpdates) return;
-        auto snapshot = _getSnapshot(tick, mIncomingSnapshots);
-        auto &objectChanges = snapshot->changesSinceLastSnapshot[object.getObjectId()];
+        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
+        auto &objectChanges = snapshot->changes[object.getObjectId()];
 
         if(!objectChanges.transformed()) snapshot->discreteChangeCount++;
         objectChanges.setTransform(tf);
@@ -83,8 +90,8 @@ namespace odState
     void StateManager::incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible)
     {
         if(mIgnoreStateUpdates) return;
-        auto snapshot = _getSnapshot(tick, mIncomingSnapshots);
-        auto &objectChanges = snapshot->changesSinceLastSnapshot[object.getObjectId()];
+        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
+        auto &objectChanges = snapshot->changes[object.getObjectId()];
 
         if(!objectChanges.visibilityChanged()) snapshot->discreteChangeCount++;
         objectChanges.setVisibility(visible);
@@ -99,7 +106,7 @@ namespace odState
 
     void StateManager::confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount)
     {
-        auto stagedSnapshot = _getSnapshot(tick, mIncomingSnapshots);
+        auto stagedSnapshot = _getSnapshot(tick, mIncomingSnapshots, true);
         stagedSnapshot->realtime = time;
         stagedSnapshot->targetDiscreteChangeCount = changeCount;
         stagedSnapshot->confirmed = true;
@@ -109,29 +116,20 @@ namespace odState
 
     void StateManager::commit(double realtime)
     {
-        // apply all new changes to the base state map and count total discrete changes
-        size_t discreteChangeCount = 0;
-        for(auto &stateChange : mCurrentUpdateChangeMap)
-        {
-            auto &baseStateChange = mCurrentUpdateChangeMap[stateChange.first];
-            baseStateChange.merge(stateChange.second);
-
-            discreteChangeCount += stateChange.second.getDiscreteChangeCount();
-        }
-
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
         if(mSnapshots.size() >= TICK_CAPACITY)
         {
+            // TODO: reclaim the discarded change map so we don't allocate a new one for every commit
             mSnapshots.pop_front();
         }
 
-        TickNumber nextTick = mSnapshots.empty() ? 0 : mSnapshots.back().tick + 1;
+        TickNumber nextTick = mSnapshots.empty() ? FIRST_TICK : mSnapshots.back().tick + 1;
         mSnapshots.emplace_back(nextTick);
+
         auto &newSnapshot = mSnapshots.back();
-        newSnapshot.changesSinceLastSnapshot.swap(mCurrentUpdateChangeMap);
+        newSnapshot.changes = mCurrentUpdateChangeMap;
         newSnapshot.realtime = realtime;
-        newSnapshot.discreteChangeCount = discreteChangeCount;
     }
 
     void StateManager::apply(double realtime)
@@ -139,49 +137,145 @@ namespace odState
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
         ApplyGuard applyGuard(*this);
 
-        auto pred = [](Snapshot &snapshot, double realtime) { return snapshot.realtime < realtime; };
-        auto it = std::lower_bound(mSnapshots.begin(), mSnapshots.end(), realtime, pred);
-    }
-
-    void StateManager::apply(TickNumber tick, float lerp)
-    {
-        OD_UNIMPLEMENTED();
-    }
-
-    void StateManager::sendLatestSnapshotToClient(odNet::ClientConnector &c)
-    {
         if(mSnapshots.empty())
         {
-            throw od::Exception("No snapshot available for sending");
+            // can't apply anything on an empty timeline. we are done right away.
+            return;
         }
 
-        auto &snapshot = mSnapshots.back();
+        // find the first snapshots with a time later than the requested one
+        auto pred = [](double realtime, Snapshot &snapshot) { return realtime < snapshot.realtime; };
+        auto it = std::upper_bound(mSnapshots.begin(), mSnapshots.end(), realtime, pred);
 
-        for(auto &stateChange : snapshot.changesSinceLastSnapshot)
+        if(it == mSnapshots.end())
         {
-            if(stateChange.second.transformed())
+            // the latest snapshot is older than the requested time -> extrapolate
+            //  TODO: extrapolation not implemented. applying latest snapshot verbatim for now
+            for(auto &objChange : mSnapshots.back().changes)
             {
-                c.objectTransformed(snapshot.tick, stateChange.first, stateChange.second.getTransform());
+                od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
+                if(obj == nullptr) continue;
+                objChange.second.apply(*obj);
             }
 
-            if(stateChange.second.visibilityChanged())
+        }else if(it == mSnapshots.begin())
+        {
+            // we only have one snapshot in the timeline, and it's later than the requested time.
+            //  extrapolating here is probably unnecessary, so we just apply the snapshot as if it happened right now.
+            for(auto &objChange : it->changes)
             {
-                c.objectVisibilityChanged(snapshot.tick, stateChange.first, stateChange.second.getVisibility());
+                od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
+                if(obj == nullptr) continue;
+                objChange.second.apply(*obj);
             }
 
-            //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+        }else
+        {
+            Snapshot &a = *(it-1);
+            Snapshot &b = *it;
+
+            double delta = (realtime - a.realtime)/(b.realtime - a.realtime);
+
+            for(auto &objChange : a.changes)
+            {
+                od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
+                if(obj == nullptr) continue;
+
+                auto changeInB = b.changes.find(objChange.first);
+                if(changeInB == b.changes.end())
+                {
+                    // no corresponding change in B. this should not happen, as
+                    //  all snapshots reflect all changes since load. for now, assume steady state
+                    objChange.second.apply(*obj);
+
+                }else
+                {
+                    // TODO: a flag indicating that a state has not changed since the last snapshot might improve performance a tiny bit
+                    //  by ommitting the lerp. we still have to store full snapshots, as we must move through the timeline arbitrarily, and
+                    //  for every missing state, we'd have to search previous and intermediate snapshots to recover the original state
+                    objChange.second.applyInterpolated(*obj, changeInB->second, delta);
+                }
+            }
         }
-
-        c.confirmSnapshot(snapshot.tick, snapshot.realtime, snapshot.discreteChangeCount);
     }
 
-    StateManager::SnapshotIterator StateManager::_getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots)
+    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::ClientConnector &c, TickNumber lastSentSnapshot)
+    {
+        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+
+        auto toSend = _getSnapshot(tickToSend, mSnapshots, false);
+        if(toSend == mSnapshots.end())
+        {
+            throw od::Exception("Snapshot with given tick not available for sending");
+        }
+
+        size_t discreteChangeCount = 0;
+
+        auto lastSent = _getSnapshot(lastSentSnapshot, mSnapshots, false);
+        if(lastSent == mSnapshots.end())
+        {
+            // last sent snapshot does not exist (anymore). send full snapshot
+            for(auto &stateChange : toSend->changes)
+            {
+                if(stateChange.second.transformed())
+                {
+                    c.objectTransformed(tickToSend, stateChange.first, stateChange.second.getTransform());
+                }
+
+                if(stateChange.second.visibilityChanged())
+                {
+                    c.objectVisibilityChanged(tickToSend, stateChange.first, stateChange.second.getVisibility());
+                }
+
+                //if(stateTransition.second.animationFrame) c.objectTransformed(tick, stateTransition.first, stateTransition.second.transform);
+
+                discreteChangeCount += stateChange.second.getDiscreteChangeCount();
+            }
+
+        }else
+        {
+            // last sent snapshot does exist. only send states that changed
+            for(auto &stateChange : toSend->changes)
+            {
+                ObjectStateChange filteredChange = stateChange.second;
+                auto prevChange = lastSent->changes.find(stateChange.first);
+                if(prevChange != lastSent->changes.end())
+                {
+                    filteredChange.removeSteadyStates(prevChange->second);
+                }
+
+                if(filteredChange.transformed())
+                {
+                    c.objectTransformed(tickToSend, stateChange.first, filteredChange.getTransform());
+                }
+
+                if(filteredChange.visibilityChanged())
+                {
+                    c.objectVisibilityChanged(tickToSend, stateChange.first, filteredChange.getVisibility());
+                }
+
+                discreteChangeCount += filteredChange.getDiscreteChangeCount();
+            }
+        }
+
+        c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount);
+    }
+
+    StateManager::SnapshotIterator StateManager::_getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound)
     {
         auto pred = [](Snapshot &snapshot, TickNumber tick) { return snapshot.tick == tick; };
         auto it = std::lower_bound(snapshots.begin(), snapshots.end(), tick, pred);
+
         if(it == snapshots.end())
         {
-            return snapshots.emplace(snapshots.begin(), tick);
+            if(createIfNotFound)
+            {
+                return snapshots.emplace(snapshots.begin(), tick);
+
+            }else
+            {
+                return it;
+            }
 
         }else if(it->tick == tick)
         {
@@ -189,7 +283,14 @@ namespace odState
 
         }else
         {
-            return snapshots.emplace(it, tick);
+            if(createIfNotFound)
+            {
+                return snapshots.emplace(it, tick);
+
+            }else
+            {
+                return mSnapshots.end();
+            }
         }
     }
 
@@ -204,7 +305,10 @@ namespace odState
                 mSnapshots.pop_front();
             }
 
-            auto snapshot = _getSnapshot(tick, mSnapshots);
+            // merge incoming with previous full snapshot
+            //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
+
+            auto snapshot = _getSnapshot(tick, mSnapshots, true);
             if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
             *snapshot = std::move(*incomingSnapshot);
             mIncomingSnapshots.erase(incomingSnapshot);

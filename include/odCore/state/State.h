@@ -4,6 +4,11 @@
 
 #include <odCore/ObjectTransform.h>
 
+namespace od
+{
+    class LevelObject;
+}
+
 namespace odState
 {
 
@@ -34,9 +39,26 @@ namespace odState
          * @brief Returns the number of discrete state changes in this object.
          *
          * Transform, visibility change, animation etc. each count as one
-         * discrete change. 
+         * discrete change.
          */
         size_t getDiscreteChangeCount() const;
+
+        void apply(od::LevelObject &obj);
+
+        /**
+         * @brief Applies to the object a linear interpolation between this and another state.
+         *
+         * States present in this but not in rhs will be applied without
+         * interpolation. State present in rhs but not in this will be ignored.
+         *
+         * @param delta  A value between 0.0 and 1.0 (not enforced).
+         */
+        void applyInterpolated(od::LevelObject &obj, const ObjectStateChange &rhs, float delta);
+
+        /**
+         * @brief Removes from this all states that are the same in this and rhs.
+         */
+        void removeSteadyStates(const ObjectStateChange &rhs);
 
 
     private:

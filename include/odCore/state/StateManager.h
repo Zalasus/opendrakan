@@ -38,10 +38,12 @@ namespace odState
     {
     public:
 
+        static const TickNumber FIRST_TICK = 1;
+
+
         StateManager(od::Level &level);
 
-        //ChangeSet &getUpdateLoopChangeSet();
-        //ChangeSet &getIncomingChangeSet(TickNumber tick);
+        TickNumber getLatestTick();
 
         // these modify the update loop changeset (for server)
         void objectTransformed(od::LevelObject &object, const od::ObjectTransform &tf);
@@ -55,7 +57,7 @@ namespace odState
         void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount);
 
         /**
-         * @brief Finalizes the staging snapshot, merges it into the base state and moves it into the timeline.
+         * @brief Finalizes the staging snapshot and moves it into the timeline.
          *
          * Server only.
          */
@@ -64,26 +66,15 @@ namespace odState
         void apply(double realtime);
 
         /**
-         * @brief Applies the given tick to the level with optional forward interpolation.
+         * @brief Sends all actions and state transitions of the snapshot with the given tick to the client connector.
          *
-         * Use this carefully! The applied state will stay forever. Most likely,
-         * checkout(...) is what you want to do instead.
+         * Will throw if no committed snapshot with that tick exists in the timeline.
          *
-         * This supports interpolation between ticks. The lerp parameter can be
-         * choosen in the range [0, inf), where 0 is exactly at the passed tick
-         * and 1 is at the next tick.
-         * TODO: dead reckoning can be implemented here, too, but we'd need to look back more than one tick (or use the base state)
+         * TODO: add option to send a full snapshot (other than passing lastSentSnapshot = FIRST_TICK - 1)
          *
-         * Will throw if the given tick number is not being held in memory.
+         * @param lastSentSnapshot  The tick number of the last snapshot that was sent to the client (for delta-encoding).
          */
-        void apply(TickNumber tick, float lerp = 0.0);
-
-        /**
-         * @brief Sends all actions and state transitions of the latest snapshot to the client connector.
-         *
-         * Will throw if there is no commited snapshot in the timeline.
-         */
-        void sendLatestSnapshotToClient(odNet::ClientConnector &c);
+        void sendSnapshotToClient(TickNumber tickToSend, odNet::ClientConnector &c, TickNumber lastSentSnapshot);
 
 
     private:
@@ -107,11 +98,13 @@ namespace odState
             Snapshot(const Snapshot &s) = delete;
             Snapshot &operator=(Snapshot &&) = default;
 
-            ChangeMap changesSinceLastSnapshot;
+            ChangeMap changes;
             TickNumber tick;
             double realtime;
-            size_t discreteChangeCount;
 
+            // bookkeeping for incoming snapshots
+            //  TODO: move out of this struct, as they are only ever valid for incoming snapshots
+            size_t discreteChangeCount;
             size_t targetDiscreteChangeCount;
             bool confirmed;
         };
@@ -119,9 +112,9 @@ namespace odState
         using SnapshotIterator = std::deque<Snapshot>::iterator;
 
         /**
-         * @brief Searches for a snapshot with the given tick. If none exists, creates one at the appropriate position.
+         * @brief Searches for a snapshot with the given tick. Optionally creates one at the appropriate position.
          */
-        SnapshotIterator _getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots);
+        SnapshotIterator _getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound);
         void _commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot);
 
         od::Level &mLevel;
@@ -129,19 +122,25 @@ namespace odState
         bool mIgnoreStateUpdates;
 
         /**
-         * A set of state events that can take the level as loaded from the file
-         * to the most recent committed snapshot. This is useful for new joining
-         * clients as well as for creating savegames.
+         * During the update loop, all changes first go here. This map is never
+         * cleared, so after every update loop, this represents a full snapshot.
          *
-         * This is basically a union of all state changes that happened so far.
+         * On both clients and servers, this is only used locally.
          */
-        ChangeMap mBaseStateChangeMap;
-
         ChangeMap mCurrentUpdateChangeMap;
 
         std::deque<Snapshot> mSnapshots;
         std::mutex mSnapshotMutex; // this synchronized accesses to mSnapshots
 
+        /**
+         * A list of incoming snapshots. The client uses this to store changes
+         * coming from the server. Since server packets can arrive out of order,
+         * snapshots are kept here until they are complete.
+         *
+         * In contrast to all other snapshots in the StateManager, these are
+         * "delta-encoded", i.e. they only list changes that happened since the
+         * last snapshot.
+         */
         std::deque<Snapshot> mIncomingSnapshots;
     };
 

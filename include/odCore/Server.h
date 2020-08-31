@@ -16,6 +16,8 @@
 
 #include <odCore/net/ClientConnector.h>
 
+#include <odCore/state/Timeline.h>
+
 namespace odDb
 {
     class DbManager;
@@ -110,8 +112,11 @@ namespace od
 
         struct Client
         {
+            Client();
+            
             std::unique_ptr<odNet::ClientConnector> connector;
             std::unique_ptr<odInput::InputManager> inputManager;
+            odState::TickNumber lastSentTick;
         };
 
         void _commitUpdate();

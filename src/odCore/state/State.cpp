@@ -1,6 +1,8 @@
 
 #include <odCore/state/State.h>
 
+#include <odCore/LevelObject.h>
+
 namespace odState
 {
 
@@ -51,6 +53,78 @@ namespace odState
     size_t ObjectStateChange::getDiscreteChangeCount() const
     {
         return transformed() + visibilityChanged() + animationFrame();
+    }
+
+    void ObjectStateChange::apply(od::LevelObject &obj)
+    {
+        if(transformed())
+        {
+            obj.transform(mTransform);
+        }
+
+        if(visibilityChanged())
+        {
+            obj.setVisible(mVisibility);
+        }
+
+        /*if(animationFrame())
+        {
+            obj.setAnimationFrame(mAnimationFrameTime);
+        }*/
+    }
+
+    void ObjectStateChange::applyInterpolated(od::LevelObject &obj, const ObjectStateChange &rhs, float delta)
+    {
+        if(transformed())
+        {
+            if(rhs.transformed())
+            {
+                obj.transform(mTransform.lerp(rhs.mTransform, delta));
+
+            }else
+            {
+                obj.transform(mTransform);
+            }
+        }
+
+        if(visibilityChanged())
+        {
+            obj.setVisible(mVisibility);
+        }
+
+        if(animationFrame())
+        {
+            if(rhs.transformed())
+            {
+                float lerpedTime = glm::mix(mAnimationFrameTime, rhs.mAnimationFrameTime, delta);
+                //obj.setAnimationFrame(lerpedTime);
+
+            }else
+            {
+                //obj.setAnimationFrame(mAnimationFrameTime);
+            }
+
+        }
+    }
+
+    void ObjectStateChange::removeSteadyStates(const ObjectStateChange &rhs)
+    {
+        // TODO: epsilon
+        
+        if(transformed() && rhs.transformed() && mTransform == rhs.mTransform)
+        {
+            mFlags &= ~TRANSFORMED;
+        }
+
+        if(visibilityChanged() && rhs.visibilityChanged() && mVisibility == rhs.mVisibility)
+        {
+            mFlags &= ~VISIBILITY_CHANGED;
+        }
+
+        if(animationFrame() && rhs.animationFrame() && mAnimationFrameTime == rhs.mAnimationFrameTime)
+        {
+            mFlags &= ~ANIMATION_FRAME;
+        }
     }
 
 }

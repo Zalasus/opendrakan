@@ -159,10 +159,13 @@ namespace od
             }
 
             // commit update
+            odState::TickNumber latestTick = mStateManager->getLatestTick();
             mStateManager->commit(serverTime);
             for(auto &client : mClients)
             {
-                mStateManager->sendLatestSnapshotToClient(*client.second.connector);
+                // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                mStateManager->sendSnapshotToClient(latestTick, *client.second.connector, client.second.lastSentTick);
+                client.second.lastSentTick = latestTick;
             }
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
@@ -179,6 +182,11 @@ namespace od
         }
 
         Logger::info() << "Shutting down server gracefully";
+    }
+
+    Server::Client::Client()
+    : lastSentTick(odState::StateManager::FIRST_TICK - 1)
+    {
     }
 
 }

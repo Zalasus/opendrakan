@@ -48,6 +48,14 @@ namespace od
         mTypeMask |= SCALED;
     }
 
+    bool ObjectTransform::operator==(const ObjectTransform &rhs) const
+    {
+        if((mTypeMask & TRANSLATED) && (mPosition != rhs.mPosition)) return false;
+        if((mTypeMask & ROTATED) && (mRotation != rhs.mRotation)) return false;
+        if((mTypeMask & SCALED) && (mScale != rhs.mScale)) return false;
+        return true;
+    }
+
     ObjectTransform ObjectTransform::merge(const ObjectTransform &tf) const
     {
         ObjectTransform mergedTf(*this);
