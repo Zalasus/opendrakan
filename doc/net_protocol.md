@@ -12,6 +12,25 @@ Tick number
 At 60 ticks per second, a uint32 would overflow after about 2.2 years. uint64
 would overflow after 9.8 billion years.
 
+Snapshot transmission
+---------------------
+Snapshots are sent to a client in two steps: First, an arbitrary number of
+change packets referring to the snapshot using it's tick number are sent. Then,
+a *confirmation* packet is transmitted, which states how many discrete changes
+the snapshot with the given tick should contain, at which server time it was
+taken, and possibly more metadata.
+
+Upon reception of a confirmation packet, a client marks it's local version of
+the snapshots as confirmed and stores the expected number of changes for that
+snapshot. Once a confirmed snapshot contains as many changes as stated by the
+confirmation, it is complete and can be moved into the local timeline.
+
+Packet loss will cause either the confirmation or a number of changes to be
+missing, so the expected change count will never match the one recorded. Thus,
+an incomplete snapshot will not be considered by the client.
+
+This scheme is also independent of the packet's order upon arrival.
+
 Basic packet structure
 ----------------------
 u8 packet_type;
@@ -19,36 +38,48 @@ u16 packet_number; // growing steadily
 u16 payload_length;
 u8 payload_bytes[~];
 
-UDP packet types
-----------------
+Basic packet types
+------------------
 
-### 0 = compound
+### Compound
 u8 packet_count;
 packet packets[~];
 
-### 1 = begin snapshot
-u32 snapshot_id;
-u32 number_of_updates;
-
-### 2 = object moved
-u64 tick_number;
-u8 flags;
-u32 object_id;
-if(flags & 1) vec3 translation;
-if(flags & 2) quat rotation;
-if(flags & 4) vec3 scale;
-
-### 3 = raw keyboard action
-u32 snapshot_id;
-u32 action_id;
-u32 flags?;
-
-### 4 = ACK snapshot
-u32 snapshot_id;
-
-
-TCP packet types
+Snapshot packets
 ----------------
+These are used to send snapshots from the server to a client. Thus, they are
+only valid in the downlink. A client does not send state updates to the server.
 
-### 4 = Chat
-u32 message_length;
+### Confirm Snapshot
+u64 tick_number;
+f64 realtime;
+u32 number_of_discrete_changes;
+
+### Object State Changed
+u64 tick_number;
+u32 object_id;
+u32 state_flags;
+if(state_flags & (1 << 1)) vec3 translation;
+if(state_flags & (1 << 2)) quat rotation;
+if(state_flags & (1 << 3)) vec3 scale;
+if(state_flags & (1 << 4)) u8 visibility;
+if(state_flags & (1 << 5)) f32 animation_frame;
+
+Gameplay packets
+----------------
+These are sent as soon as the action happens on the transmitting side. They
+don't use the timeline.
+
+### Action (Uplink)
+u32 action_code;
+u8 action_state;
+
+### Analog Action (Uplink)
+u32 action_code;
+u8  flags; // 1 == has_y_axis
+f32 x;
+if(flags & 1) f32 y;
+
+### Chat
+u16 message_length;
+u8 message_chars[~];
