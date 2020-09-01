@@ -76,15 +76,17 @@ namespace od
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
         /**
-         * @brief Creates a ServerConnector to connect this server to a given local client without a network inbetween.
-         */
-        std::unique_ptr<odNet::ServerConnector> createLocalConnector(odNet::ClientId clientId);
-
-        /**
          * @brief Adds a client and assigns a new client ID to it.
          * @return the new client ID assigned to the client.
          */
-        odNet::ClientId addClientConnector(std::unique_ptr<odNet::ClientConnector> connector);
+        odNet::ClientId addClientConnector(std::shared_ptr<odNet::ClientConnector> connector);
+
+        /**
+         * @brief Returns a server connector that can be used to connect the client with the given ID to this server.
+         *
+         * The client must have already been added to the server via the addClientConnector() method.
+         */
+        std::shared_ptr<odNet::ServerConnector> getServerConnectorForClient(odNet::ClientId clientId);
 
         /**
          * @brief Returns the input manager for the given client.
@@ -113,8 +115,9 @@ namespace od
         struct Client
         {
             Client();
-            
-            std::unique_ptr<odNet::ClientConnector> connector;
+
+            std::shared_ptr<odNet::ClientConnector> clientConnector;
+            std::shared_ptr<odNet::ServerConnector> serverConnector;
             std::unique_ptr<odInput::InputManager> inputManager;
             odState::TickNumber lastSentTick;
         };
@@ -134,6 +137,7 @@ namespace od
 
         odNet::ClientId mNextClientId;
         std::unordered_map<odNet::ClientId, Client> mClients;
+        std::shared_ptr<odNet::ServerConnector> mServerConnector;
 
     };
 

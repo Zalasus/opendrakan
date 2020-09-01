@@ -101,10 +101,10 @@ int main(int argc, char **argv)
     sClient = &client;
 
     od::Server server(dbManager, rflManager);
-    auto clientId = server.addClientConnector(client.createLocalConnector());
+    auto clientId = server.addClientConnector(client.getClientConnector());
     sServer = &server;
 
-    client.setServerConnector(server.createLocalConnector(clientId));
+    client.setServerConnector(server.getServerConnectorForClient(clientId));
 
     int c;
     bool freeLook = false;

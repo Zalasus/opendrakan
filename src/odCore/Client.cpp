@@ -101,6 +101,7 @@ namespace od
                 throw od::Exception("No level loaded");
             }
 
+            // FIXME: this access is neither atomic nor synchronized!
             auto object = mClient.getLevel()->getLevelObjectById(id);
             if(object == nullptr)
             {
@@ -126,6 +127,8 @@ namespace od
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
         mInputManager = std::make_unique<odInput::InputManager>();
 
+        mClientConnector = std::make_shared<LocalClientConnector>(*this);
+
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
         {
@@ -148,14 +151,9 @@ namespace od
     {
     }
 
-    std::unique_ptr<odNet::ClientConnector> Client::createLocalConnector()
+    void Client::setServerConnector(std::shared_ptr<odNet::ServerConnector> connector)
     {
-        return std::make_unique<LocalClientConnector>(*this);
-    }
-
-    void Client::setServerConnector(std::unique_ptr<odNet::ServerConnector> connector)
-    {
-        mServerConnector = std::move(connector);
+        mServerConnector = connector;
     }
 
     void Client::loadLevel(const FilePath &lvlPath)

@@ -77,17 +77,14 @@ namespace od
         inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
-        inline od::Level *getLevel() { return mLevel.get(); }
+        inline std::shared_ptr<odNet::ClientConnector> getClientConnector() { return mClientConnector; }
 
-        /**
-         * @brief Creates a connector to connect this client to a local server.
-         */
-        std::unique_ptr<odNet::ClientConnector> createLocalConnector();
+        inline od::Level *getLevel() { return mLevel.get(); }
 
         /**
          * @brief Assigns a server connector to which this client will report local changes and events.
          */
-        void setServerConnector(std::unique_ptr<odNet::ServerConnector> connector);
+        void setServerConnector(std::shared_ptr<odNet::ServerConnector> connector);
 
         void loadLevel(const FilePath &lvlPath);
 
@@ -110,7 +107,8 @@ namespace od
 
         std::unique_ptr<Level> mLevel;
 
-        std::unique_ptr<odNet::ServerConnector> mServerConnector;
+        std::shared_ptr<odNet::ClientConnector> mClientConnector;
+        std::shared_ptr<odNet::ServerConnector> mServerConnector;
 
         std::shared_ptr<odInput::RawActionListener> mActionListener;
 

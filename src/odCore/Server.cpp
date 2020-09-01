@@ -68,22 +68,29 @@ namespace od
     {
     }
 
-    std::unique_ptr<odNet::ServerConnector> Server::createLocalConnector(odNet::ClientId clientId)
-    {
-        return std::make_unique<LocalServerConnector>(*this, clientId);
-    }
-
-    odNet::ClientId Server::addClientConnector(std::unique_ptr<odNet::ClientConnector> connector)
+    odNet::ClientId Server::addClientConnector(std::shared_ptr<odNet::ClientConnector> connector)
     {
         odNet::ClientId newClientId = mNextClientId++;
 
         Client client;
-        client.connector = std::move(connector);
+        client.clientConnector = connector;
+        client.serverConnector = std::make_shared<LocalServerConnector>(*this, newClientId);
         client.inputManager = std::make_unique<odInput::InputManager>();
 
         mClients.insert(std::make_pair(newClientId, std::move(client)));
 
         return newClientId;
+    }
+
+    std::shared_ptr<odNet::ServerConnector> Server::getServerConnectorForClient(odNet::ClientId clientId)
+    {
+        auto it = mClients.find(clientId);
+        if(it == mClients.end())
+        {
+            throw od::NotFoundException("Invalid client ID");
+        }
+
+        return it->second.serverConnector;
     }
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
@@ -121,7 +128,7 @@ namespace od
 
         for(auto &client : mClients)
         {
-            client.second.connector->loadLevel(relLevelPath);
+            client.second.clientConnector->loadLevel(relLevelPath);
         }
 
         mRflManager.forEachLoadedRfl([this](odRfl::Rfl &rfl){ rfl.onLevelLoaded(*this); });
@@ -159,12 +166,14 @@ namespace od
             }
 
             // commit update
-            odState::TickNumber latestTick = mStateManager->getLatestTick();
             mStateManager->commit(serverTime);
+
+            // send update to clients
+            odState::TickNumber latestTick = mStateManager->getLatestTick();
             for(auto &client : mClients)
             {
                 // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                mStateManager->sendSnapshotToClient(latestTick, *client.second.connector, client.second.lastSentTick);
+                mStateManager->sendSnapshotToClient(latestTick, *client.second.clientConnector, client.second.lastSentTick);
                 client.second.lastSentTick = latestTick;
             }
 
