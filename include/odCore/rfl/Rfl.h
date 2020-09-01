@@ -14,8 +14,6 @@
 
 #include <odCore/rfl/Class.h>
 
-#include <odCore/net/ClientConnector.h>
-
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 

@@ -12,7 +12,7 @@
 
 #include <odCore/input/InputManager.h>
 
-#include <odCore/net/ClientConnector.h>
+#include <odCore/net/IdTypes.h>
 
 #include <odCore/rfl/Rfl.h>
 

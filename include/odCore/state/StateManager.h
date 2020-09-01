@@ -26,7 +26,7 @@ namespace od
 
 namespace odNet
 {
-    class ClientConnector;
+    class DownlinkConnector;
 }
 
 namespace odState
@@ -73,7 +73,7 @@ namespace odState
         void apply(double realtime);
 
         /**
-         * @brief Sends all actions and state transitions of the snapshot with the given tick to the client connector.
+         * @brief Sends all actions and state transitions of the snapshot with the given tick to the given downlink.
          *
          * Will throw if no committed snapshot with that tick exists in the timeline.
          *
@@ -81,7 +81,7 @@ namespace odState
          *
          * @param lastSentSnapshot  The tick number of the last snapshot that was sent to the client (for delta-encoding).
          */
-        void sendSnapshotToClient(TickNumber tickToSend, odNet::ClientConnector &c, TickNumber lastSentSnapshot);
+        void sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber lastSentSnapshot);
 
 
     private:

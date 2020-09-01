@@ -45,8 +45,8 @@ namespace odPhysics
 
 namespace odNet
 {
-    class ClientConnector;
-    class ServerConnector;
+    class UplinkConnector;
+    class DownlinkConnector;
 }
 
 namespace odState
@@ -77,14 +77,14 @@ namespace od
         inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
-        inline std::shared_ptr<odNet::ClientConnector> getClientConnector() { return mClientConnector; }
+        inline std::shared_ptr<odNet::DownlinkConnector> getDownlinkConnector() { return mDownlinkConnector; }
 
         inline od::Level *getLevel() { return mLevel.get(); }
 
         /**
-         * @brief Assigns a server connector to which this client will report local changes and events.
+         * @brief Assigns an uplink connector to which this client will report local changes and events.
          */
-        void setServerConnector(std::shared_ptr<odNet::ServerConnector> connector);
+        void setUplinkConnector(std::shared_ptr<odNet::UplinkConnector> connector);
 
         void loadLevel(const FilePath &lvlPath);
 
@@ -107,8 +107,8 @@ namespace od
 
         std::unique_ptr<Level> mLevel;
 
-        std::shared_ptr<odNet::ClientConnector> mClientConnector;
-        std::shared_ptr<odNet::ServerConnector> mServerConnector;
+        std::shared_ptr<odNet::DownlinkConnector> mDownlinkConnector;
+        std::shared_ptr<odNet::UplinkConnector> mUplinkConnector;
 
         std::shared_ptr<odInput::RawActionListener> mActionListener;
 

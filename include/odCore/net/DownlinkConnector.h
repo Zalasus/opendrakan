@@ -1,10 +1,10 @@
 /*
- * @file ClientConnector.h
+ * @file DownlinkConnector.h
  * @author zal
  */
 
-#ifndef INCLUDE_ODCORE_NET_CLIENTCONNECTOR_H_
-#define INCLUDE_ODCORE_NET_CLIENTCONNECTOR_H_
+#ifndef INCLUDE_ODCORE_NET_DOWNLINKCONNECTOR_H_
+#define INCLUDE_ODCORE_NET_DOWNLINKCONNECTOR_H_
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -17,26 +17,23 @@ namespace odNet
 {
 
     /**
-     * @brief A client ID that uniquely identifies a client
-     */
-    using ClientId = uint32_t;
-
-    /**
-     * @brief Server-side interface for connecting a client to the local server.
+     * @brief Interface representing the server-to-client communication.
      *
-     * This is an abstraction of the server-to-client tunnel. Implementations
-     * could either use a network connection as a transport medium, or directly
-     * connect a local server to a local client with minimal overhead.
+     * This is an abstraction of the server-to-client tunnel. A client always
+     * provides an implementation of this. For local connections, that object
+     * can be used to connect local servers to the client with minimal overhead.
+     * For network-based connections, that DownlinkConnector can be used by the
+     * packet-parsing end of a network tunnel.
      *
      * Keep in mind that everything which passes through this interface will
      * eventually have to pass through network packets, so keep passed data as
      * simple as possible!
      */
-    class ClientConnector
+    class DownlinkConnector
     {
     public:
 
-        virtual ~ClientConnector() = default;
+        virtual ~DownlinkConnector() = default;
 
         virtual void loadLevel(const std::string &path) = 0;
 

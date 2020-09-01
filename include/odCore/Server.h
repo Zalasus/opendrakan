@@ -14,7 +14,7 @@
 
 #include <odCore/FilePath.h>
 
-#include <odCore/net/ClientConnector.h>
+#include <odCore/net/IdTypes.h>
 
 #include <odCore/state/Timeline.h>
 
@@ -40,7 +40,8 @@ namespace odInput
 
 namespace odNet
 {
-    class ServerConnector;
+    class UplinkConnector;
+    class DownlinkConnector;
 }
 
 namespace odState
@@ -76,17 +77,17 @@ namespace od
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
         /**
-         * @brief Adds a client and assigns a new client ID to it.
+         * @brief Adds a client via it's downlink connector and assigns a new client ID to it.
          * @return the new client ID assigned to the client.
          */
-        odNet::ClientId addClientConnector(std::shared_ptr<odNet::ClientConnector> connector);
+        odNet::ClientId addClient(std::shared_ptr<odNet::DownlinkConnector> connector);
 
         /**
-         * @brief Returns a server connector that can be used to connect the client with the given ID to this server.
+         * @brief Returns an uplink connector that can be used to connect the client with the given ID to this server.
          *
-         * The client must have already been added to the server via the addClientConnector() method.
+         * The client must have already been added to the server via the addClient() method.
          */
-        std::shared_ptr<odNet::ServerConnector> getServerConnectorForClient(odNet::ClientId clientId);
+        std::shared_ptr<odNet::UplinkConnector> getUplinkConnectorForClient(odNet::ClientId clientId);
 
         /**
          * @brief Returns the input manager for the given client.
@@ -116,8 +117,8 @@ namespace od
         {
             Client();
 
-            std::shared_ptr<odNet::ClientConnector> clientConnector;
-            std::shared_ptr<odNet::ServerConnector> serverConnector;
+            std::shared_ptr<odNet::DownlinkConnector> downlinkConnector;
+            std::shared_ptr<odNet::UplinkConnector> uplinkConnector;
             std::unique_ptr<odInput::InputManager> inputManager;
             odState::TickNumber lastSentTick;
         };
@@ -137,8 +138,7 @@ namespace od
 
         odNet::ClientId mNextClientId;
         std::unordered_map<odNet::ClientId, Client> mClients;
-        std::shared_ptr<odNet::ServerConnector> mServerConnector;
-
+        
     };
 
 }

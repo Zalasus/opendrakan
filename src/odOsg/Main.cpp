@@ -17,8 +17,8 @@
 #include <odCore/Exception.h>
 #include <odCore/FilePath.h>
 
-#include <odCore/net/ClientConnector.h>
-#include <odCore/net/ServerConnector.h>
+#include <odCore/net/UplinkConnector.h>
+#include <odCore/net/DownlinkConnector.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -101,10 +101,10 @@ int main(int argc, char **argv)
     sClient = &client;
 
     od::Server server(dbManager, rflManager);
-    auto clientId = server.addClientConnector(client.getClientConnector());
+    auto clientId = server.addClient(client.getDownlinkConnector());
     sServer = &server;
 
-    client.setServerConnector(server.getServerConnectorForClient(clientId));
+    client.setUplinkConnector(server.getUplinkConnectorForClient(clientId));
 
     int c;
     bool freeLook = false;

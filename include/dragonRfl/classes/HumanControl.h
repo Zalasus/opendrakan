@@ -16,7 +16,7 @@
 #include <odCore/input/Action.h>
 #include <odCore/input/InputListener.h>
 
-#include <odCore/net/ClientConnector.h>
+#include <odCore/net/IdTypes.h>
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
@@ -88,7 +88,7 @@ namespace dragonRfl
 		virtual void onLoaded() override;
 		virtual void onSpawned() override;
 		virtual void onTransformChanged() override;
-        
+
 
 	 private:
 

@@ -20,8 +20,8 @@
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
-#include <odCore/net/ClientConnector.h>
-#include <odCore/net/ServerConnector.h>
+#include <odCore/net/UplinkConnector.h>
+#include <odCore/net/DownlinkConnector.h>
 
 #include <odCore/state/StateManager.h>
 
@@ -30,13 +30,13 @@ namespace od
 {
 
     /**
-     * @brief ClientConnector for connecting a local client to the server.
+     * @brief DownlinkConnector for connecting the local client to a server.
      */
-    class LocalClientConnector final : public odNet::ClientConnector
+    class LocalDownlinkConnector final : public odNet::DownlinkConnector
     {
     public:
 
-        LocalClientConnector(Client &client)
+        LocalDownlinkConnector(Client &client)
         : mClient(client)
         {
         }
@@ -127,22 +127,22 @@ namespace od
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
         mInputManager = std::make_unique<odInput::InputManager>();
 
-        mClientConnector = std::make_shared<LocalClientConnector>(*this);
+        mDownlinkConnector = std::make_shared<LocalDownlinkConnector>(*this);
 
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
         {
-            if(this->mServerConnector != nullptr)
+            if(this->mUplinkConnector != nullptr)
             {
-                this->mServerConnector->actionTriggered(code, state);
+                this->mUplinkConnector->actionTriggered(code, state);
             }
         };
 
         mActionListener->analogCallback = [this](odInput::ActionCode code, const glm::vec2 &axes)
         {
-            if(this->mServerConnector != nullptr)
+            if(this->mUplinkConnector != nullptr)
             {
-                this->mServerConnector->analogActionTriggered(code, axes);
+                this->mUplinkConnector->analogActionTriggered(code, axes);
             }
         };
     }
@@ -151,9 +151,9 @@ namespace od
     {
     }
 
-    void Client::setServerConnector(std::shared_ptr<odNet::ServerConnector> connector)
+    void Client::setUplinkConnector(std::shared_ptr<odNet::UplinkConnector> connector)
     {
-        mServerConnector = connector;
+        mUplinkConnector = connector;
     }
 
     void Client::loadLevel(const FilePath &lvlPath)

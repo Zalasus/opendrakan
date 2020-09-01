@@ -6,7 +6,7 @@
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 
-#include <odCore/net/ClientConnector.h>
+#include <odCore/net/DownlinkConnector.h>
 
 namespace odState
 {
@@ -49,14 +49,14 @@ namespace odState
     };
 
 
-    struct ApplyChangeToClientConnectorVisitor
+    struct ApplyChangeToDownlinkVisitor
     {
-        odNet::ClientConnector &clientConnector;
+        odNet::DownlinkConnector &downlink;
         TickNumber tick;
         od::LevelObjectId objectId;
 
-        ApplyChangeToClientConnectorVisitor(TickNumber t, odNet::ClientConnector &c, od::LevelObjectId id)
-        : clientConnector(c)
+        ApplyChangeToDownlinkVisitor(TickNumber t, odNet::DownlinkConnector &c, od::LevelObjectId id)
+        : downlink(c)
         , tick(t)
         , objectId(id)
         {
@@ -64,22 +64,22 @@ namespace odState
 
         void translated(const glm::vec3 &p)
         {
-            clientConnector.objectTranslated(tick, objectId, p);
+            downlink.objectTranslated(tick, objectId, p);
         }
 
         void rotated(const glm::quat &r)
         {
-            clientConnector.objectRotated(tick, objectId, r);
+            downlink.objectRotated(tick, objectId, r);
         }
 
         void scaled(const glm::vec3 &s)
         {
-            clientConnector.objectScaled(tick, objectId, s);
+            downlink.objectScaled(tick, objectId, s);
         }
 
         void visibilityChanged(bool b)
         {
-            clientConnector.objectVisibilityChanged(tick, objectId, b);
+            downlink.objectVisibilityChanged(tick, objectId, b);
         }
 
         void animationFrameChanged(float t)
@@ -299,7 +299,7 @@ namespace odState
         }
     }
 
-    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::ClientConnector &c, TickNumber lastSentSnapshot)
+    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber lastSentSnapshot)
     {
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
@@ -325,7 +325,7 @@ namespace odState
                 }
             }
 
-            ApplyChangeToClientConnectorVisitor applyVisitor(tickToSend, c, stateChange.first);
+            ApplyChangeToDownlinkVisitor applyVisitor(tickToSend, c, stateChange.first);
             filteredChange.visit(applyVisitor);
 
             discreteChangeCount += filteredChange.getDiscreteChangeCount();

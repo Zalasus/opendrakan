@@ -12,7 +12,8 @@
 
 #include <odCore/Level.h>
 
-#include <odCore/net/ServerConnector.h>
+#include <odCore/net/UplinkConnector.h>
+#include <odCore/net/DownlinkConnector.h>
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
@@ -26,11 +27,11 @@
 namespace od
 {
 
-    class LocalServerConnector : public odNet::ServerConnector
+    class LocalUplinkConnector : public odNet::UplinkConnector
     {
     public:
 
-        LocalServerConnector(Server &server, odNet::ClientId client)
+        LocalUplinkConnector(Server &server, odNet::ClientId client)
         : mServer(server)
         , mClientId(client)
         {
@@ -68,13 +69,13 @@ namespace od
     {
     }
 
-    odNet::ClientId Server::addClientConnector(std::shared_ptr<odNet::ClientConnector> connector)
+    odNet::ClientId Server::addClient(std::shared_ptr<odNet::DownlinkConnector> connector)
     {
         odNet::ClientId newClientId = mNextClientId++;
 
         Client client;
-        client.clientConnector = connector;
-        client.serverConnector = std::make_shared<LocalServerConnector>(*this, newClientId);
+        client.downlinkConnector = connector;
+        client.uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, newClientId);
         client.inputManager = std::make_unique<odInput::InputManager>();
 
         mClients.insert(std::make_pair(newClientId, std::move(client)));
@@ -82,7 +83,7 @@ namespace od
         return newClientId;
     }
 
-    std::shared_ptr<odNet::ServerConnector> Server::getServerConnectorForClient(odNet::ClientId clientId)
+    std::shared_ptr<odNet::UplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
     {
         auto it = mClients.find(clientId);
         if(it == mClients.end())
@@ -90,7 +91,7 @@ namespace od
             throw od::NotFoundException("Invalid client ID");
         }
 
-        return it->second.serverConnector;
+        return it->second.uplinkConnector;
     }
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
@@ -128,7 +129,7 @@ namespace od
 
         for(auto &client : mClients)
         {
-            client.second.clientConnector->loadLevel(relLevelPath);
+            client.second.downlinkConnector->loadLevel(relLevelPath);
         }
 
         mRflManager.forEachLoadedRfl([this](odRfl::Rfl &rfl){ rfl.onLevelLoaded(*this); });
@@ -173,7 +174,7 @@ namespace od
             for(auto &client : mClients)
             {
                 // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                mStateManager->sendSnapshotToClient(latestTick, *client.second.clientConnector, client.second.lastSentTick);
+                mStateManager->sendSnapshotToClient(latestTick, *client.second.downlinkConnector, client.second.lastSentTick);
                 client.second.lastSentTick = latestTick;
             }
 
