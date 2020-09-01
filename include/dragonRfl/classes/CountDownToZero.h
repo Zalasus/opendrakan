@@ -10,14 +10,17 @@
 
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
+#include <odCore/rfl/DummyClass.h>
 
 namespace dragonRfl
 {
+
     enum class TimerTriggerMode
     {
         DecrementOnAnyMessage,
         DependsOnMessage
     };
+
 
     class CountDownToZeroFields final : public odRfl::FieldBundle
     {
@@ -35,6 +38,7 @@ namespace dragonRfl
         odRfl::EnumMessage                      resetMessage;
 
     };
+
 
     class CountDownToZero_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Sv>
     {
@@ -57,28 +61,11 @@ namespace dragonRfl
 
     };
 
-    // This is effectively a dummy class. In theory, we could add a dedicated Dummy class implementation for that purpose
-    class CountDownToZero_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Cl>
-    {
-    public:
 
-        CountDownToZero_Cl() = default;
-
-        virtual odRfl::FieldBundle &getFields() override { return mFields; }
-
-
-    private:
-
-        CountDownToZeroFields mFields;
-
-    };
-
-    using CountDownToZeroFactory = odRfl::DefaultClassFactory<CountDownToZeroFields, CountDownToZero_Cl, CountDownToZero_Sv>;
+    using CountDownToZeroFactory = odRfl::DefaultClassFactory<CountDownToZeroFields, odRfl::DummyClass, CountDownToZero_Sv>;
 
     OD_DEFINE_CLASS(CountDownToZero, 0x0007, "System", "Count Down To Zero", CountDownToZeroFactory);
 
 }
-
-
 
 #endif /* INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_ */
