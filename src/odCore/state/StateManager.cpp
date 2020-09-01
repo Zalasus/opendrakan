@@ -51,24 +51,35 @@ namespace odState
 
     struct ApplyChangeToClientConnectorVisitor
     {
-        ApplyChangeToClientConnectorVisitor(TickNumber tick, odNet::ClientConnector &c)
+        odNet::ClientConnector &clientConnector;
+        TickNumber tick;
+        od::LevelObjectId objectId;
+
+        ApplyChangeToClientConnectorVisitor(TickNumber t, odNet::ClientConnector &c, od::LevelObjectId id)
+        : clientConnector(c)
+        , tick(t)
+        , objectId(id)
         {
         }
 
         void translated(const glm::vec3 &p)
         {
+            clientConnector.objectTranslated(tick, objectId, p);
         }
 
         void rotated(const glm::quat &r)
         {
+            clientConnector.objectRotated(tick, objectId, r);
         }
 
         void scaled(const glm::vec3 &s)
         {
+            clientConnector.objectScaled(tick, objectId, s);
         }
 
         void visibilityChanged(bool b)
         {
+            clientConnector.objectVisibilityChanged(tick, objectId, b);
         }
 
         void animationFrameChanged(float t)
@@ -115,6 +126,13 @@ namespace odState
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
         return mSnapshots.empty() ? FIRST_TICK - 1 : mSnapshots.back().tick;
+    }
+
+    double StateManager::getLatestRealtime()
+    {
+        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+
+        return mSnapshots.empty() ? 0.0 : mSnapshots.back().realtime;
     }
 
     void StateManager::objectTranslated(od::LevelObject &object, const glm::vec3 &p)
@@ -292,7 +310,6 @@ namespace odState
         }
 
         size_t discreteChangeCount = 0;
-        ApplyChangeToClientConnectorVisitor applyVisitor(tickToSend, c);
 
         auto lastSent = _getSnapshot(lastSentSnapshot, mSnapshots, false);
 
@@ -308,6 +325,7 @@ namespace odState
                 }
             }
 
+            ApplyChangeToClientConnectorVisitor applyVisitor(tickToSend, c, stateChange.first);
             filteredChange.visit(applyVisitor);
 
             discreteChangeCount += filteredChange.getDiscreteChangeCount();
@@ -318,25 +336,10 @@ namespace odState
 
     StateManager::SnapshotIterator StateManager::_getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound)
     {
-        auto pred = [](Snapshot &snapshot, TickNumber tick) { return snapshot.tick == tick; };
+        auto pred = [](Snapshot &snapshot, TickNumber tick) { return snapshot.tick < tick; };
         auto it = std::lower_bound(snapshots.begin(), snapshots.end(), tick, pred);
 
-        if(it == snapshots.end())
-        {
-            if(createIfNotFound)
-            {
-                return snapshots.emplace(snapshots.begin(), tick);
-
-            }else
-            {
-                return it;
-            }
-
-        }else if(it->tick == tick)
-        {
-            return it;
-
-        }else
+        if(it == snapshots.end() || it->tick != tick)
         {
             if(createIfNotFound)
             {
@@ -344,8 +347,12 @@ namespace odState
 
             }else
             {
-                return mSnapshots.end();
+                return snapshots.end();
             }
+
+        }else
+        {
+            return it;
         }
     }
 

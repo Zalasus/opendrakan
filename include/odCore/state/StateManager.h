@@ -43,6 +43,11 @@ namespace odState
 
         TickNumber getLatestTick();
 
+        /**
+         * @brief Returns the realtime of the latest snapshot, or 0.0 if no snapshots exist yet.
+         */
+        double getLatestRealtime();
+
         // these modify the update loop changeset (for server)
         void objectTranslated(od::LevelObject &object, const glm::vec3 &p);
         void objectRotated(od::LevelObject &object, const glm::quat &q);
