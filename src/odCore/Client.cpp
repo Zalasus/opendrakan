@@ -178,10 +178,8 @@ namespace od
 
         Logger::info() << "Client set up. Starting render loop";
 
-        float tickInterval = (1.0/60.0);
         float lerpTime = 0.1;
-        int idealTickOffset = std::ceil(lerpTime/tickInterval);
-        float idealTickTimeOffset = idealTickOffset*tickInterval - lerpTime;
+        float timeTolerance = 0.05;
 
         double clientTime = 0;
         auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
@@ -201,7 +199,18 @@ namespace od
             mPhysicsSystem->update(relTime);
             mInputManager->update(relTime);
 
-            mStateManager->apply(clientTime);
+            if(mStateManager != nullptr)
+            {
+                // check if we are still in sync before advancing the world
+                double latestServerTime = mStateManager->getLatestRealtime();
+                if(latestServerTime > clientTime + lerpTime + timeTolerance)
+                {
+                    Logger::info() << "Client resyncing (servertime=" << latestServerTime << " clienttime=" << clientTime << ")";
+                    clientTime = latestServerTime - lerpTime;
+                }
+
+                mStateManager->apply(clientTime);
+            }
 
             mRenderer.frame(relTime);
         }
