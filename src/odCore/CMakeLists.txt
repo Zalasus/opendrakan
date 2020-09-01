@@ -81,6 +81,9 @@ target_sources(odCore PRIVATE
         "StringUtils.cpp"
         "ZStream.cpp")
 
+add_dependencies(odCore GenerateVersion)
+target_include_directories(odCore PUBLIC ${VERSION_HEADER_INCLUDE_DIR})
+
 find_package(Threads REQUIRED)
 target_link_libraries(odCore ${CMAKE_THREAD_LIBS_INIT})
 

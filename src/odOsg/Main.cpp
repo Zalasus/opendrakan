@@ -16,6 +16,7 @@
 #include <odCore/Server.h>
 #include <odCore/Exception.h>
 #include <odCore/FilePath.h>
+#include <odCore/Version.h>
 
 #include <odCore/net/UplinkConnector.h>
 #include <odCore/net/DownlinkConnector.h>
@@ -87,7 +88,7 @@ int main(int argc, char **argv)
 
     od::Logger::getDefaultLogger().setOutputLogLevel(od::LogLevel::Info);
 
-    od::Logger::info() << "Starting OpenDrakan...";
+    od::Logger::info() << "Starting OpenDrakan version " << OD_VERSION_TAG << " (" << OD_VERSION_BRANCH << " " << OD_VERSION_COMMIT << ")";
 
     //odOsg::SoundSystem soundSystem;
     odOsg::Renderer osgRenderer;

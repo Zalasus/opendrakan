@@ -4,7 +4,7 @@
 
 set(VERSION_CACHE_FILE VersionCache.cmake)
 set(VERSION_CACHE_FILE_PROTO VersionCache.cmake.in)
-set(VERSION_HEADER_FILE Version.h)
+set(VERSION_HEADER_FILE include/odCore/Version.h)
 set(VERSION_HEADER_FILE_PROTO Version.h.in)
 
 
