@@ -10,59 +10,57 @@
 
 #include <odCore/LevelObject.h>
 
-#include <dragonRfl/RflDragon.h>
-
 namespace dragonRfl
 {
 
 	TimerFields::TimerFields()
-	: mTimeUntilTrigger(5.0)
-	, mStartMode(TimerStartMode::RUN_WHEN_TRIGGERED)
-	, mRepeat(true)
-	, mDestroyAfterTimeout(true)
-	, mTriggerMessage(od::Message::On)
-	, mToggle(false)
-	, mDisableReenableMessage(od::Message::Off)
+	: timeUntilTrigger(5.0)
+	, startMode(TimerStartMode::RUN_WHEN_TRIGGERED)
+	, repeat(true)
+	, destroyAfterTimeout(true)
+	, triggerMessage(od::Message::On)
+	, toggle(false)
+	, disableReenableMessage(od::Message::Off)
 	{
 	}
 
 	void TimerFields::probeFields(odRfl::FieldProbe &probe)
 	{
 		probe("Timer")
-				(mTimeUntilTrigger, "Time Until Trigger")
-				(mStartMode, "Start Mode")
-				(mRepeat, "Repeat")
-				(mDestroyAfterTimeout, "Destroy After Timeout?")
-				(mTriggerMessage, "Trigger Message")
-				(mToggle, "Toggle (Message / Off)")
-				(mDisableReenableMessage, "Disable/Re-Enable Message");
+				(timeUntilTrigger, "Time Until Trigger")
+				(startMode, "Start Mode")
+				(repeat, "Repeat")
+				(destroyAfterTimeout, "Destroy After Timeout?")
+				(triggerMessage, "Trigger Message")
+				(toggle, "Toggle (Message / Off)")
+				(disableReenableMessage, "Disable/Re-Enable Message");
 	}
 
 
-	Timer::Timer()
+	Timer_Sv::Timer_Sv()
 	: mGotStartTrigger(false)
     , mTimerRunning(false)
     , mTimeElapsed(0.0)
 	{
 	}
 
-	void Timer::onLoaded()
+	void Timer_Sv::onLoaded()
 	{
 	    auto &obj = getLevelObject();
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
 	    obj.setObjectType(od::LevelObjectType::Detector);
 	}
 
-	void Timer::onSpawned()
+	void Timer_Sv::onSpawned()
 	{
         auto &obj = getLevelObject();
 
 	    obj.setEnableUpdate(true);
 
-	    mTimerRunning = (mStartMode == TimerStartMode::RUN_INSTANTLY);
+	    mTimerRunning = (mFields.startMode == TimerStartMode::RUN_INSTANTLY);
 	}
 
-	void Timer::onUpdate(float relTime)
+	void Timer_Sv::onUpdate(float relTime)
 	{
         auto &obj = getLevelObject();
 
@@ -73,19 +71,19 @@ namespace dragonRfl
 
 	    mTimeElapsed += relTime;
 
-	    if(mTimeElapsed >= mTimeUntilTrigger)
+	    if(mTimeElapsed >= mFields.timeUntilTrigger)
 	    {
 	        Logger::verbose() << "Timer " << obj.getObjectId() << " triggered after " << mTimeElapsed << "s";
 
-	        obj.messageAllLinkedObjects(mTriggerMessage);
+	        obj.messageAllLinkedObjects(mFields.triggerMessage);
 
 	        mTimerRunning = false;
 
-	        if(mDestroyAfterTimeout)
+	        if(mFields.destroyAfterTimeout)
 	        {
 	            obj.requestDestruction();
 
-	        }else if(mRepeat)
+	        }else if(mFields.repeat)
 	        {
 	            mTimerRunning = true;
 	            mTimeElapsed = 0.0;
@@ -93,9 +91,9 @@ namespace dragonRfl
 	    }
 	}
 
-	void Timer::onMessageReceived(od::LevelObject &sender, od::Message message)
+	void Timer_Sv::onMessageReceived(od::LevelObject &sender, od::Message message)
 	{
-	    if(mStartMode == TimerStartMode::RUN_WHEN_TRIGGERED && !mGotStartTrigger)
+	    if(mFields.startMode == TimerStartMode::RUN_WHEN_TRIGGERED && !mGotStartTrigger)
 	    {
 	        // i assume any message will trigger the timer. there is no field that would indicate otherwise
 	        mTimerRunning = true;
@@ -103,7 +101,7 @@ namespace dragonRfl
 
 	        Logger::verbose() << "Timer " << getLevelObject().getObjectId() << " started by object " << sender.getObjectId();
 
-	    }else if(mToggle && message == mDisableReenableMessage)
+	    }else if(mFields.toggle && message == mFields.disableReenableMessage)
 	    {
 	        mTimerRunning = !mTimerRunning;
 

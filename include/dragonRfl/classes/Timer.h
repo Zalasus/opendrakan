@@ -10,47 +10,42 @@
 
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
+#include <odCore/rfl/DummyClass.h>
 
 namespace dragonRfl
 {
 
-    class TimerFields : public odRfl::FieldBundle
+    enum class TimerStartMode
     {
-    public:
-
-        enum class TimerStartMode
-        {
-            RUN_INSTANTLY,
-            RUN_WHEN_TRIGGERED
-        };
-        typedef odRfl::EnumImpl<TimerStartMode, 0, 1> EnumTimerStartMode;
+        RUN_INSTANTLY,
+        RUN_WHEN_TRIGGERED
+    };
+    typedef odRfl::EnumImpl<TimerStartMode, 0, 1> EnumTimerStartMode;
 
 
+    struct TimerFields : public odRfl::FieldBundle
+    {
         TimerFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override final;
 
-
-    protected:
-
-        odRfl::Float         mTimeUntilTrigger;
-        EnumTimerStartMode   mStartMode;
-        odRfl::EnumYesNo     mRepeat;
-        odRfl::EnumYesNo     mDestroyAfterTimeout;
-        odRfl::EnumMessage   mTriggerMessage; // message that will be sent upon timeout
-        odRfl::EnumYesNo     mToggle;
-        odRfl::EnumMessage   mDisableReenableMessage;
+        odRfl::Float         timeUntilTrigger;
+        EnumTimerStartMode   startMode;
+        odRfl::EnumYesNo     repeat;
+        odRfl::EnumYesNo     destroyAfterTimeout;
+        odRfl::EnumMessage   triggerMessage; // message that will be sent upon timeout
+        odRfl::EnumYesNo     toggle;
+        odRfl::EnumMessage   disableReenableMessage;
     };
 
 
-	class Timer : public odRfl::ClassBase, odRfl::Spawnable, odRfl::ClassImpl, TimerFields
+	class Timer_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Timer_Sv>
 	{
 	public:
 
-		Timer();
+		Timer_Sv();
 
-		virtual odRfl::Spawnable *asSpawnable() override { return this; }
-		virtual odRfl::FieldBundle *getFieldBundle() override { return this; }
+		virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onLoaded() override;
         virtual void onSpawned() override;
@@ -60,21 +55,19 @@ namespace dragonRfl
 
 	private:
 
+        TimerFields mFields;
+
 		bool mGotStartTrigger;
 		bool mTimerRunning;
 		float mTimeElapsed;
 
 	};
 
+
+    using TimerFactory = odRfl::DefaultClassFactory<TimerFields, odRfl::DummyClass, Timer_Sv>;
+
+    OD_DEFINE_CLASS(Timer, 0x003e, "System", "Timer", TimerFactory);
+
 }
-
-ODRFL_DEFINE_CLASS(dragonRfl::Timer, 0x003e, "System", "Timer");
-ODRFL_DEFINE_CLASS_FIELDS(dragonRfl::Timer, dragonRfl::TimerFields);
-
-// the timer base class provides it's own implementation
-ODRFL_DEFINE_CLASS_IMPL_SERVER(dragonRfl::Timer, dragonRfl::Timer);
-
-// timers are generally server-only
-//ODRFL_DEFINE_CLASS_IMPL_CLIENT(dragonRfl::Timer, dragonRfl::Timer);
 
 #endif /* INCLUDE_RFL_DRAGON_TIMER_H_ */
