@@ -39,27 +39,28 @@ namespace odState
         mFlags |= ANIMATION_FRAME;
     }
 
-    void ObjectStateChange::merge(const ObjectStateChange &t)
+    ObjectStateChange ObjectStateChange::merge(const ObjectStateChange &t) const
     {
-        // NOTE: by implementing all these operations as visitors, we get compile errors when we add states but don't account for them in all operations. neato!
         struct MergeVisitor
         {
-            ObjectStateChange &me;
+            ObjectStateChange result;
 
-            MergeVisitor(ObjectStateChange &_me)
-            : me(_me)
+            MergeVisitor(const ObjectStateChange &me)
+            : result(me)
             {
             }
 
-            void translated(const glm::vec3 &p) { me.setTranslation(p); }
-            void rotated(const glm::quat &r) { me.setRotation(r); }
-            void scaled(const glm::vec3 &s) { me.setScale(s); }
-            void visibilityChanged(bool b) { me.setVisibility(b); }
-            void animationFrameChanged(float t) { me.setAnimationFrame(t); }
+            void translated(const glm::vec3 &p) { result.setTranslation(p); }
+            void rotated(const glm::quat &r) { result.setRotation(r); }
+            void scaled(const glm::vec3 &s) { result.setScale(s); }
+            void visibilityChanged(bool b) { result.setVisibility(b); }
+            void animationFrameChanged(float t) { result.setAnimationFrame(t); }
         };
 
         MergeVisitor visitor(*this);
         t.visit(visitor);
+
+        return visitor.result;
     }
 
     size_t ObjectStateChange::getDiscreteChangeCount() const

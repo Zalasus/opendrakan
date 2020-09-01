@@ -384,8 +384,18 @@ namespace odState
             mSnapshots.pop_front();
         }
 
-        // TODO: merge incoming with previous full snapshot
+        // merge incoming with previous full snapshot
+        //  TODO: it might be clever to explicitly state the snapshot that the delta encoding used
         //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
+        if(!mSnapshots.empty())
+        {
+            auto &baseSnapshot = mSnapshots.back();
+            for(auto &baseChange : baseSnapshot.changes)
+            {
+                auto &deltaChange = incomingSnapshot->changes[baseChange.first];
+                deltaChange = baseChange.second.merge(deltaChange);
+            }
+        }
 
         auto snapshot = _getSnapshot(tick, mSnapshots, true);
         if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");

@@ -26,6 +26,7 @@ namespace odState
         inline bool getVisibility() const { return mVisibility; }
         inline float getAnimationFrameTime() const { return mAnimationFrameTime; }
 
+        // NOTE: by implementing all these operations as visitors, we get compile errors when we add states but don't account for them in all operations. neato!
         template <typename T>
         void visit(T &t) const
         {
@@ -43,9 +44,11 @@ namespace odState
         void setAnimationFrame(float t);
 
         /**
-         * @brief Applies the transition t on top of this one. States unaffected by t will retain their original value.
+         * @brief Creates a copy of this state, applies the changes in t on top of the copy and returns it.
+         *
+         * States unaffected by t will retain their original value.
          */
-        void merge(const ObjectStateChange &t);
+        ObjectStateChange merge(const ObjectStateChange &t) const;
 
         /**
          * @brief Returns the number of discrete state changes in this object.
