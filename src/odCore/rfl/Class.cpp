@@ -9,6 +9,8 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/physics/Handles.h>
+
 namespace odRfl
 {
 
@@ -68,6 +70,11 @@ namespace odRfl
 
     void SpawnableClass::onTransformChanged()
     {
+    }
+
+    std::shared_ptr<odPhysics::Handle> SpawnableClass::getPhysicsHandle()
+    {
+        return nullptr;
     }
 
     void SpawnableClass::readCustomState(od::DataReader &dr)

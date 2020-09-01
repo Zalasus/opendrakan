@@ -39,6 +39,7 @@ namespace dragonRfl
 		virtual ~HumanControl_Sv();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
+        virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() override { return mPhysicsHandle; }
 
         virtual void onLoaded() override;
 		virtual void onSpawned() override;

@@ -88,7 +88,11 @@ namespace dragonRfl
 
     void TrackingCamera_Cl::updateCamera()
     {
-        std::shared_ptr<odPhysics::Handle> playerHandle = nullptr; //mObjectToTrack.getPhysicsHandle();
+        std::shared_ptr<odPhysics::Handle> trackedPhysicsHandle;
+        if(mObjectToTrack.getSpawnableClassInstance() != nullptr)
+        {
+            trackedPhysicsHandle = mObjectToTrack.getSpawnableClassInstance()->getPhysicsHandle();
+        }
 
         glm::vec3::value_type maxDistance = 3;
         glm::vec3::value_type bounceBackDistance = 0.1; // TODO: calculate this based of FOV or something
@@ -104,7 +108,7 @@ namespace dragonRfl
         static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
 
         odPhysics::RayTestResult result;
-        bool hit = getClient().getPhysicsSystem().rayTestClosest(from, to, mask, playerHandle, result);
+        bool hit = getClient().getPhysicsSystem().rayTestClosest(from, to, mask, trackedPhysicsHandle, result);
         if(!hit)
         {
             eye = to;

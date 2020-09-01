@@ -76,6 +76,7 @@ namespace dragonRfl
         Building_Cl();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
+        virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() override { return mPhysicsHandle; }
 
         virtual void onLoaded() override;
 

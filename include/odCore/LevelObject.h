@@ -74,6 +74,7 @@ namespace od
         inline LevelObjectId getObjectId() const { return mId; }
         inline std::shared_ptr<odDb::Class> getClass() { return mClass; }
         inline odRfl::ClassBase *getClassInstance() { return mRflClassInstance.get(); }
+        inline odRfl::SpawnableClass *getSpawnableClassInstance() { return mSpawnableClass; }
         inline Level &getLevel() { return mLevel; }
         inline glm::vec3 getPosition() const { return mPosition; }
         inline glm::vec3 getScale() const { return mScale; }
