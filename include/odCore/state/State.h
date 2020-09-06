@@ -5,9 +5,297 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/Downcast.h>
+
 namespace odState
 {
 
+    struct StateFlags
+    {
+        using Type = int;
+
+        static const Type NOT_SAVED = (1 << 0);
+        static const Type NETWORKED = (1 << 1);
+        static const Type LERPED    = (1 << 2);
+    };
+
+
+    template <typename T>
+    struct StateLerp
+    {
+        T operator()(const T &left, const T &right, float delta)
+        {
+            return glm::mix(left, right, delta);
+        }
+    };
+
+    template <>
+    struct StateLerp<glm::quat>
+    {
+        glm::quat operator()(const glm::quat &left, const glm::quat &right, float delta)
+        {
+            return glm::slerp(left, right, delta);
+        }
+    };
+
+
+    /**
+     * A template for a simple state type. This should handle most basic types
+     * of states (ints, floats, glm vectors etc.).
+     *
+     * This works like an Optional, so this can either contain a value or not.
+     *
+     * You don't have to use this (though you probably should). Any type can be
+     * a state, as long as it meets the following requirements:
+     *  - DefaultConstructible, CopyAssignable, EqualityComparable
+     *  - Defines a static lerp() function
+     *  - Defines a non-static hasValue() method
+     */
+    template <typename T, StateFlags::Type _Flags>
+    struct State
+    {
+    public:
+
+        using ThisType = State<T, _Flags>;
+
+        State()
+        : mHasValue(false)
+        , mValue()
+        {
+        }
+
+        State(T v)
+        : mHasValue(true)
+        , mValue(v)
+        {
+        }
+
+
+        class LerpableTag {};
+        class NonLerpableTag {};
+        using LerpTagType = typename std::conditional<_Flags & StateFlags::LERPED, LerpableTag, NonLerpableTag>::type;
+
+        static ThisType lerp(const ThisType &left, const ThisType &right, float delta)
+        {
+            return lerpImpl(left, right, delta, LerpTagType());
+        }
+
+        static ThisType lerpImpl(const ThisType &left, const ThisType &right, float delta, NonLerpableTag)
+        {
+            return left.mValue;
+        }
+
+        static ThisType lerpImpl(const ThisType &left, const ThisType &right, float delta, LerpableTag)
+        {
+            StateLerp<T> lerper;
+            return lerper(left.mValue, right.mValue, delta);
+        }
+
+        bool hasValue() const { return mHasValue; }
+
+        bool operator==(const ThisType &rhs) const
+        {
+            return mValue == rhs.mValue;
+        }
+
+        operator T() const
+        {
+            return mValue;
+        }
+
+
+    private:
+
+        bool mHasValue;
+        T mValue;
+    };
+
+
+    template <typename _Bundle>
+    class StateMergeOp
+    {
+    public:
+
+        StateMergeOp(_Bundle &left, _Bundle &right, _Bundle &result)
+        : mLeftBundle(left)
+        , mRightBundle(right)
+        , mResultBundle(result)
+        {
+        }
+
+        template <typename _State>
+        StateMergeOp &operator()(_State _Bundle::* state)
+        {
+            if((mRightBundle.*state).hasValue())
+            {
+                mResultBundle.*state = mRightBundle.*state;
+
+            }else
+            {
+                mResultBundle.*state = mLeftBundle.*state;
+            }
+
+            return *this;
+        }
+
+
+    private:
+
+        _Bundle &mLeftBundle;
+        _Bundle &mRightBundle;
+        _Bundle &mResultBundle;
+    };
+
+
+    template <typename _Bundle>
+    class StateLerpOp
+    {
+    public:
+
+        StateLerpOp(_Bundle &left, _Bundle &right, _Bundle &result, float delta)
+        : mLeftBundle(left)
+        , mRightBundle(right)
+        , mResultBundle(result)
+        , mDelta(delta)
+        {
+        }
+
+        template <typename _State>
+        StateLerpOp &operator()(_State _Bundle::* state)
+        {
+            mResultBundle.*state = _State::lerp(mLeftBundle.*state, mRightBundle.*state, mDelta);
+            return *this;
+        }
+
+
+    private:
+
+        _Bundle &mLeftBundle;
+        _Bundle &mRightBundle;
+        _Bundle &mResultBundle;
+        float mDelta;
+    };
+
+
+    template <typename _Bundle>
+    class StateDeltaEncOp
+    {
+    public:
+
+        StateDeltaEncOp(_Bundle &left, _Bundle &right, _Bundle &result)
+        : mLeftBundle(left)
+        , mRightBundle(right)
+        , mResultBundle(result)
+        {
+        }
+
+        template <typename _State>
+        StateDeltaEncOp &operator()(_State _Bundle::* state)
+        {
+            if((mRightBundle.*state).hasValue() && mLeftBundle.*state == mRightBundle.*state)
+            {
+                mResultBundle.*state = mRightBundle.*state;
+
+            }else
+            {
+                mResultBundle.*state = _State();
+            }
+
+            return *this;
+        }
+
+
+    private:
+
+        _Bundle &mLeftBundle;
+        _Bundle &mRightBundle;
+        _Bundle &mResultBundle;
+    };
+
+
+    struct StateBundleBase
+    {
+        virtual ~StateBundleBase() = default;
+        virtual void merge(StateBundleBase &rhs) = 0;
+        virtual void lerp(StateBundleBase &rhs, float delta) = 0;
+        virtual void deltaEncode(StateBundleBase &rhs) = 0;
+    };
+
+
+    template <typename _Bundle>
+    class StateBundle : public StateBundleBase
+    {
+    public:
+
+        void merge(_Bundle &rhs)
+        {
+            auto &lhs = static_cast<_Bundle&>(*this);
+            StateMergeOp<_Bundle> op(lhs, rhs, lhs);
+            _Bundle::stateOp(op);
+        }
+
+        virtual void merge(StateBundleBase &right) override final
+        {
+            auto &rhs = *(od::downcast<_Bundle>(&right));
+            merge(rhs);
+        }
+
+        void lerp(_Bundle &rhs, float delta)
+        {
+            auto &lhs = static_cast<_Bundle&>(*this);
+            StateLerpOp<_Bundle> op(lhs, rhs, lhs, delta);
+            _Bundle::stateOp(op);
+        }
+
+        virtual void lerp(StateBundleBase &right, float delta) override final
+        {
+            auto &rhs = *(od::downcast<_Bundle>(&right));
+            lerp(rhs, delta);
+        }
+
+        void deltaEncode(_Bundle &rhs)
+        {
+            auto &lhs = static_cast<_Bundle&>(*this);
+            StateDeltaEncOp<_Bundle> op(lhs, rhs, lhs);
+            _Bundle::stateOp(op);
+        }
+
+        virtual void deltaEncode(StateBundleBase &right) override final
+        {
+            auto &rhs = *(od::downcast<_Bundle>(&right));
+            deltaEncode(rhs);
+        }
+
+
+    private:
+
+        friend _Bundle;
+
+        // private constructor, but _Bundle is a friend, so it is the only thing that can construct us
+        StateBundle() = default;
+
+    };
+
+
+    struct ObjectState : public StateBundle<ObjectState>
+    {
+        template <typename T>
+        static void stateOp(T &op)
+        {
+            op(&ObjectState::position)
+              (&ObjectState::rotation)
+              (&ObjectState::scale)
+              (&ObjectState::visibility);
+        }
+
+        State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> position;
+        State<glm::quat, StateFlags::NETWORKED | StateFlags::LERPED> rotation;
+        State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> scale;
+        State<bool,      StateFlags::NETWORKED>                      visibility;
+    };
+
+
+    // TODO: this whole thing could be wrapped in a copy-on-write-pointer thingy
     class ObjectStateChange
     {
     public:
