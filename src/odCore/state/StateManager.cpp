@@ -89,35 +89,15 @@ namespace odState
         OD_UNIMPLEMENTED();
     }
 
-    void StateManager::incomingObjectTranslated(TickNumber tick, od::LevelObject &object, const glm::vec3 &p)
+    void StateManager::incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states)
     {
-        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].baseStates.position = p;
-        _commitIncomingIfComplete(tick, snapshot);
+        auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
+        auto &baseStates = snapshotIt->changes[objectId].baseStates;
+        baseStates.merge(baseStates, states);
+        _commitIncomingIfComplete(tick, snapshotIt);
     }
 
-    void StateManager::incomingObjectRotated(TickNumber tick, od::LevelObject &object, const glm::quat &r)
-    {
-        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].baseStates.rotation = r;
-        _commitIncomingIfComplete(tick, snapshot);
-    }
-
-    void StateManager::incomingObjectScaled(TickNumber tick, od::LevelObject &object, const glm::vec3 &s)
-    {
-        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].baseStates.scale = s;
-        _commitIncomingIfComplete(tick, snapshot);
-    }
-
-    void StateManager::incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible)
-    {
-        auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].baseStates.visibility = visible;
-        _commitIncomingIfComplete(tick, snapshot);
-    }
-
-    void StateManager::incomingObjectCustomStateChanged(TickNumber tick, od::LevelObject &object)
+    void StateManager::incomingObjectCustomStateChanged(TickNumber tick, od::LevelObjectId objectId)
     {
         OD_UNIMPLEMENTED();
     }
@@ -247,10 +227,13 @@ namespace odState
                 }
             }
 
-            //ApplyChangeToDownlinkVisitor applyVisitor(tickToSend, c, stateChange.first);
-            //filteredChange.visit(applyVisitor);
+            size_t changeCount = filteredChange.countStatesWithValue();
+            if(changeCount > 0)
+            {
+                c.objectStatesChanged(tickToSend, stateChange.first, filteredChange);
+            }
 
-            discreteChangeCount += filteredChange.countStatesWithValue();
+            discreteChangeCount += changeCount;
         }
 
         c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount);

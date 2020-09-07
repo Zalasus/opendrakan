@@ -17,10 +17,7 @@ namespace odNet
         DownlinkPacketBuilder();
 
         virtual void loadLevel(const std::string &path) override;
-        virtual void objectTranslated(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &p) override;
-        virtual void objectRotated(odState::TickNumber tick, od::LevelObjectId id, const glm::quat &q) override;
-        virtual void objectScaled(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &s) override;
-        virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) override;
+        virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override;
         virtual void spawnObject(od::LevelObjectId id) override;
         virtual void despawnObject(od::LevelObjectId id) override;
         virtual void destroyObject(od::LevelObjectId id) override;

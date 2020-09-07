@@ -58,11 +58,8 @@ namespace odState
         void objectCustomStateChanged(od::LevelObject &object);
 
         // these modify the incoming changeset with the given tick (for client)
-        void incomingObjectTranslated(TickNumber tick, od::LevelObject &object, const glm::vec3 &p);
-        void incomingObjectRotated(TickNumber tick, od::LevelObject &object, const glm::quat &r);
-        void incomingObjectScaled(TickNumber tick, od::LevelObject &object, const glm::vec3 &s);
-        void incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible);
-        void incomingObjectCustomStateChanged(TickNumber tick, od::LevelObject &object);
+        void incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states);
+        void incomingObjectCustomStateChanged(TickNumber tick, od::LevelObjectId objectId);
         void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount);
 
         /**

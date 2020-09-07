@@ -47,28 +47,9 @@ namespace od
             mClient.loadLevel(lvlPath);
         }
 
-        virtual void objectTranslated(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &p) override
+        virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override
         {
-            auto &obj = _getObjectById(id);
-            mClient.getStateManager().incomingObjectTranslated(tick, obj, p);
-        }
-
-        virtual void objectRotated(odState::TickNumber tick, od::LevelObjectId id, const glm::quat &q) override
-        {
-            auto &obj = _getObjectById(id);
-            mClient.getStateManager().incomingObjectRotated(tick, obj, q);
-        }
-
-        virtual void objectScaled(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &s) override
-        {
-            auto &obj = _getObjectById(id);
-            mClient.getStateManager().incomingObjectScaled(tick, obj, s);
-        }
-
-        virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) override
-        {
-            auto &obj = _getObjectById(id);
-            mClient.getStateManager().incomingObjectVisibilityChanged(tick, obj, visible);
+            mClient.getStateManager().incomingObjectStatesChanged(tick, id, states);
         }
 
         virtual void spawnObject(od::LevelObjectId id) override

@@ -10,6 +10,7 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <odCore/IdTypes.h>
+#include <odCore/ObjectStates.h>
 
 #include <odCore/state/Timeline.h>
 
@@ -37,10 +38,7 @@ namespace odNet
 
         virtual void loadLevel(const std::string &path) = 0;
 
-        virtual void objectTranslated(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &p) = 0;
-        virtual void objectRotated(odState::TickNumber tick, od::LevelObjectId id, const glm::quat &q) = 0;
-        virtual void objectScaled(odState::TickNumber tick, od::LevelObjectId id, const glm::vec3 &s) = 0;
-        virtual void objectVisibilityChanged(odState::TickNumber tick, od::LevelObjectId id, bool visible) = 0;
+        virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) = 0;
 
         virtual void spawnObject(od::LevelObjectId id) = 0;
         virtual void despawnObject(od::LevelObjectId id) = 0;
