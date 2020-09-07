@@ -18,6 +18,7 @@
 #include <odCore/BoundingSphere.h>
 #include <odCore/IdTypes.h>
 #include <odCore/Message.h>
+#include <odCore/ObjectStates.h>
 
 #include <odCore/db/Class.h>
 
@@ -63,7 +64,6 @@ namespace od
         Always
     };
 
-
     class LevelObject
     {
     public:
@@ -102,8 +102,12 @@ namespace od
         void setScale(const glm::vec3 &s);
         void setVisible(bool v);
 
-        void customStateDirty() {}
-        void setCustomStateModes(bool networked, bool lerped) {}
+        void applyStates(const ObjectStates &states);
+
+        /**
+         * @brief Will cause the RFL instance's states to be probed and all changed states to be added to the snapshot.
+         */
+        void extraStateDirty();
 
         /**
          * @brief Enables or disables updates for this object.

@@ -13,81 +13,6 @@ namespace odState
 
     static const TickNumber TICK_CAPACITY = 16;
 
-
-    struct ApplyChangeToObjectVisitor
-    {
-        od::LevelObject &obj;
-
-        ApplyChangeToObjectVisitor(od::LevelObject &o)
-        : obj(o)
-        {
-        }
-
-        void translated(const glm::vec3 &p)
-        {
-            obj.setPosition(p);
-        }
-
-        void rotated(const glm::quat &r)
-        {
-            obj.setRotation(r);
-        }
-
-        void scaled(const glm::vec3 &s)
-        {
-            obj.setScale(s);
-        }
-
-        void visibilityChanged(bool b)
-        {
-            obj.setVisible(b);
-        }
-
-        void animationFrameChanged(float t)
-        {
-        }
-    };
-
-
-    struct ApplyChangeToDownlinkVisitor
-    {
-        odNet::DownlinkConnector &downlink;
-        TickNumber tick;
-        od::LevelObjectId objectId;
-
-        ApplyChangeToDownlinkVisitor(TickNumber t, odNet::DownlinkConnector &c, od::LevelObjectId id)
-        : downlink(c)
-        , tick(t)
-        , objectId(id)
-        {
-        }
-
-        void translated(const glm::vec3 &p)
-        {
-            downlink.objectTranslated(tick, objectId, p);
-        }
-
-        void rotated(const glm::quat &r)
-        {
-            downlink.objectRotated(tick, objectId, r);
-        }
-
-        void scaled(const glm::vec3 &s)
-        {
-            downlink.objectScaled(tick, objectId, s);
-        }
-
-        void visibilityChanged(bool b)
-        {
-            downlink.objectVisibilityChanged(tick, objectId, b);
-        }
-
-        void animationFrameChanged(float t)
-        {
-        }
-    };
-
-
     /**
      * @brief An RAII object that disables state updates on the StateManager as long as it lives.
      */
@@ -138,25 +63,25 @@ namespace odState
     void StateManager::objectTranslated(od::LevelObject &object, const glm::vec3 &p)
     {
         if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].setTranslation(p);
+        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.position = p;
     }
 
     void StateManager::objectRotated(od::LevelObject &object, const glm::quat &q)
     {
         if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].setRotation(q);
+        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.rotation = q;
     }
 
     void StateManager::objectScaled(od::LevelObject &object, const glm::vec3 &s)
     {
         if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].setScale(s);
+        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.scale = s;
     }
 
     void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
     {
         if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].setVisibility(visible);
+        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.visibility = visible;
     }
 
     void StateManager::objectCustomStateChanged(od::LevelObject &object)
@@ -167,28 +92,28 @@ namespace odState
     void StateManager::incomingObjectTranslated(TickNumber tick, od::LevelObject &object, const glm::vec3 &p)
     {
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].setTranslation(p);
+        snapshot->changes[object.getObjectId()].baseStates.position = p;
         _commitIncomingIfComplete(tick, snapshot);
     }
 
     void StateManager::incomingObjectRotated(TickNumber tick, od::LevelObject &object, const glm::quat &r)
     {
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].setRotation(r);
+        snapshot->changes[object.getObjectId()].baseStates.rotation = r;
         _commitIncomingIfComplete(tick, snapshot);
     }
 
     void StateManager::incomingObjectScaled(TickNumber tick, od::LevelObject &object, const glm::vec3 &s)
     {
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].setScale(s);
+        snapshot->changes[object.getObjectId()].baseStates.scale = s;
         _commitIncomingIfComplete(tick, snapshot);
     }
 
     void StateManager::incomingObjectVisibilityChanged(TickNumber tick, od::LevelObject &object, bool visible)
     {
         auto snapshot = _getSnapshot(tick, mIncomingSnapshots, true);
-        snapshot->changes[object.getObjectId()].setVisibility(visible);
+        snapshot->changes[object.getObjectId()].baseStates.visibility = visible;
         _commitIncomingIfComplete(tick, snapshot);
     }
 
@@ -249,8 +174,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                ApplyChangeToObjectVisitor applyVisitor(*obj);
-                objChange.second.visit(applyVisitor);
+                obj->applyStates(objChange.second.baseStates);
             }
 
         }else if(it == mSnapshots.begin())
@@ -262,8 +186,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                ApplyChangeToObjectVisitor applyVisitor(*obj);
-                objChange.second.visit(applyVisitor);
+                obj->applyStates(objChange.second.baseStates);
             }
 
         }else
@@ -278,22 +201,21 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                ApplyChangeToObjectVisitor applyVisitor(*obj);
-
                 auto changeInB = b.changes.find(objChange.first);
                 if(changeInB == b.changes.end())
                 {
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
-                    objChange.second.visit(applyVisitor);
+                    obj->applyStates(objChange.second.baseStates);
 
                 }else
                 {
                     // TODO: a flag indicating that a state has not changed since the last snapshot might improve performance a tiny bit by ommitting the lerp.
                     //  we still have to store full snapshots, as we must move through the timeline arbitrarily, and for every missing state, we'd have to
                     //  search previous and intermediate snapshots to recover the original state
-                    auto lerped = objChange.second.lerp(changeInB->second, delta);
-                    lerped.visit(applyVisitor);
+                    od::ObjectStates lerped;
+                    lerped.lerp(objChange.second.baseStates, changeInB->second.baseStates, delta);
+                    obj->applyStates(lerped);
                 }
             }
         }
@@ -315,20 +237,20 @@ namespace odState
 
         for(auto &stateChange : toSend->changes)
         {
-            ObjectStateChange filteredChange = stateChange.second;
+            od::ObjectStates filteredChange = stateChange.second.baseStates;
             if(lastSent != mSnapshots.end())
             {
                 auto prevChange = lastSent->changes.find(stateChange.first);
                 if(prevChange != lastSent->changes.end())
                 {
-                    filteredChange.removeSteadyStates(prevChange->second);
+                    filteredChange.deltaEncode(filteredChange, prevChange->second.baseStates);
                 }
             }
 
-            ApplyChangeToDownlinkVisitor applyVisitor(tickToSend, c, stateChange.first);
-            filteredChange.visit(applyVisitor);
+            //ApplyChangeToDownlinkVisitor applyVisitor(tickToSend, c, stateChange.first);
+            //filteredChange.visit(applyVisitor);
 
-            discreteChangeCount += filteredChange.getDiscreteChangeCount();
+            discreteChangeCount += filteredChange.countStatesWithValue();
         }
 
         c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount);
@@ -369,7 +291,7 @@ namespace odState
         size_t discreteChangeCount = 0;
         for(auto &change : incomingSnapshot->changes)
         {
-            discreteChangeCount += change.second.getDiscreteChangeCount();
+            discreteChangeCount += change.second.baseStates.countStatesWithValue();
         }
 
         if(incomingSnapshot->targetDiscreteChangeCount != discreteChangeCount)
@@ -393,7 +315,7 @@ namespace odState
             for(auto &baseChange : baseSnapshot.changes)
             {
                 auto &deltaChange = incomingSnapshot->changes[baseChange.first];
-                deltaChange = baseChange.second.merge(deltaChange);
+                deltaChange.baseStates.merge(baseChange.second.baseStates, deltaChange.baseStates);
             }
         }
 

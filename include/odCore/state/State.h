@@ -103,11 +103,51 @@ namespace odState
             return mValue;
         }
 
+        ThisType &operator=(const T &v)
+        {
+            mValue = v;
+            mHasValue = true;
+            return *this;
+        }
+
 
     private:
 
         bool mHasValue;
         T mValue;
+    };
+
+
+    template <typename _Bundle>
+    class StateCountOp
+    {
+    public:
+
+        StateCountOp(_Bundle &bundle)
+        : mBundle(bundle)
+        , mCount(0)
+        {
+        }
+
+        size_t getCount() const { return mCount; }
+
+        template <typename _State>
+        StateCountOp &operator()(_State _Bundle::* state)
+        {
+            if((mBundle.*state).hasValue())
+            {
+                mCount++;
+            }
+
+            return *this;
+        }
+
+
+    private:
+
+        _Bundle &mBundle;
+        size_t mCount;
+
     };
 
 
@@ -182,9 +222,9 @@ namespace odState
     {
     public:
 
-        StateDeltaEncOp(_Bundle &left, _Bundle &right, _Bundle &result)
-        : mLeftBundle(left)
-        , mRightBundle(right)
+        StateDeltaEncOp(_Bundle &prev, _Bundle &current, _Bundle &result)
+        : mPrevBundle(prev)
+        , mCurrentBundle(current)
         , mResultBundle(result)
         {
         }
@@ -192,13 +232,13 @@ namespace odState
         template <typename _State>
         StateDeltaEncOp &operator()(_State _Bundle::* state)
         {
-            if((mRightBundle.*state).hasValue() && mLeftBundle.*state == mRightBundle.*state)
+            if((mPrevBundle.*state).hasValue() && mCurrentBundle.*state == mPrevBundle.*state)
             {
-                mResultBundle.*state = mRightBundle.*state;
+                mResultBundle.*state = _State();
 
             }else
             {
-                mResultBundle.*state = _State();
+                mResultBundle.*state = mCurrentBundle.*state;
             }
 
             return *this;
@@ -207,8 +247,8 @@ namespace odState
 
     private:
 
-        _Bundle &mLeftBundle;
-        _Bundle &mRightBundle;
+        _Bundle &mPrevBundle;
+        _Bundle &mCurrentBundle;
         _Bundle &mResultBundle;
     };
 
@@ -216,9 +256,10 @@ namespace odState
     struct StateBundleBase
     {
         virtual ~StateBundleBase() = default;
-        virtual void merge(StateBundleBase &rhs) = 0;
-        virtual void lerp(StateBundleBase &rhs, float delta) = 0;
-        virtual void deltaEncode(StateBundleBase &rhs) = 0;
+        virtual size_t countStatesWithValue() = 0;
+        virtual void merge(StateBundleBase &lhs, StateBundleBase &rhs) = 0;
+        virtual void lerp(StateBundleBase &lhs, StateBundleBase &rhs, float delta) = 0;
+        virtual void deltaEncode(StateBundleBase &prev, StateBundleBase &current) = 0;
     };
 
 
@@ -227,43 +268,54 @@ namespace odState
     {
     public:
 
-        void merge(_Bundle &rhs)
+        virtual size_t countStatesWithValue() override final
         {
-            auto &lhs = static_cast<_Bundle&>(*this);
-            StateMergeOp<_Bundle> op(lhs, rhs, lhs);
+            auto &thisSub = static_cast<_Bundle&>(*this);
+            StateCountOp<_Bundle> op(thisSub);
+            _Bundle::stateOp(op);
+            return op.getCount();
+        }
+
+        void merge(_Bundle &lhs, _Bundle &rhs)
+        {
+            auto &result = static_cast<_Bundle&>(*this);
+            StateMergeOp<_Bundle> op(lhs, rhs, result);
             _Bundle::stateOp(op);
         }
 
-        virtual void merge(StateBundleBase &right) override final
+        virtual void merge(StateBundleBase &left, StateBundleBase &right) override final
         {
+            auto &lhs = *(od::downcast<_Bundle>(&left));
             auto &rhs = *(od::downcast<_Bundle>(&right));
-            merge(rhs);
+            merge(lhs, rhs);
         }
 
-        void lerp(_Bundle &rhs, float delta)
+        void lerp(_Bundle &lhs, _Bundle &rhs, float delta)
         {
-            auto &lhs = static_cast<_Bundle&>(*this);
-            StateLerpOp<_Bundle> op(lhs, rhs, lhs, delta);
+            auto &result = static_cast<_Bundle&>(*this);
+            StateLerpOp<_Bundle> op(lhs, rhs, result, delta);
             _Bundle::stateOp(op);
         }
 
-        virtual void lerp(StateBundleBase &right, float delta) override final
+        virtual void lerp(StateBundleBase &left, StateBundleBase &right, float delta) override final
         {
+            auto &lhs = *(od::downcast<_Bundle>(&left));
             auto &rhs = *(od::downcast<_Bundle>(&right));
-            lerp(rhs, delta);
+            lerp(lhs, rhs, delta);
         }
 
-        void deltaEncode(_Bundle &rhs)
+        void deltaEncode(_Bundle &prev, _Bundle &current)
         {
-            auto &lhs = static_cast<_Bundle&>(*this);
-            StateDeltaEncOp<_Bundle> op(lhs, rhs, lhs);
+            auto &result = static_cast<_Bundle&>(*this);
+            StateDeltaEncOp<_Bundle> op(prev, current, result);
             _Bundle::stateOp(op);
         }
 
-        virtual void deltaEncode(StateBundleBase &right) override final
+        virtual void deltaEncode(StateBundleBase &prev, StateBundleBase &current) override final
         {
-            auto &rhs = *(od::downcast<_Bundle>(&right));
-            deltaEncode(rhs);
+            auto &prevSub = *(od::downcast<_Bundle>(&prev));
+            auto &currentSub = *(od::downcast<_Bundle>(&current));
+            deltaEncode(prevSub, currentSub);
         }
 
 
@@ -273,111 +325,6 @@ namespace odState
 
         // private constructor, but _Bundle is a friend, so it is the only thing that can construct us
         StateBundle() = default;
-
-    };
-
-
-    struct ObjectState : public StateBundle<ObjectState>
-    {
-        template <typename T>
-        static void stateOp(T &op)
-        {
-            op(&ObjectState::position)
-              (&ObjectState::rotation)
-              (&ObjectState::scale)
-              (&ObjectState::visibility);
-        }
-
-        State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> position;
-        State<glm::quat, StateFlags::NETWORKED | StateFlags::LERPED> rotation;
-        State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> scale;
-        State<bool,      StateFlags::NETWORKED>                      visibility;
-    };
-
-
-    // TODO: this whole thing could be wrapped in a copy-on-write-pointer thingy
-    class ObjectStateChange
-    {
-    public:
-
-        ObjectStateChange();
-
-        inline bool isTranslated() const { return mFlags & TRANSLATION; }
-        inline bool isRotated() const { return mFlags & ROTATION; }
-        inline bool isScaled() const { return mFlags & SCALE; }
-        inline bool isVisibilityChanged() const { return mFlags & VISIBILITY; }
-        inline bool isAnimationFrameChanged() const { return mFlags & ANIMATION_FRAME; }
-
-        inline glm::vec3 getTranslation() const { return mTranslation; }
-        inline glm::quat getRotation() const { return mRotation; }
-        inline glm::vec3 getScale() const { return mScale; }
-        inline bool getVisibility() const { return mVisibility; }
-        inline float getAnimationFrameTime() const { return mAnimationFrameTime; }
-
-        // NOTE: by implementing all these operations as visitors, we get compile errors when we add states but don't account for them in all operations. neato!
-        template <typename T>
-        void visit(T &t) const
-        {
-            if(isTranslated()) t.translated(mTranslation);
-            if(isRotated()) t.rotated(mRotation);
-            if(isScaled()) t.scaled(mScale);
-            if(isVisibilityChanged()) t.visibilityChanged(mVisibility);
-            if(isAnimationFrameChanged()) t.animationFrameChanged(mAnimationFrameTime);
-        }
-
-        void setTranslation(const glm::vec3 &p);
-        void setRotation(const glm::quat &r);
-        void setScale(const glm::vec3 &s);
-        void setVisibility(bool b);
-        void setAnimationFrame(float t);
-
-        /**
-         * @brief Creates a copy of this state, applies the changes in t on top of the copy and returns it.
-         *
-         * States unaffected by t will retain their original value.
-         */
-        ObjectStateChange merge(const ObjectStateChange &t) const;
-
-        /**
-         * @brief Returns the number of discrete state changes in this object.
-         *
-         * Transform, visibility change, animation etc. each count as one
-         * discrete change.
-         */
-        size_t getDiscreteChangeCount() const;
-
-        /**
-         * @bried Creates a new ObjectStateChange where states appearing in both this and rhs are linearly interpolated.
-         *
-         * States that only appear in this and not in rhs are added to the result without interpolation. States present
-         * in rhs but not in this will be ignored.
-         *
-         * @param delta  A value between 0.0 and 1.0 (not enforced).
-         */
-        ObjectStateChange lerp(const ObjectStateChange &rhs, float delta) const;
-
-        /**
-         * @brief Removes from this all states that are the same in this and rhs.
-         */
-        void removeSteadyStates(const ObjectStateChange &rhs);
-
-
-    private:
-
-        static constexpr uint32_t TRANSLATION        = (1 << 0);
-        static constexpr uint32_t ROTATION           = (1 << 1);
-        static constexpr uint32_t SCALE              = (1 << 2);
-        static constexpr uint32_t VISIBILITY         = (1 << 3);
-        static constexpr uint32_t ANIMATION_FRAME    = (1 << 4);
-        static constexpr uint32_t CUSTOM             = (1 << 5);
-
-        uint32_t mFlags;
-
-        glm::vec3 mTranslation;
-        glm::quat mRotation;
-        glm::vec3 mScale;
-        bool mVisibility;
-        float mAnimationFrameTime;
 
     };
 

@@ -26,8 +26,6 @@ namespace od
     class Server;
     class LevelObject;
     class Layer;
-    class DataReader;
-    class DataWriter;
 }
 
 namespace odPhysics
@@ -294,9 +292,9 @@ namespace odRfl
          */
         virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle();
 
-        virtual void readCustomState(od::DataReader &dr);
-        virtual void writeCustomState(od::DataWriter &dw);
-        //virtual void lerpCustomState(od::DataReader &left, od::DataReader &right, float delta);
+
+        //virtual void onExtraStateChanged(odState::StateBase *state);
+        //virtual odState::StateBundle *getStates();
 
 
     private:

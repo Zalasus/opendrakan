@@ -77,13 +77,6 @@ namespace odRfl
         return nullptr;
     }
 
-    void SpawnableClass::readCustomState(od::DataReader &dr)
-    {
-    }
-
-    void SpawnableClass::writeCustomState(od::DataWriter &dw)
-    {
-    }
 
     ClassFactory::~ClassFactory()
     {

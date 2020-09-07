@@ -246,6 +246,18 @@ namespace od
         mLevel.getEngine().getStateManager().objectVisibilityChanged(*this, v);
     }
 
+    void LevelObject::applyStates(const ObjectStates &states)
+    {
+        if(states.position.hasValue()) _applyTranslation(states.position);
+        if(states.rotation.hasValue()) _applyRotation(states.rotation);
+        if(states.scale.hasValue()) _applyScale(states.scale);
+        if(states.visibility.hasValue()) _applyVisibility(states.visibility);
+    }
+
+    void LevelObject::extraStateDirty()
+    {
+    }
+
     void LevelObject::spawned()
     {
         Logger::debug() << "Object " << getObjectId() << " spawned";

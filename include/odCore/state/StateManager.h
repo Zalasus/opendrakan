@@ -12,6 +12,8 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/ObjectStates.h>
+
 #include <odCore/input/Keys.h>
 
 #include <odCore/state/Event.h>
@@ -87,6 +89,15 @@ namespace odState
     private:
 
         friend class ApplyGuard;
+
+        // TODO: this whole thing could be wrapped in a copy-on-write-pointer thingy
+        struct ObjectStateChange
+        {
+            od::ObjectStates baseStates;
+
+            // TODO: it could be beneficial to store extra states in a separate map, increasing sparsity and thus probably descreasing memory usage
+            //std::unique_ptr<StateBundleBase> extraStates;
+        };
 
         using ChangeMap = std::unordered_map<od::LevelObjectId, ObjectStateChange>;
 
