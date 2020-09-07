@@ -82,13 +82,20 @@ namespace odState
 
         static ThisType lerpImpl(const ThisType &left, const ThisType &right, float delta, NonLerpableTag)
         {
-            return left.mValue;
+            return left;
         }
 
         static ThisType lerpImpl(const ThisType &left, const ThisType &right, float delta, LerpableTag)
         {
-            StateLerp<T> lerper;
-            return lerper(left.mValue, right.mValue, delta);
+            if(left.hasValue() && right.hasValue())
+            {
+                StateLerp<T> lerper;
+                return lerper(left.mValue, right.mValue, delta);
+                
+            }else
+            {
+                return left;
+            }
         }
 
         bool hasValue() const { return mHasValue; }
@@ -123,7 +130,7 @@ namespace odState
     {
     public:
 
-        StateCountOp(_Bundle &bundle)
+        StateCountOp(const _Bundle &bundle)
         : mBundle(bundle)
         , mCount(0)
         {
@@ -145,7 +152,7 @@ namespace odState
 
     private:
 
-        _Bundle &mBundle;
+        const _Bundle &mBundle;
         size_t mCount;
 
     };
@@ -156,7 +163,7 @@ namespace odState
     {
     public:
 
-        StateMergeOp(_Bundle &left, _Bundle &right, _Bundle &result)
+        StateMergeOp(const _Bundle &left, const _Bundle &right, _Bundle &result)
         : mLeftBundle(left)
         , mRightBundle(right)
         , mResultBundle(result)
@@ -181,8 +188,8 @@ namespace odState
 
     private:
 
-        _Bundle &mLeftBundle;
-        _Bundle &mRightBundle;
+        const _Bundle &mLeftBundle;
+        const _Bundle &mRightBundle;
         _Bundle &mResultBundle;
     };
 
@@ -192,7 +199,7 @@ namespace odState
     {
     public:
 
-        StateLerpOp(_Bundle &left, _Bundle &right, _Bundle &result, float delta)
+        StateLerpOp(const _Bundle &left, const _Bundle &right, _Bundle &result, float delta)
         : mLeftBundle(left)
         , mRightBundle(right)
         , mResultBundle(result)
@@ -210,8 +217,8 @@ namespace odState
 
     private:
 
-        _Bundle &mLeftBundle;
-        _Bundle &mRightBundle;
+        const _Bundle &mLeftBundle;
+        const _Bundle &mRightBundle;
         _Bundle &mResultBundle;
         float mDelta;
     };
@@ -222,7 +229,7 @@ namespace odState
     {
     public:
 
-        StateDeltaEncOp(_Bundle &prev, _Bundle &current, _Bundle &result)
+        StateDeltaEncOp(const _Bundle &prev, const _Bundle &current, _Bundle &result)
         : mPrevBundle(prev)
         , mCurrentBundle(current)
         , mResultBundle(result)
@@ -247,8 +254,8 @@ namespace odState
 
     private:
 
-        _Bundle &mPrevBundle;
-        _Bundle &mCurrentBundle;
+        const _Bundle &mPrevBundle;
+        const _Bundle &mCurrentBundle;
         _Bundle &mResultBundle;
     };
 
@@ -257,9 +264,9 @@ namespace odState
     {
         virtual ~StateBundleBase() = default;
         virtual size_t countStatesWithValue() = 0;
-        virtual void merge(StateBundleBase &lhs, StateBundleBase &rhs) = 0;
-        virtual void lerp(StateBundleBase &lhs, StateBundleBase &rhs, float delta) = 0;
-        virtual void deltaEncode(StateBundleBase &prev, StateBundleBase &current) = 0;
+        virtual void merge(const StateBundleBase &lhs, const StateBundleBase &rhs) = 0;
+        virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
+        virtual void deltaEncode(const StateBundleBase &prev, const StateBundleBase &current) = 0;
     };
 
 
@@ -276,45 +283,45 @@ namespace odState
             return op.getCount();
         }
 
-        void merge(_Bundle &lhs, _Bundle &rhs)
+        void merge(const _Bundle &lhs, const _Bundle &rhs)
         {
             auto &result = static_cast<_Bundle&>(*this);
             StateMergeOp<_Bundle> op(lhs, rhs, result);
             _Bundle::stateOp(op);
         }
 
-        virtual void merge(StateBundleBase &left, StateBundleBase &right) override final
+        virtual void merge(const StateBundleBase &left, const StateBundleBase &right) override final
         {
-            auto &lhs = *(od::downcast<_Bundle>(&left));
-            auto &rhs = *(od::downcast<_Bundle>(&right));
+            auto &lhs = *(od::downcast<const _Bundle>(&left));
+            auto &rhs = *(od::downcast<const _Bundle>(&right));
             merge(lhs, rhs);
         }
 
-        void lerp(_Bundle &lhs, _Bundle &rhs, float delta)
+        void lerp(const _Bundle &lhs, const _Bundle &rhs, float delta)
         {
             auto &result = static_cast<_Bundle&>(*this);
             StateLerpOp<_Bundle> op(lhs, rhs, result, delta);
             _Bundle::stateOp(op);
         }
 
-        virtual void lerp(StateBundleBase &left, StateBundleBase &right, float delta) override final
+        virtual void lerp(const StateBundleBase &left, const StateBundleBase &right, float delta) override final
         {
-            auto &lhs = *(od::downcast<_Bundle>(&left));
-            auto &rhs = *(od::downcast<_Bundle>(&right));
+            auto &lhs = *(od::downcast<const _Bundle>(&left));
+            auto &rhs = *(od::downcast<const _Bundle>(&right));
             lerp(lhs, rhs, delta);
         }
 
-        void deltaEncode(_Bundle &prev, _Bundle &current)
+        void deltaEncode(const _Bundle &prev, const _Bundle &current)
         {
             auto &result = static_cast<_Bundle&>(*this);
             StateDeltaEncOp<_Bundle> op(prev, current, result);
             _Bundle::stateOp(op);
         }
 
-        virtual void deltaEncode(StateBundleBase &prev, StateBundleBase &current) override final
+        virtual void deltaEncode(const StateBundleBase &prev, const StateBundleBase &current) override final
         {
-            auto &prevSub = *(od::downcast<_Bundle>(&prev));
-            auto &currentSub = *(od::downcast<_Bundle>(&current));
+            auto &prevSub = *(od::downcast<const _Bundle>(&prev));
+            auto &currentSub = *(od::downcast<const _Bundle>(&current));
             deltaEncode(prevSub, currentSub);
         }
 
