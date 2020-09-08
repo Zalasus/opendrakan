@@ -73,7 +73,7 @@ namespace odState
 
         class LerpableTag {};
         class NonLerpableTag {};
-        using LerpTagType = typename std::conditional<_Flags & StateFlags::LERPED, LerpableTag, NonLerpableTag>::type;
+        using LerpTagType = typename std::conditional<((_Flags & StateFlags::LERPED) != 0), LerpableTag, NonLerpableTag>::type;
 
         static ThisType lerp(const ThisType &left, const ThisType &right, float delta)
         {
@@ -91,7 +91,7 @@ namespace odState
             {
                 StateLerp<T> lerper;
                 return lerper(left.mValue, right.mValue, delta);
-                
+
             }else
             {
                 return left;
