@@ -254,14 +254,15 @@ namespace od
 	}
 
 
-    MemBuffer::MemBuffer(char *begin, char *end)
-    : mBegin(begin)
-    , mEnd(end)
+    MemoryInputBuffer::MemoryInputBuffer(const char *data, size_t size)
     {
-    	this->setg(begin, begin, end);
+        // for some reason, the stdlib can only use non-const pointers in streambufs.
+        //  given that we never modify the buffer, using const_cast'ing the constness away should probably be okay.
+        char *mutData = const_cast<char*>(data);
+    	this->setg(mutData, mutData, mutData+size);
     }
 
-    std::streampos MemBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+    std::streampos MemoryInputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
     {
     	if(which != std::ios_base::in)
     	{
@@ -284,7 +285,7 @@ namespace od
     	return gptr() - eback();
     }
 
-    std::streampos MemBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    std::streampos MemoryInputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
     {
     	return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
     }

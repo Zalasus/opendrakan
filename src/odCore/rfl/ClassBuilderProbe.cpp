@@ -86,7 +86,7 @@ namespace odRfl
 
         // field seems reasonable. let's fill it
 
-        od::MemBuffer buf(mFieldData.data(), mFieldData.data() + mFieldData.size());
+        od::MemoryInputBuffer buf(mFieldData.data(), mFieldData.size());
         std::istream dataStr(&buf);
         od::DataReader dr(dataStr);
 
@@ -112,4 +112,3 @@ namespace odRfl
     }
 
 }
-

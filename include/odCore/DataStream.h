@@ -100,19 +100,14 @@ namespace od
 	}
 
 
-	class MemBuffer : public std::streambuf
+	class MemoryInputBuffer : public std::streambuf
 	{
 	public:
 
-		MemBuffer(char *begin, char *end);
+        MemoryInputBuffer(const char *data, size_t size);
 
 		virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
 		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
-
-	private:
-
-		char *mBegin;
-		char *mEnd;
 
 	};
 
