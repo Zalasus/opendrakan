@@ -40,18 +40,34 @@ of an object can define *extra states*, which are sent in a separate channel.
 States are also how the engine handles persistence across play sessions by
 writing the states that changed since loading the level to a savegame.
 
+Data structures
+---------------
+struct vec2
+{
+    f32 x;
+    f32 y;
+}
+
+struct vec3
+{
+    f32 x;
+    f32 y;
+    f32 z;
+}
+
+struct quat
+{
+    f32 i;
+    f32 j;
+    f32 k;
+    f32 w;
+}
+
 Basic packet structure
 ----------------------
 u8 packet_type;
 u16 payload_length;
 u8 payload_bytes[~];
-
-Basic packet types
-------------------
-
-### Compound
-u8 packet_count;
-packet packets[~];
 
 Snapshot packets
 ----------------
@@ -67,11 +83,11 @@ u32 number_of_discrete_changes;
 u64 tick_number;
 u32 object_id;
 u32 state_flags;
-if(state_flags & (1 << 1)) vec3 translation;
-if(state_flags & (1 << 2)) quat rotation;
-if(state_flags & (1 << 3)) vec3 scale;
-if(state_flags & (1 << 4)) u8 visibility;
-if(state_flags & (1 << 5)) f32 animation_frame;
+if(state_flags & (1 << 0)) vec3 translation;
+if(state_flags & (1 << 1)) quat rotation;
+if(state_flags & (1 << 2)) vec3 scale;
+if(state_flags & (1 << 3)) u8 visibility;
+if(state_flags & (1 << 4)) f32 animation_frame;
 
 ### Object Extra State Changed
 u64 tick_number;
@@ -97,3 +113,6 @@ if(flags & 1) f32 y;
 
 ### Chat
 u8 message_chars[];
+
+### Load level
+u8 level_path[]; // relative to engine root
