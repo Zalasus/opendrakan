@@ -254,6 +254,71 @@ namespace od
 	}
 
 
+    DataWriter::DataWriter(std::ostream &out)
+    : mStream(&out)
+    {
+    }
+
+    // you figure out this SFINAE stuff. I'm done.
+
+    template <typename T>
+    static void _writeIntegral(std::ostream &out, T value)
+    {
+        static_assert(std::is_integral<T>::value, "T must be integral");
+
+        auto uvalue = static_cast<typename std::make_unsigned<T>::type>(value);
+
+        // turn value into byte array first, then write it out (only one IO call).
+        //  using bitshifts makes this endianess-independent.
+        char bytes[sizeof(T)];
+        for(size_t i = 0; i < sizeof(T); ++i)
+        {
+            bytes[i] = (uvalue >> i*8) & 0xff;
+        }
+
+        out.write(&bytes[0], sizeof(T));
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint8_t>(const uint8_t &v)
+    {
+        _writeIntegral(*mStream, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint16_t>(const uint16_t &v)
+    {
+        _writeIntegral(*mStream, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint32_t>(const uint32_t &v)
+    {
+        _writeIntegral(*mStream, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint64_t>(const uint64_t &v)
+    {
+        _writeIntegral(*mStream, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<float>(const float &v)
+    {
+        auto valuePtr = reinterpret_cast<const char*>(&v); // FIXME: host-endianess-dependent
+        mStream->write(valuePtr, sizeof(v));
+    }
+
+    template <>
+    void DataWriter::writeTyped<double>(const double &v)
+    {
+        auto valuePtr = reinterpret_cast<const char*>(&v); // FIXME: host-endianess-dependent
+        mStream->write(valuePtr, sizeof(v));
+    }
+
+
+
     MemoryInputBuffer::MemoryInputBuffer(const char *data, size_t size)
     {
         // for some reason, the stdlib can only use non-const pointers in streambufs.
@@ -288,6 +353,22 @@ namespace od
     std::streampos MemoryInputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
     {
     	return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
+    }
+
+
+    MemoryOutputBuffer::MemoryOutputBuffer(char *data, size_t size)
+    {
+        this->setp(data, data+size);
+    }
+
+    std::streampos MemoryOutputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+    {
+        OD_UNIMPLEMENTED();
+    }
+
+    std::streampos MemoryOutputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    {
+        return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
     }
 
 }

@@ -100,7 +100,32 @@ namespace od
 	}
 
 
-	class MemoryInputBuffer : public std::streambuf
+    class DataWriter
+    {
+    public:
+
+        DataWriter(std::ostream &out);
+
+        template <typename T>
+        DataWriter &operator<<(const T &v)
+        {
+            writeTyped(v);
+            return *this;
+        }
+
+        template <typename T>
+        void writeTyped(const T &v);
+
+        void write(const char *data, size_t size);
+
+
+    private:
+
+        std::ostream *mStream;
+    };
+
+
+	class MemoryInputBuffer final : public std::streambuf
 	{
 	public:
 
@@ -110,6 +135,19 @@ namespace od
 		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
 
 	};
+
+
+    class MemoryOutputBuffer final : public std::streambuf
+    {
+    public:
+
+        MemoryOutputBuffer(char *data, size_t size);
+
+        //virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
+        virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
+		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
+
+    };
 
 }
 
