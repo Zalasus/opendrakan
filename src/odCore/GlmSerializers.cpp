@@ -97,4 +97,31 @@ namespace od
         return *this;
     }
 
+
+    // serializers
+
+    template <>
+    void DataWriter::writeTyped<glm::vec2>(const glm::vec2 &v)
+    {
+        (*this) << v.x << v.y;
+    }
+
+    template <>
+    void DataWriter::writeTyped<glm::vec3>(const glm::vec3 &v)
+    {
+        (*this) << v.x << v.y << v.z;
+    }
+
+    template <>
+    void DataWriter::writeTyped<glm::vec4>(const glm::vec4 &v)
+    {
+        (*this) << v.x << v.y << v.z << v.w;
+    }
+
+    template <>
+    void DataWriter::writeTyped<glm::quat>(const glm::quat &v)
+    {
+        (*this) << v.x << v.y << v.z << v.w;
+    }
+    
 }
