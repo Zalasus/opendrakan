@@ -4,6 +4,11 @@
 
 #include <memory>
 
+namespace od
+{
+    class DataReader;
+}
+
 namespace odNet
 {
     class DownlinkConnector;
@@ -15,12 +20,19 @@ namespace odNet
         DownlinkPacketParser(std::shared_ptr<DownlinkConnector> output);
         ~DownlinkPacketParser();
 
-        void parse(const char *data, size_t size);
+        /**
+         * @return The number of bytes of input that were used.
+         */
+        size_t parse(const char *data, size_t size);
 
 
     private:
 
+        void _parsePacket(uint8_t type, uint16_t length, od::DataReader &dr);
+
         std::shared_ptr<DownlinkConnector> mOutput;
+
+        size_t mBadPacketCount;
 
     };
 

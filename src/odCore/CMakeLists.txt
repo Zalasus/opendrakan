@@ -37,6 +37,7 @@ target_sources(odCore PRIVATE
         "input/InputManager.cpp"
         "net/PacketBuilder.cpp"
         "net/PacketParser.cpp"
+        "net/Protocol.cpp"
         "physics/bullet/BulletCallbacks.cpp"
         "physics/bullet/BulletPhysicsSystem.cpp"
         "physics/bullet/DebugDrawer.cpp"
