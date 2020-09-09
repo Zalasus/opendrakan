@@ -53,12 +53,39 @@ namespace od
 		std::istream &getStream();
 
 		template <typename T>
-		DataReader &operator>>(T &s);
+		DataReader &operator>>(T &s)
+        {
+            readTyped(s);
+            return *this;
+        }
 
-		DataReader &operator>>(const Ignore &s);
+        // const overload, basically only useful for Expect<T> and Ignore statements
+        template <typename T>
+        DataReader &operator>>(const T &s)
+        {
+            readTyped(s);
+            return *this;
+        }
+
+        // deserializers can specialize this template:
+        template <typename T>
+        void readTyped(T &s);
+
+		void readTyped(const Ignore &s);
 
 		template <typename T>
-		DataReader &operator>>(const Expect<T> &s);
+		void readTyped(const Expect<T> &s)
+        {
+            _checkStream();
+
+    		T value;
+    		(*this) >> value;
+
+    		if(value != s.getExpectedValue())
+    		{
+    			Logger::warn() << "Data error: expected value " << s.getExpectedValue() << ", found value " << value;
+    		}
+    	}
 
 		void read(char *data, size_t size);
 
@@ -69,35 +96,10 @@ namespace od
 
 	private:
 
-		template <typename T>
-        void _stupidlyReadIntegral(T &v)
-        {
-		    v = 0;
-
-            for(size_t i = 0; i < sizeof(T); ++i)
-            {
-                v |= _getNext() << 8*i;
-            }
-        }
-
-		uint8_t _getNext();
+        void _checkStream();
 
 		std::istream *mStream;
 	};
-
-	template <typename T>
-	DataReader &DataReader::operator>>(const DataReader::Expect<T> &s)
-	{
-		T value;
-		*this >> value;
-
-		if(value != s.getExpectedValue())
-		{
-			Logger::warn() << "Data error: expected value " << s.getExpectedValue() << ", found value " << value;
-		}
-
-		return *this;
-	}
 
 
     class DataWriter

@@ -18,8 +18,10 @@
 namespace od
 {
 
+    // deserializers
+
     template <>
-    DataReader &DataReader::operator >> <glm::vec2>(glm::vec2 &v)
+    void DataReader::readTyped<glm::vec2>(glm::vec2 &v)
     {
         float x;
         float y;
@@ -28,12 +30,10 @@ namespace od
 
         v.x = x;
         v.y = y;
-
-        return *this;
     }
 
     template <>
-    DataReader &DataReader::operator >> <glm::vec3>(glm::vec3 &v)
+    void DataReader::readTyped<glm::vec3>(glm::vec3 &v)
     {
         float x;
         float y;
@@ -44,12 +44,10 @@ namespace od
         v.x = x;
         v.y = y;
         v.z = z;
-
-        return *this;
     }
 
     template <>
-    DataReader &DataReader::operator >> <glm::quat>(glm::quat &q)
+    void DataReader::readTyped<glm::quat>(glm::quat &q)
     {
         float x;
         float y;
@@ -62,12 +60,10 @@ namespace od
         q.y = y;
         q.z = z;
         q.w = w;
-
-        return *this;
     }
 
     template <>
-    DataReader &DataReader::operator >> <glm::mat3>(glm::mat3 &m)
+    void DataReader::readTyped<glm::mat3>(glm::mat3 &m)
     {
         // riot engine uses row-major storage -> read as column vectors, then transpose
         for(size_t i = 0; i < 3; ++i)
@@ -76,12 +72,10 @@ namespace od
         }
 
         m = glm::transpose(m);
-
-        return *this;
     }
 
     template <>
-    DataReader &DataReader::operator >> <glm::mat3x4>(glm::mat3x4 &m)
+    void DataReader::readTyped<glm::mat3x4>(glm::mat3x4 &m)
     {
         glm::mat3 mat;
         (*this) >> mat;
@@ -93,8 +87,6 @@ namespace od
         m[0].w = translation.x;
         m[1].w = translation.y;
         m[2].w = translation.z;
-
-        return *this;
     }
 
 
@@ -123,5 +115,5 @@ namespace od
     {
         (*this) << v.x << v.y << v.z << v.w;
     }
-    
+
 }
