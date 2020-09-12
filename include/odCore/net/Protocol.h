@@ -3,6 +3,7 @@
 #define INCLUDE_ODCORE_NET_PROTOCOL_H_
 
 #include <stdint.h>
+#include <stddef.h>
 
 namespace odNet
 {
