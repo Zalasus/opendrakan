@@ -53,6 +53,7 @@ target_sources(odCore PRIVATE
         "rfl/ClassBuilderProbe.cpp"
         #"rfl/DefaultObjectClass.cpp"
         "rfl/Field.cpp"
+        "rfl/FieldLoaderProbe.cpp"
         "rfl/FieldProbe.cpp"
         "rfl/ObjectBuilderProbe.cpp"
         "rfl/PrefetchProbe.cpp"
