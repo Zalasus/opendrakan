@@ -188,6 +188,16 @@ namespace od
         }
     }
 
+    LevelObjectId Level::getObjectIdForRecordIndex(uint16_t index)
+    {
+        if(index < 0 || index >= mObjectRecords.size())
+        {
+            throw Exception("Object index out of bounds");
+        }
+
+        return mObjectRecords[index].getObjectId();
+    }
+
     LevelObject *Level::getLevelObjectById(LevelObjectId id)
     {
         auto it = mLevelObjects.find(id);
@@ -453,6 +463,12 @@ namespace od
     	Logger::verbose() << "Level has " << objectCount << " objects";
 
         std::array<LevelObjectId, 0x10000> indexToIdMapping;
+
+        /*mObjectRecords.reserve(objectCount);
+        for(size_t i = 0; i < objectCount; ++i)
+    	{
+            mObjectRecords.emplace_back(dr);
+        }*/
 
     	mLevelObjects.reserve(objectCount);
     	for(size_t i = 0; i < objectCount; ++i)

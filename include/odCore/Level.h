@@ -19,6 +19,7 @@
 #include <odCore/IdTypes.h>
 #include <odCore/Engine.h>
 #include <odCore/FilePath.h>
+#include <odCore/ObjectRecord.h>
 
 #include <odCore/rfl/Class.h>
 
@@ -67,6 +68,13 @@ namespace od
 
         void update(float relTime);
 
+        /**
+         * @brief Returns the object ID for a given object record index (as encountered during loading).
+         *
+         * Will throw if the index is out of bounds.
+         */
+        LevelObjectId getObjectIdForRecordIndex(uint16_t index);
+
         LevelObject *getLevelObjectById(LevelObjectId id);
 
         /**
@@ -108,6 +116,9 @@ namespace od
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
         std::map<uint16_t, std::shared_ptr<odDb::Database>> mDependencyMap;
+
+        // TODO: we could potentially share this across local clients/servers. would go well with separation of data and state
+        std::vector<ObjectRecordData> mObjectRecords;
 
 		float mVerticalExtent;
 		Layer *mCurrentActivePvsLayer;
