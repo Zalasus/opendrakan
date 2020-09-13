@@ -38,7 +38,7 @@ namespace odDb
            >> mRflClassId
 		   >> mIconNumber;
 
-        mClassBuilder.readFieldRecord(dr);
+        mFieldLoader.loadFromRecord(dr, odRfl::FieldLoaderProbe::RecordFormat::CLASS);
 
         // TODO: why are we loading the model together with the class definition?
         if(mModelRef.assetId != 0)
@@ -57,8 +57,8 @@ namespace odDb
 
     void Class::fillFields(odRfl::FieldBundle &fieldBundle)
     {
-        mClassBuilder.resetIndexCounter(); // in case of throw, do this BEFORE building so counter is always fresh
-        fieldBundle.probeFields(mClassBuilder);
+        mFieldLoader.reset(); // in case of throw, do this BEFORE building so counter is always fresh
+        fieldBundle.probeFields(mFieldLoader);
     }
 
     std::unique_ptr<odRfl::ClassBase> Class::makeInstance(od::Engine &engine)

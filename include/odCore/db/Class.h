@@ -13,7 +13,7 @@
 #include <odCore/db/Asset.h>
 #include <odCore/db/Model.h>
 #include <odCore/rfl/Class.h>
-#include <odCore/rfl/ClassBuilderProbe.h>
+#include <odCore/rfl/FieldLoaderProbe.h>
 
 namespace od
 {
@@ -79,7 +79,7 @@ namespace odDb
         AssetRef mModelRef;
         std::shared_ptr<Model> mModel;
         uint16_t mRflClassId;
-        odRfl::ClassBuilderProbe mClassBuilder;
+        odRfl::FieldLoaderProbe mFieldLoader;
         uint16_t mIconNumber;
 
         odRfl::ClassFactory *mCachedRflClassFactory;
