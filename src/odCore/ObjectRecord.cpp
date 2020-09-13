@@ -42,7 +42,7 @@ namespace od
             mScale = glm::vec3(1, 1, 1);
         }
 
-        mFieldLoader = odRfl::FieldLoaderProbe(dr, odRfl::FieldLoaderProbe::RecordFormat::OBJECT);
+        mFieldLoader.loadFromRecord(dr, odRfl::FieldLoaderProbe::RecordFormat::OBJECT);
 
         mPosition = Units::worldUnitsToLengthUnits(mPosition);
 

@@ -35,7 +35,7 @@ namespace odRfl
          * Field records in object and class data store basically the same data, but use a slightly different format.
          * Thus, you have to specify the format that you want to be read.
          */
-        FieldLoaderProbe(od::DataReader &dr, RecordFormat format);
+        void loadFromRecord(od::DataReader &dr, RecordFormat format);
 
         FieldLoaderProbe &operator=(FieldLoaderProbe &&p) = default;
 

@@ -14,8 +14,7 @@ namespace odRfl
     {
     }
 
-    FieldLoaderProbe::FieldLoaderProbe(od::DataReader &dr, RecordFormat format)
-    : mRegistrationIndex(0)
+    void FieldLoaderProbe::loadFromRecord(od::DataReader &dr, RecordFormat format)
     {
         uint32_t fieldCount;
         uint32_t dwordCount;
