@@ -21,12 +21,12 @@ namespace odRfl
         uint32_t dwordCount;
         switch(format)
         {
-        case RecordFormat::OBJECT:
+        case RecordFormat::CLASS:
             dr >> fieldCount
                >> dwordCount;
             break;
 
-        case RecordFormat::CLASS:
+        case RecordFormat::OBJECT:
             dr >> dwordCount
                >> fieldCount;
             break;
@@ -40,7 +40,10 @@ namespace odRfl
         {
             for(size_t i = 0; i < fieldCount; ++i)
             {
-                dr >> mFieldEntries[i].index;
+                uint16_t index;
+                dr >> index;
+
+                mFieldEntries[i].index = index;
             }
         }
 
@@ -82,7 +85,7 @@ namespace odRfl
         auto it = std::lower_bound(mFieldEntries.begin(), mFieldEntries.end(), mRegistrationIndex, pred);
         if(it == mFieldEntries.end() || it->index != mRegistrationIndex)
         {
-            // the field we are looking for does not exist in this record
+            // the field we are looking for does not exist in this record. for object records, we can ignore this. for class records, this would be an error TODO: report it
             return;
         }
 
