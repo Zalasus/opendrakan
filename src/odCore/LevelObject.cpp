@@ -28,9 +28,6 @@
 
 #include <odCore/state/StateManager.h>
 
-#define OD_OBJECT_FLAG_VISIBLE 0x001
-#define OD_OBJECT_FLAG_SCALED  0x100
-
 namespace od
 {
 
@@ -88,14 +85,14 @@ namespace od
     }
 
 
-    LevelObject::LevelObject(Level &level)
+    LevelObject::LevelObject(ObjectRecordData &record, Level &level)
     : mLevel(level)
-    , mId(0)
-    , mLightingLayerId(0)
+    , mId(record.getObjectId())
     , mLightingLayer(nullptr)
-    , mFlags(0)
-    , mInitialEventCount(0)
-    , mIsVisible(true)
+    , mPosition(record.getPosition())
+    , mRotation(record.getRotation())
+    , mScale(record.getScale())
+    , mIsVisible(record.isVisible())
     , mState(LevelObjectState::NotLoaded)
     , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
@@ -103,6 +100,35 @@ namespace od
     , mAssociateWithCeiling(false)
     , mSpawnableClass(nullptr)
     {
+        LayerId lightSourceLayerId = record.getLightSourceLayerId();
+        if(lightSourceLayerId != 0)
+        {
+            mLightingLayer = mLevel.getLayerById(lightSourceLayerId);
+            if(mLightingLayer == nullptr)
+            {
+                Logger::error() << "Object " << mId << " has invalid lighting layer ID " << lightSourceLayerId;
+            }
+        }
+
+        // the record lists object indices, but we need a list of linked object IDs. translate them here
+        mLinkedObjects.reserve(record.getLinkedObjectIndices().size());
+        for(auto linkedIndex : record.getLinkedObjectIndices())
+        {
+            mLinkedObjects.push_back(level.getObjectIdForRecordIndex(linkedIndex));
+        }
+
+        mClass = mLevel.getAssetByRef<odDb::Class>(record.getClassRef());
+        auto instance = mClass->makeInstance(mLevel.getEngine());
+        if(instance != nullptr)
+        {
+            instance->getFields().probeFields(record.getFieldLoader());
+            this->replaceRflClassInstance(std::move(instance));
+
+            if(mRflClassInstance != nullptr)
+            {
+                mRflClassInstance->onLoaded();
+            }
+        }
     }
 
     LevelObject::~LevelObject()
@@ -117,108 +143,6 @@ namespace od
         Logger::debug() << "Object " << getObjectId() << " destroyed";
 
         setEnableUpdate(false);
-    }
-
-    void LevelObject::loadFromRecord(DataReader dr)
-    {
-        uint16_t xRot;
-        uint16_t yRot;
-        uint16_t zRot;
-        uint16_t linkCount;
-
-        dr >> mId
-           >> mClassRef
-           >> mLightingLayerId
-           >> mInitialPosition
-           >> mFlags
-           >> mInitialEventCount
-           >> linkCount;
-
-        if(mLightingLayerId != 0)
-        {
-            mLightingLayer = mLevel.getLayerById(mLightingLayerId);
-            if(mLightingLayer == nullptr)
-            {
-                Logger::error() << "Object " << mId << " has invalid lighting layer ID " << mLightingLayerId;
-            }
-        }
-
-        // the mLinkedObjects vector contains IDs, but the engine stores the object's indices in the file.
-        //  to avoid having to store an additional array (either in the level or here) we abuse the mLinkedObjects
-        //  vector by storing the indices in it until translateLinkIndices() is called.
-        mLinkedObjects.resize(linkCount);
-        for(size_t i = 0; i < linkCount; ++i)
-        {
-            uint16_t linkedIndex = 0;
-            dr >> linkedIndex;
-            mLinkedObjects[i] = linkedIndex;
-        }
-
-        dr >> xRot
-           >> yRot
-           >> zRot;
-
-        if(mFlags & OD_OBJECT_FLAG_SCALED)
-        {
-            dr >> mInitialScale;
-
-        }else
-        {
-            mInitialScale = glm::vec3(1, 1, 1);
-        }
-
-        odRfl::ObjectBuilderProbe builder;
-        builder.readFieldRecord(dr);
-
-        // all fields loaded. now create class instance TODO: maybe move this to a second method so we don't invoke class behavior just by loading the fields?
-        mClass = mLevel.getAssetByRef<odDb::Class>(mClassRef);
-        auto instance = mClass->makeInstance(mLevel.getEngine());
-        if(instance != nullptr)
-        {
-            instance->getFields().probeFields(builder);
-            this->replaceRflClassInstance(std::move(instance));
-
-        }else
-        {
-            // object has unimplemented RFL class. this could mean it is a client-only class on a server (or vice versa)
-            //  since an object without a class just sits there uselessly, just let it die.
-            // TODO: this will likely accumulate a big queue at the beginning of level loading everytime. maybe let level handle this, bypassing the queue
-            requestDestruction();
-            return;
-        }
-
-        mInitialPosition *= OD_WORLD_SCALE; // correct editor scaling
-
-        glm::vec3 eulerAngles(glm::radians((float)xRot), glm::radians((float)yRot-90), glm::radians((float)zRot)); // -90 deg. determined to be correct through experiment
-        mInitialRotation = glm::quat(eulerAngles);
-
-        mPosition = mInitialPosition;
-        mRotation = mInitialRotation;
-        mScale = mInitialScale;
-
-        mIsVisible = mFlags & OD_OBJECT_FLAG_VISIBLE;
-
-        if(mRflClassInstance != nullptr)
-        {
-            mRflClassInstance->onLoaded(); // do this last! it'd be better to pass a fully set up level object here
-        }
-    }
-
-    void LevelObject::translateLinkIndices(const std::array<LevelObjectId, 0x10000> &idMap)
-    {
-        for(auto &link : mLinkedObjects)
-        {
-            uint16_t linkIndex = static_cast<uint16_t>(link);
-            if(linkIndex >= idMap.size())
-            {
-                Logger::error() << "Object " << mId << " linked to invalid object index " << linkIndex;
-                link = -1; // TODO: add constant for a guaranteed-invalid ID
-
-            }else
-            {
-                link = idMap[linkIndex];
-            }
-        }
     }
 
     void LevelObject::setPosition(const glm::vec3 &v)

@@ -19,6 +19,7 @@
 #include <odCore/IdTypes.h>
 #include <odCore/Message.h>
 #include <odCore/ObjectStates.h>
+#include <odCore/ObjectRecord.h>
 
 #include <odCore/db/Class.h>
 
@@ -68,7 +69,8 @@ namespace od
     {
     public:
 
-        LevelObject(Level &level);
+        LevelObject(ObjectRecordData &record, Level &level);
+        LevelObject(LevelObject &&obj) = delete;
         virtual ~LevelObject();
 
         inline LevelObjectId getObjectId() const { return mId; }
@@ -89,9 +91,6 @@ namespace od
         inline bool isScaled() const { return (mScale != glm::vec3(1,1,1)); }
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
-
-        void loadFromRecord(DataReader dr);
-        void translateLinkIndices(const std::array<LevelObjectId, 0x10000> &idMap);
 
         void spawned();
         void despawned();
@@ -226,18 +225,11 @@ namespace od
 
         // loaded from the object record:
         LevelObjectId mId;
-        odDb::AssetRef mClassRef;
         std::shared_ptr<odDb::Class> mClass;
-        uint32_t mLightingLayerId;
         Layer *mLightingLayer;
-        uint32_t mFlags;
-        uint16_t mInitialEventCount;
         std::vector<LevelObjectId> mLinkedObjects; // this is sorta abused, since during load it stores the indices instead. those are later translated
-        glm::vec3 mInitialPosition;
-        glm::quat mInitialRotation;
-        glm::vec3 mInitialScale;
 
-        // state:
+        // state: TODO: use ObjectStates
         glm::vec3 mPosition;
         glm::quat mRotation;
         glm::vec3 mScale;

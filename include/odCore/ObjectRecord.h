@@ -34,7 +34,7 @@ namespace od
         inline glm::vec3 getPosition() const { return mPosition; }
         inline glm::quat getRotation() const { return mRotation; }
         inline glm::vec3 getScale() const { return mScale; }
-        inline const odRfl::FieldLoaderProbe &getFieldLoader() const { return mFieldLoader; };
+        inline odRfl::FieldLoaderProbe &getFieldLoader() { return mFieldLoader; } // TODO: would be nice if this could also be const
         inline bool isVisible() const { return mFlags & FLAG_OBJECT_FLAG_VISIBLE; }
 
 

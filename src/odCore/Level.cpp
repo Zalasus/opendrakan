@@ -462,35 +462,31 @@ namespace od
     	dr >> objectCount;
     	Logger::verbose() << "Level has " << objectCount << " objects";
 
-        std::array<LevelObjectId, 0x10000> indexToIdMapping;
-
-        /*mObjectRecords.reserve(objectCount);
+        mObjectRecords.reserve(objectCount);
         for(size_t i = 0; i < objectCount; ++i)
     	{
             mObjectRecords.emplace_back(dr);
-        }*/
+        }
 
     	mLevelObjects.reserve(objectCount);
-    	for(size_t i = 0; i < objectCount; ++i)
+    	for(auto &record : mObjectRecords)
     	{
-    		std::unique_ptr<od::LevelObject> object = std::make_unique<od::LevelObject>(*this);
-    		object->loadFromRecord(dr);
+            auto object = std::make_unique<LevelObject>(record, *this);
 
-            auto id = object->getObjectId();
+            if(object->getClassInstance() == nullptr)
+            {
+                // ignore objects without a class for now. they will sit around doing nothing anyways.
+                //  TODO: maybe derive this info from record data directly so we can avoid the allocation?
+                continue;
+            }
 
-            auto &ptrInMap = mLevelObjects[id];
+            auto &ptrInMap = mLevelObjects[record.getObjectId()];
             if(ptrInMap != nullptr)
             {
                 throw od::Exception("Level contains non-unique object IDs (this might actually be an error in our level file interpretation)");
             }
 
-    		ptrInMap = std::move(object);
-            indexToIdMapping[i] = id;
+            ptrInMap = std::move(object);
     	}
-
-        for(auto &objMap : mLevelObjects)
-        {
-            objMap.second->translateLinkIndices(indexToIdMapping);
-        }
     }
 }
