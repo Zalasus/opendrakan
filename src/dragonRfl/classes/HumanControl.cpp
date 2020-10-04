@@ -33,6 +33,9 @@
 namespace dragonRfl
 {
 
+    static const float TURN_ANIM_THRESHOLD = glm::half_pi<float>(); // angular yaw speed at which turn animation is triggered (in rad/sec)
+
+
     HumanControl_Sv::HumanControl_Sv(odNet::ClientId clientId)
     : mClientId(clientId)
     , mYaw(0)
@@ -114,7 +117,6 @@ namespace dragonRfl
 
     void HumanControl_Sv::onUpdate(float relTime)
     {
-        static const float turnAnimThreshold = glm::half_pi<float>(); // angular yaw speed at which turn animation is triggered (in rad/sec)
 
         getLevelObject().setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
 
@@ -127,12 +129,12 @@ namespace dragonRfl
         case State::Idling:
         case State::TurningLeft:
         case State::TurningRight:
-            if(yawSpeed >= turnAnimThreshold)
+            if(yawSpeed >= TURN_ANIM_THRESHOLD)
             {
                 _playAnim(mFields.turnLeft, true, false);
                 mState = State::TurningLeft;
 
-            }else if(yawSpeed <= -turnAnimThreshold)
+            }else if(yawSpeed <= -TURN_ANIM_THRESHOLD)
             {
                 _playAnim(mFields.turnRight, true, false);
                 mState = State::TurningRight;
