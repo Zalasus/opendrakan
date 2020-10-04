@@ -42,6 +42,7 @@ namespace odNet
 {
     class UplinkConnector;
     class DownlinkConnector;
+    class DownlinkMessageDispatcher;
 }
 
 namespace odState
@@ -97,6 +98,8 @@ namespace od
          */
         odInput::InputManager &getInputManagerForClient(odNet::ClientId id);
 
+        odNet::DownlinkMessageDispatcher &getMessageDispatcherForClient(odNet::ClientId id);
+
         template <typename T>
         void forEachClient(const T &functor)
         {
@@ -120,6 +123,7 @@ namespace od
             std::shared_ptr<odNet::DownlinkConnector> downlinkConnector;
             std::shared_ptr<odNet::UplinkConnector> uplinkConnector;
             std::unique_ptr<odInput::InputManager> inputManager;
+            std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
             odState::TickNumber lastSentTick;
         };
 
@@ -138,7 +142,7 @@ namespace od
 
         odNet::ClientId mNextClientId;
         std::unordered_map<odNet::ClientId, Client> mClients;
-        
+
     };
 
 }

@@ -14,6 +14,7 @@
 
 #include <odCore/net/UplinkConnector.h>
 #include <odCore/net/DownlinkConnector.h>
+#include <odCore/net/MessageDispatcher.h>
 
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
@@ -77,6 +78,7 @@ namespace od
         client.downlinkConnector = connector;
         client.uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, newClientId);
         client.inputManager = std::make_unique<odInput::InputManager>();
+        client.messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>(client.downlinkConnector);
 
         mClients.insert(std::make_pair(newClientId, std::move(client)));
 
@@ -103,6 +105,17 @@ namespace od
         }
 
         return *(it->second.inputManager);
+    }
+
+    odNet::DownlinkMessageDispatcher &Server::getMessageDispatcherForClient(odNet::ClientId id)
+    {
+        auto it = mClients.find(id);
+        if(it == mClients.end())
+        {
+            throw od::NotFoundException("Invalid client ID");
+        }
+
+        return *(it->second.messageDispatcher);
     }
 
     void Server::loadLevel(const FilePath &lvlPath)
