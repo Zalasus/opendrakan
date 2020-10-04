@@ -157,16 +157,25 @@ namespace od
     {
     public:
 
-        VectorOutputBuffer(std::vector<uint8_t> &v);
+        static constexpr size_t BACKBUFFER_SIZE = (1 << 8);
+
+        VectorOutputBuffer(std::vector<char> &v);
+        ~VectorOutputBuffer();
 
         virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
         virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
 		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
 
+        virtual int sync();
 
     private:
 
-        std::vector<uint8_t> &mVector;
+        std::vector<char> &mVector;
+
+        // the design of streambuf does not allow to easily track the size and adjust the vector accordingly.
+        //  in order not to direct all writing through the virtual overflow method, we use a transparent internal buffer
+        //  that gets flushed to the actual vector.
+        std::array<char, BACKBUFFER_SIZE> mBackBuffer;
 
     };
 

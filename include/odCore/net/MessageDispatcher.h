@@ -33,7 +33,7 @@ namespace odNet
     {
     public:
 
-        GlobalDownlinkMessageBuilder(std::shared_ptr<DownlinkConnector> connector, MessageChannelCode code, std::vector<uint8_t> &dataBuffer);
+        GlobalDownlinkMessageBuilder(std::shared_ptr<DownlinkConnector> connector, MessageChannelCode code, std::vector<char> &dataBuffer);
         GlobalDownlinkMessageBuilder(GlobalDownlinkMessageBuilder &c) = delete;
         ~GlobalDownlinkMessageBuilder();
 
@@ -50,7 +50,7 @@ namespace odNet
 
         std::shared_ptr<DownlinkConnector> mConnector;
         MessageChannelCode mCode;
-        std::vector<uint8_t> &mData;
+        std::vector<char> &mData;
 
         od::VectorOutputBuffer mStreamBuffer;
         std::ostream mStream;
@@ -102,7 +102,7 @@ namespace odNet
         GlobalDownlinkMessageBuilder sendGlobalMessage(_ChannelEnum channel)
         {
             auto channelCode = static_cast<MessageChannelCode>(channel);
-            return GlobalDownlinkMessageBuilder(mConnector, channelCode, mMessageBufferPool[channelCode]);
+            return { mConnector, channelCode, mMessageBufferPool[channelCode] };
         }
 
 
@@ -116,7 +116,7 @@ namespace odNet
 
         std::shared_ptr<DownlinkConnector> mConnector;
 
-        std::unordered_map<MessageChannelCode, std::vector<uint8_t>> mMessageBufferPool;
+        std::unordered_map<MessageChannelCode, std::vector<char>> mMessageBufferPool;
 
     };
 

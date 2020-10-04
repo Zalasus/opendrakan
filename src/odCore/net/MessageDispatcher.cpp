@@ -7,7 +7,7 @@
 namespace odNet
 {
 
-    GlobalDownlinkMessageBuilder::GlobalDownlinkMessageBuilder(std::shared_ptr<DownlinkConnector> connector, MessageChannelCode code, std::vector<uint8_t> &dataBuffer)
+    GlobalDownlinkMessageBuilder::GlobalDownlinkMessageBuilder(std::shared_ptr<DownlinkConnector> connector, MessageChannelCode code, std::vector<char> &dataBuffer)
     : mConnector(connector)
     , mCode(code)
     , mData(dataBuffer)
