@@ -262,6 +262,8 @@ namespace dragonRfl
     {
         auto &obj = getLevelObject();
 
+        Logger::info() << "non-dummy HumanControl_Cl spawned :)";
+
     	mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
     }
 
@@ -316,19 +318,6 @@ namespace dragonRfl
     void HumanControlDummy_Cl::onTransformChanged()
     {
         auto &obj = getLevelObject();
-
-        odAudio::SoundSystem *soundSystem = getClient().getSoundSystem();
-        if(soundSystem != nullptr)
-        {
-            glm::vec3 pos = obj.getPosition();
-
-            glm::quat lookDirection = obj.getRotation();
-            glm::vec3 at = lookDirection * glm::vec3(0, 0, -1);
-            glm::vec3 up = glm::vec3(0, 1, 0);
-
-            soundSystem->setListenerPosition(pos);
-            soundSystem->setListenerOrientation(at, up);
-        }
 
         if(mRenderHandle != nullptr)
         {

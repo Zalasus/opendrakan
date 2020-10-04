@@ -13,10 +13,12 @@
 #include <odCore/input/InputManager.h>
 
 #include <odCore/net/IdTypes.h>
+#include <odCore/net/MessageDispatcher.h>
 
 #include <odCore/rfl/Rfl.h>
 
 #include <dragonRfl/Actions.h>
+#include <dragonRfl/MessageChannel.h>
 
 namespace dragonRfl
 {
@@ -55,6 +57,8 @@ namespace dragonRfl
 
         LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
+
+        std::shared_ptr<odNet::GlobalMessageListener<MessageChannel>> mControlCreationChannelListener;
     };
 
 }

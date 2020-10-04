@@ -68,15 +68,14 @@ namespace dragonRfl
 
             obj.despawned();
 
-            // i kinda dislike that we need to set everything up ourselves
-            // FIXME: also, this does not override the fields from the object data
             auto newHumanControl = std::make_unique<HumanControl_Sv>(clientId);
-            newHumanControl->setServer(localServer);
-            newHumanControl->setLevelObject(obj);
-            obj.getClass()->fillFields(newHumanControl->getFields());
-            newHumanControl->onLoaded();
+            newHumanControl->setServer(localServer); // i kinda dislike having to do this manually
             obj.setRflClassInstance(std::move(newHumanControl));
             obj.spawned();
+
+            // TODO: make this a broadcast
+            localServer.getMessageDispatcherForClient(clientId).sendGlobalMessage(MessageChannel::HUMANCONTROL_CREATED)
+                << clientId << obj.getObjectId();
         }
 
         /*
@@ -143,6 +142,39 @@ namespace dragonRfl
         physicsDebugAction.addCallback([&localClient](Action action, odInput::ActionState state)
         {
             localClient.getPhysicsSystem().toggleDebugDrawing();
+        });
+
+
+        // TODO: the existence of this should be coupled to the existence of the localClient somehow. maybe we *should* split local behaviour off into client/server RFLs
+        mControlCreationChannelListener = localClient.getMessageDispatcher().createGlobalListener(MessageChannel::HUMANCONTROL_CREATED);
+        mControlCreationChannelListener->setCallback([this, &localClient](auto channel, auto messageBodyReader) mutable
+        {
+            odNet::ClientId clientId;
+            od::LevelObjectId objectId;
+            messageBodyReader >> clientId >> objectId;
+
+            /*if(clientId != localClient.getClientId())
+            {
+                // this is not the controller for this client. later, we might store this association somewhere, or create
+                //  a custom HumanControlDummy_Cl that displays player colors, team, etc. for now, just ignore
+                return;
+
+            }else*/
+            {
+                auto controlObject = localClient.getLevel()->getLevelObjectById(objectId);
+                if(controlObject == nullptr)
+                {
+                    Logger::warn() << "Got HUMANCONTROL_CREATED message with invalid object ID " << objectId;
+
+                }else
+                {
+                    controlObject->despawned();
+                    auto newControl = std::make_unique<HumanControl_Cl>();
+                    newControl->setClient(localClient); // i kinda dislike having to do this manually
+                    controlObject->setRflClassInstance(std::move(newControl));
+                    controlObject->spawned();
+                }
+            }
         });
     }
 
