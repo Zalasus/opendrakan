@@ -22,10 +22,8 @@ namespace dragonRfl
     };
 
 
-    class CountDownToZeroFields final : public odRfl::FieldBundle
+    struct CountDownToZeroFields final : public odRfl::FieldBundle
     {
-    public:
-
         CountDownToZeroFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
@@ -36,8 +34,18 @@ namespace dragonRfl
         odRfl::EnumMessage                      incrementMessage;
         odRfl::EnumMessage                      decrementMessage;
         odRfl::EnumMessage                      resetMessage;
-
     };
+
+
+    /*struct CountDownToZeroStates final : public odState::StateBundle
+    {
+        virtual void probeStates(odState::StateProbe &probe) override
+        {
+            probe(counterValue);
+        }
+
+        odState::State<uint32_t, odState::SAVED> counterValue;
+    };*/
 
 
     class CountDownToZero_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Sv>
@@ -47,6 +55,7 @@ namespace dragonRfl
         CountDownToZero_Sv();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
+        //virtual odState::StateBundle *getStates() override { return &mStates; }
 
         virtual void onLoaded() override;
         virtual void onSpawned() override;
@@ -56,8 +65,8 @@ namespace dragonRfl
     private:
 
         CountDownToZeroFields mFields;
-
-        uint32_t mCounterValue;
+        int mCounterValue;
+        //CountDownToZeroStates mStates;
 
     };
 

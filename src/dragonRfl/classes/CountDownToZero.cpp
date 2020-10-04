@@ -53,6 +53,8 @@ namespace dragonRfl
     void CountDownToZero_Sv::onSpawned()
     {
         mCounterValue = mFields.initialCounterValue;
+        //mStates.counterValue = mFields.initialCounterValue;
+        //getLevelObject().extraStateDirty();
     }
 
     void CountDownToZero_Sv::onMessageReceived(od::LevelObject &sender, od::Message message)
@@ -103,6 +105,7 @@ namespace dragonRfl
                 << "Count was " << mCounterValue << ", now is " << newCounter;
 
         mCounterValue = newCounter;
+        getLevelObject().extraStateDirty();
     }
 
 }
