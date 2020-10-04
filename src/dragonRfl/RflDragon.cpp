@@ -77,24 +77,6 @@ namespace dragonRfl
             localServer.getMessageDispatcherForClient(clientId).sendGlobalMessage(MessageChannel::HUMANCONTROL_CREATED)
                 << clientId << obj.getObjectId();
         }
-
-        /*
-        foundObjects.clear();
-        localServer.getLevel()->findObjectsOfType(TrackingCamera::classId(), foundObjects);
-        if(foundObjects.empty())
-        {
-            // TODO: intro level excepted
-            Logger::error() << "Found no Tracking Camera in level! This could be an error in level design.";
-
-        }else
-        {
-            if(foundObjects.size() > 1)
-            {
-                Logger::warn() << "More than one Tracking Camera found in level! Ignoring all but one";
-            }
-
-            auto &obj = *foundObjects.back();
-        }*/
     }
 
     const char *DragonRfl::getName() const

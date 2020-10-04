@@ -7,9 +7,9 @@
 
 #include <dragonRfl/classes/HumanControl.h>
 
-#include <glm/gtc/constants.hpp>
+#include <vector>
 
-#include <dragonRfl/classes/TrackingCamera.h> // for cursor->yaw/pitch calculation
+#include <glm/gtc/constants.hpp>
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
@@ -27,6 +27,8 @@
 #include <odCore/physics/PhysicsSystem.h>
 
 #include <odCore/render/Renderer.h>
+
+#include <dragonRfl/classes/TrackingCamera.h>
 
 namespace dragonRfl
 {
@@ -262,9 +264,29 @@ namespace dragonRfl
     {
         auto &obj = getLevelObject();
 
-        Logger::info() << "non-dummy HumanControl_Cl spawned :)";
-
     	mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
+
+        // create a tracking camera for me
+        std::vector<od::LevelObject*> foundCameras;
+        obj.getLevel().findObjectsOfType(TrackingCamera::classId(), foundCameras);
+        if(foundCameras.empty())
+        {
+            Logger::error() << "Found no Tracking Camera in level! This could be an error in level design.";
+
+        }else
+        {
+            if(foundCameras.size() > 1)
+            {
+                Logger::warn() << "More than one Tracking Camera found in level! Ignoring all but one";
+            }
+
+            auto &cameraObject = *foundCameras.back();
+            cameraObject.despawned();
+            auto newCameraInstance = std::make_unique<TrackingCamera_Cl>(obj);
+            newCameraInstance->setClient(getClient());
+            cameraObject.setRflClassInstance(std::move(newCameraInstance));
+            cameraObject.spawned();
+        }
     }
 
     void HumanControl_Cl::onTransformChanged()
