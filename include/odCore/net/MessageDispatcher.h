@@ -135,7 +135,9 @@ namespace odNet
     {
     public:
 
-        UplinkMessageDispatcher(std::shared_ptr<UplinkConnector> connector);
+        UplinkMessageDispatcher() = default;
+
+        inline void setUplinkConnector(std::shared_ptr<UplinkConnector> connector) { mConnector = connector; }
 
 
     protected:

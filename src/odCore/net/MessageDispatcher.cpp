@@ -39,14 +39,12 @@ namespace odNet
     }
 
 
-    UplinkMessageDispatcher::UplinkMessageDispatcher(std::shared_ptr<UplinkConnector> connector)
-    : mConnector(connector)
-    {
-    }
-
     void UplinkMessageDispatcher::globalMessage(MessageChannelCode code, const char *data, size_t size)
     {
-        // TODO: implement
+        if(mConnector != nullptr)
+        {
+            // TODO: implement
+        }
     }
 
     void UplinkMessageDispatcher::objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size)
