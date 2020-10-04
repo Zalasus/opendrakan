@@ -40,7 +40,7 @@ namespace dragonRfl
     {
     }
 
-    void DragonRfl::spawnHumanControlForPlayer(od::Server &localServer, odNet::ClientId client)
+    void DragonRfl::spawnHumanControlForPlayer(od::Server &localServer, odNet::ClientId clientId)
     {
         if(localServer.getLevel() == nullptr)
         {
@@ -70,14 +70,12 @@ namespace dragonRfl
 
             // i kinda dislike that we need to set everything up ourselves
             // FIXME: also, this does not override the fields from the object data
-            auto newHumanControl = std::make_unique<HumanControl_Sv>(client);
+            auto newHumanControl = std::make_unique<HumanControl_Sv>(clientId);
             newHumanControl->setServer(localServer);
             newHumanControl->setLevelObject(obj);
             obj.getClass()->fillFields(newHumanControl->getFields());
             newHumanControl->onLoaded();
-
-            obj.replaceRflClassInstance(std::move(newHumanControl));
-
+            obj.setRflClassInstance(std::move(newHumanControl));
             obj.spawned();
         }
 

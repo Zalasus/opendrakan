@@ -85,8 +85,9 @@ namespace od
     }
 
 
-    LevelObject::LevelObject(ObjectRecordData &record, Level &level)
+    LevelObject::LevelObject(Level &level,uint16_t recordIndex, ObjectRecordData &record, LevelObjectId id, std::unique_ptr<odRfl::ClassBase> classInstance)
     : mLevel(level)
+    , mRecordIndex(recordIndex)
     , mId(record.getObjectId())
     , mLightingLayer(nullptr)
     , mPosition(record.getPosition())
@@ -98,6 +99,7 @@ namespace od
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
+    , mRflClassInstance(std::move(classInstance))
     , mSpawnableClass(nullptr)
     {
         LayerId lightSourceLayerId = record.getLightSourceLayerId();
@@ -117,16 +119,28 @@ namespace od
             mLinkedObjects.push_back(level.getObjectIdForRecordIndex(linkedIndex));
         }
 
-        mClass = mLevel.getAssetByRef<odDb::Class>(record.getClassRef());
-        auto instance = mClass->makeInstance(mLevel.getEngine());
-        if(instance != nullptr)
+        if(mRflClassInstance != nullptr)
         {
-            instance->getFields().probeFields(record.getFieldLoader());
-            this->replaceRflClassInstance(std::move(instance));
-
-            if(mRflClassInstance != nullptr)
+            mSpawnableClass = mRflClassInstance->asSpawnableClass();
+            if(mSpawnableClass != nullptr)
             {
-                mRflClassInstance->onLoaded();
+                mSpawnableClass->setLevelObject(*this);
+
+            }else
+            {
+                Logger::warn() << "Level object has RFL class that is not spawnable. This object will probably not do much...";
+            }
+
+            mRflClassInstance->onLoaded();
+
+        }else
+        {
+            mClass = mLevel.getAssetByRef<odDb::Class>(record.getClassRef());
+            auto instance = mClass->makeInstance(mLevel.getEngine());
+            if(instance != nullptr)
+            {
+                instance->getFields().probeFields(record.getFieldLoader());
+                this->setRflClassInstance(std::move(instance));
             }
         }
     }
@@ -378,9 +392,8 @@ namespace od
         }
     }
 
-    void LevelObject::replaceRflClassInstance(std::unique_ptr<odRfl::ClassBase> i)
+    void LevelObject::setRflClassInstance(std::unique_ptr<odRfl::ClassBase> i)
     {
-        // TODO: maybe signal the class instance that's being replaced? like, add onInstanceReplaced() to spawnable
         mRflClassInstance = std::move(i);
         mSpawnableClass = mRflClassInstance->asSpawnableClass();
         if(mSpawnableClass != nullptr)

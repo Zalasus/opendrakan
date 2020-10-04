@@ -469,9 +469,10 @@ namespace od
         }
 
     	mLevelObjects.reserve(objectCount);
-    	for(auto &record : mObjectRecords)
+        for(size_t i = 0; i < objectCount; ++i)
     	{
-            auto object = std::make_unique<LevelObject>(record, *this);
+            auto &record = mObjectRecords[i];
+            auto object = std::make_unique<LevelObject>(*this, i, record, record.getObjectId(), nullptr);
 
             if(object->getClassInstance() == nullptr)
             {
