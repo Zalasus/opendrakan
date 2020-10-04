@@ -425,6 +425,17 @@ namespace odRfl
 
     };
 
+    /**
+     * @brief Specifies the environment a class is intended for.
+     */
+    enum class ClassEnvironmentType
+    {
+        CLIENT_SERVER, ///< The class has implementations for both clients and servers (can be the same impl. for both).
+        CLIENT_ONLY,   ///< The class only can exist on clients. On servers, their object will be destroyed.
+        SERVER_ONLY,   ///< The class only can exist on servers. On clients, their object will be destroyed.
+        STUB           ///< Instantiating a class for the object is up to other game mechanics. The object will be kept in pre-load state.
+    };
+
 }
 
 #define OD_DEFINE_CLASS(_cppclass, _id, _category, _name, _factory) \
