@@ -218,7 +218,7 @@ namespace dragonRfl
         for(auto &result : results)
         {
             odPhysics::ObjectHandle *objectHandle = result.handle->asObjectHandle();
-            if(objectHandle != nullptr)
+            if(objectHandle != nullptr && objectHandle->getLevelObject().getObjectId() == obj.getObjectId())
             {
                 Logger::info() << "I, " << obj.getObjectId() << ", attacked " << objectHandle->getLevelObject().getObjectId();
             }
@@ -258,6 +258,10 @@ namespace dragonRfl
     void HumanControl_Cl::onLoaded()
     {
         getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
+
+        auto analogActionHandler = std::bind(&HumanControl_Cl::_handleAnalogAction, this, std::placeholders::_1, std::placeholders::_2);
+        auto &lookAction = getClient().getInputManager().getAnalogAction(Action::Look);
+        lookAction.addCallback(analogActionHandler);
     }
 
     void HumanControl_Cl::onSpawned()
@@ -316,6 +320,17 @@ namespace dragonRfl
         }
     }
 
+    void HumanControl_Cl::_handleAnalogAction(Action action, const glm::vec2 &pos)
+    {
+        if(action == Action::Look)
+        {
+            // TODO: we have to mark this as a prediction, and have to shift the server side calculation so it roughly matches up
+            //  with this state update
+            glm::vec2 yawPitch = TrackingCamera_Cl::cursorPosToYawPitch(pos);
+            getLevelObject().setRotation(glm::quat(glm::vec3(0, yawPitch.x, 0)));
+        }
+    }
+
 
     HumanControlDummy_Cl::HumanControlDummy_Cl()
     {
@@ -323,11 +338,6 @@ namespace dragonRfl
 
     HumanControlDummy_Cl::~HumanControlDummy_Cl()
     {
-    }
-
-    void HumanControlDummy_Cl::onLoaded()
-    {
-        getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
     }
 
     void HumanControlDummy_Cl::onSpawned()

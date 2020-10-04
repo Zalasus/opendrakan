@@ -93,6 +93,8 @@ namespace dragonRfl
 
 	 private:
 
+        void _handleAnalogAction(Action action, const glm::vec2 &pos);
+
 		HumanControlFields mFields;
 
 		std::shared_ptr<odRender::Handle> mRenderHandle;
@@ -114,7 +116,6 @@ namespace dragonRfl
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
-		virtual void onLoaded() override;
 		virtual void onSpawned() override;
 		virtual void onTransformChanged() override;
 
