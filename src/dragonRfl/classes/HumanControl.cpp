@@ -117,6 +117,7 @@ namespace dragonRfl
 
     void HumanControl_Sv::onUpdate(float relTime)
     {
+        auto guard = getServer().compensateLag(mClientId);
 
         getLevelObject().setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
 

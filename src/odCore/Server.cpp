@@ -28,6 +28,28 @@
 namespace od
 {
 
+    LagCompensationGuard::LagCompensationGuard(odState::StateManager &sm, double rollbackTime)
+    : mStateManager(&sm)
+    , mRollbackTime(rollbackTime)
+    {
+    }
+
+    LagCompensationGuard::LagCompensationGuard(LagCompensationGuard &&g)
+    : mStateManager(g.mStateManager)
+    , mRollbackTime(g.mRollbackTime)
+    {
+        g.mStateManager = nullptr;
+    }
+
+    LagCompensationGuard::~LagCompensationGuard()
+    {
+        if(mStateManager != nullptr)
+        {
+            mStateManager->apply(mRollbackTime);
+        }
+    }
+
+
     class LocalUplinkConnector : public odNet::UplinkConnector
     {
     public:
@@ -118,6 +140,21 @@ namespace od
         return *(it->second.messageDispatcher);
     }
 
+    LagCompensationGuard Server::compensateLag(odNet::ClientId id)
+    {
+        auto client = mClients.find(id);
+        if(client == mClients.end())
+        {
+            throw od::NotFoundException("Invalid client ID");
+        }
+
+        double predictedClientViewTime = mServerTime - client->second.lastMeasuredRoundTripTime/2 - client->second.viewInterpolationTime;
+
+        mStateManager->apply(predictedClientViewTime);
+
+        return { *mStateManager, mServerTime };
+    }
+
     void Server::loadLevel(const FilePath &lvlPath)
     {
         Logger::verbose() << "Server loading level " << lvlPath;
@@ -157,7 +194,7 @@ namespace od
         double targetUpdateIntervalNs = (1e9/60.0);
         auto targetUpdateInterval = std::chrono::nanoseconds((int64_t)targetUpdateIntervalNs);
         auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
-        double serverTime = 0.0;
+        mServerTime = 0.0;
         while(!mIsDone.load(std::memory_order_relaxed))
         {
             auto loopStart = std::chrono::high_resolution_clock::now();
@@ -165,7 +202,7 @@ namespace od
             double relTime = 1e-9 * std::chrono::duration_cast<std::chrono::nanoseconds>(loopStart - lastUpdateStartTime).count();
             lastUpdateStartTime = loopStart;
 
-            serverTime += relTime;
+            mServerTime += relTime;
 
             if(mLevel != nullptr)
             {
@@ -180,7 +217,7 @@ namespace od
             }
 
             // commit update
-            mStateManager->commit(serverTime);
+            mStateManager->commit(mServerTime);
 
             // send update to clients
             odState::TickNumber latestTick = mStateManager->getLatestTick();
@@ -209,6 +246,8 @@ namespace od
 
     Server::Client::Client()
     : lastSentTick(odState::StateManager::FIRST_TICK - 1)
+    , viewInterpolationTime(0.1) // TODO: use constant or communicate via handshake
+    , lastMeasuredRoundTripTime(0.0)
     {
     }
 

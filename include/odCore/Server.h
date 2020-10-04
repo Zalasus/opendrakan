@@ -54,6 +54,22 @@ namespace od
 {
     class Level;
 
+    class LagCompensationGuard
+    {
+    public:
+
+        LagCompensationGuard(odState::StateManager &sm, double rollbackTime);
+        LagCompensationGuard(LagCompensationGuard &&g);
+        ~LagCompensationGuard();
+
+
+    private:
+
+        odState::StateManager *mStateManager;
+        double mRollbackTime;
+
+    };
+
     /**
      * @brief Local server instance.
      *
@@ -100,6 +116,8 @@ namespace od
 
         odNet::DownlinkMessageDispatcher &getMessageDispatcherForClient(odNet::ClientId id);
 
+        LagCompensationGuard compensateLag(odNet::ClientId id);
+
         template <typename T>
         void forEachClient(const T &functor)
         {
@@ -125,6 +143,10 @@ namespace od
             std::unique_ptr<odInput::InputManager> inputManager;
             std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
             odState::TickNumber lastSentTick;
+
+            // for lag compensation:
+            float viewInterpolationTime;
+            float lastMeasuredRoundTripTime;
         };
 
         void _commitUpdate();
@@ -142,6 +164,8 @@ namespace od
 
         odNet::ClientId mNextClientId;
         std::unordered_map<odNet::ClientId, Client> mClients;
+
+        double mServerTime;
 
     };
 
