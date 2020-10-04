@@ -99,7 +99,38 @@ namespace dragonRfl
 
 	};
 
-    using HumanControlFactory = odRfl::DefaultClassFactory<HumanControlFields, HumanControl_Cl, odRfl::DummyClass>;
+
+    /**
+     * A dummy used to represent all HumanControls created by the server, i.e. other players.
+     * HumanControl_Cl contains the actual controller code. A custom downlink message is used to
+     * turn the object that represents the client in question into a HumanControl_Cl.
+     */
+    class HumanControlDummy_Cl : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControlDummy_Cl>
+	{
+    public:
+
+        HumanControlDummy_Cl();
+		virtual ~HumanControlDummy_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+		virtual void onLoaded() override;
+		virtual void onSpawned() override;
+		virtual void onTransformChanged() override;
+
+
+	 private:
+
+		HumanControlFields mFields;
+
+		std::shared_ptr<odRender::Handle> mRenderHandle;
+    };
+
+
+    // server: never create. always needs special treatment
+    // client: always some kind of rendered dummy. HumanControl_Cl creation is handled via a custom message
+    using HumanControlFactory = odRfl::DefaultClassFactory<HumanControlFields, HumanControlDummy_Cl, odRfl::DummyClass>;
+
 
     OD_DEFINE_CLASS(HumanControl, 0x0009, "Player", "Human Control", HumanControlFactory);
 

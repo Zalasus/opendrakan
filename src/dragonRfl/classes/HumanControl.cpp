@@ -291,4 +291,53 @@ namespace dragonRfl
             mRenderHandle->setScale(obj.getScale());
         }
     }
+
+
+    HumanControlDummy_Cl::HumanControlDummy_Cl()
+    {
+    }
+
+    HumanControlDummy_Cl::~HumanControlDummy_Cl()
+    {
+    }
+
+    void HumanControlDummy_Cl::onLoaded()
+    {
+        getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
+    }
+
+    void HumanControlDummy_Cl::onSpawned()
+    {
+        auto &obj = getLevelObject();
+
+    	mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
+    }
+
+    void HumanControlDummy_Cl::onTransformChanged()
+    {
+        auto &obj = getLevelObject();
+
+        odAudio::SoundSystem *soundSystem = getClient().getSoundSystem();
+        if(soundSystem != nullptr)
+        {
+            glm::vec3 pos = obj.getPosition();
+
+            glm::quat lookDirection = obj.getRotation();
+            glm::vec3 at = lookDirection * glm::vec3(0, 0, -1);
+            glm::vec3 up = glm::vec3(0, 1, 0);
+
+            soundSystem->setListenerPosition(pos);
+            soundSystem->setListenerOrientation(at, up);
+        }
+
+        if(mRenderHandle != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+
+            mRenderHandle->setPosition(obj.getPosition());
+            mRenderHandle->setOrientation(obj.getRotation());
+            mRenderHandle->setScale(obj.getScale());
+        }
+    }
+
 }
