@@ -22,6 +22,7 @@
 
 #include <odCore/net/UplinkConnector.h>
 #include <odCore/net/DownlinkConnector.h>
+#include <odCore/net/MessageDispatcher.h>
 
 #include <odCore/state/StateManager.h>
 
@@ -116,6 +117,8 @@ namespace od
 
         mDownlinkConnector = std::make_shared<LocalDownlinkConnector>(*this);
 
+        mMessageDispatcher = std::make_unique<odNet::UplinkMessageDispatcher>();
+
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
         {
@@ -141,6 +144,7 @@ namespace od
     void Client::setUplinkConnector(std::shared_ptr<odNet::UplinkConnector> connector)
     {
         mUplinkConnector = connector;
+        mMessageDispatcher->setUplinkConnector(connector);
     }
 
     void Client::loadLevel(const FilePath &lvlPath)

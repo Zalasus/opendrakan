@@ -47,6 +47,7 @@ namespace odNet
 {
     class UplinkConnector;
     class DownlinkConnector;
+    class UplinkMessageDispatcher;
 }
 
 namespace odState
@@ -78,6 +79,8 @@ namespace od
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
         inline std::shared_ptr<odNet::DownlinkConnector> getDownlinkConnector() { return mDownlinkConnector; }
+
+        inline odNet::UplinkMessageDispatcher &getMessageDispatcher() { return *mMessageDispatcher; }
 
         inline od::Level *getLevel() { return mLevel.get(); }
 
@@ -111,6 +114,8 @@ namespace od
         std::shared_ptr<odNet::UplinkConnector> mUplinkConnector;
 
         std::shared_ptr<odInput::RawActionListener> mActionListener;
+
+        std::unique_ptr<odNet::UplinkMessageDispatcher> mMessageDispatcher;
 
     };
 
