@@ -42,6 +42,7 @@ writing the states that changed since loading the level to a savegame.
 
 Data structures
 ---------------
+```
 struct vec2
 {
     f32 x;
@@ -62,6 +63,7 @@ struct quat
     f32 k;
     f32 w;
 }
+```
 
 Basic packet structure
 ----------------------
@@ -75,11 +77,14 @@ These are used to send snapshots from the server to a client. Thus, they are
 only valid in the downlink. A client does not send state updates to the server.
 
 ### Confirm Snapshot
+```
 u64 tick_number;
 f64 realtime;
 u32 number_of_discrete_changes;
+```
 
 ### Object State Changed
+```
 u64 tick_number;
 u32 object_id;
 u32 state_flags;
@@ -88,13 +93,41 @@ if(state_flags & (1 << 1)) quat rotation;
 if(state_flags & (1 << 2)) vec3 scale;
 if(state_flags & (1 << 3)) u8 visibility;
 if(state_flags & (1 << 4)) f32 animation_frame;
+```
 
 ### Object Extra State Changed
+```
 u64 tick_number;
 u32 object_id;
 u16 first_state_number;
 u16 state_count;
-u8 state_data[~];
+u8  state_data[]; // size is to be derived from payload size field of the packet
+```
+
+### Object Created
+```
+u64 tick_number;
+u32 new_object_id;
+u32 prototype_object_id; // currently, new objects can only be created as clones of exisiting objects
+```
+
+Message Channel packets
+-----------------------
+These packets allow an RFL to send arbitrary messages over so called "channels".
+
+### Global message (downlink)
+```
+u32 channel_code;
+u8  message_body[];  // size is to be derived from payload size field of the packet
+```
+
+### Object message (downlink)
+```
+u32 channel_code;
+u32 sender_object_id;
+u32 receiver_object_id;
+u8  messageBody[];  // size is to be derived from payload size field of the packet
+```
 
 Gameplay packets
 ----------------
@@ -102,14 +135,18 @@ These are sent as soon as the action happens on the transmitting side. They
 don't use the timeline.
 
 ### Action (Uplink)
+```
 u32 action_code;
-u8 action_state;
+u8  action_state;
+```
 
 ### Analog Action (Uplink)
+```
 u32 action_code;
 u8  flags; // 1 == has_y_axis
 f32 x;
 if(flags & 1) f32 y;
+```
 
 ### Chat
 u8 message_chars[];
