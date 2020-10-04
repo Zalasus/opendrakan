@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include <odCore/DataStream.h>
+#include <odCore/IdTypes.h>
 
 #include <odCore/net/IdTypes.h>
 
@@ -14,12 +15,14 @@ namespace odNet
 {
     class DownlinkConnector;
     class UplinkConnector;
+    class MessageDispatcher;
 
 
     class GlobalMessageListenerBase
     {
 
     };
+
 
     template <typename _ChannelEnum>
     class GlobalMessageListener : public GlobalMessageListenerBase
@@ -29,16 +32,16 @@ namespace odNet
     };
 
 
-    class GlobalDownlinkMessageBuilder
+    class GlobalMessageBuilder
     {
     public:
 
-        GlobalDownlinkMessageBuilder(std::shared_ptr<DownlinkConnector> connector, MessageChannelCode code, std::vector<char> &dataBuffer);
-        GlobalDownlinkMessageBuilder(GlobalDownlinkMessageBuilder &c) = delete;
-        ~GlobalDownlinkMessageBuilder();
+        GlobalMessageBuilder(MessageDispatcher &dispatcher, MessageChannelCode code, std::vector<char> &dataBuffer);
+        GlobalMessageBuilder(GlobalMessageBuilder &c) = delete;
+        ~GlobalMessageBuilder();
 
         template <typename T>
-        GlobalDownlinkMessageBuilder &operator<<(const T &v)
+        GlobalMessageBuilder &operator<<(const T &v)
         {
             mDataWriter << v;
             return *this;
@@ -48,7 +51,7 @@ namespace odNet
 
     private:
 
-        std::shared_ptr<DownlinkConnector> mConnector;
+        MessageDispatcher &mDispatcher;
         MessageChannelCode mCode;
         std::vector<char> &mData;
 
@@ -59,31 +62,12 @@ namespace odNet
     };
 
 
-    /*class UplinkMessageDispatcher
+    class MessageDispatcher
     {
     public:
 
-        UplinkMessageDispatcher(std::shared_ptr<UplinkConnector> connector);
-
-        template <typename _ChannelEnum>
-        MessageBuilder sendMessage(_ChannelEnum channel)
-        {
-            auto channelId = static_cast<MessageChannelCode>(channel);
-        }
-
-
-    private:
-
-        std::shared_ptr<UplinkConnector> mConnector;
-
-    };
-  */
-
-    class DownlinkMessageDispatcher
-    {
-    public:
-
-        DownlinkMessageDispatcher(std::shared_ptr<DownlinkConnector> connector);
+        MessageDispatcher() = default;
+        MessageDispatcher(MessageDispatcher &d) = delete;
 
         template <typename _ChannelEnum>
         std::shared_ptr<GlobalMessageListener<_ChannelEnum>> createGlobalListener(_ChannelEnum channel)
@@ -99,24 +83,70 @@ namespace odNet
         //}
 
         template <typename _ChannelEnum>
-        GlobalDownlinkMessageBuilder sendGlobalMessage(_ChannelEnum channel)
+        GlobalMessageBuilder sendGlobalMessage(_ChannelEnum channel)
         {
             auto channelCode = static_cast<MessageChannelCode>(channel);
-            return { mConnector, channelCode, mMessageBufferPool[channelCode] };
+            return { *this, channelCode, mMessageBufferPool[channelCode] };
         }
 
 
         //template <typename _ChannelEnum>
-        //MessageBuilder sendObjectMessage(_ChannelEnum channel, od::LevelObjectId sender, od::LevelObjectId receiver)
+        //ObjectMessageBuilder sendObjectMessage(_ChannelEnum channel, od::LevelObjectId sender, od::LevelObjectId receiver)
         //{
         //}
+
+
+    protected:
+
+        friend class GlobalMessageBuilder;
+
+        virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;
+        virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
+
+
+    private:
+
+        std::unordered_map<MessageChannelCode, std::vector<char>> mMessageBufferPool;
+
+    };
+
+
+    class DownlinkMessageDispatcher final : public MessageDispatcher
+    {
+    public:
+
+        DownlinkMessageDispatcher(std::shared_ptr<DownlinkConnector> connector);
+
+
+    protected:
+
+        virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
+        virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) override;
 
 
     private:
 
         std::shared_ptr<DownlinkConnector> mConnector;
 
-        std::unordered_map<MessageChannelCode, std::vector<char>> mMessageBufferPool;
+    };
+
+
+    class UplinkMessageDispatcher final : public MessageDispatcher
+    {
+    public:
+
+        UplinkMessageDispatcher(std::shared_ptr<UplinkConnector> connector);
+
+
+    protected:
+
+        virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
+        virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) override;
+
+
+    private:
+
+        std::shared_ptr<UplinkConnector> mConnector;
 
     };
 
