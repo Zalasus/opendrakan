@@ -188,14 +188,14 @@ namespace od
         }
     }
 
-    LevelObjectId Level::getObjectIdForRecordIndex(uint16_t index)
+    ObjectRecordData &Level::getObjectRecord(uint16_t index)
     {
         if(index < 0 || index >= mObjectRecords.size())
         {
             throw Exception("Object index out of bounds");
         }
 
-        return mObjectRecords[index].getObjectId();
+        return mObjectRecords[index];
     }
 
     LevelObject *Level::getLevelObjectById(LevelObjectId id)

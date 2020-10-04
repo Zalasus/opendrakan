@@ -69,11 +69,19 @@ namespace od
         void update(float relTime);
 
         /**
+         * @brief Returns the record data for a given object record index (as encountered during loading).
+         *
+         * Will throw if the index is out of bounds.
+         */
+        ObjectRecordData &getObjectRecord(uint16_t index);
+
+        /**
          * @brief Returns the object ID for a given object record index (as encountered during loading).
          *
          * Will throw if the index is out of bounds.
          */
-        LevelObjectId getObjectIdForRecordIndex(uint16_t index);
+        inline LevelObjectId getObjectIdForRecordIndex(uint16_t index) { return getObjectRecord(index).getObjectId(); }
+
 
         LevelObject *getLevelObjectById(LevelObjectId id);
 
