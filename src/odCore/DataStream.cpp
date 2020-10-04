@@ -352,4 +352,62 @@ namespace od
         return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
     }
 
+
+    VectorOutputBuffer::VectorOutputBuffer(std::vector<char> &v)
+    : mVector(v)
+    {
+        this->setp(&mBackBuffer[0], &mBackBuffer[0] + BACKBUFFER_SIZE);
+    }
+
+    VectorOutputBuffer::~VectorOutputBuffer()
+    {
+        this->sync();
+    }
+
+    std::streambuf::int_type VectorOutputBuffer::overflow(std::streambuf::int_type ch)
+    {
+        int syncResult = this->sync();
+        if(syncResult != 0)
+        {
+            return std::streambuf::traits_type::eof();
+        }
+
+        if(ch != std::streambuf::traits_type::eof())
+        {
+            this->sputc(ch);
+        }
+
+        return std::streambuf::traits_type::eof() + 1; // standard says this has to be "not std::streambuf::traits_type::eof()" on success.
+    }
+
+    std::streampos VectorOutputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+    {
+        OD_UNIMPLEMENTED();
+    }
+
+    std::streampos VectorOutputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    {
+        OD_UNIMPLEMENTED();
+    }
+
+    int VectorOutputBuffer::sync()
+    {
+        ptrdiff_t backbufferSize = this->pptr() - this->pbase();
+        if(backbufferSize >= 0 && static_cast<size_t>(backbufferSize) <= BACKBUFFER_SIZE)
+        {
+            if(backbufferSize > 0)
+            {
+                mVector.insert(mVector.end(), mBackBuffer.begin(), mBackBuffer.begin() + backbufferSize);
+                this->setp(&mBackBuffer[0], &mBackBuffer[0] + BACKBUFFER_SIZE);
+            }
+
+            return 0;
+
+        }else
+        {
+            throw od::Exception("Bad pptr or pbase");
+        }
+
+        OD_UNREACHABLE();
+    }
 }
