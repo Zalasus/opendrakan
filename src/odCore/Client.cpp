@@ -72,6 +72,12 @@ namespace od
             mClient.getStateManager().confirmIncomingSnapshot(tick, realtime, discreteChangeCount);
         }
 
+        virtual void globalMessage(odNet::MessageChannelCode code, const uint8_t *data, size_t size) override
+        {
+        }
+
+        //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const uint8_t *data, size_t size) = 0;
+
 
     private:
 

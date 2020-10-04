@@ -35,6 +35,7 @@ target_sources(odCore PRIVATE
         "input/Action.cpp"
         "input/InputListener.cpp"
         "input/InputManager.cpp"
+        "net/MessageDispatcher.cpp"
         "net/PacketBuilder.cpp"
         "net/PacketParser.cpp"
         "net/Protocol.cpp"

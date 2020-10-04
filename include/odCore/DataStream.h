@@ -9,6 +9,7 @@
 #define INCLUDE_DATASTREAM_H_
 
 #include <istream>
+#include <vector>
 
 #include <odCore/Logger.h>
 
@@ -148,6 +149,24 @@ namespace od
         //virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
         virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
 		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
+
+    };
+
+
+    class VectorOutputBuffer final : public std::streambuf
+    {
+    public:
+
+        VectorOutputBuffer(std::vector<uint8_t> &v);
+
+        virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
+        virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
+		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
+
+
+    private:
+
+        std::vector<uint8_t> &mVector;
 
     };
 

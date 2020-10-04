@@ -12,6 +12,8 @@ namespace odNet
      */
     using ClientId = uint32_t;
 
+    using MessageChannelCode = uint32_t;
+
 }
 
 #endif

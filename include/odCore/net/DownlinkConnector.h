@@ -12,6 +12,8 @@
 #include <odCore/IdTypes.h>
 #include <odCore/ObjectStates.h>
 
+#include <odCore/net/IdTypes.h>
+
 #include <odCore/state/Timeline.h>
 
 namespace odNet
@@ -45,6 +47,9 @@ namespace odNet
         virtual void destroyObject(od::LevelObjectId id) = 0;
 
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) = 0;
+
+        virtual void globalMessage(MessageChannelCode code, const uint8_t *data, size_t size) = 0;
+        //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const uint8_t *data, size_t size) = 0;
     };
 
 }
