@@ -67,6 +67,14 @@ namespace odNet
         _endPacket();
     }
 
+    void DownlinkPacketBuilder::globalMessage(MessageChannelCode code, const char *data, size_t size)
+    {
+        _beginPacket(PacketType::GLOBAL_MESSAGE, PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE + size);
+        mWriter << code;
+        mWriter.write(data, size);
+        _endPacket();
+    }
+
     void DownlinkPacketBuilder::_beginPacket(PacketType type, uint16_t payloadSize)
     {
         mPacketBuffer.resize(payloadSize + PacketConstants::HEADER_SIZE);

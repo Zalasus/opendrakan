@@ -12,7 +12,9 @@ namespace odNet
     {
         OBJECT_STATE_CHANGED,
         CONFIRM_SNAPSHOT,
-        LOAD_LEVEL
+        LOAD_LEVEL,
+        GLOBAL_MESSAGE,
+        OBJECT_MESSAGE
     };
 
     struct PacketConstants
@@ -26,6 +28,8 @@ namespace odNet
         static constexpr uint32_t STATE_MASK_VISIBILITY = (1 << 3);
 
         static constexpr size_t   CONFIRM_PAYLOAD_SIZE = 20;
+
+        static constexpr size_t   GLOBAL_MESSAGE_HEADER_SIZE = 4;
     };
 
     size_t getObjectStateChangePacketSize(uint32_t flags);

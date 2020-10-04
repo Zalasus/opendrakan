@@ -24,6 +24,7 @@ namespace odNet
         virtual void despawnObject(od::LevelObjectId id) override final;
         virtual void destroyObject(od::LevelObjectId id) override final;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) override final;
+        virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override final;
 
 
     private:
