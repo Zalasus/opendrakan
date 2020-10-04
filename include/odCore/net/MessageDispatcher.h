@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <functional>
 
 #include <odCore/DataStream.h>
 #include <odCore/IdTypes.h>
@@ -20,15 +21,43 @@ namespace odNet
 
     class GlobalMessageListenerBase
     {
+    public:
+
+        virtual void triggerCallback(od::DataReader messageBodyReader) = 0;
 
     };
 
 
     template <typename _ChannelEnum>
-    class GlobalMessageListener : public GlobalMessageListenerBase
+    class GlobalMessageListener final : public GlobalMessageListenerBase
     {
     public:
 
+        using CallbackType = std::function<void(_ChannelEnum, od::DataReader)>;
+
+        GlobalMessageListener(_ChannelEnum channel)
+        : mChannel(channel)
+        {
+        }
+
+        void setCallback(const CallbackType &cb)
+        {
+            mCallback = cb;
+        }
+
+        virtual void triggerCallback(od::DataReader messageBodyReader) override
+        {
+            if(mCallback != nullptr)
+            {
+                mCallback(mChannel, messageBodyReader);
+            }
+        }
+
+
+    private:
+
+        _ChannelEnum mChannel;
+        CallbackType mCallback;
     };
 
 
@@ -72,8 +101,11 @@ namespace odNet
         template <typename _ChannelEnum>
         std::shared_ptr<GlobalMessageListener<_ChannelEnum>> createGlobalListener(_ChannelEnum channel)
         {
+            auto channelCode = static_cast<MessageChannelCode>(channel);
+
             auto newListener = std::make_shared<GlobalMessageListener<_ChannelEnum>>(channel);
-            // TODO: store weak ref so we can signal the listener later!
+            mChannelMeta[channelCode].globalListeners.emplace_back(newListener);
+
             return newListener;
         }
 
@@ -86,8 +118,10 @@ namespace odNet
         GlobalMessageBuilder sendGlobalMessage(_ChannelEnum channel)
         {
             auto channelCode = static_cast<MessageChannelCode>(channel);
-            return { *this, channelCode, mMessageBufferPool[channelCode] };
+            return { *this, channelCode, mChannelMeta[channelCode].messageBuffer };
         }
+
+        void receiveGlobalMessage(MessageChannelCode code, const char *data, size_t size); // FIXME: synchronize this method! also, dispatch messages only on appropriate tick
 
 
         //template <typename _ChannelEnum>
@@ -106,7 +140,13 @@ namespace odNet
 
     private:
 
-        std::unordered_map<MessageChannelCode, std::vector<char>> mMessageBufferPool;
+        struct Channel
+        {
+            std::vector<char> messageBuffer;
+            std::vector<std::weak_ptr<GlobalMessageListenerBase>> globalListeners;
+        };
+
+        std::unordered_map<MessageChannelCode, Channel> mChannelMeta;
 
     };
 

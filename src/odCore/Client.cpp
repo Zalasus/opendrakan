@@ -75,6 +75,7 @@ namespace od
 
         virtual void globalMessage(odNet::MessageChannelCode code, const char *data, size_t size) override
         {
+            mClient.getMessageDispatcher().receiveGlobalMessage(code, data, size);
         }
 
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;

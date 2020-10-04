@@ -24,6 +24,23 @@ namespace odNet
     }
 
 
+    void MessageDispatcher::receiveGlobalMessage(MessageChannelCode code, const char *data, size_t size)
+    {
+        for(auto weakListener : mChannelMeta[code].globalListeners)
+        {
+            auto listener = weakListener.lock();
+            if(listener != nullptr)
+            {
+                od::MemoryInputBuffer streamBuffer(data, size);
+                std::istream stream(&streamBuffer);
+                od::DataReader dr(stream);
+
+                listener->triggerCallback(dr);
+            }
+        }
+    }
+
+
     DownlinkMessageDispatcher::DownlinkMessageDispatcher(std::shared_ptr<DownlinkConnector> connector)
     : mConnector(connector)
     {
