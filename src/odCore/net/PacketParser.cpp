@@ -36,7 +36,9 @@ namespace odNet
         // is the packet available in full?
         if(size >= length + PacketConstants::HEADER_SIZE)
         {
-            _parsePacket(type, length, dr);
+            const char *rawPayload = data + PacketConstants::HEADER_SIZE;
+
+            _parsePacket(type, length, dr, rawPayload);
             return length + PacketConstants::HEADER_SIZE; // TODO: consume more than one packet
 
         }else
@@ -45,7 +47,7 @@ namespace odNet
         }
     }
 
-    void DownlinkPacketParser::_parsePacket(uint8_t type, uint16_t length, od::DataReader &dr)
+    void DownlinkPacketParser::_parsePacket(uint8_t type, uint16_t length, od::DataReader &dr, const char *rawPayload)
     {
         switch(static_cast<PacketType>(type))
         {
@@ -118,6 +120,14 @@ namespace odNet
                 mOutput->confirmSnapshot(tick, realtime, changeCount);
             }
             break;
+
+        case PacketType::GLOBAL_MESSAGE:
+            {
+                MessageChannelCode code;
+                dr >> code;
+
+                mOutput->globalMessage(code, rawPayload + PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE, length - PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE);
+            }
 
         default:
             // unknown packet type

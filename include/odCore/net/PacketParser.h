@@ -28,7 +28,7 @@ namespace odNet
 
     private:
 
-        void _parsePacket(uint8_t type, uint16_t length, od::DataReader &dr);
+        void _parsePacket(uint8_t type, uint16_t length, od::DataReader &dr, const char *rawPayload);
 
         std::shared_ptr<DownlinkConnector> mOutput;
 
