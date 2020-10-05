@@ -92,19 +92,30 @@ namespace od
     {
     }
 
-    odNet::ClientId Server::addClient(std::shared_ptr<odNet::DownlinkConnector> connector)
+    odNet::ClientId Server::addClient()
     {
         odNet::ClientId newClientId = mNextClientId++;
 
         Client client;
-        client.downlinkConnector = connector;
         client.uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, newClientId);
         client.inputManager = std::make_unique<odInput::InputManager>();
-        client.messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>(client.downlinkConnector);
+        client.messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>();
 
         mClients.insert(std::make_pair(newClientId, std::move(client)));
 
         return newClientId;
+    }
+
+    void Server::setClientDownlinkConnector(odNet::ClientId id, std::shared_ptr<odNet::DownlinkConnector> connector)
+    {
+        auto it = mClients.find(id);
+        if(it == mClients.end())
+        {
+            throw od::NotFoundException("Invalid client ID");
+        }
+
+        it->second.downlinkConnector = connector;
+        it->second.messageDispatcher->setDownlinkConnector(connector);
     }
 
     std::shared_ptr<odNet::UplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
@@ -179,7 +190,10 @@ namespace od
 
         for(auto &client : mClients)
         {
-            client.second.downlinkConnector->loadLevel(relLevelPath);
+            if(client.second.downlinkConnector != nullptr)
+            {
+                client.second.downlinkConnector->loadLevel(relLevelPath);
+            }
         }
 
         mRflManager.forEachLoadedRfl([this](odRfl::Rfl &rfl){ rfl.onLevelLoaded(*this); });
@@ -224,8 +238,11 @@ namespace od
             for(auto &client : mClients)
             {
                 // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                mStateManager->sendSnapshotToClient(latestTick, *client.second.downlinkConnector, client.second.lastSentTick);
-                client.second.lastSentTick = latestTick;
+                if(client.second.downlinkConnector != nullptr)
+                {
+                    mStateManager->sendSnapshotToClient(latestTick, *client.second.downlinkConnector, client.second.lastSentTick);
+                    client.second.lastSentTick = latestTick;
+                }
             }
 
             auto loopEnd = std::chrono::high_resolution_clock::now();

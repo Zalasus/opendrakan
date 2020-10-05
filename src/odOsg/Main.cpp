@@ -20,6 +20,7 @@
 
 #include <odCore/net/UplinkConnector.h>
 #include <odCore/net/DownlinkConnector.h>
+#include <odCore/net/LocalTunnel.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
@@ -56,6 +57,7 @@ static void printUsage()
         << "    -h  Display this message and exit" << std::endl
         << "    -c  Use free look trackball view and ignore in-game camera controllers" << std::endl
         << "    -p  Force enable physics debug drawing" << std::endl
+        << "    -t  Use a simulated network tunnel to connect client and server" << std::endl
         << "If no level file and no options are given, the default intro level is loaded." << std::endl
         << "The latter assumes the current directory to be the game root." << std::endl
         << std::endl;
@@ -90,27 +92,11 @@ int main(int argc, char **argv)
 
     od::Logger::info() << "Starting OpenDrakan version " << OD_VERSION_TAG << " (" << OD_VERSION_BRANCH << " " << OD_VERSION_COMMIT << ")";
 
-    //odOsg::SoundSystem soundSystem;
-    odOsg::Renderer osgRenderer;
-
-    odDb::DbManager dbManager;
-
-    odRfl::RflManager rflManager;
-    odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>(); // TODO: add option to specify dynamic RFL
-
-    od::Client client(dbManager, rflManager, osgRenderer);
-    sClient = &client;
-
-    od::Server server(dbManager, rflManager);
-    auto clientId = server.addClient(client.getDownlinkConnector());
-    sServer = &server;
-
-    client.setUplinkConnector(server.getUplinkConnectorForClient(clientId));
-
     int c;
     bool freeLook = false;
     bool physicsDebug = false;
-    while((c = getopt(argc, argv, "vhcp")) != -1)
+    bool useLocalTunnel = false;
+    while((c = getopt(argc, argv, "vhcpt")) != -1)
     {
         switch(c)
         {
@@ -130,11 +116,43 @@ int main(int argc, char **argv)
             physicsDebug = true;
             break;
 
+        case 't':
+            useLocalTunnel = true;
+            break;
+
         case '?':
             std::cout << "Unknown option -" << optopt << std::endl;
             printUsage();
             return 1;
         }
+    }
+
+    //odOsg::SoundSystem soundSystem;
+    odOsg::Renderer osgRenderer;
+
+    odDb::DbManager dbManager;
+
+    odRfl::RflManager rflManager;
+    odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>(); // TODO: add option to specify dynamic RFL
+
+    od::Client client(dbManager, rflManager, osgRenderer);
+    sClient = &client;
+
+    od::Server server(dbManager, rflManager);
+    auto clientId = server.addClient();
+    sServer = &server;
+
+    std::unique_ptr<odNet::LocalTunnel> localTunnel;
+    if(!useLocalTunnel)
+    {
+        server.setClientDownlinkConnector(clientId, client.getDownlinkConnector());
+        client.setUplinkConnector(server.getUplinkConnectorForClient(clientId));
+
+    }else
+    {
+        localTunnel = std::make_unique<odNet::LocalTunnel>(client.getDownlinkConnector(), server.getUplinkConnectorForClient(clientId));
+        server.setClientDownlinkConnector(clientId, localTunnel->getDownlinkInput());
+        client.setUplinkConnector(localTunnel->getUplinkInput());
     }
 
     od::FilePath engineRoot(".");

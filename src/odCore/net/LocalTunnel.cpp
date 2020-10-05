@@ -5,6 +5,7 @@
 
 namespace odNet
 {
+    constexpr size_t LocalTunnel::MAX_PAYLOAD_SIZE; // pre-C++17 bullshit (no inline vars)
 
     LocalTunnel::LocalTunnel(std::shared_ptr<DownlinkConnector> downlinkOutput, std::shared_ptr<UplinkConnector> uplinkOutput)
     : mUplinkOutput(uplinkOutput)

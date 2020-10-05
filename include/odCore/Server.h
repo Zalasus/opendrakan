@@ -94,10 +94,12 @@ namespace od
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
         /**
-         * @brief Adds a client via it's downlink connector and assigns a new client ID to it.
+         * @brief Creates a new client and assigns a new client ID to it. It's downlink connector has to be assigned separately.
          * @return the new client ID assigned to the client.
          */
-        odNet::ClientId addClient(std::shared_ptr<odNet::DownlinkConnector> connector);
+        odNet::ClientId addClient();
+
+        void setClientDownlinkConnector(odNet::ClientId id, std::shared_ptr<odNet::DownlinkConnector> connector);
 
         /**
          * @brief Returns an uplink connector that can be used to connect the client with the given ID to this server.
