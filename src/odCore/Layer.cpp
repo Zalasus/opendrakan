@@ -121,7 +121,7 @@ namespace od
 
             Vertex v;
             v.type = vertexType;
-            v.heightOffsetLu = Units::worldUnitsToLengthUnits((heightOffsetBiased - 0x8000)*2);
+            v.heightOffsetLu = Units::worldUnitsToLengthUnits<float>((heightOffsetBiased - 0x8000)*2);
 
             if(v.heightOffsetLu < lowestHeightOffset)
             {
