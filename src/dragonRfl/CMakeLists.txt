@@ -21,7 +21,7 @@ target_sources(dragonRfl PRIVATE
     #"classes/Key.cpp"
     #"classes/Material.cpp"
     #"classes/PushableObject.cpp"
-    #"classes/Sky.cpp"
+    "classes/Sky.cpp"
     #"classes/SoundEffect.cpp"
     "classes/StaticLight.cpp"
     "classes/Timer.cpp"

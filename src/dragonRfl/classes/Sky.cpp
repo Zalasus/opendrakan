@@ -7,65 +7,68 @@
 
 #include <dragonRfl/classes/Sky.h>
 
+#include <odCore/Client.h>
 #include <odCore/Level.h>
-#include <odCore/OdDefines.h>
 #include <odCore/LevelObject.h>
-
-#include <odCore/rfl/Rfl.h>
+#include <odCore/Units.h>
 
 #include <odCore/render/Renderer.h>
-
-#include <dragonRfl/RflDragon.h>
 
 #include <dragonRfl/classes/TrackingCamera.h>
 
 namespace dragonRfl
 {
 
-	DomedSky::DomedSky()
-	: mPrimarySky(true)
-	, mFollowMode(0) // original height
-	, mOffsetDown(10000.0)
-	, mEffects(0) // none
-	, mLightningObject(odDb::AssetRef::NULL_REF)
-	, mAveLightningPeriod(5.0)
-	, mLightningHeight(30)
-	, mMinLightningDist(10)
-	, mMaxLightningDist(20)
-	, mLightningWedgeAngle(90.0)
-	, mLensFlare(odDb::AssetRef::NULL_REF)
-	, mFlareElevation(0)
-	, mFlareDirection(0)
+	DomedSkyFields::DomedSkyFields()
+	: primarySky(true)
+	, followMode(0) // original height
+	, offsetDown(10000.0)
+	, effects(0) // none
+	, lightningObject(odDb::AssetRef::NULL_REF)
+	, aveLightningPeriod(5.0)
+	, lightningHeight(30)
+	, minLightningDist(10)
+	, maxLightningDist(20)
+	, lightningWedgeAngle(90.0)
+	, lensFlare(odDb::AssetRef::NULL_REF)
+	, flareElevation(0)
+	, flareDirection(0)
 	{
 	}
 
-    void DomedSky::probeFields(odRfl::FieldProbe &probe)
+    void DomedSkyFields::probeFields(odRfl::FieldProbe &probe)
     {
 		probe("Position")
-    		     (mPrimarySky, "Primary Sky")
-			     (mFollowMode, "Follow Mode")
-			     (mOffsetDown, "Offset Down")
+    		     (primarySky, "Primary Sky")
+			     (followMode, "Follow Mode")
+			     (offsetDown, "Offset Down")
 			 ("Effects")
-			     (mEffects, "Effects")
-			     (mLightningObject, "Lightning Object")
-			     (mAveLightningPeriod, "Ave Lightning Period")
-			     (mLightningHeight, "Lightning Height")
-			     (mMinLightningDist, "Min Lightning Dist")
-			     (mMaxLightningDist, "Max Lightning Dist")
-			     (mLightningWedgeAngle, "Lightning Wedge Angle")
-			     (mLensFlare, "Lens Flare")
-			     (mFlareElevation, "Flare Elevation (0 - 90)")
-			     (mFlareDirection, "Flare Direction (0 - 359)");
+			     (effects, "Effects")
+			     (lightningObject, "Lightning Object")
+			     (aveLightningPeriod, "Ave Lightning Period")
+			     (lightningHeight, "Lightning Height")
+			     (minLightningDist, "Min Lightning Dist")
+			     (maxLightningDist, "Max Lightning Dist")
+			     (lightningWedgeAngle, "Lightning Wedge Angle")
+			     (lensFlare, "Lens Flare")
+			     (flareElevation, "Flare Elevation (0 - 90)")
+			     (flareDirection, "Flare Direction (0 - 359)");
     }
 
-    void DomedSky::onSpawned()
+
+    DomedSky_Cl::DomedSky_Cl()
+    : mCameraObject(nullptr)
+    {
+    }
+
+    void DomedSky_Cl::onSpawned()
 	{
         od::LevelObject &obj = getLevelObject();
 
         // handle attachment: attach sky to camera (not player!!!) FIXME: somehow, the sky is still a bit stuttery
-        odRfl::ClassId cameraClassId = odRfl::ClassTraits<TrackingCamera>::classId();
-        od::LevelObject *cameraObject = obj.getLevel().findObjectOfType(cameraClassId);
-        if(cameraObject == nullptr)
+        odRfl::ClassId cameraClassId = TrackingCamera::classId();
+        mCameraObject = obj.getLevel().findFirstObjectOfType(cameraClassId);
+        if(mCameraObject == nullptr)
         {
             // no camera present in level. we don't want a dangling sky in the level, so we let the sky commit suicide
             Logger::warn() << "Sky found no camera in the level. Destroying sky...";
@@ -73,25 +76,16 @@ namespace dragonRfl
             return;
         }
 
-        glm::vec3 skyOffset(0, -mOffsetDown.get()*OD_WORLD_SCALE, 0);
-        obj.setPosition(cameraObject->getPosition() + skyOffset);
-        obj.attachTo(cameraObject, false, true, false);
-
-
         // we need a special render node for the sky (in it's own render bin)
-        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
-        if(renderer == nullptr)
-        {
-            return;
-        }
-
-        mRenderNode = renderer->createHandleFromObject(obj);
+        mRenderNode = getClient().getRenderer().createHandleFromObject(obj);
 
         std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
         mRenderNode->setRenderBin(odRender::RenderBin::SKY);
+
+        obj.setEnableUpdate(true);
 	}
 
-    void DomedSky::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
+    void DomedSky_Cl::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
     {
         if(mRenderNode != nullptr)
         {
@@ -99,5 +93,14 @@ namespace dragonRfl
             mRenderNode->setPosition(to);
         }
     }
+
+    void DomedSky_Cl::onUpdate(float relTime)
+    {
+        if(mCameraObject != nullptr)
+        {
+            glm::vec3 skyOffset(0, -od::Units::worldUnitsToLengthUnits(mFields.offsetDown.get()), 0);
+            getLevelObject().setPosition(mCameraObject->getPosition() + skyOffset);
+        }
+    }   
 
 }

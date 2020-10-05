@@ -18,7 +18,7 @@
 // #include <dragonRfl/classes/Key.h>
 // #include <dragonRfl/classes/Material.h>
 // #include <dragonRfl/classes/PushableObject.h>
-// #include <dragonRfl/classes/Sky.h>
+#include <dragonRfl/classes/Sky.h>
 // #include <dragonRfl/classes/SoundEffect.h>
 #include <dragonRfl/classes/StaticLight.h>
 #include <dragonRfl/classes/Timer.h>
@@ -43,7 +43,7 @@ namespace dragonRfl
         // registerClass<Material>();
         // registerClass<BlendedMaterial>();
         // registerClass<PushableObject>();
-        // registerClass<DomedSky>();
+        registerClass<DomedSky>();
         // registerClass<SoundEffect>();
         registerClass<StaticLight>();
         registerClass<Timer>();
