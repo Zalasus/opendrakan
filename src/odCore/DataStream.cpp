@@ -265,6 +265,30 @@ namespace od
     }
 
     template <>
+    void DataWriter::writeTyped<int8_t>(const int8_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int16_t>(const int16_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int32_t>(const int32_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int64_t>(const int64_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
     void DataWriter::writeTyped<float>(const float &v)
     {
         // FIXME: host-endianess-dependent
