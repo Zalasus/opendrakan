@@ -9,7 +9,7 @@ namespace odNet
 
     DownlinkPacketBuilder::DownlinkPacketBuilder(const std::function<void(const char *, size_t)> &packetCallback)
     : mPacketCallback(packetCallback)
-    , mStreamBuffer(nullptr, 0)
+    , mStreamBuffer(mPacketBuffer)
     , mOutputStream(&mStreamBuffer)
     , mWriter(mOutputStream)
     {
@@ -19,7 +19,7 @@ namespace odNet
     {
         uint16_t pathLength = path.size() > 0xffff ? 0xffff : path.size(); // TODO: warn on truncation?
 
-        _beginPacket(PacketType::LOAD_LEVEL, pathLength);
+        _beginPacket(PacketType::LOAD_LEVEL);
         mWriter.write(path.data(), pathLength);
         _endPacket();
     }
@@ -32,11 +32,7 @@ namespace odNet
         if(states.scale.hasValue()) flags |= PacketConstants::STATE_MASK_SCALE;
         if(states.visibility.hasValue()) flags |= PacketConstants::STATE_MASK_VISIBILITY;
 
-        size_t length = getObjectStateChangePacketSize(flags);
-        if(length > 0xffff) throw od::Exception("Object State Change packet would be too big");
-        uint16_t payloadLength = static_cast<uint16_t>(length);
-
-        _beginPacket(PacketType::OBJECT_STATE_CHANGED, payloadLength);
+        _beginPacket(PacketType::OBJECT_STATE_CHANGED);
         mWriter << id
                 << flags;
         if(states.position.hasValue())   mWriter << states.position.get();
@@ -60,7 +56,7 @@ namespace odNet
 
     void DownlinkPacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount)
     {
-        _beginPacket(PacketType::CONFIRM_SNAPSHOT, PacketConstants::CONFIRM_PAYLOAD_SIZE);
+        _beginPacket(PacketType::CONFIRM_SNAPSHOT);
         mWriter << tick
                 << realtime
                 << discreteChangeCount;
@@ -69,23 +65,38 @@ namespace odNet
 
     void DownlinkPacketBuilder::globalMessage(MessageChannelCode code, const char *data, size_t size)
     {
-        _beginPacket(PacketType::GLOBAL_MESSAGE, PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE + size);
+        _beginPacket(PacketType::GLOBAL_MESSAGE);
         mWriter << code;
         mWriter.write(data, size);
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::_beginPacket(PacketType type, uint16_t payloadSize)
+    void DownlinkPacketBuilder::_beginPacket(PacketType type)
     {
-        mPacketBuffer.resize(payloadSize + PacketConstants::HEADER_SIZE);
-        mStreamBuffer = od::MemoryOutputBuffer(mPacketBuffer.data(), mPacketBuffer.size());
-        mOutputStream.rdbuf(&mStreamBuffer);
+        mPacketBuffer.clear();
+        //mOutputStream.seekp(0);
 
-        mWriter << static_cast<uint8_t>(type) << payloadSize;
+        uint16_t dummyPayloadSize = 0;
+        mWriter << static_cast<uint8_t>(type) << dummyPayloadSize;
     }
 
     void DownlinkPacketBuilder::_endPacket()
     {
+        mOutputStream.flush();
+
+        size_t payloadSize = mPacketBuffer.size() - PacketConstants::HEADER_SIZE;
+        if(payloadSize > 0xffff)
+        {
+            throw od::Exception("Packet payload size exceeds size fields limits");
+        }
+
+        //mOutputStream.seekp(1);
+        //mWriter << static_cast<uint16_t>(payloadSize);
+
+        // FIXME: bad hack! while seeking is unimplemented, we have to overwrite the payload size field manually
+        mPacketBuffer[1] = (payloadSize >> 0) & 0xff;
+        mPacketBuffer[2] = (payloadSize >> 8) & 0xff;
+
         if(mPacketCallback != nullptr)
         {
             mPacketCallback(mPacketBuffer.data(), mPacketBuffer.size());

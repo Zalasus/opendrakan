@@ -29,12 +29,12 @@ namespace odNet
 
     private:
 
-        void _beginPacket(PacketType type, uint16_t payloadSize);
+        void _beginPacket(PacketType type);
         void _endPacket();
 
         std::function<void(const char *, size_t)> mPacketCallback;
         std::vector<char> mPacketBuffer;
-        od::MemoryOutputBuffer mStreamBuffer;
+        od::VectorOutputBuffer mStreamBuffer;
         std::ostream mOutputStream;
         od::DataWriter mWriter;
 
