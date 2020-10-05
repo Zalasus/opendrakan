@@ -8,13 +8,14 @@
 #ifndef INCLUDE_ODCORE_ANIM_SKELETONANIMATIONPLAYER_H_
 #define INCLUDE_ODCORE_ANIM_SKELETONANIMATIONPLAYER_H_
 
-#include <stdint.h>
 #include <vector>
 #include <queue>
 #include <memory>
 
 #include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
 #include <glm/gtx/dual_quaternion.hpp>
+
+#include <odCore/CTypes.h>
 
 #include <odCore/db/Animation.h>
 

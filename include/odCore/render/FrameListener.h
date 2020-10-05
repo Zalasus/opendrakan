@@ -8,7 +8,7 @@
 #ifndef INCLUDE_ODCORE_RENDER_FRAMELISTENER_H_
 #define INCLUDE_ODCORE_RENDER_FRAMELISTENER_H_
 
-#include <stdint.h>
+#include <odCore/CTypes.h>
 
 namespace odRender
 {

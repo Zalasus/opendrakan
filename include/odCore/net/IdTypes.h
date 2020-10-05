@@ -2,7 +2,7 @@
 #ifndef INCLUDE_ODCORE_NET_IDTYPES_H_
 #define INCLUDE_ODCORE_NET_IDTYPES_H_
 
-#include <stdint.h>
+#include <odCore/CTypes.h>
 
 namespace odNet
 {

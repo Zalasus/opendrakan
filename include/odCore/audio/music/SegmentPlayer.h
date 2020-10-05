@@ -8,11 +8,11 @@
 #ifndef INCLUDE_ODCORE_AUDIO_MUSIC_SEGMENTPLAYER_H_
 #define INCLUDE_ODCORE_AUDIO_MUSIC_SEGMENTPLAYER_H_
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <vector>
 #include <deque>
 #include <memory>
+
+#include <odCore/CTypes.h>
 
 #include <odCore/db/Segment.h>
 

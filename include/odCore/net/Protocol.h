@@ -2,8 +2,7 @@
 #ifndef INCLUDE_ODCORE_NET_PROTOCOL_H_
 #define INCLUDE_ODCORE_NET_PROTOCOL_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include <odCore/CTypes.h>
 
 namespace odNet
 {

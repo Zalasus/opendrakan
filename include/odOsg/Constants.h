@@ -8,7 +8,7 @@
 #ifndef INCLUDE_ODOSG_CONSTANTS_H_
 #define INCLUDE_ODOSG_CONSTANTS_H_
 
-#include <stdint.h>
+#include <odCore/CTypes.h>
 
 namespace odOsg
 {

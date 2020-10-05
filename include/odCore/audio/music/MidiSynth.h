@@ -8,9 +8,7 @@
 #ifndef INCLUDE_ODCORE_AUDIO_MUSIC_MIDISYNTH_H_
 #define INCLUDE_ODCORE_AUDIO_MUSIC_MIDISYNTH_H_
 
-#include <stdint.h>
-#include <stdlib.h>
-
+#include <odCore/CTypes.h>
 #include <odCore/Guid.h>
 
 namespace odAudio

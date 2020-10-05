@@ -11,6 +11,7 @@
 #include <istream>
 #include <vector>
 
+#include <odCore/CTypes.h>
 #include <odCore/Logger.h>
 
 namespace od

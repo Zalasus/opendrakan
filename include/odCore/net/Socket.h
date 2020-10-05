@@ -8,8 +8,7 @@
 #ifndef INCLUDE_ODCORE_NET_SOCKET_H_
 #define INCLUDE_ODCORE_NET_SOCKET_H_
 
-#include <stdint.h>
-
+#include <odCore/CTypes.h>
 #include <odCore/DataStream.h>
 
 namespace odNet

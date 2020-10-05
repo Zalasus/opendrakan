@@ -11,6 +11,8 @@
 #ifndef IDTYPES_H_
 #define IDTYPES_H_
 
+#include <odCore/CTypes.h>
+
 namespace od
 {
     using LevelObjectId = uint32_t;
