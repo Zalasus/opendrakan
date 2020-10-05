@@ -63,7 +63,7 @@ namespace od
     {
     public:
 
-        Client(odDb::DbManager &dbManager, odRfl::RflManager &rflManager, odRender::Renderer &renderer);
+        Client(odDb::DbManager &dbManager, odRfl::RflManager &rflManager, odRender::Renderer &renderer, odAudio::SoundSystem *soundSystem);
         ~Client();
 
         inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
@@ -75,7 +75,7 @@ namespace od
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
         inline odInput::InputManager &getInputManager() { return *mInputManager; }
         inline odRender::Renderer &getRenderer() { return mRenderer; }
-        inline odAudio::SoundSystem *getSoundSystem() { return nullptr; }
+        inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
         inline std::shared_ptr<odNet::DownlinkConnector> getDownlinkConnector() { return mDownlinkConnector; }
@@ -99,6 +99,7 @@ namespace od
         odDb::DbManager &mDbManager;
         odRfl::RflManager &mRflManager;
         odRender::Renderer &mRenderer;
+        odAudio::SoundSystem *mSoundSystem;
 
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
         std::unique_ptr<odInput::InputManager> mInputManager;

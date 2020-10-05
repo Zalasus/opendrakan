@@ -106,10 +106,11 @@ namespace od
 
 
 
-    Client::Client(odDb::DbManager &dbManager, odRfl::RflManager &rflManager, odRender::Renderer &renderer)
+    Client::Client(odDb::DbManager &dbManager, odRfl::RflManager &rflManager, odRender::Renderer &renderer, odAudio::SoundSystem *soundSystem)
     : mDbManager(dbManager)
     , mRflManager(rflManager)
     , mRenderer(renderer)
+    , mSoundSystem(soundSystem)
     , mEngineRoot(".")
     , mIsDone(false)
     {

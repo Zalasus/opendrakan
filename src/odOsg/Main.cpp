@@ -127,7 +127,7 @@ int main(int argc, char **argv)
         }
     }
 
-    //odOsg::SoundSystem soundSystem;
+    odOsg::SoundSystem soundSystem;
     odOsg::Renderer osgRenderer;
 
     odDb::DbManager dbManager;
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
     odRfl::RflManager rflManager;
     odRfl::Rfl &dragonRfl = rflManager.loadStaticRfl<dragonRfl::DragonRfl>(); // TODO: add option to specify dynamic RFL
 
-    od::Client client(dbManager, rflManager, osgRenderer);
+    od::Client client(dbManager, rflManager, osgRenderer, &soundSystem);
     sClient = &client;
 
     od::Server server(dbManager, rflManager);
