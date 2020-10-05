@@ -398,10 +398,12 @@ namespace od
 
         if(ch != std::streambuf::traits_type::eof())
         {
-            this->sputc(ch);
-        }
+            return this->sputc(ch);
 
-        return std::streambuf::traits_type::eof() + 1; // standard says this has to be "not std::streambuf::traits_type::eof()" on success.
+        }else
+        {
+            return std::streambuf::traits_type::eof() + 1; // standard says this has to be "not std::streambuf::traits_type::eof()" on success.
+        }
     }
 
     std::streampos VectorOutputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
@@ -422,16 +424,16 @@ namespace od
             if(backbufferSize > 0)
             {
                 mVector.insert(mVector.end(), mBackBuffer.begin(), mBackBuffer.begin() + backbufferSize);
-                this->setp(&mBackBuffer[0], &mBackBuffer[0] + BACKBUFFER_SIZE);
             }
+
+            this->setp(&mBackBuffer[0], &mBackBuffer[0] + BACKBUFFER_SIZE);
 
             return 0;
 
         }else
         {
-            throw od::Exception("Bad pptr or pbase");
+            Logger::error() << "Bad pptr or pbase in VectorOutputBuffer";
+            return -1;
         }
-
-        OD_UNREACHABLE();
     }
 }

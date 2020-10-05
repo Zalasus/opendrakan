@@ -33,7 +33,8 @@ namespace odNet
         if(states.visibility.hasValue()) flags |= PacketConstants::STATE_MASK_VISIBILITY;
 
         _beginPacket(PacketType::OBJECT_STATE_CHANGED);
-        mWriter << id
+        mWriter << tick
+                << id
                 << flags;
         if(states.position.hasValue())   mWriter << states.position.get();
         if(states.rotation.hasValue())   mWriter << states.rotation.get();
@@ -59,7 +60,7 @@ namespace odNet
         _beginPacket(PacketType::CONFIRM_SNAPSHOT);
         mWriter << tick
                 << realtime
-                << discreteChangeCount;
+                << static_cast<uint32_t>(discreteChangeCount);
         _endPacket();
     }
 

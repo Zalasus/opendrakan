@@ -62,7 +62,7 @@ namespace odNet
             {
                 if(length < PacketConstants::STATE_HEADER_SIZE)
                 {
-                    mBadPacketCount++;
+                    _badPacket("objstate unexpected size");
                     return;
                 }
 
@@ -73,7 +73,7 @@ namespace odNet
 
                 if(length != getObjectStateChangePacketSize(stateFlags))
                 {
-                    mBadPacketCount++;
+                    _badPacket("objstate unexpected size");
                     return;
                 }
 
@@ -115,7 +115,7 @@ namespace odNet
             {
                 if(length != PacketConstants::CONFIRM_PAYLOAD_SIZE)
                 {
-                    mBadPacketCount++;
+                    _badPacket("snapconf unexpected size");
                     return;
                 }
 
@@ -135,12 +135,19 @@ namespace odNet
 
                 mOutput->globalMessage(code, rawPayload + PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE, length - PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE);
             }
+            break;
 
         default:
             // unknown packet type
-            mBadPacketCount++;
+            _badPacket("unknown type");
             break;
         }
+    }
+
+    void DownlinkPacketParser::_badPacket(const char *reason)
+    {
+        Logger::error() << "Bad packet: " << reason;
+        mBadPacketCount++;
     }
 
 }
