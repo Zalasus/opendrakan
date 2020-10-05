@@ -72,11 +72,6 @@ namespace odRfl
     {
     }
 
-    std::shared_ptr<odPhysics::Handle> SpawnableClass::getPhysicsHandle()
-    {
-        return nullptr;
-    }
-
 
     ClassFactory::~ClassFactory()
     {

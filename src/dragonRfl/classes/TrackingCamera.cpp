@@ -91,7 +91,7 @@ namespace dragonRfl
         std::shared_ptr<odPhysics::Handle> trackedPhysicsHandle;
         if(mObjectToTrack.getSpawnableClassInstance() != nullptr)
         {
-            trackedPhysicsHandle = mObjectToTrack.getSpawnableClassInstance()->getPhysicsHandle();
+            trackedPhysicsHandle = mObjectToTrack.getPhysicsHandle();
         }
 
         glm::vec3::value_type maxDistance = 3;

@@ -281,18 +281,6 @@ namespace odRfl
          */
         virtual void onTransformChanged();
 
-        /**
-         * @brief Exposes an object's physics handles, if available.
-         *
-         * If you add physics properties to your object by creating a physics handle, it might sometimes be
-         * helpful for engine subsystems to be able to query this handle. This method can be used to provide
-         * it to the engine.
-         *
-         * Returns a nullpointer by default.
-         */
-        virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle();
-
-
         //virtual void onExtraStateChanged(odState::StateBase *state);
         //virtual odState::StateBundle *getStates();
 

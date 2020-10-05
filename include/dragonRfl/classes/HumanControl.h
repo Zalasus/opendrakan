@@ -39,7 +39,6 @@ namespace dragonRfl
 		virtual ~HumanControl_Sv();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
-        virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() override { return mPhysicsHandle; }
 
         virtual void onLoaded() override;
 		virtual void onSpawned() override;
@@ -72,7 +71,6 @@ namespace dragonRfl
 
 		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
-		std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 	};
 

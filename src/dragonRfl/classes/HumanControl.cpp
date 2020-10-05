@@ -93,11 +93,12 @@ namespace dragonRfl
     	mPitch = playerLookDirection.x;
     	mYaw = playerLookDirection.y;
 
+        obj.setupRenderingAndPhysics(od::ObjectRenderMode::NOT_RENDERED, od::ObjectPhysicsMode::SOLID);
+
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton != nullptr)
         {
-            mPhysicsHandle = getServer().getPhysicsSystem().createObjectHandle(obj, false);
-            mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), mPhysicsHandle, obj, 0.05, 0.3);
+            mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
             mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
