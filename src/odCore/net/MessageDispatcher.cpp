@@ -41,14 +41,12 @@ namespace odNet
     }
 
 
-    DownlinkMessageDispatcher::DownlinkMessageDispatcher(std::shared_ptr<DownlinkConnector> connector)
-    : mConnector(connector)
-    {
-    }
-
     void DownlinkMessageDispatcher::globalMessage(MessageChannelCode code, const char *data, size_t size)
     {
-        mConnector->globalMessage(code, data, size);
+        if(mConnector != nullptr)
+        {
+            mConnector->globalMessage(code, data, size);
+        }
     }
 
     void DownlinkMessageDispatcher::objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size)

@@ -155,7 +155,9 @@ namespace odNet
     {
     public:
 
-        DownlinkMessageDispatcher(std::shared_ptr<DownlinkConnector> connector);
+        DownlinkMessageDispatcher() = default;
+
+        inline void setDownlinkConnector(std::shared_ptr<DownlinkConnector> connector) { mConnector = connector; }
 
 
     protected:
