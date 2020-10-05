@@ -42,7 +42,7 @@ namespace odNet
         if(states.position.hasValue())   mWriter << states.position.get();
         if(states.rotation.hasValue())   mWriter << states.rotation.get();
         if(states.scale.hasValue())      mWriter << states.scale.get();
-        if(states.visibility.hasValue()) mWriter << states.visibility.get();
+        if(states.visibility.hasValue()) mWriter << (states.visibility.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
         _endPacket();
     }
 
