@@ -16,6 +16,8 @@
 #include <odCore/Client.h>
 #include <odCore/Server.h>
 
+#include <odCore/anim/Skeleton.h>
+
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
 
@@ -169,6 +171,8 @@ namespace dragonRfl
 
     void HumanControl_Sv::_handleAction(Action action, odInput::ActionState state)
     {
+        // TODO: we probably have to add the packet and view latency to these state changes
+
         if(state == odInput::ActionState::BEGIN)
         {
             switch(action)
@@ -221,7 +225,7 @@ namespace dragonRfl
         for(auto &result : results)
         {
             odPhysics::ObjectHandle *objectHandle = result.handle->asObjectHandle();
-            if(objectHandle != nullptr && objectHandle->getLevelObject().getObjectId() == obj.getObjectId())
+            if(objectHandle != nullptr && objectHandle->getLevelObject().getObjectId() != obj.getObjectId())
             {
                 Logger::info() << "I, " << obj.getObjectId() << ", attacked " << objectHandle->getLevelObject().getObjectId();
             }
@@ -260,6 +264,9 @@ namespace dragonRfl
 
     void HumanControl_Cl::onLoaded()
     {
+        odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
+        mFields.probeFields(probe);
+
         getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
 
         auto analogActionHandler = std::bind(&HumanControl_Cl::_handleAnalogAction, this, std::placeholders::_1, std::placeholders::_2);
@@ -271,7 +278,21 @@ namespace dragonRfl
     {
         auto &obj = getLevelObject();
 
-    	mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
+    	obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
+
+        odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
+        if(skeleton != nullptr)
+        {
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
+
+            mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
+                                                                         odAnim::AccumulationMode::Bone,
+                                                                         odAnim::AccumulationMode::Bone
+                                                                       });
+
+            mAnimPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
+            obj.setEnableUpdate(true);
+        }
 
         // create a tracking camera for me
         std::vector<od::LevelObject*> foundCameras;
@@ -312,14 +333,20 @@ namespace dragonRfl
             soundSystem->setListenerPosition(pos);
             soundSystem->setListenerOrientation(at, up);
         }
+    }
 
-        if(mRenderHandle != nullptr)
+    void HumanControl_Cl::onUpdate(float relTime)
+    {
+        auto &obj = getLevelObject();
+
+        // TODO: move anim-stuff into LevelObject. it owns the skeleton, anyways
+        if(mAnimPlayer != nullptr)
         {
-            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
-
-            mRenderHandle->setPosition(obj.getPosition());
-            mRenderHandle->setOrientation(obj.getRotation());
-            mRenderHandle->setScale(obj.getScale());
+            mAnimPlayer->update(relTime);
+            if(obj.getOrCreateSkeleton() != nullptr && obj.getRenderHandle() != nullptr)
+            {
+                getLevelObject().getOrCreateSkeleton()->flatten(obj.getRenderHandle()->getRig());
+            }
         }
     }
 
@@ -345,23 +372,7 @@ namespace dragonRfl
 
     void HumanControlDummy_Cl::onSpawned()
     {
-        auto &obj = getLevelObject();
-
-    	mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
-    }
-
-    void HumanControlDummy_Cl::onTransformChanged()
-    {
-        auto &obj = getLevelObject();
-
-        if(mRenderHandle != nullptr)
-        {
-            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
-
-            mRenderHandle->setPosition(obj.getPosition());
-            mRenderHandle->setOrientation(obj.getRotation());
-            mRenderHandle->setScale(obj.getScale());
-        }
+    	getLevelObject().setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
     }
 
 }

@@ -89,6 +89,7 @@ namespace dragonRfl
 		virtual void onLoaded() override;
 		virtual void onSpawned() override;
 		virtual void onTransformChanged() override;
+        virtual void onUpdate(float relTime) override;
 
 
 	 private:
@@ -97,7 +98,7 @@ namespace dragonRfl
 
 		HumanControlFields mFields;
 
-		std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
 	};
 
@@ -117,14 +118,12 @@ namespace dragonRfl
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 		virtual void onSpawned() override;
-		virtual void onTransformChanged() override;
 
 
 	 private:
 
 		HumanControlFields mFields;
 
-		std::shared_ptr<odRender::Handle> mRenderHandle;
     };
 
 
