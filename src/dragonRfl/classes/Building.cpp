@@ -97,54 +97,15 @@ namespace dragonRfl
     void Building_Cl::onSpawned()
     {
         auto &obj = getLevelObject();
-        auto dbClass = obj.getClass();
-        if(dbClass != nullptr && dbClass->hasModel())
-        {
-            auto &renderer = getClient().getRenderer();
-            auto dbModel = dbClass->getModel();
-            auto renderModel = renderer.getOrCreateModelFromDb(dbModel);
 
-            mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
-            mRenderHandle->setPosition(obj.getPosition());
-            mRenderHandle->setOrientation(obj.getRotation());
-            mRenderHandle->setScale(obj.getScale());
-            mRenderHandle->setModel(renderModel);
-
-            od::Layer *lightSourceLayer = obj.getLightSourceLayer();
-            if(lightSourceLayer == nullptr) lightSourceLayer = obj.getAssociatedLayer();
-            if(lightSourceLayer != nullptr)
-            {
-                mRenderHandle->setGlobalLight(lightSourceLayer->getLightDirection(), lightSourceLayer->getLightColor(), lightSourceLayer->getAmbientColor());
-            }
-
-            mPhysicsHandle = getClient().getPhysicsSystem().createObjectHandle(obj, false);
-
-            mObjectLightReceiver = std::make_unique<od::ObjectLightReceiver>(getClient().getPhysicsSystem(), mPhysicsHandle, mRenderHandle);
-            mObjectLightReceiver->updateAffectingLights();
-        }
-
-        /* just an idea for how prediction will work:
-        {
-            // all changes applied to the object after this line until the guard
-            //  dies will be stored as predictions for the next frame
-            //  (offset 0 = next frame. predicting for the current frame does not make sense).
-            auto predictGuard = obj.startPrediction(0);
-            obj.setPosition({ 10, 10, 2 });
-        }*/
-    }
-
-    void Building_Cl::onDespawned()
-    {
-        mObjectLightReceiver = nullptr;
-        mPhysicsHandle = nullptr;
-        mRenderHandle = nullptr;
+        obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
     }
 
     DamageResult Building_Cl::onAttackHit(od::LevelObject &attacker, const Damage &damage)
     {
         mHealth -= damage.strength;
         if(mHealth < 0) mHealth = 0;
-        
+
         return DamageResult::HIT;
     }
 

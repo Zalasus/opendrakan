@@ -65,6 +65,19 @@ namespace od
         Always
     };
 
+    enum class ObjectRenderMode
+    {
+        NOT_RENDERED,
+        NORMAL,
+        NO_LIGHTING
+    };
+
+    enum class ObjectPhysicsMode
+    {
+        NO_PHYSICS,
+        SOLID
+    };
+
     class LevelObject
     {
     public:
@@ -211,6 +224,8 @@ namespace od
 
         void setRflClassInstance(std::unique_ptr<odRfl::ClassBase> instance);
 
+        void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
+
 
     private:
 
@@ -247,6 +262,11 @@ namespace od
         std::unique_ptr<odRfl::ClassBase> mRflClassInstance;
         odRfl::SpawnableClass *mSpawnableClass; // downcast version of mRflClassInstance, so we don't have to cast for every call to Spawnable methods
 
+        ObjectRenderMode mRenderMode;
+        ObjectPhysicsMode mPhysicsMode;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::unique_ptr<ObjectLightReceiver> mLightReceiver;
     };
 
 }

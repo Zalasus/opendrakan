@@ -76,12 +76,9 @@ namespace dragonRfl
         Building_Cl();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
-        virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() override { return mPhysicsHandle; }
 
         virtual void onLoaded() override;
-
         virtual void onSpawned() override;
-        virtual void onDespawned() override;
 
         virtual DamageResult onAttackHit(od::LevelObject &attacker, const Damage &damage) override;
 
@@ -89,10 +86,6 @@ namespace dragonRfl
     private:
 
         BuildingFields mFields;
-
-        std::shared_ptr<odRender::Handle> mRenderHandle;
-        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
-        std::unique_ptr<od::ObjectLightReceiver> mObjectLightReceiver;
 
         float mHealth;
 

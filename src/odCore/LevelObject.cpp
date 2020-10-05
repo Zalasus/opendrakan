@@ -9,9 +9,11 @@
 
 #include <algorithm>
 
+#include <odCore/Client.h>
 #include <odCore/Level.h>
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
+#include <odCore/ObjectLightReceiver.h>
 
 #include <odCore/anim/Skeleton.h>
 
@@ -21,6 +23,9 @@
 
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
+
+#include <odCore/render/Renderer.h>
+#include <odCore/render/Handle.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -405,6 +410,59 @@ namespace od
             mRflClassInstance->getFields().probeFields(fieldLoader);
 
             mRflClassInstance->onLoaded();
+        }
+    }
+
+    void LevelObject::setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode)
+    {
+        // TODO: update these when moved
+
+        mRenderMode = renderMode;
+        mPhysicsMode = physicsMode;
+
+        // create physics first because lighting might need the handle
+        if(physicsMode != ObjectPhysicsMode::NO_PHYSICS)
+        {
+            mPhysicsHandle = getLevel().getEngine().getPhysicsSystem().createObjectHandle(*this, false);
+        }
+
+        if(renderMode != ObjectRenderMode::NOT_RENDERED && mClass != nullptr && mClass->hasModel())
+        {
+            if(getLevel().getEngine().isServer())
+            {
+                throw od::Exception("Can't enable rendering on servers");
+            }
+
+            auto &client = getLevel().getEngine().getClient();
+            auto &renderer = client.getRenderer();
+            auto dbModel = mClass->getModel();
+            auto renderModel = renderer.getOrCreateModelFromDb(dbModel);
+
+            mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
+            mRenderHandle->setPosition(this->getPosition());
+            mRenderHandle->setOrientation(this->getRotation());
+            mRenderHandle->setScale(this->getScale());
+            mRenderHandle->setModel(renderModel);
+
+            if(renderMode != ObjectRenderMode::NO_LIGHTING)
+            {
+                od::Layer *lightSourceLayer = this->getLightSourceLayer();
+                if(lightSourceLayer == nullptr) lightSourceLayer = this->getAssociatedLayer();
+                if(lightSourceLayer != nullptr)
+                {
+                    mRenderHandle->setGlobalLight(lightSourceLayer->getLightDirection(), lightSourceLayer->getLightColor(), lightSourceLayer->getAmbientColor());
+                }
+
+                if(mPhysicsHandle != nullptr)
+                {
+                    mLightReceiver = std::make_unique<od::ObjectLightReceiver>(client.getPhysicsSystem(), mPhysicsHandle, mRenderHandle);
+                    mLightReceiver->updateAffectingLights();
+
+                }else
+                {
+                    Logger::warn() << "Object " << mId << " without physics but with lighting enabled will not receive light from point lights";
+                }
+            }
         }
     }
 
