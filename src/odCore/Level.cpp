@@ -11,7 +11,6 @@
 #include <algorithm>
 
 #include <odCore/Client.h>
-#include <odCore/OdDefines.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>

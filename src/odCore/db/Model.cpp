@@ -10,7 +10,6 @@
 #include <algorithm>
 #include <limits>
 
-#include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
 
 #include <odCore/db/Asset.h>

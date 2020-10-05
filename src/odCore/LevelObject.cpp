@@ -12,7 +12,6 @@
 #include <odCore/Level.h>
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
-#include <odCore/OdDefines.h>
 
 #include <odCore/anim/Skeleton.h>
 

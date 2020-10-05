@@ -13,9 +13,9 @@
 #include <glm/vec3.hpp>
 
 #include <odCore/IdTypes.h>
+#include <odCore/Units.h>
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
-#include <odCore/OdDefines.h>
 #include <odCore/LightCallback.h>
 
 #include <odCore/db/Asset.h>
@@ -93,7 +93,7 @@ namespace od
         inline uint32_t getWidth() const { return mWidth; }
         inline uint32_t getHeight() const { return mHeight; }
         inline float getWorldHeightWu() const { return mWorldHeightWu; }
-        inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
+        inline float getWorldHeightLu() const { return Units::worldUnitsToLengthUnits(mWorldHeightWu); }
         inline glm::vec3 getLightColor() const { return mLightColor; }
         inline glm::vec3 getAmbientColor() const { return mAmbientColor; }
         inline glm::vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light

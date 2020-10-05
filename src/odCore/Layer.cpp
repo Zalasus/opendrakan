@@ -121,7 +121,7 @@ namespace od
 
             Vertex v;
             v.type = vertexType;
-            v.heightOffsetLu = OD_WORLD_SCALE*(heightOffsetBiased - 0x8000)*2;
+            v.heightOffsetLu = Units::worldUnitsToLengthUnits((heightOffsetBiased - 0x8000)*2);
 
             if(v.heightOffsetLu < lowestHeightOffset)
             {
@@ -565,7 +565,7 @@ namespace od
                     float ourVertexHeight = mVertices.at(ourVertIndex).heightOffsetLu + getWorldHeightLu();
                     float theirVertexHeight = layer->mVertices.at(theirVertIndex).heightOffsetLu + layer->getWorldHeightLu();
 
-                    if(std::abs(ourVertexHeight - theirVertexHeight) <= 2*OD_WORLD_SCALE) // threshold is +/- 2wu
+                    if(std::abs(ourVertexHeight - theirVertexHeight) <= Units::worldUnitsToLengthUnits(2)) // threshold is +/- 2wu
                     {
                         // vertices are within range! add to list
                         overlapMap.at(ourVertIndex).addLayer(layer);

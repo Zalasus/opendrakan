@@ -16,7 +16,6 @@
 #include <odCore/Light.h>
 #include <odCore/Layer.h>
 #include <odCore/Level.h>
-#include <odCore/OdDefines.h>
 #include <odCore/Downcast.h>
 
 #include <odCore/render/RendererEventListener.h>
