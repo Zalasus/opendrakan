@@ -39,10 +39,10 @@ namespace odNet
         _beginPacket(PacketType::OBJECT_STATE_CHANGED, payloadLength);
         mWriter << id
                 << flags;
-        if(states.position.hasValue()) mWriter << states.position;
-        if(states.rotation.hasValue()) mWriter << states.rotation;
-        if(states.scale.hasValue()) mWriter << states.scale;
-        if(states.visibility.hasValue()) mWriter << states.visibility;
+        if(states.position.hasValue())   mWriter << states.position.get();
+        if(states.rotation.hasValue())   mWriter << states.rotation.get();
+        if(states.scale.hasValue())      mWriter << states.scale.get();
+        if(states.visibility.hasValue()) mWriter << states.visibility.get();
         _endPacket();
     }
 

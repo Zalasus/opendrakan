@@ -105,7 +105,7 @@ namespace odState
             return mValue == rhs.mValue;
         }
 
-        operator T() const
+        T get() const
         {
             return mValue;
         }

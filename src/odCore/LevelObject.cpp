@@ -174,10 +174,10 @@ namespace od
 
     void LevelObject::applyStates(const ObjectStates &states)
     {
-        if(states.position.hasValue()) _applyTranslation(states.position);
-        if(states.rotation.hasValue()) _applyRotation(states.rotation);
-        if(states.scale.hasValue()) _applyScale(states.scale);
-        if(states.visibility.hasValue()) _applyVisibility(states.visibility);
+        if(states.position.hasValue()) _applyTranslation(states.position.get());
+        if(states.rotation.hasValue()) _applyRotation(states.rotation.get());
+        if(states.scale.hasValue()) _applyScale(states.scale.get());
+        if(states.visibility.hasValue()) _applyVisibility(states.visibility.get());
     }
 
     void LevelObject::extraStateDirty()
