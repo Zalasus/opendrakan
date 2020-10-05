@@ -19,62 +19,60 @@ namespace dragonRfl
 {
 
     DetectorFields::DetectorFields()
-    : mTask(Task::TRIGGER_ONLY)
-    , mDetectWhich(DetectWhich::BOTH)
-    , mDetectMethod(DetectMethod::OUTSIDE_TO_INSIDE)
-    , mOneWay(false)
-    , mTriggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
-    , mInitialState(InitialState::ENABLED)
-    , mTriggerMessage(od::Message::Off)
-    , mDetectOnlyOnce(false)
-    , mSequenceToPlay(odDb::AssetRef::NULL_REF)
-    , mMessageString("")
-    , mDoesCaveEntranceTeleport(true)
-    , mDragonTakesOffUponTeleport(true)
+    : task(Task::TRIGGER_ONLY)
+    , detectWhich(DetectWhich::BOTH)
+    , detectMethod(DetectMethod::OUTSIDE_TO_INSIDE)
+    , oneWay(false)
+    , triggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
+    , initialState(InitialState::ENABLED)
+    , triggerMessage(od::Message::Off)
+    , detectOnlyOnce(false)
+    , sequenceToPlay(odDb::AssetRef::NULL_REF)
+    , messageString("")
+    , doesCaveEntranceTeleport(true)
+    , dragonTakesOffUponTeleport(true)
     {
     }
 
     void DetectorFields::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Detector")
-                (mTask, "Task")
-                (mDetectWhich, "Detect Which?")
-                (mDetectMethod, "Detect Method")
-                (mOneWay, "One Way?")
-                (mTriggerOnlyIfCarryingItem, "Trigger Only If Carrying Item...")
-                (mInitialState, "Initial State")
-                (mTriggerMessage, "Trigger Message")
-                (mDetectOnlyOnce, "Detect Only Once?")
-                (mSequenceToPlay, "Sequence To Play")
-                (mMessageString, "Message String")
-                (mDoesCaveEntranceTeleport, "Does Cave Entrance Teleport?")
-                (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
+                (task, "Task")
+                (detectWhich, "Detect Which?")
+                (detectMethod, "Detect Method")
+                (oneWay, "One Way?")
+                (triggerOnlyIfCarryingItem, "Trigger Only If Carrying Item...")
+                (initialState, "Initial State")
+                (triggerMessage, "Trigger Message")
+                (detectOnlyOnce, "Detect Only Once?")
+                (sequenceToPlay, "Sequence To Play")
+                (messageString, "Message String")
+                (doesCaveEntranceTeleport, "Does Cave Entrance Teleport?")
+                (dragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
 
-    Detector::Detector(od::Server &server)
-    : odRfl::ServerClassImpl(server)
-    , mPlayerWasIn(false)
+    Detector_Sv::Detector_Sv()
+    : mPlayerWasIn(false)
     {
     }
 
-    void Detector::onLoaded()
+    void Detector_Sv::onLoaded()
     {
         getLevelObject().setObjectType(od::LevelObjectType::Detector);
     }
 
-    void Detector::onSpawned()
+    void Detector_Sv::onSpawned()
     {
         getLevelObject().setEnableUpdate(true);
 
-        od::Server &server = getServer();
-        mPhysicsHandle = server.getPhysicsSystem().createObjectHandle(getLevelObject(), true);
+        mPhysicsHandle = getServer().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
         mPhysicsHandle->setEnableCollision(false);
     }
 
-    void Detector::onUpdate(float relTime)
+    void Detector_Sv::onUpdate(float relTime)
     {
-        if(mTask != Task::TRIGGER_ONLY || mPhysicsHandle == nullptr)
+        if(mFields.task != DetectorFields::Task::TRIGGER_ONLY || mPhysicsHandle == nullptr)
         {
             return;
         }
@@ -100,7 +98,7 @@ namespace dragonRfl
             // the server has no notion on what a "player" is, yet. to not break the detector, we check whether the
             //  object in question is of the HumanControl class
             odRfl::ClassId objectClassId = objectHandle->getLevelObject().getClass()->getRflClassId();
-            if(objectClassId == odRfl::ClassTraits<HumanControl>::classId())
+            if(objectClassId == HumanControl::classId())
             {
                 playerIsIn = true;
                 break;
@@ -108,26 +106,23 @@ namespace dragonRfl
         }
 
         bool triggered = false;
-        switch(mDetectMethod)
+        switch(mFields.detectMethod)
         {
-        case DetectMethod::INSIDE_TO_OUTSIDE:
+        case DetectorFields::DetectMethod::INSIDE_TO_OUTSIDE:
             triggered = mPlayerWasIn && !playerIsIn;
             break;
 
-        case DetectMethod::OUTSIDE_TO_INSIDE:
+        case DetectorFields::DetectMethod::OUTSIDE_TO_INSIDE:
             triggered = !mPlayerWasIn && playerIsIn;
             break;
         }
 
         if(triggered)
         {
-            obj.messageAllLinkedObjects(mTriggerMessage);
+            obj.messageAllLinkedObjects(mFields.triggerMessage);
         }
 
         mPlayerWasIn = playerIsIn;
     }
 
 }
-
-
-

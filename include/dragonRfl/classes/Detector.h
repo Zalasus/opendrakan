@@ -11,17 +11,16 @@
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
+#include <odCore/rfl/DummyClass.h>
 
 #include <odCore/physics/Handles.h>
 #include <odCore/physics/PhysicsSystem.h>
 
 namespace dragonRfl
 {
-    class DragonRfl;
 
-    class DetectorFields : public odRfl::FieldBundle
+    struct DetectorFields final : public odRfl::FieldBundle
     {
-    public:
 
         enum class Task
         {
@@ -63,35 +62,30 @@ namespace dragonRfl
 
         DetectorFields();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override final;
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-
-    protected:
-
-        EnumTask            mTask;
-        EnumDetectWhich     mDetectWhich;
-        EnumDetectMethod    mDetectMethod;
-        odRfl::EnumYesNo    mOneWay;
-        odRfl::ClassRef     mTriggerOnlyIfCarryingItem;
-        EnumInitialState    mInitialState;
-        odRfl::EnumMessage  mTriggerMessage;
-        odRfl::EnumYesNo    mDetectOnlyOnce;
-        odRfl::SequenceRef  mSequenceToPlay;
-        odRfl::String       mMessageString;
-        odRfl::EnumYesNo    mDoesCaveEntranceTeleport;
-        odRfl::EnumYesNo    mDragonTakesOffUponTeleport;
-
+        EnumTask            task;
+        EnumDetectWhich     detectWhich;
+        EnumDetectMethod    detectMethod;
+        odRfl::EnumYesNo    oneWay;
+        odRfl::ClassRef     triggerOnlyIfCarryingItem;
+        EnumInitialState    initialState;
+        odRfl::EnumMessage  triggerMessage;
+        odRfl::EnumYesNo    detectOnlyOnce;
+        odRfl::SequenceRef  sequenceToPlay;
+        odRfl::String       messageString;
+        odRfl::EnumYesNo    doesCaveEntranceTeleport;
+        odRfl::EnumYesNo    dragonTakesOffUponTeleport;
     };
 
 
-    class Detector : public odRfl::ClassBase, private odRfl::Spawnable, private odRfl::ServerClassImpl, private DetectorFields
+    class Detector_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Detector_Sv>
     {
     public:
 
-        Detector(od::Server &server);
+        Detector_Sv();
 
-        virtual odRfl::Spawnable *getSpawnable() override final { return this; }
-        virtual odRfl::FieldBundle *getFieldBundle() override final { return this; }
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onLoaded() override;
         virtual void onSpawned() override;
@@ -100,15 +94,19 @@ namespace dragonRfl
 
     private:
 
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        DetectorFields mFields;
+
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         odPhysics::ContactTestResultVector mResultCache;
         bool mPlayerWasIn;
     };
 
-}
 
-ODRFL_DEFINE_CLASS(dragonRfl::Detector, 0x003d, "System", "Detector");
-ODRFL_DEFINE_CLASS_FIELDS(dragonRfl::Detector, dragonRfl::DetectorFields);
-ODRFL_DEFINE_CLASS_IMPL_SERVER(dragonRfl::Detector, dragonRfl::Detector);
+    using DetectorFactory = odRfl::DefaultClassFactory<DetectorFields, odRfl::DummyClass, Detector_Sv>;
+
+
+    OD_DEFINE_CLASS(Detector, 0x003d, "System", "Detector", DetectorFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_DETECTOR_H_ */

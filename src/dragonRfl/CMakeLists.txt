@@ -12,7 +12,7 @@ target_sources(dragonRfl PRIVATE
     #"classes/AnimationDemo.cpp"
     "classes/Building.cpp"
     "classes/CountDownToZero.cpp"
-    #"classes/Detector.cpp"
+    "classes/Detector.cpp"
     #"classes/DragonControl.cpp"
     "classes/DynamicLight.cpp"
     #"classes/HealthPack.cpp"
