@@ -121,7 +121,7 @@ namespace odOsg
         mMusicSource = musicSource;
 
         std::lock_guard<std::mutex> lock(mWorkerMutex);
-        mSources.emplace_back(musicSource.get());
+        mSources.emplace_back(musicSource);
     }
 
     void SoundSystem::playMusic(odAudio::MusicId musicId)
@@ -199,28 +199,17 @@ namespace odOsg
 
             try
             {
-                // FIXME: weak pointers are not thread safe. this causes crashes and deadlocks. for now, we take strong ownership, which is inefficient
-                /*for(auto &weakSource : mWeakSources)
-                {
-
-                    if(weakSource.isNonNull())
-                    {
-                        auto source = weakSource.aquire();
-                        std::lock_guard<std::mutex> lock(source->getMutex());
-                        source->update(relTime);
-                    }
-
-                    //TODO: maybe delete null entries here? leaving them in poses a minor memory leak
-                    //  (not that severe since we don't create sources on the fly)
-                }*/
-
                 std::lock_guard<std::mutex> lock(mWorkerMutex);
-                for(auto &source : mSources)
+                for(auto &weakSource : mSources)
                 {
+                    auto source = weakSource.lock();
                     if(source != nullptr)
                     {
                         source->update(relTime);
                     }
+
+                    //TODO: maybe delete expired entries here? leaving them in poses a minor memory leak
+                    //  (not that severe since we don't create sources on the fly)
                 }
 
             }catch(od::Exception &e)
