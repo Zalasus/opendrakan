@@ -85,21 +85,14 @@ namespace dragonRfl
         obj.setEnableUpdate(true);
 	}
 
-    void DomedSky_Cl::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
-    {
-        if(mRenderNode != nullptr)
-        {
-            std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
-            mRenderNode->setPosition(to);
-        }
-    }
-
     void DomedSky_Cl::onPostUpdate(float relTime)
     {
-        if(mCameraObject != nullptr)
+        if(mCameraObject != nullptr && mRenderNode != nullptr)
         {
+            // only move render handle, not the object. this avoids unnecessary state changes
             glm::vec3 skyOffset(0, -od::Units::worldUnitsToLengthUnits(mFields.offsetDown.get()), 0);
-            getLevelObject().setPosition(mCameraObject->getPosition() + skyOffset);
+            glm::vec3 skyPosition = mCameraObject->getPosition() + skyOffset;
+            mRenderNode->setPosition(skyPosition);
         }
     }
 

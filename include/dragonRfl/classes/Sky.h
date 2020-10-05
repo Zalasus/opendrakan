@@ -52,7 +52,6 @@ namespace dragonRfl
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onSpawned() override;
-        virtual void onTranslated(const glm::vec3 &from, const glm::vec3 &to) override;
         virtual void onPostUpdate(float relTime) override;
 
 
