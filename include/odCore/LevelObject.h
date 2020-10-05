@@ -153,7 +153,7 @@ namespace od
          * One example for what might happen here is updating the object's associated layer, which only needs to consider
          * the final position assigned during this tick.
          */
-        void postUpdate();
+        void postUpdate(float relTime);
 
         void setAssociatedLayer(od::Layer *l);
 

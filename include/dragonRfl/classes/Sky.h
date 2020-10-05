@@ -53,7 +53,7 @@ namespace dragonRfl
 
         virtual void onSpawned() override;
         virtual void onTranslated(const glm::vec3 &from, const glm::vec3 &to) override;
-        virtual void onUpdate(float relTime) override;
+        virtual void onPostUpdate(float relTime) override;
 
 
     private:

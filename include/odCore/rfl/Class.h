@@ -220,6 +220,13 @@ namespace odRfl
         virtual void onUpdate(float relTime);
 
         /**
+         * @brief Post-Update hook. Will be called every game tick, after all objects had their update-hook called.
+         *
+         * @param relTime  Time since the last tick, in seconds.
+         */
+        virtual void onPostUpdate(float relTime);
+
+        /**
          * @brief Message hook. Called when this object receives a message.
          *
          * @param sender   The object sending this message.

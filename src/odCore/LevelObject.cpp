@@ -254,8 +254,12 @@ namespace od
         }
     }
 
-    void LevelObject::postUpdate()
+    void LevelObject::postUpdate(float relTime)
     {
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onPostUpdate(relTime);
+        }
     }
 
     void LevelObject::setAssociatedLayer(od::Layer *newLayer)

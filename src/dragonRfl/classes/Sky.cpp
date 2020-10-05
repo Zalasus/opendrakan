@@ -94,13 +94,13 @@ namespace dragonRfl
         }
     }
 
-    void DomedSky_Cl::onUpdate(float relTime)
+    void DomedSky_Cl::onPostUpdate(float relTime)
     {
         if(mCameraObject != nullptr)
         {
             glm::vec3 skyOffset(0, -od::Units::worldUnitsToLengthUnits(mFields.offsetDown.get()), 0);
             getLevelObject().setPosition(mCameraObject->getPosition() + skyOffset);
         }
-    }   
+    }
 
 }

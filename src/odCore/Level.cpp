@@ -182,7 +182,7 @@ namespace od
             auto obj = getLevelObjectById(objId);
             if(obj != nullptr)
             {
-                obj->postUpdate();
+                obj->postUpdate(relTime);
             }
         }
     }

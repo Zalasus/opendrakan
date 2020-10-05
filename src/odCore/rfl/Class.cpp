@@ -44,6 +44,10 @@ namespace odRfl
     {
     }
 
+    void SpawnableClass::onPostUpdate(float relTime)
+    {
+    }
+
     void SpawnableClass::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
     }
