@@ -415,8 +415,6 @@ namespace od
 
     void LevelObject::setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode)
     {
-        // TODO: update these when moved
-
         mRenderMode = renderMode;
         mPhysicsMode = physicsMode;
 
@@ -476,6 +474,16 @@ namespace od
             updateAssociatedLayer(true);
         }
 
+        if(mRenderHandle != nullptr)
+        {
+            mRenderHandle->setPosition(mPosition);
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setPosition(mPosition);
+        }
+
         if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onTranslated(prevPos, mPosition);
@@ -487,6 +495,16 @@ namespace od
     {
         glm::quat prevRot = mRotation;
         mRotation = r;
+
+        if(mRenderHandle != nullptr)
+        {
+            mRenderHandle->setOrientation(mRotation);
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setOrientation(mRotation);
+        }
 
         if(mSpawnableClass != nullptr)
         {
@@ -500,6 +518,16 @@ namespace od
         glm::vec3 prevScale = mScale;
         mScale = s;
 
+        if(mRenderHandle != nullptr)
+        {
+            mRenderHandle->setScale(mScale);
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setScale(mScale);
+        }
+
         if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onScaled(prevScale, mScale);
@@ -512,6 +540,11 @@ namespace od
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
 
         mIsVisible = v;
+
+        if(mRenderHandle != nullptr)
+        {
+            mRenderHandle->setVisible(mIsVisible);
+        }
 
         if(mSpawnableClass != nullptr)
         {

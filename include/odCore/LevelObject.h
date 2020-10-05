@@ -111,6 +111,9 @@ namespace od
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
+        inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
+        inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
+
         void spawned();
         void despawned();
         void messageReceived(LevelObject &sender, od::Message message);
