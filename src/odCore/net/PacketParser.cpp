@@ -51,6 +51,13 @@ namespace odNet
     {
         switch(static_cast<PacketType>(type))
         {
+        case PacketType::LOAD_LEVEL:
+            {
+                std::string level(rawPayload, static_cast<size_t>(length));
+                mOutput->loadLevel(level);
+            }
+            break;
+
         case PacketType::OBJECT_STATE_CHANGED:
             {
                 if(length < PacketConstants::STATE_HEADER_SIZE)
