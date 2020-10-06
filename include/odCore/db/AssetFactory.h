@@ -10,6 +10,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
@@ -67,6 +68,26 @@ namespace odDb
             asset = loaded; // this effectively inserts the asset into the cache
 
             return loaded;
+        }
+
+        /**
+         * @brief Fills the passed vector with the IDs of all assets that are stored in this factory's asset container.
+         *
+         * The default implementation simply adds the IDs of all records of the base type stated in the AssetTraits template.
+         */
+        virtual size_t listAssets(std::vector<od::RecordId> &list)
+        {
+            size_t count = 0;
+
+            auto cursor = mSrscFile.getFirstRecordOfType(AssetTraits<_AssetType>::baseType());
+            while(cursor.isValid())
+            {
+                list.push_back(cursor.getDirIterator()->recordId);
+                ++count;
+                cursor.nextOfType(AssetTraits<_AssetType>::baseType());
+            }
+
+            return count;
         }
 
 
