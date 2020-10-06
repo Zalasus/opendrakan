@@ -24,6 +24,7 @@ target_sources(dragonRfl PRIVATE
     "classes/Sky.cpp"
     #"classes/SoundEffect.cpp"
     "classes/StaticLight.cpp"
+    "classes/StompPlayer.cpp"
     "classes/Timer.cpp"
     "classes/TrackingCamera.cpp"
     "classes/UserInterfaceProperties.cpp"
