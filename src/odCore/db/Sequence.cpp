@@ -36,7 +36,28 @@ namespace odDb
            >> interpolationType
            >> od::DataReader::Ignore(2);
 
-        mInterpolationType = static_cast<InterpolationType>(interpolationType);
+        switch(interpolationType)
+        {
+        case static_cast<uint16_t>(InterpolationType::NONE):
+            mInterpolationType = InterpolationType::NONE;
+            break;
+
+        case static_cast<uint16_t>(InterpolationType::LINEAR_LINEAR):
+            mInterpolationType = InterpolationType::LINEAR_LINEAR;
+            break;
+
+        case static_cast<uint16_t>(InterpolationType::LINEAR_SPLINE):
+            mInterpolationType = InterpolationType::LINEAR_SPLINE;
+            break;
+
+        case static_cast<uint16_t>(InterpolationType::SPLINE_SPLINE):
+            mInterpolationType = InterpolationType::SPLINE_SPLINE;
+            break;
+
+        default:
+            throw od::Exception("Invalid interpolation type");
+        }
+
     }
 
 
@@ -93,13 +114,13 @@ namespace odDb
             dr >> actionType
                >> timeOffset;
 
-            switch(static_cast<ActionType>(actionType))
+            switch(actionType)
             {
-            case ActionType::TRANSFORM:
+            case static_cast<uint16_t>(ActionType::TRANSFORM):
                 mActions.push_back(std::make_unique<ActionTransform>(timeOffset));
                 break;
 
-            case ActionType::START_ANIM:
+            case static_cast<uint16_t>(ActionType::START_ANIM):
                 mActions.push_back(std::make_unique<ActionStartAnim>(timeOffset));
                 break;
 
