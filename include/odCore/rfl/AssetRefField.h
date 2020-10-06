@@ -101,7 +101,7 @@ namespace odRfl
     typedef AssetRefFieldImpl<odDb::Class,     Field::Type::CLASS>     ClassRef;
     typedef AssetRefFieldImpl<odDb::Sound,     Field::Type::SOUND>     SoundRef;
     typedef AssetRefFieldImpl<odDb::Texture,   Field::Type::TEXTURE>   TextureRef;
-    typedef AssetRefFieldImpl<odDb::Sequence,  Field::Type::SEUQUENCE> SequenceRef;
+    typedef AssetRefFieldImpl<odDb::Sequence,  Field::Type::SEQUENCE> SequenceRef;
     typedef AssetRefFieldImpl<odDb::Animation, Field::Type::ANIMATION> AnimRef;
     typedef AssetRefFieldImpl<odDb::Model,     Field::Type::MODEL>     ModelRef;
 
@@ -189,6 +189,7 @@ namespace odRfl
 
     };
 
+    typedef AssetRefArrayFieldImpl<odDb::Sequence,  Field::Type::SEQUENCE>  SequenceRefArray;
     typedef AssetRefArrayFieldImpl<odDb::Sound,     Field::Type::SOUND>     SoundRefArray;
     typedef AssetRefArrayFieldImpl<odDb::Class,     Field::Type::CLASS>     ClassRefArray;
     typedef AssetRefArrayFieldImpl<odDb::Animation, Field::Type::ANIMATION> AnimRefArray;

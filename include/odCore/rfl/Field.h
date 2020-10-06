@@ -39,7 +39,7 @@ namespace odRfl
             CHAR_CHANNEL    = 0x08,
             ANIMATION       = 0x09,
             STRING          = 0x0a,
-            SEUQUENCE       = 0x0b,
+            SEQUENCE        = 0x0b,
             TEXTURE         = 0x0e,
             COLOR           = 0x0f
         };
