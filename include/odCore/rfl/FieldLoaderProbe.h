@@ -27,9 +27,19 @@ namespace odRfl
             CLASS
         };
 
-        FieldLoaderProbe();
+        struct FieldEntry
+        {
+            uint32_t fieldType;
+            bool isArray;
+            uint16_t index;
+            size_t dataOffset; // offset of entry in mFieldData
+            std::string fieldName;
+        };
 
+        FieldLoaderProbe();
         FieldLoaderProbe(FieldLoaderProbe &&p) = default;
+
+        inline const std::vector<FieldEntry> &getFieldEntries() const { return mFieldEntries; }
 
         /**
          * Field records in object and class data store basically the same data, but use a slightly different format.
@@ -47,15 +57,6 @@ namespace odRfl
 
 
     private:
-
-        struct FieldEntry
-        {
-            uint32_t fieldType;
-            bool isArray;
-            uint16_t index;
-            size_t dataOffset; // offset of entry in mFieldData
-            std::string fieldName;
-        };
 
         std::vector<FieldEntry> mFieldEntries;
         std::vector<char> mFieldData;
