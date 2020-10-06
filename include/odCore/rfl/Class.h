@@ -328,11 +328,47 @@ namespace odRfl
         virtual std::unique_ptr<FieldBundle> makeFieldBundle() = 0;
 
         /**
-         * @brief Allocates a new class instace. Will never return nullptr.
+         * @brief Allocates a new class instace. May return nullptr if no instance can be created for the passed engine.
          */
         virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) = 0;
 
     };
+
+
+    namespace detail
+    {
+
+        template <typename T>
+        struct CheckFieldBundleType
+        {
+            static_assert(std::is_base_of<odRfl::FieldBundle, T>::value, "Fields class must implement odRfl::FieldBundle");
+            static_assert(!std::is_abstract<T>::value, "Fields class must not be abstract");
+
+            using Type = T;
+        };
+
+        template <typename T>
+        struct CheckServerClassType
+        {
+            static_assert(std::is_base_of<odRfl::ServerClass, T>::value, "Server class must implement odRfl::ServerClass");
+            static_assert(std::is_base_of<odRfl::ClassBase, T>::value, "Server class must implement odRfl::ClassBase (likely via odRfl::ClassImpl)");
+            static_assert(!std::is_abstract<T>::value, "Server class must not be abstract");
+
+            using Type = T;
+        };
+
+        template <typename T>
+        struct CheckClientClassType
+        {
+            static_assert(std::is_base_of<odRfl::ClientClass, T>::value, "Client class must implement odRfl::ClientClass");
+            static_assert(std::is_base_of<odRfl::ClassBase, T>::value, "Client class must implement odRfl::ClassBase (likely via odRfl::ClassImpl)");
+            static_assert(!std::is_abstract<T>::value, "Client class must not be abstract");
+
+            using Type = T;
+        };
+
+    }
+
 
     /**
      * @brief A default class factory for RFL classes with two implementations, one for servers and one for clients.
@@ -345,20 +381,9 @@ namespace odRfl
     {
     public:
 
-        using Fields = _Fields;
-        using ClientClassImpl = _ClientClassImpl;
-        using ServerClassImpl = _ServerClassImpl;
-
-        static_assert(std::is_base_of<odRfl::FieldBundle, _Fields>::value, "_Fields must implement odRfl::FieldBundle");
-        static_assert(!std::is_abstract<_Fields>::value, "_Fields must not be abstract");
-
-        static_assert(std::is_base_of<odRfl::ClientClass, _ClientClassImpl>::value, "_ClientClassImpl must implement odRfl::ClientClass");
-        static_assert(std::is_base_of<odRfl::ClassBase, _ClientClassImpl>::value, "_ClientClassImpl must implement odRfl::ClassBase (likely via odRfl::ClassImpl)");
-        static_assert(!std::is_abstract<_ClientClassImpl>::value, "_ClientClassImpl must not be abstract");
-
-        static_assert(std::is_base_of<odRfl::ServerClass, _ServerClassImpl>::value, "_ServerClassImpl must implement odRfl::ServerClass");
-        static_assert(std::is_base_of<odRfl::ClassBase, _ServerClassImpl>::value, "_ServerClassImpl must implement odRfl::ClassBase (likely via odRfl::ClassImpl)");
-        static_assert(!std::is_abstract<_ServerClassImpl>::value, "_ServerClassImpl must not be abstract");
+        using Fields = typename detail::CheckFieldBundleType<_Fields>::Type;
+        using ClientClassImpl = typename detail::CheckClientClassType<_ClientClassImpl>::Type;
+        using ServerClassImpl = typename detail::CheckServerClassType<_ServerClassImpl>::Type;
 
         virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
         {
@@ -397,7 +422,7 @@ namespace odRfl
     {
     public:
 
-        using Fields = _Fields;
+        using Fields = typename detail::CheckFieldBundleType<_Fields>::Type;
 
         virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
         {
@@ -410,17 +435,77 @@ namespace odRfl
         }
 
     };
-    
+
 
     /**
-     * @brief Specifies the environment a class is intended for.
+     * @brief A class factory for RFL classes with only a server implementation.
+     *
+     * On clients, will return nullptr as instance to signal back to the caller
+     * that no implementation exists. A level, for instance, could delete
+     * objects without a valid class implementation.
      */
-    enum class ClassEnvironmentType
+    template <typename _Fields, typename _ServerClassImpl>
+    class ServerOnlyClassFactory final : public ClassFactory
     {
-        CLIENT_SERVER, ///< The class has implementations for both clients and servers (can be the same impl. for both).
-        CLIENT_ONLY,   ///< The class only can exist on clients. On servers, their object will be destroyed.
-        SERVER_ONLY,   ///< The class only can exist on servers. On clients, their object will be destroyed.
-        STUB           ///< Instantiating a class for the object is up to other game mechanics. The object will be kept in pre-load state.
+    public:
+
+        using Fields = typename detail::CheckFieldBundleType<_Fields>::Type;
+        using ServerClassImpl = typename detail::CheckServerClassType<_ServerClassImpl>::Type;
+
+        virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
+        {
+            return std::make_unique<_Fields>();
+        }
+
+        virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) override
+        {
+            if(engine.isServer())
+            {
+                auto serverImpl = std::make_unique<_ServerClassImpl>();
+                serverImpl->setServer(engine.getServer());
+                return std::move(serverImpl);
+
+            }else
+            {
+                return nullptr;
+            }
+        }
+    };
+
+
+    /**
+     * @brief A class factory for RFL classes with only a client implementation.
+     *
+     * On servers, will return nullptr as instance to signal back to the caller
+     * that no implementation exists. A level, for instance, could delete
+     * objects without a valid class implementation.
+     */
+    template <typename _Fields, typename _ClientClassImpl>
+    class ClientOnlyClassFactory final : public ClassFactory
+    {
+    public:
+
+        using Fields = typename detail::CheckFieldBundleType<_Fields>::Type;
+        using ClientClassImpl = typename detail::CheckClientClassType<_ClientClassImpl>::Type;
+
+        virtual std::unique_ptr<FieldBundle> makeFieldBundle() override
+        {
+            return std::make_unique<_Fields>();
+        }
+
+        virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) override
+        {
+            if(engine.isClient())
+            {
+                auto clientImpl = std::make_unique<_ClientClassImpl>();
+                clientImpl->setClient(engine.getClient());
+                return std::move(clientImpl);
+
+            }else
+            {
+                return nullptr;
+            }
+        }
     };
 
 }
