@@ -73,8 +73,11 @@ namespace odDb
     	Logger::debug() << "Instantiating class '" << mClassName << "' (" << std::hex << getAssetId() << std::dec << ")";
 
     	std::unique_ptr<odRfl::ClassBase> newInstance = factory->makeInstance(engine);
-        fillFields(newInstance->getFields());
-
+        if(newInstance != nullptr)
+        {
+            fillFields(newInstance->getFields());
+        }
+        
         return newInstance;
 	}
 

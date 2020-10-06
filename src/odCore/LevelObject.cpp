@@ -93,10 +93,11 @@ namespace od
     }
 
 
-    LevelObject::LevelObject(Level &level, uint16_t recordIndex, ObjectRecordData &record, LevelObjectId id, std::unique_ptr<odRfl::ClassBase> classInstance)
+    LevelObject::LevelObject(Level &level, uint16_t recordIndex, ObjectRecordData &record, LevelObjectId id, std::shared_ptr<odDb::Class> dbClass)
     : mLevel(level)
     , mRecordIndex(recordIndex)
     , mId(record.getObjectId())
+    , mClass(dbClass)
     , mLightingLayer(nullptr)
     , mPosition(record.getPosition())
     , mRotation(record.getRotation())
@@ -124,20 +125,6 @@ namespace od
         for(auto linkedIndex : record.getLinkedObjectIndices())
         {
             mLinkedObjects.push_back(level.getObjectIdForRecordIndex(linkedIndex));
-        }
-
-        // load class from db. TODO: let Level do this asynchronously later
-        mClass = mLevel.getAssetByRef<odDb::Class>(record.getClassRef());
-
-        if(classInstance != nullptr)
-        {
-            setRflClassInstance(std::move(classInstance));
-
-        }else
-        {
-            // no instance provided. we have to create it using info from the DB class
-            auto instance = mClass->makeInstance(mLevel.getEngine());
-            this->setRflClassInstance(std::move(instance));
         }
     }
 
@@ -300,7 +287,7 @@ namespace od
 
     odAnim::Skeleton *LevelObject::getOrCreateSkeleton()
     {
-        if(mSkeleton == nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
+        if(mSkeleton == nullptr && mClass != nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
         {
             odDb::SkeletonBuilder *sb = mClass->getModel()->getSkeletonBuilder();
             mSkeleton = std::make_unique<odAnim::Skeleton>(sb->getJointCount());

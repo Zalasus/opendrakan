@@ -471,14 +471,24 @@ namespace od
         for(size_t i = 0; i < objectCount; ++i)
     	{
             auto &record = mObjectRecords[i];
-            auto object = std::make_unique<LevelObject>(*this, i, record, record.getObjectId(), nullptr);
 
-            if(object->getClassInstance() == nullptr)
+            auto dbClass = this->getAssetByRef<odDb::Class>(record.getClassRef());
+            if(dbClass == nullptr)
             {
-                // ignore objects without a class for now. they will sit around doing nothing anyways.
-                //  TODO: maybe derive this info from record data directly so we can avoid the allocation?
+                // ignore objects whose class we failed to load
+                Logger::warn() << "Failed to load Class of object. Ignoring object";
                 continue;
             }
+
+            auto rflClassInstance = dbClass->makeInstance(mEngine);
+            if(rflClassInstance == nullptr)
+            {
+                // ignore objects without a class implementation. they will sit around doing nothing anyways.
+                continue;
+            }
+
+            auto newObject = std::make_unique<LevelObject>(*this, i, record, record.getObjectId(), dbClass);
+            newObject->setRflClassInstance(std::move(rflClassInstance));
 
             auto &ptrInMap = mLevelObjects[record.getObjectId()];
             if(ptrInMap != nullptr)
@@ -486,7 +496,7 @@ namespace od
                 throw od::Exception("Level contains non-unique object IDs (this might actually be an error in our level file interpretation)");
             }
 
-            ptrInMap = std::move(object);
+            ptrInMap = std::move(newObject);
     	}
     }
 }

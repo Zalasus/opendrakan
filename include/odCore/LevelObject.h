@@ -84,10 +84,8 @@ namespace od
 
         /**
          * Since many objects can be created from the same object records, the \c id argument is used instead of the ID stored in the record passed here.
-         *
-         * If classInstance is nullptr, the constructor will create a new class instance from the database class given in the record.
          */
-        LevelObject(Level &level, uint16_t recordIndex, ObjectRecordData &record, LevelObjectId id, std::unique_ptr<odRfl::ClassBase> classInstance = nullptr);
+        LevelObject(Level &level, uint16_t recordIndex, ObjectRecordData &record, LevelObjectId id, std::shared_ptr<odDb::Class> dbClass);
         LevelObject(LevelObject &&obj) = delete;
         virtual ~LevelObject();
 
