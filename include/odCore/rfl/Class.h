@@ -410,32 +410,7 @@ namespace odRfl
         }
 
     };
-
-
-    template <ClassId _Id, const char *_Category, const char *_Name, typename _Factory>
-    class ClassDefinition
-    {
-    public:
-
-        static_assert(std::is_base_of<odRfl::ClassFactory, _Factory>::value, "_Factory must implement odRfl::ClassFactory");
-        static_assert(!std::is_abstract<_Factory>::value, "_Factory must not be abstract");
-
-        using Factory = _Factory;
-
-        static inline constexpr ClassId classId() { return _Id; }
-        static inline constexpr const char *category() { return _Category; }
-        static inline constexpr const char *name() { return _Name; }
-
-        /**
-         * @brief Returns a factory for this class with static storage duration.
-         */
-        static ClassFactory &getFactory()
-        {
-            static _Factory factory;
-            return factory;
-        }
-
-    };
+    
 
     /**
      * @brief Specifies the environment a class is intended for.
