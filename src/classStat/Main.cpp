@@ -66,7 +66,7 @@ static std::string typeIdToString(uint32_t type)
         break;
     };
 
-    if(type & 0x0100)
+    if(type & 0x1000)
     {
         name += "[]";
     }
