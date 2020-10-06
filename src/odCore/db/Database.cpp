@@ -139,16 +139,21 @@ namespace odDb
         _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
 	}
 
-	AssetProvider &Database::getDependency(uint16_t index)
-	{
-	    auto it = mDependencyMap.find(index);
+    std::shared_ptr<Database> Database::getDependencyDatabase(uint16_t index)
+    {
+        auto it = mDependencyMap.find(index);
 	    if(it == mDependencyMap.end())
 	    {
 	        Logger::error() << "Database '" + getShortName() + "' has no dependency with index " << index;
 	        throw od::NotFoundException("Database has no dependency with given index");
 	    }
 
-	    return *(it->second);
+	    return it->second;
+    }
+
+	AssetProvider &Database::getDependency(uint16_t index)
+	{
+	    return *getDependencyDatabase(index);
 	}
 
 	std::shared_ptr<Texture> Database::getTexture(od::RecordId recordId)

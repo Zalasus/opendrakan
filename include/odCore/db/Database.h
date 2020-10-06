@@ -52,6 +52,14 @@ namespace odDb
 
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
+        /**
+         * @brief Does the same thing as getDependency(), but returns an owned pointer to Database.
+         *
+         * Since the database module is up for an overhaul as well, we might make this the official method
+         * and remove the non-owned AssetProvider version.
+         */
+        std::shared_ptr<Database> getDependencyDatabase(uint16_t index);
+
 	    // override AssetProvider
 		virtual AssetProvider &getDependency(uint16_t index) override;
         virtual std::shared_ptr<Texture>   getTexture(od::RecordId recordId) override;
