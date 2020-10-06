@@ -87,9 +87,18 @@ namespace odRfl
     class ServerClass;
 
     /**
-     * @brief Interface for a class implementation.
+     * @brief Interface for all class implementations.
      *
-     * The subclasses ClassImplServer and ClassImplClient extend this interface with client/server specific functions.
+     * This defines the basic set of hooks that every class possesses. More
+     * specific interfaces exist for classes that need a server, client or level
+     * object.
+     *
+     * The interface also defines methods for quickly converting an instance of
+     * ClassBase into one of the specific server-, client- or spawnable
+     * interface without a dynamic cast. An implementation for these methods can
+     * be auto-generated using the CRTP ClassImpl<T>. In order to avoid having
+     * to manually override the conversion methods inherit from
+     * `ClassImpl<YourClass>` instead of ClassBase.
      */
     class ClassBase
     {
@@ -113,10 +122,18 @@ namespace odRfl
     };
 
 
+    /**
+     * @brief CRTP that auto-generates implementations for the conversion methods in ClassBase.
+     *
+     * In order to avoid having to manually override the conversion methods in
+     * ClassBase, inherit from `ClassImpl<YourClass>` instead of ClassBase.
+     */
     template <typename T>
     class ClassImpl : public ClassBase
     {
     public:
+
+        // TODO: maybe add field bundle as a protected member here and let this also implement getFields()? same for states
 
         virtual SpawnableClass *asSpawnableClass() override final
         {
@@ -139,7 +156,7 @@ namespace odRfl
     /**
      * @brief Interface for a client-side class implementation.
      *
-     * This provides the implementer with a od::Client object, which can be used to access
+     * This provides the implementer with an od::Client object, which can be used to access
      * the client's subsystems.
      */
     class ClientClass
@@ -160,7 +177,7 @@ namespace odRfl
     /**
      * @brief Interface for a server-side class implementation.
      *
-     * This provides the implementer with a od::Server object, which can be used to access
+     * This provides the implementer with an od::Server object, which can be used to access
      * the server's subsystems.
      */
     class ServerClass
