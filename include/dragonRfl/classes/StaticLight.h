@@ -57,7 +57,7 @@ namespace dragonRfl
 
     };
 
-    using StaticLightFactory = odRfl::DefaultClassFactory<StaticLightFields, StaticLight_Cl, odRfl::DummyClass>;
+    using StaticLightFactory = odRfl::ClientOnlyClassFactory<StaticLightFields, StaticLight_Cl>;
 
     OD_DEFINE_CLASS(StaticLight, 0x0084, "Light Source", "Static Light", StaticLightFactory);
 

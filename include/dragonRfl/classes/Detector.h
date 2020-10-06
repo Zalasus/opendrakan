@@ -102,7 +102,7 @@ namespace dragonRfl
     };
 
 
-    using DetectorFactory = odRfl::DefaultClassFactory<DetectorFields, odRfl::DummyClass, Detector_Sv>;
+    using DetectorFactory = odRfl::ServerOnlyClassFactory<DetectorFields, Detector_Sv>;
 
 
     OD_DEFINE_CLASS(Detector, 0x003d, "System", "Detector", DetectorFactory);

@@ -70,7 +70,11 @@ namespace dragonRfl
         bool  mPulseRising;
     };
 
+
+    // this is not a client-only class! the server side has to exists, even if it's just a dummy. but the server might
+    //  want to move this light around or switch it off or on, so it can't be deleted there.
     using DynamicLightFactory = odRfl::DefaultClassFactory<DynamicLightFields, DynamicLight_Cl, odRfl::DummyClass>;
+
 
     OD_DEFINE_CLASS(DynamicLight, 0x0085, "Light Source", "Dynamic Light", DynamicLightFactory);
 

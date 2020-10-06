@@ -64,7 +64,7 @@ namespace dragonRfl
 	};
 
 
-    using TimerFactory = odRfl::DefaultClassFactory<TimerFields, odRfl::DummyClass, Timer_Sv>;
+    using TimerFactory = odRfl::ServerOnlyClassFactory<TimerFields, Timer_Sv>;
 
     OD_DEFINE_CLASS(Timer, 0x003e, "System", "Timer", TimerFactory);
 

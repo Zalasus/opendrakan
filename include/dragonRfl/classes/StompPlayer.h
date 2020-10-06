@@ -57,7 +57,7 @@ namespace dragonRfl
 
     };
 
-    using StomPlayerFactory = odRfl::DefaultClassFactory<StompPlayerFields, odRfl::DummyClass, StompPlayer_Sv>;
+    using StomPlayerFactory = odRfl::ServerOnlyClassFactory<StompPlayerFields, StompPlayer_Sv>;
 
     OD_DEFINE_CLASS(StompPlayer, 0x0033, "System", "STOMP Player", StomPlayerFactory);
 

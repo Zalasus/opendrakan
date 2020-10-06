@@ -71,7 +71,7 @@ namespace dragonRfl
     };
 
 
-    using CountDownToZeroFactory = odRfl::DefaultClassFactory<CountDownToZeroFields, odRfl::DummyClass, CountDownToZero_Sv>;
+    using CountDownToZeroFactory = odRfl::ServerOnlyClassFactory<CountDownToZeroFields, CountDownToZero_Sv>;
 
     OD_DEFINE_CLASS(CountDownToZero, 0x0007, "System", "Count Down To Zero", CountDownToZeroFactory);
 

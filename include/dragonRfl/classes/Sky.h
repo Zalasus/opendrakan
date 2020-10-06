@@ -66,7 +66,7 @@ namespace dragonRfl
     };
 
 
-    using DomedSkyFactory = odRfl::DefaultClassFactory<DomedSkyFields, DomedSky_Cl, odRfl::DummyClass>;
+    using DomedSkyFactory = odRfl::ClientOnlyClassFactory<DomedSkyFields, DomedSky_Cl>;
 
 
     OD_DEFINE_CLASS(DomedSky, 0x001a, "System", "Domed Sky", DomedSkyFactory);
