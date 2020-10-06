@@ -56,7 +56,7 @@ namespace od
             return true;
         }
 
-        // using the signs of the coordinates relative to the cell center, we can check in which
+        // by comparing x and y of the coordinates relative to the cell center, we can check in which
         // triangle each point is. if they aren't in the same triangle, we crossed a boundary.
 
         // +----+  /\ Y/Z
@@ -68,15 +68,19 @@ namespace od
 
         auto calcTriangle =  [](const glm::vec2 &p) -> int
         {
-            if(p.y >= p.x)
+            // the two dividing lines are defined by y=x and y=-x. by turning the = into a relation,
+            //  we can make the condition hold true for all points below the dividing lines. using
+            //  clever combination, we can then determine in which triangle the point is, exactly
+            bool in1or2 = p.x < p.y;
+            bool in3or2 = p.y < -p.x;
+
+            if(in1or2)
             {
-                // p is in 0 or 2
-                return (p.y > 0) ? 0 : 2;
+                return in3or2 ? 2 : 1;
 
             }else
             {
-                // a is in 3 or 1
-                return (p.x > 0) ? 1 : 3;
+                return in3or2 ? 3 : 0;
             }
         };
 
