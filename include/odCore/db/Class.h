@@ -39,9 +39,11 @@ namespace odDb
 		Class(AssetProvider &ap, od::RecordId classId, ClassFactory &classFactory);
 
 		inline bool hasModel() const { return mModel != nullptr; }
+        inline AssetRef getModelRef() const { return mModelRef; }
         inline std::shared_ptr<Model> getModel() { return mModel; }
         inline const std::string &getName() const { return mClassName; }
         inline odRfl::ClassId getRflClassId() const { return mRflClassId; }
+        inline const odRfl::FieldLoaderProbe &getFieldLoader() const { return mFieldLoader; }
 
         virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 

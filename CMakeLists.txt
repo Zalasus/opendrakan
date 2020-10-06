@@ -4,6 +4,10 @@ cmake_minimum_required(VERSION 3.0.0)
 
 project(OpenDrakan CXX)
 
+option(BUILD_SRCSED "Build srscEd, a viewer for SRSC-files (useful for reverse-engineering)" ON)
+option(BUILD_CLASSSTAT "Build classStat, a tool for dumping .odb class data" ON)
+option(BUILD_OSG_RENDERER "Build the OpenSceneGraph-based renderer" ON)
+
 if(NOT CMAKE_BUILD_TYPE)
     message("No CMAKE_BUILD_TYPE specified. Defaulting to Debug")
     set(CMAKE_BUILD_TYPE Debug)
@@ -56,8 +60,18 @@ include_directories("include")
 
 add_subdirectory("src/odCore")
 add_subdirectory("src/dragonRfl")
-add_subdirectory("src/odOsg")
-add_subdirectory("src/srscEd")
+
+if(BUILD_OSG_RENDERER)
+    add_subdirectory("src/odOsg")
+endif()
+
+if(BUILD_SRSCED)
+    add_subdirectory("src/srscEd")
+endif()
+
+if(BUILD_CLASSSTAT)
+    add_subdirectory("src/classStat")
+endif()
 
 # copy shader sources
 set(SHADER_SOURCES
