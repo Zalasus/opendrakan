@@ -153,17 +153,22 @@ namespace od
 
     LagCompensationGuard Server::compensateLag(odNet::ClientId id)
     {
+        double predictedClientViewTime = mServerTime - getEstimatedClientLag(id);
+
+        mStateManager->apply(predictedClientViewTime);
+
+        return { *mStateManager, mServerTime };
+    }
+
+    float Server::getEstimatedClientLag(odNet::ClientId id)
+    {
         auto client = mClients.find(id);
         if(client == mClients.end())
         {
             throw od::NotFoundException("Invalid client ID");
         }
 
-        double predictedClientViewTime = mServerTime - client->second.lastMeasuredRoundTripTime/2 - client->second.viewInterpolationTime;
-
-        mStateManager->apply(predictedClientViewTime);
-
-        return { *mStateManager, mServerTime };
+        return client->second.lastMeasuredRoundTripTime/2 - client->second.viewInterpolationTime;
     }
 
     void Server::loadLevel(const FilePath &lvlPath)

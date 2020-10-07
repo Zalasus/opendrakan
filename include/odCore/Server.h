@@ -120,6 +120,8 @@ namespace od
 
         LagCompensationGuard compensateLag(odNet::ClientId id);
 
+        float getEstimatedClientLag(odNet::ClientId id);
+
         template <typename T>
         void forEachClient(const T &functor)
         {

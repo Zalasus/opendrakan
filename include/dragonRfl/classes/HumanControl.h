@@ -59,7 +59,7 @@ namespace dragonRfl
         void _handleAction(Action action, odInput::ActionState state);
         void _handleAnalogAction(Action action, const glm::vec2 &pos);
         void _attack();
-		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
+		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping, float skipAhead = 0.0);
 
 		HumanControlFields mFields;
 

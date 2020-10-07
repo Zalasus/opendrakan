@@ -120,7 +120,7 @@ namespace dragonRfl
 
     void HumanControl_Sv::onUpdate(float relTime)
     {
-        auto guard = getServer().compensateLag(mClientId);
+        //auto guard = getServer().compensateLag(mClientId);
 
         getLevelObject().setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
 
@@ -173,23 +173,24 @@ namespace dragonRfl
     void HumanControl_Sv::_handleAction(Action action, odInput::ActionState state)
     {
         // TODO: we probably have to add the packet and view latency to these state changes
+        float clientLag = getServer().getEstimatedClientLag(mClientId); // skip animations ahead by this time
 
         if(state == odInput::ActionState::BEGIN)
         {
             switch(action)
             {
             case Action::Forward:
-                _playAnim(mFields.runAnim, false, true);
+                _playAnim(mFields.runAnim, false, true, clientLag);
                 mState = State::RunningForward;
                 break;
 
             case Action::Backward:
-                _playAnim(mFields.runBackwards, false, true);
+                _playAnim(mFields.runBackwards, false, true, clientLag);
                 mState = State::RunningBackward;
                 break;
 
             case Action::Attack_Primary:
-                _playAnim(mFields.oneHandRH, false, false);
+                _playAnim(mFields.oneHandRH, false, false, clientLag);
                 _attack();
                 break;
 
@@ -199,7 +200,7 @@ namespace dragonRfl
 
         }else
         {
-            _playAnim(mFields.readyAnim, true, true);
+            _playAnim(mFields.readyAnim, true, true, clientLag);
             mState = State::Idling;
         }
     }
@@ -233,7 +234,7 @@ namespace dragonRfl
         }
     }
 
-    void HumanControl_Sv::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping)
+    void HumanControl_Sv::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping, float skipAheadTime)
     {
         static const odAnim::AxesModes walkAccum{  odAnim::AccumulationMode::Accumulate,
                                                    odAnim::AccumulationMode::Bone,
@@ -251,6 +252,10 @@ namespace dragonRfl
         {
             mAnimPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
             mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
+            if(skipAheadTime > 0)
+            {
+                mAnimPlayer->update(skipAheadTime);
+            }
         }
     }
 
