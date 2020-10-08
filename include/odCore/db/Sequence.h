@@ -236,11 +236,11 @@ namespace odDb
     Action *ActionVariant::as<Action>();
 
 
-    class Actor
+    class SequenceActor
     {
     public:
 
-        Actor();
+        SequenceActor();
 
         void load(od::DataReader &dr);
 
@@ -260,13 +260,15 @@ namespace odDb
 
 	    Sequence(AssetProvider &ap, od::RecordId id);
 
+
+
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 
 	private:
 
 		std::string mSequenceName;
-		std::vector<Actor> mActors;
+		std::vector<SequenceActor> mActors;
 	};
 
 

@@ -175,13 +175,13 @@ namespace odDb
     }
 
 
-    Actor::Actor()
+    SequenceActor::SequenceActor()
     : mActorId(0)
     , mLevelObjectId(0)
     {
     }
 
-    void Actor::load(od::DataReader &dr)
+    void SequenceActor::load(od::DataReader &dr)
     {
         uint32_t actionCount;
 
