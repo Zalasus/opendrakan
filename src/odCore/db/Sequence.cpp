@@ -7,51 +7,44 @@
 
 #include <odCore/db/Sequence.h>
 
-#include <odCore/Exception.h>
+#include <algorithm>
 
 namespace odDb
 {
 
-    Action::Action(ActionType type, float timeOffset)
-    : mActionType(type)
-    , mTimeOffset(timeOffset)
+    Action::Action(float t)
+    : timeOffset(t)
     {
     }
 
 
-
-    ActionTransform::ActionTransform(float timeOffset)
-    : Action(ActionType::TRANSFORM, timeOffset)
-    , mInterpolationType(InterpolationType::NONE)
+    ActionTransform::ActionTransform(float t, od::DataReader &dr)
+    : Action(t)
     {
-    }
+        uint16_t interpolationTypeCode;
 
-    void ActionTransform::load(od::DataReader &dr)
-    {
-        uint16_t interpolationType;
-
-        dr >> mRotation
-           >> mPosition
+        dr >> rotation
+           >> position
            >> od::DataReader::Ignore(4)
-           >> interpolationType
+           >> interpolationTypeCode
            >> od::DataReader::Ignore(2);
 
-        switch(interpolationType)
+        switch(interpolationTypeCode)
         {
         case static_cast<uint16_t>(InterpolationType::NONE):
-            mInterpolationType = InterpolationType::NONE;
+            interpolationType = InterpolationType::NONE;
             break;
 
         case static_cast<uint16_t>(InterpolationType::LINEAR_LINEAR):
-            mInterpolationType = InterpolationType::LINEAR_LINEAR;
+            interpolationType = InterpolationType::LINEAR_LINEAR;
             break;
 
         case static_cast<uint16_t>(InterpolationType::LINEAR_SPLINE):
-            mInterpolationType = InterpolationType::LINEAR_SPLINE;
+            interpolationType = InterpolationType::LINEAR_SPLINE;
             break;
 
         case static_cast<uint16_t>(InterpolationType::SPLINE_SPLINE):
-            mInterpolationType = InterpolationType::SPLINE_SPLINE;
+            interpolationType = InterpolationType::SPLINE_SPLINE;
             break;
 
         default:
@@ -61,40 +54,132 @@ namespace odDb
     }
 
 
-
-    ActionStartAnim::ActionStartAnim(float timeOffset)
-    : Action(ActionType::START_ANIM, timeOffset)
-    , mChannelIndex(0)
-    , mAnimationRef(AssetRef::NULL_REF)
-    , mTransitionTime(0)
-    , mSpeed(0)
-    , mRootNodeTranslationFlags(0)
+    ActionStartAnim::ActionStartAnim(float t, od::DataReader &dr)
+    : Action(t)
     {
-    }
-
-    void ActionStartAnim::load(od::DataReader &dr)
-    {
-        dr >> mChannelIndex
-           >> mAnimationRef
+        dr >> channelIndex
+           >> animationRef
            >> od::DataReader::Ignore(4)
-           >> mTransitionTime
-           >> mSpeed
-           >> mRootNodeTranslationFlags;
+           >> transitionTime
+           >> speed
+           >> rootNodeTranslationFlags;
     }
 
 
+    ActionPlaySound::ActionPlaySound(float t, od::DataReader &dr)
+    : Action(t)
+    {
+        dr >> soundRef
+           >> duration
+           >> volume
+           >> flags;
+    }
 
-    ActionPlaySound::ActionPlaySound(float timeOffset)
-    : Action(ActionType::PLAY_SOUND, timeOffset)
+
+    ActionAttach::ActionAttach(float t, od::DataReader &dr)
+    : Action(t)
+    {
+        dr >> targetObjectId
+           >> thisActorChannelId;
+    }
+
+
+    ActionRunStopAi::ActionRunStopAi(float t, od::DataReader &dr)
+    : Action(t)
+    {
+        dr >> enableAi;
+    }
+
+
+    ActionShowHide::ActionShowHide(float t, od::DataReader &dr)
+    : Action(t)
+    {
+        dr >> visible;
+    }
+
+
+    ActionMessage::ActionMessage(float t, od::DataReader &dr)
+    : Action(t)
+    {
+        dr >> messageCode
+           >> od::DataReader::Expect<uint32_t>(0);
+    }
+
+
+    ActionMusic::ActionMusic(float t, od::DataReader &dr)
+    : Action(t)
+    {
+        dr >> musicId
+           >> dlsId
+           >> fadeInTime
+           >> fadeOutTime;
+    }
+
+
+    ActionVariant::ActionVariant(const ActionTransform &transform)
+    : mType(ActionType::TRANSFORM)
+    , mTransform(transform)
     {
     }
 
-    void ActionPlaySound::load(od::DataReader &dr)
+    ActionVariant::ActionVariant(const ActionStartAnim &startAnim)
+    : mType(ActionType::TRANSFORM)
+    , mStartAnim(startAnim)
     {
     }
 
+    ActionVariant::ActionVariant(const ActionPlaySound &playSound)
+    : mType(ActionType::TRANSFORM)
+    , mPlaySound(playSound)
+    {
+    }
+
+    ActionVariant::ActionVariant(const ActionAttach &attach)
+    : mType(ActionType::TRANSFORM)
+    , mAttach(attach)
+    {
+    }
+
+    ActionVariant::ActionVariant(const ActionRunStopAi &runStopAi)
+    : mType(ActionType::TRANSFORM)
+    , mRunStopAi(runStopAi)
+    {
+    }
+
+    ActionVariant::ActionVariant(const ActionShowHide &showHide)
+    : mType(ActionType::TRANSFORM)
+    , mShowHide(showHide)
+    {
+    }
+
+    ActionVariant::ActionVariant(const ActionMessage &message)
+    : mType(ActionType::TRANSFORM)
+    , mMessage(message)
+    {
+    }
+
+    ActionVariant::ActionVariant(const ActionMusic &music)
+    : mType(ActionType::TRANSFORM)
+    , mMusic(music)
+    {
+    }
+
+    template <>
+    Action *ActionVariant::as<Action>()
+    {
+        Action *result = nullptr;
+        auto visitor = [&](Action &action) mutable { result = &action; };
+        this->visit(visitor);
+        if(result == nullptr) OD_UNREACHABLE();
+        return result;
+    }
 
 
+    Actor::Actor()
+    : mActorId(0)
+    , mLevelObjectId(0)
+    {
+    }
 
     void Actor::load(od::DataReader &dr)
     {
@@ -117,19 +202,48 @@ namespace odDb
             switch(actionType)
             {
             case static_cast<uint16_t>(ActionType::TRANSFORM):
-                mActions.push_back(std::make_unique<ActionTransform>(timeOffset));
+                mActions.emplace_back(ActionTransform(timeOffset, dr));
                 break;
 
             case static_cast<uint16_t>(ActionType::START_ANIM):
-                mActions.push_back(std::make_unique<ActionStartAnim>(timeOffset));
+                mActions.emplace_back(ActionStartAnim(timeOffset, dr));
+                break;
+
+            case static_cast<uint16_t>(ActionType::PLAY_SOUND):
+                mActions.emplace_back(ActionPlaySound(timeOffset, dr));
+                break;
+
+            case static_cast<uint16_t>(ActionType::ATTACH):
+                mActions.emplace_back(ActionAttach(timeOffset, dr));
+                break;
+
+            case static_cast<uint16_t>(ActionType::RUN_STOP_AI):
+                mActions.emplace_back(ActionRunStopAi(timeOffset, dr));
+                break;
+
+            case static_cast<uint16_t>(ActionType::SHOW_HIDE):
+                mActions.emplace_back(ActionShowHide(timeOffset, dr));
+                break;
+
+            case static_cast<uint16_t>(ActionType::MESSAGE):
+                mActions.emplace_back(ActionMessage(timeOffset, dr));
+                break;
+
+            case static_cast<uint16_t>(ActionType::MUSIC):
+                mActions.emplace_back(ActionMusic(timeOffset, dr));
                 break;
 
             default:
                 // can't continue to load as we have no idea where this action ends
+                Logger::error() << "Sequence '" << mName << "' contains unknown action type " << actionType;
                 throw od::Exception("Unknown action type in sequence actor '" + mName + "'");
             }
+        }
 
-            mActions.back()->load(dr);
+        auto pred = [](ActionVariant &left, ActionVariant &right) { return left.as<Action>()->timeOffset < right.as<Action>()->timeOffset; };
+        if(!std::is_sorted(mActions.begin(), mActions.end(), pred))
+        {
+            Logger::warn() << "Sequence actor has unsorted timeline!";
         }
     }
 
@@ -152,9 +266,8 @@ namespace odDb
 		mActors.reserve(actorCount);
 		for(size_t i = 0; i < actorCount; ++i)
 		{
-		    auto newActor = std::make_unique<Actor>();
-		    newActor->load(dr);
-		    mActors.push_back(std::move(newActor));
+		    mActors.emplace_back();
+            mActors.back().load(dr);
 		}
 	}
 

@@ -9,8 +9,11 @@
 #define INCLUDE_DB_SEQUENCE_H_
 
 #include <memory>
+#include <vector>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+
+#include <odCore/Exception.h>
 
 #include <odCore/db/Asset.h>
 
@@ -25,85 +28,219 @@ namespace odDb
         ATTACH      = 4,
         RUN_STOP_AI = 5,
         SHOW_HIDE   = 6,
-        MESSAGE     = 7
+        MESSAGE     = 7,
+        MUSIC       = 8
     };
 
-    enum class InterpolationType : uint16_t
+
+    /**
+     * @brief Common base for all actions. Helps with writing visitors.
+     */
+    struct Action
     {
-        NONE = 0,
-        LINEAR_LINEAR = 0x10,
-        LINEAR_SPLINE = 0x20,
-        SPLINE_SPLINE = 0x30
+        Action(float t);
+
+        float timeOffset;
     };
 
-    class Action
+
+    struct ActionTransform : public Action
+    {
+        enum class InterpolationType : uint16_t
+        {
+            NONE = 0,
+            LINEAR_LINEAR = 0x10,
+            LINEAR_SPLINE = 0x20,
+            SPLINE_SPLINE = 0x30
+        };
+
+        ActionTransform(float t, od::DataReader &dr);
+
+        glm::quat rotation;
+        glm::vec3 position;
+        InterpolationType interpolationType;
+    };
+
+
+    struct ActionStartAnim : public Action
+    {
+        ActionStartAnim(float t, od::DataReader &dr);
+
+        uint32_t channelIndex;
+        AssetRef animationRef;
+        float transitionTime;
+        float speed;
+        uint32_t rootNodeTranslationFlags;
+    };
+
+
+    struct ActionPlaySound : public Action
+    {
+        ActionPlaySound(float t, od::DataReader &dr);
+
+        AssetRef soundRef;
+        float duration;
+        uint16_t volume; // [0..10000]
+        uint16_t flags; // 0x8 == flush from memory after playing, 0x10 == mono, 0x30 == notify actor (what does this do?)
+    };
+
+
+    struct ActionAttach : public Action
+    {
+        ActionAttach(float t, od::DataReader &dr);
+
+        uint32_t targetObjectId;
+        uint32_t thisActorChannelId;
+    };
+
+
+    struct ActionRunStopAi : public Action
+    {
+        ActionRunStopAi(float t, od::DataReader &dr);
+
+        uint32_t enableAi;
+    };
+
+
+    struct ActionShowHide : public Action
+    {
+        ActionShowHide(float t, od::DataReader &dr);
+
+        uint32_t visible;
+    };
+
+
+    struct ActionMessage : public Action
+    {
+        ActionMessage(float t, od::DataReader &dr);
+
+        uint32_t messageCode; // no trivial relation with class enums!
+    };
+
+
+    struct ActionMusic : public Action
+    {
+        ActionMusic(float t, od::DataReader &dr);
+
+        uint32_t musicId;
+        uint32_t dlsId;
+        float fadeInTime;
+        float fadeOutTime;
+    };
+
+
+    class ActionVariant
     {
     public:
 
-        Action(ActionType type, float timeOffset);
-        virtual ~Action() = default;
+        ActionVariant(const ActionTransform &transform);
+        ActionVariant(const ActionStartAnim &startAnim);
+        ActionVariant(const ActionPlaySound &playSound);
+        ActionVariant(const ActionAttach    &attach);
+        ActionVariant(const ActionRunStopAi &runStopAi);
+        ActionVariant(const ActionShowHide  &showHide);
+        ActionVariant(const ActionMessage   &message);
+        ActionVariant(const ActionMusic     &music);
 
-        inline ActionType getActionType() const { return mActionType; }
-        inline float getTimeOffset() const { return mTimeOffset; }
+        ActionType getType() const { return mType; }
 
-        virtual void load(od::DataReader &dr) = 0;
+        template <typename F>
+        void visit(F f)
+        {
+            switch(mType)
+            {
+            case ActionType::TRANSFORM:
+                f(mTransform);
+                break;
 
+            case ActionType::START_ANIM:
+                f(mStartAnim);
+                break;
 
-    protected:
+            case ActionType::PLAY_SOUND:
+                f(mPlaySound);
+                break;
 
-        ActionType mActionType;
-        float mTimeOffset;
-    };
+            case ActionType::ATTACH:
+                f(mAttach);
+                break;
 
+            case ActionType::RUN_STOP_AI:
+                f(mRunStopAi);
+                break;
 
-    class ActionTransform : public Action
-    {
-    public:
+            case ActionType::SHOW_HIDE:
+                f(mShowHide);
+                break;
 
-        ActionTransform(float timeOffset);
+            case ActionType::MESSAGE:
+                f(mMessage);
+                break;
 
-        virtual void load(od::DataReader &dr) override;
+            case ActionType::MUSIC:
+                f(mMusic);
+                break;
+            }
+        }
+
+        template <typename T>
+        T *as()
+        {
+            struct RetrieveVisitor
+            {
+                T *result;
+
+                RetrieveVisitor()
+                : result(nullptr)
+                {
+                }
+
+                RetrieveVisitor &operator()(Action &a)
+                {
+                    return *this;
+                }
+
+                RetrieveVisitor &operator()(T &a)
+                {
+                    result = &a;
+                    return *this;
+                }
+            };
+
+            RetrieveVisitor visitor;
+            this->visit(visitor);
+
+            return visitor.result;
+        }
 
 
     private:
 
-        glm::quat mRotation;
-        glm::vec3 mPosition;
-        InterpolationType mInterpolationType;
+        ActionType mType;
+
+        union
+        {
+            ActionTransform mTransform;
+            ActionStartAnim mStartAnim;
+            ActionPlaySound mPlaySound;
+            ActionAttach    mAttach;
+            ActionRunStopAi mRunStopAi;
+            ActionShowHide  mShowHide;
+            ActionMessage   mMessage;
+            ActionMusic     mMusic;
+        };
+
     };
 
-
-    class ActionStartAnim : public Action
-    {
-    public:
-
-        ActionStartAnim(float timeOffset);
-
-        virtual void load(od::DataReader &dr) override;
-
-
-    private:
-
-        uint32_t mChannelIndex;
-        AssetRef mAnimationRef;
-        float mTransitionTime;
-        float mSpeed;
-        uint32_t mRootNodeTranslationFlags;
-    };
-
-    class ActionPlaySound : public Action
-    {
-    public:
-
-        ActionPlaySound(float timeOffset);
-
-        virtual void load(od::DataReader &dr) override;
-    };
+    template<>
+    Action *ActionVariant::as<Action>();
 
 
     class Actor
     {
     public:
+
+        Actor();
 
         void load(od::DataReader &dr);
 
@@ -113,7 +250,7 @@ namespace odDb
         std::string mName;
         uint32_t mActorId;
         uint32_t mLevelObjectId;
-        std::vector<std::unique_ptr<Action>> mActions;
+        std::vector<ActionVariant> mActions;
     };
 
 
@@ -129,7 +266,7 @@ namespace odDb
 	private:
 
 		std::string mSequenceName;
-		std::vector<std::unique_ptr<Actor>> mActors;
+		std::vector<Actor> mActors;
 	};
 
 
