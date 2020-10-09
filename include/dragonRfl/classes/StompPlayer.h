@@ -54,6 +54,7 @@ namespace dragonRfl
         virtual void onSpawned() override;
         virtual void onDespawned() override;
         virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
+        virtual void onUpdate(float relTime) override;
 
 
     private:

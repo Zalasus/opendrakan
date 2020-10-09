@@ -38,6 +38,7 @@ namespace dragonRfl
         if(getLevelObject().getClass() != nullptr)
         {
             mFields.sequenceList.fetchAssets(getLevelObject().getClass()->getAssetProvider(), true);
+            mPlayers.resize(mFields.sequenceList.getAssetCount());
         }
     }
 
@@ -58,6 +59,18 @@ namespace dragonRfl
         if(message == mFields.messageToPlayNext)
         {
             _playNextSequence();
+        }
+    }
+
+    void StompPlayer_Sv::onUpdate(float relTime)
+    {
+        for(auto &player : mPlayers)
+        {
+            bool stillRunning = player.update(relTime);
+            if(!stillRunning)
+            {
+                getLevelObject().setEnableUpdate(false);
+            }
         }
     }
 
@@ -93,6 +106,8 @@ namespace dragonRfl
             if(sequence != nullptr)
             {
                 Logger::verbose() << "Playing sequence '" << sequence->getName() << "'";
+                mPlayers.back().setSequence(getLevelObject().getLevel(), *sequence);
+                getLevelObject().setEnableUpdate(true);
 
             }else
             {
