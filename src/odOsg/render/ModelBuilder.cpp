@@ -189,7 +189,7 @@ namespace odOsg
         }
 
         // sort by texture. most models are already sorted, so this is O(n) most of the time
-        auto pred = [](Triangle &left, Triangle &right){ return left.texture < right.texture; };
+        auto pred = [](Triangle &left, Triangle &right){ return (left.texture.dbIndex << 16 | left.texture.assetId) < (right.texture.dbIndex << 16 | right.texture.assetId); };
         std::sort(mTriangles.begin(), mTriangles.end(), pred);
 
         // count number of unique textures

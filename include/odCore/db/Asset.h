@@ -74,9 +74,6 @@ namespace odDb
 		od::RecordId assetId;
 		uint16_t dbIndex;
 
-		// so we can use this in a map
-		bool operator<(const AssetRef &right) const;
-
 		bool operator==(const AssetRef &right) const;
 		inline bool operator!=(const AssetRef &right) const { return !(this->operator==(right)); }
 
@@ -87,6 +84,13 @@ namespace odDb
 
 		static const AssetRef NULL_REF;
 	};
+
+
+    struct AssetRefHasher
+    {
+        size_t operator()(const AssetRef &ref) const;
+    };
+
 
 	od::DataReader &operator>>(od::DataReader &left, AssetRef &right);
 

@@ -7,6 +7,8 @@
 
 #include <odCore/db/Asset.h>
 
+#include <functional>
+
 #include <odCore/Exception.h>
 
 namespace odDb
@@ -27,17 +29,21 @@ namespace odDb
 	}
 
 
-    bool AssetRef::operator<(const AssetRef &right) const
-    {
-        return (dbIndex << 16 | assetId) < (right.dbIndex << 16 | right.assetId);
-    }
-
     bool AssetRef::operator==(const AssetRef &right) const
 	{
     	return (dbIndex == right.dbIndex) && (assetId == right.assetId);
 	}
 
     const AssetRef AssetRef::NULL_REF(0, 0);
+
+
+    size_t AssetRefHasher::operator()(const AssetRef &ref) const
+    {
+        std::hash<uint32_t> hash;
+        uint32_t intRepresentation = (ref.assetId << 16) | ref.dbIndex;
+        return hash(intRepresentation);
+    }
+
 
     od::DataReader &operator>>(od::DataReader &left, AssetRef &right)
     {
@@ -54,5 +60,3 @@ namespace odDb
         return left;
     }
 }
-
-
