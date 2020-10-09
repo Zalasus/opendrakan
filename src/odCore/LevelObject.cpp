@@ -109,6 +109,7 @@ namespace od
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
     , mSpawnableClass(nullptr)
+    , mRunObjectAi(true)
     {
         LayerId lightSourceLayerId = record.getLightSourceLayerId();
         if(lightSourceLayerId != 0)
@@ -214,7 +215,7 @@ namespace od
     {
         Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
 
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onMessageReceived(sender, message);
         }
@@ -239,7 +240,7 @@ namespace od
             return;
         }
 
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onUpdate(relTime);
         }
@@ -247,7 +248,7 @@ namespace od
 
     void LevelObject::postUpdate(float relTime)
     {
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onPostUpdate(relTime);
         }
@@ -258,7 +259,7 @@ namespace od
         od::Layer *oldLayer = mAssociatedLayer;
         mAssociatedLayer = newLayer;
 
-        if(/*callChangedHook && */mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onLayerChanged(oldLayer, newLayer);
         }
@@ -459,6 +460,10 @@ namespace od
         }
     }
 
+    void LevelObject::setRunState(bool run)
+    {
+        mRunObjectAi = run;
+    }
     void LevelObject::_applyTranslation(const glm::vec3 &p)
     {
         auto prevPos = getPosition();
@@ -479,7 +484,7 @@ namespace od
             mPhysicsHandle->setPosition(mPosition);
         }
 
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onTranslated(prevPos, mPosition);
             mSpawnableClass->onTransformChanged();
@@ -501,7 +506,7 @@ namespace od
             mPhysicsHandle->setOrientation(mRotation);
         }
 
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onRotated(prevRot, mRotation);
             mSpawnableClass->onTransformChanged();
@@ -523,7 +528,7 @@ namespace od
             mPhysicsHandle->setScale(mScale);
         }
 
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onScaled(prevScale, mScale);
             mSpawnableClass->onTransformChanged();
@@ -541,7 +546,7 @@ namespace od
             mRenderHandle->setVisible(mIsVisible);
         }
 
-        if(mSpawnableClass != nullptr)
+        if(mRunObjectAi && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onVisibilityChanged(v);
         }

@@ -227,6 +227,15 @@ namespace od
 
         void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
 
+        /**
+         * @brief Sets the run-state of this object.
+         *
+         * When set to false, no RFL hooks will be called (except important ones
+         * like the spawned/despawned hooks).
+         *
+         * The default is true.
+         */
+        void setRunState(bool run);
 
     private:
 
@@ -262,6 +271,8 @@ namespace od
 
         std::unique_ptr<odRfl::ClassBase> mRflClassInstance;
         odRfl::SpawnableClass *mSpawnableClass; // downcast version of mRflClassInstance, so we don't have to cast for every call to Spawnable methods
+
+        bool mRunObjectAi;
 
         ObjectRenderMode mRenderMode;
         ObjectPhysicsMode mPhysicsMode;
