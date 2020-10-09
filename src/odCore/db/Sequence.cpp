@@ -123,43 +123,43 @@ namespace odDb
     }
 
     ActionVariant::ActionVariant(const ActionStartAnim &startAnim)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::START_ANIM)
     , mStartAnim(startAnim)
     {
     }
 
     ActionVariant::ActionVariant(const ActionPlaySound &playSound)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::PLAY_SOUND)
     , mPlaySound(playSound)
     {
     }
 
     ActionVariant::ActionVariant(const ActionAttach &attach)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::ATTACH)
     , mAttach(attach)
     {
     }
 
     ActionVariant::ActionVariant(const ActionRunStopAi &runStopAi)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::RUN_STOP_AI)
     , mRunStopAi(runStopAi)
     {
     }
 
     ActionVariant::ActionVariant(const ActionShowHide &showHide)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::SHOW_HIDE)
     , mShowHide(showHide)
     {
     }
 
     ActionVariant::ActionVariant(const ActionMessage &message)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::MESSAGE)
     , mMessage(message)
     {
     }
 
     ActionVariant::ActionVariant(const ActionMusic &music)
-    : mType(ActionType::TRANSFORM)
+    : mType(ActionType::MUSIC)
     , mMusic(music)
     {
     }

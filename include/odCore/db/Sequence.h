@@ -145,7 +145,7 @@ namespace odDb
         ActionType getType() const { return mType; }
 
         template <typename F>
-        void visit(F f) const
+        void visit(F &f) const
         {
             switch(mType)
             {
