@@ -51,13 +51,6 @@ namespace od
         Spawned
     };
 
-    enum class LevelObjectType
-    {
-        Normal,
-        Light,
-        Detector
-    };
-
     enum class SpawnStrategy
     {
         Never,
@@ -99,7 +92,6 @@ namespace od
         inline glm::vec3 getScale() const { return mScale; }
         inline glm::quat getRotation() const { return mRotation; }
         inline LevelObjectState getState() const { return mState; }
-        inline LevelObjectType getObjectType() const { return mObjectType; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
         inline const std::vector<LevelObjectId> &getLinkedObjects() const { return mLinkedObjects; }
@@ -154,8 +146,6 @@ namespace od
         void postUpdate(float relTime);
 
         void setAssociatedLayer(od::Layer *l);
-
-        void setObjectType(LevelObjectType type);
 
         /**
          * @brief Returns the skeleton for this object or builds it if that has not yet been done.
@@ -260,7 +250,6 @@ namespace od
         bool mIsVisible;
 
         LevelObjectState mState;
-        LevelObjectType mObjectType;
         SpawnStrategy mSpawnStrategy;
 
         Layer *mAssociatedLayer;

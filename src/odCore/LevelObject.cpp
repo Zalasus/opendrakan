@@ -104,7 +104,6 @@ namespace od
     , mScale(record.getScale())
     , mIsVisible(record.isVisible())
     , mState(LevelObjectState::NotLoaded)
-    , mObjectType(LevelObjectType::Normal)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
@@ -263,27 +262,6 @@ namespace od
         {
             mSpawnableClass->onLayerChanged(oldLayer, newLayer);
         }
-    }
-
-    void LevelObject::setObjectType(LevelObjectType type)
-    {
-        mObjectType = type;
-
-        bool objectVisible;
-        switch(type)
-        {
-        case LevelObjectType::Normal:
-            objectVisible = true;
-            break;
-
-        case LevelObjectType::Light:
-        case LevelObjectType::Detector:
-        default:
-            objectVisible = false;
-            break;
-        }
-
-        (void)objectVisible;
     }
 
     odAnim::Skeleton *LevelObject::getOrCreateSkeleton()

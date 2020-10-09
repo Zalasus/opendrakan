@@ -48,7 +48,6 @@ namespace dragonRfl
 	{
 	    auto &obj = getLevelObject();
 	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
-	    obj.setObjectType(od::LevelObjectType::Detector);
 	}
 
 	void Timer_Sv::onSpawned()

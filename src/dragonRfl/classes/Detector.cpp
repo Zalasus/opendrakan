@@ -59,7 +59,6 @@ namespace dragonRfl
 
     void Detector_Sv::onLoaded()
     {
-        getLevelObject().setObjectType(od::LevelObjectType::Detector);
     }
 
     void Detector_Sv::onSpawned()

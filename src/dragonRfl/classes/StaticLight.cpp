@@ -38,7 +38,6 @@ namespace dragonRfl
 
     void StaticLight_Cl::onLoaded()
     {
-        getLevelObject().setObjectType(od::LevelObjectType::Light);
     }
 
     void StaticLight_Cl::onSpawned()

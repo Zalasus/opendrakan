@@ -50,7 +50,6 @@ namespace dragonRfl
 
     void DynamicLight_Cl::onLoaded()
     {
-        getLevelObject().setObjectType(od::LevelObjectType::Light);
     }
 
     void DynamicLight_Cl::onSpawned()

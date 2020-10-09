@@ -47,7 +47,6 @@ namespace dragonRfl
     void CountDownToZero_Sv::onLoaded()
     {
         getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
-        getLevelObject().setObjectType(od::LevelObjectType::Detector);
     }
 
     void CountDownToZero_Sv::onSpawned()
