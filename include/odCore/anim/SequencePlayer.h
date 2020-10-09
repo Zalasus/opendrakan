@@ -26,7 +26,10 @@ namespace odAnim
          */
         void setSequence(od::Level &level, odDb::Sequence &sequence);
 
-        void update(float relTime);
+        /**
+         * @brief Returns false if no further updates are required i.e. the sequence has ended.
+         */
+        bool update(float relTime);
 
 
     private:
