@@ -165,10 +165,10 @@ namespace odDb
     }
 
     template <>
-    Action *ActionVariant::as<Action>()
+    const Action *ActionVariant::as<Action>() const
     {
-        Action *result = nullptr;
-        auto visitor = [&](Action &action) mutable { result = &action; };
+        const Action *result = nullptr;
+        auto visitor = [&](const Action &action) mutable { result = &action; };
         this->visit(visitor);
         if(result == nullptr) OD_UNREACHABLE();
         return result;

@@ -145,7 +145,7 @@ namespace odDb
         ActionType getType() const { return mType; }
 
         template <typename F>
-        void visit(F f)
+        void visit(F f) const
         {
             switch(mType)
             {
@@ -184,23 +184,23 @@ namespace odDb
         }
 
         template <typename T>
-        T *as()
+        const T *as() const
         {
             struct RetrieveVisitor
             {
-                T *result;
+                const T *result;
 
                 RetrieveVisitor()
                 : result(nullptr)
                 {
                 }
 
-                RetrieveVisitor &operator()(Action &a)
+                RetrieveVisitor &operator()(const Action &a)
                 {
                     return *this;
                 }
 
-                RetrieveVisitor &operator()(T &a)
+                RetrieveVisitor &operator()(const T &a)
                 {
                     result = &a;
                     return *this;
@@ -233,7 +233,7 @@ namespace odDb
     };
 
     template<>
-    Action *ActionVariant::as<Action>();
+    const Action *ActionVariant::as<Action>() const;
 
 
     class SequenceActor
@@ -241,6 +241,11 @@ namespace odDb
     public:
 
         SequenceActor();
+
+        inline const std::string &getName() const { return mName; }
+        inline uint32_t getActorId() const { return mActorId; }
+        inline uint32_t getLevelObjectId() const { return mLevelObjectId; }
+        inline const std::vector<ActionVariant> &getActions() const { return mActions; }
 
         void load(od::DataReader &dr);
 
@@ -260,7 +265,8 @@ namespace odDb
 
 	    Sequence(AssetProvider &ap, od::RecordId id);
 
-
+        inline const std::string &getName() const { return mSequenceName; }
+        inline const std::vector<SequenceActor> &getActors() const { return mActors; }
 
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 

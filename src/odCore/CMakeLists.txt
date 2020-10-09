@@ -9,6 +9,7 @@ set_target_properties(odCore PROPERTIES
         CXX_EXTENSIONS NO)
 
 target_sources(odCore PRIVATE
+        "anim/SequencePlayer.cpp"
         "anim/Skeleton.cpp"
         "anim/SkeletonAnimationPlayer.cpp"
         "audio/music/SegmentPlayer.cpp"

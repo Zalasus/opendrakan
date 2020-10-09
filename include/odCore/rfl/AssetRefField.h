@@ -181,6 +181,16 @@ namespace odRfl
             return mReferencedAssets[i];
         }
 
+        odDb::AssetRef getAssetRef(size_t i)
+        {
+            if(i >= mReferences.size())
+            {
+                throw od::Exception("Index of asset ref array access out of bounds");
+            }
+
+            return mReferences[i];
+        }
+
 
     protected:
 
