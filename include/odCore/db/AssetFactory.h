@@ -8,7 +8,7 @@
 #ifndef INCLUDE_ASSETFACTORY_H_
 #define INCLUDE_ASSETFACTORY_H_
 
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <vector>
 
@@ -134,7 +134,7 @@ namespace odDb
 		AssetProvider &mAssetProvider;
 		od::SrscFile &mSrscFile;
 
-		std::map<od::RecordId, std::weak_ptr<_AssetType>> mAssetCache;
+		std::unordered_map<od::RecordId, std::weak_ptr<_AssetType>> mAssetCache;
 	};
 
 
