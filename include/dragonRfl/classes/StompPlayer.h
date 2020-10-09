@@ -2,6 +2,8 @@
 #ifndef INCLUDE_RFL_DRAGON_STOMPPLAYER_H_
 #define INCLUDE_RFL_DRAGON_STOMPPLAYER_H_
 
+#include <odCore/anim/SequencePlayer.h>
+
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
@@ -44,16 +46,24 @@ namespace dragonRfl
     {
     public:
 
+        StompPlayer_Sv();
+
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onLoaded() override;
         virtual void onSpawned() override;
         virtual void onDespawned() override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
     private:
 
+        void _playNextSequence();
+
         StompPlayerFields mFields;
+
+        std::vector<odAnim::SequencePlayer> mPlayers; // has to be a vector in case we want to play multiple sequences in parallel
+        int mLastPlayedSequence;
 
     };
 
