@@ -511,8 +511,17 @@ Record types
         };
 
         string        sequence_name;
-        uint32        unk0; // flags?
-        uint32        unk1;
+        uint32        flags; // 0x01 = play looped
+                             // 0x02 = flush sequence on exit
+                             // 0x04 = preload animations on play
+                             // 0x08 = flush animations on stop
+                             // 0x10 = preload sounds on play
+                             // 0x20 = flush sounds on stop
+                             // 0x40 = can fast forward
+        uint32        modify_run_states; // 0 = do not modify
+                                         // 1 = stop running all objects
+                                         // 2 = stop running non-actors
+                                         // 3 = stop running actors
         uint32        unk2;
         actor[uint32] actors;
 
