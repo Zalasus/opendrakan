@@ -108,6 +108,15 @@ namespace od
         void addToUpdateQueue(LevelObject &obj);
         void removeFromUpdateQueue(LevelObject &obj);
 
+        template <typename F>
+        void forEachObject(const F &f)
+        {
+            for(auto &objectIt : mLevelObjects)
+            {
+                f(*(objectIt.second));
+            }
+        }
+
 
     private:
 

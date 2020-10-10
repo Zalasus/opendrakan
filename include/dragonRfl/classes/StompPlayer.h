@@ -63,7 +63,7 @@ namespace dragonRfl
 
         StompPlayerFields mFields;
 
-        std::vector<odAnim::SequencePlayer> mPlayers; // has to be a vector in case we want to play multiple sequences in parallel
+        std::unique_ptr<odAnim::SequencePlayer> mPlayer;
         int mLastPlayedSequence;
 
     };

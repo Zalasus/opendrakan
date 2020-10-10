@@ -3,6 +3,9 @@
 #define INCLUDE_ODCORE_ANIM_SEQUENCEPLAYER_H_
 
 #include <vector>
+#include <unordered_map>
+
+#include <odCore/IdTypes.h>
 
 #include <odCore/db/Sequence.h>
 
@@ -19,12 +22,23 @@ namespace odAnim
     {
     public:
 
-        SequencePlayer();
+        SequencePlayer(od::Level &level);
 
         /**
-         * @brief Loads a sequence. Does not take ownership!
+         * @brief Assigns a sequence and prepares the player for playing it.
          */
-        void setSequence(od::Level &level, odDb::Sequence &sequence);
+        void setSequence(std::shared_ptr<odDb::Sequence> sequence);
+
+        /**
+         * @brief Starts playing the sequence.
+         *
+         * A sequence may state that all objects should be stopped, but since
+         * the sequence player is run by an object's update loop, we have to
+         * make an exception for the player. That's what the playerObject
+         * parameter is for. The passed object will be excluded from the
+         * deactivation step.
+         */
+        void play(od::LevelObject *playerObject);
 
         /**
          * @brief Returns false if no further updates are required i.e. the sequence has ended.
@@ -46,9 +60,12 @@ namespace odAnim
             std::vector<odDb::ActionVariant> nonTransformActions;
         };
 
+        od::Level &mLevel;
+
+        std::shared_ptr<odDb::Sequence> mSequence;
         float mSequenceTime;
 
-        std::vector<Actor> mActors;
+        std::unordered_map<od::LevelObjectId, Actor> mActors;
 
     };
 

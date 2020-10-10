@@ -38,7 +38,7 @@ namespace dragonRfl
         if(getLevelObject().getClass() != nullptr)
         {
             mFields.sequenceList.fetchAssets(getLevelObject().getClass()->getAssetProvider(), true);
-            mPlayers.resize(mFields.sequenceList.getAssetCount());
+            mPlayer = std::make_unique<odAnim::SequencePlayer>(getLevelObject().getLevel());
         }
     }
 
@@ -64,9 +64,9 @@ namespace dragonRfl
 
     void StompPlayer_Sv::onUpdate(float relTime)
     {
-        for(auto &player : mPlayers)
+        if(mPlayer != nullptr)
         {
-            bool stillRunning = player.update(relTime);
+            bool stillRunning = mPlayer->update(relTime);
             if(!stillRunning)
             {
                 getLevelObject().setEnableUpdate(false);
@@ -96,7 +96,7 @@ namespace dragonRfl
             break;
 
         case StompPlayerFields::ListPlayOrder::ALL_AT_ONCE:
-            // unimplemented
+            OD_UNIMPLEMENTED();
             break;
         }
 
@@ -106,7 +106,8 @@ namespace dragonRfl
             if(sequence != nullptr)
             {
                 Logger::verbose() << "Playing sequence '" << sequence->getName() << "'";
-                mPlayers.back().setSequence(getLevelObject().getLevel(), *sequence);
+                mPlayer->setSequence(sequence);
+                mPlayer->play(&getLevelObject());
                 getLevelObject().setEnableUpdate(true);
 
             }else
