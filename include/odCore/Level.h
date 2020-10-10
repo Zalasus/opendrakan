@@ -105,9 +105,6 @@ namespace od
 
         void calculateInitialLayerAssociations();
 
-        void addToUpdateQueue(LevelObject &obj);
-        void removeFromUpdateQueue(LevelObject &obj);
-
         template <typename F>
         void forEachObject(const F &f)
         {
@@ -141,13 +138,6 @@ namespace od
 		Layer *mCurrentActivePvsLayer;
 
         std::unordered_set<LevelObjectId> mDestructionQueue;
-
-		// since an object could add/remove itself from the update queue during the update phase,
-        // we have to consider that any iterators of mObjectUpdateQueue might become invalid while
-		// performing the update. thus, we copy the queue into a second, temporary vector during update
-		// so no invalidation can occur.
-        std::unordered_set<LevelObjectId> mObjectUpdateQueue;
-        std::unordered_set<LevelObjectId> mTempObjectUpdateQueue;
 
         std::vector<std::unique_ptr<Layer>> mLayers;
         std::unordered_map<LevelObjectId, std::unique_ptr<LevelObject>> mLevelObjects;

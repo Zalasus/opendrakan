@@ -262,6 +262,7 @@ namespace od
         odRfl::SpawnableClass *mSpawnableClass; // downcast version of mRflClassInstance, so we don't have to cast for every call to Spawnable methods
 
         bool mRunObjectAi;
+        bool mEnableUpdate;
 
         ObjectRenderMode mRenderMode;
         ObjectPhysicsMode mPhysicsMode;

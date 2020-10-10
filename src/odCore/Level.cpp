@@ -159,31 +159,14 @@ namespace od
             mDestructionQueue.clear();
         }
 
-        // TODO: could we handle this more efficiently using a swap?
-        mTempObjectUpdateQueue.clear();
-        mTempObjectUpdateQueue = mObjectUpdateQueue;
-
-        for(auto objId : mTempObjectUpdateQueue)
+        for(auto &objIt : mLevelObjects)
         {
-            auto obj = getLevelObjectById(objId);
-            if(obj != nullptr)
-            {
-                obj->update(relTime);
-
-            }else
-            {
-                Logger::warn() << "Stale object in update queue: " << objId;
-                mObjectUpdateQueue.erase(objId);
-            }
+            objIt.second->update(relTime);
         }
 
-        for(auto objId : mTempObjectUpdateQueue)
+        for(auto &objIt : mLevelObjects)
         {
-            auto obj = getLevelObjectById(objId);
-            if(obj != nullptr)
-            {
-                obj->postUpdate(relTime);
-            }
+            objIt.second->postUpdate(relTime);
         }
     }
 
@@ -320,20 +303,6 @@ namespace od
         for(auto &obj : mLevelObjects)
         {
             obj.second->updateAssociatedLayer(false);
-        }
-    }
-
-    void Level::addToUpdateQueue(LevelObject &obj)
-    {
-        mObjectUpdateQueue.insert(obj.getObjectId());
-    }
-
-    void Level::removeFromUpdateQueue(LevelObject &obj)
-    {
-        auto it = mObjectUpdateQueue.find(obj.getObjectId());
-        if(it != mObjectUpdateQueue.end())
-        {
-            mObjectUpdateQueue.erase(it);
         }
     }
 

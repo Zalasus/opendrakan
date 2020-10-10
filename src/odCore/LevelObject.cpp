@@ -109,6 +109,7 @@ namespace od
     , mAssociateWithCeiling(false)
     , mSpawnableClass(nullptr)
     , mRunObjectAi(true)
+    , mEnableUpdate(false)
     {
         LayerId lightSourceLayerId = record.getLightSourceLayerId();
         if(lightSourceLayerId != 0)
@@ -222,14 +223,7 @@ namespace od
 
     void LevelObject::setEnableUpdate(bool enable)
     {
-        if(enable)
-        {
-            mLevel.addToUpdateQueue(*this);
-
-        }else
-        {
-            mLevel.removeFromUpdateQueue(*this);
-        }
+        mEnableUpdate = enable;
     }
 
     void LevelObject::update(float relTime)
@@ -239,7 +233,7 @@ namespace od
             return;
         }
 
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mRunObjectAi && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onUpdate(relTime);
         }
@@ -247,7 +241,7 @@ namespace od
 
     void LevelObject::postUpdate(float relTime)
     {
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mRunObjectAi && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onPostUpdate(relTime);
         }
@@ -258,7 +252,7 @@ namespace od
         od::Layer *oldLayer = mAssociatedLayer;
         mAssociatedLayer = newLayer;
 
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onLayerChanged(oldLayer, newLayer);
         }
@@ -462,7 +456,7 @@ namespace od
             mPhysicsHandle->setPosition(mPosition);
         }
 
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onTranslated(prevPos, mPosition);
             mSpawnableClass->onTransformChanged();
@@ -506,7 +500,7 @@ namespace od
             mPhysicsHandle->setScale(mScale);
         }
 
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onScaled(prevScale, mScale);
             mSpawnableClass->onTransformChanged();
@@ -524,7 +518,7 @@ namespace od
             mRenderHandle->setVisible(mIsVisible);
         }
 
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onVisibilityChanged(v);
         }
