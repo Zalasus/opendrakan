@@ -52,33 +52,32 @@ namespace dragonRfl
 
 	void TrackingCamera_Cl::onLoaded()
 	{
-	    auto &obj = getLevelObject();
-
-	    obj.setSpawnStrategy(od::SpawnStrategy::Always);
-
-        mInputListener = getClient().getInputManager().createInputListener();
-        mInputListener->setMouseMoveCallback([this](auto pos){ _mouseHandler(pos); });
+	    getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
 	}
 
-	void TrackingCamera_Cl::onSpawned()
-	{
+    void TrackingCamera_Cl::onStart()
+    {
         auto &obj = getLevelObject();
 
         //obj.getLevel().activateLayerPVS(obj.getAssociatedLayer());
 
 	    // set initial view matrix
-	    _setObjectPositionAndViewMatrix(obj.getPosition(), obj.getRotation());
+	    _updateCameraViewMatrix();
 
 	    obj.setEnableUpdate(true);
-	}
 
-	void TrackingCamera_Cl::onDespawned()
-	{
-	}
+        mInputListener = getClient().getInputManager().createInputListener();
+        mInputListener->setMouseMoveCallback([this](auto pos){ _mouseHandler(pos); });
+    }
+
+    void TrackingCamera_Cl::onStop()
+    {
+        mInputListener = nullptr;
+    }
 
 	void TrackingCamera_Cl::onUpdate(float relTime)
 	{
-	    updateCamera();
+	    _updateCameraTracking();
 	}
 
 	void TrackingCamera_Cl::onLayerChanged(od::Layer *from, od::Layer *to)
@@ -86,7 +85,30 @@ namespace dragonRfl
 	    //getLevelObject().getLevel().activateLayerPVS(to);
 	}
 
-    void TrackingCamera_Cl::updateCamera()
+    void TrackingCamera_Cl::onTransformChanged()
+    {
+        _updateCameraViewMatrix();
+    }
+
+    glm::vec2 TrackingCamera_Cl::cursorPosToYawPitch(const glm::vec2 &cursorPos)
+    {
+        // the tranlation to pitch/yaw is easier in NDC. convert from GUI space
+        glm::vec2 posNdc(2*cursorPos.x - 1, 1 - 2*cursorPos.y);
+        float pitch =  glm::half_pi<float>()*posNdc.y;
+        float yaw   = -glm::pi<float>()*posNdc.x;
+        return {yaw, pitch};
+    }
+
+    void TrackingCamera_Cl::_mouseHandler(const glm::vec2 &pos)
+    {
+        glm::vec2 yawPitch = TrackingCamera_Cl::cursorPosToYawPitch(pos);
+        mYaw = yawPitch.x;
+        mPitch = yawPitch.y;
+
+        _updateCameraTracking();
+    }
+
+    void TrackingCamera_Cl::_updateCameraTracking()
     {
         std::shared_ptr<odPhysics::Handle> trackedPhysicsHandle;
         if(mObjectToTrack.getSpawnableClassInstance() != nullptr)
@@ -123,36 +145,19 @@ namespace dragonRfl
             eye = result.hitPoint + reflectedDirection * bounceBackDistance;
         }
 
-        _setObjectPositionAndViewMatrix(eye, lookDirectionQuat);
+        getLevelObject().setPosition(eye);
+        getLevelObject().setRotation(lookDirectionQuat);
     }
 
-    glm::vec2 TrackingCamera_Cl::cursorPosToYawPitch(const glm::vec2 &cursorPos)
+    void TrackingCamera_Cl::_updateCameraViewMatrix()
     {
-        // the tranlation to pitch/yaw is easier in NDC. convert from GUI space
-        glm::vec2 posNdc(2*cursorPos.x - 1, 1 - 2*cursorPos.y);
-        float pitch =  glm::half_pi<float>()*posNdc.y;
-        float yaw   = -glm::pi<float>()*posNdc.x;
-        return {yaw, pitch};
-    }
+        glm::vec3 eyepoint = getLevelObject().getPosition();
+        glm::quat lookDirection = getLevelObject().getRotation();
 
-    void TrackingCamera_Cl::_setObjectPositionAndViewMatrix(const glm::vec3 &eyepoint, const glm::quat &lookDirection)
-    {
         glm::vec3 front = lookDirection * glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
         glm::vec3 up = lookDirection * glm::vec3(0, 1, 0);
 
-        getLevelObject().setPosition(eyepoint);
-        getLevelObject().setRotation(lookDirection);
-
         getClient().getRenderer().getCamera()->lookAt(eyepoint, eyepoint + front, up);
-    }
-
-    void TrackingCamera_Cl::_mouseHandler(const glm::vec2 &pos)
-    {
-        glm::vec2 yawPitch = TrackingCamera_Cl::cursorPosToYawPitch(pos);
-        mYaw = yawPitch.x;
-        mPitch = yawPitch.y;
-
-        updateCamera();
     }
 
 }

@@ -50,20 +50,20 @@ namespace dragonRfl
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 		virtual void onLoaded() override;
-		virtual void onSpawned() override;
-		virtual void onDespawned() override;
+        virtual void onStart() override;
+        virtual void onStop() override;
 		virtual void onUpdate(float relTime) override;
 		virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
-
-        void updateCamera();
+        virtual void onTransformChanged() override;
 
         /// @brief Turns a position on the screen into a vector of yaw/pitch for the player.
         static glm::vec2 cursorPosToYawPitch(const glm::vec2 &p);
 
 	private:
 
-        void _setObjectPositionAndViewMatrix(const glm::vec3 &eyepoint, const glm::quat &lookDirection);
         void _mouseHandler(const glm::vec2 &pos);
+        void _updateCameraTracking();
+        void _updateCameraViewMatrix();
 
 		TrackingCameraFields mFields;
 
