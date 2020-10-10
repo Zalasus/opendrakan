@@ -26,6 +26,7 @@
 namespace odAnim
 {
     class Skeleton;
+    class SkeletonAnimationPlayer;
 }
 
 namespace odRender
@@ -46,9 +47,9 @@ namespace od
 
     enum class LevelObjectState
     {
-        NotLoaded,
-        Loaded,
-        Spawned
+        LOADED, // aka despawned
+        SPAWNED, // aka stopped
+        RUNNING
     };
 
     enum class SpawnStrategy
@@ -104,9 +105,10 @@ namespace od
         inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
         inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
 
-        void spawned();
-        void despawned();
-        void messageReceived(LevelObject &sender, od::Message message);
+        void spawn();
+        void despawn();
+        void start();
+        void stop();
 
         void setPosition(const glm::vec3 &v);
         void setRotation(const glm::quat &q);
@@ -146,13 +148,6 @@ namespace od
         void postUpdate(float relTime);
 
         void setAssociatedLayer(od::Layer *l);
-
-        /**
-         * @brief Returns the skeleton for this object or builds it if that has not yet been done.
-         *
-         * This may return nullptr if this object has no model or the object's model has no skeleton.
-         */
-        odAnim::Skeleton *getOrCreateSkeleton();
 
         /**
          * @brief Attaches this object to target object.
@@ -196,7 +191,9 @@ namespace od
          */
         void detach();
 
+        void receiveMessage(LevelObject &sender, od::Message message);
         void messageAllLinkedObjects(od::Message message);
+
         void requestDestruction();
 
         /**
@@ -217,15 +214,8 @@ namespace od
 
         void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
 
-        /**
-         * @brief Sets the run-state of this object.
-         *
-         * When set to false, no RFL hooks will be called (except important ones
-         * like the spawned/despawned hooks).
-         *
-         * The default is true.
-         */
-        void setRunState(bool run);
+        odAnim::Skeleton *getOrCreateSkeleton();
+
 
     private:
 
@@ -255,9 +245,6 @@ namespace od
         Layer *mAssociatedLayer;
         bool mAssociateWithCeiling;
 
-        // created on demand:
-        std::unique_ptr<odAnim::Skeleton> mSkeleton;
-
         std::unique_ptr<odRfl::ClassBase> mRflClassInstance;
         odRfl::SpawnableClass *mSpawnableClass; // downcast version of mRflClassInstance, so we don't have to cast for every call to Spawnable methods
 
@@ -269,6 +256,8 @@ namespace od
         std::shared_ptr<odRender::Handle> mRenderHandle;
         std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::unique_ptr<ObjectLightReceiver> mLightReceiver;
+        std::unique_ptr<odAnim::Skeleton> mSkeleton;
+        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mSkeletonAnimationPlayer;
     };
 
 }

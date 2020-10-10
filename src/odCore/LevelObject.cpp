@@ -16,6 +16,7 @@
 #include <odCore/ObjectLightReceiver.h>
 
 #include <odCore/anim/Skeleton.h>
+#include <odCore/anim/SkeletonAnimationPlayer.h>
 
 #include <odCore/db/Model.h>
 #include <odCore/db/ModelBounds.h>
@@ -103,7 +104,7 @@ namespace od
     , mRotation(record.getRotation())
     , mScale(record.getScale())
     , mIsVisible(record.isVisible())
-    , mState(LevelObjectState::NotLoaded)
+    , mState(LevelObjectState::LOADED)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
@@ -132,15 +133,14 @@ namespace od
     LevelObject::~LevelObject()
     {
         // make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
-        if(mState == LevelObjectState::Spawned)
+        if(mState != LevelObjectState::LOADED)
         {
             Logger::warn() << "Level object deleted while still spawned";
-            despawned();
+            stop();
+            despawn();
         }
 
         Logger::debug() << "Object " << getObjectId() << " destroyed";
-
-        setEnableUpdate(false);
     }
 
     void LevelObject::setPosition(const glm::vec3 &v)
@@ -180,44 +180,88 @@ namespace od
     {
     }
 
-    void LevelObject::spawned()
+    void LevelObject::spawn()
     {
-        Logger::debug() << "Object " << getObjectId() << " spawned";
-
-        // if we haven't got an associated layer yet, search for it now.
-        // TODO: add flag tracking this. might be possible we searched once, but found there is no layer to associate with
-        if(mAssociatedLayer == nullptr)
+        switch(mState)
         {
-            updateAssociatedLayer(false);
-        }
+        case LevelObjectState::LOADED:
+            mState = LevelObjectState::SPAWNED;
+            if(mAssociatedLayer == nullptr)
+            {
+                // if we haven't got an associated layer yet, search for it now.
+                updateAssociatedLayer(false);
+            }
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onSpawned();
+            }
+            Logger::debug() << "Object " << getObjectId() << " spawned";
+            break;
 
-        mState = LevelObjectState::Spawned;
+        case LevelObjectState::SPAWNED:
+        case LevelObjectState::RUNNING:
+            break;
+        };
+    }
 
-        if(mSpawnableClass != nullptr)
+    void LevelObject::despawn()
+    {
+        switch(mState)
         {
-            mSpawnableClass->onSpawned();
+        case LevelObjectState::LOADED:
+            break;
+
+        case LevelObjectState::SPAWNED:
+            mState = LevelObjectState::LOADED;
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onDespawned();
+            }
+            Logger::debug() << "Object " << getObjectId() << " despawned";
+            break;
+
+        case LevelObjectState::RUNNING:
+            throw od::Exception("Can't despawn an object that is still running");
+        };
+    }
+
+    void LevelObject::start()
+    {
+        switch(mState)
+        {
+        case LevelObjectState::LOADED:
+            throw od::Exception("Can't start an object that is not spawned");
+
+        case LevelObjectState::SPAWNED:
+            mState = LevelObjectState::RUNNING;
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onStart();
+            }
+            Logger::debug() << "Object " << getObjectId() << " started";
+            break;
+
+        case LevelObjectState::RUNNING:
+            break;
         }
     }
 
-    void LevelObject::despawned()
+    void LevelObject::stop()
     {
-        Logger::debug() << "Object " << getObjectId() << " despawned";
-
-        mState = LevelObjectState::Loaded;
-
-        if(mSpawnableClass != nullptr)
+        switch(mState)
         {
-            mSpawnableClass->onDespawned();
-        }
-    }
+        case LevelObjectState::LOADED:
+        case LevelObjectState::SPAWNED:
+            break;
 
-    void LevelObject::messageReceived(LevelObject &sender, od::Message message)
-    {
-        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
-
-        if(mRunObjectAi && mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onMessageReceived(sender, message);
+        case LevelObjectState::RUNNING:
+            mState = LevelObjectState::SPAWNED;
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onStop();
+            }
+            Logger::debug() << "Object " << getObjectId() << " stopped";
+            break;
         }
     }
 
@@ -228,12 +272,7 @@ namespace od
 
     void LevelObject::update(float relTime)
     {
-        if(mState != LevelObjectState::Spawned)
-        {
-            return;
-        }
-
-        if(mRunObjectAi && mEnableUpdate && mSpawnableClass != nullptr)
+        if(mState == LevelObjectState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onUpdate(relTime);
         }
@@ -241,7 +280,7 @@ namespace od
 
     void LevelObject::postUpdate(float relTime)
     {
-        if(mRunObjectAi && mEnableUpdate && mSpawnableClass != nullptr)
+        if(mState == LevelObjectState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onPostUpdate(relTime);
         }
@@ -256,18 +295,6 @@ namespace od
         {
             mSpawnableClass->onLayerChanged(oldLayer, newLayer);
         }
-    }
-
-    odAnim::Skeleton *LevelObject::getOrCreateSkeleton()
-    {
-        if(mSkeleton == nullptr && mClass != nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
-        {
-            odDb::SkeletonBuilder *sb = mClass->getModel()->getSkeletonBuilder();
-            mSkeleton = std::make_unique<odAnim::Skeleton>(sb->getJointCount());
-            sb->build(*mSkeleton);
-        }
-
-        return mSkeleton.get();
     }
 
     void LevelObject::attachTo(LevelObject *target, bool ignoreTranslation, bool ignoreRotation, bool ignoreScale)
@@ -285,6 +312,16 @@ namespace od
         OD_UNIMPLEMENTED();
     }
 
+    void LevelObject::receiveMessage(LevelObject &sender, od::Message message)
+    {
+        Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
+
+        if(mState == LevelObjectState::RUNNING && mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onMessageReceived(sender, message);
+        }
+    }
+
     void LevelObject::messageAllLinkedObjects(od::Message message)
     {
         for(auto linkedId : mLinkedObjects)
@@ -292,7 +329,7 @@ namespace od
             od::LevelObject *obj = mLevel.getLevelObjectById(linkedId);
             if(obj != nullptr)
             {
-                obj->messageReceived(*this, message);
+                obj->receiveMessage(*this, message);
             }
         }
     }
@@ -354,6 +391,11 @@ namespace od
 
     void LevelObject::setRflClassInstance(std::unique_ptr<odRfl::ClassBase> i)
     {
+        if(mState != LevelObjectState::LOADED)
+        {
+            throw od::Exception("An object must be in the loaded-state to be assigned an instance");
+        }
+
         mRflClassInstance = std::move(i);
 
         if(mRflClassInstance != nullptr)
@@ -432,10 +474,18 @@ namespace od
         }
     }
 
-    void LevelObject::setRunState(bool run)
+    odAnim::Skeleton *LevelObject::getOrCreateSkeleton()
     {
-        mRunObjectAi = run;
+        if(mSkeleton == nullptr && mClass != nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
+        {
+            odDb::SkeletonBuilder *sb = mClass->getModel()->getSkeletonBuilder();
+            mSkeleton = std::make_unique<odAnim::Skeleton>(sb->getJointCount());
+            sb->build(*mSkeleton);
+        }
+
+        return mSkeleton.get();
     }
+
     void LevelObject::_applyTranslation(const glm::vec3 &p)
     {
         auto prevPos = getPosition();
@@ -478,7 +528,7 @@ namespace od
             mPhysicsHandle->setOrientation(mRotation);
         }
 
-        if(mRunObjectAi && mSpawnableClass != nullptr)
+        if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onRotated(prevRot, mRotation);
             mSpawnableClass->onTransformChanged();

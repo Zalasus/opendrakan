@@ -55,12 +55,12 @@ namespace od
 
         virtual void spawnObject(od::LevelObjectId id) override
         {
-            _getObjectById(id).spawned();
+            _getObjectById(id).spawn();
         }
 
         virtual void despawnObject(od::LevelObjectId id) override
         {
-            _getObjectById(id).despawned();
+            _getObjectById(id).despawn();
         }
 
         virtual void destroyObject(od::LevelObjectId id) override

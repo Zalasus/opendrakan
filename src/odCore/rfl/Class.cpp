@@ -40,6 +40,14 @@ namespace odRfl
     {
     }
 
+    void SpawnableClass::onStart()
+    {
+    }
+
+    void SpawnableClass::onStop()
+    {
+    }
+
     void SpawnableClass::onUpdate(float relTime)
     {
     }

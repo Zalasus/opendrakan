@@ -66,12 +66,13 @@ namespace dragonRfl
 
             auto &obj = *foundObjects.back();
 
-            obj.despawned();
-
+            obj.stop();
+            obj.despawn();
             auto newHumanControl = std::make_unique<HumanControl_Sv>(clientId);
             newHumanControl->setServer(localServer); // i kinda dislike having to do this manually
             obj.setRflClassInstance(std::move(newHumanControl));
-            obj.spawned();
+            obj.spawn();
+            obj.start();
 
             // TODO: make this a broadcast
             localServer.getMessageDispatcherForClient(clientId).sendGlobalMessage(MessageChannel::HUMANCONTROL_CREATED)
@@ -150,11 +151,13 @@ namespace dragonRfl
 
                 }else
                 {
-                    controlObject->despawned();
+                    controlObject->stop();
+                    controlObject->despawn();
                     auto newControl = std::make_unique<HumanControl_Cl>();
                     newControl->setClient(localClient); // i kinda dislike having to do this manually
                     controlObject->setRflClassInstance(std::move(newControl));
-                    controlObject->spawned();
+                    controlObject->spawn();
+                    controlObject->start();
                 }
             }
         });

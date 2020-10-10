@@ -98,7 +98,7 @@ namespace odAnim
             {
                 if(playerObject != nullptr && actor.second.actorObject.getObjectId() == playerObject->getObjectId()) continue;
 
-                actor.second.actorObject.setRunState(false);
+                actor.second.actorObject.stop();
             }
 
         }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_NON_ACTORS)
@@ -112,7 +112,7 @@ namespace odAnim
                 if(it == mActors.end())
                 {
                     // not an actor. stop object
-                    obj.setRunState(false);
+                    obj.stop();
                 }
 
             });
@@ -124,7 +124,7 @@ namespace odAnim
 
                 if(playerObject != nullptr && obj.getObjectId() == playerObject->getObjectId()) return;
 
-                obj.setRunState(false);
+                obj.stop();
 
             });
         }
@@ -171,7 +171,14 @@ namespace odAnim
 
         NonTransformApplyVisitor &operator()(const odDb::ActionRunStopAi &a)
         {
-            mObject.setRunState(a.enableAi);
+            if(a.enableAi)
+            {
+                mObject.start();
+
+            }else
+            {
+                mObject.stop();
+            }
             return *this;
         }
 
@@ -184,7 +191,7 @@ namespace odAnim
         NonTransformApplyVisitor &operator()(const odDb::ActionMessage &a)
         {
             od::Message message = getMessageForCode(a.messageCode);
-            mObject.messageReceived(mObject, message);
+            mObject.receiveMessage(mObject, message);
             return *this;
         }
 

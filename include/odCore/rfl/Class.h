@@ -224,13 +224,39 @@ namespace odRfl
         virtual void onDespawned();
 
         /**
+         * @brief Called when the object gets "started", signaling it to start executing it's programmed behaviour.
+         *
+         * This happens once after spawning, and whenever an object is brought back up after being stopped
+         * e.g. during a sequence.
+         *
+         * This is where you'd start listening for actions, for instance.
+         *
+         * Note that the update hook will not be called while an object is stopped, regardless of whether it was activated or not.
+         * It will fire again as soon as the object is restarted.
+         */
+        virtual void onStart();
+
+        /**
+         * @brief Called when the object gets "stopped", signaling it to stop executing it's programmed behaviour.
+         *
+         * A sequence might stop certain objects, so their programmed behaviour does not interfere with the sequence content.
+         *
+         * Here, you should disable any action listeners or other custom behaviour which might trigger game mechanics.
+         *
+         * Note that the update hook will not be called while an object is stopped, regardless of whether it was activated or not.
+         * It will fire again as soon as the object is restarted.
+         */
+        virtual void onStop();
+
+        /**
          * @brief Update hook. Will be called every game tick if object is spawned.
          *
          * There is absolutely no guarantee in what order objects will be updated. If your updates require other objects to have been
-         * updated, consider doing them in the onPostUpdate() hook (TBA).
+         * updated, consider doing them in the onPostUpdate() hook.
          *
-         * Right now, this hook has to be enabled via LevelObject::setEnableRflUpdateHook(true). That might change in the future,
-         * since that feature is not really useful and probably does not make that much of a difference performance-wise.
+         * This hook has to be enabled via LevelObject::setEnableUpdate(true). Note that the update hook will not be called while an
+         * object is in the "stopped" state, regardless of whether the hook was activated or not. It will resume firing as soon as the
+         * object is restarted.
          *
          * @param relTime  Time since the last tick, in seconds.
          */
@@ -238,6 +264,8 @@ namespace odRfl
 
         /**
          * @brief Post-Update hook. Will be called every game tick, after all objects had their update-hook called.
+         *
+         * This hook has to be enabled via LevelObject::setEnableUpdate(true). It will not be called when the object is stopped, same as onUpdate().
          *
          * @param relTime  Time since the last tick, in seconds.
          */
