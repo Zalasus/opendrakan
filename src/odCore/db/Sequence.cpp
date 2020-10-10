@@ -254,6 +254,8 @@ namespace odDb
 
     Sequence::Sequence(AssetProvider &ap, od::RecordId id)
     : Asset(ap, id)
+    , mRunStateModifyStyle(ModifyRunStateStyle::DO_NOT_MODIFY)
+    , mLooping(false)
     {
     }
 
@@ -262,10 +264,38 @@ namespace odDb
 	    od::DataReader dr = cursor.getReader();
 
 		uint32_t actorCount;
+        uint32_t flags;
+        uint32_t modifyRunStateCode;
 
 		dr >> mSequenceName
-		   >> od::DataReader::Ignore(12)
+           >> flags
+           >> modifyRunStateCode
+		   >> od::DataReader::Ignore(4)
 		   >> actorCount;
+
+        switch(modifyRunStateCode)
+        {
+        case static_cast<uint32_t>(ModifyRunStateStyle::DO_NOT_MODIFY):
+            mRunStateModifyStyle = ModifyRunStateStyle::DO_NOT_MODIFY;
+            break;
+
+        case static_cast<uint32_t>(ModifyRunStateStyle::STOP_ALL_OBJECTS):
+            mRunStateModifyStyle = ModifyRunStateStyle::STOP_ALL_OBJECTS;
+            break;
+
+        case static_cast<uint32_t>(ModifyRunStateStyle::STOP_NON_ACTORS):
+            mRunStateModifyStyle = ModifyRunStateStyle::STOP_NON_ACTORS;
+            break;
+
+        case static_cast<uint32_t>(ModifyRunStateStyle::STOP_ACTORS):
+            mRunStateModifyStyle = ModifyRunStateStyle::STOP_ACTORS;
+            break;
+
+        default:
+            throw od::Exception("Unknown modify-run-state-style");
+        }
+
+        mLooping = flags & 1;
 
 		mActors.reserve(actorCount);
 		for(size_t i = 0; i < actorCount; ++i)

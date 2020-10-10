@@ -33,6 +33,14 @@ namespace odDb
     };
 
 
+    enum class ModifyRunStateStyle
+    {
+        DO_NOT_MODIFY,
+        STOP_ALL_OBJECTS,
+        STOP_NON_ACTORS,
+        STOP_ACTORS
+    };
+
     /**
      * @brief Common base for all actions. Helps with writing visitors.
      */
@@ -267,6 +275,7 @@ namespace odDb
 
         inline const std::string &getName() const { return mSequenceName; }
         inline const std::vector<SequenceActor> &getActors() const { return mActors; }
+        inline ModifyRunStateStyle getRunStateModifyStyle() const { return mRunStateModifyStyle; }
 
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
@@ -274,6 +283,8 @@ namespace odDb
 	private:
 
 		std::string mSequenceName;
+        ModifyRunStateStyle mRunStateModifyStyle;
+        bool mLooping;
 		std::vector<SequenceActor> mActors;
 	};
 
