@@ -424,7 +424,7 @@ Record types
             struct xform_key_frame
             {
                 quat rotation;
-                vect3f position;
+                vect3f position; // wu!
                 uint32 flags; // Probably. Always 0.
                 uint16 interpolation; // 0x00 == NONE, 0x10 == LINEAR_LINEAR, 0x30 == SINE_SPLINE
                 uint16 relative_to; // Probably. Always 0.
