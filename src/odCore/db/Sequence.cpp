@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+#include <odCore/Units.h>
+
 namespace odDb
 {
 
@@ -28,6 +30,8 @@ namespace odDb
            >> od::DataReader::Ignore(4)
            >> interpolationTypeCode
            >> od::DataReader::Ignore(2);
+
+        position = od::Units::worldUnitsToLengthUnits(position);
 
         switch(interpolationTypeCode)
         {
