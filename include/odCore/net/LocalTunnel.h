@@ -35,7 +35,7 @@ namespace odNet
         LocalTunnel(std::shared_ptr<DownlinkConnector> downlinkOutput, std::shared_ptr<UplinkConnector> uplinkOutput);
 
         inline std::shared_ptr<DownlinkConnector> getDownlinkInput() { return mDownlinkPacketBuilder; }
-        inline std::shared_ptr<UplinkConnector> getUplinkInput() { return mUplinkOutput; } // pass-through since we have not implemented uplink parsers yet
+        inline std::shared_ptr<UplinkConnector> getUplinkInput() { return mUplinkPacketBuilder; }
 
         inline void setLatency(double latencySeconds) { mLatency = latencySeconds; }
         inline void setDropRate(double dropRate) { mDropRate = dropRate; }
@@ -54,10 +54,9 @@ namespace odNet
 
         bool _shouldDrop();
 
-        std::shared_ptr<UplinkConnector> mUplinkOutput;
+        PacketParser mPacketParser;
 
         std::shared_ptr<PacketBuilder> mDownlinkPacketBuilder;
-        DownlinkPacketParser mDownlinkPacketParser;
         std::deque<Packet> mDownlinkPacketBuffer;
 
         std::shared_ptr<PacketBuilder> mUplinkPacketBuilder;

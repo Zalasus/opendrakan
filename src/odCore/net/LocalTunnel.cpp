@@ -8,8 +8,7 @@ namespace odNet
     constexpr size_t LocalTunnel::MAX_PAYLOAD_SIZE; // pre-C++17 bullshit (no inline vars)
 
     LocalTunnel::LocalTunnel(std::shared_ptr<DownlinkConnector> downlinkOutput, std::shared_ptr<UplinkConnector> uplinkOutput)
-    : mUplinkOutput(uplinkOutput)
-    , mDownlinkPacketParser(downlinkOutput)
+    : mPacketParser(downlinkOutput, uplinkOutput)
     , mLatency(0.0)
     , mDropRate(0.0)
     , mDropDistribution(0.0, 1.0)
@@ -38,7 +37,7 @@ namespace odNet
 
             }else
             {
-                size_t usedBytes = mDownlinkPacketParser.parse(data, size);
+                size_t usedBytes = mPacketParser.parse(data, size);
                 if(usedBytes != size)
                 {
                     throw od::Exception("Parser did not use all packet bytes, but it should have");

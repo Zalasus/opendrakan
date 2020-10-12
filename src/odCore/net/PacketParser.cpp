@@ -3,21 +3,23 @@
 
 #include <odCore/net/Protocol.h>
 #include <odCore/net/DownlinkConnector.h>
+#include <odCore/net/UplinkConnector.h>
 
 namespace odNet
 {
 
-    DownlinkPacketParser::DownlinkPacketParser(std::shared_ptr<DownlinkConnector> output)
-    : mOutput(output)
+    PacketParser::PacketParser(std::shared_ptr<DownlinkConnector> downlinkOutput, std::shared_ptr<UplinkConnector> uplinkOutput)
+    : mDownlinkOutput(downlinkOutput)
+    , mUplinkOutput(uplinkOutput)
     , mBadPacketCount(0)
     {
     }
 
-    DownlinkPacketParser::~DownlinkPacketParser()
+    PacketParser::~PacketParser()
     {
     }
 
-    size_t DownlinkPacketParser::parse(const char *data, size_t size)
+    size_t PacketParser::parse(const char *data, size_t size)
     {
         if(size < PacketConstants::HEADER_SIZE)
         {
@@ -38,7 +40,15 @@ namespace odNet
         {
             const char *rawPayload = data + PacketConstants::HEADER_SIZE;
 
-            _parsePacket(type, length, dr, rawPayload);
+            try
+            {
+                _parsePacket(type, length, dr, rawPayload);
+
+            }catch(od::IoException &e) // kinda ugly to use this to detect an underrun condition. this could cause us to miss actually bad states in the data reader
+            {
+                _badPacket("unexpected size");
+            }
+
             return length + PacketConstants::HEADER_SIZE; // TODO: consume more than one packet
 
         }else
@@ -47,35 +57,16 @@ namespace odNet
         }
     }
 
-    void DownlinkPacketParser::_parsePacket(uint8_t type, uint16_t length, od::DataReader &dr, const char *rawPayload)
+    void PacketParser::_parsePacket(uint8_t type, uint16_t length, od::DataReader &dr, const char *rawPayload)
     {
         switch(static_cast<PacketType>(type))
         {
-        case PacketType::LOAD_LEVEL:
-            {
-                std::string level(rawPayload, static_cast<size_t>(length));
-                mOutput->loadLevel(level);
-            }
-            break;
-
         case PacketType::OBJECT_STATE_CHANGED:
             {
-                if(length < PacketConstants::STATE_HEADER_SIZE)
-                {
-                    _badPacket("objstate unexpected size");
-                    return;
-                }
-
                 odState::TickNumber tick;
                 od::LevelObjectId id;
                 uint32_t stateFlags;
                 dr >> tick >> id >> stateFlags;
-
-                if(length != getObjectStateChangePacketSize(stateFlags))
-                {
-                    _badPacket("objstate unexpected size");
-                    return;
-                }
 
                 od::ObjectStates states;
 
@@ -107,18 +98,15 @@ namespace odNet
                     states.visibility = vis;
                 }
 
-                mOutput->objectStatesChanged(tick, id, states);
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->objectStatesChanged(tick, id, states);
+                }
             }
             break;
 
         case PacketType::OBJECT_LIFECYCLE_STATE_CHANGED:
             {
-                if(length != PacketConstants::LIFECYCLE_SIZE)
-                {
-                    _badPacket("objlifecycle unexpected size");
-                    return;
-                }
-
                 odState::TickNumber tick;
                 od::LevelObjectId id;
                 uint8_t stateCode;
@@ -126,25 +114,36 @@ namespace odNet
                    >> id
                    >> stateCode;
 
-                mOutput->objectLifecycleStateChanged(tick, id, static_cast<od::ObjectLifecycleState>(stateCode)); // TODO: validate state code
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->objectLifecycleStateChanged(tick, id, static_cast<od::ObjectLifecycleState>(stateCode)); // TODO: validate state code
+                }
             }
             break;
 
         case PacketType::CONFIRM_SNAPSHOT:
             {
-                if(length != PacketConstants::CONFIRM_PAYLOAD_SIZE)
-                {
-                    _badPacket("snapconf unexpected size");
-                    return;
-                }
-
                 odState::TickNumber tick;
                 double realtime;
                 uint32_t changeCount;
                 odState::TickNumber referenceTick;
                 dr >> tick >> realtime >> changeCount >> referenceTick;
 
-                mOutput->confirmSnapshot(tick, realtime, changeCount, referenceTick);
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->confirmSnapshot(tick, realtime, changeCount, referenceTick);
+                }
+            }
+            break;
+
+        case PacketType::LOAD_LEVEL:
+            {
+                std::string level(rawPayload, static_cast<size_t>(length));
+
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->loadLevel(level);
+                }
             }
             break;
 
@@ -153,7 +152,49 @@ namespace odNet
                 MessageChannelCode code;
                 dr >> code;
 
-                mOutput->globalMessage(code, rawPayload + PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE, length - PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE);
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->globalMessage(code, rawPayload + PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE, length - PacketConstants::GLOBAL_MESSAGE_HEADER_SIZE);
+                }
+            }
+            break;
+
+        case PacketType::ACKNOWLEDGE_SNAPSHOT:
+            {
+                odState::TickNumber tick;
+                dr >> tick;
+
+                if(mUplinkOutput != nullptr)
+                {
+                    mUplinkOutput->acknowledgeSnapshot(tick);
+                }
+            }
+            break;
+
+        case PacketType::ACTION_TRIGGERED:
+            {
+                odInput::ActionCode code;
+                uint8_t state;
+                dr >> code >> state;
+
+                if(mUplinkOutput != nullptr)
+                {
+                    mUplinkOutput->actionTriggered(code, static_cast<odInput::ActionState>(state)); // TODO: validate state value
+                }
+            }
+            break;
+
+        case PacketType::ANALOG_ACTION_TRIGGERED:
+            {
+                odInput::ActionCode code;
+                float x;
+                float y;
+                dr >> code >> x >> y;
+
+                if(mUplinkOutput != nullptr)
+                {
+                    mUplinkOutput->analogActionTriggered(code, {x, y});
+                }
             }
             break;
 
@@ -164,7 +205,7 @@ namespace odNet
         }
     }
 
-    void DownlinkPacketParser::_badPacket(const char *reason)
+    void PacketParser::_badPacket(const char *reason)
     {
         Logger::error() << "Bad packet: " << reason;
         mBadPacketCount++;
