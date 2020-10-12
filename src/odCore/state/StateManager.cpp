@@ -108,12 +108,13 @@ namespace odState
         OD_UNIMPLEMENTED();
     }
 
-    void StateManager::confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount)
+    void StateManager::confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceTick)
     {
         auto stagedSnapshot = _getSnapshot(tick, mIncomingSnapshots, true);
         stagedSnapshot->realtime = time;
         stagedSnapshot->targetDiscreteChangeCount = changeCount;
         stagedSnapshot->confirmed = true;
+        stagedSnapshot->referenceSnapshot = referenceTick;
 
         _commitIncomingIfComplete(tick, stagedSnapshot);
     }
@@ -207,7 +208,7 @@ namespace odState
         }
     }
 
-    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber deltaTick)
+    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber referenceSnapshot)
     {
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
@@ -219,15 +220,15 @@ namespace odState
 
         size_t discreteChangeCount = 0;
 
-        auto lastSent = (deltaTick != INVALID_TICK) ? _getSnapshot(deltaTick, mSnapshots, false) : mSnapshots.end();
+        auto reference = (referenceSnapshot != INVALID_TICK) ? _getSnapshot(referenceSnapshot, mSnapshots, false) : mSnapshots.end();
 
         for(auto &stateChange : toSend->changes)
         {
             od::ObjectStates filteredChange = stateChange.second.baseStates;
-            if(lastSent != mSnapshots.end())
+            if(reference != mSnapshots.end())
             {
-                auto prevChange = lastSent->changes.find(stateChange.first);
-                if(prevChange != lastSent->changes.end())
+                auto prevChange = reference->changes.find(stateChange.first);
+                if(prevChange != reference->changes.end())
                 {
                     filteredChange.deltaEncode(filteredChange, prevChange->second.baseStates);
                 }
@@ -242,7 +243,7 @@ namespace odState
             discreteChangeCount += changeCount;
         }
 
-        c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount);
+        c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount, referenceSnapshot);
     }
 
     StateManager::SnapshotIterator StateManager::_getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound)
@@ -294,13 +295,16 @@ namespace odState
                 mSnapshots.pop_front();
             }
 
-            // merge incoming with previous full snapshot
-            //  TODO: it might be clever to explicitly state the snapshot that the delta encoding used
-            //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
-            if(!mSnapshots.empty())
+            // undo delta-encoding by merging incoming with the reference snapshot (only if this is not a full snapshot)
+            if(incomingSnapshot->referenceSnapshot != INVALID_TICK)
             {
-                auto &baseSnapshot = mSnapshots.back();
-                for(auto &baseChange : baseSnapshot.changes)
+                auto referenceSnapshot = _getSnapshot(incomingSnapshot->referenceSnapshot, mSnapshots, false);
+                if(referenceSnapshot == mSnapshots.end())
+                {
+                    throw od::Exception("Reference snapshot no longer contained in timeline");
+                }
+
+                for(auto &baseChange : referenceSnapshot->changes)
                 {
                     auto &deltaChange = incomingSnapshot->changes[baseChange.first];
                     deltaChange.baseStates.merge(baseChange.second.baseStates, deltaChange.baseStates);

@@ -58,12 +58,13 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount)
+    void DownlinkPacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick)
     {
         _beginPacket(PacketType::CONFIRM_SNAPSHOT);
         mWriter << tick
                 << realtime
-                << static_cast<uint32_t>(discreteChangeCount);
+                << static_cast<uint32_t>(discreteChangeCount)
+                << referenceTick;
         _endPacket();
     }
 

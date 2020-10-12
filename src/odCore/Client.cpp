@@ -57,9 +57,9 @@ namespace od
         {
         }
 
-        virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) override
+        virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override
         {
-            mClient.getStateManager().confirmIncomingSnapshot(tick, realtime, discreteChangeCount);
+            mClient.getStateManager().confirmIncomingSnapshot(tick, realtime, discreteChangeCount, referenceTick);
         }
 
         virtual void globalMessage(odNet::MessageChannelCode code, const char *data, size_t size) override

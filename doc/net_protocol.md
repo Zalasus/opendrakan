@@ -81,10 +81,13 @@ These are used to send snapshots from the server to a client. Thus, they are
 only valid in the downlink. A client does not send state updates to the server.
 
 ### Confirm Snapshot
+reference_tick_number is the tick of the snapshot that was used for delta-
+encoding. It may 0 to indicate this is a full snapshot.
 ```
 u64 tick_number;
 f64 realtime;
 u32 number_of_discrete_changes;
+u64 reference_tick_number;
 ```
 
 ### Object State Changed
@@ -127,6 +130,7 @@ Used by the client to tell the server that it has received a snapshot in full.
 This is not strictly necessary, but the server can only use ACK'd snapshots in
 delta encoding. That means the longer a client fails to ACK a snapshot, the
 larger the snapshots sent by the server will become.
+TODO: confirm and acknowledge are kinda ambiguous. maybe rename one of the two?
 ```
 u64 tick_number;
 ```

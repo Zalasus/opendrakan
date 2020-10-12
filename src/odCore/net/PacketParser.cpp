@@ -141,9 +141,10 @@ namespace odNet
                 odState::TickNumber tick;
                 double realtime;
                 uint32_t changeCount;
-                dr >> tick >> realtime >> changeCount;
+                odState::TickNumber referenceTick;
+                dr >> tick >> realtime >> changeCount >> referenceTick;
 
-                mOutput->confirmSnapshot(tick, realtime, changeCount);
+                mOutput->confirmSnapshot(tick, realtime, changeCount, referenceTick);
             }
             break;
 

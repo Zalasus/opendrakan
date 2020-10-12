@@ -64,7 +64,7 @@ namespace odState
         // these modify the incoming changeset with the given tick (for client)
         void incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states);
         void incomingObjectCustomStateChanged(TickNumber tick, od::LevelObjectId objectId);
-        void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount);
+        void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceSnapshot);
 
         /**
          * @brief Finalizes the staging snapshot and moves it into the timeline.
@@ -81,14 +81,15 @@ namespace odState
          * Will throw if no committed snapshot with that tick exists in the timeline.
          *
          * This will perform delta-encoding against the snapshot with tick
-         * deltaTick if that snapshot is still in the timeline. This will
-         * usually be the the tick of the latest snapshot whose reception a
+         * referenceSnapshot if that snapshot is still in the timeline. This
+         * will usually be the the tick of the latest snapshot whose reception a
          * client acknowledged. Pass INVALID_TICK to force sending a full
-         * snapshot.
+         * snapshot. If the snapshot is no longer being held in memory, a full
+         * snapshot will be sent as well.
          *
-         * @param deltaTick  The tick number to be used for delta encoding (INVALID_TICK if no delta-encoding desired).
+         * @param referenceSnapshot  The tick number to be used for delta encoding (INVALID_TICK if no delta-encoding desired).
          */
-        void sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber deltaTick);
+        void sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber referenceSnapshot);
 
 
     private:
@@ -128,6 +129,7 @@ namespace odState
             //  TODO: move out of this struct, as they are only ever valid for incoming snapshots
             size_t targetDiscreteChangeCount;
             bool confirmed;
+            TickNumber referenceSnapshot;
         };
 
         using SnapshotIterator = std::deque<Snapshot>::iterator;

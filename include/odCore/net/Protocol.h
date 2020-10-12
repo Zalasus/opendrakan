@@ -29,7 +29,7 @@ namespace odNet
 
         static constexpr size_t   LIFECYCLE_SIZE = 13;
 
-        static constexpr size_t   CONFIRM_PAYLOAD_SIZE = 20;
+        static constexpr size_t   CONFIRM_PAYLOAD_SIZE = 28;
 
         static constexpr size_t   GLOBAL_MESSAGE_HEADER_SIZE = 4;
     };
