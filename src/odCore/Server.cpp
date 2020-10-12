@@ -54,38 +54,33 @@ namespace od
     {
     public:
 
-        LocalUplinkConnector(Server &server, odNet::ClientId clientId)
+        LocalUplinkConnector(Server &server, Server::ClientData &client)
         : mServer(server)
-        , mClientId(clientId)
+        , mClient(client)
         {
         }
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override
         {
-            mServer.getInputManagerForClient(mClientId).injectAction(code, state);
+            mClient.inputManager->injectAction(code, state);
         }
 
         virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override
         {
-            mServer.getInputManagerForClient(mClientId).injectAnalogAction(code, axes);
+            mClient.inputManager->injectAnalogAction(code, axes);
         }
 
         virtual void acknowledgeSnapshot(odState::TickNumber tick) override
         {
-            std::lock_guard<std::mutex> lock(mServer.mClientsMutex);
-
-            auto clientIt = mServer.mClients.find(mClientId);
-            if(clientIt != mServer.mClients.end())
-            {
-                clientIt->second.lastAcknowledgedTick = tick;
-            }
+            std::lock_guard<std::mutex> lock(mClient.mutex);
+            mClient.lastAcknowledgedTick = tick;
         }
 
 
     private:
 
         Server &mServer;
-        odNet::ClientId mClientId;
+        Server::ClientData &mClient;
 
     };
 
@@ -109,12 +104,13 @@ namespace od
 
         odNet::ClientId newClientId = mNextClientId++;
 
-        ClientData clientData;
-        clientData.uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, newClientId);
-        clientData.inputManager = std::make_unique<odInput::InputManager>();
-        clientData.messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>();
+        auto clientData = std::make_unique<ClientData>();
+        // FIXME: passing w/o ownership here is potentially dangerous (but can't be strong either because that would be circular)
+        clientData->uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, *clientData);
+        clientData->inputManager = std::make_unique<odInput::InputManager>();
+        clientData->messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>();
 
-        mClients.insert(std::make_pair(newClientId, std::move(clientData)));
+        mClients[newClientId] = std::move(clientData);
 
         return newClientId;
     }
@@ -129,8 +125,8 @@ namespace od
             throw od::NotFoundException("Invalid client ID");
         }
 
-        it->second.downlinkConnector = connector;
-        it->second.messageDispatcher->setDownlinkConnector(connector);
+        it->second->downlinkConnector = connector;
+        it->second->messageDispatcher->setDownlinkConnector(connector);
     }
 
     std::shared_ptr<odNet::UplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
@@ -143,7 +139,7 @@ namespace od
             throw od::NotFoundException("Invalid client ID");
         }
 
-        return it->second.uplinkConnector;
+        return it->second->uplinkConnector;
     }
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
@@ -156,7 +152,7 @@ namespace od
             throw od::NotFoundException("Invalid client ID");
         }
 
-        return *(it->second.inputManager);
+        return *(it->second->inputManager);
     }
 
     odNet::DownlinkMessageDispatcher &Server::getMessageDispatcherForClient(odNet::ClientId id)
@@ -169,7 +165,7 @@ namespace od
             throw od::NotFoundException("Invalid client ID");
         }
 
-        return *(it->second.messageDispatcher);
+        return *(it->second->messageDispatcher);
     }
 
     LagCompensationGuard Server::compensateLag(odNet::ClientId id)
@@ -191,7 +187,13 @@ namespace od
             throw od::NotFoundException("Invalid client ID");
         }
 
-        return client->second.lastMeasuredRoundTripTime/2 - client->second.viewInterpolationTime;
+        float clientLag;
+        {
+            std::lock_guard<std::mutex> lock(client->second->mutex);
+            clientLag = client->second->lastMeasuredRoundTripTime/2 - client->second->viewInterpolationTime;
+        }
+
+        return clientLag;
     }
 
     void Server::loadLevel(const FilePath &lvlPath)
@@ -221,9 +223,9 @@ namespace od
 
             for(auto &client : mClients)
             {
-                if(client.second.downlinkConnector != nullptr)
+                if(client.second->downlinkConnector != nullptr)
                 {
-                    client.second.downlinkConnector->loadLevel(relLevelPath);
+                    client.second->downlinkConnector->loadLevel(relLevelPath);
                 }
             }
         }
@@ -262,7 +264,7 @@ namespace od
 
                 for(auto &client : mClients)
                 {
-                    client.second.inputManager->update(relTime);
+                    client.second->inputManager->update(relTime);
                 }
             }
 
@@ -276,11 +278,18 @@ namespace od
                 std::lock_guard<std::mutex> lock(mClientsMutex);
                 for(auto &client : mClients)
                 {
-                    Logger::info() << "last ack: " << client.second.lastAcknowledgedTick;
-                    // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                    if(client.second.downlinkConnector != nullptr)
+                    odState::TickNumber lastAckd;
                     {
-                        mStateManager->sendSnapshotToClient(latestTick, *client.second.downlinkConnector, client.second.lastAcknowledgedTick);
+                        std::lock_guard<std::mutex> lock(client.second->mutex);
+                        lastAckd = client.second->lastAcknowledgedTick;
+                    }
+
+                    Logger::info() << "last ack: " << lastAckd;
+
+                    // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                    if(client.second->downlinkConnector != nullptr)
+                    {
+                        mStateManager->sendSnapshotToClient(latestTick, *client.second->downlinkConnector, lastAckd);
                     }
                 }
             }

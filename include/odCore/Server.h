@@ -150,6 +150,9 @@ namespace od
             std::unique_ptr<odInput::InputManager> inputManager;
             std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
 
+            // for synchronizing access to the below fields
+            std::mutex mutex;
+
             // for delta-encoding snapshots
             odState::TickNumber lastAcknowledgedTick;
 
@@ -172,8 +175,8 @@ namespace od
         std::atomic_bool mIsDone;
 
         odNet::ClientId mNextClientId;
-        std::unordered_map<odNet::ClientId, ClientData> mClients;
-        std::mutex mClientsMutex; // to synchrownize access to clients map (for adding clients etc.). refs to ClientData are only valid as long as the map is not rehashed!
+        std::unordered_map<odNet::ClientId, std::unique_ptr<ClientData>> mClients;
+        std::mutex mClientsMutex; // to synchronize access to clients map (for adding clients etc.)
 
         double mServerTime;
 
