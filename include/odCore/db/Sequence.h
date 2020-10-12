@@ -54,19 +54,40 @@ namespace odDb
 
     struct ActionTransform : public Action
     {
-        enum class InterpolationType : uint16_t
+        enum class InterpolationType
         {
-            NONE = 0,
-            LINEAR_LINEAR = 0x10,
-            LINEAR_SPLINE = 0x20,
-            SPLINE_SPLINE = 0x30
+            NONE,
+            LINEAR_LINEAR,
+            LINEAR_SPLINE,
+            SINE_SPLINE
+        };
+
+        enum class RelativeTo
+        {
+            WORLD,
+            ACTOR,
+            LOOK_AT_ACTOR
         };
 
         ActionTransform(float t, od::DataReader &dr);
 
+        InterpolationType getInterpolationType() const;
+        RelativeTo getRelativeTo() const;
+
+        bool ignorePosition() const
+        {
+            return options & 0x0100;
+        }
+
+        bool ignoreRotation() const
+        {
+            return options & 0x0200;
+        }
+
         glm::quat rotation;
         glm::vec3 position;
-        InterpolationType interpolationType;
+        uint32_t relativeActorId;
+        uint32_t options;
     };
 
 

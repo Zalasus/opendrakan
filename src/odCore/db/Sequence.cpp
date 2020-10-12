@@ -23,38 +23,53 @@ namespace odDb
     ActionTransform::ActionTransform(float t, od::DataReader &dr)
     : Action(t)
     {
-        uint16_t interpolationTypeCode;
-
         dr >> rotation
            >> position
-           >> od::DataReader::Ignore(4)
-           >> interpolationTypeCode
-           >> od::DataReader::Ignore(2);
+           >> relativeActorId
+           >> options;
 
+        glm::vec3 rotCorrection(0, glm::radians(-90.0), 0);
+        rotation = rotation * glm::quat(rotCorrection);
         position = od::Units::worldUnitsToLengthUnits(position);
+    }
 
-        switch(interpolationTypeCode)
+    ActionTransform::InterpolationType ActionTransform::getInterpolationType() const
+    {
+        switch(options & 0xf0)
         {
-        case static_cast<uint16_t>(InterpolationType::NONE):
-            interpolationType = InterpolationType::NONE;
-            break;
+        case 0x00:
+            return InterpolationType::NONE;
 
-        case static_cast<uint16_t>(InterpolationType::LINEAR_LINEAR):
-            interpolationType = InterpolationType::LINEAR_LINEAR;
-            break;
+        case 0x10:
+            return InterpolationType::LINEAR_LINEAR;
 
-        case static_cast<uint16_t>(InterpolationType::LINEAR_SPLINE):
-            interpolationType = InterpolationType::LINEAR_SPLINE;
-            break;
+        case 0x20:
+            return InterpolationType::LINEAR_SPLINE;
 
-        case static_cast<uint16_t>(InterpolationType::SPLINE_SPLINE):
-            interpolationType = InterpolationType::SPLINE_SPLINE;
-            break;
+        case 0x30:
+            return InterpolationType::SINE_SPLINE;
 
         default:
             throw od::Exception("Invalid interpolation type");
         }
+    }
 
+    ActionTransform::RelativeTo ActionTransform::getRelativeTo() const
+    {
+        switch(options & 0x0f)
+        {
+        case 0x00:
+            return RelativeTo::WORLD;
+
+        case 0x01:
+            return RelativeTo::ACTOR;
+
+        case 0x02:
+            return RelativeTo::LOOK_AT_ACTOR;
+
+        default:
+            throw od::Exception("Invalid relative-to type");
+        }
     }
 
 

@@ -12,6 +12,8 @@ namespace odAnim
 
     static od::Message getMessageForCode(uint32_t code)
     {
+        // this seems to serve multiple purposes. some classes like fader can
+        //  be passed a numeric value via the message interface (fade time for faders).
         switch(code)
         {
         case 4098:
@@ -234,28 +236,13 @@ namespace odAnim
                     if(right == actor.transformActions.end())
                     {
                         // no keyframe right of us or that one must not be interpolated -> apply left as it is
-                        actor.actorObject.setPosition(left->position);
-                        actor.actorObject.setRotation(left->rotation);
+                        if(!left->ignorePosition()) actor.actorObject.setPosition(left->position);
+                        if(!left->ignoreRotation()) actor.actorObject.setRotation(left->rotation);
 
                     }else
                     {
                         // there is a keyframe both left and right of us. we can interpolate!
-                        if(right->interpolationType == odDb::ActionTransform::InterpolationType::NONE)
-                        {
-                            actor.actorObject.setPosition(left->position);
-                            actor.actorObject.setRotation(left->rotation);
-
-                        }else
-                        {
-                            // TODO: heed other interpolation styles as well (once we figure them out)
-                            float delta = (mSequenceTime - left->timeOffset) / (right->timeOffset - left->timeOffset);
-                            auto position = glm::mix(left->position, right->position, delta);
-                            auto rotation = glm::slerp(left->rotation, right->rotation, delta);
-
-                            actor.actorObject.setPosition(position);
-                            actor.actorObject.setRotation(rotation);
-                        }
-
+                        _applyInterpolatedKeyframes(actor.actorObject, *left, *right);
                         sequenceRunning = true;
                     }
                 } // else: no keyframe left of us, so no transforms have happened yet.
@@ -287,6 +274,58 @@ namespace odAnim
         }
 
         return sequenceRunning;
+    }
+
+    void SequencePlayer::_applyInterpolatedKeyframes(od::LevelObject &obj, const odDb::ActionTransform &left, const odDb::ActionTransform &right)
+    {
+        if(left.getRelativeTo() != odDb::ActionTransform::RelativeTo::WORLD || right.getRelativeTo() != odDb::ActionTransform::RelativeTo::WORLD)
+        {
+            OD_UNIMPLEMENTED();
+        }
+
+        // it seems to me like interpolation styles always affect the curve *left* of the keyframe
+        if(right.getInterpolationType() == odDb::ActionTransform::InterpolationType::NONE)
+        {
+            // this keyframe won't get considered until it is left of us
+            if(!left.ignorePosition()) obj.setPosition(left.position);
+            if(!left.ignoreRotation()) obj.setRotation(left.rotation);
+
+        }else
+        {
+            // TODO: heed other interpolation styles as well (once we figure them out)
+            float delta = (mSequenceTime - left.timeOffset) / (right.timeOffset - left.timeOffset);
+
+            if(!left.ignorePosition() && right.ignorePosition())
+            {
+                obj.setPosition(left.position);
+
+            }else if(left.ignorePosition() && !right.ignorePosition())
+            {
+                obj.setPosition(right.position);
+
+            }else if(!left.ignorePosition() && !right.ignorePosition())
+            {
+                float delta = (mSequenceTime - left.timeOffset) / (right.timeOffset - left.timeOffset);
+                auto position = glm::mix(left.position, right.position, delta);
+                obj.setPosition(position);
+            }
+
+            if(!left.ignoreRotation() && right.ignoreRotation())
+            {
+                obj.setRotation(left.rotation);
+
+            }else if(left.ignoreRotation() && !right.ignoreRotation())
+            {
+                obj.setRotation(right.rotation);
+
+            }else if(!left.ignoreRotation() && !right.ignoreRotation())
+            {
+                auto rotation = glm::slerp(left.rotation, right.rotation, delta);
+                obj.setRotation(rotation);
+            }
+        }
+
+
     }
 
 }
