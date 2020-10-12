@@ -28,8 +28,7 @@ namespace odDb
            >> relativeActorId
            >> options;
 
-        glm::vec3 rotCorrection(0, glm::radians(-90.0), 0);
-        rotation = rotation * glm::quat(rotCorrection);
+        rotation = glm::conjugate(rotation);
         position = od::Units::worldUnitsToLengthUnits(position);
     }
 
