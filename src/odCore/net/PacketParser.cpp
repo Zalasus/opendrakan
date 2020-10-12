@@ -111,6 +111,25 @@ namespace odNet
             }
             break;
 
+        case PacketType::OBJECT_LIFECYCLE_STATE_CHANGED:
+            {
+                if(length != PacketConstants::LIFECYCLE_SIZE)
+                {
+                    _badPacket("objlifecycle unexpected size");
+                    return;
+                }
+
+                odState::TickNumber tick;
+                od::LevelObjectId id;
+                uint8_t stateCode;
+                dr >> tick
+                   >> id
+                   >> stateCode;
+
+                mOutput->objectLifecycleStateChanged(tick, id, static_cast<od::ObjectLifecycleState>(stateCode)); // TODO: validate state code
+            }
+            break;
+
         case PacketType::CONFIRM_SNAPSHOT:
             {
                 if(length != PacketConstants::CONFIRM_PAYLOAD_SIZE)

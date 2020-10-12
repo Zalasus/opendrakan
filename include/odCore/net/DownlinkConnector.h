@@ -41,11 +41,7 @@ namespace odNet
         virtual void loadLevel(const std::string &path) = 0;
 
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) = 0;
-
-        virtual void spawnObject(od::LevelObjectId id) = 0;
-        virtual void despawnObject(od::LevelObjectId id) = 0;
-        virtual void destroyObject(od::LevelObjectId id) = 0;
-
+        virtual void objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state) = 0;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) = 0;
 
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;

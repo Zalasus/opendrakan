@@ -45,13 +45,6 @@ namespace od
     class Level;
     class Layer;
 
-    enum class LevelObjectState
-    {
-        LOADED, // aka despawned
-        SPAWNED, // aka stopped
-        RUNNING
-    };
-
     enum class SpawnStrategy
     {
         Never,
@@ -92,7 +85,7 @@ namespace od
         inline glm::vec3 getPosition() const { return mPosition; }
         inline glm::vec3 getScale() const { return mScale; }
         inline glm::quat getRotation() const { return mRotation; }
-        inline LevelObjectState getState() const { return mState; }
+        inline ObjectLifecycleState getLifecycleState() const { return mLifecycleState; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
         inline const std::vector<LevelObjectId> &getLinkedObjects() const { return mLinkedObjects; }
@@ -239,7 +232,7 @@ namespace od
         glm::vec3 mScale;
         bool mIsVisible;
 
-        LevelObjectState mState;
+        ObjectLifecycleState mLifecycleState;
         SpawnStrategy mSpawnStrategy;
 
         Layer *mAssociatedLayer;

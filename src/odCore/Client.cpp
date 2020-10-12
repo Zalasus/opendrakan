@@ -53,19 +53,8 @@ namespace od
             mClient.getStateManager().incomingObjectStatesChanged(tick, id, states);
         }
 
-        virtual void spawnObject(od::LevelObjectId id) override
+        virtual void objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state) override
         {
-            _getObjectById(id).spawn();
-        }
-
-        virtual void despawnObject(od::LevelObjectId id) override
-        {
-            _getObjectById(id).despawn();
-        }
-
-        virtual void destroyObject(od::LevelObjectId id) override
-        {
-             _getObjectById(id).requestDestruction();
         }
 
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount) override

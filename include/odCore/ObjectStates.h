@@ -29,6 +29,14 @@ namespace od
         odState::State<bool,      StateFlags::NETWORKED>                      visibility;
     };
 
+    enum class ObjectLifecycleState
+    {
+        LOADED, // aka despawned
+        SPAWNED, // aka stopped
+        RUNNING,
+        DESTROYED
+    };
+
 }
 
 #endif

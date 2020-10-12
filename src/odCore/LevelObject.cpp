@@ -104,7 +104,7 @@ namespace od
     , mRotation(record.getRotation())
     , mScale(record.getScale())
     , mIsVisible(record.isVisible())
-    , mState(LevelObjectState::LOADED)
+    , mLifecycleState(ObjectLifecycleState::LOADED)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
@@ -133,7 +133,7 @@ namespace od
     LevelObject::~LevelObject()
     {
         // make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
-        if(mState != LevelObjectState::LOADED)
+        if(mLifecycleState != ObjectLifecycleState::LOADED)
         {
             Logger::warn() << "Level object deleted while still spawned";
             stop();
@@ -182,10 +182,10 @@ namespace od
 
     void LevelObject::spawn()
     {
-        switch(mState)
+        switch(mLifecycleState)
         {
-        case LevelObjectState::LOADED:
-            mState = LevelObjectState::SPAWNED;
+        case ObjectLifecycleState::LOADED:
+            mLifecycleState = ObjectLifecycleState::SPAWNED;
             if(mAssociatedLayer == nullptr)
             {
                 // if we haven't got an associated layer yet, search for it now.
@@ -198,21 +198,24 @@ namespace od
             Logger::debug() << "Object " << getObjectId() << " spawned";
             break;
 
-        case LevelObjectState::SPAWNED:
-        case LevelObjectState::RUNNING:
+        case ObjectLifecycleState::SPAWNED:
+        case ObjectLifecycleState::RUNNING:
             break;
+
+        case ObjectLifecycleState::DESTROYED:
+            throw od::Exception("Can't spawn on object in destroyed state");
         };
     }
 
     void LevelObject::despawn()
     {
-        switch(mState)
+        switch(mLifecycleState)
         {
-        case LevelObjectState::LOADED:
+        case ObjectLifecycleState::LOADED:
             break;
 
-        case LevelObjectState::SPAWNED:
-            mState = LevelObjectState::LOADED;
+        case ObjectLifecycleState::SPAWNED:
+            mLifecycleState = ObjectLifecycleState::LOADED;
             if(mSpawnableClass != nullptr)
             {
                 mSpawnableClass->onDespawned();
@@ -220,20 +223,24 @@ namespace od
             Logger::debug() << "Object " << getObjectId() << " despawned";
             break;
 
-        case LevelObjectState::RUNNING:
+        case ObjectLifecycleState::RUNNING:
             throw od::Exception("Can't despawn an object that is still running");
+
+        case ObjectLifecycleState::DESTROYED:
+            break;
         };
     }
 
     void LevelObject::start()
     {
-        switch(mState)
+        switch(mLifecycleState)
         {
-        case LevelObjectState::LOADED:
+        case ObjectLifecycleState::LOADED:
+        case ObjectLifecycleState::DESTROYED:
             throw od::Exception("Can't start an object that is not spawned");
 
-        case LevelObjectState::SPAWNED:
-            mState = LevelObjectState::RUNNING;
+        case ObjectLifecycleState::SPAWNED:
+            mLifecycleState = ObjectLifecycleState::RUNNING;
             if(mSpawnableClass != nullptr)
             {
                 mSpawnableClass->onStart();
@@ -241,21 +248,22 @@ namespace od
             Logger::debug() << "Object " << getObjectId() << " started";
             break;
 
-        case LevelObjectState::RUNNING:
+        case ObjectLifecycleState::RUNNING:
             break;
         }
     }
 
     void LevelObject::stop()
     {
-        switch(mState)
+        switch(mLifecycleState)
         {
-        case LevelObjectState::LOADED:
-        case LevelObjectState::SPAWNED:
+        case ObjectLifecycleState::LOADED:
+        case ObjectLifecycleState::SPAWNED:
+        case ObjectLifecycleState::DESTROYED:
             break;
 
-        case LevelObjectState::RUNNING:
-            mState = LevelObjectState::SPAWNED;
+        case ObjectLifecycleState::RUNNING:
+            mLifecycleState = ObjectLifecycleState::SPAWNED;
             if(mSpawnableClass != nullptr)
             {
                 mSpawnableClass->onStop();
@@ -272,7 +280,7 @@ namespace od
 
     void LevelObject::update(float relTime)
     {
-        if(mState == LevelObjectState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
+        if(mLifecycleState == ObjectLifecycleState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onUpdate(relTime);
         }
@@ -280,7 +288,7 @@ namespace od
 
     void LevelObject::postUpdate(float relTime)
     {
-        if(mState == LevelObjectState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
+        if(mLifecycleState == ObjectLifecycleState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onPostUpdate(relTime);
         }
@@ -316,7 +324,7 @@ namespace od
     {
         Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
 
-        if(mState == LevelObjectState::RUNNING && mSpawnableClass != nullptr)
+        if(mLifecycleState == ObjectLifecycleState::RUNNING && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onMessageReceived(sender, message);
         }
@@ -391,7 +399,7 @@ namespace od
 
     void LevelObject::setRflClassInstance(std::unique_ptr<odRfl::ClassBase> i)
     {
-        if(mState != LevelObjectState::LOADED)
+        if(mLifecycleState != ObjectLifecycleState::LOADED)
         {
             throw od::Exception("An object must be in the loaded-state to be assigned an instance");
         }

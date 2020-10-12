@@ -10,6 +10,7 @@ namespace odNet
     enum class PacketType : uint8_t
     {
         OBJECT_STATE_CHANGED,
+        OBJECT_LIFECYCLE_STATE_CHANGED,
         CONFIRM_SNAPSHOT,
         LOAD_LEVEL,
         GLOBAL_MESSAGE,
@@ -25,6 +26,8 @@ namespace odNet
         static constexpr uint32_t STATE_MASK_ROTATION   = (1 << 1);
         static constexpr uint32_t STATE_MASK_SCALE      = (1 << 2);
         static constexpr uint32_t STATE_MASK_VISIBILITY = (1 << 3);
+
+        static constexpr size_t   LIFECYCLE_SIZE = 13;
 
         static constexpr size_t   CONFIRM_PAYLOAD_SIZE = 20;
 

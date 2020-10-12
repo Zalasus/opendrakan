@@ -111,6 +111,13 @@ u32 new_object_id;
 u32 prototype_object_id; // currently, new objects can only be created as clones of exisiting objects
 ```
 
+### Object lifecycle state changed
+```
+u64 tick_number;
+u32 object_id;
+u8 new_state; // 0 = loaded, 1 = spawned, 2 = running, 3 = destroyed
+```
+
 Message Channel packets
 -----------------------
 These packets allow an RFL to send arbitrary messages over so called "channels".

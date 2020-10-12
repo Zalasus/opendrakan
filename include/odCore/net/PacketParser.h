@@ -13,6 +13,14 @@ namespace odNet
 {
     class DownlinkConnector;
 
+    /**
+     * Parses downlink packets and turns them into calls of the appropriate
+     * DownlinkConnector methods.
+     *
+     * This only does protocol validation, not data validation. You might get
+     * bad object IDs, tick numbers etc. via the output connector if the server
+     * misbehaves.
+     */
     class DownlinkPacketParser
     {
     public:

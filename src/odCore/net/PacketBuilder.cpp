@@ -43,16 +43,19 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::spawnObject(od::LevelObjectId id)
+    void DownlinkPacketBuilder::objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state)
     {
-    }
+        auto stateCode = static_cast<std::underlying_type_t<od::ObjectLifecycleState>>(state);
+        if(stateCode > std::numeric_limits<uint8_t>::max())
+        {
+            throw od::Exception("State code exceed limits of state field");
+        }
 
-    void DownlinkPacketBuilder::despawnObject(od::LevelObjectId id)
-    {
-    }
-
-    void DownlinkPacketBuilder::destroyObject(od::LevelObjectId id)
-    {
+        _beginPacket(PacketType::OBJECT_LIFECYCLE_STATE_CHANGED);
+        mWriter << tick
+                << id
+                << static_cast<uint8_t>(stateCode);
+        _endPacket();
     }
 
     void DownlinkPacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount)
