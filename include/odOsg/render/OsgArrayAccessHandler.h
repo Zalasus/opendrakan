@@ -19,18 +19,18 @@
 namespace odOsg
 {
 
-    template <typename _OdType, typename _OsgArrayType>
-    class OsgTVecArrayAccessHandler : public odRender::ArrayAccessHandler<_OdType>
+    template <typename _OdType, typename _OsgArrayType, typename _Converter>
+    class OsgConvertingArrayAccessHandler : public odRender::ArrayAccessHandler<_OdType>
     {
     public:
 
-        OsgTVecArrayAccessHandler(_OsgArrayType *osgArray)
+        OsgConvertingArrayAccessHandler(_OsgArrayType *osgArray)
         : mOsgArray(osgArray)
         , mAcquired(false)
         {
         }
 
-        virtual ~OsgTVecArrayAccessHandler()
+        virtual ~OsgConvertingArrayAccessHandler()
         {
             release(false);
         }
@@ -63,7 +63,7 @@ namespace odOsg
             {
                 for(size_t i = 0; i < mOsgArray->size(); ++i)
                 {
-                    mArray[i] = GlmAdapter::toGlm((*mOsgArray)[i]);
+                    mArray[i] = _Converter::toGlm((*mOsgArray)[i]);
                 }
             }
 
@@ -83,7 +83,7 @@ namespace odOsg
 
                 for(size_t i = 0; i < mArray.size(); ++i)
                 {
-                    (*mOsgArray)[i] = GlmAdapter::toOsg(mArray[i]);
+                    (*mOsgArray)[i] = _Converter::toOsg(mArray[i]);
                 }
 
                 mOsgArray->dirty();
@@ -115,10 +115,29 @@ namespace odOsg
 
     };
 
+    struct SimpleConverter
+    {
+
+        template <typename T>
+        static T toOsg(const T &v)
+        {
+            return v;
+        }
+
+        template <typename T>
+        static T toGlm(const T &v)
+        {
+            return v;
+        }
+
+    };
+
     // TODO: only forward specialize these and put explicit instantiation into source file
-    typedef OsgTVecArrayAccessHandler<glm::vec2, osg::Vec2Array> OsgVec2ArrayAccessHandler;
-    typedef OsgTVecArrayAccessHandler<glm::vec3, osg::Vec3Array> OsgVec3ArrayAccessHandler;
-    typedef OsgTVecArrayAccessHandler<glm::vec4, osg::Vec4Array> OsgVec4ArrayAccessHandler;
+    typedef OsgConvertingArrayAccessHandler<glm::vec2, osg::Vec2Array, GlmAdapter> OsgVec2ArrayAccessHandler;
+    typedef OsgConvertingArrayAccessHandler<glm::vec3, osg::Vec3Array, GlmAdapter> OsgVec3ArrayAccessHandler;
+    typedef OsgConvertingArrayAccessHandler<glm::vec4, osg::Vec4Array, GlmAdapter> OsgVec4ArrayAccessHandler;
+
+    using OsgIndexArrayAccessHandler = OsgConvertingArrayAccessHandler<int32_t, osg::DrawElementsUInt, SimpleConverter>;
 }
 
 

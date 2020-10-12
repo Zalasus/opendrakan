@@ -113,6 +113,7 @@ namespace odOsg
         OsgVec2ArrayAccessHandler mTextureCoordArrayAccessHandler;
         OsgVec4ArrayAccessHandler mBoneIndexArrayAccessHandler;
         OsgVec4ArrayAccessHandler mBoneWeightArrayAccessHandler;
+        OsgIndexArrayAccessHandler mIndexArrayAccessHandler;
     };
 
 }

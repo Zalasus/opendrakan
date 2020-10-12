@@ -64,6 +64,7 @@ namespace odOsg
     , mTextureCoordArrayAccessHandler(mOsgTextureCoordArray)
     , mBoneIndexArrayAccessHandler(nullptr)
     , mBoneWeightArrayAccessHandler(nullptr)
+    , mIndexArrayAccessHandler(nullptr)
     {
         mGeometry->setUseDisplayList(false);
         mGeometry->setUseVertexBufferObjects(true);
@@ -98,7 +99,9 @@ namespace odOsg
 
         if(indexed)
         {
-            mPrimitiveSet = new osg::DrawElementsUInt(glPrimitiveType);
+            auto drawElements = new osg::DrawElementsUInt(glPrimitiveType);
+            mPrimitiveSet = drawElements;
+            mIndexArrayAccessHandler.setArray(drawElements);
 
         }else
         {
@@ -119,6 +122,7 @@ namespace odOsg
     , mTextureCoordArrayAccessHandler(nullptr)
     , mBoneIndexArrayAccessHandler(nullptr)
     , mBoneWeightArrayAccessHandler(nullptr)
+    , mIndexArrayAccessHandler(nullptr)
     {
         OD_CHECK_ARG_NONNULL(geometry);
 
@@ -166,8 +170,20 @@ namespace odOsg
         mPrimitiveSet = mGeometry->getPrimitiveSet(0);
 
         auto drawArrays = dynamic_cast<osg::DrawArrays*>(mPrimitiveSet.get());
-        mVertexArrayAccessHandler.setDrawArrays(drawArrays);
-        mIndexed = (drawArrays == nullptr);
+        if(drawArrays != nullptr)
+        {
+            mVertexArrayAccessHandler.setDrawArrays(drawArrays);
+            mIndexed = false;
+
+        }else
+        {
+            auto drawElements = dynamic_cast<osg::DrawElementsUInt*>(mPrimitiveSet.get());
+            if(drawElements != nullptr)
+            {
+                mIndexArrayAccessHandler.setArray(drawElements);
+                mIndexed = true;
+            }
+        }
 
         switch(mPrimitiveSet->getMode())
         {
@@ -247,7 +263,12 @@ namespace odOsg
 
     odRender::ArrayAccessHandler<int32_t> &Geometry::getIndexArrayAccessHandler()
     {
-        throw od::UnsupportedException("Accessing index array is unsupported right now");
+        if(!mIndexed)
+        {
+            throw od::Exception("Not indexed");
+        }
+
+        return mIndexArrayAccessHandler;
     }
 
     odRender::ArrayAccessHandler<glm::vec4> &Geometry::getBoneIndexArrayAccessHandler()
