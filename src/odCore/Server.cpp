@@ -54,9 +54,9 @@ namespace od
     {
     public:
 
-        LocalUplinkConnector(Server &server, odNet::ClientId client)
+        LocalUplinkConnector(Server &server, odNet::ClientId clientId)
         : mServer(server)
-        , mClientId(client)
+        , mClientId(clientId)
         {
         }
 
@@ -68,6 +68,17 @@ namespace od
         virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override
         {
             mServer.getInputManagerForClient(mClientId).injectAnalogAction(code, axes);
+        }
+
+        virtual void acknowledgeSnapshot(odState::TickNumber tick) override
+        {
+            std::lock_guard<std::mutex> lock(mServer.mClientsMutex);
+
+            auto clientIt = mServer.mClients.find(mClientId);
+            if(clientIt != mServer.mClients.end())
+            {
+                clientIt->second.lastAcknowledgedTick = tick;
+            }
         }
 
 
@@ -94,20 +105,24 @@ namespace od
 
     odNet::ClientId Server::addClient()
     {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
         odNet::ClientId newClientId = mNextClientId++;
 
-        Client client;
-        client.uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, newClientId);
-        client.inputManager = std::make_unique<odInput::InputManager>();
-        client.messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>();
+        ClientData clientData;
+        clientData.uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, newClientId);
+        clientData.inputManager = std::make_unique<odInput::InputManager>();
+        clientData.messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>();
 
-        mClients.insert(std::make_pair(newClientId, std::move(client)));
+        mClients.insert(std::make_pair(newClientId, std::move(clientData)));
 
         return newClientId;
     }
 
     void Server::setClientDownlinkConnector(odNet::ClientId id, std::shared_ptr<odNet::DownlinkConnector> connector)
     {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
         auto it = mClients.find(id);
         if(it == mClients.end())
         {
@@ -120,6 +135,8 @@ namespace od
 
     std::shared_ptr<odNet::UplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
     {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
         auto it = mClients.find(clientId);
         if(it == mClients.end())
         {
@@ -131,6 +148,8 @@ namespace od
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
     {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
         auto it = mClients.find(id);
         if(it == mClients.end())
         {
@@ -142,6 +161,8 @@ namespace od
 
     odNet::DownlinkMessageDispatcher &Server::getMessageDispatcherForClient(odNet::ClientId id)
     {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
         auto it = mClients.find(id);
         if(it == mClients.end())
         {
@@ -162,6 +183,8 @@ namespace od
 
     float Server::getEstimatedClientLag(odNet::ClientId id)
     {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
         auto client = mClients.find(id);
         if(client == mClients.end())
         {
@@ -193,11 +216,15 @@ namespace od
         //  networked clients will probably not be used with out-of-tree-levels, anyway.
         auto relLevelPath = lvlPath.removePrefix(getEngineRootDir()).str();
 
-        for(auto &client : mClients)
         {
-            if(client.second.downlinkConnector != nullptr)
+            std::lock_guard<std::mutex> lock(mClientsMutex);
+
+            for(auto &client : mClients)
             {
-                client.second.downlinkConnector->loadLevel(relLevelPath);
+                if(client.second.downlinkConnector != nullptr)
+                {
+                    client.second.downlinkConnector->loadLevel(relLevelPath);
+                }
             }
         }
 
@@ -230,9 +257,13 @@ namespace od
 
             mPhysicsSystem->update(relTime);
 
-            for(auto &client : mClients)
             {
-                client.second.inputManager->update(relTime);
+                std::lock_guard<std::mutex> lock(mClientsMutex);
+
+                for(auto &client : mClients)
+                {
+                    client.second.inputManager->update(relTime);
+                }
             }
 
             // commit update
@@ -240,13 +271,17 @@ namespace od
 
             // send update to clients
             odState::TickNumber latestTick = mStateManager->getLatestTick();
-            for(auto &client : mClients)
+
             {
-                // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                if(client.second.downlinkConnector != nullptr)
+                std::lock_guard<std::mutex> lock(mClientsMutex);
+                for(auto &client : mClients)
                 {
-                    mStateManager->sendSnapshotToClient(latestTick, *client.second.downlinkConnector, client.second.lastSentTick);
-                    client.second.lastSentTick = latestTick;
+                    Logger::info() << "last ack: " << client.second.lastAcknowledgedTick;
+                    // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                    if(client.second.downlinkConnector != nullptr)
+                    {
+                        mStateManager->sendSnapshotToClient(latestTick, *client.second.downlinkConnector, client.second.lastAcknowledgedTick);
+                    }
                 }
             }
 
@@ -266,8 +301,8 @@ namespace od
         Logger::info() << "Shutting down server gracefully";
     }
 
-    Server::Client::Client()
-    : lastSentTick(odState::StateManager::FIRST_TICK - 1)
+    Server::ClientData::ClientData()
+    : lastAcknowledgedTick(odState::INVALID_TICK)
     , viewInterpolationTime(0.1) // TODO: use constant or communicate via handshake
     , lastMeasuredRoundTripTime(0.0)
     {

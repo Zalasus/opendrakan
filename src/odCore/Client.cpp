@@ -72,23 +72,6 @@ namespace od
 
     private:
 
-        od::LevelObject &_getObjectById(od::LevelObjectId id)
-        {
-            if(mClient.getLevel() == nullptr)
-            {
-                throw od::Exception("No level loaded");
-            }
-
-            // FIXME: this access is neither atomic nor synchronized!
-            auto object = mClient.getLevel()->getLevelObjectById(id);
-            if(object == nullptr)
-            {
-                throw od::Exception("Invalid level object ID");
-            }
-
-            return *object;
-        }
-
         Client &mClient;
 
     };

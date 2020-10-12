@@ -10,6 +10,8 @@
 
 #include <odCore/input/Action.h>
 
+#include <odCore/state/Tick.h>
+
 namespace odNet
 {
 
@@ -34,6 +36,8 @@ namespace odNet
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) = 0;
         virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) = 0;
+
+        virtual void acknowledgeSnapshot(odState::TickNumber tick) = 0;
 
     };
 

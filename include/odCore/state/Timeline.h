@@ -9,12 +9,10 @@
 #include <deque>
 #include <type_traits>
 
+#include <odCore/state/Tick.h>
+
 namespace odState
 {
-
-    using TickNumber = std::int64_t;
-
-    static_assert(std::is_signed<TickNumber>::value, "TickNumber must be of a signed type");
 
     /**
      * @brief A kind of vector that ties together blocks of elements based on a time value.

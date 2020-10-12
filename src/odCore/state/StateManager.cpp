@@ -201,7 +201,7 @@ namespace odState
         }
     }
 
-    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber lastSentSnapshot)
+    void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber deltaTick)
     {
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
@@ -213,7 +213,7 @@ namespace odState
 
         size_t discreteChangeCount = 0;
 
-        auto lastSent = _getSnapshot(lastSentSnapshot, mSnapshots, false);
+        auto lastSent = (deltaTick != INVALID_TICK) ? _getSnapshot(deltaTick, mSnapshots, false) : mSnapshots.end();
 
         for(auto &stateChange : toSend->changes)
         {

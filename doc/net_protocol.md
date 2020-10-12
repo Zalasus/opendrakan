@@ -12,6 +12,10 @@ Tick number
 At 60 ticks per second, a uint32 would overflow after about 2.2 years. uint64
 would overflow after 9.8 billion years.
 
+Tick numbers should be one-based, since some protocol features need to be able
+to pass an invalid tick. E.g. when sending snapshots, it needs to be indicated
+whether the snapshot is full or delta encoded against another snapshot.
+
 Snapshot transmission
 ---------------------
 Snapshots are sent to a client in two steps: First, an arbitrary number of
@@ -116,6 +120,15 @@ u32 prototype_object_id; // currently, new objects can only be created as clones
 u64 tick_number;
 u32 object_id;
 u8 new_state; // 0 = loaded, 1 = spawned, 2 = running, 3 = destroyed
+```
+
+### Acknowledge snapshot (uplink)
+Used by the client to tell the server that it has received a snapshot in full.
+This is not strictly necessary, but the server can only use ACK'd snapshots in
+delta encoding. That means the longer a client fails to ACK a snapshot, the
+larger the snapshots sent by the server will become.
+```
+u64 tick_number;
 ```
 
 Message Channel packets

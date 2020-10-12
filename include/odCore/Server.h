@@ -11,6 +11,7 @@
 #include <memory>
 #include <atomic>
 #include <unordered_map>
+#include <mutex>
 
 #include <odCore/FilePath.h>
 
@@ -138,15 +139,19 @@ namespace od
 
     private:
 
-        struct Client
+        friend class LocalUplinkConnector;
+
+        struct ClientData
         {
-            Client();
+            ClientData();
 
             std::shared_ptr<odNet::DownlinkConnector> downlinkConnector;
             std::shared_ptr<odNet::UplinkConnector> uplinkConnector;
             std::unique_ptr<odInput::InputManager> inputManager;
             std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
-            odState::TickNumber lastSentTick;
+
+            // for delta-encoding snapshots
+            odState::TickNumber lastAcknowledgedTick;
 
             // for lag compensation:
             float viewInterpolationTime;
@@ -167,7 +172,8 @@ namespace od
         std::atomic_bool mIsDone;
 
         odNet::ClientId mNextClientId;
-        std::unordered_map<odNet::ClientId, Client> mClients;
+        std::unordered_map<odNet::ClientId, ClientData> mClients;
+        std::mutex mClientsMutex; // to synchrownize access to clients map (for adding clients etc.). refs to ClientData are only valid as long as the map is not rehashed!
 
         double mServerTime;
 

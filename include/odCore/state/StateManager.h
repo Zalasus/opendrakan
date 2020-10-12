@@ -9,6 +9,7 @@
 
 #include <mutex>
 #include <unordered_map>
+#include <deque>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -18,7 +19,7 @@
 
 #include <odCore/state/Event.h>
 #include <odCore/state/State.h>
-#include <odCore/state/Timeline.h>
+#include <odCore/state/Tick.h>
 
 namespace od
 {
@@ -37,9 +38,6 @@ namespace odState
     class StateManager
     {
     public:
-
-        static const TickNumber FIRST_TICK = 1;
-
 
         StateManager(od::Level &level);
 
@@ -76,11 +74,15 @@ namespace odState
          *
          * Will throw if no committed snapshot with that tick exists in the timeline.
          *
-         * TODO: add option to send a full snapshot (other than passing lastSentSnapshot = FIRST_TICK - 1)
+         * This will perform delta-encoding against the snapshot with tick
+         * deltaTick if that snapshot is still in the timeline. This will
+         * usually be the the tick of the latest snapshot whose reception a
+         * client acknowledged. Pass INVALID_TICK to force sending a full
+         * snapshot.
          *
-         * @param lastSentSnapshot  The tick number of the last snapshot that was sent to the client (for delta-encoding).
+         * @param deltaTick  The tick number to be used for delta encoding (INVALID_TICK if no delta-encoding desired).
          */
-        void sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber lastSentSnapshot);
+        void sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber deltaTick);
 
 
     private:
