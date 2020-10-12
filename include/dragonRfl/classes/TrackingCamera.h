@@ -17,6 +17,8 @@
 
 #include <odCore/input/InputListener.h>
 
+#include <odCore/render/Handle.h>
+
 namespace dragonRfl
 {
 
@@ -50,8 +52,10 @@ namespace dragonRfl
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
 		virtual void onLoaded() override;
+        virtual void onSpawned() override;
         virtual void onStart() override;
         virtual void onStop() override;
+        virtual void onDespawned() override;
 		virtual void onUpdate(float relTime) override;
 		virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
         virtual void onTransformChanged() override;
@@ -64,12 +68,15 @@ namespace dragonRfl
         void _mouseHandler(const glm::vec2 &pos);
         void _updateCameraTracking();
         void _updateCameraViewMatrix();
+        void _setupCameraModel();
 
 		TrackingCameraFields mFields;
 
         od::LevelObject &mObjectToTrack;
 
         std::shared_ptr<odInput::InputListener> mInputListener;
+
+        std::shared_ptr<odRender::Handle> mRenderHandle;
 
         float mYaw;
         float mPitch;

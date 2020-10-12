@@ -20,6 +20,9 @@
 #include <odCore/rfl/Rfl.h>
 
 #include <odCore/render/Renderer.h>
+#include <odCore/render/Model.h>
+#include <odCore/render/Geometry.h>
+#include <odCore/render/Array.h>
 #include <odCore/render/Camera.h>
 
 #include <odCore/physics/PhysicsSystem.h>
@@ -55,6 +58,16 @@ namespace dragonRfl
 	    getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
 	}
 
+    void TrackingCamera_Cl::onSpawned()
+    {
+        //_setupCameraModel();
+    }
+
+    void TrackingCamera_Cl::onDespawned()
+    {
+        mRenderHandle = nullptr;
+    }
+
     void TrackingCamera_Cl::onStart()
     {
         auto &obj = getLevelObject();
@@ -77,7 +90,7 @@ namespace dragonRfl
 
 	void TrackingCamera_Cl::onUpdate(float relTime)
 	{
-	    _updateCameraTracking();
+	    //_updateCameraTracking();
 	}
 
 	void TrackingCamera_Cl::onLayerChanged(od::Layer *from, od::Layer *to)
@@ -88,6 +101,12 @@ namespace dragonRfl
     void TrackingCamera_Cl::onTransformChanged()
     {
         _updateCameraViewMatrix();
+
+        if(mRenderHandle != nullptr)
+        {
+            mRenderHandle->setPosition(getLevelObject().getPosition());
+            mRenderHandle->setOrientation(getLevelObject().getRotation());
+        }
     }
 
     glm::vec2 TrackingCamera_Cl::cursorPosToYawPitch(const glm::vec2 &cursorPos)
@@ -105,7 +124,7 @@ namespace dragonRfl
         mYaw = yawPitch.x;
         mPitch = yawPitch.y;
 
-        _updateCameraTracking();
+        //_updateCameraTracking();
     }
 
     void TrackingCamera_Cl::_updateCameraTracking()
@@ -154,10 +173,77 @@ namespace dragonRfl
         glm::vec3 eyepoint = getLevelObject().getPosition();
         glm::quat lookDirection = getLevelObject().getRotation();
 
-        glm::vec3 front = lookDirection * glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
+        glm::vec3 frontUnrot = glm::quat(glm::vec3(mPitch, mYaw, 0)) * glm::vec3(0, 0, -1);
+        Logger::info() << frontUnrot.x << "/" << frontUnrot.y << "/" << frontUnrot.z;
+
+        glm::vec3 front = lookDirection * frontUnrot; //* glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
         glm::vec3 up = lookDirection * glm::vec3(0, 1, 0);
 
         getClient().getRenderer().getCamera()->lookAt(eyepoint, eyepoint + front, up);
+    }
+
+    void TrackingCamera_Cl::_setupCameraModel()
+    {
+        // creates a visual representation of the camera position and direction
+        auto &renderer = getClient().getRenderer();
+
+        float d = 0.05;
+        float hw = 0.04;
+        float hh = 0.03;
+        glm::vec3 verts[] =
+        {
+            { 0, 0, 0 },
+            {    hw,  hh,     -d },
+            {   -hw,  hh,     -d },
+            {   -hw, -hh,     -d },
+            {    hw, -hh,     -d },
+            { -hw/2,  hh,     -d },
+            {  hw/2,  hh,     -d },
+            {     0,  hh*1.3, -d }
+        };
+
+        int32_t indices[] =
+        {
+            0, 1,
+            0, 2,
+            0, 3,
+            0, 4,
+
+            1, 2,
+            2, 3,
+            3, 4,
+            4, 1,
+
+            5, 7,
+            6, 7
+        };
+
+        auto geometry = renderer.createGeometry(odRender::PrimitiveType::LINES, true);
+        {
+            odRender::ArrayAccessor<glm::vec3> accessor(geometry->getVertexArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE);
+            accessor.resize(sizeof(verts)/sizeof(verts[0]));
+            for(size_t i = 0; i < accessor.size(); ++i)
+            {
+                accessor[i] = verts[i];
+            }
+        }
+
+        {
+            odRender::ArrayAccessor<int32_t> accessor(geometry->getIndexArrayAccessHandler(), odRender::ArrayAccessMode::REPLACE);
+            accessor.resize(sizeof(indices)/sizeof(indices[0]));
+            for(size_t i = 0; i < accessor.size(); ++i)
+            {
+                accessor[i] = indices[i];
+            }
+        }
+
+        auto model = renderer.createModel();
+        model->addGeometry(geometry);
+
+        mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
+        mRenderHandle->setModel(model);
+        mRenderHandle->setPosition(getLevelObject().getPosition());
+        mRenderHandle->setOrientation(getLevelObject().getRotation());
     }
 
 }
