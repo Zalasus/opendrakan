@@ -425,9 +425,19 @@ Record types
             {
                 quat rotation;
                 vect3f position; // wu!
-                uint32 flags; // Probably. Always 0.
-                uint16 interpolation; // 0x00 == NONE, 0x10 == LINEAR_LINEAR, 0x30 == SINE_SPLINE
-                uint16 relative_to; // Probably. Always 0.
+                uint32 relative_actor_id; // uses the actor id as stated in the sequence. only valid if "relative to another actor" or "look at actor"
+                uint32 options; // this basically consists of two bitfields and some flags
+                                //  bits 0-1: relative to
+                                //    00 = the world
+                                //    01 = another actor
+                                //    10 = look at actor
+                                //  bits 4-5: interpolation type
+                                //    00 = none
+                                //    01 = linear-linear
+                                //    10 = linear-spline
+                                //    11 = sine-spline
+                                // 0x0100 = ignore position
+                                // 0x0200 = ignore rotation
             };
 
             struct start_anim
@@ -504,9 +514,11 @@ Record types
         {
             string name;
             uint32 id;
-            uint32 unk0; // Always 1
-            uint32 unk1; // Always 0
-            uint32 level_entity_id; // probably
+            uint32 actor_type; // 0 = null actor, 1 == object, 2 == assigned by ai
+            uint32 assigned_as; // the different "parameter n"-options. is probably unused for any other type than "assigned by AI"
+            if(actor_type == 0) uint32 unused;
+            if(actor_type == 1) uint32 level_object_id;
+            if(actor_type == 2) ref ai_class; // no idea to what end this is used yet
             action[uint32] actions;
         };
 
