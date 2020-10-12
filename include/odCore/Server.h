@@ -12,6 +12,7 @@
 #include <atomic>
 #include <unordered_map>
 #include <mutex>
+#include <vector>
 
 #include <odCore/FilePath.h>
 
@@ -161,7 +162,7 @@ namespace od
             float lastMeasuredRoundTripTime;
         };
 
-        void _commitUpdate();
+        ClientData &_getClientData(odNet::ClientId id);
 
         odDb::DbManager &mDbManager;
         odRfl::RflManager &mRflManager;
@@ -176,7 +177,13 @@ namespace od
 
         odNet::ClientId mNextClientId;
         std::unordered_map<odNet::ClientId, std::unique_ptr<ClientData>> mClients;
-        std::mutex mClientsMutex; // to synchronize access to clients map (for adding clients etc.)
+        std::mutex mClientsMutex; // to synchronize access to clients map (for adding clients etc.). don't hold this when performing actions on clients!
+
+        // updating the clients may cause some of them to cause accesses to the client map. since we have to synchronize
+        //  access to that map, this could cause deadlocks if hold the mutex during that time. to prevent this, we only
+        //  aquire the mutex for a short time to copy the map into this update list, then iterate over the element without
+        //  holding the mutex.
+        std::vector<ClientData*> mTempClientUpdateList;
 
         double mServerTime;
 

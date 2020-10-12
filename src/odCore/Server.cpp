@@ -117,55 +117,25 @@ namespace od
 
     void Server::setClientDownlinkConnector(odNet::ClientId id, std::shared_ptr<odNet::DownlinkConnector> connector)
     {
-        std::lock_guard<std::mutex> lock(mClientsMutex);
+        auto &client = _getClientData(id);
 
-        auto it = mClients.find(id);
-        if(it == mClients.end())
-        {
-            throw od::NotFoundException("Invalid client ID");
-        }
-
-        it->second->downlinkConnector = connector;
-        it->second->messageDispatcher->setDownlinkConnector(connector);
+        client.downlinkConnector = connector;
+        client.messageDispatcher->setDownlinkConnector(connector);
     }
 
     std::shared_ptr<odNet::UplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
     {
-        std::lock_guard<std::mutex> lock(mClientsMutex);
-
-        auto it = mClients.find(clientId);
-        if(it == mClients.end())
-        {
-            throw od::NotFoundException("Invalid client ID");
-        }
-
-        return it->second->uplinkConnector;
+        return _getClientData(clientId).uplinkConnector;
     }
 
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
     {
-        std::lock_guard<std::mutex> lock(mClientsMutex);
-
-        auto it = mClients.find(id);
-        if(it == mClients.end())
-        {
-            throw od::NotFoundException("Invalid client ID");
-        }
-
-        return *(it->second->inputManager);
+        return *(_getClientData(id).inputManager);
     }
 
     odNet::DownlinkMessageDispatcher &Server::getMessageDispatcherForClient(odNet::ClientId id)
     {
-        std::lock_guard<std::mutex> lock(mClientsMutex);
-
-        auto it = mClients.find(id);
-        if(it == mClients.end())
-        {
-            throw od::NotFoundException("Invalid client ID");
-        }
-
-        return *(it->second->messageDispatcher);
+        return *(_getClientData(id).messageDispatcher);
     }
 
     LagCompensationGuard Server::compensateLag(odNet::ClientId id)
@@ -179,21 +149,10 @@ namespace od
 
     float Server::getEstimatedClientLag(odNet::ClientId id)
     {
-        std::lock_guard<std::mutex> lock(mClientsMutex);
+        auto &client = _getClientData(id);
 
-        auto client = mClients.find(id);
-        if(client == mClients.end())
-        {
-            throw od::NotFoundException("Invalid client ID");
-        }
-
-        float clientLag;
-        {
-            std::lock_guard<std::mutex> lock(client->second->mutex);
-            clientLag = client->second->lastMeasuredRoundTripTime/2 - client->second->viewInterpolationTime;
-        }
-
-        return clientLag;
+        std::lock_guard<std::mutex> lock(client.mutex);
+        return client.lastMeasuredRoundTripTime/2 - client.viewInterpolationTime;
     }
 
     void Server::loadLevel(const FilePath &lvlPath)
@@ -218,15 +177,23 @@ namespace od
         //  networked clients will probably not be used with out-of-tree-levels, anyway.
         auto relLevelPath = lvlPath.removePrefix(getEngineRootDir()).str();
 
+        // copy clients into temporary vector of pointers which we don't have to synchronize (to prevent deadlocks on recursive accesses to clients)
+        //  TODO: this is duplicate code, see update loop
         {
             std::lock_guard<std::mutex> lock(mClientsMutex);
-
+            mTempClientUpdateList.clear();
+            mTempClientUpdateList.reserve(mClients.size());
             for(auto &client : mClients)
             {
-                if(client.second->downlinkConnector != nullptr)
-                {
-                    client.second->downlinkConnector->loadLevel(relLevelPath);
-                }
+                mTempClientUpdateList.push_back(client.second.get());
+            }
+        }
+
+        for(auto client : mTempClientUpdateList)
+        {
+            if(client->downlinkConnector != nullptr)
+            {
+                client->downlinkConnector->loadLevel(relLevelPath);
             }
         }
 
@@ -259,13 +226,20 @@ namespace od
 
             mPhysicsSystem->update(relTime);
 
+            // copy clients into temporary vector of pointers which we don't have to synchronize (to prevent deadlocks on recursive accesses to clients)
             {
                 std::lock_guard<std::mutex> lock(mClientsMutex);
-
+                mTempClientUpdateList.clear();
+                mTempClientUpdateList.reserve(mClients.size());
                 for(auto &client : mClients)
                 {
-                    client.second->inputManager->update(relTime);
+                    mTempClientUpdateList.push_back(client.second.get());
                 }
+            }
+
+            for(auto client : mTempClientUpdateList)
+            {
+                client->inputManager->update(relTime);
             }
 
             // commit update
@@ -273,22 +247,18 @@ namespace od
 
             // send update to clients
             odState::TickNumber latestTick = mStateManager->getLatestTick();
-
+            for(auto client : mTempClientUpdateList)
             {
-                std::lock_guard<std::mutex> lock(mClientsMutex);
-                for(auto &client : mClients)
+                odState::TickNumber lastAckd;
                 {
-                    odState::TickNumber lastAckd;
-                    {
-                        std::lock_guard<std::mutex> lock(client.second->mutex);
-                        lastAckd = client.second->lastAcknowledgedTick;
-                    }
+                    std::lock_guard<std::mutex> lock(client->mutex);
+                    lastAckd = client->lastAcknowledgedTick;
+                }
 
-                    // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                    if(client.second->downlinkConnector != nullptr)
-                    {
-                        mStateManager->sendSnapshotToClient(latestTick, *client.second->downlinkConnector, lastAckd);
-                    }
+                // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                if(client->downlinkConnector != nullptr)
+                {
+                    mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, lastAckd);
                 }
             }
 
@@ -306,6 +276,19 @@ namespace od
         }
 
         Logger::info() << "Shutting down server gracefully";
+    }
+
+    Server::ClientData &Server::_getClientData(odNet::ClientId id)
+    {
+        std::lock_guard<std::mutex> lock(mClientsMutex);
+
+        auto it = mClients.find(id);
+        if(it == mClients.end())
+        {
+            throw od::NotFoundException("Invalid client ID");
+        }
+
+        return *it->second;
     }
 
     Server::ClientData::ClientData()
