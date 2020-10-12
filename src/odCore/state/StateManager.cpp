@@ -7,6 +7,7 @@
 #include <odCore/LevelObject.h>
 
 #include <odCore/net/DownlinkConnector.h>
+#include <odCore/net/UplinkConnector.h>
 
 namespace odState
 {
@@ -44,6 +45,11 @@ namespace odState
     : mLevel(level)
     , mIgnoreStateUpdates(false)
     {
+    }
+
+    void StateManager::setUplinkConnector(std::shared_ptr<odNet::UplinkConnector> c)
+    {
+        mUplinkConnectorForAck = c;
     }
 
     TickNumber StateManager::getLatestTick()
@@ -277,35 +283,40 @@ namespace odState
             discreteChangeCount += change.second.baseStates.countStatesWithValue();
         }
 
-        if(incomingSnapshot->targetDiscreteChangeCount != discreteChangeCount)
+        if(incomingSnapshot->targetDiscreteChangeCount == discreteChangeCount)
         {
-            return;
-        }
+            // this snapshot is complete! move it to the timeline
 
-        std::lock_guard<std::mutex> lock(mSnapshotMutex);
+            std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
-        if(mSnapshots.size() >= TICK_CAPACITY)
-        {
-            mSnapshots.pop_front();
-        }
-
-        // merge incoming with previous full snapshot
-        //  TODO: it might be clever to explicitly state the snapshot that the delta encoding used
-        //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
-        if(!mSnapshots.empty())
-        {
-            auto &baseSnapshot = mSnapshots.back();
-            for(auto &baseChange : baseSnapshot.changes)
+            if(mSnapshots.size() >= TICK_CAPACITY)
             {
-                auto &deltaChange = incomingSnapshot->changes[baseChange.first];
-                deltaChange.baseStates.merge(baseChange.second.baseStates, deltaChange.baseStates);
+                mSnapshots.pop_front();
+            }
+
+            // merge incoming with previous full snapshot
+            //  TODO: it might be clever to explicitly state the snapshot that the delta encoding used
+            //  FIXME: due to out-of-order transport, an incoming snapshot might get confirmed before the one it's delta encoding depends on. take that into account!!
+            if(!mSnapshots.empty())
+            {
+                auto &baseSnapshot = mSnapshots.back();
+                for(auto &baseChange : baseSnapshot.changes)
+                {
+                    auto &deltaChange = incomingSnapshot->changes[baseChange.first];
+                    deltaChange.baseStates.merge(baseChange.second.baseStates, deltaChange.baseStates);
+                }
+            }
+
+            auto snapshot = _getSnapshot(tick, mSnapshots, true);
+            if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
+            *snapshot = std::move(*incomingSnapshot);
+            mIncomingSnapshots.erase(incomingSnapshot);
+
+            if(mUplinkConnectorForAck != nullptr)
+            {
+                mUplinkConnectorForAck->acknowledgeSnapshot(tick);
             }
         }
-
-        auto snapshot = _getSnapshot(tick, mSnapshots, true);
-        if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
-        *snapshot = std::move(*incomingSnapshot);
-        mIncomingSnapshots.erase(incomingSnapshot);
     }
 
 }

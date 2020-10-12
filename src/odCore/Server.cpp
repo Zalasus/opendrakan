@@ -284,8 +284,6 @@ namespace od
                         lastAckd = client.second->lastAcknowledgedTick;
                     }
 
-                    Logger::info() << "last ack: " << lastAckd;
-
                     // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
                     if(client.second->downlinkConnector != nullptr)
                     {

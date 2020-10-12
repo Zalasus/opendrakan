@@ -119,6 +119,11 @@ namespace od
     {
         mUplinkConnector = connector;
         mMessageDispatcher->setUplinkConnector(connector);
+
+        if(mStateManager != nullptr)
+        {
+            mStateManager->setUplinkConnector(connector);
+        }
     }
 
     void Client::loadLevel(const FilePath &lvlPath)
@@ -131,6 +136,7 @@ namespace od
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
 
         mStateManager = std::make_unique<odState::StateManager>(*mLevel);
+        mStateManager->setUplinkConnector(mUplinkConnector);
 
         mLevel->spawnAllObjects();
     }

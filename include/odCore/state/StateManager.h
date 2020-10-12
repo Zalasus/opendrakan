@@ -30,6 +30,7 @@ namespace od
 namespace odNet
 {
     class DownlinkConnector;
+    class UplinkConnector;
 }
 
 namespace odState
@@ -40,6 +41,11 @@ namespace odState
     public:
 
         StateManager(od::Level &level);
+
+        /**
+         * @brief Assigns an uplink connector to which snapshot acknowledgements will be reported. May be nullptr.
+         */
+        void setUplinkConnector(std::shared_ptr<odNet::UplinkConnector> c);
 
         TickNumber getLatestTick();
 
@@ -157,6 +163,8 @@ namespace odState
          * last snapshot.
          */
         std::deque<Snapshot> mIncomingSnapshots;
+
+        std::shared_ptr<odNet::UplinkConnector> mUplinkConnectorForAck;
     };
 
 }
