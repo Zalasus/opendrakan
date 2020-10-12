@@ -167,9 +167,8 @@ u8  action_state;
 ### Analog Action (Uplink)
 ```
 u32 action_code;
-u8  flags; // 1 == has_y_axis
 f32 x;
-if(flags & 1) f32 y;
+f32 y;
 ```
 
 ### Chat

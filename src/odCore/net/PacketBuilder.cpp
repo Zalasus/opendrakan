@@ -7,7 +7,7 @@
 namespace odNet
 {
 
-    DownlinkPacketBuilder::DownlinkPacketBuilder(const std::function<void(const char *, size_t)> &packetCallback)
+    PacketBuilder::PacketBuilder(const std::function<void(const char *, size_t)> &packetCallback)
     : mPacketCallback(packetCallback)
     , mStreamBuffer(mPacketBuffer)
     , mOutputStream(&mStreamBuffer)
@@ -15,7 +15,7 @@ namespace odNet
     {
     }
 
-    void DownlinkPacketBuilder::loadLevel(const std::string &path)
+    void PacketBuilder::loadLevel(const std::string &path)
     {
         uint16_t pathLength = path.size() > 0xffff ? 0xffff : path.size(); // TODO: warn on truncation?
 
@@ -24,7 +24,7 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states)
+    void PacketBuilder::objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states)
     {
         uint32_t flags = 0;
         if(states.position.hasValue()) flags |= PacketConstants::STATE_MASK_POSITION;
@@ -43,7 +43,7 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state)
+    void PacketBuilder::objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state)
     {
         auto stateCode = static_cast<std::underlying_type_t<od::ObjectLifecycleState>>(state);
         if(stateCode > std::numeric_limits<uint8_t>::max())
@@ -58,7 +58,7 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick)
+    void PacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick)
     {
         _beginPacket(PacketType::CONFIRM_SNAPSHOT);
         mWriter << tick
@@ -68,7 +68,7 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::globalMessage(MessageChannelCode code, const char *data, size_t size)
+    void PacketBuilder::globalMessage(MessageChannelCode code, const char *data, size_t size)
     {
         _beginPacket(PacketType::GLOBAL_MESSAGE);
         mWriter << code;
@@ -76,7 +76,28 @@ namespace odNet
         _endPacket();
     }
 
-    void DownlinkPacketBuilder::_beginPacket(PacketType type)
+    void PacketBuilder::actionTriggered(odInput::ActionCode code, odInput::ActionState state)
+    {
+        _beginPacket(PacketType::ACTION_TRIGGERED);
+        mWriter << code << static_cast<uint8_t>(state);
+        _endPacket();
+    }
+
+    void PacketBuilder::analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes)
+    {
+        _beginPacket(PacketType::ANALOG_ACTION_TRIGGERED);
+        mWriter << code << axes.x << axes.y;
+        _endPacket();
+    }
+
+    void PacketBuilder::acknowledgeSnapshot(odState::TickNumber tick)
+    {
+        _beginPacket(PacketType::ACKNOWLEDGE_SNAPSHOT);
+        mWriter << tick;
+        _endPacket();
+    }
+
+    void PacketBuilder::_beginPacket(PacketType type)
     {
         mPacketBuffer.clear();
         //mOutputStream.seekp(0);
@@ -85,7 +106,7 @@ namespace odNet
         mWriter << static_cast<uint8_t>(type) << dummyPayloadSize;
     }
 
-    void DownlinkPacketBuilder::_endPacket()
+    void PacketBuilder::_endPacket()
     {
         mOutputStream.flush();
 

@@ -8,21 +8,26 @@
 
 #include <odCore/net/DownlinkConnector.h>
 #include <odCore/net/Protocol.h>
+#include <odCore/net/UplinkConnector.h>
 
 namespace odNet
 {
 
-    class DownlinkPacketBuilder : public DownlinkConnector
+    class PacketBuilder : public DownlinkConnector, public UplinkConnector
     {
     public:
 
-        DownlinkPacketBuilder(const std::function<void(const char *, size_t)> &packetCallback);
+        PacketBuilder(const std::function<void(const char *, size_t)> &packetCallback);
 
         virtual void loadLevel(const std::string &path) override final;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override final;
         virtual void objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state) override final;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override final;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override final;
+
+        virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override final;
+        virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override final;
+        virtual void acknowledgeSnapshot(odState::TickNumber tick) override final;
 
 
     private:

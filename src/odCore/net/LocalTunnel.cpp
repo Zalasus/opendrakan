@@ -38,11 +38,15 @@ namespace odNet
 
             }else
             {
-                mDownlinkPacketParser.parse(data, size);
+                size_t usedBytes = mDownlinkPacketParser.parse(data, size);
+                if(usedBytes != size)
+                {
+                    throw od::Exception("Parser did not use all packet bytes, but it should have");
+                }
             }
         };
 
-        mDownlinkPacketBuilder = std::make_shared<DownlinkPacketBuilder>(downlinkPacketCallback);
+        mDownlinkPacketBuilder = std::make_shared<PacketBuilder>(downlinkPacketCallback);
     }
 
     bool LocalTunnel::_shouldDrop()

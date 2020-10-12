@@ -12,9 +12,15 @@ namespace odNet
         OBJECT_STATE_CHANGED,
         OBJECT_LIFECYCLE_STATE_CHANGED,
         CONFIRM_SNAPSHOT,
+        ACKNOWLEDGE_SNAPSHOT,
+
         LOAD_LEVEL,
+
         GLOBAL_MESSAGE,
-        OBJECT_MESSAGE
+        OBJECT_MESSAGE,
+
+        ACTION_TRIGGERED,
+        ANALOG_ACTION_TRIGGERED
     };
 
     struct PacketConstants
