@@ -2,16 +2,20 @@
 #include <odCore/net/LocalTunnel.h>
 
 #include <algorithm>
+#include <random>
 
 namespace odNet
 {
     constexpr size_t LocalTunnel::MAX_PAYLOAD_SIZE; // pre-C++17 bullshit (no inline vars)
 
+    static thread_local std::random_device seedSource;
+    static thread_local std::minstd_rand randomEngine(seedSource());
+    static thread_local std::uniform_real_distribution<double> dropDistribution(0.0, 1.0);
+
     LocalTunnel::LocalTunnel(std::shared_ptr<DownlinkConnector> downlinkOutput, std::shared_ptr<UplinkConnector> uplinkOutput)
     : mPacketParser(downlinkOutput, uplinkOutput)
     , mLatency(0.0)
     , mDropRate(0.0)
-    , mDropDistribution(0.0, 1.0)
     {
         auto downlinkPacketCallback = [this](const char *data, size_t size)
         {
@@ -28,7 +32,7 @@ namespace odNet
 
     bool LocalTunnel::_shouldDrop()
     {
-        return mDropDistribution(mRandomEngine) < mDropRate;
+        return dropDistribution(randomEngine) < mDropRate;
     }
 
     void LocalTunnel::_addPacket(const char *data, size_t size, std::deque<Packet> &buffer)

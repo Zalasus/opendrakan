@@ -17,7 +17,6 @@
 #ifndef INCLUDE_ODCORE_NET_LOCALTUNNEL_H_
 #define INCLUDE_ODCORE_NET_LOCALTUNNEL_H_
 
-#include <random>
 #include <memory>
 
 #include <odCore/net/PacketParser.h>
@@ -64,11 +63,7 @@ namespace odNet
         std::deque<Packet> mUplinkPacketBuffer;
 
         double mLatency;
-
         double mDropRate;
-        std::minstd_rand mRandomEngine;
-        std::uniform_real_distribution<double> mDropDistribution;
-
     };
 
 }
