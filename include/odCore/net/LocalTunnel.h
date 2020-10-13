@@ -53,6 +53,7 @@ namespace odNet
         };
 
         bool _shouldDrop();
+        void _addPacket(const char *data, size_t size, std::deque<Packet> &buffer);
 
         PacketParser mPacketParser;
 
