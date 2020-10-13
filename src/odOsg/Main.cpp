@@ -58,6 +58,7 @@ static void printUsage()
         << "    -c  Use free look trackball view and ignore in-game camera controllers" << std::endl
         << "    -p  Force enable physics debug drawing" << std::endl
         << "    -t  Use a simulated network tunnel to connect client and server" << std::endl
+        << "    -d <drop rate>  Simulate packet drops (implies -t, range 0-1)" << std::endl
         << "If no level file and no options are given, the default intro level is loaded." << std::endl
         << "The latter assumes the current directory to be the game root." << std::endl
         << std::endl;
@@ -96,7 +97,8 @@ int main(int argc, char **argv)
     bool freeLook = false;
     bool physicsDebug = false;
     bool useLocalTunnel = false;
-    while((c = getopt(argc, argv, "vhcpt")) != -1)
+    float dropRate = 0;
+    while((c = getopt(argc, argv, "vhcptd:")) != -1)
     {
         switch(c)
         {
@@ -118,6 +120,19 @@ int main(int argc, char **argv)
 
         case 't':
             useLocalTunnel = true;
+            break;
+
+        case 'd':
+            {
+                useLocalTunnel = true;
+                std::istringstream in(optarg);
+                in >> dropRate;
+                if(in.fail())
+                {
+                    std::cout << "-d option needs a real number as argument" << std::endl;
+                    return 1;
+                }
+            }
             break;
 
         case '?':
@@ -151,6 +166,7 @@ int main(int argc, char **argv)
     }else
     {
         localTunnel = std::make_unique<odNet::LocalTunnel>(client.getDownlinkConnector(), server.getUplinkConnectorForClient(clientId));
+        localTunnel->setDropRate(dropRate);
         server.setClientDownlinkConnector(clientId, localTunnel->getDownlinkInput());
         client.setUplinkConnector(localTunnel->getUplinkInput());
     }
