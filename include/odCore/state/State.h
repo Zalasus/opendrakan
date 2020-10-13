@@ -229,9 +229,9 @@ namespace odState
     {
     public:
 
-        StateDeltaEncOp(const _Bundle &prev, const _Bundle &current, _Bundle &result)
-        : mPrevBundle(prev)
-        , mCurrentBundle(current)
+        StateDeltaEncOp(const _Bundle &reference, const _Bundle &toEncode, _Bundle &result)
+        : mReference(reference)
+        , mToEncode(toEncode)
         , mResultBundle(result)
         {
         }
@@ -239,13 +239,13 @@ namespace odState
         template <typename _State>
         StateDeltaEncOp &operator()(_State _Bundle::* state)
         {
-            if((mPrevBundle.*state).hasValue() && mCurrentBundle.*state == mPrevBundle.*state)
+            if((mReference.*state).hasValue() && mToEncode.*state == mReference.*state)
             {
                 mResultBundle.*state = _State();
 
             }else
             {
-                mResultBundle.*state = mCurrentBundle.*state;
+                mResultBundle.*state = mToEncode.*state;
             }
 
             return *this;
@@ -254,8 +254,8 @@ namespace odState
 
     private:
 
-        const _Bundle &mPrevBundle;
-        const _Bundle &mCurrentBundle;
+        const _Bundle &mReference;
+        const _Bundle &mToEncode;
         _Bundle &mResultBundle;
     };
 
@@ -266,7 +266,7 @@ namespace odState
         virtual size_t countStatesWithValue() = 0;
         virtual void merge(const StateBundleBase &lhs, const StateBundleBase &rhs) = 0;
         virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
-        virtual void deltaEncode(const StateBundleBase &prev, const StateBundleBase &current) = 0;
+        virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
     };
 
 
@@ -311,10 +311,10 @@ namespace odState
             lerp(lhs, rhs, delta);
         }
 
-        void deltaEncode(const _Bundle &prev, const _Bundle &current)
+        void deltaEncode(const _Bundle &reference, const _Bundle &toEncode)
         {
             auto &result = static_cast<_Bundle&>(*this);
-            StateDeltaEncOp<_Bundle> op(prev, current, result);
+            StateDeltaEncOp<_Bundle> op(reference, toEncode, result);
             _Bundle::stateOp(op);
         }
 

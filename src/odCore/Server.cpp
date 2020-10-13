@@ -73,7 +73,10 @@ namespace od
         virtual void acknowledgeSnapshot(odState::TickNumber tick) override
         {
             std::lock_guard<std::mutex> lock(mClient.mutex);
-            mClient.lastAcknowledgedTick = tick;
+            if(tick > mClient.lastAcknowledgedTick)
+            {
+                mClient.lastAcknowledgedTick = tick;
+            }
         }
 
 

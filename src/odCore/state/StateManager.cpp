@@ -56,7 +56,7 @@ namespace odState
     {
         std::lock_guard<std::mutex> lock(mSnapshotMutex);
 
-        return mSnapshots.empty() ? FIRST_TICK - 1 : mSnapshots.back().tick;
+        return mSnapshots.empty() ? INVALID_TICK : mSnapshots.back().tick;
     }
 
     double StateManager::getLatestRealtime()
@@ -110,7 +110,7 @@ namespace odState
 
     void StateManager::confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceTick)
     {
-        auto stagedSnapshot = _getSnapshot(tick, mIncomingSnapshots, true);
+        auto stagedSnapshot = _getSnapshot(tick, mIncomingSnapshots, true); // TODO: clean up incoming snapshots that have never been confirmed
         stagedSnapshot->realtime = time;
         stagedSnapshot->targetDiscreteChangeCount = changeCount;
         stagedSnapshot->confirmed = true;
@@ -227,10 +227,10 @@ namespace odState
             od::ObjectStates filteredChange = stateChange.second.baseStates;
             if(reference != mSnapshots.end())
             {
-                auto prevChange = reference->changes.find(stateChange.first);
-                if(prevChange != reference->changes.end())
+                auto referenceChange = reference->changes.find(stateChange.first);
+                if(referenceChange != reference->changes.end())
                 {
-                    filteredChange.deltaEncode(filteredChange, prevChange->second.baseStates);
+                    filteredChange.deltaEncode(referenceChange->second.baseStates, filteredChange);
                 }
             }
 
