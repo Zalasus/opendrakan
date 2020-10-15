@@ -90,7 +90,7 @@ namespace dragonRfl
 
 	void TrackingCamera_Cl::onUpdate(float relTime)
 	{
-	    //_updateCameraTracking();
+	    _updateCameraTracking();
 	}
 
 	void TrackingCamera_Cl::onLayerChanged(od::Layer *from, od::Layer *to)
@@ -124,17 +124,11 @@ namespace dragonRfl
         mYaw = yawPitch.x;
         mPitch = yawPitch.y;
 
-        //_updateCameraTracking();
+        _updateCameraTracking();
     }
 
     void TrackingCamera_Cl::_updateCameraTracking()
-    {
-        std::shared_ptr<odPhysics::Handle> trackedPhysicsHandle;
-        if(mObjectToTrack.getSpawnableClassInstance() != nullptr)
-        {
-            trackedPhysicsHandle = mObjectToTrack.getPhysicsHandle();
-        }
-
+    {    
         glm::vec3::value_type maxDistance = 3;
         glm::vec3::value_type bounceBackDistance = 0.1; // TODO: calculate this based of FOV or something
 
@@ -149,7 +143,7 @@ namespace dragonRfl
         static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
 
         odPhysics::RayTestResult result;
-        bool hit = getClient().getPhysicsSystem().rayTestClosest(from, to, mask, trackedPhysicsHandle, result);
+        bool hit = getClient().getPhysicsSystem().rayTestClosest(from, to, mask, mObjectToTrack.getPhysicsHandle(), result);
         if(!hit)
         {
             eye = to;
@@ -173,10 +167,7 @@ namespace dragonRfl
         glm::vec3 eyepoint = getLevelObject().getPosition();
         glm::quat lookDirection = getLevelObject().getRotation();
 
-        glm::vec3 frontUnrot = glm::quat(glm::vec3(mPitch, mYaw, 0)) * glm::vec3(0, 0, -1);
-        Logger::info() << frontUnrot.x << "/" << frontUnrot.y << "/" << frontUnrot.z;
-
-        glm::vec3 front = lookDirection * frontUnrot; //* glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
+        glm::vec3 front = lookDirection * glm::vec3(0, 0, -1); // rynn's model's look direction is negative z!
         glm::vec3 up = lookDirection * glm::vec3(0, 1, 0);
 
         getClient().getRenderer().getCamera()->lookAt(eyepoint, eyepoint + front, up);
