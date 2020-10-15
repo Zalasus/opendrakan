@@ -151,6 +151,8 @@ namespace od
             std::unique_ptr<odInput::InputManager> inputManager;
             std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
 
+            odState::TickNumber nextTickToSend;
+
             // for synchronizing access to the below fields
             std::mutex mutex;
 

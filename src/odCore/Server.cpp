@@ -252,17 +252,24 @@ namespace od
             odState::TickNumber latestTick = mStateManager->getLatestTick();
             for(auto client : mTempClientUpdateList)
             {
+                if(latestTick < client->nextTickToSend)
+                {
+                    continue;
+                }
+
                 odState::TickNumber lastAckd;
                 {
                     std::lock_guard<std::mutex> lock(client->mutex);
                     lastAckd = client->lastAcknowledgedTick;
                 }
 
-                // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
                 if(client->downlinkConnector != nullptr)
                 {
                     mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, lastAckd);
                 }
+
+                // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                client->nextTickToSend = latestTick+3;
             }
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
@@ -295,7 +302,8 @@ namespace od
     }
 
     Server::ClientData::ClientData()
-    : lastAcknowledgedTick(odState::INVALID_TICK)
+    : nextTickToSend(odState::FIRST_TICK)
+    , lastAcknowledgedTick(odState::INVALID_TICK)
     , viewInterpolationTime(0.1) // TODO: use constant or communicate via handshake
     , lastMeasuredRoundTripTime(0.0)
     {
