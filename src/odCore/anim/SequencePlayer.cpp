@@ -100,7 +100,7 @@ namespace odAnim
             {
                 if(playerObject != nullptr && actor.second.actorObject.getObjectId() == playerObject->getObjectId()) continue;
 
-                actor.second.actorObject.stop();
+                actor.second.actorObject.setRunning(false);
             }
 
         }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_NON_ACTORS)
@@ -114,7 +114,7 @@ namespace odAnim
                 if(it == mActors.end())
                 {
                     // not an actor. stop object
-                    obj.stop();
+                    obj.setRunning(false);
                 }
 
             });
@@ -126,7 +126,7 @@ namespace odAnim
 
                 if(playerObject != nullptr && obj.getObjectId() == playerObject->getObjectId()) return;
 
-                obj.stop();
+                obj.setRunning(false);
 
             });
         }
@@ -173,14 +173,7 @@ namespace odAnim
 
         NonTransformApplyVisitor &operator()(const odDb::ActionRunStopAi &a)
         {
-            if(a.enableAi)
-            {
-                mObject.start();
-
-            }else
-            {
-                mObject.stop();
-            }
+            mObject.setRunning(a.enableAi);
             return *this;
         }
 

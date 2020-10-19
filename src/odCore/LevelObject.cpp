@@ -100,7 +100,7 @@ namespace od
     , mId(record.getObjectId())
     , mClass(dbClass)
     , mLightingLayer(nullptr)
-    , mLifecycleState(ObjectLifecycleState::LOADED)
+    , mIsSpawned(false)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mAssociatedLayer(nullptr)
     , mAssociateWithCeiling(false)
@@ -112,6 +112,7 @@ namespace od
         mStates.rotation = record.getRotation();
         mStates.scale = record.getScale();
         mStates.visibility = record.isVisible();
+        mStates.running = true;
 
         LayerId lightSourceLayerId = record.getLightSourceLayerId();
         if(lightSourceLayerId != 0)
@@ -134,10 +135,9 @@ namespace od
     LevelObject::~LevelObject()
     {
         // make sure we perform the despawn cleanup in case we didnt despawn before getting deleted
-        if(mLifecycleState != ObjectLifecycleState::LOADED)
+        if(mIsSpawned)
         {
             Logger::warn() << "Level object deleted while still spawned";
-            stop();
             despawn();
         }
 
@@ -172,31 +172,111 @@ namespace od
         setStates(states);
     }
 
-    void LevelObject::setStates(const ObjectStates &states, bool doNotTrack)
+    void LevelObject::setRunning(bool b)
+    {
+        ObjectStates states;
+        states.running = b;
+        setStates(states);
+    }
+
+    void LevelObject::setStates(const ObjectStates &newStates, bool doNotTrack)
     {
         bool transformChanged = false;
+        ObjectStates prevStates = mStates;
 
-        if(states.position.hasValue())
+        mStates.merge(mStates, newStates);
+
+        if(newStates.position.hasValue())
         {
-            _applyTranslation(states.position.get());
+            if(_hasCrossedTriangle(prevStates.position.get(), newStates.position.get()))
+            {
+                updateAssociatedLayer(true);
+            }
+
+            if(mRenderHandle != nullptr)
+            {
+                mRenderHandle->setPosition(newStates.position.get());
+            }
+
+            if(mPhysicsHandle != nullptr)
+            {
+                mPhysicsHandle->setPosition(newStates.position.get());
+            }
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onTranslated(prevStates.position.get(), newStates.position.get());
+            }
+
             transformChanged = true;
         }
 
-        if(states.rotation.hasValue())
+        if(newStates.rotation.hasValue())
         {
-            _applyRotation(states.rotation.get());
+            if(mRenderHandle != nullptr)
+            {
+                mRenderHandle->setOrientation(newStates.rotation.get());
+            }
+
+            if(mPhysicsHandle != nullptr)
+            {
+                mPhysicsHandle->setOrientation(newStates.rotation.get());
+            }
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onRotated(prevStates.rotation.get(), newStates.rotation.get());
+            }
+
             transformChanged = true;
         }
 
-        if(states.scale.hasValue())
+        if(newStates.scale.hasValue())
         {
-            _applyScale(states.scale.get());
+            if(mRenderHandle != nullptr)
+            {
+                mRenderHandle->setScale(newStates.scale.get());
+            }
+
+            if(mPhysicsHandle != nullptr)
+            {
+                mPhysicsHandle->setScale(newStates.scale.get());
+            }
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onScaled(prevStates.scale.get(), newStates.scale.get());
+            }
+
             transformChanged = true;
         }
 
-        if(states.visibility.hasValue())
+        if(newStates.visibility.hasValue())
         {
-            _applyVisibility(states.visibility.get());
+            if(mRenderHandle != nullptr)
+            {
+                mRenderHandle->setVisible(newStates.visibility.get());
+            }
+
+            if(mSpawnableClass != nullptr)
+            {
+                mSpawnableClass->onVisibilityChanged(newStates.visibility.get());
+            }
+        }
+
+        if(newStates.running.hasValue())
+        {
+            if(mSpawnableClass != nullptr)
+            {
+                if(newStates.running.get())
+                {
+                    mSpawnableClass->onStart();
+
+                }else
+                {
+                    mSpawnableClass->onStop();
+                }
+            }
         }
 
         if(transformChanged && mSpawnableClass != nullptr)
@@ -206,7 +286,7 @@ namespace od
 
         if(!doNotTrack)
         {
-            mLevel.getEngine().getStateManager().objectStatesChanged(*this, states);
+            mLevel.getEngine().getStateManager().objectStatesChanged(*this, newStates);
         }
     }
 
@@ -216,95 +296,44 @@ namespace od
 
     void LevelObject::spawn()
     {
-        switch(mLifecycleState)
+        if(mIsSpawned)
         {
-        case ObjectLifecycleState::LOADED:
-            mLifecycleState = ObjectLifecycleState::SPAWNED;
-            if(mAssociatedLayer == nullptr)
-            {
-                // if we haven't got an associated layer yet, search for it now.
-                updateAssociatedLayer(false);
-            }
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onSpawned();
-            }
-            Logger::debug() << "Object " << getObjectId() << " spawned";
-            break;
+            return;
+        }
 
-        case ObjectLifecycleState::SPAWNED:
-        case ObjectLifecycleState::RUNNING:
-            break;
+        mIsSpawned = true;
 
-        case ObjectLifecycleState::DESTROYED:
-            throw od::Exception("Can't spawn on object in destroyed state");
-        };
+        if(mAssociatedLayer == nullptr)
+        {
+            // if we haven't got an associated layer yet, search for it now.
+            updateAssociatedLayer(false);
+        }
+
+        if(mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onSpawned();
+        }
+
+        Logger::debug() << "Object " << getObjectId() << " spawned";
     }
 
     void LevelObject::despawn()
     {
-        switch(mLifecycleState)
+        if(!mIsSpawned)
         {
-        case ObjectLifecycleState::LOADED:
-            break;
-
-        case ObjectLifecycleState::SPAWNED:
-            mLifecycleState = ObjectLifecycleState::LOADED;
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onDespawned();
-            }
-            Logger::debug() << "Object " << getObjectId() << " despawned";
-            break;
-
-        case ObjectLifecycleState::RUNNING:
-            throw od::Exception("Can't despawn an object that is still running");
-
-        case ObjectLifecycleState::DESTROYED:
-            break;
-        };
-    }
-
-    void LevelObject::start()
-    {
-        switch(mLifecycleState)
-        {
-        case ObjectLifecycleState::LOADED:
-        case ObjectLifecycleState::DESTROYED:
-            throw od::Exception("Can't start an object that is not spawned");
-
-        case ObjectLifecycleState::SPAWNED:
-            mLifecycleState = ObjectLifecycleState::RUNNING;
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onStart();
-            }
-            Logger::debug() << "Object " << getObjectId() << " started";
-            break;
-
-        case ObjectLifecycleState::RUNNING:
-            break;
+            return;
         }
-    }
 
-    void LevelObject::stop()
-    {
-        switch(mLifecycleState)
+        mIsSpawned = false;
+
+        if(mSpawnableClass != nullptr)
         {
-        case ObjectLifecycleState::LOADED:
-        case ObjectLifecycleState::SPAWNED:
-        case ObjectLifecycleState::DESTROYED:
-            break;
-
-        case ObjectLifecycleState::RUNNING:
-            mLifecycleState = ObjectLifecycleState::SPAWNED;
-            if(mSpawnableClass != nullptr)
-            {
-                mSpawnableClass->onStop();
-            }
-            Logger::debug() << "Object " << getObjectId() << " stopped";
-            break;
+            mSpawnableClass->onDespawned();
         }
+
+        // TODO: destroy render and physics handle
+
+        Logger::debug() << "Object " << getObjectId() << " despawned";
     }
 
     void LevelObject::setEnableUpdate(bool enable)
@@ -314,7 +343,7 @@ namespace od
 
     void LevelObject::update(float relTime)
     {
-        if(mLifecycleState == ObjectLifecycleState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
+        if(mStates.running.get() && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onUpdate(relTime);
         }
@@ -322,7 +351,7 @@ namespace od
 
     void LevelObject::postUpdate(float relTime)
     {
-        if(mLifecycleState == ObjectLifecycleState::RUNNING && mEnableUpdate && mSpawnableClass != nullptr)
+        if(mStates.running.get() && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onPostUpdate(relTime);
         }
@@ -358,7 +387,7 @@ namespace od
     {
         Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
 
-        if(mLifecycleState == ObjectLifecycleState::RUNNING && mSpawnableClass != nullptr)
+        if(mStates.running.get() && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onMessageReceived(sender, message);
         }
@@ -434,9 +463,9 @@ namespace od
 
     void LevelObject::setRflClassInstance(std::unique_ptr<odRfl::ClassBase> i)
     {
-        if(mLifecycleState != ObjectLifecycleState::LOADED)
+        if(mIsSpawned)
         {
-            throw od::Exception("An object must be in the loaded-state to be assigned an instance");
+            throw od::Exception("An object must not be spawned when assigning an instance to it");
         }
 
         mRflClassInstance = std::move(i);
@@ -527,91 +556,6 @@ namespace od
         }
 
         return mSkeleton.get();
-    }
-
-    void LevelObject::_applyTranslation(const glm::vec3 &p)
-    {
-        glm::vec3 prevPos = mStates.position.get();
-        mStates.position = p;
-
-        if(_hasCrossedTriangle(prevPos, p))
-        {
-            updateAssociatedLayer(true);
-        }
-
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->setPosition(p);
-        }
-
-        if(mPhysicsHandle != nullptr)
-        {
-            mPhysicsHandle->setPosition(p);
-        }
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onTranslated(prevPos, p);
-        }
-    }
-
-    void LevelObject::_applyRotation(const glm::quat &r)
-    {
-        glm::quat prevRot = mStates.rotation.get();
-        mStates.rotation = r;
-
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->setOrientation(r);
-        }
-
-        if(mPhysicsHandle != nullptr)
-        {
-            mPhysicsHandle->setOrientation(r);
-        }
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onRotated(prevRot, r);
-        }
-    }
-
-    void LevelObject::_applyScale(const glm::vec3 &s)
-    {
-        glm::vec3 prevScale = mStates.scale.get();
-        mStates.scale = s;
-
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->setScale(s);
-        }
-
-        if(mPhysicsHandle != nullptr)
-        {
-            mPhysicsHandle->setScale(s);
-        }
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onScaled(prevScale, s);
-        }
-    }
-
-    void LevelObject::_applyVisibility(bool v)
-    {
-        Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
-
-        mStates.visibility = v;
-
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->setVisible(v);
-        }
-
-        if(mSpawnableClass != nullptr)
-        {
-            mSpawnableClass->onVisibilityChanged(v);
-        }
     }
 
 }

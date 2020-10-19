@@ -46,7 +46,6 @@ namespace od
     	// despawn all remaining objects
     	for(auto &objMap : mLevelObjects)
     	{
-            objMap.second->stop();
     		objMap.second->despawn();
     	}
     }
@@ -125,7 +124,6 @@ namespace od
             if(obj->getSpawnStrategy() == SpawnStrategy::Always)
             {
                 obj->spawn();
-                obj->start();
             }
         }
     }
@@ -142,7 +140,6 @@ namespace od
         for(auto &objMap : mLevelObjects)
         {
             objMap.second->spawn();
-            objMap.second->start();
         }
     }
 
@@ -155,7 +152,6 @@ namespace od
                 auto it = mLevelObjects.find(objId);
                 if(it == mLevelObjects.end()) continue;
 
-                it->second->stop();
                 it->second->despawn();
 
                 mLevelObjects.erase(it);

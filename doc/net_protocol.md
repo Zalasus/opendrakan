@@ -99,7 +99,7 @@ if(state_flags & (1 << 0)) vec3 translation;
 if(state_flags & (1 << 1)) quat rotation;
 if(state_flags & (1 << 2)) vec3 scale;
 if(state_flags & (1 << 3)) u8 visibility;
-if(state_flags & (1 << 4)) f32 animation_frame;
+if(state_flags & (1 << 4)) u8 running;
 ```
 
 ### Object Extra State Changed

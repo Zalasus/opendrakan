@@ -70,6 +70,8 @@ namespace odNet
 
                 od::ObjectStates states;
 
+                // TODO: implement this using a state operator
+
                 if(stateFlags & PacketConstants::STATE_MASK_POSITION)
                 {
                     glm::vec3 pos;
@@ -98,25 +100,16 @@ namespace odNet
                     states.visibility = vis;
                 }
 
+                if(stateFlags & PacketConstants::STATE_MASK_RUNNING)
+                {
+                    uint8_t running;
+                    dr >> running;
+                    states.running = running;
+                }
+
                 if(mDownlinkOutput != nullptr)
                 {
                     mDownlinkOutput->objectStatesChanged(tick, id, states);
-                }
-            }
-            break;
-
-        case PacketType::OBJECT_LIFECYCLE_STATE_CHANGED:
-            {
-                odState::TickNumber tick;
-                od::LevelObjectId id;
-                uint8_t stateCode;
-                dr >> tick
-                   >> id
-                   >> stateCode;
-
-                if(mDownlinkOutput != nullptr)
-                {
-                    mDownlinkOutput->objectLifecycleStateChanged(tick, id, static_cast<od::ObjectLifecycleState>(stateCode)); // TODO: validate state code
                 }
             }
             break;

@@ -85,9 +85,9 @@ namespace od
         inline glm::vec3 getPosition() const { return mStates.position.get(); }
         inline glm::vec3 getScale() const { return mStates.scale.get(); }
         inline glm::quat getRotation() const { return mStates.rotation.get(); }
-        inline ObjectLifecycleState getLifecycleState() const { return mLifecycleState; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
+        inline bool isSpawned() const { return mIsSpawned; }
         inline const std::vector<LevelObjectId> &getLinkedObjects() const { return mLinkedObjects; }
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
         inline bool isVisible() const { return mStates.visibility.get(); }
@@ -100,13 +100,13 @@ namespace od
 
         void spawn();
         void despawn();
-        void start();
-        void stop();
 
+        // these are convenience methods that create and pass an ObjectStates object to setStates().
         void setPosition(const glm::vec3 &v);
         void setRotation(const glm::quat &q);
         void setScale(const glm::vec3 &s);
         void setVisible(bool v);
+        void setRunning(bool b);
 
         /**
          * If doNotTrack is true, these changes will be not be sent to the state
@@ -218,11 +218,6 @@ namespace od
 
     private:
 
-        void _applyTranslation(const glm::vec3 &p);
-        void _applyRotation(const glm::quat &r);
-        void _applyScale(const glm::vec3 &s);
-        void _applyVisibility(bool v);
-
         Level &mLevel;
 
         // loaded from the object record:
@@ -234,7 +229,7 @@ namespace od
 
         ObjectStates mStates;
 
-        ObjectLifecycleState mLifecycleState;
+        bool mIsSpawned;
         SpawnStrategy mSpawnStrategy;
 
         Layer *mAssociatedLayer;

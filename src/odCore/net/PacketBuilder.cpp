@@ -26,11 +26,13 @@ namespace odNet
 
     void PacketBuilder::objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states)
     {
+        // TODO: implement this using state operator
         uint32_t flags = 0;
         if(states.position.hasValue()) flags |= PacketConstants::STATE_MASK_POSITION;
         if(states.rotation.hasValue()) flags |= PacketConstants::STATE_MASK_ROTATION;
         if(states.scale.hasValue()) flags |= PacketConstants::STATE_MASK_SCALE;
         if(states.visibility.hasValue()) flags |= PacketConstants::STATE_MASK_VISIBILITY;
+        if(states.running.hasValue()) flags |= PacketConstants::STATE_MASK_RUNNING;
 
         _beginPacket(PacketType::OBJECT_STATE_CHANGED);
         mWriter << tick
@@ -40,21 +42,7 @@ namespace odNet
         if(states.rotation.hasValue())   mWriter << states.rotation.get();
         if(states.scale.hasValue())      mWriter << states.scale.get();
         if(states.visibility.hasValue()) mWriter << (states.visibility.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
-        _endPacket();
-    }
-
-    void PacketBuilder::objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state)
-    {
-        auto stateCode = static_cast<std::underlying_type_t<od::ObjectLifecycleState>>(state);
-        if(stateCode > std::numeric_limits<uint8_t>::max())
-        {
-            throw od::Exception("State code exceed limits of state field");
-        }
-
-        _beginPacket(PacketType::OBJECT_LIFECYCLE_STATE_CHANGED);
-        mWriter << tick
-                << id
-                << static_cast<uint8_t>(stateCode);
+        if(states.running.hasValue())    mWriter << (states.running.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
         _endPacket();
     }
 

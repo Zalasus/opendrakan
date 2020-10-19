@@ -53,10 +53,6 @@ namespace od
             mClient.getStateManager().incomingObjectStatesChanged(tick, id, states);
         }
 
-        virtual void objectLifecycleStateChanged(odState::TickNumber tick, od::LevelObjectId id, od::ObjectLifecycleState state) override
-        {
-        }
-
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override
         {
             mClient.getStateManager().confirmIncomingSnapshot(tick, realtime, discreteChangeCount, referenceTick);

@@ -19,7 +19,8 @@ namespace od
             op(&ObjectStates::position)
               (&ObjectStates::rotation)
               (&ObjectStates::scale)
-              (&ObjectStates::visibility);
+              (&ObjectStates::visibility)
+              (&ObjectStates::running);
         }
 
 
@@ -27,14 +28,7 @@ namespace od
         odState::State<glm::quat, StateFlags::NETWORKED | StateFlags::LERPED> rotation;
         odState::State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> scale;
         odState::State<bool,      StateFlags::NETWORKED>                      visibility;
-    };
-
-    enum class ObjectLifecycleState
-    {
-        LOADED, // aka despawned
-        SPAWNED, // aka stopped
-        RUNNING,
-        DESTROYED
+        odState::State<bool,      StateFlags::NETWORKED>                      running;
     };
 
 }
