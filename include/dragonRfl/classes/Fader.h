@@ -29,16 +29,29 @@ namespace dragonRfl
     {
     public:
 
+        Fader_Cl();
+
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
         virtual void onSpawned() override;
         virtual void onUpdate(float relTime) override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
     private:
 
+        enum class FadePhase
+        {
+            NOT_TRIGGERED,
+            FADE_IN,
+            FADED,
+            FADE_OUT
+        };
+
         FaderFields mFields;
 
+        float mTime;
+        FadePhase mPhase;
     };
 
 
