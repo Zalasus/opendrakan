@@ -80,9 +80,11 @@ namespace odRfl
 
     void FieldLoaderProbe::registerField(Field &field, const char *fieldName)
     {
+        auto currentFieldIndex = mRegistrationIndex++;
+
         auto pred = [](const FieldEntry &field, size_t index ){ return field.index < index; };
-        auto it = std::lower_bound(mFieldEntries.begin(), mFieldEntries.end(), mRegistrationIndex, pred);
-        if(it == mFieldEntries.end() || it->index != mRegistrationIndex)
+        auto it = std::lower_bound(mFieldEntries.begin(), mFieldEntries.end(), currentFieldIndex, pred);
+        if(it == mFieldEntries.end() || it->index != currentFieldIndex)
         {
             // the field we are looking for does not exist in this record. for object records, we can ignore this. for class records, this would be an error TODO: report it
             return;
@@ -130,8 +132,6 @@ namespace odRfl
         }
 
         Logger::debug() << "Filled field '" << fieldName << "'";
-
-        ++mRegistrationIndex;
     }
 
 }
