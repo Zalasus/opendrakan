@@ -82,16 +82,16 @@ namespace od
         inline odRfl::ClassBase *getClassInstance() { return mRflClassInstance.get(); }
         inline odRfl::SpawnableClass *getSpawnableClassInstance() { return mSpawnableClass; }
         inline Level &getLevel() { return mLevel; }
-        inline glm::vec3 getPosition() const { return mPosition; }
-        inline glm::vec3 getScale() const { return mScale; }
-        inline glm::quat getRotation() const { return mRotation; }
+        inline glm::vec3 getPosition() const { return mStates.position.get(); }
+        inline glm::vec3 getScale() const { return mStates.scale.get(); }
+        inline glm::quat getRotation() const { return mStates.rotation.get(); }
         inline ObjectLifecycleState getLifecycleState() const { return mLifecycleState; }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
         inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
         inline const std::vector<LevelObjectId> &getLinkedObjects() const { return mLinkedObjects; }
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
-        inline bool isVisible() const { return mIsVisible; }
-        inline bool isScaled() const { return (mScale != glm::vec3(1,1,1)); }
+        inline bool isVisible() const { return mStates.visibility.get(); }
+        inline bool isScaled() const { return (getScale() != glm::vec3(1,1,1)); }
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
@@ -108,7 +108,13 @@ namespace od
         void setScale(const glm::vec3 &s);
         void setVisible(bool v);
 
-        void applyStates(const ObjectStates &states);
+        /**
+         * If doNotTrack is true, these changes will be not be sent to the state
+         * manager. You can generally ignore this flag. It is used only by the
+         * state manager when restoring a cetain level state, to prevent it from
+         * getting notifications about the changes it just caused.
+         */
+        void setStates(const ObjectStates &states, bool doNotTrack = false);
 
         /**
          * @brief Will cause the RFL instance's states to be probed and all changed states to be added to the snapshot.
@@ -226,11 +232,7 @@ namespace od
         Layer *mLightingLayer;
         std::vector<LevelObjectId> mLinkedObjects; // this is sorta abused, since during load it stores the indices instead. those are later translated
 
-        // state: TODO: use ObjectStates
-        glm::vec3 mPosition;
-        glm::quat mRotation;
-        glm::vec3 mScale;
-        bool mIsVisible;
+        ObjectStates mStates;
 
         ObjectLifecycleState mLifecycleState;
         SpawnStrategy mSpawnStrategy;

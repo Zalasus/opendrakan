@@ -66,28 +66,11 @@ namespace odState
         return mSnapshots.empty() ? 0.0 : mSnapshots.back().realtime;
     }
 
-    void StateManager::objectTranslated(od::LevelObject &object, const glm::vec3 &p)
+    void StateManager::objectStatesChanged(od::LevelObject &object, const od::ObjectStates &newStates)
     {
         if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.position = p;
-    }
-
-    void StateManager::objectRotated(od::LevelObject &object, const glm::quat &q)
-    {
-        if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.rotation = q;
-    }
-
-    void StateManager::objectScaled(od::LevelObject &object, const glm::vec3 &s)
-    {
-        if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.scale = s;
-    }
-
-    void StateManager::objectVisibilityChanged(od::LevelObject &object, bool visible)
-    {
-        if(mIgnoreStateUpdates) return;
-        mCurrentUpdateChangeMap[object.getObjectId()].baseStates.visibility = visible;
+        auto &storedStates = mCurrentUpdateChangeMap[object.getObjectId()].baseStates;
+        storedStates.merge(storedStates, newStates);
     }
 
     void StateManager::objectCustomStateChanged(od::LevelObject &object)
@@ -161,7 +144,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                obj->applyStates(objChange.second.baseStates);
+                obj->setStates(objChange.second.baseStates, true);
             }
 
         }else if(it == mSnapshots.begin())
@@ -173,7 +156,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                obj->applyStates(objChange.second.baseStates);
+                obj->setStates(objChange.second.baseStates, true);
             }
 
         }else
@@ -193,7 +176,7 @@ namespace odState
                 {
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
-                    obj->applyStates(objChange.second.baseStates);
+                    obj->setStates(objChange.second.baseStates, true);
 
                 }else
                 {
@@ -202,7 +185,7 @@ namespace odState
                     //  search previous and intermediate snapshots to recover the original state
                     od::ObjectStates lerped;
                     lerped.lerp(objChange.second.baseStates, changeInB->second.baseStates, delta);
-                    obj->applyStates(lerped);
+                    obj->setStates(lerped, true);
                 }
             }
         }

@@ -100,10 +100,6 @@ namespace od
     , mId(record.getObjectId())
     , mClass(dbClass)
     , mLightingLayer(nullptr)
-    , mPosition(record.getPosition())
-    , mRotation(record.getRotation())
-    , mScale(record.getScale())
-    , mIsVisible(record.isVisible())
     , mLifecycleState(ObjectLifecycleState::LOADED)
     , mSpawnStrategy(SpawnStrategy::WhenInSight)
     , mAssociatedLayer(nullptr)
@@ -112,6 +108,11 @@ namespace od
     , mRunObjectAi(true)
     , mEnableUpdate(false)
     {
+        mStates.position = record.getPosition();
+        mStates.rotation = record.getRotation();
+        mStates.scale = record.getScale();
+        mStates.visibility = record.isVisible();
+
         LayerId lightSourceLayerId = record.getLightSourceLayerId();
         if(lightSourceLayerId != 0)
         {
@@ -145,35 +146,68 @@ namespace od
 
     void LevelObject::setPosition(const glm::vec3 &v)
     {
-        _applyTranslation(v);
-        mLevel.getEngine().getStateManager().objectTranslated(*this, v);
+        ObjectStates states;
+        states.position = v;
+        setStates(states);
     }
 
     void LevelObject::setRotation(const glm::quat &q)
     {
-        _applyRotation(q);
-        mLevel.getEngine().getStateManager().objectRotated(*this, q);
+        ObjectStates states;
+        states.rotation = q;
+        setStates(states);
     }
 
     void LevelObject::setScale(const glm::vec3 &s)
     {
-        _applyScale(s);
-        mLevel.getEngine().getStateManager().objectScaled(*this, s);
+        ObjectStates states;
+        states.scale = s;
+        setStates(states);
     }
 
     void LevelObject::setVisible(bool v)
     {
-        _applyVisibility(v);
-
-        mLevel.getEngine().getStateManager().objectVisibilityChanged(*this, v);
+        ObjectStates states;
+        states.visibility = v;
+        setStates(states);
     }
 
-    void LevelObject::applyStates(const ObjectStates &states)
+    void LevelObject::setStates(const ObjectStates &states, bool doNotTrack)
     {
-        if(states.position.hasValue()) _applyTranslation(states.position.get());
-        if(states.rotation.hasValue()) _applyRotation(states.rotation.get());
-        if(states.scale.hasValue()) _applyScale(states.scale.get());
-        if(states.visibility.hasValue()) _applyVisibility(states.visibility.get());
+        bool transformChanged = false;
+
+        if(states.position.hasValue())
+        {
+            _applyTranslation(states.position.get());
+            transformChanged = true;
+        }
+
+        if(states.rotation.hasValue())
+        {
+            _applyRotation(states.rotation.get());
+            transformChanged = true;
+        }
+
+        if(states.scale.hasValue())
+        {
+            _applyScale(states.scale.get());
+            transformChanged = true;
+        }
+
+        if(states.visibility.hasValue())
+        {
+            _applyVisibility(states.visibility.get());
+        }
+
+        if(transformChanged && mSpawnableClass != nullptr)
+        {
+            mSpawnableClass->onTransformChanged();
+        }
+
+        if(!doNotTrack)
+        {
+            mLevel.getEngine().getStateManager().objectStatesChanged(*this, states);
+        }
     }
 
     void LevelObject::extraStateDirty()
@@ -351,13 +385,13 @@ namespace od
     {
         if(mClass == nullptr || !mClass->hasModel())
         {
-            return AxisAlignedBoundingBox(mPosition, mPosition);
+            return AxisAlignedBoundingBox(getPosition(), getPosition());
         }
 
         auto &modelBB = mClass->getModel()->getCalculatedBoundingBox();
 
-        glm::vec3 min = (modelBB.min() * mScale) * mRotation + mPosition;
-        glm::vec3 max = (modelBB.max() * mScale) * mRotation + mPosition;
+        glm::vec3 min = (modelBB.min() * getScale()) * getRotation() + getPosition();
+        glm::vec3 max = (modelBB.max() * getScale()) * getRotation() + getPosition();
 
         return AxisAlignedBoundingBox(min, max);
     }
@@ -366,13 +400,14 @@ namespace od
     {
         if(mClass == nullptr || !mClass->hasModel())
         {
-            return BoundingSphere(mPosition, 0);
+            return BoundingSphere(getPosition(), 0);
         }
 
         float calcRadius = mClass->getModel()->getCalculatedBoundingSphere().radius();
-        float maxScale = std::max(std::max(mScale.x, mScale.y), mScale.z);
+        auto scale = getScale();
+        float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
 
-        return BoundingSphere(mPosition, calcRadius*maxScale);
+        return BoundingSphere(getPosition(), calcRadius*maxScale);
     }
 
     void LevelObject::updateAssociatedLayer(bool callChangedHook)
@@ -380,10 +415,10 @@ namespace od
         odPhysics::PhysicsSystem &ps = mLevel.getPhysicsSystem();
 
         // a slight upwards offset fixes many association issues with objects whose origin is exactly on the ground
-        glm::vec3 rayStart = mPosition + (mAssociateWithCeiling ? glm::vec3(0, -0.1, 0) : glm::vec3(0, 0.1, 0));
+        glm::vec3 rayStart = getPosition() + (mAssociateWithCeiling ? glm::vec3(0, -0.1, 0) : glm::vec3(0, 0.1, 0));
 
         float heightOffset =  mLevel.getVerticalExtent() * (mAssociateWithCeiling ? 1 : -1);
-        glm::vec3 rayEnd = mPosition + glm::vec3(0, heightOffset, 0);
+        glm::vec3 rayEnd = getPosition() + glm::vec3(0, heightOffset, 0);
 
         odPhysics::RayTestResult hitResult;
         ps.rayTestClosest(rayStart, rayEnd, odPhysics::PhysicsTypeMasks::Layer, nullptr, hitResult);
@@ -496,72 +531,69 @@ namespace od
 
     void LevelObject::_applyTranslation(const glm::vec3 &p)
     {
-        auto prevPos = getPosition();
-        mPosition = p;
+        glm::vec3 prevPos = mStates.position.get();
+        mStates.position = p;
 
-        if(_hasCrossedTriangle(prevPos, mPosition))
+        if(_hasCrossedTriangle(prevPos, p))
         {
             updateAssociatedLayer(true);
         }
 
         if(mRenderHandle != nullptr)
         {
-            mRenderHandle->setPosition(mPosition);
+            mRenderHandle->setPosition(p);
         }
 
         if(mPhysicsHandle != nullptr)
         {
-            mPhysicsHandle->setPosition(mPosition);
+            mPhysicsHandle->setPosition(p);
         }
 
         if(mSpawnableClass != nullptr)
         {
-            mSpawnableClass->onTranslated(prevPos, mPosition);
-            mSpawnableClass->onTransformChanged();
+            mSpawnableClass->onTranslated(prevPos, p);
         }
     }
 
     void LevelObject::_applyRotation(const glm::quat &r)
     {
-        glm::quat prevRot = mRotation;
-        mRotation = r;
+        glm::quat prevRot = mStates.rotation.get();
+        mStates.rotation = r;
 
         if(mRenderHandle != nullptr)
         {
-            mRenderHandle->setOrientation(mRotation);
+            mRenderHandle->setOrientation(r);
         }
 
         if(mPhysicsHandle != nullptr)
         {
-            mPhysicsHandle->setOrientation(mRotation);
+            mPhysicsHandle->setOrientation(r);
         }
 
         if(mSpawnableClass != nullptr)
         {
-            mSpawnableClass->onRotated(prevRot, mRotation);
-            mSpawnableClass->onTransformChanged();
+            mSpawnableClass->onRotated(prevRot, r);
         }
     }
 
     void LevelObject::_applyScale(const glm::vec3 &s)
     {
-        glm::vec3 prevScale = mScale;
-        mScale = s;
+        glm::vec3 prevScale = mStates.scale.get();
+        mStates.scale = s;
 
         if(mRenderHandle != nullptr)
         {
-            mRenderHandle->setScale(mScale);
+            mRenderHandle->setScale(s);
         }
 
         if(mPhysicsHandle != nullptr)
         {
-            mPhysicsHandle->setScale(mScale);
+            mPhysicsHandle->setScale(s);
         }
 
         if(mSpawnableClass != nullptr)
         {
-            mSpawnableClass->onScaled(prevScale, mScale);
-            mSpawnableClass->onTransformChanged();
+            mSpawnableClass->onScaled(prevScale, s);
         }
     }
 
@@ -569,11 +601,11 @@ namespace od
     {
         Logger::verbose() << "Object " << getObjectId() << " made " << (v ? "visible" : "invisible");
 
-        mIsVisible = v;
+        mStates.visibility = v;
 
         if(mRenderHandle != nullptr)
         {
-            mRenderHandle->setVisible(mIsVisible);
+            mRenderHandle->setVisible(v);
         }
 
         if(mSpawnableClass != nullptr)

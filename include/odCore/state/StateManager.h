@@ -55,10 +55,7 @@ namespace odState
         double getLatestRealtime();
 
         // these modify the update loop changeset (for server)
-        void objectTranslated(od::LevelObject &object, const glm::vec3 &p);
-        void objectRotated(od::LevelObject &object, const glm::quat &q);
-        void objectScaled(od::LevelObject &object, const glm::vec3 &s);
-        void objectVisibilityChanged(od::LevelObject &object, bool visible);
+        void objectStatesChanged(od::LevelObject &obj, const od::ObjectStates &newStates);
         void objectCustomStateChanged(od::LevelObject &object);
 
         // these modify the incoming changeset with the given tick (for client)
