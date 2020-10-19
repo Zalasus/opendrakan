@@ -80,7 +80,7 @@ namespace dragonRfl
 	    obj.setEnableUpdate(true);
 
         mInputListener = getClient().getInputManager().createInputListener();
-        mInputListener->setMouseMoveCallback([this](auto pos){ _mouseHandler(pos); });
+        mInputListener->setMouseMoveCallback([this](auto pos){ this->_mouseHandler(pos); });
     }
 
     void TrackingCamera_Cl::onStop()
