@@ -38,7 +38,8 @@ namespace odAnim
             return od::Message::Triggered;
 
         default:
-            throw od::Exception("Unknown message code. Need to investigate");
+            Logger::warn() << "Unknown message code " << code << " in sequence. Need to investigate";
+            return od::Message::BlowUp;
         }
     }
 
