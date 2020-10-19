@@ -47,7 +47,7 @@ namespace dragonRfl
 	{
 	public:
 
-        TrackingCamera_Cl(od::LevelObject &objectToTrack);
+        TrackingCamera_Cl();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
@@ -59,6 +59,8 @@ namespace dragonRfl
 		virtual void onUpdate(float relTime) override;
 		virtual void onLayerChanged(od::Layer *from, od::Layer *to) override;
         virtual void onTransformChanged() override;
+
+        void setObjectToTrack(od::LevelObject *obj);
 
         /// @brief Turns a position on the screen into a vector of yaw/pitch for the player.
         static glm::vec2 cursorPosToYawPitch(const glm::vec2 &p);
@@ -72,7 +74,7 @@ namespace dragonRfl
 
 		TrackingCameraFields mFields;
 
-        od::LevelObject &mObjectToTrack;
+        od::LevelObject *mObjectToTrack;
 
         std::shared_ptr<odInput::InputListener> mInputListener;
 
@@ -82,23 +84,10 @@ namespace dragonRfl
         float mPitch;
 	};
 
-    class TrackingCameraFactory final : public odRfl::ClassFactory
-    {
-    public:
 
-        virtual std::unique_ptr<odRfl::FieldBundle> makeFieldBundle()
-        {
-            return std::make_unique<TrackingCameraFields>();
-        }
+    // TODO: this needs a bit more consideration for multiplayer
+    using TrackingCameraFactory = odRfl::DefaultClassFactory<TrackingCameraFields, TrackingCamera_Cl, odRfl::DummyClass>;
 
-        virtual std::unique_ptr<odRfl::ClassBase> makeInstance(od::Engine &engine)
-        {
-            // all cameras are instantiated as dummies initially. the RFL can decide to replace
-            //  or clone them for each player (if in multiplayer)
-            return std::make_unique<odRfl::DummyClass>();
-        }
-
-    };
 
     OD_DEFINE_CLASS(TrackingCamera, 0x001b, "System", "Tracking Camera", TrackingCameraFactory);
 

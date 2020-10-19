@@ -158,6 +158,14 @@ namespace od
         setStates(states);
     }
 
+    void LevelObject::setPositionRotation(const glm::vec3 &v, const glm::quat &q)
+    {
+        ObjectStates states;
+        states.position = v;
+        states.rotation = q;
+        setStates(states);
+    }
+
     void LevelObject::setScale(const glm::vec3 &s)
     {
         ObjectStates states;

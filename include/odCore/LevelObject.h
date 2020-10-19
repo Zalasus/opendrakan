@@ -104,6 +104,7 @@ namespace od
         // these are convenience methods that create and pass an ObjectStates object to setStates().
         void setPosition(const glm::vec3 &v);
         void setRotation(const glm::quat &q);
+        void setPositionRotation(const glm::vec3 &v, const glm::quat &q);
         void setScale(const glm::vec3 &s);
         void setVisible(bool v);
         void setRunning(bool b);

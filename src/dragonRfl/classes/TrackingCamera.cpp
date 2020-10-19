@@ -48,8 +48,8 @@ namespace dragonRfl
 	}
 
 
-    TrackingCamera_Cl::TrackingCamera_Cl(od::LevelObject &objectToTrack)
-    : mObjectToTrack(objectToTrack)
+    TrackingCamera_Cl::TrackingCamera_Cl()
+    : mObjectToTrack(nullptr)
     {
     }
 
@@ -109,6 +109,16 @@ namespace dragonRfl
         }
     }
 
+    void TrackingCamera_Cl::setObjectToTrack(od::LevelObject *obj)
+    {
+        mObjectToTrack = obj;
+
+        if(mObjectToTrack != nullptr)
+        {
+            getLevelObject().setPositionRotation(mObjectToTrack->getPosition(), mObjectToTrack->getRotation());
+        }
+    }
+
     glm::vec2 TrackingCamera_Cl::cursorPosToYawPitch(const glm::vec2 &cursorPos)
     {
         // the tranlation to pitch/yaw is easier in NDC. convert from GUI space
@@ -128,22 +138,27 @@ namespace dragonRfl
     }
 
     void TrackingCamera_Cl::_updateCameraTracking()
-    {    
+    {
+        if(mObjectToTrack == nullptr)
+        {
+            return;
+        }
+
         glm::vec3::value_type maxDistance = 3;
         glm::vec3::value_type bounceBackDistance = 0.1; // TODO: calculate this based of FOV or something
 
-        glm::vec3 eye = mObjectToTrack.getPosition();
+        glm::vec3 eye = mObjectToTrack->getPosition();
         glm::quat lookDirectionQuat(glm::vec3(mPitch, mYaw, 0));
         glm::vec3 lookDirection = lookDirectionQuat * glm::vec3(0, 0, 1);
 
         // perform raycast to find obstacle closest point with unobstructed view of player
-        glm::vec3 from = mObjectToTrack.getPosition();
+        glm::vec3 from = mObjectToTrack->getPosition();
         glm::vec3 to = from + lookDirection * maxDistance;
 
         static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Layer | odPhysics::PhysicsTypeMasks::LevelObject;
 
         odPhysics::RayTestResult result;
-        bool hit = getClient().getPhysicsSystem().rayTestClosest(from, to, mask, mObjectToTrack.getPhysicsHandle(), result);
+        bool hit = getClient().getPhysicsSystem().rayTestClosest(from, to, mask, mObjectToTrack->getPhysicsHandle(), result);
         if(!hit)
         {
             eye = to;
@@ -158,8 +173,7 @@ namespace dragonRfl
             eye = result.hitPoint + reflectedDirection * bounceBackDistance;
         }
 
-        getLevelObject().setPosition(eye);
-        getLevelObject().setRotation(lookDirectionQuat);
+        getLevelObject().setPositionRotation(eye, lookDirectionQuat);
     }
 
     void TrackingCamera_Cl::_updateCameraViewMatrix()

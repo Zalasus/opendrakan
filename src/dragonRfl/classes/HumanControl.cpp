@@ -315,11 +315,8 @@ namespace dragonRfl
             }
 
             auto &cameraObject = *foundCameras.back();
-            cameraObject.despawn();
-            auto newCameraInstance = std::make_unique<TrackingCamera_Cl>(obj);
-            newCameraInstance->setClient(getClient());
-            cameraObject.setRflClassInstance(std::move(newCameraInstance));
-            cameraObject.spawn();
+            auto trackingCameraInstance = od::downcast<TrackingCamera_Cl>(cameraObject.getClassInstance());
+            trackingCameraInstance->setObjectToTrack(&obj);
         }
     }
 
