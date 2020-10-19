@@ -87,6 +87,7 @@ target_sources(odCore PRIVATE
         "Server.cpp"
         "SrscFile.cpp"
         "StringUtils.cpp"
+        "ThreadUtils.cpp"
         "ZStream.cpp")
 
 add_dependencies(odCore GenerateVersion)
@@ -94,6 +95,9 @@ target_include_directories(odCore PUBLIC ${VERSION_HEADER_INCLUDE_DIR})
 
 find_package(Threads REQUIRED)
 target_link_libraries(odCore ${CMAKE_THREAD_LIBS_INIT})
+if(CMAKE_USE_PTHREADS_INIT)
+    target_compile_definitions(odCore PUBLIC USE_PTHREADS)
+endif()
 
 find_package(ZLIB REQUIRED)
 target_link_libraries(odCore ${ZLIB_LIBRARIES})

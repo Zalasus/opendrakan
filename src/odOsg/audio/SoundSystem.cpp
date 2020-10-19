@@ -10,6 +10,7 @@
 #include <AL/al.h>
 
 #include <odCore/Exception.h>
+#include <odCore/ThreadUtils.h>
 
 #include <odCore/db/Sound.h>
 #include <odCore/db/MusicContainer.h>
@@ -39,6 +40,7 @@ namespace odOsg
         mContext.makeCurrent();
 
         mWorkerThread = std::thread(&SoundSystem::_doWorkerStuff, this);
+        od::ThreadUtils::setThreadName(mWorkerThread, "sound worker");
     }
 
     SoundSystem::~SoundSystem()

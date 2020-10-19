@@ -17,6 +17,7 @@
 #include <odCore/Exception.h>
 #include <odCore/FilePath.h>
 #include <odCore/Version.h>
+#include <odCore/ThreadUtils.h>
 
 #include <odCore/net/UplinkConnector.h>
 #include <odCore/net/DownlinkConnector.h>
@@ -243,6 +244,7 @@ int main(int argc, char **argv)
     };
 
     std::thread serverThread(serverThreadFunc);
+    od::ThreadUtils::setThreadName(serverThread, "server");
 
     // we run the client in the main thread for now, as there is always a client for the normal game
     clientThreadFunc();
