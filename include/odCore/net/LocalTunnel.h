@@ -18,6 +18,11 @@
 #define INCLUDE_ODCORE_NET_LOCALTUNNEL_H_
 
 #include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <chrono>
+#include <atomic>
 
 #include <odCore/net/PacketParser.h>
 #include <odCore/net/PacketBuilder.h>
@@ -32,15 +37,19 @@ namespace odNet
     public:
 
         LocalTunnel(std::shared_ptr<DownlinkConnector> downlinkOutput, std::shared_ptr<UplinkConnector> uplinkOutput);
+        ~LocalTunnel();
 
         inline std::shared_ptr<DownlinkConnector> getDownlinkInput() { return mDownlinkPacketBuilder; }
         inline std::shared_ptr<UplinkConnector> getUplinkInput() { return mUplinkPacketBuilder; }
 
-        inline void setLatency(double latencySeconds) { mLatency = latencySeconds; }
         inline void setDropRate(double dropRate) { mDropRate = dropRate; }
+
+        void setLatency(double min, double max);
 
 
     private:
+
+        using time_point = std::chrono::high_resolution_clock::time_point;
 
         static constexpr size_t MAX_PAYLOAD_SIZE = 512;
 
@@ -48,22 +57,33 @@ namespace odNet
         {
             std::array<char, MAX_PAYLOAD_SIZE> data;
             size_t size;
-            double sendTimer;
+            time_point arriveBy;
+            bool isUplink;
         };
 
         bool _shouldDrop();
-        void _addPacket(const char *data, size_t size, std::deque<Packet> &buffer);
-
-        PacketParser mPacketParser;
+        double _getRandomLatency();
+        void _addPacket(const char *data, size_t size, bool isUplink);
+        void _parsePacket(const char *data, size_t size, bool isUplink);
+        void _dispatchThreadWorkerFunc();
 
         std::shared_ptr<PacketBuilder> mDownlinkPacketBuilder;
-        std::deque<Packet> mDownlinkPacketBuffer;
+        PacketParser mDownlinkPacketParser;
 
         std::shared_ptr<PacketBuilder> mUplinkPacketBuilder;
-        std::deque<Packet> mUplinkPacketBuffer;
+        PacketParser mUplinkPacketParser;
 
-        double mLatency;
+        double mLatencyMin;
+        double mLatencyMax;
         double mDropRate;
+
+        std::thread mDispatchThread;
+        bool mDispatchThreadStarted;
+        std::atomic_bool mTerminateDispatchThread;
+        std::deque<Packet> mPacketBuffer;
+        std::mutex mPacketBufferMutex;
+        std::condition_variable mDispatchCondition;
+
     };
 
 }

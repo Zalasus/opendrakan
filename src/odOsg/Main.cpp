@@ -60,6 +60,7 @@ static void printUsage()
         << "    -p  Force enable physics debug drawing" << std::endl
         << "    -t  Use a simulated network tunnel to connect client and server" << std::endl
         << "    -d <drop rate>  Simulate packet drops (implies -t, range 0-1)" << std::endl
+        << "    -l <min>:<max>  Simulate packet latency (implies -t, min/max are seconds)" << std::endl
         << "If no level file and no options are given, the default intro level is loaded." << std::endl
         << "The latter assumes the current directory to be the game root." << std::endl
         << std::endl;
@@ -99,7 +100,9 @@ int main(int argc, char **argv)
     bool physicsDebug = false;
     bool useLocalTunnel = false;
     float dropRate = 0;
-    while((c = getopt(argc, argv, "vhcptd:")) != -1)
+    double latencyMin = 0;
+    double latencyMax = 0;
+    while((c = getopt(argc, argv, "vhcptd:l:")) != -1)
     {
         switch(c)
         {
@@ -131,6 +134,21 @@ int main(int argc, char **argv)
                 if(in.fail())
                 {
                     std::cout << "-d option needs a real number as argument" << std::endl;
+                    return 1;
+                }
+            }
+            break;
+
+        case 'l':
+            {
+                useLocalTunnel = true;
+                std::istringstream in(optarg);
+                in >> latencyMin;
+                in.ignore(1);
+                in >> latencyMax;
+                if(in.fail())
+                {
+                    std::cout << "-l option needs an argument in the format <min>:<max>" << std::endl;
                     return 1;
                 }
             }
@@ -168,6 +186,7 @@ int main(int argc, char **argv)
     {
         localTunnel = std::make_unique<odNet::LocalTunnel>(client.getDownlinkConnector(), server.getUplinkConnectorForClient(clientId));
         localTunnel->setDropRate(dropRate);
+        localTunnel->setLatency(latencyMin, latencyMax);
         server.setClientDownlinkConnector(clientId, localTunnel->getDownlinkInput());
         client.setUplinkConnector(localTunnel->getUplinkInput());
     }
