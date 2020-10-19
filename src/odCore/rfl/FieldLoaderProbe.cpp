@@ -59,7 +59,7 @@ namespace odRfl
             }
 
             mFieldEntries[i].fieldType = type & 0xff;
-            mFieldEntries[i].fieldName = name;
+            mFieldEntries[i].fieldName = std::move(name);
             mFieldEntries[i].dataOffset = i*4;
             mFieldEntries[i].isArray = (type & 0x1000) || (mFieldEntries[i].fieldType == static_cast<uint32_t>(Field::Type::STRING)); // strings are stored exactly like arrays
         }
