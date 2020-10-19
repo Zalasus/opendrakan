@@ -15,7 +15,7 @@ namespace dragonRfl
 
 	TimerFields::TimerFields()
 	: timeUntilTrigger(5.0)
-	, startMode(TimerStartMode::RUN_WHEN_TRIGGERED)
+	, startMode(StartMode::RUN_WHEN_TRIGGERED)
 	, repeat(true)
 	, destroyAfterTimeout(true)
 	, triggerMessage(od::Message::On)
@@ -56,7 +56,7 @@ namespace dragonRfl
 
 	    obj.setEnableUpdate(true);
 
-	    mTimerRunning = (mFields.startMode == TimerStartMode::RUN_INSTANTLY);
+	    mTimerRunning = (mFields.startMode == StartMode::RUN_INSTANTLY);
 	}
 
 	void Timer_Sv::onUpdate(float relTime)
@@ -92,7 +92,7 @@ namespace dragonRfl
 
 	void Timer_Sv::onMessageReceived(od::LevelObject &sender, od::Message message)
 	{
-	    if(mFields.startMode == TimerStartMode::RUN_WHEN_TRIGGERED && !mGotStartTrigger)
+	    if(mFields.startMode == StartMode::RUN_WHEN_TRIGGERED && !mGotStartTrigger)
 	    {
 	        // i assume any message will trigger the timer. there is no field that would indicate otherwise
 	        mTimerRunning = true;

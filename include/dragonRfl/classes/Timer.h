@@ -12,16 +12,10 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/DummyClass.h>
 
+#include <dragonRfl/classes/common/Enums.h>
+
 namespace dragonRfl
 {
-
-    enum class TimerStartMode
-    {
-        RUN_INSTANTLY,
-        RUN_WHEN_TRIGGERED
-    };
-    typedef odRfl::EnumImpl<TimerStartMode, 0, 1> EnumTimerStartMode;
-
 
     struct TimerFields : public odRfl::FieldBundle
     {
@@ -30,7 +24,7 @@ namespace dragonRfl
         virtual void probeFields(odRfl::FieldProbe &probe) override final;
 
         odRfl::Float         timeUntilTrigger;
-        EnumTimerStartMode   startMode;
+        EnumStartMode        startMode;
         odRfl::EnumYesNo     repeat;
         odRfl::EnumYesNo     destroyAfterTimeout;
         odRfl::EnumMessage   triggerMessage; // message that will be sent upon timeout
