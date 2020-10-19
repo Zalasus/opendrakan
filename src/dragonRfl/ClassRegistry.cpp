@@ -13,6 +13,7 @@
 #include <dragonRfl/classes/Detector.h>
 // #include <dragonRfl/classes/DragonControl.h>
 #include <dragonRfl/classes/DynamicLight.h>
+#include <dragonRfl/classes/Fader.h>
 // #include <dragonRfl/classes/HealthPack.h>
 #include <dragonRfl/classes/HumanControl.h>
 // #include <dragonRfl/classes/Key.h>
@@ -38,6 +39,7 @@ namespace dragonRfl
         registerClass<Detector>();
         // registerClass<DragonControl>();
         registerClass<DynamicLight>();
+        registerClass<Fader>();
         // registerClass<HealthPack>();
         registerClass<HumanControl>();
         // registerClass<Key>();

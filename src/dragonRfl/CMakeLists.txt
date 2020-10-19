@@ -15,6 +15,7 @@ target_sources(dragonRfl PRIVATE
     "classes/Detector.cpp"
     #"classes/DragonControl.cpp"
     "classes/DynamicLight.cpp"
+    "classes/Fader.cpp"
     #"classes/HealthPack.cpp"
     "classes/HumanControl.cpp"
     "classes/HumanControlFields.cpp"
