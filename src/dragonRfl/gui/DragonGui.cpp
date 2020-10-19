@@ -33,6 +33,7 @@ namespace dragonRfl
     , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, client.getEngineRootDir()).adjustCase())
     , mRrcTextureFactory(*this, mRrcFile)
     , mInterfaceDb(nullptr)
+    , mFaderQuad(client.getRenderer())
     {
         od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
         mInterfaceDb = client.getDbManager().loadDb(interfaceDbPath.adjustCase());
@@ -69,6 +70,13 @@ namespace dragonRfl
 
         mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);
+
+        mFaderQuad.setVertexCoords({0,0}, {1,1});
+        mFaderQuad.setColor({0,0,0,0});
+        auto faderWidget = std::make_shared<odGui::Widget>(*this);
+        faderWidget->addRenderHandle(mFaderQuad.getHandle());
+        faderWidget->setZPosition(1000);
+        addWidget(faderWidget);
 
         setMenuMode(false);
     }

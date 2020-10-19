@@ -17,6 +17,7 @@
 #include <odCore/db/Database.h>
 
 #include <odCore/gui/Gui.h>
+#include <odCore/gui/Quad.h>
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
@@ -42,6 +43,7 @@ namespace dragonRfl
 
         inline od::Client &getClient() { return mClient; }
         inline const UserInterfacePropertiesFields &getUserInterfaceProperties() const { return mUserInterfaceProperties; }
+        inline odGui::Quad getFaderQuad() { return mFaderQuad; }
 
         /**
          * @brief Localizes string with localization tag.
@@ -79,6 +81,8 @@ namespace dragonRfl
         std::map<od::RecordId, std::string> mLocalizedStringCache;
 
         std::shared_ptr<MainMenu> mMainMenu;
+
+        odGui::Quad mFaderQuad; // a fullscreen quad that faders can use to fade to black (or whatever color)
     };
 
 }
