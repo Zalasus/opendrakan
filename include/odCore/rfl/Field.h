@@ -117,6 +117,11 @@ namespace odRfl
     {
     public:
 
+        Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
+        : PodField<uint32_t, Field::Type::COLOR>((a << 24) | (r << 16) | (g << 8) | b)
+        {
+        }
+
         using PodField<uint32_t, Field::Type::COLOR>::PodField;
 
         inline uint8_t red() const { return (mValue >> 16) & 0xff; }

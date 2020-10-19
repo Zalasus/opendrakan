@@ -16,7 +16,7 @@ namespace dragonRfl
 {
 
     StaticLightFields::StaticLightFields()
-    : color(0xffffffff)
+    : color(255, 255, 255)
     , intensityScaling(1.0)
     , radius(1.0)
     , lightMap(odDb::AssetRef::NULL_REF)
