@@ -63,7 +63,7 @@ namespace odNet
 
         bool _shouldDrop();
         double _getRandomLatency();
-        void _addPacket(const char *data, size_t size, bool isUplink);
+        void _addPacket(const char *data, size_t size, PacketBuilder::LinkType linkType, bool isUplink);
         void _parsePacket(const char *data, size_t size, bool isUplink);
         void _dispatchThreadWorkerFunc();
 

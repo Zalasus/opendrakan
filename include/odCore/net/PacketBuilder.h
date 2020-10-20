@@ -17,7 +17,17 @@ namespace odNet
     {
     public:
 
-        PacketBuilder(const std::function<void(const char *, size_t)> &packetCallback);
+        enum class LinkType
+        {
+            UNRELIABLE,
+            RELIABLE
+        };
+
+        /**
+         * packetCallback will be called for every packet built. The third parameter indicated whether the
+         * packet needs to be sent over a reliable connection (i.e. TCP).
+         */
+        PacketBuilder(const std::function<void(const char *, size_t, LinkType)> &packetCallback);
 
         virtual void loadLevel(const std::string &path) override final;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override final;
@@ -32,9 +42,9 @@ namespace odNet
     private:
 
         void _beginPacket(PacketType type);
-        void _endPacket();
+        void _endPacket(LinkType linkType);
 
-        std::function<void(const char *, size_t)> mPacketCallback;
+        std::function<void(const char *, size_t, LinkType)> mPacketCallback;
         std::vector<char> mPacketBuffer;
         od::VectorOutputBuffer mStreamBuffer;
         std::ostream mOutputStream;

@@ -7,7 +7,7 @@
 namespace odNet
 {
 
-    PacketBuilder::PacketBuilder(const std::function<void(const char *, size_t)> &packetCallback)
+    PacketBuilder::PacketBuilder(const std::function<void(const char *, size_t, LinkType)> &packetCallback)
     : mPacketCallback(packetCallback)
     , mStreamBuffer(mPacketBuffer)
     , mOutputStream(&mStreamBuffer)
@@ -21,7 +21,7 @@ namespace odNet
 
         _beginPacket(PacketType::LOAD_LEVEL);
         mWriter.write(path.data(), pathLength);
-        _endPacket();
+        _endPacket(LinkType::RELIABLE);
     }
 
     void PacketBuilder::objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states)
@@ -43,7 +43,7 @@ namespace odNet
         if(states.scale.hasValue())      mWriter << states.scale.get();
         if(states.visibility.hasValue()) mWriter << (states.visibility.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
         if(states.running.hasValue())    mWriter << (states.running.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
-        _endPacket();
+        _endPacket(LinkType::UNRELIABLE);
     }
 
     void PacketBuilder::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick)
@@ -53,7 +53,7 @@ namespace odNet
                 << realtime
                 << static_cast<uint32_t>(discreteChangeCount)
                 << referenceTick;
-        _endPacket();
+        _endPacket(LinkType::UNRELIABLE);
     }
 
     void PacketBuilder::globalMessage(MessageChannelCode code, const char *data, size_t size)
@@ -61,28 +61,28 @@ namespace odNet
         _beginPacket(PacketType::GLOBAL_MESSAGE);
         mWriter << code;
         mWriter.write(data, size);
-        _endPacket();
+        _endPacket(LinkType::RELIABLE);
     }
 
     void PacketBuilder::actionTriggered(odInput::ActionCode code, odInput::ActionState state)
     {
         _beginPacket(PacketType::ACTION_TRIGGERED);
         mWriter << code << static_cast<uint8_t>(state);
-        _endPacket();
+        _endPacket(LinkType::RELIABLE);
     }
 
     void PacketBuilder::analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes)
     {
         _beginPacket(PacketType::ANALOG_ACTION_TRIGGERED);
         mWriter << code << axes.x << axes.y;
-        _endPacket();
+        _endPacket(LinkType::RELIABLE);
     }
 
     void PacketBuilder::acknowledgeSnapshot(odState::TickNumber tick)
     {
         _beginPacket(PacketType::ACKNOWLEDGE_SNAPSHOT);
         mWriter << tick;
-        _endPacket();
+        _endPacket(LinkType::UNRELIABLE);
     }
 
     void PacketBuilder::_beginPacket(PacketType type)
@@ -94,7 +94,7 @@ namespace odNet
         mWriter << static_cast<uint8_t>(type) << dummyPayloadSize;
     }
 
-    void PacketBuilder::_endPacket()
+    void PacketBuilder::_endPacket(LinkType linkType)
     {
         mOutputStream.flush();
 
@@ -113,7 +113,7 @@ namespace odNet
 
         if(mPacketCallback != nullptr)
         {
-            mPacketCallback(mPacketBuffer.data(), mPacketBuffer.size());
+            mPacketCallback(mPacketBuffer.data(), mPacketBuffer.size(), linkType);
         }
     }
 

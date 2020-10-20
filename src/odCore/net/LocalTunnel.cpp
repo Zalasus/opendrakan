@@ -23,15 +23,15 @@ namespace odNet
     , mDispatchThreadStarted(false)
     , mTerminateDispatchThread(false)
     {
-        auto downlinkPacketCallback = [this](const char *data, size_t size)
+        auto downlinkPacketCallback = [this](const char *data, size_t size, PacketBuilder::LinkType linkType)
         {
-            _addPacket(data, size, false);
+            _addPacket(data, size, linkType, false);
         };
         mDownlinkPacketBuilder = std::make_shared<PacketBuilder>(downlinkPacketCallback);
 
-        auto uplinkPacketCallback = [this](const char *data, size_t size)
+        auto uplinkPacketCallback = [this](const char *data, size_t size, PacketBuilder::LinkType linkType)
         {
-            _addPacket(data, size, true);
+            _addPacket(data, size, linkType, true);
         };
         mUplinkPacketBuilder = std::make_shared<PacketBuilder>(uplinkPacketCallback);
     }
@@ -77,7 +77,7 @@ namespace odNet
         return r*(mLatencyMax - mLatencyMin) + mLatencyMin;
     }
 
-    void LocalTunnel::_addPacket(const char *data, size_t size, bool isUplink)
+    void LocalTunnel::_addPacket(const char *data, size_t size, PacketBuilder::LinkType linkType, bool isUplink)
     {
         if(size > MAX_PAYLOAD_SIZE)
         {
@@ -85,7 +85,7 @@ namespace odNet
             return;
         }
 
-        if(_shouldDrop())
+        if(linkType == PacketBuilder::LinkType::UNRELIABLE && _shouldDrop())
         {
             return;
         }
