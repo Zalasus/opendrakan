@@ -72,7 +72,7 @@ namespace odAnim
 
             for(auto &action : dbActor.getActions())
             {
-                const odDb::ActionTransform *tf = action.as<odDb::ActionTransform>();
+                const odDb::ActionTransform *tf = std::get_if<odDb::ActionTransform>(&action);
                 if(tf != nullptr)
                 {
                     playerActor.transformActions.push_back(*tf);
@@ -86,7 +86,7 @@ namespace odAnim
             auto tfPred = [](auto &left, auto &right){ return left.timeOffset < right.timeOffset; };
             std::sort(playerActor.transformActions.begin(), playerActor.transformActions.end(), tfPred);
 
-            auto nonTfPred = [](odDb::ActionVariant &left, odDb::ActionVariant &right){ return left.as<odDb::Action>()->timeOffset < right.as<odDb::Action>()->timeOffset; };
+            auto nonTfPred = [](odDb::ActionVariant &left, odDb::ActionVariant &right){ return odDb::getTimeFromActionVariant(left) < odDb::getTimeFromActionVariant(right); };
             std::sort(playerActor.nonTransformActions.begin(), playerActor.nonTransformActions.end(), nonTfPred);
         }
 
@@ -247,8 +247,8 @@ namespace odAnim
                 // for non-transforms, we can't interpolate anything. here we simply search all events that happened since last time and apply them.
                 //  any missed time can be added by them as they see fit
                 NonTransformApplyVisitor visitor(actor.actorObject, mSequenceTime);
-                auto nonTfPredUpper = [](float t, odDb::ActionVariant &action){ return t < action.as<odDb::Action>()->timeOffset; };
-                auto nonTfPredLower = [](odDb::ActionVariant &action, float t){ return action.as<odDb::Action>()->timeOffset < t; };
+                auto nonTfPredUpper = [](float t, odDb::ActionVariant &action){ return t < odDb::getTimeFromActionVariant(action); };
+                auto nonTfPredLower = [](odDb::ActionVariant &action, float t){ return odDb::getTimeFromActionVariant(action) < t; };
                 auto begin = std::lower_bound(actor.nonTransformActions.begin(), actor.nonTransformActions.end(), lastTime, nonTfPredLower);
                 if(begin != actor.nonTransformActions.end())
                 {
@@ -256,7 +256,7 @@ namespace odAnim
                     auto end = std::upper_bound(begin, actor.nonTransformActions.end(), mSequenceTime, nonTfPredUpper);
                     for(auto it = begin; it < end; ++it)
                     {
-                        it->visit(visitor);
+                        std::visit(visitor, *it);
                     }
 
                     if(end != actor.nonTransformActions.end())

@@ -10,6 +10,7 @@
 
 #include <memory>
 #include <vector>
+#include <variant>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -40,6 +41,7 @@ namespace odDb
         STOP_NON_ACTORS,
         STOP_ACTORS
     };
+
 
     /**
      * @brief Common base for all actions. Helps with writing visitors.
@@ -157,113 +159,16 @@ namespace odDb
         float fadeOutTime;
     };
 
+    using ActionVariant = std::variant<ActionTransform,
+                                       ActionStartAnim,
+                                       ActionPlaySound,
+                                       ActionAttach,
+                                       ActionRunStopAi,
+                                       ActionShowHide,
+                                       ActionMessage,
+                                       ActionMusic>;
 
-    class ActionVariant
-    {
-    public:
-
-        ActionVariant(const ActionTransform &transform);
-        ActionVariant(const ActionStartAnim &startAnim);
-        ActionVariant(const ActionPlaySound &playSound);
-        ActionVariant(const ActionAttach    &attach);
-        ActionVariant(const ActionRunStopAi &runStopAi);
-        ActionVariant(const ActionShowHide  &showHide);
-        ActionVariant(const ActionMessage   &message);
-        ActionVariant(const ActionMusic     &music);
-
-        ActionType getType() const { return mType; }
-
-        template <typename F>
-        void visit(F &f) const
-        {
-            switch(mType)
-            {
-            case ActionType::TRANSFORM:
-                f(mTransform);
-                break;
-
-            case ActionType::START_ANIM:
-                f(mStartAnim);
-                break;
-
-            case ActionType::PLAY_SOUND:
-                f(mPlaySound);
-                break;
-
-            case ActionType::ATTACH:
-                f(mAttach);
-                break;
-
-            case ActionType::RUN_STOP_AI:
-                f(mRunStopAi);
-                break;
-
-            case ActionType::SHOW_HIDE:
-                f(mShowHide);
-                break;
-
-            case ActionType::MESSAGE:
-                f(mMessage);
-                break;
-
-            case ActionType::MUSIC:
-                f(mMusic);
-                break;
-            }
-        }
-
-        template <typename T>
-        const T *as() const
-        {
-            struct RetrieveVisitor
-            {
-                const T *result;
-
-                RetrieveVisitor()
-                : result(nullptr)
-                {
-                }
-
-                RetrieveVisitor &operator()(const Action &a)
-                {
-                    return *this;
-                }
-
-                RetrieveVisitor &operator()(const T &a)
-                {
-                    result = &a;
-                    return *this;
-                }
-            };
-
-            RetrieveVisitor visitor;
-            this->visit(visitor);
-
-            return visitor.result;
-        }
-
-
-    private:
-
-        ActionType mType;
-
-        union
-        {
-            ActionTransform mTransform;
-            ActionStartAnim mStartAnim;
-            ActionPlaySound mPlaySound;
-            ActionAttach    mAttach;
-            ActionRunStopAi mRunStopAi;
-            ActionShowHide  mShowHide;
-            ActionMessage   mMessage;
-            ActionMusic     mMusic;
-        };
-
-    };
-
-    template<>
-    const Action *ActionVariant::as<Action>() const;
-
+    float getTimeFromActionVariant(const ActionVariant &action);
 
     class SequenceActor
     {

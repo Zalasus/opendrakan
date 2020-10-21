@@ -134,65 +134,6 @@ namespace odDb
     }
 
 
-    ActionVariant::ActionVariant(const ActionTransform &transform)
-    : mType(ActionType::TRANSFORM)
-    , mTransform(transform)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionStartAnim &startAnim)
-    : mType(ActionType::START_ANIM)
-    , mStartAnim(startAnim)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionPlaySound &playSound)
-    : mType(ActionType::PLAY_SOUND)
-    , mPlaySound(playSound)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionAttach &attach)
-    : mType(ActionType::ATTACH)
-    , mAttach(attach)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionRunStopAi &runStopAi)
-    : mType(ActionType::RUN_STOP_AI)
-    , mRunStopAi(runStopAi)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionShowHide &showHide)
-    : mType(ActionType::SHOW_HIDE)
-    , mShowHide(showHide)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionMessage &message)
-    : mType(ActionType::MESSAGE)
-    , mMessage(message)
-    {
-    }
-
-    ActionVariant::ActionVariant(const ActionMusic &music)
-    : mType(ActionType::MUSIC)
-    , mMusic(music)
-    {
-    }
-
-    template <>
-    const Action *ActionVariant::as<Action>() const
-    {
-        const Action *result = nullptr;
-        auto visitor = [&](const Action &action) mutable { result = &action; };
-        this->visit(visitor);
-        if(result == nullptr) OD_UNREACHABLE();
-        return result;
-    }
-
-
     SequenceActor::SequenceActor()
     : mActorId(0)
     , mLevelObjectId(0)
@@ -258,11 +199,22 @@ namespace odDb
             }
         }
 
-        auto pred = [](ActionVariant &left, ActionVariant &right) { return left.as<Action>()->timeOffset < right.as<Action>()->timeOffset; };
+        auto pred = [](ActionVariant &left, ActionVariant &right) { return getTimeFromActionVariant(left) < getTimeFromActionVariant(right); };
         if(!std::is_sorted(mActions.begin(), mActions.end(), pred))
         {
             Logger::warn() << "Sequence actor has unsorted timeline!";
         }
+    }
+
+
+    float getTimeFromActionVariant(const ActionVariant &action)
+    {
+        auto visitor = [](const Action &a) -> float
+        {
+            return a.timeOffset;
+        };
+
+        return std::visit(visitor, action);
     }
 
 
