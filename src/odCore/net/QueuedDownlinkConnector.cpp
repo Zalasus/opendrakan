@@ -46,7 +46,7 @@ namespace odNet
 
         for(auto &call : mCalls)
         {
-            call.visit(visitor);
+            std::visit(visitor, call);
         }
 
         mCalls.clear();
