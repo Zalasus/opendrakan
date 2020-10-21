@@ -54,15 +54,11 @@ namespace odState
 
     TickNumber StateManager::getLatestTick()
     {
-        std::lock_guard<std::mutex> lock(mSnapshotMutex);
-
         return mSnapshots.empty() ? INVALID_TICK : mSnapshots.back().tick;
     }
 
     double StateManager::getLatestRealtime()
     {
-        std::lock_guard<std::mutex> lock(mSnapshotMutex);
-
         return mSnapshots.empty() ? 0.0 : mSnapshots.back().realtime;
     }
 
@@ -104,8 +100,6 @@ namespace odState
 
     void StateManager::commit(double realtime)
     {
-        std::lock_guard<std::mutex> lock(mSnapshotMutex);
-
         if(mSnapshots.size() >= TICK_CAPACITY)
         {
             // TODO: reclaim the discarded change map so we don't allocate a new one for every commit
@@ -122,7 +116,6 @@ namespace odState
 
     void StateManager::apply(double realtime)
     {
-        std::lock_guard<std::mutex> lock(mSnapshotMutex);
         ApplyGuard applyGuard(*this);
 
         if(mSnapshots.empty())
@@ -193,8 +186,6 @@ namespace odState
 
     void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber referenceSnapshot)
     {
-        std::lock_guard<std::mutex> lock(mSnapshotMutex);
-
         auto toSend = _getSnapshot(tickToSend, mSnapshots, false);
         if(toSend == mSnapshots.end())
         {
@@ -270,9 +261,6 @@ namespace odState
         if(incomingSnapshot->targetDiscreteChangeCount == discreteChangeCount)
         {
             // this snapshot is complete! move it to the timeline
-
-            std::lock_guard<std::mutex> lock(mSnapshotMutex);
-
             if(mSnapshots.size() >= TICK_CAPACITY)
             {
                 mSnapshots.pop_front();

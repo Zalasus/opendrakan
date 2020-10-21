@@ -72,7 +72,6 @@ namespace od
 
         virtual void acknowledgeSnapshot(odState::TickNumber tick) override
         {
-            std::lock_guard<std::mutex> lock(mClient.mutex);
             if(tick > mClient.lastAcknowledgedTick)
             {
                 mClient.lastAcknowledgedTick = tick;
@@ -152,8 +151,7 @@ namespace od
     float Server::getEstimatedClientLag(odNet::ClientId id)
     {
         auto &client = _getClientData(id);
-
-        std::lock_guard<std::mutex> lock(client.mutex);
+        
         return client.lastMeasuredRoundTripTime/2 - client.viewInterpolationTime;
     }
 
@@ -260,15 +258,9 @@ namespace od
                     continue;
                 }
 
-                odState::TickNumber lastAckd;
-                {
-                    std::lock_guard<std::mutex> lock(client->mutex);
-                    lastAckd = client->lastAcknowledgedTick;
-                }
-
                 if(client->downlinkConnector != nullptr)
                 {
-                    mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, lastAckd);
+                    mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, client->lastAcknowledgedTick);
                 }
 
                 // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed

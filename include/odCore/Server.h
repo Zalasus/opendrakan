@@ -97,16 +97,28 @@ namespace od
 
         /**
          * @brief Creates a new client and assigns a new client ID to it. It's downlink connector has to be assigned separately.
+         *
+         * This method is synchronized with the server main loop. It is okay to call it from a different thread.
+         *
          * @return the new client ID assigned to the client.
          */
         odNet::ClientId addClient();
 
+        /**
+         * @brief Assigns a downlink connector to a client.
+         *
+         * The client must have already been added to the server via the addClient() method.
+         *
+         * This method is synchronized with the server main loop. It is okay to call it from a different thread.
+         */
         void setClientDownlinkConnector(odNet::ClientId id, std::shared_ptr<odNet::DownlinkConnector> connector);
 
         /**
          * @brief Returns an uplink connector that can be used to connect the client with the given ID to this server.
          *
          * The client must have already been added to the server via the addClient() method.
+         *
+         * This method is synchronized with the server main loop. It is okay to call it from a different thread.
          */
         std::shared_ptr<odNet::QueuedUplinkConnector> getUplinkConnectorForClient(odNet::ClientId clientId);
 
@@ -114,10 +126,20 @@ namespace od
          * @brief Returns the input manager for the given client.
          *
          * On the server, every connected client has it's own input manager.
-         * If the given client ID is not registered, this will throw.
+         *
+         * The client must have already been added to the server via the addClient() method.
+         *
+         * This method is synchronized with the server main loop. It is okay to call it from a different thread.
          */
         odInput::InputManager &getInputManagerForClient(odNet::ClientId id);
 
+        /**
+         * @brief Returns the message dispatcher for the given client.
+         *
+         * The client must have already been added to the server via the addClient() method.
+         *
+         * This method is synchronized with the server main loop. It is okay to call it from a different thread.
+         */
         odNet::DownlinkMessageDispatcher &getMessageDispatcherForClient(odNet::ClientId id);
 
         LagCompensationGuard compensateLag(odNet::ClientId id);
@@ -152,9 +174,6 @@ namespace od
             std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
 
             odState::TickNumber nextTickToSend;
-
-            // for synchronizing access to the below fields
-            std::mutex mutex;
 
             // for delta-encoding snapshots
             odState::TickNumber lastAcknowledgedTick;

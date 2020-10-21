@@ -121,7 +121,7 @@ namespace odNet
             return { *this, channelCode, mChannelMeta[channelCode].messageBuffer };
         }
 
-        void receiveGlobalMessage(MessageChannelCode code, const char *data, size_t size); // FIXME: synchronize this method! also, dispatch messages only on appropriate tick
+        void receiveGlobalMessage(MessageChannelCode code, const char *data, size_t size);
 
 
         //template <typename _ChannelEnum>

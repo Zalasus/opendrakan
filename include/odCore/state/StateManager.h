@@ -7,7 +7,6 @@
 #ifndef INCLUDE_ODCORE_STATE_STATEMANAGER_H_
 #define INCLUDE_ODCORE_STATE_STATEMANAGER_H_
 
-#include <mutex>
 #include <unordered_map>
 #include <deque>
 #include <glm/vec3.hpp>
@@ -150,7 +149,6 @@ namespace odState
         ChangeMap mCurrentUpdateChangeMap;
 
         std::deque<Snapshot> mSnapshots;
-        std::mutex mSnapshotMutex; // this synchronized accesses to mSnapshots
 
         /**
          * A list of incoming snapshots. The client uses this to store changes
