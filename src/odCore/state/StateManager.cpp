@@ -100,18 +100,25 @@ namespace odState
 
     void StateManager::commit(double realtime)
     {
+        TickNumber nextTick = mSnapshots.empty() ? FIRST_TICK : mSnapshots.back().tick + 1;
+
         if(mSnapshots.size() >= TICK_CAPACITY)
         {
-            // TODO: reclaim the discarded change map so we don't allocate a new one for every commit
+            // snapshot capacity reached. reclaim oldest snapshot so we don't have to reallocate the change map
+            auto oldSnapshot = std::move(mSnapshots.front());
             mSnapshots.pop_front();
+            oldSnapshot.tick = nextTick;
+            oldSnapshot.realtime = realtime;
+            oldSnapshot.changes = mCurrentUpdateChangeMap;
+            mSnapshots.emplace_back(std::move(oldSnapshot));
+
+        }else
+        {
+            mSnapshots.emplace_back(nextTick);
+            auto &newSnapshot = mSnapshots.back();
+            newSnapshot.changes = mCurrentUpdateChangeMap;
+            newSnapshot.realtime = realtime;
         }
-
-        TickNumber nextTick = mSnapshots.empty() ? FIRST_TICK : mSnapshots.back().tick + 1;
-        mSnapshots.emplace_back(nextTick);
-
-        auto &newSnapshot = mSnapshots.back();
-        newSnapshot.changes = mCurrentUpdateChangeMap;
-        newSnapshot.realtime = realtime;
     }
 
     void StateManager::apply(double realtime)
