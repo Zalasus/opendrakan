@@ -12,6 +12,8 @@
 
 #include <odCore/FilePath.h>
 
+#include <odCore/net/QueuedDownlinkConnector.h>
+
 namespace odDb
 {
     class DbManager;
@@ -46,7 +48,6 @@ namespace odPhysics
 namespace odNet
 {
     class UplinkConnector;
-    class DownlinkConnector;
     class UplinkMessageDispatcher;
 }
 
@@ -78,7 +79,7 @@ namespace od
         inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
-        inline std::shared_ptr<odNet::DownlinkConnector> getDownlinkConnector() { return mDownlinkConnector; }
+        inline std::shared_ptr<odNet::QueuedDownlinkConnector> getDownlinkConnector() { return mDownlinkConnector; }
 
         inline odNet::UplinkMessageDispatcher &getMessageDispatcher() { return *mMessageDispatcher; }
 
@@ -111,8 +112,8 @@ namespace od
 
         std::unique_ptr<Level> mLevel;
 
-        std::shared_ptr<odNet::DownlinkConnector> mDownlinkConnector;
-        std::shared_ptr<odNet::UplinkConnector> mUplinkConnector;
+        std::shared_ptr<odNet::QueuedDownlinkConnector> mDownlinkConnector; // created by us
+        std::shared_ptr<odNet::UplinkConnector> mAssignedUplinkConnector; // assigned to us
 
         std::shared_ptr<odInput::RawActionListener> mActionListener;
 

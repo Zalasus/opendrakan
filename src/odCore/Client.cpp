@@ -85,24 +85,24 @@ namespace od
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(&renderer);
         mInputManager = std::make_unique<odInput::InputManager>();
 
-        mDownlinkConnector = std::make_shared<LocalDownlinkConnector>(*this);
+        mDownlinkConnector = std::make_shared<odNet::QueuedDownlinkConnector>();
 
         mMessageDispatcher = std::make_unique<odNet::UplinkMessageDispatcher>();
 
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
         {
-            if(this->mUplinkConnector != nullptr)
+            if(this->mAssignedUplinkConnector != nullptr)
             {
-                this->mUplinkConnector->actionTriggered(code, state);
+                this->mAssignedUplinkConnector->actionTriggered(code, state);
             }
         };
 
         mActionListener->analogCallback = [this](odInput::ActionCode code, const glm::vec2 &axes)
         {
-            if(this->mUplinkConnector != nullptr)
+            if(this->mAssignedUplinkConnector != nullptr)
             {
-                this->mUplinkConnector->analogActionTriggered(code, axes);
+                this->mAssignedUplinkConnector->analogActionTriggered(code, axes);
             }
         };
     }
@@ -113,7 +113,7 @@ namespace od
 
     void Client::setUplinkConnector(std::shared_ptr<odNet::UplinkConnector> connector)
     {
-        mUplinkConnector = connector;
+        mAssignedUplinkConnector = connector;
         mMessageDispatcher->setUplinkConnector(connector);
 
         if(mStateManager != nullptr)
@@ -132,7 +132,7 @@ namespace od
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
 
         mStateManager = std::make_unique<odState::StateManager>(*mLevel);
-        mStateManager->setUplinkConnector(mUplinkConnector);
+        mStateManager->setUplinkConnector(mAssignedUplinkConnector);
 
         mLevel->spawnAllObjects();
     }
@@ -140,6 +140,8 @@ namespace od
     void Client::run()
     {
         Logger::info() << "OpenDrakan client starting...";
+
+        LocalDownlinkConnector localDownlinkConnector(*this);
 
         mRenderer.setup();
 
@@ -157,6 +159,8 @@ namespace od
             lastUpdateStartTime = loopStart;
 
             clientTime += relTime;
+
+            mDownlinkConnector->flushQueue(localDownlinkConnector);
 
             if(mLevel != nullptr)
             {

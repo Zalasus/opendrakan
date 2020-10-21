@@ -17,6 +17,7 @@
 #include <odCore/FilePath.h>
 
 #include <odCore/net/IdTypes.h>
+#include <odCore/net/QueuedUplinkConnector.h>
 
 #include <odCore/state/Timeline.h>
 
@@ -42,7 +43,6 @@ namespace odInput
 
 namespace odNet
 {
-    class UplinkConnector;
     class DownlinkConnector;
     class DownlinkMessageDispatcher;
 }
@@ -108,7 +108,7 @@ namespace od
          *
          * The client must have already been added to the server via the addClient() method.
          */
-        std::shared_ptr<odNet::UplinkConnector> getUplinkConnectorForClient(odNet::ClientId clientId);
+        std::shared_ptr<odNet::QueuedUplinkConnector> getUplinkConnectorForClient(odNet::ClientId clientId);
 
         /**
          * @brief Returns the input manager for the given client.
@@ -147,7 +147,7 @@ namespace od
             ClientData();
 
             std::shared_ptr<odNet::DownlinkConnector> downlinkConnector;
-            std::shared_ptr<odNet::UplinkConnector> uplinkConnector;
+            std::shared_ptr<odNet::QueuedUplinkConnector> uplinkConnector;
             std::unique_ptr<odInput::InputManager> inputManager;
             std::unique_ptr<odNet::DownlinkMessageDispatcher> messageDispatcher;
 

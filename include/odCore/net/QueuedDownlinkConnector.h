@@ -35,7 +35,7 @@ namespace odNet
 
         struct LoadLevel
         {
-            std::string name;
+            std::string path;
         };
 
         struct ObjectStatesChanged

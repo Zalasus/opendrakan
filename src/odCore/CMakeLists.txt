@@ -41,6 +41,8 @@ target_sources(odCore PRIVATE
         "net/PacketBuilder.cpp"
         "net/PacketParser.cpp"
         "net/Protocol.cpp"
+        "net/QueuedDownlinkConnector.cpp"
+        "net/QueuedUplinkConnector.cpp"
         "physics/bullet/BulletCallbacks.cpp"
         "physics/bullet/BulletPhysicsSystem.cpp"
         "physics/bullet/DebugDrawer.cpp"

@@ -13,9 +13,11 @@ namespace odNet
         struct FlushVisitor
         {
             DownlinkConnector &connector;
+            std::vector<char> &messages;
 
-            FlushVisitor(DownlinkConnector &c)
+            FlushVisitor(DownlinkConnector &c, std::vector<char> &m)
             : connector(c)
+            , messages(m)
             {
             }
 
@@ -36,13 +38,13 @@ namespace odNet
 
             void operator()(const GlobalMessage &m)
             {
-                const char *data = &mMessages[m.dataOffset];
-                connector.globalMessage(m.channelCode, data, m.size);
+                const char *data = &messages[m.dataOffset];
+                connector.globalMessage(m.code, data, m.size);
             }
 
         };
 
-        FlushVisitor visitor(connector);
+        FlushVisitor visitor(connector, mMessages);
 
         for(auto &call : mCalls)
         {

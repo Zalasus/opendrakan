@@ -108,8 +108,7 @@ namespace od
         odNet::ClientId newClientId = mNextClientId++;
 
         auto clientData = std::make_unique<ClientData>();
-        // FIXME: passing w/o ownership here is potentially dangerous (but can't be strong either because that would be circular)
-        clientData->uplinkConnector = std::make_shared<LocalUplinkConnector>(*this, *clientData);
+        clientData->uplinkConnector = std::make_shared<odNet::QueuedUplinkConnector>();
         clientData->inputManager = std::make_unique<odInput::InputManager>();
         clientData->messageDispatcher = std::make_unique<odNet::DownlinkMessageDispatcher>();
 
@@ -126,7 +125,7 @@ namespace od
         client.messageDispatcher->setDownlinkConnector(connector);
     }
 
-    std::shared_ptr<odNet::UplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
+    std::shared_ptr<odNet::QueuedUplinkConnector> Server::getUplinkConnectorForClient(odNet::ClientId clientId)
     {
         return _getClientData(clientId).uplinkConnector;
     }
@@ -240,8 +239,12 @@ namespace od
                 }
             }
 
+            // update per-client subsystems and process received packets
             for(auto client : mTempClientUpdateList)
             {
+                LocalUplinkConnector localConnector(*this, *client);
+                client->uplinkConnector->flushQueue(localConnector);
+
                 client->inputManager->update(relTime);
             }
 
