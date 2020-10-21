@@ -8,8 +8,7 @@
 
 namespace odNet
 {
-    constexpr size_t LocalTunnel::MAX_PAYLOAD_SIZE; // pre-C++17 bullshit (no inline vars)
-
+    
     static thread_local std::random_device seedSource;
     static thread_local std::minstd_rand randomEngine(seedSource());
     static thread_local std::uniform_real_distribution<double> dropDistribution(0.0, 1.0);
