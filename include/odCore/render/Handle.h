@@ -8,7 +8,6 @@
 #ifndef INCLUDE_ODCORE_RENDER_HANDLE_H_
 #define INCLUDE_ODCORE_RENDER_HANDLE_H_
 
-#include <mutex>
 #include <memory>
 
 #include <glm/vec3.hpp>
@@ -36,13 +35,6 @@ namespace odRender
     class Handle
     {
     public:
-
-        /**
-         * Provides a mutex that can be used to synchronize access to this node with the
-         * render thread. Note that this will already be locked during any renderer-provided
-         * callbacks. Trying trying to lock it again inside a callback will cause a deadlock.
-         */
-        virtual std::mutex &getMutex() = 0;
 
         virtual glm::vec3 getPosition() = 0;
         virtual glm::quat getOrientation() = 0;

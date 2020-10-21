@@ -191,7 +191,6 @@ namespace od
             mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
             mRenderModel = renderer->createModelFromLayer(this);
 
-            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
             mRenderHandle->setModel(mRenderModel);
             mRenderHandle->setPosition(getOrigin());
 

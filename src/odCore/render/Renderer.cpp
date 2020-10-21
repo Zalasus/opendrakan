@@ -50,8 +50,6 @@ namespace odRender
     {
         auto handle = this->createHandle(RenderSpace::LEVEL);
 
-        std::lock_guard<std::mutex> lock(handle->getMutex());
-
         handle->setPosition(obj.getPosition());
         handle->setOrientation(obj.getRotation());
         handle->setScale(obj.getScale());

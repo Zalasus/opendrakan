@@ -22,20 +22,7 @@
 namespace odOsg
 {
 
-    static void _assert_mutex_locked(std::mutex &mutex)
-    {
-#ifndef NDEBUG
-        /* FIXME: this synchronization concept is flawed. think of a better one
-        if(mutex.try_lock())
-        {
-            mutex.unlock();
-            throw od::Exception("Accessed Handle without locking it's mutex");
-        }*/
-#endif
-    }
-
-
-    class HandleUpdateCallback : public osg::Callback
+    /*class HandleUpdateCallback : public osg::Callback
     {
     public:
 
@@ -81,7 +68,7 @@ namespace odOsg
         Handle &mHandle;
         double mLastSimTime;
         bool mFirstUpdate;
-    };
+    };*/
 
 
     Handle::Handle(Renderer &renderer)
@@ -91,29 +78,14 @@ namespace odOsg
     , mLightStateAttribute(new LightStateAttribute(renderer, Constants::MAX_LIGHTS))
     {
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
-
-        // TODO: maybe allow to designate static objects that don't need this?
-        //mUpdateCallback = new HandleUpdateCallback(*this);
-        //mTransform->addUpdateCallback(mUpdateCallback);
     }
 
     Handle::~Handle()
     {
-        if(mUpdateCallback != nullptr)
-        {
-            mTransform->removeUpdateCallback(mUpdateCallback);
-            mUpdateCallback = nullptr;
-        }
-
         if(mParentGroup != nullptr)
         {
             mParentGroup->removeChild(mTransform);
         }
-    }
-
-    std::mutex &Handle::getMutex()
-    {
-        return mMutex;
     }
 
     glm::vec3 Handle::getPosition()
@@ -133,22 +105,16 @@ namespace odOsg
 
     void Handle::setPosition(const glm::vec3 &pos)
     {
-        _assert_mutex_locked(mMutex);
-
         mTransform->setPosition(GlmAdapter::toOsg(pos));
     }
 
     void Handle::setOrientation(const glm::quat &orientation)
     {
-        _assert_mutex_locked(mMutex);
-
         mTransform->setAttitude(GlmAdapter::toOsg(orientation));
     }
 
     void Handle::setScale(const glm::vec3 &scale)
     {
-        _assert_mutex_locked(mMutex);
-
         mTransform->setScale(GlmAdapter::toOsg(scale));
     }
 
@@ -159,8 +125,6 @@ namespace odOsg
 
     void Handle::setModel(std::shared_ptr<odRender::Model> model)
     {
-        _assert_mutex_locked(mMutex);
-
         auto osgModel = od::confident_downcast<Model>(model);
 
         if(mModel != nullptr)
@@ -178,23 +142,17 @@ namespace odOsg
 
     void Handle::setVisible(bool visible)
     {
-        _assert_mutex_locked(mMutex);
-
         int mask = visible ? -1 : 0;
         mTransform->setNodeMask(mask);
     }
 
     void Handle::setModelPartVisible(size_t partIndex, bool visible)
     {
-        _assert_mutex_locked(mMutex);
-
         throw od::UnsupportedException("setModelPartVisible is unsupported");
     }
 
     void Handle::setRenderBin(odRender::RenderBin rb)
     {
-        _assert_mutex_locked(mMutex);
-
         osg::StateSet *ss = mTransform->getOrCreateStateSet();
 
         switch(rb)
@@ -246,8 +204,6 @@ namespace odOsg
 
     void Handle::setEnableColorModifier(bool enable)
     {
-        _assert_mutex_locked(mMutex);
-
         if(enable && mColorModifierUniform == nullptr)
         {
             mColorModifierUniform = new osg::Uniform("colorModifier", osg::Vec4(1.0, 1.0, 1.0, 1.0));
@@ -268,8 +224,6 @@ namespace odOsg
 
     void Handle::setColorModifier(const glm::vec4 &cm)
     {
-        _assert_mutex_locked(mMutex);
-
         if(mColorModifierUniform != nullptr)
         {
             mColorModifierUniform->set(GlmAdapter::toOsg(cm));
@@ -294,40 +248,26 @@ namespace odOsg
 
     void Handle::addLight(std::shared_ptr<od::Light> light)
     {
-        _assert_mutex_locked(mMutex);
-
         mLightStateAttribute->addLight(light);
     }
 
     void Handle::removeLight(std::shared_ptr<od::Light> light)
     {
-        _assert_mutex_locked(mMutex);
-
         mLightStateAttribute->removeLight(light);
     }
 
     void Handle::clearLightList()
     {
-        _assert_mutex_locked(mMutex);
-
         mLightStateAttribute->clearLightList();
     }
 
     void Handle::setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient)
     {
-        _assert_mutex_locked(mMutex);
-
         osg::Vec3f dif = GlmAdapter::toOsg(diffuse);
         osg::Vec3f amb = GlmAdapter::toOsg(ambient);
         osg::Vec3f dir = GlmAdapter::toOsg(direction);
 
         mLightStateAttribute->setLayerLight(dif, amb, dir);
-    }
-
-    void Handle::update(double simTime, double relTime, uint32_t frameNumber)
-    {
-        //mTransform->setPosition(GlmAdapter::toOsg(mNextUpdatePosition));
-        //mTransform->setAttitude(GlmAdapter::toOsg(mNextUpdateRotation));
     }
 
 }

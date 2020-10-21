@@ -39,11 +39,8 @@ namespace odBulletPhysics
 
         auto model = renderer.createModel();
         model->addGeometry(mGeometry);
-
-        {
-            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
-            mRenderHandle->setModel(model);
-        }
+        
+        mRenderHandle->setModel(model);
 
         mCollisionWorld->setDebugDrawer(this);
     }

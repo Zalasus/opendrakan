@@ -37,8 +37,6 @@ namespace odOsg
         inline osg::Group *getParentOsgGroup() { return mParentGroup; }
         inline void setParentOsgGroup(osg::Group *p) { mParentGroup = p; }
 
-        virtual std::mutex &getMutex() override;
-
         virtual glm::vec3 getPosition() override;
         virtual glm::quat getOrientation() override;
         virtual glm::vec3 getScale() override;
@@ -75,17 +73,13 @@ namespace odOsg
          */
         virtual void setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient) override;
 
-        void update(double simTime, double relTime, uint32_t frameNumber);
-
 
     private:
 
         osg::ref_ptr<osg::Group> mParentGroup;
 
-        std::mutex mMutex;
         std::shared_ptr<Model> mModel;
         odRender::FrameListener *mFrameListener;
-        osg::ref_ptr<osg::Callback> mUpdateCallback;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<osg::Depth> mDepth;
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;

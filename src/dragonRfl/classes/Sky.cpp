@@ -78,8 +78,6 @@ namespace dragonRfl
 
         // we need a special render node for the sky (in it's own render bin)
         mRenderNode = getClient().getRenderer().createHandleFromObject(obj);
-
-        std::lock_guard<std::mutex> lock(mRenderNode->getMutex());
         mRenderNode->setRenderBin(odRender::RenderBin::SKY);
 
         obj.setEnableUpdate(true);
