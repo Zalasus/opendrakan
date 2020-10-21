@@ -4,7 +4,7 @@ option(USE_FLUIDSYNTH "Whether to use FluidSynth subsystem to render music. (mig
 add_executable(odOsg "")
 
 set_target_properties(odOsg PROPERTIES
-        CXX_STANDARD 14
+        CXX_STANDARD 17
         CXX_STANDARD_REQUIRED YES
         CXX_EXTENSIONS NO)
 
