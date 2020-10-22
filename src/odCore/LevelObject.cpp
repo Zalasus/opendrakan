@@ -187,7 +187,14 @@ namespace od
         setStates(states);
     }
 
-    void LevelObject::setStates(const ObjectStates &newStates, bool doNotTrack)
+    void LevelObject::setStates(const ObjectStates &newStates)
+    {
+        setStatesUntracked(newStates);
+        
+        mLevel.getEngine().getStateManager().objectStatesChanged(*this, newStates);
+    }
+
+    void LevelObject::setStatesUntracked(const ObjectStates &newStates)
     {
         bool transformChanged = false;
         ObjectStates prevStates = mStates;
@@ -290,11 +297,6 @@ namespace od
         if(transformChanged && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onTransformChanged();
-        }
-
-        if(!doNotTrack)
-        {
-            mLevel.getEngine().getStateManager().objectStatesChanged(*this, newStates);
         }
     }
 

@@ -144,7 +144,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                obj->setStates(objChange.second.baseStates, true);
+                obj->setStatesUntracked(objChange.second.baseStates);
             }
 
         }else if(it == mSnapshots.begin())
@@ -156,7 +156,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
                 if(obj == nullptr) continue;
 
-                obj->setStates(objChange.second.baseStates, true);
+                obj->setStatesUntracked(objChange.second.baseStates);
             }
 
         }else
@@ -176,7 +176,7 @@ namespace odState
                 {
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
-                    obj->setStates(objChange.second.baseStates, true);
+                    obj->setStatesUntracked(objChange.second.baseStates);
 
                 }else
                 {
@@ -185,7 +185,7 @@ namespace odState
                     //  search previous and intermediate snapshots to recover the original state
                     od::ObjectStates lerped;
                     lerped.lerp(objChange.second.baseStates, changeInB->second.baseStates, delta);
-                    obj->setStates(lerped, true);
+                    obj->setStatesUntracked(lerped);
                 }
             }
         }

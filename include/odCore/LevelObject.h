@@ -110,12 +110,16 @@ namespace od
         void setRunning(bool b);
 
         /**
-         * If doNotTrack is true, these changes will be not be sent to the state
-         * manager. You can generally ignore this flag. It is used only by the
-         * state manager when restoring a cetain level state, to prevent it from
-         * getting notifications about the changes it just caused.
+         * @brief Applies the passed states to this object and notifies the StateManager about any changes.
          */
-        void setStates(const ObjectStates &states, bool doNotTrack = false);
+        void setStates(const ObjectStates &states);
+
+        /**
+         * @brief Same as setStates(), but will not notify the StateManager of the change.
+         *
+         * This is basically only used by the state manager itself.
+         */
+        void setStatesUntracked(const ObjectStates &states);
 
         /**
          * @brief Will cause the RFL instance's states to be probed and all changed states to be added to the snapshot.
