@@ -24,14 +24,14 @@ namespace odState
         ApplyGuard(StateManager &sm)
         : mStateManager(sm)
         {
-            mStateManager.mIgnoreStateUpdates = true;
+            mStateManager.mDisallowStateUpdates = true;
         }
 
         ApplyGuard(const ApplyGuard &g) = delete;
 
         ~ApplyGuard()
         {
-            mStateManager.mIgnoreStateUpdates = false;
+            mStateManager.mDisallowStateUpdates = false;
         }
 
 
@@ -43,7 +43,7 @@ namespace odState
 
     StateManager::StateManager(od::Level &level)
     : mLevel(level)
-    , mIgnoreStateUpdates(false)
+    , mDisallowStateUpdates(false)
     {
     }
 
@@ -64,7 +64,11 @@ namespace odState
 
     void StateManager::objectStatesChanged(od::LevelObject &object, const od::ObjectStates &newStates)
     {
-        if(mIgnoreStateUpdates) return;
+        if(mDisallowStateUpdates)
+        {
+            throw od::Exception("State updates disallowed while applying states");
+        }
+
         auto &storedStates = mCurrentUpdateChangeMap[object.getObjectId()].baseStates;
         storedStates.merge(storedStates, newStates);
     }

@@ -189,9 +189,9 @@ namespace od
 
     void LevelObject::setStates(const ObjectStates &newStates)
     {
-        setStatesUntracked(newStates);
-        
         mLevel.getEngine().getStateManager().objectStatesChanged(*this, newStates);
+
+        setStatesUntracked(newStates);
     }
 
     void LevelObject::setStatesUntracked(const ObjectStates &newStates)

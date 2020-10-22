@@ -138,7 +138,7 @@ namespace odState
 
         od::Level &mLevel;
 
-        bool mIgnoreStateUpdates;
+        bool mDisallowStateUpdates;
 
         /**
          * During the update loop, all changes first go here. This map is never
