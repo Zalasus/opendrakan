@@ -325,6 +325,10 @@ namespace odState
             deltaEncode(prevSub, currentSub);
         }
 
+    protected:
+
+        using BundleType = _Bundle; // this alias is used by the OD_STATE macros
+
 
     private:
 
@@ -334,6 +338,29 @@ namespace odState
         StateBundle() = default;
 
     };
+
+    /**
+     * @brief Helper macro for generating the stateOp function in StateBundles.
+     *
+     * This begins the list of states. Do not terminate with a semicolon!
+     */
+    #define OD_BEGIN_STATE_LIST() template <typename T> static void stateOp(T &op) { op
+
+    /**
+     * @brief Helper macro for generating the stateOp function in StateBundles.
+     *
+     * Adds a state to the state list. Call for every state in your bundle,
+     * between a call to OD_BEGIN_STATE_LIST and OD_END_STATE_LIST. Do not put
+     * a semicolon after this!
+     */
+    #define OD_STATE(name) (&BundleType::name)
+
+    /**
+     * @brief Helper macro for generating the stateOp function in StateBundles.
+     *
+     * Finalizes the state list. Do not put a semicolon after this!
+     */
+    #define OD_END_STATE_LIST() ; }
 
 }
 

@@ -11,18 +11,16 @@ namespace od
 {
     using odState::StateFlags;
 
-    struct ObjectStates : public odState::StateBundle<ObjectStates>
+    struct ObjectStates final : public odState::StateBundle<ObjectStates>
     {
-        template <typename T>
-        static void stateOp(T &op)
-        {
-            op(&ObjectStates::position)
-              (&ObjectStates::rotation)
-              (&ObjectStates::scale)
-              (&ObjectStates::visibility)
-              (&ObjectStates::running);
-        }
 
+        OD_BEGIN_STATE_LIST()
+            OD_STATE(position)
+            OD_STATE(rotation)
+            OD_STATE(scale)
+            OD_STATE(visibility)
+            OD_STATE(running)
+        OD_END_STATE_LIST()
 
         odState::State<glm::vec3, StateFlags::LERPED> position;
         odState::State<glm::quat, StateFlags::LERPED> rotation;
