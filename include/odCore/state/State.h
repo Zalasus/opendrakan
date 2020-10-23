@@ -8,6 +8,7 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/Logger.h>
 #include <odCore/Downcast.h>
 #include <odCore/DataStream.h>
 
@@ -68,15 +69,6 @@ namespace odState
                 return glm::slerp(left, right, delta);
             }
         };
-
-        template <typename _StateType>
-        void wrappedStateValueWrite(od::DataWriter &writer, const _StateType &value)
-        {
-            writer << value;
-        }
-
-        template <>
-        void wrappedStateValueWrite<bool>(od::DataWriter &writer, const bool &value);
 
     } // namespace detail
 
@@ -282,16 +274,39 @@ namespace odState
         SAVEGAME
     };
 
+    namespace detail
+    {
+        using MaskType = uint8_t;
+
+        constexpr size_t MAX_MASK_STATES{ sizeof(MaskType)*8 - 1 };
+        constexpr size_t EXTENDED_BIT{ 1 << MAX_MASK_STATES };
+
+        bool shouldBeIncludedInSerialization(StateSerializationPurpose purpose, StateFlags::Type flags);
+
+        template <typename _StateType>
+        void wrappedStateValueWrite(od::DataWriter &writer, const _StateType &value)
+        {
+            writer << value;
+        }
+
+        template <>
+        void wrappedStateValueWrite<bool>(od::DataWriter &writer, const bool &value);
+
+        template <typename _StateType>
+        void wrappedStateValueRead(od::DataReader &reader, _StateType &value)
+        {
+            reader >> value;
+        }
+
+        template <>
+        void wrappedStateValueRead<bool>(od::DataReader &reader, bool &value);
+
+    } // namespace detail
 
     template <typename _Bundle>
     class StateSerializeOp
     {
     public:
-
-        using MaskType = uint8_t;
-
-        static constexpr size_t MAX_MASK_STATES{ sizeof(MaskType)*8 - 1 };
-        static constexpr size_t EXTENDED_BIT{ 1 << MAX_MASK_STATES };
 
         StateSerializeOp(const _Bundle &bundle, od::DataWriter &writer, StateSerializationPurpose purpose)
         : mBundle(bundle)
@@ -312,7 +327,7 @@ namespace odState
         template <typename _StateType>
         StateSerializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
         {
-            if(_shouldWrite(flags) && (mBundle.*state).hasValue())
+            if(detail::shouldBeIncludedInSerialization(mPurpose, flags) && (mBundle.*state).hasValue())
             {
                 mMask |= (1 << mStateCount);
                 detail::wrappedStateValueWrite(mWriter, (mBundle.*state).get());
@@ -320,9 +335,9 @@ namespace odState
 
             ++mStateCount;
 
-            if(mStateCount >= MAX_MASK_STATES)
+            if(mStateCount >= detail::MAX_MASK_STATES)
             {
-                mMask |= EXTENDED_BIT;
+                mMask |= detail::EXTENDED_BIT;
                 _updateMask();
 
                 mStateCount = 0;
@@ -348,29 +363,80 @@ namespace odState
             mWriter.seek(p);
         }
 
-        bool _shouldWrite(StateFlags::Type flags)
-        {
-            switch(mPurpose)
-            {
-            case StateSerializationPurpose::NETWORK:
-                return !(flags & StateFlags::NOT_NETWORKED);
-                break;
-
-            case StateSerializationPurpose::SAVEGAME:
-                return !(flags & StateFlags::NOT_SAVED);
-                break;
-            }
-
-            OD_UNREACHABLE();
-        }
-
         const _Bundle &mBundle;
         od::DataWriter &mWriter;
         StateSerializationPurpose mPurpose;
 
         size_t mStateCount;
-        uint32_t mMask;
+        detail::MaskType mMask;
         std::streamoff mMaskOffset;
+    };
+
+
+    template <typename _Bundle>
+    class StateDeserializeOp
+    {
+    public:
+
+        StateDeserializeOp(_Bundle &bundle, od::DataReader &reader, StateSerializationPurpose purpose)
+        : mBundle(bundle)
+        , mReader(reader)
+        , mPurpose(purpose)
+        , mStateCount(0)
+        , mMask(0)
+        {
+            mReader >> mMask;
+        }
+
+        template <typename _StateType>
+        StateDeserializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+        {
+            if(mMask & (1 << mStateCount))
+            {
+                _StateType value;
+                detail::wrappedStateValueRead(mReader, value);
+
+                if(detail::shouldBeIncludedInSerialization(mPurpose, flags))
+                {
+                    (mBundle.*state) = value;
+
+                }else
+                {
+                    Logger::warn() << "State with index " << mStateCount << " from bundle " << typeid(_Bundle).name()
+                      << " was included in serialization when it shouldn't have. Ignoring state";
+                }
+            }
+
+            ++mStateCount;
+
+            if(mStateCount >= detail::MAX_MASK_STATES)
+            {
+                mStateCount = 0;
+
+                if(mMask & detail::EXTENDED_BIT)
+                {
+                    mReader >> mMask;
+
+                }else
+                {
+                    mMask = 0;
+                }
+            }
+
+            return *this;
+        }
+
+        // TODO: later, add specialization for boolean states that implements squeezing them into bitfields
+
+
+    private:
+
+        _Bundle &mBundle;
+        od::DataReader &mReader;
+        StateSerializationPurpose mPurpose;
+
+        size_t mStateCount;
+        detail::MaskType mMask;
     };
 
 
@@ -382,6 +448,7 @@ namespace odState
         virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
         virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
         virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) = 0;
+        virtual void deserialize(od::DataReader &reader, StateSerializationPurpose purpose) = 0;
     };
 
 
@@ -444,6 +511,13 @@ namespace odState
         {
             auto &bundle = static_cast<_Bundle&>(*this);
             StateSerializeOp<_Bundle> op(bundle, writer, purpose);
+            _Bundle::stateOp(op);
+        }
+
+        virtual void deserialize(od::DataReader &reader, StateSerializationPurpose purpose) override final
+        {
+            auto &bundle = static_cast<_Bundle&>(*this);
+            StateDeserializeOp<_Bundle> op(bundle, reader, purpose);
             _Bundle::stateOp(op);
         }
 
