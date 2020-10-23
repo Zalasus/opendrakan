@@ -122,6 +122,9 @@ namespace od
 
         void write(const char *data, size_t size);
 
+        std::streamoff tell();
+        void seek(std::streamoff off);
+
 
     private:
 

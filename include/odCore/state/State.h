@@ -2,10 +2,14 @@
 #ifndef INCLUDE_ODCORE_STATE_STATE_H_
 #define INCLUDE_ODCORE_STATE_STATE_H_
 
+#include <utility>
+#include <type_traits>
+
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 #include <odCore/Downcast.h>
+#include <odCore/DataStream.h>
 
 namespace odState
 {
@@ -20,43 +24,74 @@ namespace odState
     };
 
 
-    template <typename T>
-    struct StateLerp
+    namespace detail
     {
-        T operator()(const T &left, const T &right, float delta)
-        {
-            return glm::mix(left, right, delta);
-        }
-    };
 
-    template <>
-    struct StateLerp<glm::quat>
-    {
-        glm::quat operator()(const glm::quat &left, const glm::quat &right, float delta)
+        template <typename, typename = void>
+        struct HasGlmMix : std::false_type
         {
-            return glm::slerp(left, right, delta);
-        }
-    };
+        };
 
+        template <typename T>
+        struct HasGlmMix<T, std::void_t<decltype(glm::mix(std::declval<T>(), std::declval<T>(), std::declval<float>()))>> : std::true_type
+        {
+        };
+
+        template <typename T>
+        struct StateLerp
+        {
+            struct LerpableTag {};
+            struct NonLerpableTag {};
+            using LerpTagType = typename std::conditional<HasGlmMix<T>::value, LerpableTag, NonLerpableTag>::type;
+
+            T operator()(const T &left, const T &right, float delta)
+            {
+                return doTheThing(left, right, delta, LerpTagType());
+            }
+
+            T doTheThing(const T &left, const T &right, float delta, LerpableTag)
+            {
+                return glm::mix(left, right, delta);
+            }
+
+            T doTheThing(const T &left, const T &right, float delta, NonLerpableTag)
+            {
+                return left;
+            }
+        };
+
+        template <>
+        struct StateLerp<glm::quat>
+        {
+            glm::quat operator()(const glm::quat &left, const glm::quat &right, float delta)
+            {
+                return glm::slerp(left, right, delta);
+            }
+        };
+
+        template <typename _StateType>
+        void wrappedStateValueWrite(od::DataWriter &writer, const _StateType &value)
+        {
+            writer << value;
+        }
+
+        template <>
+        void wrappedStateValueWrite<bool>(od::DataWriter &writer, const bool &value);
+
+    } // namespace detail
 
     /**
      * A template for a simple state type. This should handle most basic types
      * of states (ints, floats, glm vectors etc.).
      *
      * This works like an Optional, so this can either contain a value or not.
-     *
-     * You don't have to use this (though you probably should). Any type can be
-     * a state, as long as it meets the following requirements:
-     *  - DefaultConstructible, CopyAssignable, EqualityComparable
-     *  - Defines a static lerp() function
-     *  - Defines a non-static hasValue() method
      */
-    template <typename T, StateFlags::Type _Flags = 0>
+    template <typename T>
     struct State
     {
     public:
 
-        using ThisType = State<T, _Flags>;
+        using ThisType = State<T>;
 
         State()
         : mHasValue(false)
@@ -68,34 +103,6 @@ namespace odState
         : mHasValue(true)
         , mValue(v)
         {
-        }
-
-
-        class LerpableTag {};
-        class NonLerpableTag {};
-        using LerpTagType = typename std::conditional<((_Flags & StateFlags::LERPED) != 0), LerpableTag, NonLerpableTag>::type;
-
-        static ThisType lerp(const ThisType &left, const ThisType &right, float delta)
-        {
-            return lerpImpl(left, right, delta, LerpTagType());
-        }
-
-        static ThisType lerpImpl(const ThisType &left, const ThisType &right, float delta, NonLerpableTag)
-        {
-            return left;
-        }
-
-        static ThisType lerpImpl(const ThisType &left, const ThisType &right, float delta, LerpableTag)
-        {
-            if(left.hasValue() && right.hasValue())
-            {
-                StateLerp<T> lerper;
-                return lerper(left.mValue, right.mValue, delta);
-
-            }else
-            {
-                return left;
-            }
         }
 
         bool hasValue() const { return mHasValue; }
@@ -138,8 +145,8 @@ namespace odState
 
         size_t getCount() const { return mCount; }
 
-        template <typename _State>
-        StateCountOp &operator()(_State _Bundle::* state)
+        template <typename _StateType>
+        StateCountOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
         {
             if((mBundle.*state).hasValue())
             {
@@ -170,8 +177,8 @@ namespace odState
         {
         }
 
-        template <typename _State>
-        StateMergeOp &operator()(_State _Bundle::* state)
+        template <typename _StateType>
+        StateMergeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
         {
             if((mRightBundle.*state).hasValue())
             {
@@ -207,10 +214,19 @@ namespace odState
         {
         }
 
-        template <typename _State>
-        StateLerpOp &operator()(_State _Bundle::* state)
+        template <typename _StateType>
+        StateLerpOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
         {
-            mResultBundle.*state = _State::lerp(mLeftBundle.*state, mRightBundle.*state, mDelta);
+            if((flags & StateFlags::LERPED) && (mLeftBundle.*state).hasValue() && (mRightBundle.*state).hasValue())
+            {
+                detail::StateLerp<_StateType> lerper;
+                mResultBundle.*state = lerper((mLeftBundle.*state).get(), (mRightBundle.*state).get(), mDelta);
+
+            }else
+            {
+                mResultBundle.*state = (mLeftBundle.*state);
+            }
+
             return *this;
         }
 
@@ -236,12 +252,12 @@ namespace odState
         {
         }
 
-        template <typename _State>
-        StateDeltaEncOp &operator()(_State _Bundle::* state)
+        template <typename _StateType>
+        StateDeltaEncOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
         {
             if((mReference.*state).hasValue() && mToEncode.*state == mReference.*state)
             {
-                mResultBundle.*state = _State();
+                mResultBundle.*state = State<_StateType>();
 
             }else
             {
@@ -260,6 +276,104 @@ namespace odState
     };
 
 
+    enum class StateSerializationPurpose
+    {
+        NETWORK,
+        SAVEGAME
+    };
+
+
+    template <typename _Bundle>
+    class StateSerializeOp
+    {
+    public:
+
+        using MaskType = uint8_t;
+
+        static constexpr size_t MAX_MASK_STATES{ sizeof(MaskType)*8 - 1 };
+        static constexpr size_t EXTENDED_BIT{ 1 << MAX_MASK_STATES };
+
+        StateSerializeOp(const _Bundle &bundle, od::DataWriter &writer, StateSerializationPurpose purpose)
+        : mBundle(bundle)
+        , mWriter(writer)
+        , mPurpose(purpose)
+        , mStateCount(0)
+        , mMask(0)
+        {
+            mMaskOffset = mWriter.tell();
+            mWriter << mMask;
+        }
+
+        ~StateSerializeOp()
+        {
+             _updateMask();
+        }
+
+        template <typename _StateType>
+        StateSerializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+        {
+            if(_shouldWrite(flags) && (mBundle.*state).hasValue())
+            {
+                mMask |= (1 << mStateCount);
+                detail::wrappedStateValueWrite(mWriter, (mBundle.*state).get());
+            }
+
+            ++mStateCount;
+
+            if(mStateCount >= MAX_MASK_STATES)
+            {
+                mMask |= EXTENDED_BIT;
+                _updateMask();
+
+                mStateCount = 0;
+                mMask = 0;
+
+                mMaskOffset = mWriter.tell();
+                mWriter << mMask;
+            }
+
+            return *this;
+        }
+
+        // TODO: later, add specialization for boolean states that implements squeezing them into bitfields
+
+
+    private:
+
+        void _updateMask()
+        {
+            auto p = mWriter.tell();
+            mWriter.seek(mMaskOffset);
+            mWriter << mMask;
+            mWriter.seek(p);
+        }
+
+        bool _shouldWrite(StateFlags::Type flags)
+        {
+            switch(mPurpose)
+            {
+            case StateSerializationPurpose::NETWORK:
+                return !(flags & StateFlags::NOT_NETWORKED);
+                break;
+
+            case StateSerializationPurpose::SAVEGAME:
+                return !(flags & StateFlags::NOT_SAVED);
+                break;
+            }
+
+            OD_UNREACHABLE();
+        }
+
+        const _Bundle &mBundle;
+        od::DataWriter &mWriter;
+        StateSerializationPurpose mPurpose;
+
+        size_t mStateCount;
+        uint32_t mMask;
+        std::streamoff mMaskOffset;
+    };
+
+
     struct StateBundleBase
     {
         virtual ~StateBundleBase() = default;
@@ -267,6 +381,7 @@ namespace odState
         virtual void merge(const StateBundleBase &lhs, const StateBundleBase &rhs) = 0;
         virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
         virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
+        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) = 0;
     };
 
 
@@ -325,6 +440,14 @@ namespace odState
             deltaEncode(prevSub, currentSub);
         }
 
+        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) override final
+        {
+            auto &bundle = static_cast<_Bundle&>(*this);
+            StateSerializeOp<_Bundle> op(bundle, writer, purpose);
+            _Bundle::stateOp(op);
+        }
+
+
     protected:
 
         using BundleType = _Bundle; // this alias is used by the OD_STATE macros
@@ -353,7 +476,7 @@ namespace odState
      * between a call to OD_BEGIN_STATE_LIST and OD_END_STATE_LIST. Do not put
      * a semicolon after this!
      */
-    #define OD_STATE(name) (&BundleType::name)
+    #define OD_STATE(name, flags) (&BundleType::name, (flags))
 
     /**
      * @brief Helper macro for generating the stateOp function in StateBundles.

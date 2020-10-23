@@ -217,6 +217,14 @@ namespace od
         }
 	}
 
+    void DataReader::_checkStream()
+    {
+        if(mStream == nullptr)
+	    {
+	        throw Exception("Tried to use a DataReader without assigned stream");
+	    }
+    }
+
 
     DataWriter::DataWriter(std::ostream &out)
     : mStream(&out)
@@ -315,12 +323,14 @@ namespace od
         }
     }
 
-    void DataReader::_checkStream()
+    std::streamoff DataWriter::tell()
     {
-        if(mStream == nullptr)
-	    {
-	        throw Exception("Tried to use a DataReader without assigned stream");
-	    }
+        return mStream->tellp();
+    }
+
+    void DataWriter::seek(std::streamoff off)
+    {
+        mStream->seekp(off);
     }
 
 

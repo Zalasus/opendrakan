@@ -15,18 +15,18 @@ namespace od
     {
 
         OD_BEGIN_STATE_LIST()
-            OD_STATE(position)
-            OD_STATE(rotation)
-            OD_STATE(scale)
-            OD_STATE(visibility)
-            OD_STATE(running)
+            OD_STATE(position,   StateFlags::LERPED)
+            OD_STATE(rotation,   StateFlags::LERPED)
+            OD_STATE(scale,      StateFlags::LERPED)
+            OD_STATE(visibility, 0)
+            OD_STATE(running,    0)
         OD_END_STATE_LIST()
 
-        odState::State<glm::vec3, StateFlags::LERPED> position;
-        odState::State<glm::quat, StateFlags::LERPED> rotation;
-        odState::State<glm::vec3, StateFlags::LERPED> scale;
-        odState::State<bool>                          visibility;
-        odState::State<bool>                          running;
+        odState::State<glm::vec3> position;
+        odState::State<glm::quat> rotation;
+        odState::State<glm::vec3> scale;
+        odState::State<bool>      visibility;
+        odState::State<bool>      running;
     };
 
 }

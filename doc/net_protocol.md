@@ -44,6 +44,33 @@ of an object can define *extra states*, which are sent in a separate channel.
 States are also how the engine handles persistence across play sessions by
 writing the states that changed since loading the level to a savegame.
 
+State serialization
+-------------------
+Collections of states ("state bundles") are stored in a special, mildly
+optimized format. It is a good idea to only send states that have changed since
+the last acknowledged snapshot, so the binary state bundle format must indicate
+which states are contained and which are not.
+
+This is done using a bitmask of (currently) 8 bits. A set bit indicates that
+the state with the bit's respective index is contained in the bundle. Starting
+from state 0 up to state 6, these are then serialized and appended directly
+after the bitmask.
+
+If a state bundle contains a state with a higher index than 6, the highest bit
+in the mask is set to indicate that after the blob of serialized lower states
+there is another bitmask that follows the same format as the first, only that
+this one now applies to the state 7 to 13. This is repeated until all states
+have been serialized.
+
+Object states have a fixed order which is as follows:
+```
+vec3 translation;
+quat rotation;
+vec3 scale;
+u8 visibility;
+u8 running;
+```
+
 Data structures
 ---------------
 ```
@@ -94,21 +121,14 @@ u64 reference_tick_number;
 ```
 u64 tick_number;
 u32 object_id;
-u32 state_flags;
-if(state_flags & (1 << 0)) vec3 translation;
-if(state_flags & (1 << 1)) quat rotation;
-if(state_flags & (1 << 2)) vec3 scale;
-if(state_flags & (1 << 3)) u8 visibility;
-if(state_flags & (1 << 4)) u8 running;
+statebundle states;
 ```
 
 ### Object Extra State Changed
 ```
 u64 tick_number;
 u32 object_id;
-u16 first_state_number;
-u16 state_count;
-u8  state_data[]; // size is to be derived from payload size field of the packet
+statebundle states;
 ```
 
 ### Object Created
