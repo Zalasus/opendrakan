@@ -24,11 +24,11 @@ namespace od
         }
 
 
-        odState::State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> position;
-        odState::State<glm::quat, StateFlags::NETWORKED | StateFlags::LERPED> rotation;
-        odState::State<glm::vec3, StateFlags::NETWORKED | StateFlags::LERPED> scale;
-        odState::State<bool,      StateFlags::NETWORKED>                      visibility;
-        odState::State<bool,      StateFlags::NETWORKED>                      running;
+        odState::State<glm::vec3, StateFlags::LERPED> position;
+        odState::State<glm::quat, StateFlags::LERPED> rotation;
+        odState::State<glm::vec3, StateFlags::LERPED> scale;
+        odState::State<bool>                          visibility;
+        odState::State<bool>                          running;
     };
 
 }

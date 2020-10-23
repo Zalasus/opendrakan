@@ -14,9 +14,9 @@ namespace odState
     {
         using Type = int;
 
-        static const Type NOT_SAVED = (1 << 0);
-        static const Type NETWORKED = (1 << 1);
-        static const Type LERPED    = (1 << 2);
+        static const Type NOT_SAVED     = (1 << 0);
+        static const Type NOT_NETWORKED = (1 << 1);
+        static const Type LERPED        = (1 << 2);
     };
 
 
@@ -51,7 +51,7 @@ namespace odState
      *  - Defines a static lerp() function
      *  - Defines a non-static hasValue() method
      */
-    template <typename T, StateFlags::Type _Flags>
+    template <typename T, StateFlags::Type _Flags = 0>
     struct State
     {
     public:
