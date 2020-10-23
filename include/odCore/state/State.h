@@ -447,7 +447,7 @@ namespace odState
         virtual void merge(const StateBundleBase &lhs, const StateBundleBase &rhs) = 0;
         virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
         virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
-        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) = 0;
+        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) const = 0;
         virtual void deserialize(od::DataReader &reader, StateSerializationPurpose purpose) = 0;
     };
 
@@ -507,9 +507,9 @@ namespace odState
             deltaEncode(prevSub, currentSub);
         }
 
-        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) override final
+        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) const override final
         {
-            auto &bundle = static_cast<_Bundle&>(*this);
+            auto &bundle = static_cast<const _Bundle&>(*this);
             StateSerializeOp<_Bundle> op(bundle, writer, purpose);
             _Bundle::stateOp(op);
         }

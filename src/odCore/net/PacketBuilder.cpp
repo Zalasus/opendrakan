@@ -26,23 +26,10 @@ namespace odNet
 
     void PacketBuilder::objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states)
     {
-        // TODO: implement this using state operator
-        uint32_t flags = 0;
-        if(states.position.hasValue()) flags |= PacketConstants::STATE_MASK_POSITION;
-        if(states.rotation.hasValue()) flags |= PacketConstants::STATE_MASK_ROTATION;
-        if(states.scale.hasValue()) flags |= PacketConstants::STATE_MASK_SCALE;
-        if(states.visibility.hasValue()) flags |= PacketConstants::STATE_MASK_VISIBILITY;
-        if(states.running.hasValue()) flags |= PacketConstants::STATE_MASK_RUNNING;
-
         _beginPacket(PacketType::OBJECT_STATE_CHANGED);
         mWriter << tick
-                << id
-                << flags;
-        if(states.position.hasValue())   mWriter << states.position.get();
-        if(states.rotation.hasValue())   mWriter << states.rotation.get();
-        if(states.scale.hasValue())      mWriter << states.scale.get();
-        if(states.visibility.hasValue()) mWriter << (states.visibility.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
-        if(states.running.hasValue())    mWriter << (states.running.get() ? static_cast<uint8_t>(1) : static_cast<uint8_t>(0));
+                << id;
+        states.serialize(mWriter, odState::StateSerializationPurpose::NETWORK);
         _endPacket(LinkType::UNRELIABLE);
     }
 

@@ -70,42 +70,7 @@ namespace odNet
 
                 od::ObjectStates states;
 
-                // TODO: implement this using a state operator
-
-                if(stateFlags & PacketConstants::STATE_MASK_POSITION)
-                {
-                    glm::vec3 pos;
-                    dr >> pos;
-                    states.position = pos;
-                }
-
-                if(stateFlags & PacketConstants::STATE_MASK_ROTATION)
-                {
-                    glm::quat rot;
-                    dr >> rot;
-                    states.rotation = rot;
-                }
-
-                if(stateFlags & PacketConstants::STATE_MASK_SCALE)
-                {
-                    glm::vec3 scale;
-                    dr >> scale;
-                    states.scale = scale;
-                }
-
-                if(stateFlags & PacketConstants::STATE_MASK_VISIBILITY)
-                {
-                    uint8_t vis;
-                    dr >> vis;
-                    states.visibility = vis;
-                }
-
-                if(stateFlags & PacketConstants::STATE_MASK_RUNNING)
-                {
-                    uint8_t running;
-                    dr >> running;
-                    states.running = running;
-                }
+                states.deserialize(dr, odState::StateSerializationPurpose::NETWORK);
 
                 if(mDownlinkOutput != nullptr)
                 {
