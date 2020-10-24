@@ -6,7 +6,7 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/DummyClass.h>
 
-#include <odCore/state/State.h>
+#include <odCore/state/StateBundle.h>
 
 #include <dragonRfl/classes/common/Enums.h>
 

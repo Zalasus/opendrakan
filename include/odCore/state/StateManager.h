@@ -17,7 +17,6 @@
 #include <odCore/input/Keys.h>
 
 #include <odCore/state/Event.h>
-#include <odCore/state/State.h>
 #include <odCore/state/Tick.h>
 
 namespace od
@@ -121,8 +120,7 @@ namespace odState
             TickNumber tick;
             double realtime;
 
-            // bookkeeping for incoming snapshots
-            //  TODO: move out of this struct, as they are only ever valid for incoming snapshots
+            // bookkeeping for incoming snapshots. unused otherwise
             size_t targetDiscreteChangeCount;
             bool confirmed;
             TickNumber referenceSnapshot;
@@ -156,8 +154,8 @@ namespace odState
          * snapshots are kept here until they are complete.
          *
          * In contrast to all other snapshots in the StateManager, these are
-         * "delta-encoded", i.e. they only list changes that happened since the
-         * last snapshot.
+         * "delta-encoded", i.e. they only list changes that happened since a
+         * given reference snapshot (the last one that was acknowledged).
          */
         std::deque<Snapshot> mIncomingSnapshots;
 

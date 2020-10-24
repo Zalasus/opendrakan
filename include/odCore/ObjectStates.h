@@ -5,19 +5,18 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-#include <odCore/state/State.h>
+#include <odCore/state/StateBundle.h>
 
 namespace od
 {
-    using odState::StateFlags;
 
     struct ObjectStates final : public odState::StateBundle<ObjectStates>
     {
 
         OD_BEGIN_STATE_LIST()
-            OD_STATE(position,   StateFlags::LERPED)
-            OD_STATE(rotation,   StateFlags::LERPED)
-            OD_STATE(scale,      StateFlags::LERPED)
+            OD_STATE(position,   odState::StateFlags::LERPED)
+            OD_STATE(rotation,   odState::StateFlags::LERPED)
+            OD_STATE(scale,      odState::StateFlags::LERPED)
             OD_STATE(visibility, 0)
             OD_STATE(running,    0)
         OD_END_STATE_LIST()

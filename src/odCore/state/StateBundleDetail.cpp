@@ -1,5 +1,5 @@
 
-#include <odCore/state/State.h>
+#include <odCore/state/StateBundleDetail.h>
 
 namespace odState
 {
