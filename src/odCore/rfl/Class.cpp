@@ -84,6 +84,15 @@ namespace odRfl
     {
     }
 
+    odState::StateBundleBase *SpawnableClass::getExtraStates()
+    {
+        return nullptr;
+    }
+
+    void SpawnableClass::onExtraStatesChanged()
+    {
+    }
+
 
     ClassFactory::~ClassFactory()
     {

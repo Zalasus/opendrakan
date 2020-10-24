@@ -6,6 +6,8 @@
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/DummyClass.h>
 
+#include <odCore/state/State.h>
+
 #include <dragonRfl/classes/common/Enums.h>
 
 namespace dragonRfl
@@ -25,13 +27,24 @@ namespace dragonRfl
     };
 
 
-    class Fader_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Fader_Cl>
+    struct FaderStates final : public odState::StateBundle<FaderStates>
+    {
+        OD_BEGIN_STATE_LIST()
+            OD_STATE(fade, odState::StateFlags::LERPED)
+        OD_END_STATE_LIST()
+
+        odState::State<float> fade;
+    };
+
+
+    class Fader_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Fader_Sv>
     {
     public:
 
-        Fader_Cl();
+        Fader_Sv();
 
         virtual odRfl::FieldBundle &getFields() override { return mFields; }
+        virtual odState::StateBundleBase *getExtraStates() override { return &mStates; }
 
         virtual void onSpawned() override;
         virtual void onUpdate(float relTime) override;
@@ -49,13 +62,34 @@ namespace dragonRfl
         };
 
         FaderFields mFields;
+        FaderStates mStates;
 
         float mTime;
         FadePhase mPhase;
     };
 
 
-    using FaderFactory = odRfl::DefaultClassFactory<FaderFields, Fader_Cl, odRfl::DummyClass>;
+    class Fader_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Fader_Cl>
+    {
+    public:
+
+        Fader_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+        virtual odState::StateBundleBase *getExtraStates() override { return &mStates; }
+
+        virtual void onSpawned() override;
+        virtual void onExtraStatesChanged() override;
+
+
+    private:
+
+        FaderFields mFields;
+        FaderStates mStates;
+    };
+
+
+    using FaderFactory = odRfl::DefaultClassFactory<FaderFields, Fader_Cl, Fader_Sv>;
 
 
     OD_DEFINE_CLASS(Fader, 0x0088, "Special Effect", "Fader", FaderFactory);

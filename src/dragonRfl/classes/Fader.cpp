@@ -27,27 +27,17 @@ namespace dragonRfl
                 (color, "Color");
 	}
 
-    Fader_Cl::Fader_Cl()
+
+    Fader_Sv::Fader_Sv()
     : mTime(0.0f)
     , mPhase(FadePhase::NOT_TRIGGERED)
     {
     }
 
-	void Fader_Cl::onSpawned()
+	void Fader_Sv::onSpawned()
 	{
         auto &obj = getLevelObject();
-        obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::NO_PHYSICS);
         obj.setEnableUpdate(true);
-
-        auto renderHandle = obj.getRenderHandle();
-        if(renderHandle != nullptr)
-        {
-            auto colorMod = mFields.color.asColorVector();
-            colorMod.a = 1.0;
-            renderHandle->setEnableColorModifier(true);
-            renderHandle->setColorModifier(colorMod);
-            renderHandle->setRenderBin(odRender::RenderBin::TRANSPARENT);
-        }
 
         if(mFields.startMode == StartMode::RUN_INSTANTLY)
         {
@@ -56,7 +46,7 @@ namespace dragonRfl
         }
 	}
 
-	void Fader_Cl::onUpdate(float relTime)
+	void Fader_Sv::onUpdate(float relTime)
 	{
         float fadeState;
         switch(mPhase)
@@ -101,22 +91,11 @@ namespace dragonRfl
             break;
         }
 
-        fadeState = glm::clamp(fadeState, 0.0f, 1.0f);
-
-        auto renderHandle = getLevelObject().getRenderHandle();
-        if(renderHandle != nullptr)
-        {
-            auto colorMod = mFields.color.asColorVector();
-            colorMod.a = fadeState;
-            renderHandle->setColorModifier(colorMod);
-            
-        }else
-        {
-            // TODO: apply to fullscreen quad
-        }
+        mStates.fade = glm::clamp(fadeState, 0.0f, 1.0f);
+        getLevelObject().extraStatesDirty();
     }
 
-    void Fader_Cl::onMessageReceived(od::LevelObject &sender, od::Message message)
+    void Fader_Sv::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         switch(mPhase)
         {
@@ -139,6 +118,41 @@ namespace dragonRfl
 
         default:
             break;
+        }
+    }
+
+
+    Fader_Cl::Fader_Cl()
+    {
+    }
+
+	void Fader_Cl::onSpawned()
+	{
+        auto &obj = getLevelObject();
+        obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::NO_PHYSICS);
+
+        auto renderHandle = obj.getRenderHandle();
+        if(renderHandle != nullptr)
+        {
+            auto colorMod = mFields.color.asColorVector();
+
+            // if we should run instantly, make sure we start invisible until the first state update arrives
+            colorMod.a = (mFields.startMode == StartMode::RUN_INSTANTLY) ? 0.0 : 1.0;
+
+            renderHandle->setEnableColorModifier(true);
+            renderHandle->setColorModifier(colorMod);
+            renderHandle->setRenderBin(odRender::RenderBin::TRANSPARENT);
+        }
+	}
+
+    void Fader_Cl::onExtraStatesChanged()
+    {
+        auto renderHandle =  getLevelObject().getRenderHandle();
+        if(renderHandle != nullptr)
+        {
+            auto colorMod = mFields.color.asColorVector();
+            colorMod.a = mStates.fade.get();
+            renderHandle->setColorModifier(colorMod);
         }
     }
 

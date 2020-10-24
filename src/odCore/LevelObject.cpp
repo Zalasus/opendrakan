@@ -300,7 +300,7 @@ namespace od
         }
     }
 
-    void LevelObject::extraStateDirty()
+    void LevelObject::extraStatesDirty()
     {
     }
 

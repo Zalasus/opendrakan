@@ -124,7 +124,7 @@ namespace od
         /**
          * @brief Will cause the RFL instance's states to be probed and all changed states to be added to the snapshot.
          */
-        void extraStateDirty();
+        void extraStatesDirty();
 
         /**
          * @brief Enables or disables updates for this object.

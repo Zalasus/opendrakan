@@ -33,6 +33,11 @@ namespace odPhysics
     class Handle;
 }
 
+namespace odState
+{
+    class StateBundleBase;
+}
+
 namespace odRfl
 {
 
@@ -329,12 +334,25 @@ namespace odRfl
         /**
          * @brief Called when any transform parameter has changed (translation, rotation, scale).
          *
+         * It is not specified whether this is called for each single change or groups of changes.
+         *
          * This is called right after the respective specific hook has been called.
          */
         virtual void onTransformChanged();
 
-        //virtual void onExtraStateChanged(odState::StateBase *state);
-        //virtual odState::StateBundle *getStates();
+        /**
+         * @brief Returns extra states this object has (nullptr if none, the default).
+         */
+        virtual odState::StateBundleBase *getExtraStates();
+
+        /**
+         * @brief Called when any state in the bundle provided by getExtraStates() has changed.
+         *
+         * It is not specified whether this is called for each single change or groups of changes.
+         *
+         * In the future, there might be a method that tells you exactly which state changed.
+         */
+        virtual void onExtraStatesChanged();
 
 
     private:
