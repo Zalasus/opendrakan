@@ -40,7 +40,6 @@ target_sources(odCore PRIVATE
         "net/LocalTunnel.cpp"
         "net/PacketBuilder.cpp"
         "net/PacketParser.cpp"
-        "net/Protocol.cpp"
         "net/QueuedDownlinkConnector.cpp"
         "net/QueuedUplinkConnector.cpp"
         "physics/bullet/BulletCallbacks.cpp"

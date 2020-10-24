@@ -23,22 +23,9 @@ namespace odNet
     struct PacketConstants
     {
         static constexpr size_t HEADER_SIZE = 3;
-
-        static constexpr size_t   STATE_HEADER_SIZE = 16;
-        static constexpr uint32_t STATE_MASK_POSITION   = (1 << 0);
-        static constexpr uint32_t STATE_MASK_ROTATION   = (1 << 1);
-        static constexpr uint32_t STATE_MASK_SCALE      = (1 << 2);
-        static constexpr uint32_t STATE_MASK_VISIBILITY = (1 << 3);
-        static constexpr uint32_t STATE_MASK_RUNNING    = (1 << 4);
-
-        static constexpr size_t   LIFECYCLE_SIZE = 13;
-
-        static constexpr size_t   CONFIRM_PAYLOAD_SIZE = 28;
-
-        static constexpr size_t   GLOBAL_MESSAGE_HEADER_SIZE = 4;
+        static constexpr size_t GLOBAL_MESSAGE_HEADER_SIZE = 4;
     };
 
-    size_t getObjectStateChangePacketSize(uint32_t flags);
 }
 
 #endif
