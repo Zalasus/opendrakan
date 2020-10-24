@@ -172,7 +172,10 @@ namespace od
 
         virtual int sync();
 
+
     private:
+
+        bool _isPutAreaTheBackBuffer();
 
         std::vector<char> &mVector;
 

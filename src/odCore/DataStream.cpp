@@ -418,16 +418,83 @@ namespace od
 
     std::streampos VectorOutputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
     {
-        OD_UNIMPLEMENTED();
+        if(which != std::ios_base::out)
+        {
+            return -1;
+        }
+
+        switch(way)
+        {
+        case std::ios_base::beg:
+            return this->seekpos(off, which);
+
+        case std::ios_base::end:
+            {
+                ptrdiff_t currentPosInPutArea = this->pptr() - this->pbase();
+                std::streampos currentEnd = mVector.size() + (_isPutAreaTheBackBuffer() ? currentPosInPutArea : 0);
+                return this->seekpos(currentEnd+off, which);
+            }
+            break;
+
+        case std::ios_base::cur:
+            {
+                ptrdiff_t currentPosInPutArea = this->pptr() - this->pbase();
+                std::streampos currentPos = currentPosInPutArea + (_isPutAreaTheBackBuffer() ? mVector.size() : 0);
+                if(off == 0)
+                {
+                    // as done by some implementations of ostream
+                    return currentPos;
+
+                }else
+                {
+                    return this->seekpos(currentPos + off, which);
+                }
+            }
+            break;
+
+        default:
+            return -1;
+        }
     }
 
     std::streampos VectorOutputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
     {
-        OD_UNIMPLEMENTED();
+        if(which != std::ios_base::out)
+        {
+            return -1;
+        }
+
+        // in case we are in backbuffer, empty it first so we don't have to remember the size it had before seeking
+        int syncResult = this->sync();
+        if(syncResult != 0)
+        {
+            return -1;
+        }
+
+        if(sp >= 0 && static_cast<size_t>(sp) < mVector.size())
+        {
+            this->setp(mVector.data()+sp, mVector.data()+mVector.size());
+            return sp;
+
+        }else if(sp > 0 && static_cast<size_t>(sp) == mVector.size())
+        {
+            this->setp(mBackBuffer.data(), mBackBuffer.data()+BACKBUFFER_SIZE);
+            return sp;
+
+        }else
+        {
+            return -1;
+        }
     }
 
     int VectorOutputBuffer::sync()
     {
+        if(!_isPutAreaTheBackBuffer())
+        {
+            // this only needs to do something if the put area is within the back buffer
+            return 0;
+        }
+
         ptrdiff_t backbufferSize = this->pptr() - this->pbase();
         if(backbufferSize >= 0 && static_cast<size_t>(backbufferSize) <= BACKBUFFER_SIZE)
         {
@@ -436,7 +503,7 @@ namespace od
                 mVector.insert(mVector.end(), mBackBuffer.begin(), mBackBuffer.begin() + backbufferSize);
             }
 
-            this->setp(&mBackBuffer[0], &mBackBuffer[0] + BACKBUFFER_SIZE);
+            this->setp(mBackBuffer.data(), mBackBuffer.data()+BACKBUFFER_SIZE);
 
             return 0;
 
@@ -445,5 +512,10 @@ namespace od
             Logger::error() << "Bad pptr or pbase in VectorOutputBuffer";
             return -1;
         }
+    }
+
+    bool VectorOutputBuffer::_isPutAreaTheBackBuffer()
+    {
+        return this->pbase() == mBackBuffer.data();
     }
 }
