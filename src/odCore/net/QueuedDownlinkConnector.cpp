@@ -69,6 +69,10 @@ namespace odNet
         mCalls.emplace_back(c);
     }
 
+    void QueuedDownlinkConnector::objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states)
+    {
+    }
+
     void QueuedDownlinkConnector::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick)
     {
         lock_guard lock(mMutex);

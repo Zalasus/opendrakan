@@ -53,6 +53,11 @@ namespace od
             mClient.getStateManager().incomingObjectStatesChanged(tick, id, states);
         }
 
+        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states) override
+        {
+            mClient.getStateManager().incomingObjectExtraStatesChanged(tick, id, states);
+        }
+
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override
         {
             mClient.getStateManager().confirmIncomingSnapshot(tick, realtime, discreteChangeCount, referenceTick);

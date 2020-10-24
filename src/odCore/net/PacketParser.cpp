@@ -61,7 +61,7 @@ namespace odNet
     {
         switch(static_cast<PacketType>(type))
         {
-        case PacketType::OBJECT_STATE_CHANGED:
+        case PacketType::OBJECT_STATES_CHANGED:
             {
                 odState::TickNumber tick;
                 od::LevelObjectId id;
@@ -74,6 +74,12 @@ namespace odNet
                 {
                     mDownlinkOutput->objectStatesChanged(tick, id, states);
                 }
+            }
+            break;
+
+        case PacketType::OBJECT_EXTRA_STATES_CHANGED:
+            {
+                _badPacket("extra state parsing unsupported ATM");
             }
             break;
 

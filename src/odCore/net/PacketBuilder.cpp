@@ -26,7 +26,16 @@ namespace odNet
 
     void PacketBuilder::objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states)
     {
-        _beginPacket(PacketType::OBJECT_STATE_CHANGED);
+        _beginPacket(PacketType::OBJECT_STATES_CHANGED);
+        mWriter << tick
+                << id;
+        states.serialize(mWriter, odState::StateSerializationPurpose::NETWORK);
+        _endPacket(LinkType::UNRELIABLE);
+    }
+
+    void PacketBuilder::objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states)
+    {
+        _beginPacket(PacketType::OBJECT_EXTRA_STATES_CHANGED);
         mWriter << tick
                 << id;
         states.serialize(mWriter, odState::StateSerializationPurpose::NETWORK);

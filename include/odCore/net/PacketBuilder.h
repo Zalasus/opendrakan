@@ -31,6 +31,7 @@ namespace odNet
 
         virtual void loadLevel(const std::string &path) override final;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override final;
+        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states) override final;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override final;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override final;
 

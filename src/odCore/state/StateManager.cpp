@@ -73,7 +73,7 @@ namespace odState
         storedStates.merge(storedStates, newStates);
     }
 
-    void StateManager::objectCustomStateChanged(od::LevelObject &object)
+    void StateManager::objectExtraStatesChanged(od::LevelObject &object, const odState::StateBundleBase &states)
     {
         OD_UNIMPLEMENTED();
     }
@@ -86,7 +86,7 @@ namespace odState
         _commitIncomingIfComplete(tick, snapshotIt);
     }
 
-    void StateManager::incomingObjectCustomStateChanged(TickNumber tick, od::LevelObjectId objectId)
+    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const odState::StateBundleBase &states)
     {
         OD_UNIMPLEMENTED();
     }

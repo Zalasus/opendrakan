@@ -55,11 +55,11 @@ namespace odState
 
         // these modify the update loop changeset (for server)
         void objectStatesChanged(od::LevelObject &obj, const od::ObjectStates &newStates);
-        void objectCustomStateChanged(od::LevelObject &object);
+        void objectExtraStatesChanged(od::LevelObject &object, const odState::StateBundleBase &states);
 
         // these modify the incoming changeset with the given tick (for client)
         void incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states);
-        void incomingObjectCustomStateChanged(TickNumber tick, od::LevelObjectId objectId);
+        void incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const odState::StateBundleBase &states);
         void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceSnapshot);
 
         /**

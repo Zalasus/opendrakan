@@ -9,7 +9,8 @@ namespace odNet
 
     enum class PacketType : uint8_t
     {
-        OBJECT_STATE_CHANGED,
+        OBJECT_STATES_CHANGED,
+        OBJECT_EXTRA_STATES_CHANGED,
         CONFIRM_SNAPSHOT,
         LOAD_LEVEL,
         GLOBAL_MESSAGE,
