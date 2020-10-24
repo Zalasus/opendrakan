@@ -151,7 +151,7 @@ namespace od
     float Server::getEstimatedClientLag(odNet::ClientId id)
     {
         auto &client = _getClientData(id);
-        
+
         return client.lastMeasuredRoundTripTime/2 - client.viewInterpolationTime;
     }
 
@@ -263,7 +263,7 @@ namespace od
                     mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, client->lastAcknowledgedTick);
                 }
 
-                // for now, send every tick. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                // for now, send with fixes rate. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
                 client->nextTickToSend = latestTick+3;
             }
 

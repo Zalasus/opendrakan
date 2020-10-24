@@ -8,7 +8,7 @@
 
 namespace odNet
 {
-    
+
     static thread_local std::random_device seedSource;
     static thread_local std::minstd_rand randomEngine(seedSource());
     static thread_local std::uniform_real_distribution<double> dropDistribution(0.0, 1.0);
@@ -163,8 +163,6 @@ namespace odNet
                 }
 
                 _parsePacket(packet.data.data(), packet.size, packet.isUplink);
-
-                Logger::info() << "dispatched delayed packet in " << (packet.isUplink ? "uplink" : "downlink");
 
                 mPacketBuffer.pop_front();
             }

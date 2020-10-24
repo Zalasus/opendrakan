@@ -45,7 +45,7 @@ namespace od
      * Client and Server at the same time even if both happen to exist in the
      * same process like during startup or in a singleplayer game.
      *
-     * TODO: since we can't use std::variant, why not make this an interface that Client and Server implement instead?
+     * TODO: why not make this an interface that Client and Server implement instead?
      */
     class Engine
     {

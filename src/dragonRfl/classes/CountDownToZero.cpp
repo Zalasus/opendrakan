@@ -104,7 +104,7 @@ namespace dragonRfl
                 << "Count was " << mCounterValue << ", now is " << newCounter;
 
         mCounterValue = newCounter;
-        getLevelObject().extraStateDirty();
+        getLevelObject().extraStatesDirty();
     }
 
 }
