@@ -98,9 +98,11 @@ struct quat
 
 Basic packet structure
 ----------------------
+```
 u8 packet_type;
 u16 payload_length;
 u8 payload_bytes[~];
+```
 
 Snapshot packets
 ----------------
@@ -158,14 +160,18 @@ u64 tick_number;
 Message Channel packets
 -----------------------
 These packets allow an RFL to send arbitrary messages over so called "channels".
+Messages have no timing guarantee. They must not be used for predicting
+state changes. While these are reliable (i.e. sent over TCP), they can arrive
+in any tick, which might be future or past on the client. Any timing correction
+must be handled by the receiver.
 
-### Global message (downlink)
+### Global message (downlink, reliable)
 ```
 u32 channel_code;
 u8  message_body[];  // size is to be derived from payload size field of the packet
 ```
 
-### Object message (downlink)
+### Object message (downlink, reliable)
 ```
 u32 channel_code;
 u32 sender_object_id;
@@ -178,21 +184,20 @@ Gameplay packets
 These are sent as soon as the action happens on the transmitting side. They
 don't use the timeline.
 
-### Action (Uplink)
+### Action (uplink, reliable)
 ```
 u32 action_code;
 u8  action_state;
 ```
 
-### Analog Action (Uplink)
+### Analog Action (uplink, reliable)
 ```
 u32 action_code;
 f32 x;
 f32 y;
 ```
 
-### Chat
-u8 message_chars[];
-
 ### Load level
+```
 u8 level_path[]; // relative to engine root
+```
