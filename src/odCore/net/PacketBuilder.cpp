@@ -75,7 +75,6 @@ namespace odNet
     void PacketBuilder::_beginPacket(PacketType type)
     {
         mPacketBuffer.clear();
-        //mOutputStream.seekp(0);
 
         uint16_t dummyPayloadSize = 0;
         mWriter << static_cast<uint8_t>(type) << dummyPayloadSize;
@@ -91,12 +90,10 @@ namespace odNet
             throw od::Exception("Packet payload size exceeds size fields limits");
         }
 
-        //mOutputStream.seekp(1);
-        //mWriter << static_cast<uint16_t>(payloadSize);
-
-        // FIXME: bad hack! while seeking is unimplemented, we have to overwrite the payload size field manually
-        mPacketBuffer[1] = (payloadSize >> 0) & 0xff;
-        mPacketBuffer[2] = (payloadSize >> 8) & 0xff;
+        auto p = mWriter.tell();
+        mWriter.seek(1);
+        mWriter << static_cast<uint16_t>(payloadSize);
+        mWriter.seek(p);
 
         if(mPacketCallback != nullptr)
         {

@@ -65,11 +65,9 @@ namespace odNet
             {
                 odState::TickNumber tick;
                 od::LevelObjectId id;
-                uint32_t stateFlags;
-                dr >> tick >> id >> stateFlags;
+                dr >> tick >> id;
 
                 od::ObjectStates states;
-
                 states.deserialize(dr, odState::StateSerializationPurpose::NETWORK);
 
                 if(mDownlinkOutput != nullptr)
