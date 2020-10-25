@@ -66,26 +66,36 @@ namespace odState
     {
         _throwIfStateUpdatesDisallowed();
 
-        auto &storedStates = mCurrentUpdateObjectStates[object.getObjectId()];
+        auto &storedStates = mCurrentUpdateStatesMap[object.getObjectId()].basicStates;
         storedStates.merge(storedStates, newStates);
     }
 
-    void StateManager::objectExtraStatesChanged(od::LevelObject &object, const odState::StateBundleBase &states)
+    void StateManager::objectExtraStatesChanged(od::LevelObject &object, const StateBundleBase &newStates)
     {
         _throwIfStateUpdatesDisallowed();
 
-        OD_UNIMPLEMENTED();
+        auto &storedStates = mCurrentUpdateStatesMap[object.getObjectId()].extraStates;
+        if(storedStates == nullptr || storedStates.use_count() > 1)
+        {
+            std::shared_ptr<StateBundleBase> cloned(newStates.clone().release());
+            storedStates = cloned;
+
+        }else
+        {
+            // storedStates is nonnull and unique
+            storedStates->merge(*storedStates, newStates);
+        }
     }
 
     void StateManager::incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states)
     {
         auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
-        auto &objectStates = snapshotIt->objectStates[objectId];
+        auto &objectStates = snapshotIt->statesMap[objectId].basicStates;
         objectStates.merge(objectStates, states);
         _commitIncomingIfComplete(tick, snapshotIt);
     }
 
-    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const odState::StateBundleBase &states)
+    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const StateBundleBase &states)
     {
         OD_UNIMPLEMENTED();
     }
@@ -112,16 +122,14 @@ namespace odState
             mSnapshots.pop_front();
             oldSnapshot.tick = nextTick;
             oldSnapshot.realtime = realtime;
-            oldSnapshot.objectStates = mCurrentUpdateObjectStates;
-            oldSnapshot.extraStates = mCurrentUpdateExtraStates;
+            oldSnapshot.statesMap = mCurrentUpdateStatesMap;
             mSnapshots.emplace_back(std::move(oldSnapshot));
 
         }else
         {
             mSnapshots.emplace_back(nextTick);
             auto &newSnapshot = mSnapshots.back();
-            newSnapshot.objectStates = mCurrentUpdateObjectStates;
-            newSnapshot.extraStates = mCurrentUpdateExtraStates;
+            newSnapshot.statesMap = mCurrentUpdateStatesMap;
             newSnapshot.realtime = realtime;
         }
     }
@@ -144,24 +152,24 @@ namespace odState
         {
             // the latest snapshot is older than the requested time -> extrapolate
             //  TODO: extrapolation not implemented. applying latest snapshot verbatim for now
-            for(auto &objState : mSnapshots.back().objectStates)
+            for(auto &states : mSnapshots.back().statesMap)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(objState.first);
+                od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                obj->setStatesUntracked(objState.second);
+                obj->setStatesUntracked(states.second.basicStates);
             }
 
         }else if(it == mSnapshots.begin())
         {
             // we only have one snapshot in the timeline, and it's later than the requested time.
             //  extrapolating here is probably unnecessary, so we just apply the snapshot as if it happened right now.
-            for(auto &objState : it->objectStates)
+            for(auto &states : it->statesMap)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(objState.first);
+                od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                obj->setStatesUntracked(objState.second);
+                obj->setStatesUntracked(states.second.basicStates);
             }
 
         }else
@@ -171,27 +179,27 @@ namespace odState
 
             double delta = (realtime - a.realtime)/(b.realtime - a.realtime);
 
-            for(auto &objState : a.objectStates)
+            for(auto &states : a.statesMap)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(objState.first);
+                od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                auto stateInB = b.objectStates.find(objState.first);
-                if(stateInB == b.objectStates.end())
+                auto stateInB = b.statesMap.find(states.first);
+                if(stateInB == b.statesMap.end())
                 {
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
                     Logger::warn() << "Incomplete timeline. A tracked state seems to have disappeared";
-                    obj->setStatesUntracked(objState.second);
+                    obj->setStatesUntracked(states.second.basicStates);
 
                 }else
                 {
                     // TODO: a flag indicating that a state has not changed since the last snapshot might improve performance a tiny bit by ommitting the lerp.
                     //  we still have to store full snapshots, as we must move through the timeline arbitrarily, and for every missing state, we'd have to
                     //  search previous and intermediate snapshots to recover the original state
-                    od::ObjectStates lerped;
-                    lerped.lerp(objState.second, stateInB->second, delta);
-                    obj->setStatesUntracked(lerped);
+                    CombinedStates lerped;
+                    lerped.lerp(states.second, stateInB->second, delta);
+                    obj->setStatesUntracked(lerped.basicStates);
                 }
             }
         }
@@ -209,13 +217,13 @@ namespace odState
 
         auto reference = (referenceSnapshot != INVALID_TICK) ? _getSnapshot(referenceSnapshot, mSnapshots, false) : mSnapshots.end();
 
-        for(auto &objState : toSend->objectStates)
+        for(auto &states : toSend->statesMap)
         {
-            od::ObjectStates encodedState = objState.second;
+            CombinedStates encodedState = states.second;
             if(reference != mSnapshots.end())
             {
-                auto referenceState = reference->objectStates.find(objState.first);
-                if(referenceState != reference->objectStates.end())
+                auto referenceState = reference->statesMap.find(states.first);
+                if(referenceState != reference->statesMap.end())
                 {
                     encodedState.deltaEncode(referenceState->second, encodedState);
                 }
@@ -224,7 +232,7 @@ namespace odState
             size_t changeCount = encodedState.countStatesWithValue();
             if(changeCount > 0)
             {
-                c.objectStatesChanged(tickToSend, objState.first, encodedState);
+                c.objectStatesChanged(tickToSend, states.first, encodedState.basicStates);
             }
 
             discreteChangeCount += changeCount;
@@ -266,9 +274,9 @@ namespace odState
         //  should happen only rarely in case a confirmation packet arrives earlier than a change.
         //  however, doing it this way reduces the amount of dependent states in our program, which is a plus
         size_t discreteChangeCount = 0;
-        for(auto &state : incomingSnapshot->objectStates)
+        for(auto &states : incomingSnapshot->statesMap)
         {
-            discreteChangeCount += state.second.countStatesWithValue();
+            discreteChangeCount += states.second.countStatesWithValue();
         }
 
         if(incomingSnapshot->targetDiscreteChangeCount == discreteChangeCount)
@@ -288,10 +296,10 @@ namespace odState
                     throw od::Exception("Reference snapshot no longer contained in timeline");
                 }
 
-                for(auto &referenceState : referenceSnapshot->objectStates)
+                for(auto &referenceStates : referenceSnapshot->statesMap)
                 {
-                    auto &deltaState = incomingSnapshot->objectStates[referenceState.first];
-                    deltaState.merge(referenceState.second, deltaState);
+                    auto &deltaStates = incomingSnapshot->statesMap[referenceStates.first];
+                    deltaStates.merge(referenceStates.second, deltaStates);
                 }
             }
 
@@ -314,5 +322,27 @@ namespace odState
             throw od::Exception("State updates disallowed while applying states");
         }
     }
+
+
+    size_t StateManager::CombinedStates::countStatesWithValue() const
+    {
+        return basicStates.countStatesWithValue();// + (extraStates != nullptr ? extraStates->countStatesWithValue() : 0);
+    }
+
+    void StateManager::CombinedStates::merge(const CombinedStates &lhs, const CombinedStates &rhs)
+    {
+        basicStates.merge(lhs.basicStates, rhs.basicStates);
+    }
+
+    void StateManager::CombinedStates::lerp(const CombinedStates &lhs, const CombinedStates &rhs, float delta)
+    {
+        basicStates.lerp(lhs.basicStates, rhs.basicStates, delta);
+    }
+
+    void StateManager::CombinedStates::deltaEncode(const CombinedStates &reference, const CombinedStates &toEncode)
+    {
+        basicStates.deltaEncode(reference.basicStates, toEncode.basicStates);
+    }
+
 
 }

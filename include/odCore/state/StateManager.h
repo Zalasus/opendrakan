@@ -54,11 +54,11 @@ namespace odState
 
         // these modify the update loop changeset (for server)
         void objectStatesChanged(od::LevelObject &obj, const od::ObjectStates &newStates);
-        void objectExtraStatesChanged(od::LevelObject &object, const odState::StateBundleBase &states);
+        void objectExtraStatesChanged(od::LevelObject &object, const StateBundleBase &states);
 
         // these modify the incoming changeset with the given tick (for client)
         void incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states);
-        void incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const odState::StateBundleBase &states);
+        void incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const StateBundleBase &states);
         void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceSnapshot);
 
         /**
@@ -91,8 +91,18 @@ namespace odState
 
         friend class ApplyGuard;
 
-        using ObjectStateMap = std::unordered_map<od::LevelObjectId, od::ObjectStates>;
-        using ExtraStateMap = std::unordered_map<od::LevelObjectId, std::shared_ptr<odState::StateBundleBase>>; // TODO: use copy-on-write mechanism
+        struct CombinedStates
+        {
+            size_t countStatesWithValue() const;
+            void merge(const CombinedStates &lhs, const CombinedStates &rhs);
+            void lerp(const CombinedStates &lhs, const CombinedStates &rhs, float delta);
+            void deltaEncode(const CombinedStates &reference, const CombinedStates &toEncode);
+
+            od::ObjectStates basicStates;
+            std::shared_ptr<StateBundleBase> extraStates;
+        };
+
+        using StatesMap = std::unordered_map<od::LevelObjectId, CombinedStates>;
 
         struct Snapshot
         {
@@ -108,8 +118,7 @@ namespace odState
             Snapshot(const Snapshot &s) = delete;
             Snapshot &operator=(Snapshot &&) = default;
 
-            ObjectStateMap objectStates;
-            ExtraStateMap extraStates;
+            StatesMap statesMap;
             TickNumber tick;
             double realtime;
 
@@ -138,9 +147,7 @@ namespace odState
          *
          * On both clients and servers, this is only used locally.
          */
-        ObjectStateMap mCurrentUpdateObjectStates;
-
-        ExtraStateMap mCurrentUpdateExtraStates;
+        StatesMap mCurrentUpdateStatesMap;
 
         std::deque<Snapshot> mSnapshots;
 

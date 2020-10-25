@@ -307,6 +307,10 @@ namespace od
 
     void LevelObject::extraStatesDirty()
     {
+        if(mSpawnableClass != nullptr && mSpawnableClass->getExtraStates() != nullptr)
+        {
+            mLevel.getEngine().getStateManager().objectExtraStatesChanged(*this, *mSpawnableClass->getExtraStates());
+        }
     }
 
     void LevelObject::spawn()
