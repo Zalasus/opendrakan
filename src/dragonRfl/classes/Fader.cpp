@@ -147,7 +147,7 @@ namespace dragonRfl
 
     void Fader_Cl::onExtraStatesChanged()
     {
-        auto renderHandle =  getLevelObject().getRenderHandle();
+        auto renderHandle = getLevelObject().getRenderHandle();
         if(renderHandle != nullptr)
         {
             auto colorMod = mFields.color.asColorVector();

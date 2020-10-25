@@ -15,6 +15,8 @@ namespace odState
     {
         virtual ~StateBundleBase() = default;
         virtual size_t countStatesWithValue() const = 0;
+        virtual void clear() = 0;
+        virtual void assign(const StateBundleBase &bundle) = 0;
         virtual void merge(const StateBundleBase &lhs, const StateBundleBase &rhs) = 0;
         virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
         virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
@@ -36,6 +38,19 @@ namespace odState
             detail::StateCountOp<_Bundle> op(thisSub);
             _Bundle::stateOp(op);
             return op.getCount();
+        }
+
+        virtual void clear() override final
+        {
+            auto &thisBundle = static_cast<_Bundle&>(*this);
+            thisBundle = _Bundle();
+        }
+
+        virtual void assign(const StateBundleBase &b) override final
+        {
+            auto &bundle = *(od::downcast<const _Bundle>(&b));
+            auto &thisBundle = static_cast<_Bundle&>(*this);
+            thisBundle = bundle;
         }
 
         void merge(const _Bundle &lhs, const _Bundle &rhs)

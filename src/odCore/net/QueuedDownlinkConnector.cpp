@@ -31,6 +31,11 @@ namespace odNet
                 connector.objectStatesChanged(o.tick, o.id, o.states);
             }
 
+            void operator()(const ObjectExtraStatesChanged &o)
+            {
+                connector.objectExtraStatesChanged(o.tick, o.id, *o.states);
+            }
+
             void operator()(const ConfirmSnapshot &c)
             {
                 connector.confirmSnapshot(c.tick, c.realtime, c.discreteChangeCount, c.referenceTick);
@@ -71,6 +76,10 @@ namespace odNet
 
     void QueuedDownlinkConnector::objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states)
     {
+        auto newStates = states.clone(); // FIXME: yucky
+
+        lock_guard lock(mMutex);
+        mCalls.emplace_back(ObjectExtraStatesChanged{ tick, id, std::move(newStates) });
     }
 
     void QueuedDownlinkConnector::confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick)

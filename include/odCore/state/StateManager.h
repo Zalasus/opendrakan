@@ -98,6 +98,9 @@ namespace odState
             void lerp(const CombinedStates &lhs, const CombinedStates &rhs, float delta);
             void deltaEncode(const CombinedStates &reference, const CombinedStates &toEncode);
 
+            void makeExtraStatesUnique();
+            void applyToObject(od::LevelObject &obj);
+
             od::ObjectStates basicStates;
             std::shared_ptr<StateBundleBase> extraStates;
         };

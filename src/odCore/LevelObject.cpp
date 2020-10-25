@@ -313,6 +313,19 @@ namespace od
         }
     }
 
+    void LevelObject::setExtraStatesUntracked(const odState::StateBundleBase &newStates)
+    {
+        if(mSpawnableClass != nullptr)
+        {
+            auto extraStates = mSpawnableClass->getExtraStates();
+            if(extraStates != nullptr)
+            {
+                extraStates->merge(*extraStates, newStates);
+                mSpawnableClass->onExtraStatesChanged();
+            }
+        }
+    }
+
     void LevelObject::spawn()
     {
         if(mIsSpawned)

@@ -14,6 +14,7 @@ namespace odState
 
     static const TickNumber TICK_CAPACITY = 16;
 
+
     /**
      * @brief An RAII object that disables state updates on the StateManager as long as it lives.
      */
@@ -75,29 +76,37 @@ namespace odState
         _throwIfStateUpdatesDisallowed();
 
         auto &storedStates = mCurrentUpdateStatesMap[object.getObjectId()].extraStates;
+
         if(storedStates == nullptr || storedStates.use_count() > 1)
         {
-            std::shared_ptr<StateBundleBase> cloned(newStates.clone().release());
-            storedStates = cloned;
-
-        }else
-        {
-            // storedStates is nonnull and unique
-            storedStates->merge(*storedStates, newStates);
+            storedStates = newStates.cloneShared();
         }
+
+        // storedStates is nonnull and unique
+        storedStates->merge(*storedStates, newStates);
     }
 
-    void StateManager::incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states)
+    void StateManager::incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &newStates)
     {
         auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
-        auto &objectStates = snapshotIt->statesMap[objectId].basicStates;
-        objectStates.merge(objectStates, states);
+        auto &states = snapshotIt->statesMap[objectId].basicStates;
+        states.merge(states, newStates);
         _commitIncomingIfComplete(tick, snapshotIt);
     }
 
-    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const StateBundleBase &states)
+    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const StateBundleBase &newStates)
     {
-        OD_UNIMPLEMENTED();
+        auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
+
+        auto &states = snapshotIt->statesMap[objectId].extraStates;
+        if(states == nullptr || states.use_count() > 1)
+        {
+            states = newStates.cloneShared();
+        }
+
+        states->merge(*states, newStates);
+
+        _commitIncomingIfComplete(tick, snapshotIt);
     }
 
     void StateManager::confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceTick)
@@ -138,6 +147,9 @@ namespace odState
     {
         ApplyGuard applyGuard(*this);
 
+        // TODO: not all states change everytime! we should remember the last tick we applied and only process states that changed between the two.
+        //  right now we apply *every* tracked state every single frame even if it didn't change, and that wastes a lot of time
+
         if(mSnapshots.empty())
         {
             // can't apply anything on an empty timeline. we are done right away.
@@ -157,7 +169,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                obj->setStatesUntracked(states.second.basicStates);
+                states.second.applyToObject(*obj);
             }
 
         }else if(it == mSnapshots.begin())
@@ -169,7 +181,7 @@ namespace odState
                 od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                obj->setStatesUntracked(states.second.basicStates);
+                states.second.applyToObject(*obj);
             }
 
         }else
@@ -190,7 +202,7 @@ namespace odState
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
                     Logger::warn() << "Incomplete timeline. A tracked state seems to have disappeared";
-                    obj->setStatesUntracked(states.second.basicStates);
+                    states.second.applyToObject(*obj);
 
                 }else
                 {
@@ -199,7 +211,7 @@ namespace odState
                     //  search previous and intermediate snapshots to recover the original state
                     CombinedStates lerped;
                     lerped.lerp(states.second, stateInB->second, delta);
-                    obj->setStatesUntracked(lerped.basicStates);
+                    lerped.applyToObject(*obj);
                 }
             }
         }
@@ -229,13 +241,19 @@ namespace odState
                 }
             }
 
-            size_t changeCount = encodedState.countStatesWithValue();
-            if(changeCount > 0)
+            size_t basicChangeCount = encodedState.basicStates.countStatesWithValue();
+            if(basicChangeCount > 0)
             {
                 c.objectStatesChanged(tickToSend, states.first, encodedState.basicStates);
             }
 
-            discreteChangeCount += changeCount;
+            size_t extraChangeCount = (encodedState.extraStates != nullptr) ? encodedState.extraStates->countStatesWithValue() : 0;
+            if(extraChangeCount > 0)
+            {
+                c.objectExtraStatesChanged(tickToSend, states.first, *encodedState.extraStates);
+            }
+
+            discreteChangeCount += basicChangeCount + extraChangeCount;
         }
 
         c.confirmSnapshot(tickToSend, toSend->realtime, discreteChangeCount, referenceSnapshot);
@@ -312,6 +330,10 @@ namespace odState
             {
                 mUplinkConnectorForAck->acknowledgeSnapshot(tick);
             }
+
+        }else
+        {
+            Logger::warn() << incomingSnapshot->targetDiscreteChangeCount << " > " << discreteChangeCount;
         }
     }
 
@@ -326,22 +348,139 @@ namespace odState
 
     size_t StateManager::CombinedStates::countStatesWithValue() const
     {
-        return basicStates.countStatesWithValue();// + (extraStates != nullptr ? extraStates->countStatesWithValue() : 0);
+        return basicStates.countStatesWithValue() + (extraStates != nullptr ? extraStates->countStatesWithValue() : 0);
     }
 
     void StateManager::CombinedStates::merge(const CombinedStates &lhs, const CombinedStates &rhs)
     {
         basicStates.merge(lhs.basicStates, rhs.basicStates);
+
+        if(extraStates == nullptr)
+        {
+            if(lhs.extraStates != nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates = lhs.extraStates->cloneShared();
+                extraStates->merge(*lhs.extraStates, *rhs.extraStates);
+
+            }else if(lhs.extraStates != nullptr && rhs.extraStates == nullptr)
+            {
+                extraStates = lhs.extraStates;
+
+            }else if(lhs.extraStates == nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates = rhs.extraStates;
+            }
+
+        }else
+        {
+            makeExtraStatesUnique();
+            if(lhs.extraStates != nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates->merge(*lhs.extraStates, *rhs.extraStates);
+
+            }else if(lhs.extraStates != nullptr && rhs.extraStates == nullptr)
+            {
+                extraStates->assign(*lhs.extraStates);
+
+            }else if(lhs.extraStates == nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates->assign(*rhs.extraStates);
+            }
+        }
     }
 
     void StateManager::CombinedStates::lerp(const CombinedStates &lhs, const CombinedStates &rhs, float delta)
     {
         basicStates.lerp(lhs.basicStates, rhs.basicStates, delta);
+
+        if(extraStates == nullptr)
+        {
+            if(lhs.extraStates != nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates = lhs.extraStates->cloneShared();
+                extraStates->lerp(*lhs.extraStates, *rhs.extraStates, delta);
+
+            }else if(lhs.extraStates != nullptr && rhs.extraStates == nullptr)
+            {
+                extraStates = lhs.extraStates;
+
+            }else if(lhs.extraStates == nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates = rhs.extraStates;
+            }
+
+        }else
+        {
+            makeExtraStatesUnique();
+            if(lhs.extraStates != nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates->lerp(*lhs.extraStates, *rhs.extraStates, delta);
+
+            }else if(lhs.extraStates != nullptr && rhs.extraStates == nullptr)
+            {
+                extraStates->assign(*lhs.extraStates);
+
+            }else if(lhs.extraStates == nullptr && rhs.extraStates != nullptr)
+            {
+                extraStates->assign(*rhs.extraStates);
+            }
+        }
     }
 
     void StateManager::CombinedStates::deltaEncode(const CombinedStates &reference, const CombinedStates &toEncode)
     {
         basicStates.deltaEncode(reference.basicStates, toEncode.basicStates);
+
+        if(extraStates == nullptr)
+        {
+            if(reference.extraStates != nullptr && toEncode.extraStates != nullptr)
+            {
+                extraStates = reference.extraStates->cloneShared();
+                extraStates->deltaEncode(*reference.extraStates, *toEncode.extraStates);
+
+            }else if(reference.extraStates != nullptr && toEncode.extraStates == nullptr)
+            {
+                extraStates = nullptr; // may stay nullptr
+
+            }else if(reference.extraStates == nullptr && toEncode.extraStates != nullptr)
+            {
+                extraStates = toEncode.extraStates;
+            }
+
+        }else
+        {
+            makeExtraStatesUnique();
+            if(reference.extraStates != nullptr && toEncode.extraStates != nullptr)
+            {
+                extraStates->deltaEncode(*reference.extraStates, *toEncode.extraStates);
+
+            }else if(reference.extraStates != nullptr && toEncode.extraStates == nullptr)
+            {
+                extraStates->clear();
+
+            }else if(reference.extraStates == nullptr && toEncode.extraStates != nullptr)
+            {
+                extraStates->assign(*toEncode.extraStates);
+            }
+        }
+    }
+
+    void StateManager::CombinedStates::makeExtraStatesUnique()
+    {
+        if(extraStates != nullptr && extraStates.use_count() > 1)
+        {
+            extraStates = extraStates->cloneShared();
+        }
+    }
+
+    void StateManager::CombinedStates::applyToObject(od::LevelObject &obj)
+    {
+        obj.setStatesUntracked(basicStates);
+
+        if(extraStates != nullptr)
+        {
+            obj.setExtraStatesUntracked(*extraStates);
+        }
     }
 
 

@@ -46,6 +46,13 @@ namespace odNet
             od::ObjectStates states;
         };
 
+        struct ObjectExtraStatesChanged
+        {
+            odState::TickNumber tick;
+            od::LevelObjectId id;
+            std::unique_ptr<odState::StateBundleBase> states;
+        };
+
         struct ConfirmSnapshot
         {
             odState::TickNumber tick;
@@ -63,7 +70,7 @@ namespace odNet
             size_t size;
         };
 
-        using QueuedCall = std::variant<LoadLevel, ObjectStatesChanged, ConfirmSnapshot, GlobalMessage>;
+        using QueuedCall = std::variant<LoadLevel, ObjectStatesChanged, ObjectExtraStatesChanged, ConfirmSnapshot, GlobalMessage>;
 
         std::vector<QueuedCall> mCalls;
         std::vector<char> mMessages;
