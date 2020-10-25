@@ -2,6 +2,8 @@
 #ifndef INCLUDE_ODCORE_STATE_STATEBUNDLE_H_
 #define INCLUDE_ODCORE_STATE_STATEBUNDLE_H_
 
+#include <memory>
+
 #include <odCore/Downcast.h>
 
 #include <odCore/state/StateBundleDetail.h>
@@ -18,6 +20,7 @@ namespace odState
         virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
         virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) const = 0;
         virtual void deserialize(od::DataReader &reader, StateSerializationPurpose purpose) = 0;
+        virtual std::unique_ptr<StateBundleBase> clone() const = 0;
     };
 
 
@@ -88,6 +91,13 @@ namespace odState
             auto &bundle = static_cast<_Bundle&>(*this);
             detail::StateDeserializeOp<_Bundle> op(bundle, reader, purpose);
             _Bundle::stateOp(op);
+        }
+
+        virtual std::unique_ptr<StateBundleBase> clone() const override final
+        {
+            auto &thisBundle = static_cast<const _Bundle&>(*this);
+            auto newBundle = std::make_unique<_Bundle>(thisBundle);
+            return std::move(newBundle);
         }
 
 
