@@ -21,6 +21,7 @@ namespace odState
         virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) const = 0;
         virtual void deserialize(od::DataReader &reader, StateSerializationPurpose purpose) = 0;
         virtual std::unique_ptr<StateBundleBase> clone() const = 0;
+        virtual std::shared_ptr<StateBundleBase> cloneShared() const = 0;
     };
 
 
@@ -98,6 +99,13 @@ namespace odState
             auto &thisBundle = static_cast<const _Bundle&>(*this);
             auto newBundle = std::make_unique<_Bundle>(thisBundle);
             return std::move(newBundle);
+        }
+
+        virtual std::shared_ptr<StateBundleBase> cloneShared() const override final
+        {
+            auto &thisBundle = static_cast<const _Bundle&>(*this);
+            auto newBundle = std::make_shared<_Bundle>(thisBundle);
+            return newBundle;
         }
 
 
