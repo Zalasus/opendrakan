@@ -9,6 +9,20 @@
 
 namespace od
 {
+    struct ObjectStates;
+}
+
+namespace odState
+{
+    // since StateBundle can be quite a heavy template to instantiate, we moved
+    //  the explicit instatiation to LevelObject.cpp to reduce the compiler
+    //  overhead a bit (hopefully. not sure whether this even does anything when
+    //  inheriting from a template).
+    extern template class StateBundle<od::ObjectStates>;
+}
+
+namespace od
+{
 
     struct ObjectStates final : public odState::StateBundle<ObjectStates>
     {

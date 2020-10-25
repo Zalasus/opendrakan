@@ -33,6 +33,11 @@
 
 #include <odCore/state/StateManager.h>
 
+namespace odState
+{
+    template class StateBundle<od::ObjectStates>;
+}
+
 namespace od
 {
 
