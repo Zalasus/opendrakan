@@ -91,16 +91,8 @@ namespace odState
 
         friend class ApplyGuard;
 
-        // TODO: this whole thing could be wrapped in a copy-on-write-pointer thingy
-        struct ObjectStateChange
-        {
-            od::ObjectStates baseStates;
-
-            // TODO: it could be beneficial to store extra states in a separate map, increasing sparsity and thus probably descreasing memory usage
-            //std::unique_ptr<StateBundleBase> extraStates;
-        };
-
-        using ChangeMap = std::unordered_map<od::LevelObjectId, ObjectStateChange>;
+        using ObjectStateMap = std::unordered_map<od::LevelObjectId, od::ObjectStates>;
+        using ExtraStateMap = std::unordered_map<od::LevelObjectId, std::shared_ptr<odState::StateBundleBase>>; // TODO: use copy-on-write mechanism
 
         struct Snapshot
         {
@@ -116,7 +108,8 @@ namespace odState
             Snapshot(const Snapshot &s) = delete;
             Snapshot &operator=(Snapshot &&) = default;
 
-            ChangeMap changes;
+            ObjectStateMap objectStates;
+            ExtraStateMap extraStates;
             TickNumber tick;
             double realtime;
 
@@ -133,6 +126,7 @@ namespace odState
          */
         SnapshotIterator _getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound);
         void _commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot);
+        void _throwIfStateUpdatesDisallowed();
 
         od::Level &mLevel;
 
@@ -144,7 +138,9 @@ namespace odState
          *
          * On both clients and servers, this is only used locally.
          */
-        ChangeMap mCurrentUpdateChangeMap;
+        ObjectStateMap mCurrentUpdateObjectStates;
+
+        ExtraStateMap mCurrentUpdateExtraStates;
 
         std::deque<Snapshot> mSnapshots;
 

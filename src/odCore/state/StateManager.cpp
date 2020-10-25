@@ -64,25 +64,24 @@ namespace odState
 
     void StateManager::objectStatesChanged(od::LevelObject &object, const od::ObjectStates &newStates)
     {
-        if(mDisallowStateUpdates)
-        {
-            throw od::Exception("State updates disallowed while applying states");
-        }
+        _throwIfStateUpdatesDisallowed();
 
-        auto &storedStates = mCurrentUpdateChangeMap[object.getObjectId()].baseStates;
+        auto &storedStates = mCurrentUpdateObjectStates[object.getObjectId()];
         storedStates.merge(storedStates, newStates);
     }
 
     void StateManager::objectExtraStatesChanged(od::LevelObject &object, const odState::StateBundleBase &states)
     {
+        _throwIfStateUpdatesDisallowed();
+
         OD_UNIMPLEMENTED();
     }
 
     void StateManager::incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states)
     {
         auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
-        auto &baseStates = snapshotIt->changes[objectId].baseStates;
-        baseStates.merge(baseStates, states);
+        auto &objectStates = snapshotIt->objectStates[objectId];
+        objectStates.merge(objectStates, states);
         _commitIncomingIfComplete(tick, snapshotIt);
     }
 
@@ -113,14 +112,16 @@ namespace odState
             mSnapshots.pop_front();
             oldSnapshot.tick = nextTick;
             oldSnapshot.realtime = realtime;
-            oldSnapshot.changes = mCurrentUpdateChangeMap;
+            oldSnapshot.objectStates = mCurrentUpdateObjectStates;
+            oldSnapshot.extraStates = mCurrentUpdateExtraStates;
             mSnapshots.emplace_back(std::move(oldSnapshot));
 
         }else
         {
             mSnapshots.emplace_back(nextTick);
             auto &newSnapshot = mSnapshots.back();
-            newSnapshot.changes = mCurrentUpdateChangeMap;
+            newSnapshot.objectStates = mCurrentUpdateObjectStates;
+            newSnapshot.extraStates = mCurrentUpdateExtraStates;
             newSnapshot.realtime = realtime;
         }
     }
@@ -143,24 +144,24 @@ namespace odState
         {
             // the latest snapshot is older than the requested time -> extrapolate
             //  TODO: extrapolation not implemented. applying latest snapshot verbatim for now
-            for(auto &objChange : mSnapshots.back().changes)
+            for(auto &objState : mSnapshots.back().objectStates)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
+                od::LevelObject *obj = mLevel.getLevelObjectById(objState.first);
                 if(obj == nullptr) continue;
 
-                obj->setStatesUntracked(objChange.second.baseStates);
+                obj->setStatesUntracked(objState.second);
             }
 
         }else if(it == mSnapshots.begin())
         {
             // we only have one snapshot in the timeline, and it's later than the requested time.
             //  extrapolating here is probably unnecessary, so we just apply the snapshot as if it happened right now.
-            for(auto &objChange : it->changes)
+            for(auto &objState : it->objectStates)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
+                od::LevelObject *obj = mLevel.getLevelObjectById(objState.first);
                 if(obj == nullptr) continue;
 
-                obj->setStatesUntracked(objChange.second.baseStates);
+                obj->setStatesUntracked(objState.second);
             }
 
         }else
@@ -170,17 +171,18 @@ namespace odState
 
             double delta = (realtime - a.realtime)/(b.realtime - a.realtime);
 
-            for(auto &objChange : a.changes)
+            for(auto &objState : a.objectStates)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(objChange.first);
+                od::LevelObject *obj = mLevel.getLevelObjectById(objState.first);
                 if(obj == nullptr) continue;
 
-                auto changeInB = b.changes.find(objChange.first);
-                if(changeInB == b.changes.end())
+                auto stateInB = b.objectStates.find(objState.first);
+                if(stateInB == b.objectStates.end())
                 {
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
-                    obj->setStatesUntracked(objChange.second.baseStates);
+                    Logger::warn() << "Incomplete timeline. A tracked state seems to have disappeared";
+                    obj->setStatesUntracked(objState.second);
 
                 }else
                 {
@@ -188,7 +190,7 @@ namespace odState
                     //  we still have to store full snapshots, as we must move through the timeline arbitrarily, and for every missing state, we'd have to
                     //  search previous and intermediate snapshots to recover the original state
                     od::ObjectStates lerped;
-                    lerped.lerp(objChange.second.baseStates, changeInB->second.baseStates, delta);
+                    lerped.lerp(objState.second, stateInB->second, delta);
                     obj->setStatesUntracked(lerped);
                 }
             }
@@ -207,22 +209,22 @@ namespace odState
 
         auto reference = (referenceSnapshot != INVALID_TICK) ? _getSnapshot(referenceSnapshot, mSnapshots, false) : mSnapshots.end();
 
-        for(auto &stateChange : toSend->changes)
+        for(auto &objState : toSend->objectStates)
         {
-            od::ObjectStates filteredChange = stateChange.second.baseStates;
+            od::ObjectStates encodedState = objState.second;
             if(reference != mSnapshots.end())
             {
-                auto referenceChange = reference->changes.find(stateChange.first);
-                if(referenceChange != reference->changes.end())
+                auto referenceState = reference->objectStates.find(objState.first);
+                if(referenceState != reference->objectStates.end())
                 {
-                    filteredChange.deltaEncode(referenceChange->second.baseStates, filteredChange);
+                    encodedState.deltaEncode(referenceState->second, encodedState);
                 }
             }
 
-            size_t changeCount = filteredChange.countStatesWithValue();
+            size_t changeCount = encodedState.countStatesWithValue();
             if(changeCount > 0)
             {
-                c.objectStatesChanged(tickToSend, stateChange.first, filteredChange);
+                c.objectStatesChanged(tickToSend, objState.first, encodedState);
             }
 
             discreteChangeCount += changeCount;
@@ -264,9 +266,9 @@ namespace odState
         //  should happen only rarely in case a confirmation packet arrives earlier than a change.
         //  however, doing it this way reduces the amount of dependent states in our program, which is a plus
         size_t discreteChangeCount = 0;
-        for(auto &change : incomingSnapshot->changes)
+        for(auto &state : incomingSnapshot->objectStates)
         {
-            discreteChangeCount += change.second.baseStates.countStatesWithValue();
+            discreteChangeCount += state.second.countStatesWithValue();
         }
 
         if(incomingSnapshot->targetDiscreteChangeCount == discreteChangeCount)
@@ -286,10 +288,10 @@ namespace odState
                     throw od::Exception("Reference snapshot no longer contained in timeline");
                 }
 
-                for(auto &baseChange : referenceSnapshot->changes)
+                for(auto &referenceState : referenceSnapshot->objectStates)
                 {
-                    auto &deltaChange = incomingSnapshot->changes[baseChange.first];
-                    deltaChange.baseStates.merge(baseChange.second.baseStates, deltaChange.baseStates);
+                    auto &deltaState = incomingSnapshot->objectStates[referenceState.first];
+                    deltaState.merge(referenceState.second, deltaState);
                 }
             }
 
@@ -302,6 +304,14 @@ namespace odState
             {
                 mUplinkConnectorForAck->acknowledgeSnapshot(tick);
             }
+        }
+    }
+
+    void StateManager::_throwIfStateUpdatesDisallowed()
+    {
+        if(mDisallowStateUpdates)
+        {
+            throw od::Exception("State updates disallowed while applying states");
         }
     }
 
