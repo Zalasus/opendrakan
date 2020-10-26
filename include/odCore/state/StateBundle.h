@@ -46,11 +46,16 @@ namespace odState
             thisBundle = _Bundle();
         }
 
+        void assign(const _Bundle &bundle)
+        {
+            auto &thisBundle = static_cast<_Bundle&>(*this);
+            thisBundle = bundle;
+        }
+
         virtual void assign(const StateBundleBase &b) override final
         {
             auto &bundle = *(od::downcast<const _Bundle>(&b));
-            auto &thisBundle = static_cast<_Bundle&>(*this);
-            thisBundle = bundle;
+            assign(bundle);
         }
 
         void merge(const _Bundle &lhs, const _Bundle &rhs)
