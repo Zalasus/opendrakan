@@ -128,6 +128,8 @@ namespace od
 
         void setExtraStatesUntracked(const odState::StateBundleBase &states);
 
+        odState::StateBundleBase *getExtraStates();
+
         /**
          * @brief Enables or disables updates for this object.
          *

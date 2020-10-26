@@ -27,7 +27,7 @@ namespace odNet
 
         virtual void loadLevel(const std::string &path) override;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override;
-        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states) override;
+        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
 
@@ -50,7 +50,8 @@ namespace odNet
         {
             odState::TickNumber tick;
             od::LevelObjectId id;
-            std::unique_ptr<odState::StateBundleBase> states;
+            size_t dataOffset;
+            size_t size;
         };
 
         struct ConfirmSnapshot

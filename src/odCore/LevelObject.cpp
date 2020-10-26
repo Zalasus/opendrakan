@@ -326,6 +326,11 @@ namespace od
         }
     }
 
+    odState::StateBundleBase *LevelObject::getExtraStates()
+    {
+        return (mSpawnableClass != nullptr) ? mSpawnableClass->getExtraStates() : nullptr;
+    }
+
     void LevelObject::spawn()
     {
         if(mIsSpawned)

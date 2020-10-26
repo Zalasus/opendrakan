@@ -24,6 +24,7 @@ namespace odNet
     struct PacketConstants
     {
         static constexpr size_t HEADER_SIZE = 3;
+        static constexpr size_t EXTRA_STATES_HEADER_SIZE = 12;
         static constexpr size_t GLOBAL_MESSAGE_HEADER_SIZE = 4;
     };
 

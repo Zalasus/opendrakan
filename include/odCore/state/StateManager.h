@@ -58,7 +58,7 @@ namespace odState
 
         // these modify the incoming changeset with the given tick (for client)
         void incomingObjectStatesChanged(TickNumber tick, od::LevelObjectId objectId, const od::ObjectStates &states);
-        void incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const StateBundleBase &states);
+        void incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const char *data, size_t size);
         void confirmIncomingSnapshot(TickNumber tick, double time, size_t changeCount, TickNumber referenceSnapshot);
 
         /**
@@ -166,6 +166,8 @@ namespace odState
         std::deque<Snapshot> mIncomingSnapshots;
 
         std::shared_ptr<odNet::UplinkConnector> mUplinkConnectorForAck;
+
+        std::vector<char> mExtraStateSerializationBuffer;
     };
 
 }

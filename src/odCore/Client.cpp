@@ -53,9 +53,9 @@ namespace od
             mClient.getStateManager().incomingObjectStatesChanged(tick, id, states);
         }
 
-        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states) override
+        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override
         {
-            mClient.getStateManager().incomingObjectExtraStatesChanged(tick, id, states);
+            mClient.getStateManager().incomingObjectExtraStatesChanged(tick, id, data, size);
         }
 
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override

@@ -33,12 +33,12 @@ namespace odNet
         _endPacket(LinkType::UNRELIABLE);
     }
 
-    void PacketBuilder::objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states)
+    void PacketBuilder::objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size)
     {
         _beginPacket(PacketType::OBJECT_EXTRA_STATES_CHANGED);
         mWriter << tick
                 << id;
-        states.serialize(mWriter, odState::StateSerializationPurpose::NETWORK);
+        mWriter.write(data, size);
         _endPacket(LinkType::UNRELIABLE);
     }
 

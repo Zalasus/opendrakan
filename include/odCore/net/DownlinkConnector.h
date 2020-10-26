@@ -41,8 +41,14 @@ namespace odNet
         virtual void loadLevel(const std::string &path) = 0;
 
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) = 0;
-        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const odState::StateBundleBase &states) = 0;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) = 0;
+
+        /**
+         * Extra states are passed through this interface in serialized form. Since extra states are abstract, many parts of the network tunnel
+         * would have to deal with allocating the right objects to deserialize the bundle, which seems more of a hassle than forcing a rather simple
+         * serialization.
+         */
+        virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) = 0;
 
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;

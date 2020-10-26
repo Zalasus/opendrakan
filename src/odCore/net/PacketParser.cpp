@@ -79,7 +79,14 @@ namespace odNet
 
         case PacketType::OBJECT_EXTRA_STATES_CHANGED:
             {
-                _badPacket("extra state parsing unsupported ATM");
+                odState::TickNumber tick;
+                od::LevelObjectId id;
+                dr >> tick >> id;
+
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->objectExtraStatesChanged(tick, id, rawPayload+PacketConstants::EXTRA_STATES_HEADER_SIZE, length-PacketConstants::EXTRA_STATES_HEADER_SIZE);
+                }
             }
             break;
 

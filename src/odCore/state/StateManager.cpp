@@ -90,21 +90,38 @@ namespace odState
     {
         auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
         auto &states = snapshotIt->statesMap[objectId].basicStates;
-        states.merge(states, newStates);
+        states.assign(newStates);
         _commitIncomingIfComplete(tick, snapshotIt);
     }
 
-    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const StateBundleBase &newStates)
+    void StateManager::incomingObjectExtraStatesChanged(TickNumber tick, od::LevelObjectId objectId, const char *data, size_t size)
     {
         auto snapshotIt = _getSnapshot(tick, mIncomingSnapshots, true);
 
         auto &states = snapshotIt->statesMap[objectId].extraStates;
-        if(states == nullptr || states.use_count() > 1)
+        if(states == nullptr)
         {
-            states = newStates.cloneShared();
+            auto obj = mLevel.getLevelObjectById(objectId);
+            if(obj == nullptr || obj->getExtraStates() == nullptr)
+            {
+                throw od::Exception("No states available to clone");
+            }
+
+            states = obj->getExtraStates()->cloneShared();
+
+        }else if(states.use_count() > 1)
+        {
+            states = states->cloneShared();
+            states->clear();
         }
 
-        states->merge(*states, newStates);
+        states->clear();
+
+        od::MemoryInputBuffer buffer(data, size);
+        std::istream stream(&buffer);
+        od::DataReader reader(stream);
+
+        states->deserialize(reader, odState::StateSerializationPurpose::NETWORK);
 
         _commitIncomingIfComplete(tick, snapshotIt);
     }
@@ -250,7 +267,13 @@ namespace odState
             size_t extraChangeCount = (encodedState.extraStates != nullptr) ? encodedState.extraStates->countStatesWithValue() : 0;
             if(extraChangeCount > 0)
             {
-                c.objectExtraStatesChanged(tickToSend, states.first, *encodedState.extraStates);
+                mExtraStateSerializationBuffer.clear();
+                od::VectorOutputBuffer buf(mExtraStateSerializationBuffer);
+                std::ostream out(&buf);
+                od::DataWriter writer(out);
+                encodedState.extraStates->serialize(writer, odState::StateSerializationPurpose::NETWORK);
+
+                c.objectExtraStatesChanged(tickToSend, states.first, mExtraStateSerializationBuffer.data(), mExtraStateSerializationBuffer.size());
             }
 
             discreteChangeCount += basicChangeCount + extraChangeCount;
@@ -302,6 +325,7 @@ namespace odState
             // this snapshot is complete! move it to the timeline
             if(mSnapshots.size() >= TICK_CAPACITY)
             {
+                // TODO: implement this as a ring buffer or something so we don't loose the allocated extra StateBundles
                 mSnapshots.pop_front();
             }
 
