@@ -45,18 +45,28 @@ namespace odDb
     }
 
 
-    od::DataReader &operator>>(od::DataReader &left, AssetRef &right)
-    {
-        left >> right.assetId
-             >> right.dbIndex;
-
-        return left;
-    }
-
     std::ostream &operator<<(std::ostream &left, const AssetRef &right)
     {
         left << std::hex << right.dbIndex << ":" << right.assetId << std::dec;
 
         return left;
     }
+
+}
+
+namespace od
+{
+
+    template <>
+    void DataReader::readTyped<odDb::AssetRef>(odDb::AssetRef &ref)
+    {
+        (*this) >> ref.assetId >> ref.dbIndex;
+    }
+
+    template <>
+    void DataWriter::writeTyped<odDb::AssetRef>(const odDb::AssetRef &ref)
+    {
+        (*this) << ref.assetId << ref.dbIndex;
+    }
+
 }

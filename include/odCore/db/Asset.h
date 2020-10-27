@@ -92,8 +92,6 @@ namespace odDb
     };
 
 
-	od::DataReader &operator>>(od::DataReader &left, AssetRef &right);
-
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
 
 }
