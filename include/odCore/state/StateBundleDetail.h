@@ -158,7 +158,7 @@ namespace odState
             template <typename _StateType>
             StateLerpOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
             {
-                if((flags & StateFlags::LERPED) && (mLeftBundle.*state).hasValue() && (mRightBundle.*state).hasValue())
+                if((flags & StateFlags::LERPED) && (mLeftBundle.*state).hasValue() && (mRightBundle.*state).hasValue() && !(mRightBundle.*state).isJump())
                 {
                     StateLerp<_StateType> lerper;
                     mResultBundle.*state = lerper((mLeftBundle.*state).get(), (mRightBundle.*state).get(), mDelta);

@@ -49,22 +49,42 @@ namespace odState
         using ThisType = State<T>;
 
         State()
-        : mHasValue(false)
+        : mInternalFlags(0)
         , mValue()
         {
         }
 
-        State(T v)
-        : mHasValue(true)
+        explicit State(T v)
+        : mInternalFlags(HAS_VALUE)
         , mValue(v)
         {
         }
 
-        bool hasValue() const { return mHasValue; }
+        bool hasValue() const { return mInternalFlags & HAS_VALUE; }
+        bool isJump() const { return mInternalFlags & IS_JUMP; } ///< Ths only makes sense if the state has a value
+
+        void setJump(bool b)
+        {
+            if(b)
+            {
+                mInternalFlags |= IS_JUMP;
+
+            }else
+            {
+                mInternalFlags &= ~IS_JUMP;
+            }
+        }
 
         bool operator==(const ThisType &rhs) const
         {
-            return mValue == rhs.mValue;
+            if(this->hasValue() && rhs.hasValue())
+            {
+                return mValue == rhs.mValue;
+
+            }else
+            {
+                return false;
+            }
         }
 
         T get() const
@@ -75,14 +95,24 @@ namespace odState
         ThisType &operator=(const T &v)
         {
             mValue = v;
-            mHasValue = true;
+            mInternalFlags |= HAS_VALUE;
+            return *this;
+        }
+
+        ThisType &operator=(const ThisType &s)
+        {
+            mValue = s.mValue;
+            mInternalFlags = s.mInternalFlags;
             return *this;
         }
 
 
     private:
 
-        bool mHasValue;
+        static constexpr uint8_t HAS_VALUE = (1 << 0);
+        static constexpr uint8_t IS_JUMP   = (1 << 1);
+
+        uint8_t mInternalFlags;
         T mValue;
     };
 

@@ -60,6 +60,7 @@ namespace odAnim
             std::vector<odDb::ActionVariant> nonTransformActions;
         };
 
+        void _applySingleKeyframe(od::LevelObject &obj, const odDb::ActionTransform &kf);
         void _applyInterpolatedKeyframes(od::LevelObject &obj, const odDb::ActionTransform &left, const odDb::ActionTransform &right);
 
         od::Level &mLevel;

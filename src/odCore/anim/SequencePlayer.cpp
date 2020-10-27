@@ -229,9 +229,8 @@ namespace odAnim
                     auto left = right-1;
                     if(right == actor.transformActions.end())
                     {
-                        // no keyframe right of us or that one must not be interpolated -> apply left as it is
-                        if(!left->ignorePosition()) actor.actorObject.setPosition(left->position);
-                        if(!left->ignoreRotation()) actor.actorObject.setRotation(left->rotation);
+                        // no keyframe right of us -> apply left as it is, marked as jump
+                        _applySingleKeyframe(actor.actorObject, *left);
 
                     }else
                     {
@@ -270,6 +269,25 @@ namespace odAnim
         return sequenceRunning;
     }
 
+    void SequencePlayer::_applySingleKeyframe(od::LevelObject &obj, const odDb::ActionTransform &kf)
+    {
+        od::ObjectStates states;
+
+        if(!kf.ignorePosition())
+        {
+            states.position = kf.position;
+            states.position.setJump(true);
+        }
+
+        if(!kf.ignoreRotation())
+        {
+            states.rotation = kf.rotation;
+            states.rotation.setJump(true);
+        }
+
+        obj.setStates(states);
+    }
+
     void SequencePlayer::_applyInterpolatedKeyframes(od::LevelObject &obj, const odDb::ActionTransform &left, const odDb::ActionTransform &right)
     {
         if(left.getRelativeTo() != odDb::ActionTransform::RelativeTo::WORLD || right.getRelativeTo() != odDb::ActionTransform::RelativeTo::WORLD)
@@ -280,45 +298,46 @@ namespace odAnim
         // it seems to me like interpolation styles always affect the curve *left* of the keyframe
         if(right.getInterpolationType() == odDb::ActionTransform::InterpolationType::NONE)
         {
-            // this keyframe won't get considered until it is left of us
-            if(!left.ignorePosition()) obj.setPosition(left.position);
-            if(!left.ignoreRotation()) obj.setRotation(left.rotation);
+            _applySingleKeyframe(obj, left);
 
         }else
         {
             // TODO: heed other interpolation styles as well (once we figure them out)
             float delta = (mSequenceTime - left.timeOffset) / (right.timeOffset - left.timeOffset);
 
+            od::ObjectStates states;
+
             if(!left.ignorePosition() && right.ignorePosition())
             {
-                obj.setPosition(left.position);
+                states.position = left.position;
 
             }else if(left.ignorePosition() && !right.ignorePosition())
             {
-                obj.setPosition(right.position);
+                states.position = right.position;
 
             }else if(!left.ignorePosition() && !right.ignorePosition())
             {
                 float delta = (mSequenceTime - left.timeOffset) / (right.timeOffset - left.timeOffset);
                 auto position = glm::mix(left.position, right.position, delta);
-                obj.setPosition(position);
+                states.position = position;
             }
 
             if(!left.ignoreRotation() && right.ignoreRotation())
             {
-                obj.setRotation(left.rotation);
+                states.rotation = left.rotation;
 
             }else if(left.ignoreRotation() && !right.ignoreRotation())
             {
-                obj.setRotation(right.rotation);
+                states.rotation = right.rotation;
 
             }else if(!left.ignoreRotation() && !right.ignoreRotation())
             {
                 auto rotation = glm::slerp(left.rotation, right.rotation, delta);
-                obj.setRotation(rotation);
+                states.rotation = rotation;
             }
-        }
 
+            obj.setStates(states);
+        }
 
     }
 
