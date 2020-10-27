@@ -254,11 +254,12 @@ namespace odState
             : mBundle(bundle)
             , mWriter(writer)
             , mPurpose(purpose)
-            , mStateCount(0)
-            , mMask(0)
+            , mStateIndexInMask(0)
+            , mValueMask(0)
+            , mJumpMask(0)
             {
                 mMaskOffset = mWriter.tell();
-                mWriter << mMask;
+                mWriter << mValueMask << mJumpMask;
             }
 
             ~StateSerializeOp()
@@ -271,22 +272,29 @@ namespace odState
             {
                 if(shouldBeIncludedInSerialization(mPurpose, flags) && (mBundle.*state).hasValue())
                 {
-                    mMask |= (1 << mStateCount);
+                    mValueMask |= (1 << mStateIndexInMask);
+
+                    if((mBundle.*state).isJump())
+                    {
+                        mJumpMask |= (1 << mStateIndexInMask);
+                    }
+
                     wrappedStateValueWrite(mWriter, (mBundle.*state).get());
                 }
 
-                ++mStateCount;
+                ++mStateIndexInMask;
 
-                if(mStateCount >= MAX_MASK_STATES)
+                if(mStateIndexInMask >= MAX_MASK_STATES)
                 {
-                    mMask |= EXTENDED_BIT;
+                    mValueMask |= EXTENDED_BIT;
                     _updateMask();
 
-                    mStateCount = 0;
-                    mMask = 0;
+                    mStateIndexInMask = 0;
+                    mValueMask = 0;
+                    mJumpMask = 0;
 
                     mMaskOffset = mWriter.tell();
-                    mWriter << mMask;
+                    mWriter << mValueMask << mJumpMask;
                 }
 
                 return *this;
@@ -301,7 +309,7 @@ namespace odState
             {
                 auto p = mWriter.tell();
                 mWriter.seek(mMaskOffset);
-                mWriter << mMask;
+                mWriter << mValueMask << mJumpMask;
                 mWriter.seek(p);
             }
 
@@ -309,8 +317,9 @@ namespace odState
             od::DataWriter &mWriter;
             StateSerializationPurpose mPurpose;
 
-            size_t mStateCount;
-            MaskType mMask;
+            size_t mStateIndexInMask;
+            MaskType mValueMask;
+            MaskType mJumpMask;
             std::streamoff mMaskOffset;
         };
 
@@ -324,16 +333,17 @@ namespace odState
             : mBundle(bundle)
             , mReader(reader)
             , mPurpose(purpose)
-            , mStateCount(0)
-            , mMask(0)
+            , mStateIndexInMask(0)
+            , mValueMask(0)
+            , mJumpMask(0)
             {
-                mReader >> mMask;
+                mReader >> mValueMask >> mJumpMask;
             }
 
             template <typename _StateType>
             StateDeserializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
             {
-                if(mMask & (1 << mStateCount))
+                if(mValueMask & (1 << mStateIndexInMask))
                 {
                     _StateType value;
                     wrappedStateValueRead(mReader, value);
@@ -341,27 +351,29 @@ namespace odState
                     if(shouldBeIncludedInSerialization(mPurpose, flags))
                     {
                         (mBundle.*state) = value;
+                        (mBundle.*state).setJump(mJumpMask & (1 << mStateIndexInMask));
 
                     }else
                     {
-                        Logger::warn() << "State with index " << mStateCount << " from bundle " << typeid(_Bundle).name()
+                        Logger::warn() << "State with index " << mStateIndexInMask << " from bundle " << typeid(_Bundle).name()
                           << " was included in serialization when it shouldn't have. Ignoring state";
                     }
                 }
 
-                ++mStateCount;
+                ++mStateIndexInMask;
 
-                if(mStateCount >= MAX_MASK_STATES)
+                if(mStateIndexInMask >= MAX_MASK_STATES)
                 {
-                    mStateCount = 0;
+                    mStateIndexInMask = 0;
 
-                    if(mMask & EXTENDED_BIT)
+                    if(mValueMask & EXTENDED_BIT)
                     {
-                        mReader >> mMask;
+                        mReader >> mValueMask >> mJumpMask;
 
                     }else
                     {
-                        mMask = 0;
+                        mValueMask = 0;
+                        mJumpMask = 0;
                     }
                 }
 
@@ -377,8 +389,9 @@ namespace odState
             od::DataReader &mReader;
             StateSerializationPurpose mPurpose;
 
-            size_t mStateCount;
-            MaskType mMask;
+            size_t mStateIndexInMask;
+            MaskType mValueMask;
+            MaskType mJumpMask;
         };
 
     }

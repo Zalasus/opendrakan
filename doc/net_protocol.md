@@ -49,18 +49,35 @@ State serialization
 Collections of states ("state bundles") are stored in a special, mildly
 optimized format. It is a good idea to only send states that have changed since
 the last acknowledged snapshot, so the binary state bundle format must indicate
-which states are contained and which are not.
+which states are contained and which are not. Additionally, any state change can
+be marked as a jump, indicating that it should not be interpolated.
 
-This is done using a bitmask of (currently) 8 bits. A set bit indicates that
-the state with the bit's respective index is contained in the bundle. Starting
-from state 0 up to state 6, these are then serialized and appended directly
-after the bitmask.
+This is done using bitmasks of (currently) 8 bits. First, the *value mask* is
+written, in which a set bit indicates that the state with the bit's respective
+index is contained in the bundle. After that, the *jump mask* is stored, where a
+set bit indicates the state with the bit's index is a jump. Starting from state
+0 up to state 6, these are then serialized and appended directly after the
+bitmasks.
 
 If a state bundle contains a state with a higher index than 6, the highest bit
-in the mask is set to indicate that after the blob of serialized lower states
-there is another bitmask that follows the same format as the first, only that
-this one now applies to the state 7 to 13. This is repeated until all states
-have been serialized.
+in the value mask is set to indicate that after the blob of serialized lower
+states there is another set of bitmasks that follow the same format as the
+first, only that these ones now apply to the states 7 to 13. Serialization is
+repeated in the same manner until all states have been serialized. Note that the
+highest bit of the jump mask is currently unused.
+
+Part of the state structure could be expressed as such:
+```
+u8 valueMask0;
+u8 jumpMask0;
+u8 serializedStates0[*]; // size depends on states that are serialized, not included in packet
+if(valueMask0 & 0x80)
+{
+    u8 valueMask1;
+    u8 jumpMask1;
+    u8 serializedStates1[*];
+}
+```
 
 Object states have a fixed order which is as follows:
 ```
