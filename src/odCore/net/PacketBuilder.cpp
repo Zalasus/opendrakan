@@ -60,6 +60,17 @@ namespace odNet
         _endPacket(LinkType::RELIABLE);
     }
 
+    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
+    {
+        _beginPacket(PacketType::OBJECT_ANIMATION);
+        mWriter << id
+                << animRef
+                << channelIndex
+                << speedModifier
+                << realtime;
+        _endPacket(LinkType::RELIABLE);
+    }
+
     void PacketBuilder::actionTriggered(odInput::ActionCode code, odInput::ActionState state)
     {
         _beginPacket(PacketType::ACTION_TRIGGERED);

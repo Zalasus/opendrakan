@@ -9,8 +9,11 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/CTypes.h>
 #include <odCore/IdTypes.h>
 #include <odCore/ObjectStates.h>
+
+#include <odCore/db/Asset.h>
 
 #include <odCore/net/IdTypes.h>
 
@@ -52,6 +55,8 @@ namespace odNet
 
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
+
+        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) = 0;
     };
 
 }

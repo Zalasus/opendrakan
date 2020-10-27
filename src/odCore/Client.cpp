@@ -68,6 +68,10 @@ namespace od
             mClient.getMessageDispatcher().receiveGlobalMessage(code, data, size);
         }
 
+        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override
+        {
+        }
+
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
 
 

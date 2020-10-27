@@ -356,7 +356,7 @@ namespace odState
                     }else
                     {
                         Logger::warn() << "State with index " << mStateIndexInMask << " from bundle " << typeid(_Bundle).name()
-                          << " was included in serialization when it shouldn't have. Ignoring state";
+                          << " was included in serialization when it shouldn't have been. Ignoring state";
                     }
                 }
 

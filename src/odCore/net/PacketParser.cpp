@@ -128,6 +128,28 @@ namespace odNet
             }
             break;
 
+        case PacketType::OBJECT_ANIMATION:
+            {
+                od::LevelObjectId id;
+                odDb::AssetRef animRef;
+                int32_t channelIndex;
+                float speedModifier;
+                double realtime;
+                dr >> id
+                   >> animRef
+                   >> channelIndex
+                   >> speedModifier
+                   >> realtime;
+
+                if(mDownlinkOutput != nullptr)
+                {
+                    mDownlinkOutput->objectAnimation(id, animRef, channelIndex, speedModifier, realtime);
+                }
+            }
+            break;
+
+        // === uplink packets ===
+
         case PacketType::ACKNOWLEDGE_SNAPSHOT:
             {
                 odState::TickNumber tick;

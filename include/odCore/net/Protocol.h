@@ -15,6 +15,7 @@ namespace odNet
         LOAD_LEVEL,
         GLOBAL_MESSAGE,
         OBJECT_MESSAGE,
+        OBJECT_ANIMATION,
 
         ACKNOWLEDGE_SNAPSHOT,
         ACTION_TRIGGERED,

@@ -196,6 +196,15 @@ u32 receiver_object_id;
 u8  messageBody[];  // size is to be derived from payload size field of the packet
 ```
 
+### Animation message (downlink, reliable)
+```
+u32 id;
+ref anim_ref;
+i32 channel_index;
+f32 speed_modifier;
+f64 realtime;
+```
+
 Gameplay packets
 ----------------
 These are sent as soon as the action happens on the transmitting side. They

@@ -6,8 +6,6 @@
 #include <vector>
 #include <variant>
 
-#include <odCore/CTypes.h>
-
 #include <odCore/net/DownlinkConnector.h>
 
 namespace odNet
@@ -30,6 +28,7 @@ namespace odNet
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
+        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override;
 
 
     private:
@@ -71,7 +70,21 @@ namespace odNet
             size_t size;
         };
 
-        using QueuedCall = std::variant<LoadLevel, ObjectStatesChanged, ObjectExtraStatesChanged, ConfirmSnapshot, GlobalMessage>;
+        struct ObjectAnimation
+        {
+            od::LevelObjectId id;
+            odDb::AssetRef animRef;
+            int32_t channelIndex;
+            float speedModifier;
+            double realtime;
+        };
+
+        using QueuedCall = std::variant<LoadLevel,
+                                        ObjectStatesChanged,
+                                        ObjectExtraStatesChanged,
+                                        ConfirmSnapshot,
+                                        GlobalMessage,
+                                        ObjectAnimation>;
 
         std::vector<QueuedCall> mCalls;
         std::vector<char> mMessages;

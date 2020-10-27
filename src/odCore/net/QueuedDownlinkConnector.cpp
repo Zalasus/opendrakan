@@ -48,6 +48,11 @@ namespace odNet
                 connector.globalMessage(m.code, data, m.size);
             }
 
+            void operator()(const ObjectAnimation &a)
+            {
+                connector.objectAnimation(a.id, a.animRef, a.channelIndex, a.speedModifier, a.realtime);
+            }
+
         };
 
         FlushVisitor visitor(connector, mMessages);
@@ -98,6 +103,12 @@ namespace odNet
         mCalls.emplace_back(c);
 
         mMessages.insert(mMessages.end(), data, data+size);
+    }
+
+    void QueuedDownlinkConnector::objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
+    {
+        lock_guard lock(mMutex);
+        mCalls.emplace_back(ObjectAnimation{id, animRef, channelIndex, speedModifier, realtime});
     }
 
 }
