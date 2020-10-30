@@ -12,11 +12,11 @@
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/IdTypes.h>
 #include <odCore/ObjectStates.h>
 
 #include <odCore/input/Keys.h>
 
-#include <odCore/state/Event.h>
 #include <odCore/state/Tick.h>
 
 namespace od
