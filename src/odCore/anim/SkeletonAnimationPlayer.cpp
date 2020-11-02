@@ -30,7 +30,7 @@ namespace odAnim
 
     BoneAnimator::BoneAnimator(Skeleton::Bone &bone)
     : mBone(bone)
-    , mPlaybackType(PlaybackType::Normal)
+    , mPlaybackType(PlaybackType::NORMAL)
     , mSpeedMultiplier(1.0f)
     , mPlaying(false)
     , mAnimTime(0.0f)
@@ -79,24 +79,24 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::setAccumulationModes(const AxesModes &modes)
+    void BoneAnimator::setAccumulationModes(const AxesAccumulationModes &modes)
     {
         for(size_t i = 0; i < 3; ++i)
         {
             switch(modes[i])
             {
-            case AccumulationMode::Bone:
+            case AccumulationMode::BONE:
                 mObjectAccumulationFactors[i] = 0.0;
                 mBoneAccumulationFactors[i] = 1.0;
                 break;
 
-            case AccumulationMode::Accumulate:
+            case AccumulationMode::ACCUMULATE:
                 mUseInterpolation = true; // accumulated motion should always be interpolated
                 mObjectAccumulationFactors[i] = 1.0;
                 mBoneAccumulationFactors[i] = 0.0;
                 break;
 
-            case AccumulationMode::Ignore:
+            case AccumulationMode::IGNORE:
             default:
                 mObjectAccumulationFactors[i] = 0.0;
                 mBoneAccumulationFactors[i] = 0.0;
@@ -142,19 +142,19 @@ namespace odAnim
             {
                 switch(mPlaybackType)
                 {
-                case PlaybackType::Normal:
+                case PlaybackType::NORMAL:
                 default:
                     mPlaying = false;
                     break;
 
-                case PlaybackType::Looping:
+                case PlaybackType::LOOPING:
                     mAnimTime = startTime + residualTime;
                     loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
                     loopJump *= movingBackInTime ? -1.0f : 1.0f;
                     loopedBack = true;
                     break;
 
-                case PlaybackType::PingPong:
+                case PlaybackType::PINGPONG:
                     mSpeedMultiplier = -mSpeedMultiplier;
                     mAnimTime = endTime - residualTime;
                     break;
@@ -304,7 +304,7 @@ namespace odAnim
         animator.setAccumulator(accu);
     }
 
-    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex)
+    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t rootNodeIndex)
     {
         if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
         {

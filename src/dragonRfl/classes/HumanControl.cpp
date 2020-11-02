@@ -103,12 +103,12 @@ namespace dragonRfl
             mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
             animPlayer->setRootNodeAccumulator(mCharacterController.get());
-            animPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
-                                                                        odAnim::AccumulationMode::Bone,
-                                                                        odAnim::AccumulationMode::Bone
-                                                                       });
+            animPlayer->setRootNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
+                                                       odAnim::AccumulationMode::BONE,
+                                                       odAnim::AccumulationMode::BONE
+                                                     });
 
-            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
+            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
 
         }else
         {
@@ -239,17 +239,19 @@ namespace dragonRfl
 
     void HumanControl_Sv::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping, float skipAheadTime)
     {
-        static const odAnim::AxesModes walkAccum{  odAnim::AccumulationMode::Accumulate,
-                                                   odAnim::AccumulationMode::Bone,
-                                                   odAnim::AccumulationMode::Accumulate
+        static const odAnim::AxesAccumulationModes walkAccum{
+                                                   odAnim::AccumulationMode::ACCUMULATE,
+                                                   odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::ACCUMULATE
                                                 };
 
-        static const odAnim::AxesModes fixedAccum{ odAnim::AccumulationMode::Bone,
-                                                   odAnim::AccumulationMode::Bone,
-                                                   odAnim::AccumulationMode::Bone
+        static const odAnim::AxesAccumulationModes fixedAccum{
+                                                   odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::BONE
                                                  };
 
-        auto playbackType = looping ? odAnim::PlaybackType::Looping : odAnim::PlaybackType::Normal;
+        auto playbackType = looping ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
 
         auto animPlayer = getLevelObject().getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
@@ -294,12 +296,12 @@ namespace dragonRfl
         auto animPlayer = obj.getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
         {
-            animPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
-                                                                         odAnim::AccumulationMode::Bone,
-                                                                         odAnim::AccumulationMode::Bone
-                                                                       });
+            animPlayer->setRootNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
+                                                       odAnim::AccumulationMode::BONE,
+                                                       odAnim::AccumulationMode::BONE
+                                                     });
 
-            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
+            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
             obj.setEnableUpdate(true);
         }
 

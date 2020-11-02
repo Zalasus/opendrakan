@@ -16,15 +16,6 @@
 namespace odAnim
 {
 
-    enum class AccumulationMode
-    {
-        Bone,
-        Accumulate,
-        Ignore
-    };
-
-    typedef std::array<AccumulationMode, 3> AxesModes;
-
     /**
      * Interface for objects that need to accumulate movement from an animation.
      */

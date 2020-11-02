@@ -19,19 +19,12 @@
 
 #include <odCore/db/Animation.h>
 
+#include <odCore/anim/AnimModes.h>
 #include <odCore/anim/Skeleton.h>
 #include <odCore/anim/MotionAccumulator.h>
 
 namespace odAnim
 {
-
-    enum class PlaybackType
-    {
-        Normal,
-        Looping,
-        PingPong
-    };
-
 
     class BoneAnimator
     {
@@ -82,7 +75,7 @@ namespace odAnim
          */
         void update(float relTime);
 
-        void setAccumulationModes(const AxesModes &modes);
+        void setAccumulationModes(const AxesAccumulationModes &modes);
 
 
     private:
@@ -165,7 +158,7 @@ namespace odAnim
          */
         void setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex = 0);
 
-        void setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex = 0);
+        void setRootNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t rootNodeIndex = 0);
 
         /**
          * @brief Advances the animation by relTime and applies changes to the skeleton.
