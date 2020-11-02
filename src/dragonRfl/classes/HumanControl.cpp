@@ -17,6 +17,7 @@
 #include <odCore/Server.h>
 
 #include <odCore/anim/Skeleton.h>
+#include <odCore/anim/SkeletonAnimationPlayer.h>
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/PrefetchProbe.h>
@@ -96,20 +97,18 @@ namespace dragonRfl
         obj.setupRenderingAndPhysics(od::ObjectRenderMode::NOT_RENDERED, od::ObjectPhysicsMode::SOLID);
         obj.setupSkeleton();
 
-        auto skeleton = obj.getSkeleton();
-        if(skeleton != nullptr)
+        auto animPlayer = obj.getSkeletonAnimationPlayer();
+        if(animPlayer != nullptr)
         {
             mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
-            mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
-
-            mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
-                                                                         odAnim::AccumulationMode::Bone,
-                                                                         odAnim::AccumulationMode::Bone
+            animPlayer->setRootNodeAccumulator(mCharacterController.get());
+            animPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
+                                                                        odAnim::AccumulationMode::Bone,
+                                                                        odAnim::AccumulationMode::Bone
                                                                        });
 
-            mAnimPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
+            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
 
         }else
         {
@@ -122,11 +121,14 @@ namespace dragonRfl
     void HumanControl_Sv::onUpdate(float relTime)
     {
         //auto guard = getServer().compensateLag(mClientId);
+        auto &obj = getLevelObject();
 
-        getLevelObject().setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
+        obj.setRotation(glm::quat(glm::vec3(0, mYaw, 0)));
 
         float yawSpeed = (mYaw - mLastUpdatedYaw)/relTime;
         mLastUpdatedYaw = mYaw;
+
+        auto animPlayer = obj.getSkeletonAnimationPlayer();
 
         // handle state transitions that might happen during update
         switch(mState)
@@ -146,7 +148,7 @@ namespace dragonRfl
 
             }else if(mState != State::Idling)
             {
-                if(mAnimPlayer != nullptr && mAnimPlayer->isPlaying())
+                if(animPlayer != nullptr && animPlayer->isPlaying())
                 {
                     break; // wait till turn anim is done
                 }
@@ -165,9 +167,9 @@ namespace dragonRfl
             mCharacterController->update(relTime);
         }
 
-        if(mAnimPlayer != nullptr)
+        if(animPlayer != nullptr)
         {
-            mAnimPlayer->update(relTime);
+            animPlayer->update(relTime);
         }
     }
 
@@ -249,13 +251,14 @@ namespace dragonRfl
 
         auto playbackType = looping ? odAnim::PlaybackType::Looping : odAnim::PlaybackType::Normal;
 
-        if(mAnimPlayer != nullptr)
+        auto animPlayer = getLevelObject().getSkeletonAnimationPlayer();
+        if(animPlayer != nullptr)
         {
-            mAnimPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
-            mAnimPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
+            animPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
+            animPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
             if(skipAheadTime > 0)
             {
-                mAnimPlayer->update(skipAheadTime);
+                animPlayer->update(skipAheadTime);
             }
         }
     }
@@ -288,17 +291,15 @@ namespace dragonRfl
     	obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
         obj.setupSkeleton();
 
-        auto skeleton = obj.getSkeleton();
-        if(skeleton != nullptr)
+        auto animPlayer = obj.getSkeletonAnimationPlayer();
+        if(animPlayer != nullptr)
         {
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
-
-            mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
+            animPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
                                                                          odAnim::AccumulationMode::Bone,
                                                                          odAnim::AccumulationMode::Bone
                                                                        });
 
-            mAnimPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
+            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::Looping, 1.0f);
             obj.setEnableUpdate(true);
         }
 
@@ -345,9 +346,10 @@ namespace dragonRfl
         auto &obj = getLevelObject();
 
         // TODO: move anim-stuff into LevelObject. it owns the skeleton, anyways
-        if(mAnimPlayer != nullptr)
+        auto animPlayer = obj.getSkeletonAnimationPlayer();
+        if(animPlayer != nullptr)
         {
-            mAnimPlayer->update(relTime);
+            animPlayer->update(relTime);
 
             auto skeleton = obj.getSkeleton();
             if(skeleton != nullptr && obj.getRenderHandle() != nullptr)

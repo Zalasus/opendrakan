@@ -98,6 +98,7 @@ namespace od
         inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
         inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
         inline std::shared_ptr<odAnim::Skeleton> &getSkeleton() { return mSkeleton; }
+        inline std::shared_ptr<odAnim::SkeletonAnimationPlayer> &getSkeletonAnimationPlayer() { return mSkeletonAnimationPlayer; }
 
         void spawn();
         void despawn();
@@ -256,7 +257,7 @@ namespace od
         std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::unique_ptr<ObjectLightReceiver> mLightReceiver;
         std::shared_ptr<odAnim::Skeleton> mSkeleton;
-        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mSkeletonAnimationPlayer;
+        std::shared_ptr<odAnim::SkeletonAnimationPlayer> mSkeletonAnimationPlayer;
     };
 
 }

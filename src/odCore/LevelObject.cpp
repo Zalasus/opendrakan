@@ -590,6 +590,8 @@ namespace od
             odDb::SkeletonBuilder &sb = *mClass->getModel()->getSkeletonBuilder();
             mSkeleton = std::make_shared<odAnim::Skeleton>(sb.getJointCount());
             sb.build(*mSkeleton);
+
+            mSkeletonAnimationPlayer = std::make_shared<odAnim::SkeletonAnimationPlayer>(mSkeleton);
         }
     }
 

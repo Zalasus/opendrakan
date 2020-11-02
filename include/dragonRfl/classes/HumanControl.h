@@ -18,8 +18,6 @@
 
 #include <odCore/net/IdTypes.h>
 
-#include <odCore/anim/SkeletonAnimationPlayer.h>
-
 #include <odCore/render/Handle.h>
 
 #include <odCore/rfl/DummyClass.h>
@@ -69,8 +67,6 @@ namespace dragonRfl
 		State mState;
         float mLastUpdatedYaw;
 
-		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
-
 		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 	};
 
@@ -95,8 +91,6 @@ namespace dragonRfl
         void _handleAnalogAction(Action action, const glm::vec2 &pos);
 
 		HumanControlFields mFields;
-
-        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
 	};
 
