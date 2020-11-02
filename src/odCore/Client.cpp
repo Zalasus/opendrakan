@@ -46,13 +46,17 @@ namespace od
 
         virtual void globalDatabaseTableEntry(odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override
         {
-            auto db = mClient.getDbManager().getDatabaseByPath(path);
-            if(db == nullptr)
-            {
-                throw od::Exception("DB in translation table not loaded");
-            }
+            FilePath absPath(path, mClient.getEngineRootDir());
 
-            mClient.mGlobalDbIndexMap[dbIndex] = db->getGlobalIndex();
+            auto db = mClient.getDbManager().getDatabaseByPath(absPath);
+            if(db != nullptr)
+            {
+                mClient.mGlobalDbIndexMap[dbIndex] = db->getGlobalIndex();
+
+            }else
+            {
+                Logger::error() << "Server database table contains DB '" << path << "', which we have not loaded";
+            }
         }
 
         virtual void loadLevel(const std::string &path, size_t loadedDatabaseCount) override

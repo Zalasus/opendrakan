@@ -37,6 +37,24 @@ namespace odDb
 		std::shared_ptr<Database> getDatabaseByPath(const od::FilePath &dbFilePath);
         std::shared_ptr<Database> getDatabaseByGlobalIndex(size_t index);
 
+        /**
+         * Note that this is racy. The DB manager only weakly owns databases, so the actual count
+         * may change if another thread releases or loads a database.
+         */
+        size_t getLoadedDatabaseCount() const;
+
+        template <typename F>
+        void forEachLoadedDatabase(const F &f)
+        {
+            for(auto &weakDb : mLoadedDatabases)
+            {
+                if(auto db = weakDb.second.lock(); db != nullptr)
+                {
+                    f(db);
+                }
+            }
+        }
+
 
 	private:
 

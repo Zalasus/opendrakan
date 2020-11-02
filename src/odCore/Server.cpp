@@ -193,7 +193,15 @@ namespace od
         {
             if(client->downlinkConnector != nullptr)
             {
-                client->downlinkConnector->loadLevel(relLevelPath);
+                auto dbCount = mDbManager.getLoadedDatabaseCount();
+
+                client->downlinkConnector->loadLevel(relLevelPath, dbCount);
+
+                mDbManager.forEachLoadedDatabase([this, client](auto db)
+                {
+                    auto relDbPath = db->getDbFilePath().removePrefix(getEngineRootDir()).str();
+                    client->downlinkConnector->globalDatabaseTableEntry(db->getGlobalIndex(), relDbPath);
+                });
             }
         }
 
