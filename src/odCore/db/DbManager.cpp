@@ -34,10 +34,7 @@ namespace odDb
     		throw od::Exception("Dependency depth exceeded maximum. Possible undetected circular dependency?");
     	}
 
-    	// force the right extension
-    	od::FilePath actualFilePath = dbFilePath.ext(".db");
-
-    	if(auto db = getDatabaseByPath(actualFilePath); db != nullptr)
+    	if(auto db = getDatabaseByPath(dbFilePath); db != nullptr)
         {
             return db;
         }
@@ -46,7 +43,7 @@ namespace odDb
 
         auto newGlobalIndex = mNextGlobalIndex++;
 
-        auto db = std::make_shared<Database>(actualFilePath, *this, newGlobalIndex);
+        auto db = std::make_shared<Database>(dbFilePath, *this, newGlobalIndex);
         mLoadedDatabases[newGlobalIndex] = db;
         db->loadDbFileAndDependencies(dependencyDepth);
 

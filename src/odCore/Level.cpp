@@ -332,7 +332,7 @@ namespace od
             FilePath dbPath(dbPathStr, file.getFilePath().dir());
 
             Logger::debug() << "Gonna load level dependency index " << dbIndex << ": " << dbPath;
-            auto db = dbManager.loadDatabase(dbPath.adjustCase());
+            auto db = dbManager.loadDatabase(dbPath.ext(".db").adjustCase());
 
             mDependencyMap.insert(std::make_pair(dbIndex, db));
         }

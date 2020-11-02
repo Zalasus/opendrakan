@@ -143,7 +143,7 @@ server.
 Transmits one entry of the global DB index table.
 ```
 u32 global_index;
-u8  path[]; // path of db file, w/o extension, relative to engine root. size derived from packet size
+u8  path[]; // path of db file, relative to engine root. size derived from packet size
 ```
 
 ### Load level (reliable, downlink)

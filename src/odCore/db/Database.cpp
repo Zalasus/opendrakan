@@ -124,7 +124,7 @@ namespace odDb
 
 				// note: dependency paths are always stored relative to the path of the db file defining it
 				od::FilePath depPath(results[2], mDbFilePath.dir());
-				depPath = depPath.adjustCase();
+				depPath = depPath.adjustCase().ext(".db");
 
 				if(depPath == mDbFilePath)
 				{

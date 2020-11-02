@@ -27,10 +27,10 @@ namespace odDb
 		~DbManager();
 
         /**
-         * @brief Loads a database if not already loaded and returns the the RiotDb object.
+         * @brief Loads a database if not already loaded and returns the Database object.
          *
-         * @param[in]   dbFile              Path to the *.db file defining the database to be loaded. Extension is ignored.
-         * @param[in]   dependencyDepth     Depth of dependency loading. Used to prevent undectected circular dependencies. Only used by RiotDb objects.
+         * @param[in]   dbFile              Path to the *.db file defining the database to be loaded
+         * @param[in]   dependencyDepth     Depth of dependency loading. Used to prevent undectected circular dependencies. Only used by Database objects.
          */
 		std::shared_ptr<Database> loadDatabase(const od::FilePath &dbFilePath, size_t dependencyDepth = 0);
 
