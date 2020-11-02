@@ -96,7 +96,7 @@ namespace od
 
                 if(object != nullptr)
                 {
-                    //mClient.getEventQueue().addAnimationEvent(realtime, *object, animRef, channelIndex, speedModifier);
+                    mClient.getEventQueue().addAnimationEvent(realtime, *object, animRef, channelIndex, speedModifier);
                 }
             }
         }

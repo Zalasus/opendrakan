@@ -9,7 +9,7 @@ namespace odState
     {
     }
 
-    void EventQueue::addAnimationEvent(double realtime, od::LevelObject &object, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier)
+    void EventQueue::addAnimationEvent(double realtime, od::LevelObject &object, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier)
     {
         auto it = _getEventInsertPoint(realtime);
         //mEvents.insert(it, ObjectAnimEvent(realtime, object, animRef, channelIndex, speedModifier));

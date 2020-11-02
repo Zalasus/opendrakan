@@ -18,7 +18,7 @@ namespace odState
     }
 
 
-    ObjectAnimEvent::ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::AssetRef &anim, int32_t channel, float speed)
+    ObjectAnimEvent::ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed)
     : Event(realtime)
     , object(obj)
     , animRef(anim)

@@ -26,7 +26,7 @@ namespace odState
 
         EventQueue(odDb::DbManager &dbManager);
 
-        void addAnimationEvent(double realtime, od::LevelObject &object, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier);
+        void addAnimationEvent(double realtime, od::LevelObject &object, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier);
         void sound();
 
         void dispatch(double realtime);
