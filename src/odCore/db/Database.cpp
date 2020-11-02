@@ -40,7 +40,7 @@ namespace odDb
     }
 
 
-	Database::Database(const od::FilePath &dbFilePath, DbManager &dbManager, size_t globalIndex)
+	Database::Database(const od::FilePath &dbFilePath, DbManager &dbManager, GlobalDatabaseIndex globalIndex)
 	: mDbFilePath(dbFilePath)
 	, mDbManager(dbManager)
     , mGlobalIndex(globalIndex)

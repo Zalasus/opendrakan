@@ -143,8 +143,8 @@ server.
 Transmits one entry of the global DB index table. For simplicity, the total
 number of entries in the table is sent in every packet.
 ```
-u16 total_entries;
-u16 global_index;
+u32 total_entries;
+u32 global_index;
 u8  path[]; // path of db file, w/o extension, relative to engine root. size derived from packet size
 ```
 
@@ -228,19 +228,25 @@ u32 receiver_object_id;
 u8  messageBody[];  // size is to be derived from payload size field of the packet
 ```
 
-### Animation message (downlink, reliable)
+Event packets
+-------------
+These represent one-shot events that happen at a certain time, but are not
+guaranteed to arrive at a given time.
+
+### Object animation (downlink, reliable)
 ```
-u32 id;
-ref anim_ref;
-i32 channel_index;
-f32 speed_modifier;
-f64 realtime;
+f64  realtime;
+u32  id;
+gref anim_ref;
+i32  channel_index;
+f32  speed_modifier;
 ```
 
-Gameplay packets
-----------------
-These are sent as soon as the action happens on the transmitting side. They
-don't use the timeline.
+### Sound (downlink, reliable)
+```
+f64  realtime;
+gref sound_ref;
+```
 
 ### Action (uplink, reliable)
 ```

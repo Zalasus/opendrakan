@@ -29,13 +29,13 @@ namespace odNet
          */
         PacketBuilder(const std::function<void(const char *, size_t, LinkType)> &packetCallback);
 
-        virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) override final;
+        virtual void globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override final;
         virtual void loadLevel(const std::string &path) override final;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override final;
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override final;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override final;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override final;
-        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override final;
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override final;
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override final;
         virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override final;

@@ -131,7 +131,7 @@ namespace odNet
         case PacketType::OBJECT_ANIMATION:
             {
                 od::LevelObjectId id;
-                odDb::AssetRef animRef;
+                odDb::GlobalAssetRef animRef;
                 int32_t channelIndex;
                 float speedModifier;
                 double realtime;

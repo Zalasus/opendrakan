@@ -10,6 +10,8 @@
 
 #include <odCore/SrscFile.h>
 
+#include <odCore/db/IdTypes.h>
+
 namespace odDb
 {
 
@@ -69,10 +71,10 @@ namespace odDb
 	struct AssetRef
 	{
 		AssetRef() : assetId(0), dbIndex(0) {}
-		AssetRef(od::RecordId id, uint16_t index) : assetId(id), dbIndex(index) {}
+		AssetRef(od::RecordId id, DatabaseIndex index) : assetId(id), dbIndex(index) {}
 
 		od::RecordId assetId;
-		uint16_t dbIndex;
+		DatabaseIndex dbIndex;
 
 		bool operator==(const AssetRef &right) const;
 		inline bool operator!=(const AssetRef &right) const { return !(this->operator==(right)); }
@@ -93,6 +95,16 @@ namespace odDb
 
 
 	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
+
+
+    /**
+     * @brief An alternative asset ref which references a database using it's global index instead
+     */
+    struct GlobalAssetRef
+	{
+        od::RecordId assetId;
+		GlobalDatabaseIndex globalDbIndex;
+    };
 
 }
 

@@ -15,10 +15,15 @@ namespace odNet
     {
     }
 
-    void PacketBuilder::globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path)
+    void PacketBuilder::globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path)
     {
+        if(totalEntryCount > std::numeric_limits<uint32_t>::max())
+        {
+            throw od::Exception("Entry count out of bounds");
+        }
+
         _beginPacket(PacketType::GLOBAL_DB_TABLE_ENTRY);
-        mWriter << totalEntryCount
+        mWriter << static_cast<uint32_t>(totalEntryCount)
                 << dbIndex;
         mWriter.write(path.data(), path.size());
         _endPacket(LinkType::RELIABLE);
@@ -69,7 +74,7 @@ namespace odNet
         _endPacket(LinkType::RELIABLE);
     }
 
-    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
+    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
     {
         _beginPacket(PacketType::OBJECT_ANIMATION);
         mWriter << id

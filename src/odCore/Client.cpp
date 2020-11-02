@@ -44,7 +44,7 @@ namespace od
         {
         }
 
-        virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) override
+        virtual void globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override
         {
             auto db = mClient.getDbManager().getDatabaseByPath(path);
             if(db == nullptr)
@@ -82,7 +82,7 @@ namespace od
             mClient.getMessageDispatcher().receiveGlobalMessage(code, data, size);
         }
 
-        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override
         {
             auto level = mClient.getLevel();
             if(level != nullptr)
@@ -224,7 +224,7 @@ namespace od
         Logger::info() << "Shutting down client gracefully";
     }
 
-    size_t Client::translateGlobalDatabaseIndex(size_t serverSideIndex)
+    odDb::GlobalDatabaseIndex Client::translateGlobalDatabaseIndex(odDb::GlobalDatabaseIndex serverSideIndex)
     {
         auto it = mGlobalDbIndexMap.find(serverSideIndex);
         if(it == mGlobalDbIndexMap.end())

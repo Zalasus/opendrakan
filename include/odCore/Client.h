@@ -13,6 +13,8 @@
 
 #include <odCore/FilePath.h>
 
+#include <odCore/db/IdTypes.h>
+
 #include <odCore/net/QueuedDownlinkConnector.h>
 
 namespace odDb
@@ -100,7 +102,7 @@ namespace od
         /**
          * @brief Translates a global database index coming from the server to one we can use locally.
          */
-        size_t translateGlobalDatabaseIndex(size_t serverSideIndex);
+        odDb::GlobalDatabaseIndex translateGlobalDatabaseIndex(odDb::GlobalDatabaseIndex serverSideIndex);
 
 
     private:
@@ -130,7 +132,7 @@ namespace od
         std::unique_ptr<odNet::UplinkMessageDispatcher> mMessageDispatcher;
         std::unique_ptr<odState::EventQueue> mEventQueue;
 
-        std::unordered_map<size_t, size_t> mGlobalDbIndexMap; // first=server side, second=client side
+        std::unordered_map<odDb::GlobalDatabaseIndex, odDb::GlobalDatabaseIndex> mGlobalDbIndexMap; // first=server side, second=client side
 
     };
 

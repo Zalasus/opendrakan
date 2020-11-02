@@ -23,21 +23,21 @@ namespace odNet
 
         void flushQueue(DownlinkConnector &c);
 
-        virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) override;
+        virtual void globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override;
         virtual void loadLevel(const std::string &path) override;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override;
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
-        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override;
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override;
 
 
     private:
 
         struct GlobalDatabaseTableEntry
         {
-            uint16_t totalEntryCount;
-            uint16_t dbIndex;
+            size_t totalEntryCount;
+            odDb::GlobalDatabaseIndex dbIndex;
             std::string path; // happens only during handshake, so the alloc is prolly ok
         };
 
@@ -81,7 +81,7 @@ namespace odNet
         struct ObjectAnimation
         {
             od::LevelObjectId id;
-            odDb::AssetRef animRef;
+            odDb::GlobalAssetRef animRef;
             int32_t channelIndex;
             float speedModifier;
             double realtime;

@@ -69,4 +69,17 @@ namespace od
         (*this) << ref.assetId << ref.dbIndex;
     }
 
+
+    template <>
+    void DataReader::readTyped<odDb::GlobalAssetRef>(odDb::GlobalAssetRef &ref)
+    {
+        (*this) >> ref.assetId >> ref.globalDbIndex;
+    }
+
+    template <>
+    void DataWriter::writeTyped<odDb::GlobalAssetRef>(const odDb::GlobalAssetRef &ref)
+    {
+        (*this) << ref.assetId << ref.globalDbIndex;
+    }
+
 }

@@ -14,6 +14,7 @@
 #include <odCore/ObjectStates.h>
 
 #include <odCore/db/Asset.h>
+#include <odCore/db/IdTypes.h>
 
 #include <odCore/net/IdTypes.h>
 
@@ -41,7 +42,7 @@ namespace odNet
 
         virtual ~DownlinkConnector() = default;
 
-        virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) = 0;
+        virtual void globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path) = 0;
         virtual void loadLevel(const std::string &path) = 0;
 
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) = 0;
@@ -57,7 +58,7 @@ namespace odNet
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
 
-        virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) = 0;
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) = 0;
     };
 
 }

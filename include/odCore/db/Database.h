@@ -36,12 +36,12 @@ namespace odDb
 	{
 	public:
 
-		Database(const od::FilePath &dbFilePath, DbManager &dbManager, size_t globalIndex);
+		Database(const od::FilePath &dbFilePath, DbManager &dbManager, GlobalDatabaseIndex globalIndex);
 		~Database();
 
 		inline od::FilePath getDbFilePath() const { return mDbFilePath; }
 		inline std::string getShortName() const { return mDbFilePath.fileStrNoExt(); }
-        inline size_t getGlobalIndex() const { return mGlobalIndex; }
+        inline GlobalDatabaseIndex getGlobalIndex() const { return mGlobalIndex; }
 		inline TextureFactory *getTextureFactory() { return mTextureFactory.get(); }
 		inline ClassFactory *getClassFactory() { return mClassFactory.get(); }
 		inline ModelFactory *getModelFactory() { return mModelFactory.get(); }
@@ -77,10 +77,10 @@ namespace odDb
 
 		od::FilePath mDbFilePath;
 		DbManager &mDbManager;
-        size_t mGlobalIndex;
+        GlobalDatabaseIndex mGlobalIndex;
 
 		uint32_t mVersion;
-		std::unordered_map<uint16_t, std::shared_ptr<Database>> mDependencyMap; // TODO: we have to check for dependency loops to prevent leaks
+		std::unordered_map<DatabaseIndex, std::shared_ptr<Database>> mDependencyMap; // TODO: we have to check for dependency loops to prevent leaks
 
 		std::unique_ptr<TextureFactory> mTextureFactory;
 		std::unique_ptr<od::SrscFile> mTextureContainer;

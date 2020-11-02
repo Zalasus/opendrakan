@@ -40,6 +40,7 @@ namespace odDb
 
 	private:
 
+        // FIXME: make sure a database that is unloaded, then loaded again gets the same global index!
         std::unordered_map<size_t, std::weak_ptr<Database>> mLoadedDatabases;
         size_t mNextGlobalIndex;
 	};

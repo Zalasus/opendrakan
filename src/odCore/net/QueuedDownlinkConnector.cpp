@@ -71,7 +71,7 @@ namespace odNet
         mMessages.clear();
     }
 
-    void QueuedDownlinkConnector::globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path)
+    void QueuedDownlinkConnector::globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path)
     {
         lock_guard lock(mMutex);
         mCalls.emplace_back(GlobalDatabaseTableEntry{totalEntryCount, dbIndex, path});
@@ -116,7 +116,7 @@ namespace odNet
         mMessages.insert(mMessages.end(), data, data+size);
     }
 
-    void QueuedDownlinkConnector::objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
+    void QueuedDownlinkConnector::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
     {
         lock_guard lock(mMutex);
         mCalls.emplace_back(ObjectAnimation{id, animRef, channelIndex, speedModifier, realtime});
