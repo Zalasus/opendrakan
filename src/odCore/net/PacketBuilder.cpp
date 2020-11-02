@@ -15,6 +15,15 @@ namespace odNet
     {
     }
 
+    void PacketBuilder::globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path)
+    {
+        _beginPacket(PacketType::GLOBAL_DB_TABLE_ENTRY);
+        mWriter << totalEntryCount
+                << dbIndex;
+        mWriter.write(path.data(), path.size());
+        _endPacket(LinkType::RELIABLE);
+    }
+
     void PacketBuilder::loadLevel(const std::string &path)
     {
         uint16_t pathLength = path.size() > 0xffff ? 0xffff : path.size(); // TODO: warn on truncation?

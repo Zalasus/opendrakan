@@ -21,6 +21,11 @@ namespace odNet
             {
             }
 
+            void operator()(const GlobalDatabaseTableEntry &l)
+            {
+                connector.globalDatabaseTableEntry(l.totalEntryCount, l.dbIndex, l.path);
+            }
+
             void operator()(const LoadLevel &l)
             {
                 connector.loadLevel(l.path);
@@ -64,6 +69,12 @@ namespace odNet
 
         mCalls.clear();
         mMessages.clear();
+    }
+
+    void QueuedDownlinkConnector::globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path)
+    {
+        lock_guard lock(mMutex);
+        mCalls.emplace_back(GlobalDatabaseTableEntry{totalEntryCount, dbIndex, path});
     }
 
     void QueuedDownlinkConnector::loadLevel(const std::string &path)

@@ -16,6 +16,19 @@ Tick numbers should be one-based, since some protocol features need to be able
 to pass an invalid tick. E.g. when sending snapshots, it needs to be indicated
 whether the snapshot is full or delta encoded against another snapshot.
 
+Asset references
+----------------
+Some network packets need to reference assets (like animation or sound events).
+However, asset references are context-dependent: their database index references
+the dependency table of the database from which the reference originated. This
+is suboptimal for networking, as the context of a reference is not always clear
+(like when playing sounds).
+
+To fix this, the server maintains a table in which the names/paths of all
+databases it has loaded are associated with a 16-bit index. This table is sent
+to clients during the handshake. A client will use the names to create a table
+that maps these server DB indices to it's local DB indices.
+
 Snapshot transmission
 ---------------------
 Snapshots are sent to a client in two steps: First, an arbitrary number of
@@ -121,6 +134,25 @@ u16 payload_length;
 u8 payload_bytes[~];
 ```
 
+Handshake packets
+-----------------
+These packets are used to set up the engine when a client first connects to the
+server.
+
+### Global database table entry (reliable, downlink)
+Transmits one entry of the global DB index table. For simplicity, the total
+number of entries in the table is sent in every packet.
+```
+u16 total_entries;
+u16 global_index;
+u8  path[]; // path of db file, w/o extension, relative to engine root. size derived from packet size
+```
+
+### Load level (reliable, downlink)
+```
+u8 level_path[]; // relative to engine root
+```
+
 Snapshot packets
 ----------------
 These are used to send snapshots from the server to a client. Thus, they are
@@ -221,9 +253,4 @@ u8  action_state;
 u32 action_code;
 f32 x;
 f32 y;
-```
-
-### Load level
-```
-u8 level_path[]; // relative to engine root
 ```

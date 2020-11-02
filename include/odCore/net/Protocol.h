@@ -9,10 +9,12 @@ namespace odNet
 
     enum class PacketType : uint8_t
     {
+        GLOBAL_DB_TABLE_ENTRY,
+        LOAD_LEVEL,
+
         OBJECT_STATES_CHANGED,
         OBJECT_EXTRA_STATES_CHANGED,
         CONFIRM_SNAPSHOT,
-        LOAD_LEVEL,
         GLOBAL_MESSAGE,
         OBJECT_MESSAGE,
         OBJECT_ANIMATION,

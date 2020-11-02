@@ -42,6 +42,10 @@ namespace od
         {
         }
 
+        virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) override
+        {
+        }
+
         virtual void loadLevel(const std::string &path) override
         {
             od::FilePath lvlPath(path, mClient.getEngineRootDir());

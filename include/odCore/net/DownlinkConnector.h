@@ -41,6 +41,7 @@ namespace odNet
 
         virtual ~DownlinkConnector() = default;
 
+        virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) = 0;
         virtual void loadLevel(const std::string &path) = 0;
 
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) = 0;
