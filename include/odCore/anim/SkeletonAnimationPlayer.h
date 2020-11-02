@@ -9,7 +9,6 @@
 #define INCLUDE_ODCORE_ANIM_SKELETONANIMATIONPLAYER_H_
 
 #include <vector>
-#include <queue>
 #include <memory>
 
 #include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
@@ -64,11 +63,6 @@ namespace odAnim
         void playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
 
         /**
-         * Pushes to queue, animation will start after loop point yada yada documentation is fun!
-         */
-        void pushAnimationToQueue(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
-
-        /**
          * @brief Advances animation and performs necessary updates to the skeleton.
          *
          * @param  relTime      Relative time since the last update (realtime, will always be >= 0)
@@ -90,21 +84,6 @@ namespace odAnim
         float mSpeedMultiplier;
         odDb::Animation::KfIterator mFirstFrame;
         odDb::Animation::KfIterator mLastFrame;
-
-        struct AnimationQueueEntry
-        {
-            AnimationQueueEntry(std::shared_ptr<odDb::Animation> pAnim, PlaybackType pType, float pSpeed)
-            : animation(pAnim)
-            , type(pType)
-            , speedMultiplier(pSpeed)
-            {
-            }
-
-            std::shared_ptr<odDb::Animation> animation;
-            PlaybackType type;
-            float speedMultiplier;
-        };
-        std::queue<AnimationQueueEntry> mAnimationQueue;
 
         bool mPlaying;
         float mAnimTime;
@@ -142,8 +121,6 @@ namespace odAnim
          * talking animation on neck joint to make the character talk while walking.
          */
         void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
-
-        void pushAnimationToQueue(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
 
         /**
          * @brief Sets accumulator for a root node.

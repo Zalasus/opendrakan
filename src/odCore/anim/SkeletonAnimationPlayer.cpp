@@ -67,18 +67,6 @@ namespace odAnim
         mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
     }
 
-    void BoneAnimator::pushAnimationToQueue(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier)
-    {
-        if(mCurrentAnimation == nullptr)
-        {
-            playAnimation(animation, type, speedMultiplier);
-
-        }else
-        {
-            mAnimationQueue.emplace(animation, type, speedMultiplier);
-        }
-    }
-
     void BoneAnimator::setAccumulationModes(const AxesAccumulationModes &modes)
     {
         for(size_t i = 0; i < 3; ++i)
@@ -129,36 +117,24 @@ namespace odAnim
             float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
             float residualTime = mAnimTime - endTime; // negative for reverse playback!
 
-            if(!mAnimationQueue.empty())
+            switch(mPlaybackType)
             {
-                AnimationQueueEntry &queueEntry = mAnimationQueue.back();
-                mAnimationQueue.pop();
+            case PlaybackType::NORMAL:
+            default:
+                mPlaying = false;
+                break;
 
-                playAnimation(queueEntry.animation, queueEntry.type, queueEntry.speedMultiplier);
+            case PlaybackType::LOOPING:
+                mAnimTime = startTime + residualTime;
+                loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
+                loopJump *= movingBackInTime ? -1.0f : 1.0f;
+                loopedBack = true;
+                break;
 
-                mAnimTime += residualTime;
-
-            }else
-            {
-                switch(mPlaybackType)
-                {
-                case PlaybackType::NORMAL:
-                default:
-                    mPlaying = false;
-                    break;
-
-                case PlaybackType::LOOPING:
-                    mAnimTime = startTime + residualTime;
-                    loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
-                    loopJump *= movingBackInTime ? -1.0f : 1.0f;
-                    loopedBack = true;
-                    break;
-
-                case PlaybackType::PINGPONG:
-                    mSpeedMultiplier = -mSpeedMultiplier;
-                    mAnimTime = endTime - residualTime;
-                    break;
-                }
+            case PlaybackType::PINGPONG:
+                mSpeedMultiplier = -mSpeedMultiplier;
+                mAnimTime = endTime - residualTime;
+                break;
             }
         }
 
@@ -276,16 +252,6 @@ namespace odAnim
     void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
     {
         throw od::UnsupportedException("Partial skeleton animation not implemented yet");
-    }
-
-    void SkeletonAnimationPlayer::pushAnimationToQueue(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier)
-    {
-        for(auto &animator : mBoneAnimators)
-        {
-            animator.pushAnimationToQueue(anim, type, speedMultiplier);
-        }
-
-        mPlaying = true;
     }
 
     void SkeletonAnimationPlayer::setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex)
