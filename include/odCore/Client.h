@@ -54,6 +54,7 @@ namespace odNet
 namespace odState
 {
     class StateManager;
+    class EventQueue;
 }
 
 namespace od
@@ -78,6 +79,7 @@ namespace od
         inline odRender::Renderer &getRenderer() { return mRenderer; }
         inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
+        inline odState::EventQueue &getEventQueue() { return *mEventQueue; }
 
         inline std::shared_ptr<odNet::QueuedDownlinkConnector> getDownlinkConnector() { return mDownlinkConnector; }
 
@@ -118,6 +120,7 @@ namespace od
         std::shared_ptr<odInput::RawActionListener> mActionListener;
 
         std::unique_ptr<odNet::UplinkMessageDispatcher> mMessageDispatcher;
+        std::unique_ptr<odState::EventQueue> mEventQueue;
 
     };
 

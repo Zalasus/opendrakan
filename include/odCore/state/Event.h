@@ -15,6 +15,7 @@
 #define INCLUDE_ODCORE_STATE_EVENT_H_
 
 #include <variant>
+#include <memory>
 
 #include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
@@ -27,6 +28,11 @@
 namespace od
 {
     class LevelObject;
+}
+
+namespace odDb
+{
+    class Animation;
 }
 
 namespace odState
@@ -43,10 +49,7 @@ namespace odState
      */
     struct Event
     {
-        Event(double rt)
-        : realtime(rt)
-        {
-        }
+        Event(double rt);
 
         double realtime;
     };
@@ -54,12 +57,7 @@ namespace odState
 
     struct ActionEvent final : public Event
     {
-        ActionEvent(double realtime, odInput::ActionCode code, bool down)
-        : Event(realtime)
-        , actionCode(code)
-        , keyDown(down)
-        {
-        }
+        ActionEvent(double realtime, odInput::ActionCode code, bool down);
 
         odInput::ActionCode actionCode;
         bool keyDown;
@@ -68,14 +66,8 @@ namespace odState
 
     struct ObjectAnimEvent final : public Event
     {
-        ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::AssetRef &anim, int32_t channel, float speed)
-        : Event(realtime)
-        , object(obj)
-        , animRef(anim)
-        , channelIndex(channel)
-        , speedModifier(speed)
-        {
-        }
+        ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::AssetRef &anim, int32_t channel, float speed);
+        ~ObjectAnimEvent();
 
         od::LevelObject &object;
         odDb::AssetRef animRef;
@@ -87,13 +79,7 @@ namespace odState
 
     struct ObjectMessageEvent final : public Event
     {
-        ObjectMessageEvent(double realtime, od::LevelObject &sender, od::LevelObject &receiver, const od::Message &msg)
-        : Event(realtime)
-        , senderObject(sender)
-        , receiverObject(receiver)
-        , message(msg)
-        {
-        }
+        ObjectMessageEvent(double realtime, od::LevelObject &sender, od::LevelObject &receiver, const od::Message &msg);
 
         od::LevelObject &senderObject;
         od::LevelObject &receiverObject;

@@ -25,7 +25,7 @@
 #include <odCore/net/MessageDispatcher.h>
 
 #include <odCore/state/StateManager.h>
-
+#include <odCore/state/EventQueue.h>
 
 namespace od
 {
@@ -74,6 +74,16 @@ namespace od
 
         virtual void objectAnimation(od::LevelObjectId id, odDb::AssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override
         {
+            auto level = mClient.getLevel();
+            if(level != nullptr)
+            {
+                auto object = level->getLevelObjectById(id);
+
+                if(object != nullptr)
+                {
+                    //mClient.getEventQueue().addAnimationEvent(realtime, *object, animRef, channelIndex, speedModifier);
+                }
+            }
         }
 
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
@@ -101,6 +111,8 @@ namespace od
         mDownlinkConnector = std::make_shared<odNet::QueuedDownlinkConnector>();
 
         mMessageDispatcher = std::make_unique<odNet::UplinkMessageDispatcher>();
+
+        mEventQueue = std::make_unique<odState::EventQueue>(mDbManager);
 
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)

@@ -64,6 +64,8 @@ target_sources(odCore PRIVATE
         "rfl/Rfl.cpp"
         "rfl/Class.cpp"
         "rfl/RflManager.cpp"
+        "state/Event.cpp"
+        "state/EventQueue.cpp"
         "state/StateBundleDetail.cpp"
         "state/StateManager.cpp"
         "BoundingBox.cpp"
