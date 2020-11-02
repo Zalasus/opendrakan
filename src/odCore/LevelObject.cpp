@@ -583,16 +583,14 @@ namespace od
         }
     }
 
-    odAnim::Skeleton *LevelObject::getOrCreateSkeleton()
+    void LevelObject::setupSkeleton()
     {
-        if(mSkeleton == nullptr && mClass != nullptr && mClass->hasModel() && mClass->getModel()->hasSkeleton())
+        if(mClass->hasModel() && mClass->getModel()->hasSkeleton())
         {
-            odDb::SkeletonBuilder *sb = mClass->getModel()->getSkeletonBuilder();
-            mSkeleton = std::make_unique<odAnim::Skeleton>(sb->getJointCount());
-            sb->build(*mSkeleton);
+            odDb::SkeletonBuilder &sb = *mClass->getModel()->getSkeletonBuilder();
+            mSkeleton = std::make_shared<odAnim::Skeleton>(sb.getJointCount());
+            sb.build(*mSkeleton);
         }
-
-        return mSkeleton.get();
     }
 
 }

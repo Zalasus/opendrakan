@@ -97,6 +97,7 @@ namespace od
 
         inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
         inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
+        inline std::shared_ptr<odAnim::Skeleton> &getSkeleton() { return mSkeleton; }
 
         void spawn();
         void despawn();
@@ -221,9 +222,8 @@ namespace od
         void setRflClassInstance(std::unique_ptr<odRfl::ClassBase> instance);
 
         void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
-
-        odAnim::Skeleton *getOrCreateSkeleton();
-
+        void setupSkeleton();
+        
 
     private:
 
@@ -255,7 +255,7 @@ namespace od
         std::shared_ptr<odRender::Handle> mRenderHandle;
         std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         std::unique_ptr<ObjectLightReceiver> mLightReceiver;
-        std::unique_ptr<odAnim::Skeleton> mSkeleton;
+        std::shared_ptr<odAnim::Skeleton> mSkeleton;
         std::unique_ptr<odAnim::SkeletonAnimationPlayer> mSkeletonAnimationPlayer;
     };
 

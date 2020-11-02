@@ -94,13 +94,14 @@ namespace dragonRfl
     	mYaw = playerLookDirection.y;
 
         obj.setupRenderingAndPhysics(od::ObjectRenderMode::NOT_RENDERED, od::ObjectPhysicsMode::SOLID);
+        obj.setupSkeleton();
 
-        odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
+        auto skeleton = obj.getSkeleton();
         if(skeleton != nullptr)
         {
             mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton.get());
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
@@ -285,11 +286,12 @@ namespace dragonRfl
         auto &obj = getLevelObject();
 
     	obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
-
-        odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
+        obj.setupSkeleton();
+        
+        auto skeleton = obj.getSkeleton();
         if(skeleton != nullptr)
         {
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
                                                                          odAnim::AccumulationMode::Bone,
@@ -346,9 +348,11 @@ namespace dragonRfl
         if(mAnimPlayer != nullptr)
         {
             mAnimPlayer->update(relTime);
-            if(obj.getOrCreateSkeleton() != nullptr && obj.getRenderHandle() != nullptr)
+
+            auto skeleton = obj.getSkeleton();
+            if(skeleton != nullptr && obj.getRenderHandle() != nullptr)
             {
-                getLevelObject().getOrCreateSkeleton()->flatten(obj.getRenderHandle()->getRig());
+                skeleton->flatten(obj.getRenderHandle()->getRig());
             }
         }
     }
