@@ -111,11 +111,11 @@ namespace odDb
             jointInfo.visited = true;
         }
 
-        odAnim::Skeleton::Bone *bone = (parent == nullptr) ? skeleton.addRootBone(jointIndex) : parent->addChildBone(jointIndex);
-        bone->setInverseBindPoseTransform(jointInfo.boneXform);
+        odAnim::Skeleton::Bone &bone = (parent == nullptr) ? skeleton.addRootBone(jointIndex) : parent->addChildBone(jointIndex);
+        bone.setInverseBindPoseTransform(jointInfo.boneXform);
         if(jointInfo.nameInfo != nullptr)
         {
-            bone->setName(jointInfo.nameInfo->name);
+            bone.setName(jointInfo.nameInfo->name);
         }
 
         if(jointInfo.firstChildIndex > 0)
@@ -126,7 +126,7 @@ namespace odDb
             }
 
             JointInfo &firstChildJointInfo = mJointInfos[jointInfo.firstChildIndex];
-            _buildRecursive(skeleton, bone, firstChildJointInfo, jointInfo.firstChildIndex);
+            _buildRecursive(skeleton, &bone, firstChildJointInfo, jointInfo.firstChildIndex);
         }
 
         if(jointInfo.nextSiblingIndex > 0)

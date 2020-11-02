@@ -101,7 +101,7 @@ namespace dragonRfl
         {
             mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton.get());
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
             mAnimPlayer->setRootNodeAccumulator(mCharacterController.get());
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
@@ -287,11 +287,11 @@ namespace dragonRfl
 
     	obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
         obj.setupSkeleton();
-        
+
         auto skeleton = obj.getSkeleton();
         if(skeleton != nullptr)
         {
-            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton.get());
+            mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
 
             mAnimPlayer->setRootNodeAccumulationModes(odAnim::AxesModes{ odAnim::AccumulationMode::Bone,
                                                                          odAnim::AccumulationMode::Bone,
@@ -352,7 +352,7 @@ namespace dragonRfl
             auto skeleton = obj.getSkeleton();
             if(skeleton != nullptr && obj.getRenderHandle() != nullptr)
             {
-                skeleton->flatten(obj.getRenderHandle()->getRig());
+                skeleton->flatten(*obj.getRenderHandle()->getRig());
             }
         }
     }

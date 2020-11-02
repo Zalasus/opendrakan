@@ -10,7 +10,6 @@
 
 #include <string>
 #include <vector>
-#include <functional>
 
 #include <glm/mat4x4.hpp>
 #include <glm/mat3x4.hpp>
@@ -47,8 +46,8 @@ namespace odAnim
             void setInverseBindPoseTransform(const glm::mat4 &tform);
 
             size_t getChildBoneCount();
-            Bone *getChildBone(size_t index);
-            Bone *addChildBone(int32_t jointIndex);
+            Bone &getChildBone(size_t index);
+            Bone &addChildBone(int32_t jointIndex);
 
             void moveToBindPose();
             void move(const glm::mat4 &transform);
@@ -56,8 +55,22 @@ namespace odAnim
 
         private:
 
-            void _flattenRecursive(odRender::Rig *rig, const glm::mat4 &parentMatrix);
-            void _traverse(const std::function<bool(Bone*)> &f);
+            void _flattenRecursive(odRender::Rig &rig, const glm::mat4 &parentMatrix);
+
+            template <typename F>
+            void _traverse(const F &f)
+            {
+                bool shouldContinue = f(*this);
+                if(!shouldContinue)
+                {
+                    return;
+                }
+
+                for(auto bone : mChildBones)
+                {
+                    bone->_traverse(f);
+                }
+            }
 
             Skeleton &mSkeleton;
             Bone *mParent;
@@ -77,12 +90,19 @@ namespace odAnim
 
         inline size_t getBoneCount() const { return mBones.size(); }
 
-        Bone *addRootBone(int32_t jointIndex);
-        Bone *getBoneByJointIndex(int32_t jointIndex);
+        Bone &addRootBone(int32_t jointIndex);
+        Bone &getBoneByJointIndex(int32_t jointIndex);
 
-        void traverse(const std::function<bool(Bone*)> &f);
+        template <typename F>
+        void traverse(const F &f)
+        {
+            for(auto bone : mRootBones)
+            {
+                bone->_traverse(f);
+            }
+        }
 
-        void flatten(odRender::Rig *rig);
+        void flatten(odRender::Rig &rig);
         bool checkForLoops(); ///< @brief Returns true if skeleton has loops
 
 

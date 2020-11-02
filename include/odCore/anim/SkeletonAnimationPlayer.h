@@ -37,9 +37,9 @@ namespace odAnim
     {
     public:
 
-        BoneAnimator(Skeleton::Bone *bone);
+        BoneAnimator(Skeleton::Bone &bone);
 
-        inline Skeleton::Bone *getBone() { return mBone; }
+        inline Skeleton::Bone &getBone() { return mBone; }
         inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
         inline bool isPlaying() const { return mPlaying; }
         inline std::shared_ptr<odDb::Animation> getCurrentAnimation() { return mCurrentAnimation; }
@@ -90,7 +90,7 @@ namespace odAnim
         glm::dualquat _sampleLinear(float time);
         glm::dualquat _sampleNearest(float time);
 
-        Skeleton::Bone *mBone;
+        Skeleton::Bone &mBone;
 
         std::shared_ptr<odDb::Animation> mCurrentAnimation;
         PlaybackType mPlaybackType;
@@ -133,7 +133,7 @@ namespace odAnim
     {
     public:
 
-        explicit SkeletonAnimationPlayer(Skeleton *skeleton);
+        explicit SkeletonAnimationPlayer(std::shared_ptr<Skeleton> skeleton);
         virtual ~SkeletonAnimationPlayer();
 
         inline bool isPlaying() const { return mPlaying; }
@@ -178,8 +178,7 @@ namespace odAnim
 
     private:
 
-        Skeleton *mSkeleton;
-        odRender::Rig *mRig;
+        std::shared_ptr<Skeleton> mSkeleton;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!
         bool mPlaying;
     };

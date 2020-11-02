@@ -28,7 +28,7 @@ namespace odAnim
     }
 
 
-    BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
+    BoneAnimator::BoneAnimator(Skeleton::Bone &bone)
     : mBone(bone)
     , mPlaybackType(PlaybackType::Normal)
     , mSpeedMultiplier(1.0f)
@@ -39,10 +39,6 @@ namespace odAnim
     , mObjectAccumulationFactors(0.0)
     , mUseInterpolation(false)
     {
-        if(mBone == nullptr)
-        {
-            throw od::Exception("Created BoneAnimator with bone = nullptr");
-        }
     }
 
     void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier)
@@ -59,7 +55,7 @@ namespace odAnim
         mSpeedMultiplier = speedMultiplier;
         mPlaying = true;
 
-        odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone->getJointIndex());
+        odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone.getJointIndex());
         size_t frameCount = newStartEnd.second - newStartEnd.first;
         mFirstFrame = newStartEnd.first;
         mLastFrame = mFirstFrame + (frameCount - 1);
@@ -171,7 +167,7 @@ namespace odAnim
         if(mAccumulator == nullptr)
         {
             glm::mat4 asMat(glm::mat3x4_cast(sampledTransform));
-            mBone->move(asMat);
+            mBone.move(asMat);
 
         }else
         {
@@ -192,7 +188,7 @@ namespace odAnim
             glm::mat4 boneMatrix = glm::mat4_cast(sampledTransform.real); // real part represents rotation
             glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
             boneMatrix[3] = glm::vec4(boneTranslation, 1.0);
-            mBone->move(glm::transpose(boneMatrix));
+            mBone.move(glm::transpose(boneMatrix));
         }
 
         mLastAppliedTransform = sampledTransform;
@@ -200,7 +196,7 @@ namespace odAnim
 
     glm::dualquat BoneAnimator::_sampleLinear(float time)
     {
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), time);
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
@@ -225,7 +221,7 @@ namespace odAnim
 
     glm::dualquat BoneAnimator::_sampleNearest(float time)
     {
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), time);
+        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
@@ -247,9 +243,8 @@ namespace odAnim
     }
 
 
-    SkeletonAnimationPlayer::SkeletonAnimationPlayer(Skeleton *skeleton)
+    SkeletonAnimationPlayer::SkeletonAnimationPlayer(std::shared_ptr<Skeleton> skeleton)
     : mSkeleton(skeleton)
-    , mRig(nullptr)
     , mPlaying(false)
     {
         if(mSkeleton == nullptr)
@@ -260,7 +255,7 @@ namespace odAnim
         mBoneAnimators.reserve(mSkeleton->getBoneCount());
         for(size_t i = 0; i < mSkeleton->getBoneCount(); ++i)
         {
-            mBoneAnimators.push_back(BoneAnimator(mSkeleton->getBoneByJointIndex(i)));
+            mBoneAnimators.emplace_back(mSkeleton->getBoneByJointIndex(i));
         }
     }
 
@@ -270,9 +265,9 @@ namespace odAnim
 
     void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim,  PlaybackType type, float speedMultiplier)
     {
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        for(auto &animator : mBoneAnimators)
         {
-            it->playAnimation(anim, type, speedMultiplier);
+            animator.playAnimation(anim, type, speedMultiplier);
         }
 
         mPlaying = true;
@@ -285,9 +280,9 @@ namespace odAnim
 
     void SkeletonAnimationPlayer::pushAnimationToQueue(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier)
     {
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        for(auto &animator : mBoneAnimators)
         {
-            it->pushAnimationToQueue(anim, type, speedMultiplier);
+            animator.pushAnimationToQueue(anim, type, speedMultiplier);
         }
 
         mPlaying = true;
@@ -301,7 +296,7 @@ namespace odAnim
         }
 
         BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
-        if(!animator.getBone()->isRoot())
+        if(!animator.getBone().isRoot())
         {
             throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
         }
@@ -317,7 +312,7 @@ namespace odAnim
         }
 
         BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
-        if(!animator.getBone()->isRoot())
+        if(!animator.getBone().isRoot())
         {
             throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
         }
@@ -333,10 +328,10 @@ namespace odAnim
         }
 
         bool stillPlaying = true;
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        for(auto &animator : mBoneAnimators)
         {
-            it->update((float)relTime);
-            stillPlaying |= it->isPlaying();
+            animator.update((float)relTime);
+            stillPlaying |= animator.isPlaying();
         }
 
         if(mPlaying && !stillPlaying)
