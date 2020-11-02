@@ -13,6 +13,8 @@
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 
+#include <odCore/db/Database.h>
+
 #include <odCore/render/Renderer.h>
 
 #include <odCore/input/InputManager.h>
@@ -44,6 +46,14 @@ namespace od
 
         virtual void globalDatabaseTableEntry(uint16_t totalEntryCount, uint16_t dbIndex, const std::string &path) override
         {
+            auto db = mClient.getDbManager().getDatabaseByPath(path);
+            if(db == nullptr)
+            {
+                throw od::Exception("DB in translation table not loaded");
+            }
+
+            mClient.mGlobalDbIndexMap.reserve(totalEntryCount);
+            mClient.mGlobalDbIndexMap[dbIndex] = db->getGlobalIndex();
         }
 
         virtual void loadLevel(const std::string &path) override
@@ -212,6 +222,17 @@ namespace od
         }
 
         Logger::info() << "Shutting down client gracefully";
+    }
+
+    size_t Client::translateGlobalDatabaseIndex(size_t serverSideIndex)
+    {
+        auto it = mGlobalDbIndexMap.find(serverSideIndex);
+        if(it == mGlobalDbIndexMap.end())
+        {
+            throw od::Exception("Server-side global DB index not found in table. Server must have sent incomplete table");
+        }
+
+        return it->second;
     }
 
 }

@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <atomic>
+#include <unordered_map>
 
 #include <odCore/FilePath.h>
 
@@ -96,8 +97,15 @@ namespace od
 
         void run();
 
+        /**
+         * @brief Translates a global database index coming from the server to one we can use locally.
+         */
+        size_t translateGlobalDatabaseIndex(size_t serverSideIndex);
+
 
     private:
+
+        friend class LocalDownlinkConnector;
 
         odDb::DbManager &mDbManager;
         odRfl::RflManager &mRflManager;
@@ -121,6 +129,8 @@ namespace od
 
         std::unique_ptr<odNet::UplinkMessageDispatcher> mMessageDispatcher;
         std::unique_ptr<odState::EventQueue> mEventQueue;
+
+        std::unordered_map<size_t, size_t> mGlobalDbIndexMap; // first=server side, second=client side
 
     };
 
