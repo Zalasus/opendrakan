@@ -16,14 +16,34 @@
 #include <odCore/Exception.h>
 #include <odCore/db/DbManager.h>
 
-#define OD_RIOTDB_MAXVERSION 1
-
 namespace odDb
 {
 
-	Database::Database(const od::FilePath &dbFilePath, DbManager &dbManager)
+    static constexpr uint32_t MAX_DB_VERSION{1};
+
+
+    template <typename T>
+    void Database::_tryOpeningAssetContainer(std::unique_ptr<T> &factoryPtr, std::unique_ptr<od::SrscFile> &containerPtr, const char *extension)
+    {
+        od::FilePath path = mDbFilePath.ext(extension);
+        if(path.exists())
+        {
+            containerPtr = std::make_unique<od::SrscFile>(path);
+            factoryPtr = std::make_unique<T>(*this, *containerPtr);
+
+            Logger::verbose() << AssetTraits<typename T::AssetType>::name() << " container of database opened";
+
+        }else
+        {
+            Logger::verbose() << "Database has no " << AssetTraits<typename T::AssetType>::name() << " container";
+        }
+    }
+
+
+	Database::Database(const od::FilePath &dbFilePath, DbManager &dbManager, size_t globalIndex)
 	: mDbFilePath(dbFilePath)
 	, mDbManager(dbManager)
+    , mGlobalIndex(globalIndex)
 	, mVersion(0)
 	{
 	}
@@ -48,7 +68,6 @@ namespace odDb
 		std::string line;
 		bool readingDependencies = false;
 		size_t totalDependencyCount = 0;
-		size_t dependenciesRead = 0;
 		while(std::getline(in, line))
 		{
 			// getline leaves the CR byte (0x0D) in the string if given windows line endings. remove if it is there
@@ -68,7 +87,7 @@ namespace odDb
 				std::istringstream is(results[1]);
 				is >> mVersion;
 
-				if(mVersion > OD_RIOTDB_MAXVERSION)
+				if(mVersion > MAX_DB_VERSION)
 				{
 					throw od::UnsupportedException("Unsupported database version");
 				}
@@ -77,6 +96,8 @@ namespace odDb
 			{
 				std::istringstream is(results[1]);
 				is >> totalDependencyCount;
+
+                mDependencyMap.reserve(totalDependencyCount);
 
 				readingDependencies = true;
 
@@ -87,7 +108,7 @@ namespace odDb
 					throw od::Exception("Found dependency definition before dependencies statement");
 				}
 
-				if(dependenciesRead >= totalDependencyCount)
+				if(mDependencyMap.size() >= totalDependencyCount)
                 {
                     throw od::Exception("More dependency lines found in db file than stated in 'dependencies' statement");
                 }
@@ -108,16 +129,13 @@ namespace odDb
 				if(depPath == mDbFilePath)
 				{
 				    Logger::warn() << "Self dependent database file: " << mDbFilePath;
-				    ++dependenciesRead;
 				    continue;
 				}
 
                 // TODO: detect and prevent dependency cycles!!! since Databases now own their dependencies, cycles create leaks
-				std::shared_ptr<Database> db = mDbManager.loadDb(depPath, dependencyDepth + 1);
+				std::shared_ptr<Database> db = mDbManager.loadDatabase(depPath, dependencyDepth + 1);
 
 				mDependencyMap.insert(std::make_pair(depIndex, db));
-
-				++dependenciesRead;
 
 			}else
 			{
@@ -125,7 +143,7 @@ namespace odDb
 			}
 		}
 
-        if(dependenciesRead < totalDependencyCount)
+        if(mDependencyMap.size() < totalDependencyCount)
         {
             throw od::Exception("Found less dependency definitions than stated in dependencies statement");
         }

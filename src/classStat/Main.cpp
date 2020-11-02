@@ -117,7 +117,7 @@ int main(int argc, char **argv)
 
     odDb::DbManager dbManager;
 
-    auto db = dbManager.loadDb(dbPath);
+    auto db = dbManager.loadDatabase(dbPath);
 
     std::vector<od::RecordId> classes;
     auto classFactory = db->getClassFactory();

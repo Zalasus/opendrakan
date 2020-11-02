@@ -9,6 +9,7 @@
 #define INCLUDE_DRAGONRFL_GUI_DRAGONGUI_H_
 
 #include <memory>
+#include <unordered_map>
 
 #include <odCore/FilePath.h>
 
@@ -78,7 +79,7 @@ namespace dragonRfl
 
         UserInterfacePropertiesFields mUserInterfaceProperties;
 
-        std::map<od::RecordId, std::string> mLocalizedStringCache;
+        std::unordered_map<od::RecordId, std::string> mLocalizedStringCache;
 
         std::shared_ptr<MainMenu> mMainMenu;
 

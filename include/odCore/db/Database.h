@@ -10,10 +10,9 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <vector>
-#include <functional>
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
@@ -37,12 +36,12 @@ namespace odDb
 	{
 	public:
 
-		Database(const od::FilePath &dbFilePath, DbManager &dbManager);
+		Database(const od::FilePath &dbFilePath, DbManager &dbManager, size_t globalIndex);
 		~Database();
 
 		inline od::FilePath getDbFilePath() const { return mDbFilePath; }
 		inline std::string getShortName() const { return mDbFilePath.fileStrNoExt(); }
-		inline DbManager &getDbManager() { return mDbManager; }
+        inline size_t getGlobalIndex() const { return mGlobalIndex; }
 		inline TextureFactory *getTextureFactory() { return mTextureFactory.get(); }
 		inline ClassFactory *getClassFactory() { return mClassFactory.get(); }
 		inline ModelFactory *getModelFactory() { return mModelFactory.get(); }
@@ -78,9 +77,10 @@ namespace odDb
 
 		od::FilePath mDbFilePath;
 		DbManager &mDbManager;
+        size_t mGlobalIndex;
 
 		uint32_t mVersion;
-		std::map<uint16_t, std::shared_ptr<Database>> mDependencyMap; // TODO: we have to check for dependency loops to prevent leaks
+		std::unordered_map<uint16_t, std::shared_ptr<Database>> mDependencyMap; // TODO: we have to check for dependency loops to prevent leaks
 
 		std::unique_ptr<TextureFactory> mTextureFactory;
 		std::unique_ptr<od::SrscFile> mTextureContainer;
@@ -101,22 +101,6 @@ namespace odDb
         std::unique_ptr<od::SrscFile> mSequenceContainer;
 	};
 
-	template <typename T>
-    void Database::_tryOpeningAssetContainer(std::unique_ptr<T> &factoryPtr, std::unique_ptr<od::SrscFile> &containerPtr, const char *extension)
-    {
-        od::FilePath path = mDbFilePath.ext(extension);
-        if(path.exists())
-        {
-            containerPtr = std::make_unique<od::SrscFile>(path);
-            factoryPtr = std::make_unique<T>(*this, *containerPtr);
-
-            Logger::verbose() << AssetTraits<typename T::AssetType>::name() << " container of database opened";
-
-        }else
-        {
-            Logger::verbose() << "Database has no " << AssetTraits<typename T::AssetType>::name() << " container";
-        }
-    }
 }
 
 #endif /* INCLUDE_DATABASE_H_ */

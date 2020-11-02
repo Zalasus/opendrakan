@@ -36,7 +36,7 @@ namespace dragonRfl
     , mFaderQuad(client.getRenderer())
     {
         od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
-        mInterfaceDb = client.getDbManager().loadDb(interfaceDbPath.adjustCase());
+        mInterfaceDb = client.getDbManager().loadDatabase(interfaceDbPath.adjustCase());
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb->getClassFactory() == nullptr)

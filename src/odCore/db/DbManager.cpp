@@ -9,14 +9,15 @@
 #include <odCore/db/DbManager.h>
 
 #include <odCore/Logger.h>
-#include <odCore/StringUtils.h>
 #include <odCore/Exception.h>
-#include <odCore/db/Database.h>
 
-#define OD_MAX_DEPENDENCY_DEPTH 100
+#include <odCore/db/Database.h>
 
 namespace odDb
 {
+
+    static constexpr size_t MAX_DEPENDENCY_DEPTH{100};
+
 
     DbManager::DbManager()
     {
@@ -26,22 +27,9 @@ namespace odDb
     {
     }
 
-    bool DbManager::isDbLoaded(const od::FilePath &dbFilePath) const
+    std::shared_ptr<Database> DbManager::loadDatabase(const od::FilePath &dbFilePath, size_t dependencyDepth)
     {
-        for(std::shared_ptr<Database> db : mRiotDbs)
-        {
-        	if(db->getDbFilePath() == dbFilePath)
-        	{
-        		return true;
-        	}
-        }
-
-        return false;
-    }
-
-    std::shared_ptr<Database> DbManager::loadDb(const od::FilePath &dbFilePath, size_t dependencyDepth)
-    {
-    	if(dependencyDepth > OD_MAX_DEPENDENCY_DEPTH)
+    	if(dependencyDepth > MAX_DEPENDENCY_DEPTH)
     	{
     		throw od::Exception("Dependency depth exceeded maximum. Possible undetected circular dependency?");
     	}
@@ -49,37 +37,39 @@ namespace odDb
     	// force the right extension
     	od::FilePath actualFilePath = dbFilePath.ext(".db");
 
-    	try
-    	{
-    	    return getDb(actualFilePath);
-
-    	}catch(od::NotFoundException &e)
-    	{
-    	    // not loaded -> load
-    	}
+    	if(auto db = getDatabaseByPath(actualFilePath); db != nullptr)
+        {
+            return db;
+        }
 
     	Logger::info() << "Loading database " << dbFilePath.str();
 
-        auto db = std::make_shared<Database>(actualFilePath, *this);
+        auto newGlobalIndex = mNextGlobalIndex++;
 
-        mRiotDbs.push_back(db);
-
+        auto db = std::make_shared<Database>(actualFilePath, *this, newGlobalIndex);
+        mLoadedDatabases[newGlobalIndex] = db;
         db->loadDbFileAndDependencies(dependencyDepth);
 
         return db;
     }
 
-    std::shared_ptr<Database> DbManager::getDb(const od::FilePath &dbFilePath)
+    std::shared_ptr<Database> DbManager::getDatabaseByPath(const od::FilePath &dbFilePath)
     {
-    	for(std::shared_ptr<Database> db : mRiotDbs)
+    	for(auto &weakDb : mLoadedDatabases)
         {
-        	if(db->getDbFilePath() == dbFilePath)
+            auto db = weakDb.second.lock();
+        	if(db != nullptr && db->getDbFilePath() == dbFilePath)
         	{
         		return db;
         	}
         }
 
-        throw od::NotFoundException("Database with given path not loaded");
+        return nullptr;
+    }
+
+    std::shared_ptr<Database> DbManager::getDatabaseByGlobalIndex(size_t index)
+    {
+        return mLoadedDatabases[index].lock();
     }
 
 }
