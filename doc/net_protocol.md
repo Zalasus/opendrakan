@@ -140,16 +140,17 @@ These packets are used to set up the engine when a client first connects to the
 server.
 
 ### Global database table entry (reliable, downlink)
-Transmits one entry of the global DB index table. For simplicity, the total
-number of entries in the table is sent in every packet.
+Transmits one entry of the global DB index table.
 ```
-u32 total_entries;
 u32 global_index;
 u8  path[]; // path of db file, w/o extension, relative to engine root. size derived from packet size
 ```
 
 ### Load level (reliable, downlink)
+The total number of databases that are loaded is included in this packet so the
+client can verify that it received a complete database table.
 ```
+u32 total_loaded_db_count;
 u8 level_path[]; // relative to engine root
 ```
 

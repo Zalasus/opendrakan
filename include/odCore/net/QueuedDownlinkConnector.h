@@ -23,8 +23,8 @@ namespace odNet
 
         void flushQueue(DownlinkConnector &c);
 
-        virtual void globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override;
-        virtual void loadLevel(const std::string &path) override;
+        virtual void globalDatabaseTableEntry(odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override;
+        virtual void loadLevel(const std::string &path, size_t loadedDatabaseCount) override;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override;
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override;
@@ -36,13 +36,13 @@ namespace odNet
 
         struct GlobalDatabaseTableEntry
         {
-            size_t totalEntryCount;
             odDb::GlobalDatabaseIndex dbIndex;
             std::string path; // happens only during handshake, so the alloc is prolly ok
         };
 
         struct LoadLevel
         {
+            size_t loadedDatabaseCount;
             std::string path;
         };
 

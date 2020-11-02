@@ -72,4 +72,19 @@ namespace odDb
         return mLoadedDatabases[index].lock();
     }
 
+    size_t DbManager::getLoadedDatabaseCount() const
+    {
+        size_t count = 0;
+
+        for(auto &weakDb : mLoadedDatabases)
+        {
+        	if(!weakDb.second.expired())
+        	{
+        		++count;
+        	}
+        }
+
+        return count;
+    }
+
 }

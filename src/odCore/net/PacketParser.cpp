@@ -107,11 +107,14 @@ namespace odNet
 
         case PacketType::LOAD_LEVEL:
             {
-                std::string level(rawPayload, static_cast<size_t>(length));
+                uint32_t loadedDatabaseCount;
+                dr >> loadedDatabaseCount;
+
+                std::string level(rawPayload + sizeof(loadedDatabaseCount), static_cast<size_t>(length) - sizeof(loadedDatabaseCount));
 
                 if(mDownlinkOutput != nullptr)
                 {
-                    mDownlinkOutput->loadLevel(level);
+                    mDownlinkOutput->loadLevel(level, loadedDatabaseCount);
                 }
             }
             break;

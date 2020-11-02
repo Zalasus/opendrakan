@@ -29,8 +29,8 @@ namespace odNet
          */
         PacketBuilder(const std::function<void(const char *, size_t, LinkType)> &packetCallback);
 
-        virtual void globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override final;
-        virtual void loadLevel(const std::string &path) override final;
+        virtual void globalDatabaseTableEntry(odDb::GlobalDatabaseIndex dbIndex, const std::string &path) override final;
+        virtual void loadLevel(const std::string &path, size_t loadedDatabaseCount) override final;
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) override final;
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override final;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override final;

@@ -15,26 +15,24 @@ namespace odNet
     {
     }
 
-    void PacketBuilder::globalDatabaseTableEntry(size_t totalEntryCount, odDb::GlobalDatabaseIndex dbIndex, const std::string &path)
+    void PacketBuilder::globalDatabaseTableEntry(odDb::GlobalDatabaseIndex dbIndex, const std::string &path)
     {
-        if(totalEntryCount > std::numeric_limits<uint32_t>::max())
-        {
-            throw od::Exception("Entry count out of bounds");
-        }
-
         _beginPacket(PacketType::GLOBAL_DB_TABLE_ENTRY);
-        mWriter << static_cast<uint32_t>(totalEntryCount)
-                << dbIndex;
+        mWriter << dbIndex;
         mWriter.write(path.data(), path.size());
         _endPacket(LinkType::RELIABLE);
     }
 
-    void PacketBuilder::loadLevel(const std::string &path)
+    void PacketBuilder::loadLevel(const std::string &path, size_t loadedDatabaseCount)
     {
-        uint16_t pathLength = path.size() > 0xffff ? 0xffff : path.size(); // TODO: warn on truncation?
+        if(loadedDatabaseCount > std::numeric_limits<uint32_t>::max())
+        {
+            throw od::Exception("Entry count out of bounds");
+        }
 
         _beginPacket(PacketType::LOAD_LEVEL);
-        mWriter.write(path.data(), pathLength);
+        mWriter << static_cast<uint32_t>(loadedDatabaseCount);
+        mWriter.write(path.data(), path.size());
         _endPacket(LinkType::RELIABLE);
     }
 
