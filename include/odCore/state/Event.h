@@ -14,6 +14,8 @@
 #ifndef INCLUDE_ODCORE_STATE_EVENT_H_
 #define INCLUDE_ODCORE_STATE_EVENT_H_
 
+#include <variant>
+
 #include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
@@ -30,14 +32,6 @@ namespace od
 namespace odState
 {
 
-    enum class EventType
-    {
-        ACTION,
-        OBJECT_ANIM,
-        OBJECT_MESSAGE_RECEIVED
-    };
-
-
     /**
      * @brief Empty base for event classes so a visitor can implement a catch-all functor.
      *
@@ -49,13 +43,20 @@ namespace odState
      */
     struct Event
     {
+        Event(double rt)
+        : realtime(rt)
+        {
+        }
+
+        double realtime;
     };
 
 
     struct ActionEvent final : public Event
     {
-        ActionEvent(odInput::ActionCode code, bool down)
-        : actionCode(code)
+        ActionEvent(double realtime, odInput::ActionCode code, bool down)
+        : Event(realtime)
+        , actionCode(code)
         , keyDown(down)
         {
         }
@@ -67,23 +68,28 @@ namespace odState
 
     struct ObjectAnimEvent final : public Event
     {
-        ObjectAnimEvent(od::LevelObject &obj, odDb::AssetRef anim, bool start)
-        : object(obj)
+        ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::AssetRef &anim, int32_t channel, float speed)
+        : Event(realtime)
+        , object(obj)
         , animRef(anim)
-        , started(start)
+        , channelIndex(channel)
+        , speedModifier(speed)
         {
         }
 
         od::LevelObject &object;
         odDb::AssetRef animRef;
-        bool started;
+        std::shared_ptr<odDb::Animation> animation;
+        int32_t channelIndex;
+        float speedModifier;
     };
 
 
-    struct ObjectMessageReceivedEvent final : public Event
+    struct ObjectMessageEvent final : public Event
     {
-        ObjectMessageReceivedEvent(od::LevelObject &sender, od::LevelObject &receiver, const od::Message &msg)
-        : senderObject(sender)
+        ObjectMessageEvent(double realtime, od::LevelObject &sender, od::LevelObject &receiver, const od::Message &msg)
+        : Event(realtime)
+        , senderObject(sender)
         , receiverObject(receiver)
         , message(msg)
         {
@@ -95,71 +101,14 @@ namespace odState
     };
 
 
-    /**
-     * @brief Variant that can contain any event type.
-     *
-     * Man, I wish I could use C++17...
-     */
-    class EventVariant
+    /*struct SoundEvent final : public Event
     {
-    public:
-
-        EventVariant(const ActionEvent &e)
-        : mActionEvent(e)
-        , mVariantType(EventType::ACTION)
-        {
-        }
-
-        EventVariant(const ObjectMessageReceivedEvent &e)
-        : mMessageReceivedEvent(e)
-        , mVariantType(EventType::OBJECT_MESSAGE_RECEIVED)
-        {
-        }
-
-        EventVariant(const ObjectAnimEvent &e)
-        : mAnimEvent(e)
-        , mVariantType(EventType::OBJECT_ANIM)
-        {
-        }
-
-        inline EventType getEventType() const { return mVariantType; }
-
-        template <typename T>
-        void visit(T &visitor) const
-        {
-            switch(mVariantType)
-            {
-            case EventType::ACTION:
-                visitor(mActionEvent);
-                break;
-
-            case EventType::OBJECT_MESSAGE_RECEIVED:
-                visitor(mMessageReceivedEvent);
-                break;
-
-            case EventType::OBJECT_ANIM:
-                visitor(mAnimEvent);
-                break;
-
-            default:
-                throw od::Exception("Invalid event variant");
-            }
-        }
+    };*/
 
 
-    private:
+    using EventVariant = std::variant<ActionEvent, ObjectAnimEvent, ObjectMessageEvent>;
 
-        union
-        {
-            ActionEvent mActionEvent;
-            ObjectMessageReceivedEvent mMessageReceivedEvent;
-            ObjectAnimEvent mAnimEvent;
-        };
-
-        EventType mVariantType;
-
-    };
-
+    double realtimeForEventVariant(const EventVariant &o);
 }
 
 #endif
