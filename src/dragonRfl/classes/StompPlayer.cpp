@@ -106,7 +106,7 @@ namespace dragonRfl
             if(sequence != nullptr)
             {
                 Logger::verbose() << "Playing sequence '" << sequence->getName() << "'";
-                mPlayer->setSequence(sequence);
+                mPlayer->loadSequence(sequence);
                 mPlayer->play(&getLevelObject());
                 getLevelObject().setEnableUpdate(true);
 

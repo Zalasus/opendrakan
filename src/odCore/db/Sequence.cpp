@@ -199,22 +199,12 @@ namespace odDb
             }
         }
 
-        auto pred = [](ActionVariant &left, ActionVariant &right) { return getTimeFromActionVariant(left) < getTimeFromActionVariant(right); };
+        auto pred = [](ActionVariant &left, ActionVariant &right) { return Action::getTimeFromVariant(left) < Action::getTimeFromVariant(right); };
         if(!std::is_sorted(mActions.begin(), mActions.end(), pred))
         {
             Logger::warn() << "Sequence actor has unsorted timeline!";
+            std::sort(mActions.begin(), mActions.end(), pred);
         }
-    }
-
-
-    float getTimeFromActionVariant(const ActionVariant &action)
-    {
-        auto visitor = [](const Action &a) -> float
-        {
-            return a.timeOffset;
-        };
-
-        return std::visit(visitor, action);
     }
 
 

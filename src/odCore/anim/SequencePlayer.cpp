@@ -50,10 +50,56 @@ namespace odAnim
     {
     }
 
-    void SequencePlayer::setSequence(std::shared_ptr<odDb::Sequence> sequence)
+    struct ActionLoadVisitor
     {
+        SequencePlayer::Actor &actor;
+        odDb::AssetProvider &assetProvider;
+
+        ActionLoadVisitor(SequencePlayer::Actor &a, odDb::AssetProvider &ap)
+        : actor(a)
+        , assetProvider(ap)
+        {
+        }
+
+        void operator()(const odDb::ActionTransform &a)
+        {
+            actor.transformActions.emplace_back(a);
+        }
+
+        void operator()(const odDb::ActionStartAnim &a)
+        {
+            // for some reason, animation refs are stored relative to the object's model's DB, not the sequence DB
+            auto &animAssetProvider = actor.actorObject.getClass()->getModel()->getAssetProvider();
+
+            PlayerActionStartAnim newAction(a);
+            newAction.animation = animAssetProvider.getAssetByRef<odDb::Animation>(a.animationRef);
+
+            actor.nonTransformActions.emplace_back(newAction);
+        }
+
+        void operator()(const odDb::ActionPlaySound &a)
+        {
+            PlayerActionPlaySound newAction(a);
+            newAction.sound = assetProvider.getAssetByRef<odDb::Sound>(a.soundRef);
+
+            actor.nonTransformActions.emplace_back(newAction);
+        }
+
+        template <typename _OtherAction>
+        void operator()(const _OtherAction &a)
+        {
+            actor.nonTransformActions.emplace_back(a);
+        }
+    };
+
+    void SequencePlayer::loadSequence(std::shared_ptr<odDb::Sequence> sequence)
+    {
+        OD_CHECK_ARG_NONNULL(sequence);
+
         mSequence = sequence;
         mSequenceTime = 0.0;
+
+        auto &assetProvider = sequence->getAssetProvider();
 
         auto &actors = sequence->getActors();
         mActors.clear();
@@ -70,24 +116,21 @@ namespace odAnim
             auto newActorIt = mActors.insert(std::make_pair(actorObject->getObjectId(), Actor(*actorObject)));
             auto &playerActor = (newActorIt.first)->second;
 
+            // we need to split off transform and non-transform actions into their own vectors, as to make interpolation easier.
+            //  we take this opportunity to prefetch animations and sounds, which are represented by alternative action variants.
+
+            ActionLoadVisitor visitor(playerActor, assetProvider);
+
             for(auto &action : dbActor.getActions())
             {
-                const odDb::ActionTransform *tf = std::get_if<odDb::ActionTransform>(&action);
-                if(tf != nullptr)
-                {
-                    playerActor.transformActions.push_back(*tf);
-
-                }else
-                {
-                    playerActor.nonTransformActions.push_back(action);
-                }
+                std::visit(visitor, action);
             }
 
-            auto tfPred = [](auto &left, auto &right){ return left.timeOffset < right.timeOffset; };
-            std::sort(playerActor.transformActions.begin(), playerActor.transformActions.end(), tfPred);
-
-            auto nonTfPred = [](odDb::ActionVariant &left, odDb::ActionVariant &right){ return odDb::getTimeFromActionVariant(left) < odDb::getTimeFromActionVariant(right); };
-            std::sort(playerActor.nonTransformActions.begin(), playerActor.nonTransformActions.end(), nonTfPred);
+            // sorting is unnecessary. the splitting operation does not affect sortedness, and the database guarantees that actions are sorted
+            //auto tfPred = [](auto &left, auto &right){ return left.timeOffset < right.timeOffset; };
+            //std::sort(playerActor.transformActions.begin(), playerActor.transformActions.end(), tfPred);
+            //auto nonTfPred = [](odDb::PlayerActionVariant &left, odDb::PlayerActionVariant &right){ return odDb::Action::getTimeFromVariant(left) < odDb::Action::getTimeFromVariant(right); };
+            //std::sort(playerActor.nonTransformActions.begin(), playerActor.nonTransformActions.end(), nonTfPred);
         }
 
     }
@@ -96,7 +139,6 @@ namespace odAnim
     {
         if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_ACTORS)
         {
-            Logger::info() << "stopping all actors";
             for(auto &actor : mActors)
             {
                 if(playerObject != nullptr && actor.second.actorObject.getObjectId() == playerObject->getObjectId()) continue;
@@ -106,7 +148,6 @@ namespace odAnim
 
         }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_NON_ACTORS)
         {
-            Logger::info() << "stopping all non-actors";
             mLevel.forEachObject([this, playerObject](od::LevelObject &obj){
 
                 if(playerObject != nullptr && obj.getObjectId() == playerObject->getObjectId()) return;
@@ -122,7 +163,6 @@ namespace odAnim
 
         }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_ALL_OBJECTS)
         {
-            Logger::info() << "stopping all objects";
             mLevel.forEachObject([playerObject](od::LevelObject &obj){
 
                 if(playerObject != nullptr && obj.getObjectId() == playerObject->getObjectId()) return;
@@ -143,59 +183,48 @@ namespace odAnim
         {
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::Action &a)
+        void operator()(const odDb::Action &a)
         {
             // we have accounted for every action except transforms, which are
             //  filtered during loading. thus, this should never be reached.
             OD_UNREACHABLE();
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionStartAnim &a)
+        void operator()(const PlayerActionStartAnim &a)
         {
-            float dt = mSequenceTime - a.timeOffset;
-            Logger::info() << "start anim. dt=" << dt;
+            //float dt = mSequenceTime - a.timeOffset;
             //mObject.playAnimation(a.animationRef);
-            return *this;
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionPlaySound &a)
+        void operator()(const PlayerActionPlaySound &a)
         {
-            float dt = mSequenceTime - a.timeOffset;
-            Logger::info() << "play sound. dt=" << dt;
-            return *this;
+            //float dt = mSequenceTime - a.timeOffset;
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionAttach &a)
+        void operator()(const odDb::ActionAttach &a)
         {
-            float dt = mSequenceTime - a.timeOffset;
-            Logger::info() << "attach. dt=" << dt;
-            return *this;
+            //float dt = mSequenceTime - a.timeOffset;
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionRunStopAi &a)
+        void operator()(const odDb::ActionRunStopAi &a)
         {
             mObject.setRunning(a.enableAi);
-            return *this;
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionShowHide &a)
+        void operator()(const odDb::ActionShowHide &a)
         {
             mObject.setVisible(a.visible);
-            return *this;
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionMessage &a)
+        void operator()(const odDb::ActionMessage &a)
         {
             od::Message message = getMessageForCode(a.messageCode);
             mObject.receiveMessage(mObject, message);
-            return *this;
         }
 
-        NonTransformApplyVisitor &operator()(const odDb::ActionMusic &a)
+        void operator()(const odDb::ActionMusic &a)
         {
-            float dt = mSequenceTime - a.timeOffset;
-            Logger::info() << "music. dt=" << dt;
-            return *this;
+            //float dt = mSequenceTime - a.timeOffset;
         }
 
 
@@ -246,8 +275,8 @@ namespace odAnim
                 // for non-transforms, we can't interpolate anything. here we simply search all events that happened since last time and apply them.
                 //  any missed time can be added by them as they see fit
                 NonTransformApplyVisitor visitor(actor.actorObject, mSequenceTime);
-                auto nonTfPredUpper = [](float t, odDb::ActionVariant &action){ return t < odDb::getTimeFromActionVariant(action); };
-                auto nonTfPredLower = [](odDb::ActionVariant &action, float t){ return odDb::getTimeFromActionVariant(action) < t; };
+                auto nonTfPredUpper = [](float t, PlayerActionVariant &action){ return t < odDb::Action::getTimeFromVariant(action); };
+                auto nonTfPredLower = [](PlayerActionVariant &action, float t){ return odDb::Action::getTimeFromVariant(action) < t; };
                 auto begin = std::lower_bound(actor.nonTransformActions.begin(), actor.nonTransformActions.end(), lastTime, nonTfPredLower);
                 if(begin != actor.nonTransformActions.end())
                 {

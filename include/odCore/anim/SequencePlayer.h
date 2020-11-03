@@ -15,8 +15,42 @@ namespace od
     class LevelObject;
 }
 
+namespace odDb
+{
+    class Animation;
+    class Sound;
+}
+
 namespace odAnim
 {
+    struct PlayerActionStartAnim : odDb::ActionStartAnim
+    {
+        PlayerActionStartAnim(const odDb::ActionStartAnim &a)
+        : odDb::ActionStartAnim(a)
+        {
+        }
+
+        std::shared_ptr<odDb::Animation> animation;
+    };
+
+    struct PlayerActionPlaySound : odDb::ActionPlaySound
+    {
+        PlayerActionPlaySound(const odDb::ActionPlaySound &a)
+        : odDb::ActionPlaySound(a)
+        {
+        }
+
+        std::shared_ptr<odDb::Sound> sound;
+    };
+
+    // a slightly modified action variant with differents structs for storing prefetched animations and sounds
+    using PlayerActionVariant = std::variant<PlayerActionStartAnim,
+                                             PlayerActionPlaySound,
+                                             odDb::ActionAttach,
+                                             odDb::ActionRunStopAi,
+                                             odDb::ActionShowHide,
+                                             odDb::ActionMessage,
+                                             odDb::ActionMusic>;
 
     class SequencePlayer
     {
@@ -25,9 +59,9 @@ namespace odAnim
         SequencePlayer(od::Level &level);
 
         /**
-         * @brief Assigns a sequence and prepares the player for playing it.
+         * @brief Assigns a sequence and prepares the player for playing it, prefetching necessary assets.
          */
-        void setSequence(std::shared_ptr<odDb::Sequence> sequence);
+        void loadSequence(std::shared_ptr<odDb::Sequence> sequence);
 
         /**
          * @brief Starts playing the sequence.
@@ -57,8 +91,10 @@ namespace odAnim
 
             od::LevelObject &actorObject;
             std::vector<odDb::ActionTransform> transformActions;
-            std::vector<odDb::ActionVariant> nonTransformActions;
+            std::vector<PlayerActionVariant> nonTransformActions;
         };
+
+        friend class ActionLoadVisitor;
 
         void _applySingleKeyframe(od::LevelObject &obj, const odDb::ActionTransform &kf);
         void _applyInterpolatedKeyframes(od::LevelObject &obj, const odDb::ActionTransform &left, const odDb::ActionTransform &right);

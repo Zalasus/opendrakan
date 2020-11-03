@@ -51,6 +51,17 @@ namespace odDb
         Action(float t);
 
         float timeOffset;
+
+        template <typename T>
+        static float getTimeFromVariant(const T &v)
+        {
+            auto visitor = [](const Action &a) -> float
+            {
+                return a.timeOffset;
+            };
+
+            return std::visit(visitor, v);
+        }
     };
 
 
@@ -159,6 +170,7 @@ namespace odDb
         float fadeOutTime;
     };
 
+
     using ActionVariant = std::variant<ActionTransform,
                                        ActionStartAnim,
                                        ActionPlaySound,
@@ -168,7 +180,6 @@ namespace odDb
                                        ActionMessage,
                                        ActionMusic>;
 
-    float getTimeFromActionVariant(const ActionVariant &action);
 
     class SequenceActor
     {
