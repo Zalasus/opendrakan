@@ -1,26 +1,20 @@
 language: cpp
 
-dist: xenial
+dist: bionic
 
 env:
-  - EVAL="CXX=g++-6"
-  - EVAL="CXX=clang++-3.8"
+  - EVAL="CXX=g++"
+  - EVAL="CXX=clang++"
 
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
-      - llvm-toolchain-precise-3.8
-      - sourceline: 'ppa:openmw/openmw'
     packages:
-      - clang-3.8
-      - g++-6
-      - cmake
       - zlib1g-dev
       - libbullet-dev
       - libopenal-dev
       - libglm-dev
-      - libopenscenegraph-3.4-dev
+      - libopenscenegraph-dev
 
 before_install:
   - eval "${EVAL}"
