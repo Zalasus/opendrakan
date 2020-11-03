@@ -254,36 +254,24 @@ namespace odAnim
         throw od::UnsupportedException("Partial skeleton animation not implemented yet");
     }
 
-    void SkeletonAnimationPlayer::setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex)
+    void SkeletonAnimationPlayer::setNodeAccumulator(std::shared_ptr<MotionAccumulator> accu, int32_t nodeIndex)
     {
-        if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
+        if(nodeIndex < 0 || nodeIndex >= (int32_t)mBoneAnimators.size())
         {
-            throw od::InvalidArgumentException("Root node index out of bounds");
+            throw od::InvalidArgumentException("Node index out of bounds");
         }
 
-        BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
-        if(!animator.getBone().isRoot())
-        {
-            throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
-        }
-
-        animator.setAccumulator(accu);
+        mBoneAnimators[nodeIndex].setAccumulator(accu);
     }
 
-    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t rootNodeIndex)
+    void SkeletonAnimationPlayer::setNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t nodeIndex)
     {
-        if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
+        if(nodeIndex < 0 || nodeIndex >= (int32_t)mBoneAnimators.size())
         {
-            throw od::InvalidArgumentException("Root node index out of bounds");
+            throw od::InvalidArgumentException("Node index out of bounds");
         }
 
-        BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
-        if(!animator.getBone().isRoot())
-        {
-            throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
-        }
-
-        animator.setAccumulationModes(modes);
+        mBoneAnimators[nodeIndex].setAccumulationModes(modes);
     }
 
     bool SkeletonAnimationPlayer::update(float relTime)

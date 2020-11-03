@@ -32,7 +32,7 @@ namespace odAnim
         BoneAnimator(Skeleton::Bone &bone);
 
         inline Skeleton::Bone &getBone() { return mBone; }
-        inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
+        inline void setAccumulator(std::shared_ptr<MotionAccumulator> a) { mAccumulator = a; }
         inline bool isPlaying() const { return mPlaying; }
         inline std::shared_ptr<odDb::Animation> getCurrentAnimation() { return mCurrentAnimation; }
 
@@ -93,7 +93,7 @@ namespace odAnim
 
         glm::dualquat mLastAppliedTransform;
 
-        MotionAccumulator *mAccumulator;
+        std::shared_ptr<MotionAccumulator> mAccumulator;
         glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
         glm::vec3 mObjectAccumulationFactors; // tells what part of translation is pushed to accumulator
 
@@ -123,19 +123,16 @@ namespace odAnim
         void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
 
         /**
-         * @brief Sets accumulator for a root node.
+         * @brief Sets accumulator for a node.
          *
          * Setting this for a node overrides the default animation behaviour. Transforms will no
          * longer be pushed to the rig for that node, but instead be reported to the accumulator.
          *
          * Passing nullptr as accumulator returns the bone to it's default behavior.
-         *
-         * The \c rootNodeIndex parameter determines which root node to assign the accumulator to
-         * for skeletons with multiple roots. This can be ignored most of the time.
          */
-        void setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex = 0);
+        void setNodeAccumulator(std::shared_ptr<MotionAccumulator> accumulator, int32_t nodeIndex);
 
-        void setRootNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t rootNodeIndex = 0);
+        void setNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t nodeIndex);
 
         /**
          * @brief Advances the animation by relTime and applies changes to the skeleton.

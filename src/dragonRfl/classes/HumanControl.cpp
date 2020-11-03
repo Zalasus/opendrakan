@@ -100,13 +100,13 @@ namespace dragonRfl
         auto animPlayer = obj.getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
         {
-            mCharacterController = std::make_unique<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
+            mCharacterController = std::make_shared<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
-            animPlayer->setRootNodeAccumulator(mCharacterController.get());
-            animPlayer->setRootNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
-                                                       odAnim::AccumulationMode::BONE,
-                                                       odAnim::AccumulationMode::BONE
-                                                     });
+            animPlayer->setNodeAccumulator(mCharacterController, 0);
+            animPlayer->setNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::BONE
+                                                 }, 0);
 
             animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
 
@@ -257,7 +257,7 @@ namespace dragonRfl
         if(animPlayer != nullptr)
         {
             animPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
-            animPlayer->setRootNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum);
+            animPlayer->setNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum, 0);
             if(skipAheadTime > 0)
             {
                 animPlayer->update(skipAheadTime);
@@ -296,10 +296,10 @@ namespace dragonRfl
         auto animPlayer = obj.getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
         {
-            animPlayer->setRootNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
-                                                       odAnim::AccumulationMode::BONE,
-                                                       odAnim::AccumulationMode::BONE
-                                                     });
+            animPlayer->setNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::BONE,
+                                                   odAnim::AccumulationMode::BONE
+                                                 }, 0);
 
             animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
             obj.setEnableUpdate(true);

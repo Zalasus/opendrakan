@@ -67,7 +67,7 @@ namespace dragonRfl
 		State mState;
         float mLastUpdatedYaw;
 
-		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
+		std::shared_ptr<odPhysics::CharacterController> mCharacterController;
 	};
 
 
