@@ -95,6 +95,8 @@ namespace od
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
 
+        inline double getCurrentTime() const { return mServerTime; }
+
         /**
          * @brief Creates a new client and assigns a new client ID to it. It's downlink connector has to be assigned separately.
          *
@@ -112,6 +114,11 @@ namespace od
          * This method is synchronized with the server main loop. It is okay to call it from a different thread.
          */
         void setClientDownlinkConnector(odNet::ClientId id, std::shared_ptr<odNet::DownlinkConnector> connector);
+
+        /**
+         * TODO: this is a bit hackish. need this because objects need to send animation events somehow, and event dispatch only works one-way right now
+         */
+        std::shared_ptr<odNet::DownlinkConnector> getDownlinkConnectorForClient(odNet::ClientId clientId);
 
         /**
          * @brief Returns an uplink connector that can be used to connect the client with the given ID to this server.

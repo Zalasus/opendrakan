@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include <odCore/Client.h>
+#include <odCore/Server.h>
 #include <odCore/Level.h>
 #include <odCore/Layer.h>
 #include <odCore/Exception.h>
@@ -18,9 +19,12 @@
 #include <odCore/anim/Skeleton.h>
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
+#include <odCore/db/Animation.h>
 #include <odCore/db/Model.h>
 #include <odCore/db/ModelBounds.h>
 #include <odCore/db/SkeletonBuilder.h>
+
+#include <odCore/net/DownlinkConnector.h>
 
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/ObjectBuilderProbe.h>
@@ -592,6 +596,24 @@ namespace od
             sb.build(*mSkeleton);
 
             mSkeletonAnimationPlayer = std::make_shared<odAnim::SkeletonAnimationPlayer>(mSkeleton);
+        }
+    }
+
+    void LevelObject::sendAnimationEvent(const odDb::GlobalAssetRef &animRef, int32_t jointIndex, odAnim::PlaybackType type, float speedMultiplier)
+    {
+        if(mLevel.getEngine().isServer())
+        {
+            auto &server = mLevel.getEngine().getServer();
+
+            double realtime = server.getCurrentTime();
+
+            server.forEachClient([&, this](auto id)
+            {
+                auto dl = server.getDownlinkConnectorForClient(id);
+                if(dl == nullptr) return;
+
+                dl->objectAnimation(getObjectId(), animRef, jointIndex, speedMultiplier, realtime);
+            });
         }
     }
 

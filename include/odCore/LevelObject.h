@@ -21,12 +21,19 @@
 #include <odCore/ObjectStates.h>
 #include <odCore/ObjectRecord.h>
 
+#include <odCore/anim/AnimModes.h>
+
 #include <odCore/db/Class.h>
 
 namespace odAnim
 {
     class Skeleton;
     class SkeletonAnimationPlayer;
+}
+
+namespace odDb
+{
+    class Animation;
 }
 
 namespace odRender
@@ -224,7 +231,12 @@ namespace od
 
         void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
         void setupSkeleton();
-        
+
+        /**
+         * This only works on servers. The call is ignored on clients.
+         */
+        void sendAnimationEvent(const odDb::GlobalAssetRef &animRef, int32_t jointIndex, odAnim::PlaybackType type, float speedMultiplier);
+
 
     private:
 

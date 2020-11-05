@@ -83,6 +83,29 @@ namespace odDb
            >> rootNodeTranslationFlags;
     }
 
+    odAnim::AxesAccumulationModes ActionStartAnim::getRootNodeTranslationModes()
+    {
+        auto bitsToMode = [this](int bits)
+        {
+            switch((rootNodeTranslationFlags >> bits) & 0x03)
+            {
+            case 0x00:
+                return odAnim::AccumulationMode::BONE;
+
+            case 0x01:
+                return odAnim::AccumulationMode::ACCUMULATE;
+
+            case 0x02:
+                return odAnim::AccumulationMode::IGNORE;
+
+            default:
+                throw od::Exception("Invalid root node translation flags");
+            }
+        };
+
+        return { bitsToMode(0), bitsToMode(2), bitsToMode(4) };
+    }
+
 
     ActionPlaySound::ActionPlaySound(float t, od::DataReader &dr)
     : Action(t)

@@ -16,6 +16,8 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/anim/AnimModes.h>
+
 #include <odCore/db/Asset.h>
 
 namespace odDb
@@ -107,6 +109,8 @@ namespace odDb
     struct ActionStartAnim : public Action
     {
         ActionStartAnim(float t, od::DataReader &dr);
+
+        odAnim::AxesAccumulationModes getRootNodeTranslationModes();
 
         uint32_t channelIndex;
         AssetRef animationRef;

@@ -129,6 +129,11 @@ namespace od
         return _getClientData(clientId).uplinkConnector;
     }
 
+    std::shared_ptr<odNet::DownlinkConnector> Server::getDownlinkConnectorForClient(odNet::ClientId clientId)
+    {
+        return _getClientData(clientId).downlinkConnector;
+    }
+
     odInput::InputManager &Server::getInputManagerForClient(odNet::ClientId id)
     {
         return *(_getClientData(id).inputManager);

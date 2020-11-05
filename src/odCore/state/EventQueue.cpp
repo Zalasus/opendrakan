@@ -1,6 +1,9 @@
 
 #include <odCore/state/EventQueue.h>
 
+#include <odCore/db/DbManager.h>
+#include <odCore/db/Database.h>
+
 namespace odState
 {
 
@@ -11,12 +14,19 @@ namespace odState
 
     void EventQueue::addAnimationEvent(double realtime, od::LevelObject &object, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier)
     {
-        auto it = _getEventInsertPoint(realtime);
-        //mEvents.insert(it, ObjectAnimEvent(realtime, object, animRef, channelIndex, speedModifier));
+        ObjectAnimEvent event(realtime, object, animRef, channelIndex, speedModifier);
 
         // load animation TODO: do this asynchronously
-        //auto animation = mDbManager
-        //  TODO: uhhh... huge problem here: asset references are context-dependent. where to we get the dependency table from?
+        auto db = mDbManager.getDatabaseByGlobalIndex(animRef.globalDbIndex);
+        if(db != nullptr)
+        {
+            event.animation = db->getAnimation(animRef.assetId);
+        }
+
+        // no idea why this does not work:
+        //auto it = _getEventInsertPoint(realtime);
+        //mEvents.emplace(it, event);
+        mEvents.emplace_back(event);
     }
 
     void EventQueue::dispatch(double realtime)
