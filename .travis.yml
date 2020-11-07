@@ -9,12 +9,13 @@ env:
 addons:
   apt:
     sources:
+      - sourceline: 'ppa:openmw/openmw'
     packages:
       - zlib1g-dev
       - libbullet-dev
       - libopenal-dev
       - libglm-dev
-      - libopenscenegraph-dev
+      - libopenscenegraph-3.4-dev
 
 before_install:
   - eval "${EVAL}"
