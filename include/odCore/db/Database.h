@@ -32,7 +32,7 @@ namespace odDb
 	class DbManager;
 	class Database;
 
-	class Database : public AssetProvider
+	class Database final : public AssetProvider
 	{
 	public:
 
@@ -57,7 +57,9 @@ namespace odDb
          * Since the database module is up for an overhaul as well, we might make this the official method
          * and remove the non-owned AssetProvider version.
          */
-        std::shared_ptr<Database> getDependencyDatabase(uint16_t index);
+        std::shared_ptr<Database> getDependencyDatabase(DatabaseIndex index);
+
+        GlobalAssetRef translateLocalToGlobalRef(const AssetRef &ref);
 
 	    // override AssetProvider
 		virtual AssetProvider &getDependency(uint16_t index) override;

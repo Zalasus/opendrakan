@@ -157,7 +157,7 @@ namespace odDb
         _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
 	}
 
-    std::shared_ptr<Database> Database::getDependencyDatabase(uint16_t index)
+    std::shared_ptr<Database> Database::getDependencyDatabase(DatabaseIndex index)
     {
         auto it = mDependencyMap.find(index);
 	    if(it == mDependencyMap.end())
@@ -167,6 +167,19 @@ namespace odDb
 	    }
 
 	    return it->second;
+    }
+
+    GlobalAssetRef Database::translateLocalToGlobalRef(const AssetRef &ref)
+    {
+        if(ref.dbIndex == 0)
+        {
+            return { ref.assetId, this->getGlobalIndex() };
+
+        }else
+        {
+            auto dep = getDependencyDatabase(ref.assetId);
+            return { ref.assetId, dep->getGlobalIndex() };
+        }
     }
 
 	AssetProvider &Database::getDependency(uint16_t index)
