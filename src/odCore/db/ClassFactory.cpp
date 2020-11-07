@@ -46,7 +46,7 @@ namespace odDb
 	        cursor.nextOfType(od::SrscRecordType::CLASS);
 	    }
 
-	    return AssetRef::NULL_REF.assetId;
+	    return AssetRef::NULL_ASSET;
     }
 
     std::shared_ptr<Class> ClassFactory::createNewAsset(od::RecordId id)

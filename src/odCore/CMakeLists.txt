@@ -17,6 +17,7 @@ target_sources(odCore PRIVATE
         "db/Animation.cpp"
         "db/Asset.cpp"
         "db/AssetProvider.cpp"
+        "db/AssetRef.cpp"
         "db/Class.cpp"
         "db/ClassFactory.cpp"
         "db/Database.cpp"
