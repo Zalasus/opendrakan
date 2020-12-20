@@ -230,7 +230,7 @@ Record types
          if second byte is 0x10, field is an array of that type
          */
         string          class_name;
-        uint16          unk0;
+        uint16          group_id; // for unknown reasons this entry is equal to the group_id for this record. why the redundancy?
         ref             model; // none if zero
         uint16          rfl_class_id;
         uint16          icon_number; // Selected class icon in the editor. Should have no effect on gameplay
