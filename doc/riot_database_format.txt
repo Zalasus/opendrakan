@@ -228,9 +228,10 @@ Record types
          type 0x0e = texture
          type 0x0f = colour
          if second byte is 0x10, field is an array of that type
+         the second byte can take values of 0x20, 0x30, 0x40 and 0x50 but seemingly only if type is 0x03 (class)
          */
         string          class_name;
-        uint16          unk0;
+        uint16          group_id; // for unknown reasons this entry is equal to the group_id for this record. why the redundancy?
         ref             model; // none if zero
         uint16          rfl_class_id;
         uint16          icon_number; // Selected class icon in the editor. Should have no effect on gameplay
