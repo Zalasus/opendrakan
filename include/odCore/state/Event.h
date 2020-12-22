@@ -67,6 +67,7 @@ namespace odState
     struct ObjectAnimEvent final : public Event
     {
         ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed);
+        ObjectAnimEvent(double realtime, od::LevelObject &obj, std::shared_ptr<odDb::Animation> anim, int32_t channel, float speed);
         ~ObjectAnimEvent();
 
         od::LevelObject &object;

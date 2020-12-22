@@ -232,10 +232,19 @@ namespace od
         void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
         void setupSkeleton();
 
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, float speed);
+
         /**
-         * This only works on servers. The call is ignored on clients.
+         * This returns true if the event was handled (an event being ignored counts as handled in this context).
+         * However, sometimes events can not be processed immediately, like when an object is not being run.
+         * In that case, this will return false to indicate event processing should be delayed. The same event
+         * will be dispatched later.
+         *
+         * @param timeDelta  Number of seconds between now and when the event should happen (usually zero or negative).
+         *
+         * @return true if the event was handled, false if handling needs to be retried later.
          */
-        void sendAnimationEvent(const odDb::GlobalAssetRef &animRef, int32_t jointIndex, odAnim::PlaybackType type, float speedMultiplier);
+        bool handleEvent(const odState::EventVariant &event, float timeDelta);
 
 
     private:

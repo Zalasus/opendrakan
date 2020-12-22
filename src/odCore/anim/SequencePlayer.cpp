@@ -203,7 +203,6 @@ namespace odAnim
                 animPlayer->update(dt); // FIXME: is this really that great of an idea? unless we send this over the network, this might cause glitches
             }
 
-            //mObject.sendAnimationEvent(a.animationRef, a.channelIndex, odAnim::PlaybackType::NORMAL, a.speed);
         }
 
         void operator()(const PlayerActionPlaySound &a)

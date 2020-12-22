@@ -114,4 +114,20 @@ namespace od
         OD_UNREACHABLE();
     }
 
+    odState::EventQueue &Engine::getEventQueue()
+    {
+        _assertValid();
+
+        if(mClient != nullptr)
+        {
+            return mClient->getEventQueue();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getEventQueue();
+        }
+
+        OD_UNREACHABLE();
+    }
+
 }

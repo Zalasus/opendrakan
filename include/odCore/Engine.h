@@ -27,6 +27,7 @@ namespace odPhysics
 
 namespace odState
 {
+    class EventQueue;
     class StateManager;
 }
 
@@ -65,6 +66,7 @@ namespace od
         odRfl::RflManager &getRflManager();
         odPhysics::PhysicsSystem &getPhysicsSystem();
         odState::StateManager &getStateManager();
+        odState::EventQueue &getEventQueue();
 
 
     private:

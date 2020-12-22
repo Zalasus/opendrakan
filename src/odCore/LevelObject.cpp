@@ -599,21 +599,26 @@ namespace od
         }
     }
 
-    void LevelObject::sendAnimationEvent(const odDb::GlobalAssetRef &animRef, int32_t jointIndex, odAnim::PlaybackType type, float speedMultiplier)
+    void LevelObject::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, float speed)
     {
-        if(mLevel.getEngine().isServer())
+        auto animPlayer = getSkeletonAnimationPlayer();
+        if(animPlayer != nullptr && anim != nullptr)
         {
-            auto &server = mLevel.getEngine().getServer();
+            animPlayer->playAnimation(a.animation, odAnim::PlaybackType::NORMAL, a.speed);
+        }
 
-            double realtime = server.getCurrentTime();
+        odState::ObjectAnimEvent animEvent(a.timeOffset, mObject, a.animation, a.channelIndex, a.speed);
+        mLevel.getEngine().getEventQueue().logEvent(animEvent);
+    }
 
-            server.forEachClient([&, this](auto id)
+    bool LevelObject::handleEvent(const odState::EventVariant &event, float timeDelta)
+    {
+        struct HandleEventVisitor
+        {
+            void operator()(const odState::ObjectAnimEvent &animEvent)
             {
-                auto dl = server.getDownlinkConnectorForClient(id);
-                if(dl == nullptr) return;
 
-                dl->objectAnimation(getObjectId(), animRef, jointIndex, speedMultiplier, realtime);
-            });
+            }
         }
     }
 

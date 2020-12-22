@@ -26,8 +26,18 @@ namespace odState
 
         EventQueue(odDb::DbManager &dbManager);
 
-        void addAnimationEvent(double realtime, od::LevelObject &object, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier);
-        void sound();
+        /**
+         * @brief Adds an event coming from the server to the queue.
+         */
+        void addIncomingEvent(double realtime, const EventVariant &event);
+
+        /**
+         * @brief Adds a local event that won't get dispatched at the current time.
+         *
+         * Only for the purpose of logging events that need sending to clients.
+         * It is assumed that the event has already been processed.
+         */
+        void logEvent(const EventVariant &event);
 
         void dispatch(double realtime);
 
