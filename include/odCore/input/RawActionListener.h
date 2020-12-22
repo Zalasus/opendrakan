@@ -9,8 +9,10 @@
 namespace odInput
 {
 
-    struct RawActionListener
+    class RawActionListener
     {
+    public:
+        
         using Callback = std::function<void(ActionCode, ActionState)>;
 
         Callback callback;

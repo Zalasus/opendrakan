@@ -52,8 +52,10 @@ namespace odAnim
     {
     }
 
-    struct ActionLoadVisitor
+    class ActionLoadVisitor
     {
+    public:
+        
         SequencePlayer::Actor &actor;
         odDb::AssetProvider &assetProvider;
 

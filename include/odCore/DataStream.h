@@ -170,7 +170,7 @@ namespace od
         virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
 		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
 
-        virtual int sync();
+        virtual int sync() override;
 
 
     private:

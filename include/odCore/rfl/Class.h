@@ -35,7 +35,7 @@ namespace odPhysics
 
 namespace odState
 {
-    class StateBundleBase;
+    struct StateBundleBase;
 }
 
 namespace odRfl
