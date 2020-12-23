@@ -50,6 +50,7 @@ namespace odNet
 namespace odState
 {
     class StateManager;
+    class EventQueue;
 }
 
 namespace od
@@ -94,6 +95,7 @@ namespace od
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return *mPhysicsSystem; }
         inline odState::StateManager &getStateManager() { return *mStateManager; }
+        inline odState::EventQueue &getEventQueue() { return *mEventQueue; }
 
         inline double getCurrentTime() const { return mServerTime; }
 
@@ -198,6 +200,7 @@ namespace od
         std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
         std::unique_ptr<Level> mLevel;
         std::unique_ptr<odState::StateManager> mStateManager;
+        std::unique_ptr<odState::EventQueue> mEventQueue;
 
         FilePath mEngineRoot;
 

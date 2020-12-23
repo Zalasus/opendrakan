@@ -30,10 +30,7 @@ namespace odDb
 			uint8_t dummy;
 		};
 
-		/**
-         * This needs an engine instance because classes pass it to the RFL loaded hook.
-         */
-		TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer);
+		TextureFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &textureContainer);
 
 		PaletteColor getPaletteColor(size_t index);
 

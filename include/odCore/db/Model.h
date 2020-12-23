@@ -76,7 +76,7 @@ namespace odDb
             Smooth
         };
 
-		Model(AssetProvider &ap, od::RecordId modelId);
+		Model();
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
         ~Model();
 

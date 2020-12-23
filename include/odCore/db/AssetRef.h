@@ -16,6 +16,8 @@ namespace odDb
      *
      * The database index in these is realtive to the dependency table of the
      * database they came from.
+     *
+     * Using this to load an asset usually happens via a DependencyTable.
 	 */
 	struct AssetRef
 	{
@@ -58,10 +60,18 @@ namespace odDb
 
 
     /**
-     * @brief An alternative asset ref which references a database using it's global index instead
+     * @brief An alternative asset ref which references a database using it's global index instead.
+     *
+     * Using this to load assets usually happens through the DbManager.
      */
     struct GlobalAssetRef
 	{
+        GlobalAssetRef(od::RecordId id, GlobalDatabaseIndex index)
+        : assetId(id)
+        , globalDbIndex(index)
+        {
+        }
+
         od::RecordId assetId;
 		GlobalDatabaseIndex globalDbIndex;
     };

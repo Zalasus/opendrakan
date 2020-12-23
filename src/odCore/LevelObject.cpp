@@ -36,6 +36,7 @@
 #include <odCore/physics/Handles.h>
 
 #include <odCore/state/StateManager.h>
+#include <odCore/state/EventQueue.h>
 
 namespace odState
 {
@@ -426,6 +427,17 @@ namespace od
 
     void LevelObject::receiveMessage(LevelObject &sender, od::Message message)
     {
+        // object messages are only sent in the downlink
+        if(mLevel.getEngine().isServer())
+        {
+
+        }
+
+        receiveMessageWithoutDispatch(sender, message);
+    }
+
+    void LevelObject::receiveMessageWithoutDispatch(LevelObject &sender, od::Message message)
+    {
         Logger::verbose() << "Object " << getObjectId() << " received message '" << message << "' from " << sender.getObjectId();
 
         if(mStates.running.get() && mSpawnableClass != nullptr)
@@ -604,22 +616,16 @@ namespace od
         auto animPlayer = getSkeletonAnimationPlayer();
         if(animPlayer != nullptr && anim != nullptr)
         {
-            animPlayer->playAnimation(a.animation, odAnim::PlaybackType::NORMAL, a.speed);
+            animPlayer->playAnimation(anim, odAnim::PlaybackType::NORMAL, speed);
         }
 
-        odState::ObjectAnimEvent animEvent(a.timeOffset, mObject, a.animation, a.channelIndex, a.speed);
+        odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), jointIndex, speed);
         mLevel.getEngine().getEventQueue().logEvent(animEvent);
     }
 
     bool LevelObject::handleEvent(const odState::EventVariant &event, float timeDelta)
     {
-        struct HandleEventVisitor
-        {
-            void operator()(const odState::ObjectAnimEvent &animEvent)
-            {
-
-            }
-        }
+        return true;
     }
 
 }

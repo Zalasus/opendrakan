@@ -11,7 +11,6 @@
 #include <memory>
 
 #include <odCore/db/Asset.h>
-#include <odCore/db/Model.h>
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/FieldLoaderProbe.h>
 
@@ -36,11 +35,10 @@ namespace odDb
 	{
 	public:
 
-		Class(AssetProvider &ap, od::RecordId classId, ClassFactory &classFactory);
+		Class(ClassFactory &classFactory);
 
-		inline bool hasModel() const { return mModel != nullptr; }
+		inline bool hasModel() const { return mModelRef != AssetRef::NULL_REF; }
         inline AssetRef getModelRef() const { return mModelRef; }
-        inline std::shared_ptr<Model> getModel() { return mModel; }
         inline const std::string &getName() const { return mClassName; }
         inline odRfl::ClassId getRflClassId() const { return mRflClassId; }
         inline const odRfl::FieldLoaderProbe &getFieldLoader() const { return mFieldLoader; }
@@ -79,7 +77,6 @@ namespace odDb
 
         std::string mClassName;
         AssetRef mModelRef;
-        std::shared_ptr<Model> mModel;
         uint16_t mRflClassId;
         odRfl::FieldLoaderProbe mFieldLoader;
         uint16_t mIconNumber;

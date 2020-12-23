@@ -11,7 +11,6 @@
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 #include <odCore/db/ClassFactory.h>
-#include <odCore/db/AssetProvider.h>
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/RflManager.h>
@@ -19,9 +18,8 @@
 namespace odDb
 {
 
-    Class::Class(AssetProvider &ap, od::RecordId classId, ClassFactory &factory)
-    : Asset(ap, classId)
-    , mClassFactory(factory)
+    Class::Class(ClassFactory &factory)
+    : mClassFactory(factory)
     , mRflClassId(0)
     , mIconNumber(0)
     , mCachedRflClassFactory(nullptr)
@@ -39,20 +37,6 @@ namespace odDb
 		   >> mIconNumber;
 
         mFieldLoader.loadFromRecord(dr, odRfl::FieldLoaderProbe::RecordFormat::CLASS);
-
-        // TODO: why are we loading the model together with the class definition?
-        if(mModelRef.assetId != 0)
-        {
-            try
-            {
-                mModel = this->getAssetProvider().getAssetByRef<Model>(mModelRef);
-
-            }catch(od::NotFoundException &e)
-            {
-                Logger::warn() << "Model of class " << mClassName << " not found. Leaving invisible";
-                mModel = nullptr;
-            }
-        }
     }
 
     void Class::fillFields(odRfl::FieldBundle &fieldBundle)
@@ -77,7 +61,7 @@ namespace odDb
         {
             fillFields(newInstance->getFields());
         }
-        
+
         return newInstance;
 	}
 

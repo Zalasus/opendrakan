@@ -218,6 +218,7 @@ must be handled by the receiver.
 ### Global message (downlink, reliable)
 ```
 u32 channel_code;
+f64 real_time; // server time at which the message was sent
 u8  message_body[];  // size is to be derived from payload size field of the packet
 ```
 
@@ -226,13 +227,16 @@ u8  message_body[];  // size is to be derived from payload size field of the pac
 u32 channel_code;
 u32 sender_object_id;
 u32 receiver_object_id;
+f64 real_time;
 u8  messageBody[];  // size is to be derived from payload size field of the packet
 ```
 
 Event packets
 -------------
 These represent one-shot events that happen at a certain time, but are not
-guaranteed to arrive at a given time.
+guaranteed to arrive at a given time. The receiver makes sure these are not
+processed before they happened, but might need to account for delays. It is best
+to send these as soon as possible.
 
 ### Object animation (downlink, reliable)
 ```
@@ -251,12 +255,14 @@ gref sound_ref;
 
 ### Action (uplink, reliable)
 ```
+f64 realtime;
 u32 action_code;
 u8  action_state;
 ```
 
 ### Analog Action (uplink, reliable)
 ```
+f64 realtime;
 u32 action_code;
 f32 x;
 f32 y;

@@ -30,26 +30,22 @@ namespace dragonRfl
         MainMenuImage(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            odGui::Quad topLeft(gui.getRenderer());
-            topLeft.setTextureFromDb(gui, GuiTextures::MainMenu_TopLeft, gui.getRenderer());
+            auto topLeft = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_TopLeft);
             topLeft.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             topLeft.setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
             this->addRenderHandle(topLeft.getHandle());
 
-            odGui::Quad topRight(gui.getRenderer());
-            topRight.setTextureFromDb(gui, GuiTextures::MainMenu_TopRight, gui.getRenderer());
+            auto topRight = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_TopRight);
             topRight.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             topRight.setVertexCoords(glm::vec2(0.5, 0.0), glm::vec2(1, 0.5));
             this->addRenderHandle(topRight.getHandle());
 
-            odGui::Quad bottomLeft(gui.getRenderer());
-            bottomLeft.setTextureFromDb(gui, GuiTextures::MainMenu_BottomLeft, gui.getRenderer());
+            auto bottomLeft = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_BottomLeft);
             bottomLeft.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             bottomLeft.setVertexCoords(glm::vec2(0.0, 0.5), glm::vec2(0.5, 1));
             this->addRenderHandle(bottomLeft.getHandle());
 
-            odGui::Quad bottomRight(gui.getRenderer());
-            bottomRight.setTextureFromDb(gui, GuiTextures::MainMenu_BottomRight, gui.getRenderer());
+            auto bottomRight = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_BottomRight);
             bottomRight.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
             bottomRight.setVertexCoords(glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
             this->addRenderHandle(bottomRight.getHandle());

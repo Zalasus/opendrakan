@@ -59,7 +59,7 @@ namespace od
         _loadNameAndDeps(file, dbManager);
         _loadLayers(file);
         //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
-        _loadObjects(file);
+        _loadObjects(file, dbManager);
 
         Logger::info() << "Level loaded successfully";
     }
@@ -217,18 +217,6 @@ namespace od
         }
     }
 
-    odDb::AssetProvider &Level::getDependency(uint16_t index)
-    {
-        auto it = mDependencyMap.find(index);
-        if(it == mDependencyMap.end())
-        {
-            Logger::error() << "Database index " << index << " not found in level dependencies";
-            throw NotFoundException("Database index not found in level dependencies");
-        }
-
-        return *(it->second);
-    }
-
     void Level::activateLayerPVS(Layer *layer)
     {
         if(layer == nullptr)
@@ -334,7 +322,7 @@ namespace od
             Logger::debug() << "Gonna load level dependency index " << dbIndex << ": " << dbPath;
             auto db = dbManager.loadDatabase(dbPath.ext(".db").adjustCase());
 
-            mDependencyMap.insert(std::make_pair(dbIndex, db));
+            mDependencyTable.addDependency(dbIndex, db);
         }
     }
 
@@ -413,7 +401,7 @@ namespace od
     	}
     }
 
-    void Level::_loadObjects(SrscFile &file)
+    void Level::_loadObjects(SrscFile &file, odDb::DbManager &dbManager)
     {
     	Logger::verbose() << "Loading level objects";
 
@@ -441,7 +429,7 @@ namespace od
     	{
             auto &record = mObjectRecords[i];
 
-            auto dbClass = this->getAssetByRef<odDb::Class>(record.getClassRef());
+            auto dbClass = mDependencyTable.loadAsset<odDb::Class>(record.getClassRef());
             if(dbClass == nullptr)
             {
                 // ignore objects whose class we failed to load

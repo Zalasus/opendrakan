@@ -25,6 +25,8 @@
 
 #include <odCore/db/Class.h>
 
+#include <odCore/state/Event.h>
+
 namespace odAnim
 {
     class Skeleton;
@@ -34,6 +36,7 @@ namespace odAnim
 namespace odDb
 {
     class Animation;
+    class Model;
 }
 
 namespace odRender
@@ -86,6 +89,7 @@ namespace od
         inline uint16_t getRecordIndex() const { return mRecordIndex; }
         inline LevelObjectId getObjectId() const { return mId; }
         inline std::shared_ptr<odDb::Class> getClass() { return mClass; }
+        inline std::shared_ptr<odDb::Model> getModel() { return mModel; }
         inline odRfl::ClassBase *getClassInstance() { return mRflClassInstance.get(); }
         inline odRfl::SpawnableClass *getSpawnableClassInstance() { return mSpawnableClass; }
         inline Level &getLevel() { return mLevel; }
@@ -209,6 +213,7 @@ namespace od
         void detach();
 
         void receiveMessage(LevelObject &sender, od::Message message);
+        void receiveMessageWithoutDispatch(LevelObject &sender, od::Message message);
         void messageAllLinkedObjects(od::Message message);
 
         void requestDestruction();
@@ -240,7 +245,7 @@ namespace od
          * In that case, this will return false to indicate event processing should be delayed. The same event
          * will be dispatched later.
          *
-         * @param timeDelta  Number of seconds between now and when the event should happen (usually zero or negative).
+         * @param timeDelta  Number of seconds between now and when the event should happen (either zero or negative).
          *
          * @return true if the event was handled, false if handling needs to be retried later.
          */
@@ -255,6 +260,7 @@ namespace od
         uint16_t mRecordIndex;
         LevelObjectId mId;
         std::shared_ptr<odDb::Class> mClass;
+        std::shared_ptr<odDb::Model> mModel;
         Layer *mLightingLayer;
         std::vector<LevelObjectId> mLinkedObjects; // this is sorta abused, since during load it stores the indices instead. those are later translated
 

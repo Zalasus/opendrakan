@@ -16,6 +16,7 @@
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 #include <odCore/db/DbManager.h>
+#include <odCore/db/DependencyTable.h>
 
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Image.h>
@@ -34,9 +35,8 @@
 namespace odDb
 {
 
-    Texture::Texture(AssetProvider &ap, od::RecordId id, TextureFactory &factory)
-    : Asset(ap, id)
-    , mTextureFactory(factory)
+    Texture::Texture(TextureFactory &factory)
+    : mTextureFactory(factory)
     , mWidth(0)
     , mHeight(0)
     , mBitsPerPixel(0)
@@ -97,7 +97,8 @@ namespace odDb
             mNextAnimationFrames.reserve(mAnimFrameCount-1);
             for(size_t i = 1; i < mAnimFrameCount; ++i)
             {
-                auto frame = getAssetProvider().getAsset<Texture>(getAssetId() + i);
+                AssetRef frameRef(getAssetId() + i, 0);
+                auto frame = getDependencyTable().loadAsset<Texture>(frameRef);
                 mNextAnimationFrames.push_back(frame);
             }
         }
@@ -108,7 +109,7 @@ namespace odDb
         // of loading it in load(...). better safe than sorry.
         if(!mMaterialClassRef.isNull())
         {
-            mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
+            mMaterialClass = getDependencyTable().loadAsset<Class>(mMaterialClassRef);
         }
     }
 

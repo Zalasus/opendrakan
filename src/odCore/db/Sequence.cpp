@@ -231,9 +231,8 @@ namespace odDb
     }
 
 
-    Sequence::Sequence(AssetProvider &ap, od::RecordId id)
-    : Asset(ap, id)
-    , mRunStateModifyStyle(ModifyRunStateStyle::DO_NOT_MODIFY)
+    Sequence::Sequence()
+    : mRunStateModifyStyle(ModifyRunStateStyle::DO_NOT_MODIFY)
     , mLooping(false)
     {
     }

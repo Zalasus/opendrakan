@@ -22,6 +22,7 @@
 #include <odCore/Message.h>
 
 #include <odCore/db/Asset.h>
+#include <odCore/db/Animation.h>
 
 #include <odCore/input/Action.h>
 
@@ -43,21 +44,15 @@ namespace odState
      *
      * These are not supposed to be virtual. Dispatch should be static based on a variant over all event types.
      * Make sure to keep these as lightweigt as possible.
-     *
-     * These are only used locally, so host-dependent info like pointers is okay. The net submodule later translates
-     * them into host-independet packets.
      */
     struct Event
     {
-        Event(double rt);
-
-        double realtime;
     };
 
 
     struct ActionEvent final : public Event
     {
-        ActionEvent(double realtime, odInput::ActionCode code, bool down);
+        ActionEvent(odInput::ActionCode code, bool down);
 
         odInput::ActionCode actionCode;
         bool keyDown;
@@ -66,13 +61,10 @@ namespace odState
 
     struct ObjectAnimEvent final : public Event
     {
-        ObjectAnimEvent(double realtime, od::LevelObject &obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed);
-        ObjectAnimEvent(double realtime, od::LevelObject &obj, std::shared_ptr<odDb::Animation> anim, int32_t channel, float speed);
-        ~ObjectAnimEvent();
+        ObjectAnimEvent(od::LevelObjectId obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed);
 
-        od::LevelObject &object;
+        od::LevelObjectId objectId;
         odDb::GlobalAssetRef animRef;
-        std::shared_ptr<odDb::Animation> animation;
         int32_t channelIndex;
         float speedModifier;
     };
@@ -80,10 +72,10 @@ namespace odState
 
     struct ObjectMessageEvent final : public Event
     {
-        ObjectMessageEvent(double realtime, od::LevelObject &sender, od::LevelObject &receiver, const od::Message &msg);
+        ObjectMessageEvent(od::LevelObjectId sender, od::LevelObjectId receiver, const od::Message &msg);
 
-        od::LevelObject &senderObject;
-        od::LevelObject &receiverObject;
+        od::LevelObjectId senderObjectId;
+        od::LevelObjectId receiverObjectId;
         od::Message message;
     };
 
@@ -95,7 +87,6 @@ namespace odState
 
     using EventVariant = std::variant<ActionEvent, ObjectAnimEvent, ObjectMessageEvent>;
 
-    double realtimeForEventVariant(const EventVariant &o);
 }
 
 #endif

@@ -16,7 +16,6 @@ target_sources(odCore PRIVATE
         "audio/SoundSystem.cpp"
         "db/Animation.cpp"
         "db/Asset.cpp"
-        "db/AssetProvider.cpp"
         "db/AssetRef.cpp"
         "db/Class.cpp"
         "db/ClassFactory.cpp"

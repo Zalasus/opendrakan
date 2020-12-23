@@ -49,6 +49,7 @@ namespace odGui
     public:
 
         Quad();
+        Quad(Quad &&q) = default;
         Quad(odRender::Renderer &renderer);
 
         inline std::shared_ptr<odRender::Handle> getHandle() { return mHandle; }
@@ -60,8 +61,6 @@ namespace odGui
         void init(odRender::Renderer &renderer);
 
         void setTexture(std::shared_ptr<odRender::Texture> texture);
-        void setTextureFromDb(odDb::AssetProvider &ap, const odDb::AssetRef &textureRef, odRender::Renderer &renderer);
-        void setTextureFromDb(odDb::AssetProvider &ap, const od::RecordId &textureId, odRender::Renderer &renderer);
 
         void setTextureCoords(const glm::vec2 &topLeft, const glm::vec2 &bottomRight);
         void setTextureCoordsFromPixels(const glm::vec2 &topLeft, const glm::vec2 &bottomRight);

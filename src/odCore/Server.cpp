@@ -22,6 +22,7 @@
 #include <odCore/rfl/RflManager.h>
 
 #include <odCore/state/StateManager.h>
+#include <odCore/state/EventQueue.h>
 
 #include <odCore/input/InputManager.h>
 
@@ -94,6 +95,7 @@ namespace od
     , mNextClientId(1)
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(nullptr);
+        mEventQueue = std::make_unique<odState::EventQueue>(dbManager);
     }
 
     Server::~Server()

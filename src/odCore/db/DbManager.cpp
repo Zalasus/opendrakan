@@ -64,7 +64,7 @@ namespace odDb
         return nullptr;
     }
 
-    std::shared_ptr<Database> DbManager::getDatabaseByGlobalIndex(size_t index)
+    std::shared_ptr<Database> DbManager::getDatabaseByGlobalIndex(GlobalDatabaseIndex index)
     {
         return mLoadedDatabases[index].lock();
     }

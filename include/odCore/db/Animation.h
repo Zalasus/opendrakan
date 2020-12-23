@@ -34,7 +34,7 @@ namespace odDb
 	    typedef std::vector<Keyframe>::const_iterator KfIterator;
 	    typedef std::pair<KfIterator, KfIterator> KfIteratorPair;
 
-		Animation(AssetProvider &ap, od::RecordId id);
+		Animation();
 
 		inline std::string getName() const { return mAnimationName; }
 		inline uint32_t getModelNodeCount() const { return mModelNodeCount; }

@@ -156,9 +156,17 @@ namespace dragonRfl
         return std::move(decryptedString);
     }
 
-    std::shared_ptr<odDb::Texture> DragonGui::getTexture(od::RecordId recordId)
+    odGui::Quad makeQuadFromGuiTexture(od::RecordId id)
     {
-        return mRrcTextureFactory.getAsset(recordId);
+        auto &renderer = getClient().getRenderer();
+
+        odGui::Quad quad(renderer);
+        std::shared_ptr<odDb::Texture> dbTexture = mRrcTextureFactory.getAsset(id);
+        std::shared_ptr<odRender::Image> image = renderer.getOrCreateImageFromDb(dbTexture);
+        std::shared_ptr<odRender::Texture> texture = renderer.createTexture(image, odRender::TextureReuseSlot::NONE);
+        quad.setTexture(texture);
+
+        return std::move(quad);
     }
 
     void DragonGui::onMenuModeChanged()

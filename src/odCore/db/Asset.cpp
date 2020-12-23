@@ -9,18 +9,30 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/db/DependencyTable.h>
+
 namespace odDb
 {
 
-	Asset::Asset(AssetProvider &ap, od::RecordId assetId)
-	: mAssetProvider(ap)
-	, mId(assetId)
+	Asset::Asset()
+	: mId(0)
 	{
 	}
 
 	Asset::~Asset()
 	{
 	}
+
+    void Asset::setDepTableAndId(std::shared_ptr<DependencyTable> depTable, od::RecordId assetId)
+    {
+        mDependencyTable = depTable;
+        mId = assetId;
+    }
+
+    GlobalAssetRef Asset::getGlobalAssetRef() const
+    {
+        return *mDependencyTable->localToGlobalRef(getLocalAssetRef());
+    }
 
 	void Asset::postLoad()
 	{

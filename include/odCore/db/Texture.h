@@ -32,7 +32,7 @@ namespace odDb
     {
     public:
 
-        Texture(AssetProvider &ap, od::RecordId id, TextureFactory &factory);
+        Texture(TextureFactory &factory);
         ~Texture();
 
         inline uint32_t getWidth() const { return mWidth; }

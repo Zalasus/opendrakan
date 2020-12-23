@@ -12,21 +12,20 @@ namespace odState
     {
     }
 
-    void EventQueue::addAnimationEvent(double realtime, od::LevelObject &object, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier)
+    void EventQueue::addIncomingEvent(double realtime, const EventVariant &event)
     {
-        ObjectAnimEvent event(realtime, object, animRef, channelIndex, speedModifier);
+    }
 
-        // load animation TODO: do this asynchronously
-        auto db = mDbManager.getDatabaseByGlobalIndex(animRef.globalDbIndex);
-        if(db != nullptr)
-        {
-            event.animation = db->getAnimation(animRef.assetId);
-        }
+    void EventQueue::logEvent(double realtime, const EventVariant &event)
+    {
+        auto it = _getEventInsertPoint(realtime);
+        mEvents.emplace(it, std::make_pair(realtime, event));
+    }
 
-        // no idea why this does not work:
-        //auto it = _getEventInsertPoint(realtime);
-        //mEvents.emplace(it, event);
-        mEvents.emplace_back(event);
+    void EventQueue::logEvent(const EventVariant &event)
+    {
+        double currentTime = 0.0; // TODO: fetch somewhere
+        logEvent(currentTime, event);
     }
 
     void EventQueue::dispatch(double realtime)
@@ -44,13 +43,13 @@ namespace odState
 
     EventQueue::EventIterator EventQueue::_getEventInsertPoint(double realtime)
     {
-        if(mEvents.empty() || realtimeForEventVariant(mEvents.back()) <= realtime)
+        if(mEvents.empty() || mEvents.back().first <= realtime)
         {
             return mEvents.end();
 
         }else
         {
-            auto pred = [](double time, EventVariant &event) { return time < realtimeForEventVariant(event); };
+            auto pred = [](double time, auto &event) { return time < event.first; };
             return std::upper_bound(mEvents.begin(), mEvents.end(), realtime, pred);
         }
     }

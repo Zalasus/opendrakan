@@ -13,7 +13,6 @@
 #include <odCore/Exception.h>
 
 #include <odCore/db/Asset.h>
-#include <odCore/db/AssetProvider.h>
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/SkeletonBuilder.h>
 #include <odCore/db/Texture.h>
@@ -30,9 +29,8 @@
 namespace odDb
 {
 
-	Model::Model(AssetProvider &ap, od::RecordId modelId)
-	: Asset(ap, modelId)
-	, mModelName("")
+	Model::Model()
+	: mModelName("")
 	, mShadingType(ShadingType::None)
 	, mBlendWithLandscape(false)
 	, mShiny(false)

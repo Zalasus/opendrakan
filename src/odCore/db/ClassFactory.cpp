@@ -19,8 +19,8 @@
 namespace odDb
 {
 
-	ClassFactory::ClassFactory(AssetProvider &ap, od::SrscFile &classContainer)
-    : AssetFactory<Class>(ap, classContainer)
+	ClassFactory::ClassFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &classContainer)
+    : AssetFactory<Class>(depTable, classContainer)
     {
         _loadRflRecord();
     }
@@ -51,7 +51,7 @@ namespace odDb
 
     std::shared_ptr<Class> ClassFactory::createNewAsset(od::RecordId id)
     {
-        return std::make_shared<Class>(getAssetProvider(), id, *this);
+        return std::make_shared<Class>(*this);
     }
 
     void ClassFactory::_loadRflRecord()

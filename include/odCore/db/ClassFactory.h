@@ -20,7 +20,7 @@ namespace odDb
     {
     public:
 
-        ClassFactory(AssetProvider &ap, od::SrscFile &classContainer);
+        ClassFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &classContainer);
 
         inline const od::FilePath &getRflPath() { return mRflPath; }
 

@@ -55,13 +55,13 @@ namespace odAnim
     class ActionLoadVisitor
     {
     public:
-        
-        SequencePlayer::Actor &actor;
-        odDb::AssetProvider &assetProvider;
 
-        ActionLoadVisitor(SequencePlayer::Actor &a, odDb::AssetProvider &ap)
+        SequencePlayer::Actor &actor;
+        odDb::Sequence &sequence;
+
+        ActionLoadVisitor(SequencePlayer::Actor &a, odDb::Sequence &s)
         : actor(a)
-        , assetProvider(ap)
+        , sequence(s)
         {
         }
 
@@ -73,10 +73,20 @@ namespace odAnim
         void operator()(const odDb::ActionStartAnim &a)
         {
             // for some reason, animation refs are stored relative to the object's model's DB, not the sequence DB
-            auto &animAssetProvider = actor.actorObject.getClass()->getModel()->getAssetProvider();
+            if(actor.actorObject.getModel() == nullptr)
+            {
+                Logger::error() << "Animation on object without loaded model. Can't load animation asset";
+                return;
+            }
+            auto &animDepTable = actor.actorObject.getModel()->getDependencyTable();
 
             PlayerActionStartAnim newAction(a);
-            newAction.animation = animAssetProvider.getAssetByRef<odDb::Animation>(a.animationRef);
+            newAction.animation = animDepTable.loadAsset<odDb::Animation>(a.animationRef);
+            if(newAction.animation == nullptr)
+            {
+                Logger::error() << "Missing animation in sequence: " << a.animationRef;
+                return;
+            }
 
             actor.nonTransformActions.emplace_back(newAction);
         }
@@ -84,7 +94,12 @@ namespace odAnim
         void operator()(const odDb::ActionPlaySound &a)
         {
             PlayerActionPlaySound newAction(a);
-            newAction.sound = assetProvider.getAssetByRef<odDb::Sound>(a.soundRef);
+            newAction.sound = sequence.getDependencyTable().loadAsset<odDb::Sound>(a.soundRef);
+            if(newAction.sound == nullptr)
+            {
+                Logger::error() << "Missing sound in sequence: " << a.soundRef;
+                return;
+            }
 
             actor.nonTransformActions.emplace_back(newAction);
         }
@@ -102,8 +117,6 @@ namespace odAnim
 
         mSequence = sequence;
         mSequenceTime = 0.0;
-
-        auto &assetProvider = sequence->getAssetProvider();
 
         auto &actors = sequence->getActors();
         mActors.clear();
@@ -123,7 +136,7 @@ namespace odAnim
             // we need to split off transform and non-transform actions into their own vectors, as to make interpolation easier.
             //  we take this opportunity to prefetch animations and sounds, which are represented by alternative action variants.
 
-            ActionLoadVisitor visitor(playerActor, assetProvider);
+            ActionLoadVisitor visitor(playerActor, *sequence);
 
             for(auto &action : dbActor.getActions())
             {

@@ -212,7 +212,7 @@ namespace odDb
 	{
 	public:
 
-	    Sequence(AssetProvider &ap, od::RecordId id);
+	    Sequence();
 
         inline const std::string &getName() const { return mSequenceName; }
         inline const std::vector<SequenceActor> &getActors() const { return mActors; }

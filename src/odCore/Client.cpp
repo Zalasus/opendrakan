@@ -97,8 +97,8 @@ namespace od
                 if(object != nullptr)
                 {
                     animRef.globalDbIndex = mClient.translateGlobalDatabaseIndex(animRef.globalDbIndex);
-                    
-                    mClient.getEventQueue().addAnimationEvent(realtime, *object, animRef, channelIndex, speedModifier);
+
+                    //mClient.getEventQueue().addAnimationEvent(realtime, *object, animRef, channelIndex, speedModifier);
                 }
             }
         }

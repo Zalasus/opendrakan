@@ -3,6 +3,7 @@
 #define INCLUDE_ODCORE_STATE_EVENTQUEUE_H_
 
 #include <vector>
+#include <utility>
 
 #include <odCore/state/Event.h>
 
@@ -37,6 +38,11 @@ namespace odState
          * Only for the purpose of logging events that need sending to clients.
          * It is assumed that the event has already been processed.
          */
+        void logEvent(double realtime, const EventVariant &event);
+
+        /**
+         * @brief Same as logEvent(double, const EventVariant &), but logs event at current simulation time.
+         */
         void logEvent(const EventVariant &event);
 
         void dispatch(double realtime);
@@ -44,13 +50,14 @@ namespace odState
 
     private:
 
-        using EventIterator = std::vector<EventVariant>::iterator;
+        using EventVector = std::vector<std::pair<double, EventVariant>>;
+        using EventIterator = EventVector::iterator;
 
         EventIterator _getEventInsertPoint(double realtime);
 
         odDb::DbManager &mDbManager;
 
-        std::vector<EventVariant> mEvents;
+        EventVector mEvents;
 
     };
 

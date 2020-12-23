@@ -14,7 +14,9 @@
 #include <odCore/Logger.h>
 #include <odCore/StringUtils.h>
 #include <odCore/Exception.h>
+
 #include <odCore/db/DbManager.h>
+#include <odCore/db/DependencyTable.h>
 
 namespace odDb
 {
@@ -29,7 +31,7 @@ namespace odDb
         if(path.exists())
         {
             containerPtr = std::make_unique<od::SrscFile>(path);
-            factoryPtr = std::make_unique<T>(*this, *containerPtr);
+            factoryPtr = std::make_unique<T>(mDependencyTable, *containerPtr);
 
             Logger::verbose() << AssetTraits<typename T::AssetType>::name() << " container of database opened";
 
@@ -45,6 +47,7 @@ namespace odDb
 	, mDbManager(dbManager)
     , mGlobalIndex(globalIndex)
 	, mVersion(0)
+    , mDependencyTable(std::make_shared<DependencyTable>())
 	{
 	}
 
@@ -97,7 +100,7 @@ namespace odDb
 				std::istringstream is(results[1]);
 				is >> totalDependencyCount;
 
-                mDependencyMap.reserve(totalDependencyCount);
+                mDependencyTable->reserveDependencies(totalDependencyCount);
 
 				readingDependencies = true;
 
@@ -105,13 +108,9 @@ namespace odDb
 			{
 				if(!readingDependencies)
 				{
-					throw od::Exception("Found dependency definition before dependencies statement");
+					Logger::warn() << "Found dependency definition before dependencies statement in definition file of database " << getShortName();
+                    readingDependencies = true;
 				}
-
-				if(mDependencyMap.size() >= totalDependencyCount)
-                {
-                    throw od::Exception("More dependency lines found in db file than stated in 'dependencies' statement");
-                }
 
 				uint32_t depIndex;
 				std::istringstream is(results[1]);
@@ -135,7 +134,7 @@ namespace odDb
                 // TODO: detect and prevent dependency cycles!!! since Databases now own their dependencies, cycles create leaks
 				std::shared_ptr<Database> db = mDbManager.loadDatabase(depPath, dependencyDepth + 1);
 
-				mDependencyMap.insert(std::make_pair(depIndex, db));
+				mDependencyTable->addDependency(depIndex, db);
 
 			}else
 			{
@@ -143,9 +142,9 @@ namespace odDb
 			}
 		}
 
-        if(mDependencyMap.size() < totalDependencyCount)
+        if(mDependencyTable->getDependencyCount() != totalDependencyCount)
         {
-            throw od::Exception("Found less dependency definitions than stated in dependencies statement");
+            Logger::warn() << "Dependency list of database " << getShortName() << " contains more entries than stated by 'dependencies' statement";
         }
 
         // now that the database is loaded, create the various asset factories
@@ -157,91 +156,97 @@ namespace odDb
         _tryOpeningAssetContainer(mClassFactory,    mClassContainer,    ".odb");
 	}
 
-    std::shared_ptr<Database> Database::getDependencyDatabase(DatabaseIndex index)
+    template<>
+    std::shared_ptr<Texture> Database::loadAsset<Texture>(od::RecordId id)
     {
-        auto it = mDependencyMap.find(index);
-	    if(it == mDependencyMap.end())
-	    {
-	        Logger::error() << "Database '" + getShortName() + "' has no dependency with index " << index;
-	        throw od::NotFoundException("Database has no dependency with given index");
-	    }
-
-	    return it->second;
+        return this->loadTexture(id);
     }
 
-    GlobalAssetRef Database::translateLocalToGlobalRef(const AssetRef &ref)
+    template<>
+    std::shared_ptr<Class> Database::loadAsset<Class>(od::RecordId id)
     {
-        if(ref.dbIndex == 0)
-        {
-            return { ref.assetId, this->getGlobalIndex() };
-
-        }else
-        {
-            auto dep = getDependencyDatabase(ref.assetId);
-            return { ref.assetId, dep->getGlobalIndex() };
-        }
+        return this->loadClass(id);
     }
 
-	AssetProvider &Database::getDependency(uint16_t index)
-	{
-	    return *getDependencyDatabase(index);
-	}
+    template<>
+    std::shared_ptr<Model> Database::loadAsset<Model>(od::RecordId id)
+    {
+        return this->loadModel(id);
+    }
 
-	std::shared_ptr<Texture> Database::getTexture(od::RecordId recordId)
+    template<>
+    std::shared_ptr<Sequence> Database::loadAsset<Sequence>(od::RecordId id)
+    {
+        return this->loadSequence(id);
+    }
+
+    template<>
+    std::shared_ptr<Animation> Database::loadAsset<Animation>(od::RecordId id)
+    {
+        return this->loadAnimation(id);
+    }
+
+    template<>
+    std::shared_ptr<Sound> Database::loadAsset<Sound>(od::RecordId id)
+    {
+        return this->loadSound(id);
+    }
+
+	std::shared_ptr<Texture> Database::loadTexture(od::RecordId recordId)
 	{
 		if(mTextureFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't get texture. Database has no texture container");
+			throw od::NotFoundException("Can't load texture. Database has no texture container");
 		}
 
 		return mTextureFactory->getAsset(recordId);
 	}
 
-	std::shared_ptr<Class> Database::getClass(od::RecordId recordId)
+	std::shared_ptr<Class> Database::loadClass(od::RecordId recordId)
 	{
 		if(mClassFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't get class. Database has no class container");
+			throw od::NotFoundException("Can't load class. Database has no class container");
 		}
 
 		return mClassFactory->getAsset(recordId);
 	}
 
-	std::shared_ptr<Model> Database::getModel(od::RecordId recordId)
+	std::shared_ptr<Model> Database::loadModel(od::RecordId recordId)
 	{
 		if(mModelFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't get model. Database has no model container");
+			throw od::NotFoundException("Can't load model. Database has no model container");
 		}
 
         return mModelFactory->getAsset(recordId);
 	}
 
-	std::shared_ptr<Sequence> Database::getSequence(od::RecordId recordId)
+	std::shared_ptr<Sequence> Database::loadSequence(od::RecordId recordId)
 	{
         if(mSequenceFactory == nullptr)
         {
-            throw od::NotFoundException("Can't get sequence. Database has no sequence container");
+            throw od::NotFoundException("Can't load sequence. Database has no sequence container");
         }
 
         return mSequenceFactory->getAsset(recordId);
 	}
 
-	std::shared_ptr<Animation> Database::getAnimation(od::RecordId recordId)
+	std::shared_ptr<Animation> Database::loadAnimation(od::RecordId recordId)
 	{
 		if(mAnimFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't get animation. Database has no animation container");
+			throw od::NotFoundException("Can't load animation. Database has no animation container");
 		}
 
 		return mAnimFactory->getAsset(recordId);
 	}
 
-	std::shared_ptr<Sound> Database::getSound(od::RecordId recordId)
+	std::shared_ptr<Sound> Database::loadSound(od::RecordId recordId)
     {
         if(mSoundFactory == nullptr)
         {
-            throw od::NotFoundException("Can't get sound. Database has no sound container");
+            throw od::NotFoundException("Can't load sound. Database has no sound container");
         }
 
         return mSoundFactory->getAsset(recordId);

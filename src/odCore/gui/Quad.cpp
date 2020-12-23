@@ -3,7 +3,6 @@
 
 #include <odCore/Exception.h>
 
-#include <odCore/db/AssetProvider.h>
 #include <odCore/db/Texture.h>
 
 #include <odCore/render/Renderer.h>
@@ -55,23 +54,6 @@ namespace odGui
 
         mTexture = texture;
         mGeometry->setTexture(texture);
-    }
-
-    void Quad::setTextureFromDb(odDb::AssetProvider &ap, const odDb::AssetRef &textureRef, odRender::Renderer &renderer)
-    {
-        _check();
-
-        std::shared_ptr<odDb::Texture> dbTexture = ap.getAssetByRef<odDb::Texture>(textureRef);
-        std::shared_ptr<odRender::Image> image = renderer.getOrCreateImageFromDb(dbTexture);
-        std::shared_ptr<odRender::Texture> texture = renderer.createTexture(image, odRender::TextureReuseSlot::NONE);
-        this->setTexture(texture);
-    }
-
-    void Quad::setTextureFromDb(odDb::AssetProvider &ap, const od::RecordId &textureId, odRender::Renderer &renderer)
-    {
-        _check();
-
-        setTextureFromDb(ap, odDb::AssetRef(textureId, 0), renderer);
     }
 
     void Quad::setTextureCoords(const glm::vec2 &tl, const glm::vec2 &br)

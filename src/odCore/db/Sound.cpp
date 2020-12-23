@@ -19,9 +19,8 @@
 namespace odDb
 {
 
-	Sound::Sound(AssetProvider &ap, od::RecordId id)
-	: Asset(ap, id)
-	, mSoundName("")
+	Sound::Sound()
+	: mSoundName("")
 	, mFlags(0)
 	, mChannels(0)
     , mBits(0)

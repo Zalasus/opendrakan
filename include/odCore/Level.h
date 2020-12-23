@@ -25,29 +25,30 @@
 
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
+#include <odCore/db/DependencyTable.h>
 
 namespace od
 {
     class LevelObject;
     class Layer;
 
-    class Level : public odDb::AssetProvider
+    class Level
     {
     public:
 
-        /**
-         * @brief Loads a level from the given file.
-         * @param levelPath  A path to the .lvl file.
-         * @param dbManager  A DbManager from which to load databases the level depends on.
-         */
         Level(Engine engine);
         ~Level();
 
         inline Engine &getEngine() { return mEngine; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return mPhysicsSystem; }
         inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
+        inline const odDb::DependencyTable &getDependencyTable() const { return mDependencyTable; }
 
-
+        /**
+         * @brief Loads a level from the given file.
+         * @param levelPath  A path to the .lvl file.
+         * @param dbManager  A DbManager from which to load databases the level depends on.
+         */
         void loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager);
 
         void addToDestructionQueue(LevelObjectId objId);
@@ -98,9 +99,6 @@ namespace od
          */
         void findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results);
 
-        // override AssetProvider
-        virtual AssetProvider &getDependency(uint16_t index) override;
-
         void activateLayerPVS(Layer *layer);
 
         void calculateInitialLayerAssociations();
@@ -120,7 +118,7 @@ namespace od
         void _loadNameAndDeps(SrscFile &file, odDb::DbManager &dbManager);
         void _loadLayers(SrscFile &file);
         void _loadLayerGroups(SrscFile &file);
-        void _loadObjects(SrscFile &file);
+        void _loadObjects(SrscFile &file, odDb::DbManager &dbManage);
 
         Engine mEngine;
         odPhysics::PhysicsSystem &mPhysicsSystem;
@@ -129,7 +127,7 @@ namespace od
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        std::map<uint16_t, std::shared_ptr<odDb::Database>> mDependencyMap;
+        odDb::DependencyTable mDependencyTable;
 
         // TODO: we could potentially share this across local clients/servers. would go well with separation of data and state
         std::vector<ObjectRecordData> mObjectRecords;

@@ -13,7 +13,6 @@
 
 #include <odCore/FilePath.h>
 
-#include <odCore/db/AssetProvider.h>
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 
@@ -35,7 +34,7 @@ namespace dragonRfl
     /**
      * Class handling Drakan's GUI, as well as providing GUI resources via Dragon.rrc and Interface.db.
      */
-    class DragonGui : public odGui::Gui, public odDb::AssetProvider
+    class DragonGui final : public odGui::Gui
     {
     public:
 
@@ -44,7 +43,8 @@ namespace dragonRfl
 
         inline od::Client &getClient() { return mClient; }
         inline const UserInterfacePropertiesFields &getUserInterfaceProperties() const { return mUserInterfaceProperties; }
-        inline odGui::Quad getFaderQuad() { return mFaderQuad; }
+        inline odGui::Quad &getFaderQuad() { return mFaderQuad; }
+        inline odDb::TextureFactory &getGuiTextureFactory() { return mRrcTextureFactory; }
 
         /**
          * @brief Localizes string with localization tag.
@@ -60,12 +60,9 @@ namespace dragonRfl
          */
         std::string getStringById(od::RecordId stringId);
 
+        odGui::Quad makeQuadFromGuiTexture(odDb::AssetId id);
+
         virtual void onMenuModeChanged() override;
-
-
-    protected:
-
-        virtual std::shared_ptr<odDb::Texture> getTexture(od::RecordId recordId) override;
 
 
     private:

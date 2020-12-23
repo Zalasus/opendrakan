@@ -29,7 +29,7 @@ namespace odDb
 	{
 	public:
 
-		Sound(AssetProvider &ap, od::RecordId id);
+		Sound();
 		virtual ~Sound();
 
         inline uint32_t getChannelCount() const { return mChannels; }

@@ -21,7 +21,7 @@
 
 namespace odDb
 {
-	class AssetProvider;
+    class DependencyTable;
 
 	/**
 	 * @brief Asset factory base that handles caching and loading.
@@ -38,7 +38,6 @@ namespace odDb
 		AssetFactory(const AssetFactory &f) = delete;
 		virtual ~AssetFactory() = default;
 
-		inline AssetProvider &getAssetProvider() { return mAssetProvider; }
 		inline od::SrscFile &getSrscFile() { return mSrscFile; }
 
 		std::shared_ptr<_AssetType> getAsset(od::RecordId assetId)
@@ -93,8 +92,8 @@ namespace odDb
 
 	protected:
 
-		AssetFactory(AssetProvider &ap, od::SrscFile &assetContainer)
-        : mAssetProvider(ap)
+		AssetFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &assetContainer)
+        : mDependencyTable(depTable)
         , mSrscFile(assetContainer)
         {
         }
@@ -119,9 +118,10 @@ namespace odDb
             }
 
             auto newAsset = createNewAsset(id);
+            newAsset->setDepTableAndId(mDependencyTable, id);
             newAsset->load(std::move(cursor));
 
-		    // FIXME: in contrast to load(...), postLoad() is not synchronized
+		    // FIXME: in contrast to load(...), postLoad() is not synchronized (due to it not using the cursor which holds the lock)
 		    //  this is not a problem atm, as asset loading is not threaded. later we might want to add a second mutex or something
 		    newAsset->postLoad();
 
@@ -131,7 +131,7 @@ namespace odDb
 
 	private:
 
-		AssetProvider &mAssetProvider;
+		std::shared_ptr<DependencyTable> mDependencyTable;
 		od::SrscFile &mSrscFile;
 
 		std::unordered_map<od::RecordId, std::weak_ptr<_AssetType>> mAssetCache;
@@ -141,16 +141,16 @@ namespace odDb
 	/**
 	 * @brief Template for assets that don't need a special factory.
 	 *
-	 * This is useful if your asset only has the (AssetProvider, RecordId) constructor. Simply
-	 * typedef this as your asset factory and your are good to go.
+	 * This is useful if your asset has a default constructor. Simply typedef
+     * this as your asset factory and your are good to go.
 	 */
 	template <typename _AssetType>
 	class GenericAssetFactory : public AssetFactory<_AssetType>
 	{
 	public:
 
-	    GenericAssetFactory(AssetProvider &ap, od::SrscFile &assetContainer)
-        : AssetFactory<_AssetType>(ap, assetContainer)
+	    GenericAssetFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &assetContainer)
+        : AssetFactory<_AssetType>(depTable, assetContainer)
         {
         }
 
@@ -161,7 +161,7 @@ namespace odDb
 
 	    virtual std::shared_ptr<_AssetType> createNewAsset(od::RecordId id) override
 	    {
-	        return std::make_shared<_AssetType>(AssetFactory<_AssetType>::getAssetProvider(), id);
+	        return std::make_shared<_AssetType>();
 	    }
 
 	};
