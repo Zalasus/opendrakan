@@ -140,6 +140,11 @@ namespace od
         {
             mLinkedObjects.push_back(level.getObjectIdForRecordIndex(linkedIndex));
         }
+
+        if(mClass != nullptr)
+        {
+            mModel = mClass->getOrLoadModel();
+        }
     }
 
     LevelObject::~LevelObject()
@@ -465,12 +470,12 @@ namespace od
 
     AxisAlignedBoundingBox LevelObject::getBoundingBox()
     {
-        if(mClass == nullptr || !mClass->hasModel())
+        if(mModel == nullptr)
         {
             return AxisAlignedBoundingBox(getPosition(), getPosition());
         }
 
-        auto &modelBB = mClass->getModel()->getCalculatedBoundingBox();
+        auto &modelBB = mModel->getCalculatedBoundingBox();
 
         glm::vec3 min = (modelBB.min() * getScale()) * getRotation() + getPosition();
         glm::vec3 max = (modelBB.max() * getScale()) * getRotation() + getPosition();
@@ -480,12 +485,12 @@ namespace od
 
     BoundingSphere LevelObject::getBoundingSphere()
     {
-        if(mClass == nullptr || !mClass->hasModel())
+        if(mModel == nullptr)
         {
             return BoundingSphere(getPosition(), 0);
         }
 
-        float calcRadius = mClass->getModel()->getCalculatedBoundingSphere().radius();
+        float calcRadius = mModel->getCalculatedBoundingSphere().radius();
         auto scale = getScale();
         float maxScale = std::max(std::max(scale.x, scale.y), scale.z);
 
@@ -559,7 +564,7 @@ namespace od
             mPhysicsHandle = getLevel().getEngine().getPhysicsSystem().createObjectHandle(*this, false);
         }
 
-        if(renderMode != ObjectRenderMode::NOT_RENDERED && mClass != nullptr && mClass->hasModel())
+        if(renderMode != ObjectRenderMode::NOT_RENDERED && mModel != nullptr)
         {
             if(getLevel().getEngine().isServer())
             {
@@ -568,8 +573,7 @@ namespace od
 
             auto &client = getLevel().getEngine().getClient();
             auto &renderer = client.getRenderer();
-            auto dbModel = mClass->getModel();
-            auto renderModel = renderer.getOrCreateModelFromDb(dbModel);
+            auto renderModel = renderer.getOrCreateModelFromDb(mModel);
 
             mRenderHandle = renderer.createHandle(odRender::RenderSpace::LEVEL);
             mRenderHandle->setPosition(this->getPosition());
@@ -601,9 +605,9 @@ namespace od
 
     void LevelObject::setupSkeleton()
     {
-        if(mClass->hasModel() && mClass->getModel()->hasSkeleton())
+        if(mModel != nullptr && mModel->hasSkeleton())
         {
-            odDb::SkeletonBuilder &sb = *mClass->getModel()->getSkeletonBuilder();
+            odDb::SkeletonBuilder &sb = *mModel->getSkeletonBuilder();
             mSkeleton = std::make_shared<odAnim::Skeleton>(sb.getJointCount());
             sb.build(*mSkeleton);
 

@@ -22,9 +22,8 @@ namespace dragonRfl
     {
         // the quad never changes after here and the widget shares ownership over the handle.
         //  thus we can put it on the stack and let it die after the constructor
-        odGui::Quad quad(gui.getRenderer());
+        auto quad = gui.makeQuadFromGuiTexture(GuiTextures::Cursor);
         quad.setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1, 1));
-        quad.setTextureFromDb(gui, odDb::AssetRef(GuiTextures::Cursor, 0), gui.getRenderer());
 
         // for some reason, the cursor image is offset left by 2 pixels with the pixels wrapping
         //  over to the right. maybe this is due to some strange way in which they implemented the

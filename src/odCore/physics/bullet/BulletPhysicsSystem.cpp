@@ -40,7 +40,7 @@ namespace odBulletPhysics
 
         if(renderer != nullptr)
         {
-            mDebugDrawer = std::make_unique<DebugDrawer>(*renderer, mCollisionWorld.get());
+            //mDebugDrawer = std::make_unique<DebugDrawer>(*renderer, mCollisionWorld.get());
         }
     }
 

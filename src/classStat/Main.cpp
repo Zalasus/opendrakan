@@ -7,6 +7,7 @@
 #include <odCore/db/Class.h>
 #include <odCore/db/Database.h>
 #include <odCore/db/DbManager.h>
+#include <odCore/db/DependencyTable.h>
 #include <odCore/db/Model.h>
 
 #include <odCore/rfl/Field.h>
@@ -76,8 +77,8 @@ static std::string typeIdToString(uint32_t type)
 
 static void printClassStats(std::shared_ptr<odDb::Database> db, odDb::Class &c)
 {
-    auto modelDb = (c.getModelRef().dbIndex == 0) ? db : db->getDependencyDatabase(c.getModelRef().dbIndex);
-    auto model = c.getModel();
+    auto modelDb = (c.getModelRef().dbIndex == 0) ? db : db->getDependencyTable()->getDependency(c.getModelRef().dbIndex);
+    auto model = db->getDependencyTable()->loadAsset<odDb::Model>(c.getModelRef());
 
     std::cout << "[" << c.getName() << "]" << std::endl
               << "ID: " << c.getAssetId() << std::endl
@@ -129,7 +130,7 @@ int main(int argc, char **argv)
 
     for(auto classId : classes)
     {
-        auto loadedClass = db->getClass(classId);
+        auto loadedClass = db->loadClass(classId);
         printClassStats(db, *loadedClass);
     }
 

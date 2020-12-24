@@ -42,7 +42,7 @@ namespace od
         inline Engine &getEngine() { return mEngine; }
         inline odPhysics::PhysicsSystem &getPhysicsSystem() { return mPhysicsSystem; }
         inline float getVerticalExtent() const { return mVerticalExtent; } ///< @return The distance between the lowest and the highest point in terrain
-        inline const odDb::DependencyTable &getDependencyTable() const { return mDependencyTable; }
+        inline std::shared_ptr<odDb::DependencyTable> getDependencyTable() const { return mDependencyTable; }
 
         /**
          * @brief Loads a level from the given file.
@@ -127,7 +127,7 @@ namespace od
         std::string mLevelName;
         uint32_t mMaxWidth;
         uint32_t mMaxHeight;
-        odDb::DependencyTable mDependencyTable;
+        std::shared_ptr<odDb::DependencyTable> mDependencyTable;
 
         // TODO: we could potentially share this across local clients/servers. would go well with separation of data and state
         std::vector<ObjectRecordData> mObjectRecords;

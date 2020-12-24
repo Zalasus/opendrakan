@@ -32,6 +32,7 @@ namespace od
     , mRenderer(nullptr)
     , mMaxWidth(0)
     , mMaxHeight(0)
+    , mDependencyTable(std::make_shared<odDb::DependencyTable>())
     , mVerticalExtent(0)
     , mCurrentActivePvsLayer(nullptr)
     {
@@ -322,7 +323,7 @@ namespace od
             Logger::debug() << "Gonna load level dependency index " << dbIndex << ": " << dbPath;
             auto db = dbManager.loadDatabase(dbPath.ext(".db").adjustCase());
 
-            mDependencyTable.addDependency(dbIndex, db);
+            mDependencyTable->addDependency(dbIndex, db);
         }
     }
 
@@ -429,7 +430,7 @@ namespace od
     	{
             auto &record = mObjectRecords[i];
 
-            auto dbClass = mDependencyTable.loadAsset<odDb::Class>(record.getClassRef());
+            auto dbClass = mDependencyTable->loadAsset<odDb::Class>(record.getClassRef());
             if(dbClass == nullptr)
             {
                 // ignore objects whose class we failed to load

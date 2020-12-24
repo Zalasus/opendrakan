@@ -7,12 +7,6 @@ namespace odDb
 {
 
     DependencyTable::DependencyTable()
-    : mSelfRefDatabase(nullptr)
-    {
-    }
-
-    DependencyTable::DependencyTable(std::weak_ptr<Database> selfRefDb)
-    : mSelfRefDatabase(selfRefDb)
     {
     }
 
@@ -57,6 +51,11 @@ namespace odDb
     void DependencyTable::addDependency(DatabaseIndex index, std::shared_ptr<Database> db)
     {
         mDependencyMap.insert(std::make_pair(index, db));
+    }
+
+    void DependencyTable::setSelfRefDatabase(std::weak_ptr<Database> db)
+    {
+        mSelfRefDatabase = db;
     }
 
 }

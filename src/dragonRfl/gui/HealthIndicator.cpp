@@ -29,7 +29,7 @@ namespace dragonRfl
         , mTopLeftPx_Left(topLeft)
         , mBottomRightPx_Left(bottomRight)
         , mHeightPx(glm::abs(mTopLeftPx_Left.y - mBottomRightPx_Left.y))
-        , mOrbQuad_Left(gui.getRenderer())
+        , mOrbQuad_Left(gui.makeQuadFromGuiTexture(bubbleTexture))
         {
             float width = glm::abs(mTopLeftPx_Left.x - mBottomRightPx_Left.x);
 
@@ -39,7 +39,6 @@ namespace dragonRfl
                 mBottomRightPx_Left.x -= width;
             }
 
-            mOrbQuad_Left.setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
             mOrbQuad_Left.getTexture()->setEnableWrapping(false);
             this->addRenderHandle(mOrbQuad_Left.getHandle());
 
@@ -56,8 +55,8 @@ namespace dragonRfl
         , mTopLeftPx_Right(topLeft2)
         , mBottomRightPx_Right(bottomRight2)
         , mHeightPx(glm::abs(mTopLeftPx_Left.y - mBottomRightPx_Left.y))
-        , mOrbQuad_Left(gui.getRenderer())
-        , mOrbQuad_Right(gui.getRenderer())
+        , mOrbQuad_Left(gui.makeQuadFromGuiTexture(bubbleTexture))
+        , mOrbQuad_Right(gui.makeQuadFromGuiTexture(bubbleTexture))
         {
             if(flip)
             {
@@ -73,11 +72,9 @@ namespace dragonRfl
                 std::swap(mBottomRightPx_Left, mBottomRightPx_Right);
             }
 
-            mOrbQuad_Left.setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
             mOrbQuad_Left.getTexture()->setEnableWrapping(false);
             this->addRenderHandle(mOrbQuad_Left.getHandle());
 
-            mOrbQuad_Right.setTextureFromDb(gui, bubbleTexture, gui.getRenderer());
             mOrbQuad_Right.getTexture()->setEnableWrapping(false);
             this->addRenderHandle(mOrbQuad_Right.getHandle());
 
@@ -161,8 +158,7 @@ namespace dragonRfl
 
         this->setDimensions(size, odGui::WidgetDimensionType::Pixels);
 
-        odGui::Quad border(gui.getRenderer());
-        border.setTextureFromDb(gui, GuiTextures::HudElements, gui.getRenderer());
+        auto border = gui.makeQuadFromGuiTexture(GuiTextures::HudElements);
         border.setTextureCoordsFromPixels(glm::vec2(0, 130), glm::vec2(95, 220));
         border.setVertexCoords(glm::vec2(0, 0), glm::vec2(1, 1));
         this->addRenderHandle(border.getHandle());

@@ -42,7 +42,7 @@ namespace odDb
 		inline od::FilePath getDbFilePath() const { return mDbFilePath; }
 		inline std::string getShortName() const { return mDbFilePath.fileStrNoExt(); }
         inline GlobalDatabaseIndex getGlobalIndex() const { return mGlobalIndex; }
-        inline DependencyTable &getDependencyTable() const { return *mDependencyTable; }
+        inline std::shared_ptr<DependencyTable> getDependencyTable() { return mDependencyTable; }
 		inline TextureFactory *getTextureFactory() { return mTextureFactory.get(); }
 		inline ClassFactory *getClassFactory() { return mClassFactory.get(); }
 		inline ModelFactory *getModelFactory() { return mModelFactory.get(); }

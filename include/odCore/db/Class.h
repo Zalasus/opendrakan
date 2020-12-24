@@ -30,6 +30,7 @@ namespace odRfl
 namespace odDb
 {
     class ClassFactory;
+    class Model;
 
 	class Class : public Asset
 	{
@@ -70,6 +71,11 @@ namespace odDb
          */
         std::unique_ptr<odRfl::ClassBase> makeInstance(od::Engine &engine);
 
+        /**
+         * @brief Returns the cached model for this class or attempts to load it if it has not yet been cached.
+         */
+        std::shared_ptr<odDb::Model> getOrLoadModel();
+
 
 	private:
 
@@ -82,6 +88,7 @@ namespace odDb
         uint16_t mIconNumber;
 
         odRfl::ClassFactory *mCachedRflClassFactory;
+        std::shared_ptr<odDb::Model> mCachedModel;
 	};
 
 

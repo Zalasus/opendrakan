@@ -9,13 +9,12 @@
 
 namespace odDb
 {
-    
+
     class DependencyTable
     {
     public:
 
         DependencyTable();
-        DependencyTable(std::weak_ptr<Database> selfRefDb);
 
         inline size_t getDependencyCount() const { return mDependencyMap.size(); }
 
@@ -39,6 +38,15 @@ namespace odDb
 
         void reserveDependencies(size_t n);
         void addDependency(DatabaseIndex index, std::shared_ptr<Database> db);
+
+        /**
+         * @brief Assigns the Database which is referred to by index 0.
+         *
+         * TODO: i dislike this way of handling the 0-refs very much. but we need *some* way of giving users of assets a way
+         *  of loading referenced assets without knowing the database. and also not every asset comes from a database. and not every
+         *  asset ref references a database dependency table.
+         */
+        void setSelfRefDatabase(std::weak_ptr<Database> db);
 
 
     private:

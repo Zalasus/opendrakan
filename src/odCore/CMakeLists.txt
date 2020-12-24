@@ -21,6 +21,7 @@ target_sources(odCore PRIVATE
         "db/ClassFactory.cpp"
         "db/Database.cpp"
         "db/DbManager.cpp"
+        "db/DependencyTable.cpp"
         "db/Model.cpp"
         "db/ModelBounds.cpp"
         "db/MusicContainer.cpp"

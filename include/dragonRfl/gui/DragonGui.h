@@ -26,6 +26,11 @@ namespace od
     class Client;
 }
 
+namespace odDb
+{
+    class DependencyTable;
+}
+
 namespace dragonRfl
 {
 
@@ -60,7 +65,7 @@ namespace dragonRfl
          */
         std::string getStringById(od::RecordId stringId);
 
-        odGui::Quad makeQuadFromGuiTexture(odDb::AssetId id);
+        odGui::Quad makeQuadFromGuiTexture(od::RecordId id);
 
         virtual void onMenuModeChanged() override;
 
@@ -71,6 +76,7 @@ namespace dragonRfl
 
         od::Client &mClient;
         od::SrscFile mRrcFile;
+        std::shared_ptr<odDb::DependencyTable> mDummyDependencyTable;
         odDb::TextureFactory mRrcTextureFactory;
         std::shared_ptr<odDb::Database> mInterfaceDb;
 

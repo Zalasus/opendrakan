@@ -17,7 +17,7 @@
 #include <odCore/Exception.h>
 #include <odCore/Downcast.h>
 
-#include <odCore/db/AssetProvider.h>
+#include <odCore/db/DependencyTable.h>
 #include <odCore/db/Texture.h>
 
 #include <odCore/render/Geometry.h>
@@ -34,10 +34,10 @@
 namespace odOsg
 {
 
-    ModelBuilder::ModelBuilder(Renderer &renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider)
+    ModelBuilder::ModelBuilder(Renderer &renderer, const std::string &geometryName, std::shared_ptr<odDb::DependencyTable> depTable)
     : mRenderer(renderer)
     , mGeometryName(geometryName)
-    , mAssetProvider(assetProvider)
+    , mDependencyTable(depTable)
     , mSmoothNormals(true)
     , mCWPolys(false)
     , mUseClampedTextures(false)
@@ -298,7 +298,7 @@ namespace odOsg
                 // FIXME: rename property (or change interface to directly expose this)
                 odRender::TextureReuseSlot reuseSlot = mUseClampedTextures ? odRender::TextureReuseSlot::LAYER : odRender::TextureReuseSlot::OBJECT;
 
-                auto dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
+                auto dbTexture = mDependencyTable->loadAsset<odDb::Texture>(it->texture);
                 auto renderImage = mRenderer.createImageFromDb(dbTexture);
                 auto renderTexture = mRenderer.createTexture(renderImage, reuseSlot);
 

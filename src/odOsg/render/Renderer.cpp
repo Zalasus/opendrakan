@@ -186,7 +186,7 @@ namespace odOsg
 
     std::shared_ptr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
     {
-        ModelBuilder mb(*this, "layer " + layer->getName(), layer->getLevel());
+        ModelBuilder mb(*this, "layer " + layer->getName(), layer->getLevel().getDependencyTable());
         mb.setCWPolygonFlag(false);
         mb.setUseClampedTextures(true);
 
@@ -583,7 +583,7 @@ namespace odOsg
 
     std::shared_ptr<Model> Renderer::_buildSingleLodModelNode(odDb::Model &model)
     {
-        ModelBuilder mb(*this, model.getName(), model.getAssetProvider());
+        ModelBuilder mb(*this, model.getName(), model.getDependencyTable());
 
         mb.setCWPolygonFlag(true);
         mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
@@ -601,7 +601,7 @@ namespace odOsg
 
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
-            ModelBuilder mb(*this, model.getName() + " (LOD '" + it->lodName + "')", model.getAssetProvider());
+            ModelBuilder mb(*this, model.getName() + " (LOD '" + it->lodName + "')", model.getDependencyTable());
 
             mb.setCWPolygonFlag(true);
             mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);

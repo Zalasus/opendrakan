@@ -56,7 +56,7 @@ namespace odRender
 
         if(obj.getClass()->hasModel())
         {
-            auto model = this->createModelFromDb(obj.getClass()->getModel());
+            auto model = this->createModelFromDb(obj.getModel());
             handle->setModel(model);
         }
 

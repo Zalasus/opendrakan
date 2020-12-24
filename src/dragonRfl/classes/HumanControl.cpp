@@ -55,7 +55,7 @@ namespace dragonRfl
     void HumanControl_Sv::onLoaded()
     {
         // prefetch referenced assets
-        odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
+        odRfl::PrefetchProbe probe(getLevelObject().getClass()->getDependencyTable());
         mFields.probeFields(probe);
 
         // configure controls FIXME: these handlers are not memory safe because actions are not uniquely owned!
@@ -276,7 +276,7 @@ namespace dragonRfl
 
     void HumanControl_Cl::onLoaded()
     {
-        odRfl::PrefetchProbe probe(getLevelObject().getClass()->getAssetProvider());
+        odRfl::PrefetchProbe probe(getLevelObject().getClass()->getDependencyTable());
         mFields.probeFields(probe);
 
         getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);

@@ -37,7 +37,7 @@ namespace dragonRfl
     {
         if(getLevelObject().getClass() != nullptr)
         {
-            mFields.sequenceList.fetchAssets(getLevelObject().getClass()->getAssetProvider(), true);
+            mFields.sequenceList.fetchAssets(*getLevelObject().getClass()->getDependencyTable(), true);
             mPlayer = std::make_unique<odAnim::SequencePlayer>(getLevelObject().getLevel());
         }
     }

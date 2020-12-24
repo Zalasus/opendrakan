@@ -12,8 +12,11 @@
 #include <odCore/rfl/PrefetchProbe.h>
 
 #include <odCore/db/DbManager.h>
+#include <odCore/db/DependencyTable.h>
 
 #include <odCore/gui/Quad.h>
+
+#include <odCore/render/Renderer.h>
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
@@ -31,7 +34,8 @@ namespace dragonRfl
     : odGui::Gui(client.getRenderer(), client.getInputManager())
     , mClient(client)
     , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, client.getEngineRootDir()).adjustCase())
-    , mRrcTextureFactory(*this, mRrcFile)
+    , mDummyDependencyTable(std::make_shared<odDb::DependencyTable>()) // currently, we still need an empty DependencyTable because assets assume to always have one
+    , mRrcTextureFactory(mDummyDependencyTable, mRrcFile)
     , mInterfaceDb(nullptr)
     , mFaderQuad(client.getRenderer())
     {
@@ -51,11 +55,11 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
         }
 
-        std::shared_ptr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
+        std::shared_ptr<odDb::Class> uiPropsClass = mInterfaceDb->loadClass(id);
         assert(uiPropsClass != nullptr); // this should not be null, given that the DB just gave us the ID
         uiPropsClass->fillFields(mUserInterfaceProperties);
 
-        odRfl::PrefetchProbe probe(*mInterfaceDb);
+        odRfl::PrefetchProbe probe(mInterfaceDb->getDependencyTable());
         mUserInterfaceProperties.probeFields(probe);
 
         auto cursor = std::make_shared<Cursor>(*this);
@@ -156,9 +160,9 @@ namespace dragonRfl
         return std::move(decryptedString);
     }
 
-    odGui::Quad makeQuadFromGuiTexture(od::RecordId id)
+    odGui::Quad DragonGui::makeQuadFromGuiTexture(od::RecordId id)
     {
-        auto &renderer = getClient().getRenderer();
+        auto &renderer = mClient.getRenderer();
 
         odGui::Quad quad(renderer);
         std::shared_ptr<odDb::Texture> dbTexture = mRrcTextureFactory.getAsset(id);

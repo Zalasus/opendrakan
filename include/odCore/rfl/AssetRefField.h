@@ -9,15 +9,15 @@
 #define INCLUDE_ODCORE_RFL_ASSETREFFIELD_H_
 
 #include <odCore/rfl/Field.h>
-#include <odCore/db/AssetProvider.h>
+
 #include <odCore/db/Asset.h>
-#include <odCore/db/AssetProvider.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/Model.h>
 #include <odCore/db/Class.h>
 #include <odCore/db/Sequence.h>
 #include <odCore/db/Animation.h>
 #include <odCore/db/Sound.h>
+#include <odCore/db/DependencyTable.h>
 
 namespace odRfl
 {
@@ -28,7 +28,7 @@ namespace odRfl
 
         virtual ~AssetRefField() = default;
 
-        virtual void fetchAssets(odDb::AssetProvider &ap, bool ignoreMissing = true) = 0;
+        virtual void fetchAssets(const odDb::DependencyTable &dt, bool ignoreMissing = true) = 0;
         virtual void releaseAssets() = 0;
     };
 
@@ -50,20 +50,14 @@ namespace odRfl
             dr >> mReference;
         }
 
-        virtual void fetchAssets(odDb::AssetProvider &ap, bool ignoreMissing = true) override
+        virtual void fetchAssets(const odDb::DependencyTable &dt, bool ignoreMissing = true) override
         {
             if(mReferencedAsset == nullptr && !mReference.isNull())
             {
-                try
+                mReferencedAsset = dt.loadAsset<_AssetType>(mReference);
+                if(!ignoreMissing && mReferencedAsset == nullptr)
                 {
-                    mReferencedAsset = ap.getAssetByRef<_AssetType>(mReference);
-
-                }catch(od::NotFoundException &e)
-                {
-                    if(!ignoreMissing)
-                    {
-                        throw od::NotFoundException("Asset referenced by class could not be found");
-                    }
+                    throw od::NotFoundException("Asset referenced by class could not be found");
                 }
             }
         }
@@ -73,11 +67,11 @@ namespace odRfl
             mReferencedAsset = nullptr;
         }
 
-        std::shared_ptr<_AssetType> getOrFetchAsset(odDb::AssetProvider &ap)
+        std::shared_ptr<_AssetType> getOrFetchAsset(odDb::DependencyTable &dt)
         {
             if(mReferencedAsset == nullptr)
             {
-                fetchAssets(ap);
+                fetchAssets(dt);
             }
 
             return mReferencedAsset;
@@ -137,33 +131,28 @@ namespace odRfl
             mReferences.shrink_to_fit();
         }
 
-        virtual void fetchAssets(odDb::AssetProvider &ap, bool ignoreMissing = true) override
+        virtual void fetchAssets(const odDb::DependencyTable &dt, bool ignoreMissing = true) override
         {
             mReferencedAssets.reserve(mReferences.size());
-            try
-            {
-                for(auto it = mReferences.begin(); it != mReferences.end(); ++it)
-                {
-                    auto asset = ap.getAssetByRef<_AssetType>(*it);
-                    mReferencedAssets.push_back(asset);
-                }
 
-            }catch(od::NotFoundException &e)
+            for(auto &ref : mReferences)
             {
-                if(!ignoreMissing)
+                auto asset = dt.loadAsset<_AssetType>(ref);
+                if(!ignoreMissing && asset == nullptr)
                 {
                     throw od::NotFoundException("Asset referenced by class could not be found");
                 }
+
+                mReferencedAssets.push_back(asset);
             }
         }
 
         virtual void releaseAssets() override
         {
-            for(auto it = mReferencedAssets.begin(); it != mReferencedAssets.end(); ++it)
+            for(auto &asset : mReferencedAssets)
             {
-                *it = nullptr;
+                asset = nullptr;
             }
-
         }
 
         size_t getAssetCount()

@@ -12,6 +12,7 @@
 #include <odCore/Exception.h>
 
 #include <odCore/db/Database.h>
+#include <odCore/db/DependencyTable.h>
 
 namespace odDb
 {
@@ -45,6 +46,7 @@ namespace odDb
 
         auto db = std::make_shared<Database>(dbFilePath, *this, newGlobalIndex);
         mLoadedDatabases[newGlobalIndex] = db;
+        db->getDependencyTable()->setSelfRefDatabase(db);
         db->loadDbFileAndDependencies(dependencyDepth);
 
         return db;

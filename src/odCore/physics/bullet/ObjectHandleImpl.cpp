@@ -28,7 +28,7 @@ namespace odBulletPhysics
         mCollisionObject->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
         // TODO: decide on static/kinematic object depending on user choice/ object type
 
-        std::shared_ptr<odDb::Model> model = obj.getClass()->getModel();
+        std::shared_ptr<odDb::Model> model = obj.getModel();
         if(model == nullptr)
         {
             throw od::Exception("Created physics handle for object without model");

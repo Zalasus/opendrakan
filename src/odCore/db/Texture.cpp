@@ -98,7 +98,7 @@ namespace odDb
             for(size_t i = 1; i < mAnimFrameCount; ++i)
             {
                 AssetRef frameRef(getAssetId() + i, 0);
-                auto frame = getDependencyTable().loadAsset<Texture>(frameRef);
+                auto frame = getDependencyTable()->loadAsset<Texture>(frameRef);
                 mNextAnimationFrames.push_back(frame);
             }
         }
@@ -109,7 +109,7 @@ namespace odDb
         // of loading it in load(...). better safe than sorry.
         if(!mMaterialClassRef.isNull())
         {
-            mMaterialClass = getDependencyTable().loadAsset<Class>(mMaterialClassRef);
+            mMaterialClass = getDependencyTable()->loadAsset<Class>(mMaterialClassRef);
         }
     }
 

@@ -72,6 +72,12 @@ namespace odDb
         {
         }
 
+		GlobalAssetRef()
+        : assetId(0)
+        , globalDbIndex(0)
+        {
+        }
+
         od::RecordId assetId;
 		GlobalDatabaseIndex globalDbIndex;
     };

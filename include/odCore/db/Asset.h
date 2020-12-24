@@ -29,7 +29,7 @@ namespace odDb
 
         inline AssetRef getLocalAssetRef() const { return AssetRef(mId, AssetRef::SELF_DBINDEX); }
 		inline od::RecordId getAssetId() const { return mId; }
-        inline DependencyTable &getDependencyTable() { return *mDependencyTable; }
+        inline std::shared_ptr<DependencyTable> getDependencyTable() { return mDependencyTable; }
 
         /**
          * @brief Only to be used by AssetFactory during loading.

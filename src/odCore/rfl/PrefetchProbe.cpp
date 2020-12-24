@@ -13,8 +13,8 @@ namespace odRfl
 {
 
 
-    PrefetchProbe::PrefetchProbe(odDb::AssetProvider &ap, bool ignoreMissing)
-    : mAssetProvider(ap)
+    PrefetchProbe::PrefetchProbe(std::shared_ptr<odDb::DependencyTable> dt, bool ignoreMissing)
+    : mDependencyTable(dt)
     , mIgnoreMissing(ignoreMissing)
     {
     }
@@ -23,7 +23,7 @@ namespace odRfl
     {
         try
         {
-            field.fetchAssets(mAssetProvider, false);
+            field.fetchAssets(*mDependencyTable, false);
 
         }catch(od::NotFoundException &e)
         {
@@ -37,5 +37,3 @@ namespace odRfl
     }
 
 }
-
-

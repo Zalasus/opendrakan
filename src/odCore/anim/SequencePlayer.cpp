@@ -78,10 +78,10 @@ namespace odAnim
                 Logger::error() << "Animation on object without loaded model. Can't load animation asset";
                 return;
             }
-            auto &animDepTable = actor.actorObject.getModel()->getDependencyTable();
+            auto animDepTable = actor.actorObject.getModel()->getDependencyTable();
 
             PlayerActionStartAnim newAction(a);
-            newAction.animation = animDepTable.loadAsset<odDb::Animation>(a.animationRef);
+            newAction.animation = animDepTable->loadAsset<odDb::Animation>(a.animationRef);
             if(newAction.animation == nullptr)
             {
                 Logger::error() << "Missing animation in sequence: " << a.animationRef;
@@ -94,7 +94,7 @@ namespace odAnim
         void operator()(const odDb::ActionPlaySound &a)
         {
             PlayerActionPlaySound newAction(a);
-            newAction.sound = sequence.getDependencyTable().loadAsset<odDb::Sound>(a.soundRef);
+            newAction.sound = sequence.getDependencyTable()->loadAsset<odDb::Sound>(a.soundRef);
             if(newAction.sound == nullptr)
             {
                 Logger::error() << "Missing sound in sequence: " << a.soundRef;

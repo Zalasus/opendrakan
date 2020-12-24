@@ -19,7 +19,7 @@
 
 namespace odDb
 {
-	class AssetProvider;
+	class DependencyTable;
 }
 
 namespace odOsg
@@ -45,7 +45,7 @@ namespace odOsg
         typedef std::vector<odDb::Model::Polygon>::const_iterator PolygonIterator;
         typedef std::vector<odDb::Model::BoneAffection>::const_iterator BoneAffectionIterator;
 
-		ModelBuilder(Renderer &renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider);
+		ModelBuilder(Renderer &renderer, const std::string &geometryName, std::shared_ptr<odDb::DependencyTable> depTable);
 
 		inline void setBuildSmoothNormals(bool b) { mSmoothNormals = b; }
 		inline void setCWPolygonFlag(bool b) { mCWPolys = b; }
@@ -84,7 +84,7 @@ namespace odOsg
 		Renderer &mRenderer;
 
 		std::string mGeometryName;
-		odDb::AssetProvider &mAssetProvider;
+		std::shared_ptr<odDb::DependencyTable> mDependencyTable;
 
 		bool mSmoothNormals;
 		bool mCWPolys;

@@ -10,7 +10,9 @@
 #include <odCore/Engine.h>
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
+
 #include <odCore/db/ClassFactory.h>
+#include <odCore/db/DependencyTable.h>
 
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/RflManager.h>
@@ -64,6 +66,20 @@ namespace odDb
 
         return newInstance;
 	}
+
+    std::shared_ptr<odDb::Model> Class::getOrLoadModel()
+    {
+        if(!hasModel())
+        {
+            return nullptr;
+
+        }else if(mCachedModel == nullptr)
+        {
+            mCachedModel = getDependencyTable()->loadAsset<odDb::Model>(mModelRef);
+        }
+
+        return mCachedModel;
+    }
 
     odRfl::ClassFactory *Class::getRflClassFactory(odRfl::RflManager &rflManager)
     {
