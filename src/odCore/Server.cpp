@@ -233,6 +233,7 @@ namespace od
             lastUpdateStartTime = loopStart;
 
             mServerTime += relTime;
+            mEventQueue->setCurrentTime(mServerTime);
 
             if(mLevel != nullptr)
             {
@@ -280,7 +281,12 @@ namespace od
 
                 // for now, send with fixes rate. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
                 client->nextTickToSend = latestTick+3;
+
+                mEventQueue->sendEventsToClient(*client->downlinkConnector, mServerTime);
             }
+
+            mEventQueue->markAsSent(mServerTime);
+            mEventQueue->flush();
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
             auto loopTime = loopEnd - loopStart;

@@ -89,18 +89,9 @@ namespace od
 
         virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override
         {
-            auto level = mClient.getLevel();
-            if(level != nullptr)
-            {
-                auto object = level->getLevelObjectById(id);
-
-                if(object != nullptr)
-                {
-                    animRef.globalDbIndex = mClient.translateGlobalDatabaseIndex(animRef.globalDbIndex);
-
-                    //mClient.getEventQueue().addAnimationEvent(realtime, *object, animRef, channelIndex, speedModifier);
-                }
-            }
+            animRef.globalDbIndex = mClient.translateGlobalDatabaseIndex(animRef.globalDbIndex);
+            odState::ObjectAnimEvent animEvent(id, animRef, channelIndex, speedModifier);
+            mClient.getEventQueue().addIncomingEvent(realtime, animEvent);
         }
 
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
@@ -224,6 +215,9 @@ namespace od
 
                 mStateManager->apply(clientTime);
             }
+
+            mEventQueue->dispatch(clientTime);
+            mEventQueue->flush();
 
             mRenderer.frame(relTime);
         }

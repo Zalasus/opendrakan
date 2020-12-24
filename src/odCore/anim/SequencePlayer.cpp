@@ -209,15 +209,8 @@ namespace odAnim
 
         void operator()(const PlayerActionStartAnim &a)
         {
-            float dt = mSequenceTime - a.timeOffset;
-
-            auto animPlayer = mObject.getSkeletonAnimationPlayer();
-            if(animPlayer != nullptr && a.animation != nullptr)
-            {
-                animPlayer->playAnimation(a.animation, odAnim::PlaybackType::NORMAL, a.speed);
-                animPlayer->update(dt); // FIXME: is this really that great of an idea? unless we send this over the network, this might cause glitches
-            }
-
+            //float dt = mSequenceTime - a.timeOffset;
+            mObject.playAnimation(a.animation, a.channelIndex, a.speed);
         }
 
         void operator()(const PlayerActionPlaySound &a)
