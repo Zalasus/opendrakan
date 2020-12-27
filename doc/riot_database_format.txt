@@ -212,19 +212,19 @@ Record types
     [0x0102] Class data
         struct field_def { uint32 type; string name; };
         /*LSB of type is base type 
-         type 0x01 = integer (signed), 
-         type 0x02 = float,
-         type 0x03 = class,
+         type 0x01 = integer (signed) 
+         type 0x02 = float
+         type 0x03 = class
          type 0x04 = model
          type 0x05 = sound
-         type 0x06 = ??
+         type 0x06 = boolean
          type 0x07 = enum (possible items depends on field; are stored as uint32)
          type 0x08 = character channel (probably bones)
          type 0x09 = animation
          type 0x0a = string
          type 0x0b = sequence
          type 0x0c = landscape layer
-         type 0x0d = ??
+         type 0x0d = RIOT Level Editor says <unknown_type> so maybe not used / implemented
          type 0x0e = texture
          type 0x0f = colour
          if second byte is 0x10, field is an array of that type
