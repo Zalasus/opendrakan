@@ -636,6 +636,7 @@ namespace od
             if(animPlayer != nullptr && animEvent->anim != nullptr)
             {
                 animPlayer->playAnimation(animEvent->anim, odAnim::PlaybackType::NORMAL, animEvent->speed);
+                animPlayer->update(timeDelta);
             }
         }
 

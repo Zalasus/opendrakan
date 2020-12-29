@@ -243,9 +243,9 @@ namespace od
          * This returns true if the event was handled (an event being ignored counts as handled in this context).
          * However, sometimes events can not be processed immediately, like when an object is not being run.
          * In that case, this will return false to indicate event processing should be delayed. The same event
-         * will be dispatched later.
+         * will be dispatched later (with a timeDelta reflecting that delay).
          *
-         * @param timeDelta  Number of seconds between now and when the event should happen (either zero or negative).
+         * @param timeDelta  Number of seconds that have elapsed since this event should have happened (always >= 0)
          *
          * @return true if the event was handled, false if handling needs to be retried later.
          */
