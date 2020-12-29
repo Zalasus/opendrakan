@@ -390,6 +390,15 @@ namespace od
 
     void LevelObject::update(float relTime)
     {
+        if(mSkeletonAnimationPlayer != nullptr)
+        {
+            bool rigNeedsFlattening = mSkeletonAnimationPlayer->update(relTime);
+            if(rigNeedsFlattening && mRenderHandle != nullptr)
+            {
+                mSkeleton->flatten(*mRenderHandle->getRig());
+            }
+        }
+
         if(mStates.running.get() && mEnableUpdate && mSpawnableClass != nullptr)
         {
             mSpawnableClass->onUpdate(relTime);
@@ -615,15 +624,25 @@ namespace od
         }
     }
 
-    void LevelObject::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, float speed)
+    void LevelObject::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, float speed)
     {
-        auto animPlayer = getSkeletonAnimationPlayer();
-        if(animPlayer != nullptr && anim != nullptr)
-        {
-            animPlayer->playAnimation(anim, odAnim::PlaybackType::NORMAL, speed);
+        playAnimationUntracked(anim, channelIndex, speed);
 
-            odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), jointIndex, speed);
-            mLevel.getEngine().getEventQueue().logEvent(animEvent);
+        odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), channelIndex, speed);
+        mLevel.getEngine().getEventQueue().logEvent(animEvent);
+    }
+
+    void LevelObject::playAnimationUntracked(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, float speed)
+    {
+        OD_CHECK_ARG_NONNULL(anim);
+
+        (void)channelIndex; // TODO: translate to joint and pass to animPlayer
+
+        auto animPlayer = getSkeletonAnimationPlayer();
+        if(animPlayer != nullptr)
+        {
+            Logger::info() << "Object " << getObjectId() << " playing animation " << anim->getName();
+            animPlayer->playAnimation(anim, odAnim::PlaybackType::NORMAL, speed);
         }
     }
 
@@ -632,10 +651,17 @@ namespace od
         auto animEvent = std::get_if<odState::ObjectAnimEvent>(&event);
         if(animEvent != nullptr)
         {
-            auto animPlayer = getSkeletonAnimationPlayer();
-            if(animPlayer != nullptr && animEvent->anim != nullptr)
+            if(animEvent->anim == nullptr)
             {
-                animPlayer->playAnimation(animEvent->anim, odAnim::PlaybackType::NORMAL, animEvent->speed);
+                Logger::warn() << "Event queue failed to prefetch animation for event. Retrying later. dt=" << timeDelta;
+                return false;
+            }
+
+            playAnimationUntracked(animEvent->anim, animEvent->channelIndex, animEvent->speedModifier);
+
+            auto animPlayer = getSkeletonAnimationPlayer();
+            if(animPlayer != nullptr && timeDelta > 0)
+            {
                 animPlayer->update(timeDelta);
             }
         }

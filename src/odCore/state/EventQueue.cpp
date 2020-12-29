@@ -2,6 +2,7 @@
 #include <odCore/state/EventQueue.h>
 
 #include <odCore/Level.h>
+#include <odCore/LevelObject.h>
 
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
@@ -14,9 +15,11 @@ namespace odState
     struct DispatchVisitor
     {
         od::Level &level;
+        double timeDelta;
 
-        DispatchVisitor(od::Level &l)
+        DispatchVisitor(od::Level &l, double dt)
         : level(l)
+        , timeDelta(dt)
         {
         }
 
@@ -30,7 +33,7 @@ namespace odState
             auto obj = level.getLevelObjectById(event.objectId);
             if(obj != nullptr)
             {
-                return obj->handleEvent(event);
+                return obj->handleEvent(event, timeDelta);
             }
 
             return true;
@@ -68,19 +71,20 @@ namespace odState
         {
         }
 
-        void operator()(const Event &event)
+        void operator()(Event &event)
         {
         }
 
-        void operator()(const ObjectAnimEvent &event)
+        void operator()(ObjectAnimEvent &event)
         {
             event.anim = dbManager.loadAsset<odDb::Animation>(event.animRef);
         }
     };
 
 
-    EventQueue::EventQueue(odDb::DbManager &dbManager)
+    EventQueue::EventQueue(odDb::DbManager &dbManager, od::Level &level)
     : mDbManager(dbManager)
+    , mLevel(level)
     {
     }
 
@@ -91,7 +95,7 @@ namespace odState
 
         // prefetch assets. this should later happen asynchronously
         PrefetchVisitor pv(mDbManager);
-        std::visit(pv, *inserted);
+        std::visit(pv, inserted->event);
     }
 
     void EventQueue::logEvent(double realtime, const EventVariant &event)
@@ -107,8 +111,6 @@ namespace odState
 
     void EventQueue::dispatch(double realtime)
     {
-        DispatchVisitor visitor;
-
         auto it = mEvents.begin();
         for(; it != mEvents.end(); ++it)
         {
@@ -116,6 +118,7 @@ namespace odState
             {
                 // the dispatch functor returns false if dispatch should be retried later.
                 //  this might happen if an object is stopped and thus can not process events
+                DispatchVisitor visitor(mLevel, it->realtime);
                 it->dispatched = std::visit(visitor, it->event);
 
             }else

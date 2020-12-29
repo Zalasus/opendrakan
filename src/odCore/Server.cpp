@@ -95,7 +95,6 @@ namespace od
     , mNextClientId(1)
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(nullptr);
-        mEventQueue = std::make_unique<odState::EventQueue>(dbManager);
     }
 
     Server::~Server()
@@ -172,6 +171,7 @@ namespace od
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
 
         mStateManager = std::make_unique<odState::StateManager>(*mLevel);
+        mEventQueue = std::make_unique<odState::EventQueue>(mDbManager, *mLevel);
 
         mLevel->spawnAllObjects();
 

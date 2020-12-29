@@ -7,6 +7,11 @@
 
 #include <odCore/state/Event.h>
 
+namespace od
+{
+    class Level;
+}
+
 namespace odDb
 {
     class DbManager;
@@ -30,7 +35,7 @@ namespace odState
     {
     public:
 
-        EventQueue(odDb::DbManager &dbManager);
+        EventQueue(odDb::DbManager &dbManager, od::Level &level);
 
         inline void setCurrentTime(double t) { mCurrentTime = t; }
 
@@ -86,6 +91,7 @@ namespace odState
         EventIterator _getEventInsertPoint(double realtime);
 
         odDb::DbManager &mDbManager;
+        od::Level &mLevel;
 
         double mCurrentTime;
         EventVector mEvents;

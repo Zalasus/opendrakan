@@ -135,6 +135,9 @@ namespace odAnim
 
             // we need to split off transform and non-transform actions into their own vectors, as to make interpolation easier.
             //  we take this opportunity to prefetch animations and sounds, which are represented by alternative action variants.
+            //  TODO: instead of using alternative actions, we could store prefetch assets in a vector only to make sure they stay
+            //        cached, and let the event queue handle the prefetching. since the assets are still loaded and owned by our vector,
+            //        the prefetch in the event queue will only take as long as it takes to retrieve an asset from the cache
 
             ActionLoadVisitor visitor(playerActor, *sequence);
 

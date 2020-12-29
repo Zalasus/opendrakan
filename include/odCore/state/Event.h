@@ -2,6 +2,12 @@
 /*
  * @file Event.h
  * @author zal
+ *
+ * An Event is something whose execution (on either the server or the client)
+ * can be delayed for whatever reason. They have a distinct, known time of
+ * occurrence and a target (object, subsystem or whatever). Events must not be
+ * abstract. They themselves can only be used for engine-domain stuff, although
+ * they may carry RFL-domain data (like messages).
  */
 
 #ifndef INCLUDE_ODCORE_STATE_EVENT_H_
@@ -50,7 +56,7 @@ namespace odState
         odInput::ActionCode actionCode;
         bool keyDown;
     };
-    
+
 
     struct ObjectAnimEvent final : public Event
     {

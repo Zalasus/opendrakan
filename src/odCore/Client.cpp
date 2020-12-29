@@ -120,8 +120,6 @@ namespace od
 
         mMessageDispatcher = std::make_unique<odNet::UplinkMessageDispatcher>();
 
-        mEventQueue = std::make_unique<odState::EventQueue>(mDbManager);
-
         mActionListener = mInputManager->createRawActionListener();
         mActionListener->callback = [this](odInput::ActionCode code, odInput::ActionState state)
         {
@@ -164,8 +162,11 @@ namespace od
         mLevel = std::make_unique<Level>(engine);
         mLevel->loadLevel(lvlPath.adjustCase(), mDbManager);
 
+        // TODO: all the subsytems whose existence depends on the level could be very elegantly moved to the level class itself
         mStateManager = std::make_unique<odState::StateManager>(*mLevel);
         mStateManager->setUplinkConnector(mAssignedUplinkConnector);
+
+        mEventQueue = std::make_unique<odState::EventQueue>(mDbManager, *mLevel);
 
         mLevel->spawnAllObjects();
     }
