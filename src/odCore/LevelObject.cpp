@@ -621,14 +621,24 @@ namespace od
         if(animPlayer != nullptr && anim != nullptr)
         {
             animPlayer->playAnimation(anim, odAnim::PlaybackType::NORMAL, speed);
-        }
 
-        odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), jointIndex, speed);
-        mLevel.getEngine().getEventQueue().logEvent(animEvent);
+            odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), jointIndex, speed);
+            mLevel.getEngine().getEventQueue().logEvent(animEvent);
+        }
     }
 
     bool LevelObject::handleEvent(const odState::EventVariant &event, float timeDelta)
     {
+        auto animEvent = std::get_if<odState::ObjectAnimEvent>(&event);
+        if(animEvent != nullptr)
+        {
+            auto animPlayer = getSkeletonAnimationPlayer();
+            if(animPlayer != nullptr && animEvent->anim != nullptr)
+            {
+                animPlayer->playAnimation(animEvent->anim, odAnim::PlaybackType::NORMAL, animEvent->speed);
+            }
+        }
+
         return true;
     }
 

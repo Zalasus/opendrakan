@@ -1,6 +1,8 @@
 
 #include <odCore/state/EventQueue.h>
 
+#include <odCore/Level.h>
+
 #include <odCore/db/DbManager.h>
 #include <odCore/db/Database.h>
 
@@ -11,6 +13,13 @@ namespace odState
 
     struct DispatchVisitor
     {
+        od::Level &level;
+
+        DispatchVisitor(od::Level &l)
+        : level(l)
+        {
+        }
+
         bool operator()(const Event &event)
         {
             return true;
@@ -18,6 +27,12 @@ namespace odState
 
         bool operator()(const ObjectAnimEvent &event)
         {
+            auto obj = level.getLevelObjectById(event.objectId);
+            if(obj != nullptr)
+            {
+                return obj->handleEvent(event);
+            }
+
             return true;
         }
     };
@@ -44,6 +59,25 @@ namespace odState
         }
     };
 
+    struct PrefetchVisitor
+    {
+        odDb::DbManager &dbManager;
+
+        PrefetchVisitor(odDb::DbManager &d)
+        : dbManager(d)
+        {
+        }
+
+        void operator()(const Event &event)
+        {
+        }
+
+        void operator()(const ObjectAnimEvent &event)
+        {
+            event.anim = dbManager.loadAsset<odDb::Animation>(event.animRef);
+        }
+    };
+
 
     EventQueue::EventQueue(odDb::DbManager &dbManager)
     : mDbManager(dbManager)
@@ -53,7 +87,11 @@ namespace odState
     void EventQueue::addIncomingEvent(double realtime, const EventVariant &event)
     {
         auto it = _getEventInsertPoint(realtime);
-        mEvents.emplace(it, EventData{event, realtime, false, true});
+        auto inserted = mEvents.emplace(it, EventData{event, realtime, false, true});
+
+        // prefetch assets. this should later happen asynchronously
+        PrefetchVisitor pv(mDbManager);
+        std::visit(pv, *inserted);
     }
 
     void EventQueue::logEvent(double realtime, const EventVariant &event)

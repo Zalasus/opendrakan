@@ -2,13 +2,6 @@
 /*
  * @file Event.h
  * @author zal
- *
- * Types used to represent various events that  will affect the state of the
- * level. These are used by the StateManager to keep track of every change in
- * the past or the future. They are not intended to be passed over the network,
- * however, as they may directly reference the affected objects for performance.
- * For passing them between server and client, a translation step is needed
- * (likely going to be done in the Connector implementation).
  */
 
 #ifndef INCLUDE_ODCORE_STATE_EVENT_H_
@@ -57,7 +50,7 @@ namespace odState
         odInput::ActionCode actionCode;
         bool keyDown;
     };
-
+    
 
     struct ObjectAnimEvent final : public Event
     {
@@ -65,6 +58,7 @@ namespace odState
 
         od::LevelObjectId objectId;
         odDb::GlobalAssetRef animRef;
+        std::shared_ptr<odDb::Animation> anim;
         int32_t channelIndex;
         float speedModifier;
     };
