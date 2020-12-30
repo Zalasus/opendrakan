@@ -249,9 +249,17 @@ namespace odAnim
         mPlaying = true;
     }
 
-    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, PlaybackType type, float speed)
     {
-        throw od::UnsupportedException("Partial skeleton animation not implemented yet");
+        auto &bone = mSkeleton->getBoneByChannelIndex(channelIndex);
+        auto p = [this, anim, type, speed](odAnim::Skeleton::Bone &b)
+        {
+            mBoneAnimators[b.getJointIndex()].playAnimation(anim, type, speed);
+            return true;
+        };
+        bone.traverse(p);
+
+        mPlaying = true;
     }
 
     void SkeletonAnimationPlayer::setNodeAccumulator(std::shared_ptr<MotionAccumulator> accu, int32_t nodeIndex)

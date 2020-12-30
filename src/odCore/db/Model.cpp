@@ -425,8 +425,7 @@ namespace odDb
             }
         }
 
-        //Logger::info() << "Skel info for model " << mModelName;
-        //mSkeletonBuilder->printInfo(std::cout);
+        mSkeletonDefinition->finalize();
 
         dr >> od::DataReader::Expect<uint16_t>(lodCount);
 

@@ -644,7 +644,7 @@ namespace od
         {
             Logger::debug() << "Object " << getObjectId() << " playing animation " << anim->getName();
             auto playbackType = anim->isLooping() ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
-            mSkeletonAnimationPlayer->playAnimation(anim, playbackType, speed);
+            mSkeletonAnimationPlayer->playAnimation(anim, channelIndex, playbackType, speed);
 
         }else
         {

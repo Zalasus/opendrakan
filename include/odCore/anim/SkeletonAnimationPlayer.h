@@ -114,25 +114,25 @@ namespace odAnim
         void playAnimation(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier);
 
         /**
-         * @brief Plays animation on skeleton subtree, starting at \c jointIndex.
+         * @brief Plays animation on skeleton subtree, starting at \c channelIndex.
          *
          * This will override any playing animations on that subtree. You can mix multiple
          * animations this way, e.g. playing walking animation on whole skeleton, then playing
-         * talking animation on neck joint to make the character talk while walking.
+         * talking animation on neck channel to make the character talk while walking.
          */
-        void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, PlaybackType type, float speedMultiplier);
 
         /**
-         * @brief Sets accumulator for a node.
+         * @brief Sets accumulator for a joint.
          *
-         * Setting this for a node overrides the default animation behaviour. Transforms will no
-         * longer be pushed to the rig for that node, but instead be reported to the accumulator.
+         * Setting this for a joint overrides the default animation behaviour. Transforms will no
+         * longer be pushed to the rig for that joint, but instead be reported to the accumulator.
          *
          * Passing nullptr as accumulator returns the bone to it's default behavior.
          */
-        void setNodeAccumulator(std::shared_ptr<MotionAccumulator> accumulator, int32_t nodeIndex);
+        void setNodeAccumulator(std::shared_ptr<MotionAccumulator> accumulator, int32_t jointIndex);
 
-        void setNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t nodeIndex);
+        void setNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t jointIndex);
 
         /**
          * @brief Advances the animation by relTime and applies changes to the skeleton.
