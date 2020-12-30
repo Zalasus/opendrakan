@@ -13,8 +13,6 @@
 
 #include <odCore/Exception.h>
 
-#include <odCore/render/Rig.h>
-
 namespace odDb
 {
 
@@ -45,7 +43,12 @@ namespace odDb
         mJointInfos.push_back(info);
     }
 
-    void SkeletonBuilder::markJointAsChannel(size_t jointIndex)
+    void SkeletonBuilder::reserveChannels(size_t count)
+    {
+        mChannelToJointIndex.resize(count, -1);
+    }
+
+    void SkeletonBuilder::markJointAsChannel(size_t jointIndex, size_t channelIndex)
     {
         if(jointIndex >= mJointInfos.size())
         {
@@ -53,32 +56,38 @@ namespace odDb
         }
 
         mJointInfos[jointIndex].isChannel = true;
+
+        if(channelIndex <= mChannelToJointIndex.size())
+        {
+            mChannelToJointIndex.resize(channelIndex+1, -1);
+        }
+        mChannelToJointIndex[channelIndex] = jointIndex;
     }
 
     void SkeletonBuilder::build(odAnim::Skeleton &skeleton)
     {
         if(!mAlreadyBuiltNameLinks)
         {
-            for(auto it = mNameInfos.begin(); it != mNameInfos.end(); ++it)
+            for(auto &nameInfo : mNameInfos)
             {
-                if(it->jointIndex < 0)
+                if(nameInfo.jointIndex < 0)
                 {
                     continue;
 
-                }else if(it->jointIndex >= (int32_t)mJointInfos.size())
+                }else if(nameInfo.jointIndex >= (int32_t)mJointInfos.size())
                 {
                     throw od::Exception("Joint name info's referenced joint index is out of bounds");
                 }
 
-                mJointInfos[it->jointIndex].nameInfo = &(*it);
+                mJointInfos[nameInfo.jointIndex].nameInfo = &nameInfo;
             }
 
             mAlreadyBuiltNameLinks = true;
         }
 
-        for(auto it = mJointInfos.begin(); it != mJointInfos.end(); ++it)
+        for(auto &jointInfo : mJointInfos)
         {
-            it->visited = false;
+            jointInfo.visited = false;
         }
 
         // by iterating over all joints and starting to build from all untouched joints we encounter, we can

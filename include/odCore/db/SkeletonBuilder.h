@@ -16,11 +16,6 @@
 
 #include <odCore/anim/Skeleton.h>
 
-namespace odRender
-{
-    class Rig;
-}
-
 namespace odDb
 {
 
@@ -35,7 +30,9 @@ namespace odDb
 
         void addJointNameInfo(const std::string &name, int32_t jointIndex);
         void addJointInfo(const glm::mat4 &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
-        void markJointAsChannel(size_t jointIndex);
+
+        void reserveChannels(size_t count);
+        void markJointAsChannel(size_t jointIndex, size_t channelIndex);
 
         void build(odAnim::Skeleton &skeleton);
 
@@ -65,6 +62,7 @@ namespace odDb
 
         std::vector<JointNameInfo> mNameInfos;
         std::vector<JointInfo> mJointInfos;
+        std::vector<int32_t> mChannelToJointIndex; // index i contains the joint index corresponding to channel i
         bool mAlreadyBuiltNameLinks;
     };
 

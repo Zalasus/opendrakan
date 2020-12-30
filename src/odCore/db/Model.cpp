@@ -384,6 +384,7 @@ namespace odDb
         // channels
         uint16_t channelCount;
         dr >> channelCount;
+        mSkeletonBuilder->reserveChannels(channelCount);
         for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
         {
             uint32_t jointIndex;
@@ -396,7 +397,7 @@ namespace odDb
                >> xformB
                >> capCount;
 
-            mSkeletonBuilder->markJointAsChannel(jointIndex);
+            mSkeletonBuilder->markJointAsChannel(jointIndex, channelIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {

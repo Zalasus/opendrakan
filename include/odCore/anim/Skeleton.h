@@ -52,13 +52,8 @@ namespace odAnim
             void moveToBindPose();
             void move(const glm::mat4 &transform);
 
-
-        private:
-
-            void _flattenRecursive(odRender::Rig &rig, const glm::mat4 &parentMatrix);
-
             template <typename F>
-            void _traverse(const F &f)
+            void traverse(const F &f)
             {
                 bool shouldContinue = f(*this);
                 if(!shouldContinue)
@@ -68,9 +63,14 @@ namespace odAnim
 
                 for(auto bone : mChildBones)
                 {
-                    bone->_traverse(f);
+                    bone->traverse(f);
                 }
             }
+
+
+        private:
+
+            void _flattenRecursive(odRender::Rig &rig, const glm::mat4 &parentMatrix);
 
             Skeleton &mSkeleton;
             Bone *mParent;
@@ -98,7 +98,7 @@ namespace odAnim
         {
             for(auto bone : mRootBones)
             {
-                bone->_traverse(f);
+                bone->traverse(f);
             }
         }
 
