@@ -638,11 +638,20 @@ namespace od
 
         (void)channelIndex; // TODO: translate to joint and pass to animPlayer
 
-        auto animPlayer = getSkeletonAnimationPlayer();
-        if(animPlayer != nullptr)
+        if(mSkeletonAnimationPlayer == nullptr)
         {
-            Logger::info() << "Object " << getObjectId() << " playing animation " << anim->getName();
-            animPlayer->playAnimation(anim, odAnim::PlaybackType::NORMAL, speed);
+            setupSkeleton();
+        }
+
+        if(mSkeletonAnimationPlayer != nullptr)
+        {
+            Logger::debug() << "Object " << getObjectId() << " playing animation " << anim->getName();
+            auto playbackType = anim->isLooping() ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
+            mSkeletonAnimationPlayer->playAnimation(anim, playbackType, speed);
+
+        }else
+        {
+            Logger::warn() << "Object " << getObjectId() << " can't play animation because it has no animation player";
         }
     }
 
