@@ -616,10 +616,7 @@ namespace od
     {
         if(mModel != nullptr && mModel->hasSkeleton())
         {
-            auto sd = mModel->getSkeletonDefinition();
-            mSkeleton = std::make_shared<odAnim::Skeleton>(sd->getJointCount());
-            sd->build(*mSkeleton);
-
+            mSkeleton = std::make_shared<odAnim::Skeleton>(mModel->getSkeletonDefinition());
             mSkeletonAnimationPlayer = std::make_shared<odAnim::SkeletonAnimationPlayer>(mSkeleton);
         }
     }

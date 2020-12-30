@@ -13,6 +13,8 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/db/SkeletonDefinition.h>
+
 #include <odCore/render/Rig.h>
 
 namespace odAnim
@@ -23,30 +25,6 @@ namespace odAnim
     , mParent(nullptr)
     , mJointIndex(jointIndex)
     {
-    }
-
-    Skeleton::Bone::Bone(const Bone &bone)
-    : mSkeleton(bone.mSkeleton)
-    , mParent(bone.mParent)
-    , mJointIndex(bone.mJointIndex)
-    , mName(bone.mName)
-    , mInverseBindPoseTransform(bone.mInverseBindPoseTransform)
-    , mBindPoseTransform(bone.mBindPoseTransform)
-    {
-        if(bone.mChildBones.size() > 0)
-        {
-            throw od::Exception("Copying bone with set child links");
-        }
-
-        moveToBindPose();
-    }
-
-    void Skeleton::Bone::setInverseBindPoseTransform(const glm::mat4 &tform)
-    {
-        // turns out these aren't actually needed for animating a model. they are baked into the animations!
-        //  still, i keep them here for future reference
-        mInverseBindPoseTransform = tform;
-        mBindPoseTransform = glm::inverse(tform);
     }
 
     size_t Skeleton::Bone::getChildBoneCount()
@@ -107,13 +85,17 @@ namespace odAnim
     }
 
 
-    Skeleton::Skeleton(size_t boneCount)
+    Skeleton::Skeleton(std::shared_ptr<odDb::SkeletonDefinition> def)
+    : mDefinition(def)
     {
+        size_t boneCount = mDefinition->getJointCount();
         mBones.reserve(boneCount);
         for(size_t i = 0; i < boneCount; ++i)
         {
-            mBones.push_back(Bone(*this, i));
+            mBones.emplace_back(*this, i);
         }
+
+        mDefinition->build(*this);
     }
 
     Skeleton::Bone &Skeleton::addRootBone(int32_t jointIndex)
@@ -138,6 +120,11 @@ namespace odAnim
         }
 
         return mBones[jointIndex];
+    }
+
+    Skeleton::Bone &Skeleton::getBoneByChannelIndex(int32_t channelIndex)
+    {
+        return mBones[mDefinition->getJointIndexForChannelIndex(channelIndex).value()];
     }
 
     void Skeleton::flatten(odRender::Rig &rig)

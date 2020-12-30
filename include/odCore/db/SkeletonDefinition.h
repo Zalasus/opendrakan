@@ -10,6 +10,7 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
 #include <glm/mat4x4.hpp>
 #include <glm/mat3x4.hpp>
@@ -24,16 +25,17 @@ namespace odDb
     public:
 
         SkeletonDefinition();
-        SkeletonDefinition(SkeletonDefinition &sd) = delete;
+        SkeletonDefinition(const SkeletonDefinition &sd) = delete;
 
         inline size_t getJointCount() const { return mJointInfos.size(); }
 
         void addJointNameInfo(const std::string &name, int32_t jointIndex);
         void addJointInfo(const glm::mat4 &boneXform, int32_t meshIndex, int32_t firstChildIndex, int32_t nextSiblingIndex);
-
         void reserveChannels(size_t count);
         void markJointAsChannel(size_t jointIndex, size_t channelIndex);
+        void finalize();
 
+        std::optional<size_t> getJointIndexForChannelIndex(size_t channelIndex) const;
         void build(odAnim::Skeleton &skeleton);
 
 
@@ -58,12 +60,13 @@ namespace odDb
             bool visited;
         };
 
+        void _checkFinalized() const;
         void _buildRecursive(odAnim::Skeleton &skeleton, odAnim::Skeleton::Bone *parent, JointInfo &jointInfo, int32_t jointIndex);
 
         std::vector<JointNameInfo> mNameInfos;
         std::vector<JointInfo> mJointInfos;
         std::vector<int32_t> mChannelToJointIndex; // index i contains the joint index corresponding to channel i
-        bool mAlreadyBuiltNameLinks;
+        bool mFinalized;
     };
 
 }

@@ -10,9 +10,15 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <glm/mat4x4.hpp>
 #include <glm/mat3x4.hpp>
+
+namespace odDb
+{
+    class SkeletonDefinition;
+}
 
 namespace odRender
 {
@@ -33,17 +39,12 @@ namespace odAnim
             friend class Skeleton;
 
             Bone(Skeleton &skeleton, int32_t jointIndex);
-            Bone(const Bone &bone);
+            Bone(Bone &&bone) = default;
 
-            inline const std::string &getName() const { return mName; }
-            inline const glm::mat4 &getInverseBindPoseTransform() const { return mInverseBindPoseTransform; }
-            inline void setName(const std::string &name) { mName = name; }
             inline const glm::mat4 &getCurrentTransform() const { return mCurrentMatrix; }
             inline Bone *getParent() { return mParent; }
             inline int32_t getJointIndex() const { return mJointIndex; }
             inline bool isRoot() const { return mParent == nullptr; }
-
-            void setInverseBindPoseTransform(const glm::mat4 &tform);
 
             size_t getChildBoneCount();
             Bone &getChildBone(size_t index);
@@ -75,9 +76,6 @@ namespace odAnim
             Skeleton &mSkeleton;
             Bone *mParent;
             int32_t mJointIndex;
-            std::string mName;   // TODO: the name and IBPT are the same for all instances of a skeleton. might want to save some memory here
-            glm::mat4 mInverseBindPoseTransform;
-            glm::mat4 mBindPoseTransform;
             std::vector<Bone*> mChildBones;
 
             glm::mat4 mCurrentMatrix;
@@ -85,13 +83,14 @@ namespace odAnim
 
         friend class Bone;
 
-        explicit Skeleton(size_t boneCount);
+        explicit Skeleton(std::shared_ptr<odDb::SkeletonDefinition> def);
         Skeleton(const Skeleton &skeleton) = delete;
 
         inline size_t getBoneCount() const { return mBones.size(); }
 
         Bone &addRootBone(int32_t jointIndex);
         Bone &getBoneByJointIndex(int32_t jointIndex);
+        Bone &getBoneByChannelIndex(int32_t channelIndex);
 
         template <typename F>
         void traverse(const F &f)
@@ -108,6 +107,7 @@ namespace odAnim
 
     private:
 
+        std::shared_ptr<odDb::SkeletonDefinition> mDefinition;
         std::vector<Bone> mBones;
         std::vector<Bone*> mRootBones;
 
