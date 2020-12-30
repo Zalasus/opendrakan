@@ -14,7 +14,7 @@
 
 #include <odCore/db/Asset.h>
 #include <odCore/db/ModelFactory.h>
-#include <odCore/db/SkeletonBuilder.h>
+#include <odCore/db/SkeletonDefinition.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/ModelBounds.h>
 
@@ -285,7 +285,7 @@ namespace odDb
         }
 
 
-        mSkeletonBuilder = std::make_unique<SkeletonBuilder>();
+        mSkeletonDefinition = std::make_shared<SkeletonDefinition>();
 
         // node info
         uint16_t nodeInfoCount;
@@ -298,7 +298,7 @@ namespace odDb
             dr.read(nodeName, 32);
             dr >> jointInfoIndex;
 
-            mSkeletonBuilder->addJointNameInfo(std::string(nodeName), jointInfoIndex);
+            mSkeletonDefinition->addJointNameInfo(std::string(nodeName), jointInfoIndex);
         }
 
         // joint info
@@ -316,7 +316,7 @@ namespace odDb
                >> firstChildIndex
                >> nextSiblingIndex;
 
-            mSkeletonBuilder->addJointInfo(glm::mat4(inverseBoneTransform), meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeletonDefinition->addJointInfo(glm::mat4(inverseBoneTransform), meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
@@ -384,7 +384,7 @@ namespace odDb
         // channels
         uint16_t channelCount;
         dr >> channelCount;
-        mSkeletonBuilder->reserveChannels(channelCount);
+        mSkeletonDefinition->reserveChannels(channelCount);
         for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
         {
             uint32_t jointIndex;
@@ -397,7 +397,7 @@ namespace odDb
                >> xformB
                >> capCount;
 
-            mSkeletonBuilder->markJointAsChannel(jointIndex, channelIndex);
+            mSkeletonDefinition->markJointAsChannel(jointIndex, channelIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {

@@ -17,7 +17,6 @@
 #include <odCore/BoundingBox.h>
 
 #include <odCore/db/Asset.h>
-#include <odCore/db/SkeletonBuilder.h>
 
 namespace odRender
 {
@@ -34,6 +33,7 @@ namespace odPhysics
 namespace odDb
 {
     class ModelBounds;
+    class SkeletonDefinition;
 
 	class Model : public Asset
 	{
@@ -81,9 +81,9 @@ namespace odDb
         ~Model();
 
         inline const std::string &getName() const { return mModelName; }
-		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); } ///< May return nullptr if no skeleton present. Can't be const due to some caching in SkeletonBuilder
+		inline std::shared_ptr<SkeletonDefinition> getSkeletonDefinition() { return mSkeletonDefinition; } ///< May return nullptr if no skeleton present
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
-		inline bool hasSkeleton() const { return mSkeletonBuilder != nullptr; }
+		inline bool hasSkeleton() const { return mSkeletonDefinition != nullptr; }
 		inline ShadingType getShadingType() const { return mShadingType; }
 		inline bool isShiny() const { return mShiny; }
 		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
@@ -121,7 +121,7 @@ namespace odDb
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::vector<ModelBounds> mModelBounds; // one for each LOD
-		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
+		std::shared_ptr<SkeletonDefinition> mSkeletonDefinition;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;

@@ -1,12 +1,12 @@
 /*
- * SkeletonBuilder.h
+ * SkeletonDefinition.h
  *
  *  Created on: 11 Mar 2018
  *      Author: zal
  */
 
-#ifndef INCLUDE_DB_SKELETONBUILDER_H_
-#define INCLUDE_DB_SKELETONBUILDER_H_
+#ifndef INCLUDE_DB_SKELETONDEFINITION_H_
+#define INCLUDE_DB_SKELETONDEFINITION_H_
 
 #include <string>
 #include <vector>
@@ -19,12 +19,12 @@
 namespace odDb
 {
 
-    class SkeletonBuilder
+    class SkeletonDefinition
     {
     public:
 
-        SkeletonBuilder();
-        SkeletonBuilder(SkeletonBuilder &sb) = delete;
+        SkeletonDefinition();
+        SkeletonDefinition(SkeletonDefinition &sd) = delete;
 
         inline size_t getJointCount() const { return mJointInfos.size(); }
 

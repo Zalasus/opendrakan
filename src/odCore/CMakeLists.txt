@@ -27,7 +27,7 @@ target_sources(odCore PRIVATE
         "db/MusicContainer.cpp"
         "db/Segment.cpp"
         "db/Sequence.cpp"
-        "db/SkeletonBuilder.cpp"
+        "db/SkeletonDefinition.cpp"
         "db/Sound.cpp"
         "db/Texture.cpp"
         "db/TextureFactory.cpp"

@@ -22,7 +22,7 @@
 #include <odCore/db/Animation.h>
 #include <odCore/db/Model.h>
 #include <odCore/db/ModelBounds.h>
-#include <odCore/db/SkeletonBuilder.h>
+#include <odCore/db/SkeletonDefinition.h>
 
 #include <odCore/net/DownlinkConnector.h>
 
@@ -616,9 +616,9 @@ namespace od
     {
         if(mModel != nullptr && mModel->hasSkeleton())
         {
-            odDb::SkeletonBuilder &sb = *mModel->getSkeletonBuilder();
-            mSkeleton = std::make_shared<odAnim::Skeleton>(sb.getJointCount());
-            sb.build(*mSkeleton);
+            auto sd = mModel->getSkeletonDefinition();
+            mSkeleton = std::make_shared<odAnim::Skeleton>(sd->getJointCount());
+            sd->build(*mSkeleton);
 
             mSkeletonAnimationPlayer = std::make_shared<odAnim::SkeletonAnimationPlayer>(mSkeleton);
         }
