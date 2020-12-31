@@ -633,8 +633,6 @@ namespace od
     {
         OD_CHECK_ARG_NONNULL(anim);
 
-        (void)channelIndex; // TODO: translate to joint and pass to animPlayer
-
         if(mSkeletonAnimationPlayer == nullptr)
         {
             setupSkeleton();
@@ -642,7 +640,7 @@ namespace od
 
         if(mSkeletonAnimationPlayer != nullptr)
         {
-            Logger::debug() << "Object " << getObjectId() << " playing animation " << anim->getName();
+            Logger::debug() << "Object " << getObjectId() << " playing animation " << anim->getName() << " on channel " << mSkeleton->getDefinition()->getChannelName(channelIndex).value();
             auto playbackType = anim->isLooping() ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
             mSkeletonAnimationPlayer->playAnimation(anim, channelIndex, playbackType, speed);
 
@@ -665,10 +663,9 @@ namespace od
 
             playAnimationUntracked(animEvent->anim, animEvent->channelIndex, animEvent->speedModifier);
 
-            auto animPlayer = getSkeletonAnimationPlayer();
-            if(animPlayer != nullptr && timeDelta > 0)
+            if(mSkeletonAnimationPlayer != nullptr && timeDelta > 0)
             {
-                animPlayer->update(timeDelta);
+                mSkeletonAnimationPlayer->update(timeDelta);
             }
         }
 

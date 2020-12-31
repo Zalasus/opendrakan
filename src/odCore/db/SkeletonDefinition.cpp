@@ -100,6 +100,29 @@ namespace odDb
         }
     }
 
+    std::optional<std::string_view> SkeletonDefinition::getChannelName(size_t channelIndex) const
+    {
+        _checkFinalized();
+
+        auto joint = getJointIndexForChannelIndex(channelIndex);
+        if(joint.has_value())
+        {
+            auto nameInfo = mJointInfos[*joint].nameInfo;
+            if(nameInfo == nullptr)
+            {
+                return {};
+
+            }else
+            {
+                return nameInfo->name;
+            }
+            
+        }else
+        {
+            return {};
+        }
+    }
+
     void SkeletonDefinition::build(odAnim::Skeleton &skeleton)
     {
         _checkFinalized();

@@ -87,6 +87,7 @@ namespace odAnim
         Skeleton(const Skeleton &skeleton) = delete;
 
         inline size_t getBoneCount() const { return mBones.size(); }
+        inline std::shared_ptr<const odDb::SkeletonDefinition> getDefinition() const { return mDefinition; }
 
         Bone &addRootBone(int32_t jointIndex);
         Bone &getBoneByJointIndex(int32_t jointIndex);

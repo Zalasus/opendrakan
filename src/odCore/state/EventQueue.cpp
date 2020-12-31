@@ -132,12 +132,11 @@ namespace odState
 
     void EventQueue::sendEventsToClient(odNet::DownlinkConnector &connector, double realtime)
     {
-        SendVisitor visitor(connector, realtime);
-
         for(auto &event : mEvents)
         {
             if(event.realtime <= realtime && !event.sent)
             {
+                SendVisitor visitor(connector, event.realtime);
                 std::visit(visitor, event.event);
 
             }else

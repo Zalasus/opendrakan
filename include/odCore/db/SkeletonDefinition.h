@@ -9,6 +9,7 @@
 #define INCLUDE_DB_SKELETONDEFINITION_H_
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <optional>
 
@@ -36,6 +37,7 @@ namespace odDb
         void finalize();
 
         std::optional<size_t> getJointIndexForChannelIndex(size_t channelIndex) const;
+        std::optional<std::string_view> getChannelName(size_t channelIndex) const;
         void build(odAnim::Skeleton &skeleton);
 
 
