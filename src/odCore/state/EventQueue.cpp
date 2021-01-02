@@ -111,33 +111,36 @@ namespace odState
 
     void EventQueue::dispatch(double realtime)
     {
-        auto it = mEvents.begin();
-        for(; it != mEvents.end(); ++it)
+        for(auto &eventData : mEvents)
         {
-            if(it->realtime <= realtime && !it->dispatched)
+            if(eventData.realtime <= realtime)
             {
-                // the dispatch functor returns false if dispatch should be retried later.
-                //  this might happen if an object is stopped and thus can not process events
-                DispatchVisitor visitor(mLevel, it->realtime);
-                it->dispatched = std::visit(visitor, it->event);
+                if(!eventData.dispatched)
+                {
+                    // the dispatch functor returns false if dispatch should be retried later.
+                    //  this might happen if an object is stopped and thus can not process events
+                    DispatchVisitor visitor(mLevel, realtime - eventData.realtime);
+                    eventData.dispatched = std::visit(visitor, eventData.event);
+                }
 
             }else
             {
-                break;
+                break; // event queue is sorted, so the next events won't be relevant either. we are done
             }
         }
-
-        mEvents.erase(mEvents.begin(), it);
     }
 
     void EventQueue::sendEventsToClient(odNet::DownlinkConnector &connector, double realtime)
     {
-        for(auto &event : mEvents)
+        for(auto &eventData : mEvents)
         {
-            if(event.realtime <= realtime && !event.sent)
+            if(eventData.realtime <= realtime)
             {
-                SendVisitor visitor(connector, event.realtime);
-                std::visit(visitor, event.event);
+                if(!eventData.sent)
+                {
+                    SendVisitor visitor(connector, eventData.realtime);
+                    std::visit(visitor, eventData.event);
+                }
 
             }else
             {
@@ -148,11 +151,11 @@ namespace odState
 
     void EventQueue::markAsSent(double realtime)
     {
-        for(auto &event : mEvents)
+        for(auto &eventData : mEvents)
         {
-            if(event.realtime <= realtime)
+            if(eventData.realtime <= realtime)
             {
-                event.sent = true;
+                eventData.sent = true;
 
             }else
             {
@@ -161,7 +164,7 @@ namespace odState
         }
     }
 
-    void EventQueue::flush()
+    void EventQueue::cleanup()
     {
         while(!mEvents.empty() && mEvents.front().dispatched && mEvents.front().sent)
         {
@@ -177,7 +180,7 @@ namespace odState
 
         }else
         {
-            auto pred = [](double time, auto &event) { return time < event.realtime; };
+            auto pred = [](double time, auto &eventData) { return time < eventData.realtime; };
             return std::upper_bound(mEvents.begin(), mEvents.end(), realtime, pred);
         }
     }

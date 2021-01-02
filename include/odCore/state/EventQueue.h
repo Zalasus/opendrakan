@@ -65,14 +65,14 @@ namespace odState
          * @brief Marks all events from realtime or ealier as sent.
          *
          * This will prevent them from being sent the at the next call of sendEventsToClient(). If they are also marked as dispatched,
-         * the next call to flush() will remove them from the queue.
+         * the next call to cleanup() will remove them from the queue.
          */
         void markAsSent(double realtime);
 
         /**
          * @brief Removes all dispatched and sent events from the start of the queue.
          */
-        void flush();
+        void cleanup();
 
 
     private:

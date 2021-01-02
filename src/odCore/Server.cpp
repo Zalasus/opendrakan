@@ -264,29 +264,28 @@ namespace od
 
             // commit update
             mStateManager->commit(mServerTime);
+            mEventQueue->dispatch(mServerTime);
 
             // send update to clients
             odState::TickNumber latestTick = mStateManager->getLatestTick();
             for(auto client : mTempClientUpdateList)
             {
-                if(latestTick < client->nextTickToSend)
+                if(latestTick >= client->nextTickToSend)
                 {
-                    continue;
-                }
+                    if(client->downlinkConnector != nullptr)
+                    {
+                        mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, client->lastAcknowledgedTick);
+                    }
 
-                if(client->downlinkConnector != nullptr)
-                {
-                    mStateManager->sendSnapshotToClient(latestTick, *client->downlinkConnector, client->lastAcknowledgedTick);
+                    // for now, send with fixes rate. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
+                    client->nextTickToSend = latestTick+3;
                 }
-
-                // for now, send with fixes rate. later, we'd likely adapt the rate with which we send snapshots based on the client's network speed
-                client->nextTickToSend = latestTick+3;
 
                 mEventQueue->sendEventsToClient(*client->downlinkConnector, mServerTime);
             }
 
             mEventQueue->markAsSent(mServerTime);
-            mEventQueue->flush();
+            mEventQueue->cleanup();
 
             auto loopEnd = std::chrono::high_resolution_clock::now();
             auto loopTime = loopEnd - loopStart;

@@ -193,6 +193,10 @@ namespace od
             lastUpdateStartTime = loopStart;
 
             clientTime += relTime;
+            if(mEventQueue != nullptr)
+            {
+                mEventQueue->setCurrentTime(clientTime);
+            }
 
             mDownlinkConnector->flushQueue(localDownlinkConnector);
 
@@ -217,8 +221,11 @@ namespace od
                 mStateManager->apply(clientTime);
             }
 
-            mEventQueue->dispatch(clientTime);
-            mEventQueue->flush();
+            if(mEventQueue != nullptr)
+            {
+                mEventQueue->dispatch(clientTime);
+                mEventQueue->cleanup();
+            }
 
             mRenderer.frame(relTime);
         }
