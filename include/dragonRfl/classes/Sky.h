@@ -22,24 +22,37 @@ namespace dragonRfl
 
     struct DomedSkyFields final : public odRfl::FieldBundle
     {
+        enum class FollowMode
+        {
+            ORIGINAL_HEIGHT,
+            CAMERA,
+            LANDSCAPE,
+            HOLD_POSITION
+        };
+
+        enum class Effects
+        {
+            NONE,
+            LIGHTNING
+        };
 
         DomedSkyFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        odRfl::EnumYesNo	primarySky;
-		odRfl::Enum			followMode;
-		odRfl::Float		offsetDown;
-		odRfl::Enum			effects;
-		odRfl::ClassRef		lightningObject;
-		odRfl::Float		aveLightningPeriod;
-		odRfl::Integer		lightningHeight;
-		odRfl::Integer		minLightningDist;
-		odRfl::Integer		maxLightningDist;
-		odRfl::Float		lightningWedgeAngle;
-		odRfl::ClassRef		lensFlare;
-		odRfl::Integer		flareElevation;
-		odRfl::Integer		flareDirection;
+        odRfl::EnumYesNo	              primarySky;
+		odRfl::EnumImpl<FollowMode, 0, 3> followMode;
+		odRfl::Float		              offsetDown;
+		odRfl::EnumImpl<Effects, 0, 1>    effects;
+		odRfl::ClassRef		              lightningObject;
+		odRfl::Float		              aveLightningPeriod;
+		odRfl::Integer		              lightningHeight;
+		odRfl::Integer		              minLightningDist;
+		odRfl::Integer		              maxLightningDist;
+		odRfl::Float		              lightningWedgeAngle;
+		odRfl::ClassRef		              lensFlare;
+		odRfl::Integer		              flareElevation;
+		odRfl::Integer		              flareDirection;
     };
 
 

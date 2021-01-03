@@ -21,9 +21,9 @@ namespace dragonRfl
 
 	DomedSkyFields::DomedSkyFields()
 	: primarySky(true)
-	, followMode(0) // original height
+	, followMode(FollowMode::ORIGINAL_HEIGHT)
 	, offsetDown(10000.0)
-	, effects(0) // none
+	, effects(Effects::NONE)
 	, lightningObject(odDb::AssetRef::NULL_REF)
 	, aveLightningPeriod(5.0)
 	, lightningHeight(30)
@@ -87,9 +87,20 @@ namespace dragonRfl
     {
         if(mCameraObject != nullptr && mRenderNode != nullptr)
         {
+            glm::vec3 skyPosition = mCameraObject->getPosition();
+            switch(mFields.followMode.get())
+            {
+            case DomedSkyFields::FollowMode::ORIGINAL_HEIGHT:
+            case DomedSkyFields::FollowMode::CAMERA:
+            case DomedSkyFields::FollowMode::LANDSCAPE:
+                skyPosition += glm::vec3(0, -od::Units::worldUnitsToLengthUnits(mFields.offsetDown.get()), 0);
+                break;
+
+            case DomedSkyFields::FollowMode::HOLD_POSITION:
+                break;
+            }
+
             // only move render handle, not the object. this avoids unnecessary state changes
-            glm::vec3 skyOffset(0, -od::Units::worldUnitsToLengthUnits(mFields.offsetDown.get()), 0);
-            glm::vec3 skyPosition = mCameraObject->getPosition() + skyOffset;
             mRenderNode->setPosition(skyPosition);
         }
     }
