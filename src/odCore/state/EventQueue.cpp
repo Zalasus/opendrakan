@@ -58,7 +58,7 @@ namespace odState
 
         void operator()(const ObjectAnimEvent &event)
         {
-            connector.objectAnimation(event.objectId, event.animRef, event.channelIndex, event.speedModifier, event.ignoreRootNodeTranslation, realtime);
+            connector.objectAnimation(event.objectId, event.animRef, event.modes, realtime);
         }
     };
 

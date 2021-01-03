@@ -30,16 +30,10 @@ namespace odAnim
 
     BoneAnimator::BoneAnimator(Skeleton::Bone &bone)
     : mBone(bone)
-    , mPlaybackType(PlaybackType::NORMAL)
-    , mSpeed(1.0f)
     , mTransitionAnimation(nullptr)
-    , mTransitionPlaybackType(PlaybackType::NORMAL)
-    , mTransitionSpeed(1.0f)
-    , mTransitionTime(0.0f)
     , mTransitionStartTime(0.0f)
     , mPlaying(false)
     , mPlayerTime(0.0f)
-    , mAccumulator(nullptr)
     , mBoneModes({BoneMode::NORMAL, BoneMode::NORMAL, BoneMode::NORMAL})
     , mHasNonDefaultBoneMode(false)
     , mUseInterpolation(false)
@@ -65,15 +59,13 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speed, float transitionTime)
+    void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, const AnimModes &modes)
     {
-        if(transitionTime > 0.0f)
+        if(false && modes.transitionTime > 0.0f)
         {
             mTransitionAnimation = mCurrentAnimation;
-            mTransitionTime = transitionTime;
             mTransitionStartTime = mPlayerTime;
-            mTransitionPlaybackType = mPlaybackType;
-            mTransitionSpeed = mSpeed;
+            mTransitionModes = mModes;
         }
 
         if(animation == nullptr)
@@ -84,12 +76,11 @@ namespace odAnim
         }
 
         mCurrentAnimation = animation;
-        mPlaybackType = type;
-        mSpeed = speed;
+        mModes = modes;
         mPlaying = true;
         mPlayerTime = 0.0f;
 
-        bool reverse = (mSpeed < 0.0f);
+        bool reverse = (mModes.speed < 0.0f);
 
         odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone.getJointIndex());
         size_t frameCount = newStartEnd.second - newStartEnd.first;
@@ -99,16 +90,16 @@ namespace odAnim
         mLoopJump = _translationFrom3x4(firstFrame->xform) - _translationFrom3x4(lastFrame->xform);
         if(reverse)
         {
-            mLoopJump += -1.0f;
+            mLoopJump *= -1.0f;
         }
     }
 
-    static float _linearToAnimTime(float duration, PlaybackType type, float startTime, float speed, float time)
+    static float _linearToAnimTime(float duration, const AnimModes &modes, float time)
     {
-        float animTime = (speed >= 0.0f) ? (time*speed) : (duration + time*speed);
-        animTime += startTime;
+        float animTime = (modes.speed >= 0.0f) ? (time*modes.speed) : (duration + time*modes.speed);
+        animTime += modes.startTime;
 
-        switch(type)
+        switch(modes.playbackType)
         {
         case PlaybackType::NORMAL:
             return glm::clamp(animTime, 0.0f, duration);
@@ -145,11 +136,11 @@ namespace odAnim
         // for correcting relative movement in case of a loop
         bool loopedBack = false;
 
-        float animTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mPlaybackType, 0.0f, mSpeed, mPlayerTime);
+        float animTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mModes, mPlayerTime);
 
         // have we moved beyond start/end of the current animation? if yes, we need to take appropriate actions before
         //  deciding how and where to move the bones, depending on whether we are looping, playing ping-pong etc.
-        switch(mPlaybackType)
+        switch(mModes.playbackType)
         {
         case PlaybackType::NORMAL:
             if(mPlayerTime >= mCurrentAnimation->getDuration())
@@ -160,7 +151,7 @@ namespace odAnim
 
         case PlaybackType::LOOPING:
             {
-                float prevAnimTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mPlaybackType, 0.0f, mSpeed, prevPlayerTime);
+                float prevAnimTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mModes, prevPlayerTime);
                 loopedBack = (animTime < prevAnimTime);
             }
             break;
@@ -174,8 +165,8 @@ namespace odAnim
 
         if(mTransitionAnimation != nullptr)
         {
-            float transitionAnimTime = _linearToAnimTime(mTransitionAnimation->getDuration(), mTransitionPlaybackType, 0.0f, mTransitionSpeed, mTransitionStartTime + mPlayerTime);
-            float transitionDelta = (mPlayerTime - mTransitionStartTime) / mTransitionTime;
+            float transitionAnimTime = _linearToAnimTime(mTransitionAnimation->getDuration(), mTransitionModes, mTransitionStartTime + mPlayerTime);
+            float transitionDelta = (mPlayerTime - mTransitionStartTime) / mModes.transitionTime;
             glm::dualquat sampledTransitionTransform = _sample(mTransitionAnimation, transitionAnimTime, needInterpolation);
             sampledTransform = glm::lerp(sampledTransitionTransform, sampledTransform, glm::clamp(transitionDelta, 0.0f, 1.0f));
             if(transitionDelta >= 1.0f)
@@ -299,25 +290,26 @@ namespace odAnim
     {
     }
 
-    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, const AnimModes &modes)
     {
-        for(auto &animator : mBoneAnimators)
+        if(modes.channel < 0)
         {
-            animator.playAnimation(anim, type, speedMultiplier);
+            // play on whole skeleton
+            for(auto &animator : mBoneAnimators)
+            {
+                animator.playAnimation(anim, modes);
+            }
+
+        }else
+        {
+            auto &bone = mSkeleton->getBoneByChannelIndex(modes.channel);
+            auto p = [this, anim, modes](odAnim::Skeleton::Bone &b)
+            {
+                mBoneAnimators[b.getJointIndex()].playAnimation(anim, modes);
+                return true;
+            };
+            bone.traverse(p);
         }
-
-        mPlaying = true;
-    }
-
-    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, PlaybackType type, float speed)
-    {
-        auto &bone = mSkeleton->getBoneByChannelIndex(channelIndex);
-        auto p = [this, anim, type, speed](odAnim::Skeleton::Bone &b)
-        {
-            mBoneAnimators[b.getJointIndex()].playAnimation(anim, type, speed);
-            return true;
-        };
-        bone.traverse(p);
 
         mPlaying = true;
     }

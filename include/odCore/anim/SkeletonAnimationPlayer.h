@@ -35,7 +35,7 @@ namespace odAnim
         inline Skeleton::Bone &getBone() { return mBone; }
         inline void setAccumulator(std::shared_ptr<BoneAccumulator> a) { mAccumulator = a; }
         inline std::shared_ptr<BoneAccumulator> getAccumulator() const { return mAccumulator; }
-        inline const AxesBoneModes &getBoneModes() const { return mBoneModes; }
+        inline const AxesBoneModes &getBoneModes() const { return mModes.boneModes; }
         inline bool isPlaying() const { return mPlaying; }
         inline std::shared_ptr<odDb::Animation> getCurrentAnimation() { return mCurrentAnimation; }
 
@@ -50,19 +50,7 @@ namespace odAnim
 
         void setBoneModes(const AxesBoneModes &modes);
 
-        /**
-         * @brief Instantly plays animation.
-         *
-         * This will set up the animator to play the passed animation as if the animation has been
-         * started exactly after the last update.
-         *
-         * The speedModifier argument may be negative for reverse playback. In that case, the animation
-         * will start at it's last frame.
-         *
-         * @param type             The type of playback to use (normal, looping, pingpong)
-         * @param speedMultiplier  Speed factor. 1.0 is normal playback speed. May be negative for reverse playback.
-         */
-        void playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier, float transitionTime = 0.0f);
+        void playAnimation(std::shared_ptr<odDb::Animation> animation, const AnimModes &modes);
 
         /**
          * @brief Advances animation and performs necessary updates to the skeleton.
@@ -81,28 +69,20 @@ namespace odAnim
         Skeleton::Bone &mBone;
 
         std::shared_ptr<odDb::Animation> mCurrentAnimation;
-        PlaybackType mPlaybackType;
-        float mSpeed;
+        AnimModes mModes;
 
         std::shared_ptr<odDb::Animation> mTransitionAnimation;
-        PlaybackType mTransitionPlaybackType;
-        float mTransitionSpeed;
-        float mTransitionTime;
+        AnimModes mTransitionModes;
         float mTransitionStartTime;
 
         bool mPlaying;
         float mPlayerTime;
-        odDb::Animation::KfIteratorPair mLastKeyframes;
-        glm::dualquat mLeftTransform;
-        glm::dualquat mRightTransform;
         glm::vec3 mLoopJump;
-
         glm::dualquat mLastAppliedTransform;
 
         std::shared_ptr<BoneAccumulator> mAccumulator;
         AxesBoneModes mBoneModes;
         bool mHasNonDefaultBoneMode;
-
         bool mUseInterpolation;
     };
 
@@ -116,17 +96,23 @@ namespace odAnim
 
         inline bool isPlaying() const { return mPlaying; }
 
-        /// @brief Plays animation on whole skeleton.
-        void playAnimation(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier);
-
         /**
-         * @brief Plays animation on skeleton subtree, starting at \c channelIndex.
+         * @brief Plays an animation.
          *
-         * This will override any playing animations on that subtree. You can mix multiple
-         * animations this way, e.g. playing walking animation on whole skeleton, then playing
-         * talking animation on neck channel to make the character talk while walking.
+         * If the channelIndex in the modes struct is non-negative, the
+         * animation will only play on the subtree starting from that channel.
+         * This will override any playing animations on that subtree. You can
+         * mix multiple animations this way, e.g. playing walking animation on
+         * whole skeleton, then playing talking animation on neck channel to
+         * make the character talk while walking.
+         *
+         * The speed field in modes may be negative for reverse playback. In
+         * that case, the animation will start at it's last frame.
+         *
+         * Currently, the bone modes in the modes struct are ignored. You'll
+         * have to set these manually via setBoneModes().
          */
-        void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, PlaybackType type, float speedMultiplier);
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, const AnimModes &modes);
 
         /**
          * @brief Sets accumulator for a bone.

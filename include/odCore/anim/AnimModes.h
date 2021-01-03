@@ -23,6 +23,29 @@ namespace odAnim
 
     using AxesBoneModes = std::array<BoneMode, 3>;
 
+
+    struct AnimModes
+    {
+        inline static constexpr int32_t CHANNEL_WHOLE_SKELETON = -1;
+
+        AnimModes()
+        : playbackType(PlaybackType::NORMAL)
+        , boneModes({BoneMode::NORMAL, BoneMode::NORMAL, BoneMode::NORMAL})
+        , channel(CHANNEL_WHOLE_SKELETON)
+        , speed(1.0f)
+        , startTime(0.0f)
+        , transitionTime(0.0f)
+        {
+        }
+
+        PlaybackType playbackType;
+        AxesBoneModes boneModes;
+        int32_t channel;
+        float speed;
+        float startTime;
+        float transitionTime;
+    };
+
 }
 
 #endif

@@ -237,12 +237,20 @@ namespace odAnim
         void operator()(const PlayerActionStartAnim &a)
         {
             //float dt = mSequenceTime - a.timeOffset;
-            auto modes = a.getRootNodeTranslationModes();
+            auto boneModes = a.getRootNodeTranslationModes();
 
-            mActor.actorObject.playAnimation(a.animation, a.channelIndex, a.speed, modes);
+            AnimModes animModes;
+            animModes.playbackType = a.animation->isLooping() ? PlaybackType::LOOPING : PlaybackType::NORMAL;
+            animModes.boneModes = boneModes;
+            animModes.channel = a.channelIndex;
+            animModes.speed = a.speed;
+            animModes.startTime = a.beginPlayAt;
+            animModes.transitionTime = a.transitionTime;
+
+            mActor.actorObject.playAnimation(a.animation, animModes);
 
             // create accumulator on demand
-            bool needsAccumulator = std::any_of(modes.begin(), modes.end(), [](auto mode){ return mode == BoneMode::ACCUMULATE; });
+            bool needsAccumulator = std::any_of(boneModes.begin(), boneModes.end(), [](auto mode){ return mode == BoneMode::ACCUMULATE; });
             auto animPlayer = mActor.actorObject.getSkeletonAnimationPlayer();
             if(needsAccumulator && mActor.motionToPositionRootAccumulator == nullptr && animPlayer != nullptr)
             {

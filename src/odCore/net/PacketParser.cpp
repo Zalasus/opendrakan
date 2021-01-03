@@ -1,6 +1,8 @@
 
 #include <odCore/net/PacketParser.h>
 
+#include <odCore/anim/AnimModes.h>
+
 #include <odCore/net/Protocol.h>
 #include <odCore/net/DownlinkConnector.h>
 #include <odCore/net/UplinkConnector.h>
@@ -135,25 +137,27 @@ namespace odNet
             {
                 od::LevelObjectId id;
                 odDb::GlobalAssetRef animRef;
-                int32_t channelIndex;
-                float speedModifier;
-                uint8_t ignoreRootFlags;
+                odAnim::AnimModes modes;
+                uint8_t modeFlags;
                 double realtime;
                 dr >> id
                    >> animRef
-                   >> channelIndex
-                   >> speedModifier
-                   >> ignoreRootFlags
+                   >> modes.channel
+                   >> modes.speed
+                   >> modes.startTime
+                   >> modes.transitionTime
+                   >> modeFlags
                    >> realtime;
 
-                glm::bvec3 ignoreRootNodeTranslation;
-                ignoreRootNodeTranslation.x = ignoreRootFlags & 0x01;
-                ignoreRootNodeTranslation.y = ignoreRootFlags & 0x02;
-                ignoreRootNodeTranslation.z = ignoreRootFlags & 0x04;
+                // FIXME: validate
+                modes.boneModes[0] = static_cast<odAnim::BoneMode>((modeFlags & 0x03) >> 0);
+                modes.boneModes[1] = static_cast<odAnim::BoneMode>((modeFlags & 0x0c) >> 2);
+                modes.boneModes[2] = static_cast<odAnim::BoneMode>((modeFlags & 0x30) >> 4);
+                modes.playbackType = static_cast<odAnim::PlaybackType>((modeFlags & 0xc0) >> 6);
 
                 if(mDownlinkOutput != nullptr)
                 {
-                    mDownlinkOutput->objectAnimation(id, animRef, channelIndex, speedModifier, ignoreRootNodeTranslation, realtime);
+                    mDownlinkOutput->objectAnimation(id, animRef, modes, realtime);
                 }
             }
             break;

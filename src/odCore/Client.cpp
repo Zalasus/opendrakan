@@ -87,10 +87,10 @@ namespace od
             mClient.getMessageDispatcher().receiveGlobalMessage(code, data, size);
         }
 
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, const glm::bvec3 &ignoreRootNodeTranslation, double realtime) override
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime) override
         {
             animRef.globalDbIndex = mClient.translateGlobalDatabaseIndex(animRef.globalDbIndex);
-            odState::ObjectAnimEvent animEvent(id, animRef, channelIndex, speedModifier, ignoreRootNodeTranslation);
+            odState::ObjectAnimEvent animEvent(id, animRef, modes);
             mClient.getEventQueue().addIncomingEvent(realtime, animEvent);
         }
 

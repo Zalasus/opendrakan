@@ -237,8 +237,8 @@ namespace od
         void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
         void setupSkeleton();
 
-        void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, float speed, const odAnim::AxesBoneModes &axisModes);
-        void playAnimationUntracked(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, float speed, const odAnim::AxesBoneModes &axisModes);
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, const odAnim::AnimModes &modes);
+        void playAnimationUntracked(std::shared_ptr<odDb::Animation> anim, const odAnim::AnimModes &modes);
 
         /**
          * This returns true if the event was handled (an event being ignored counts as handled in this context).

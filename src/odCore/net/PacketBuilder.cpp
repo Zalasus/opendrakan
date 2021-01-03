@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <type_traits>
 
+#include <odCore/anim/AnimModes.h>
+
 namespace odNet
 {
 
@@ -72,19 +74,23 @@ namespace odNet
         _endPacket(LinkType::RELIABLE);
     }
 
-    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, const glm::bvec3 &ignoreRootNodeTranslation, double realtime)
+    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime)
     {
-        uint8_t ignoreFlags =
-              ignoreRootNodeTranslation.x ? 0x01 : 0x00
-            | ignoreRootNodeTranslation.y ? 0x02 : 0x00
-            | ignoreRootNodeTranslation.z ? 0x04 : 0x00;
+        // FIXME: this only works as long as there are no more than four bone modes/playback types
+        uint8_t flags =
+              (static_cast<uint8_t>(modes.boneModes[0]) << 0)
+            | (static_cast<uint8_t>(modes.boneModes[1]) << 2)
+            | (static_cast<uint8_t>(modes.boneModes[2]) << 4)
+            | (static_cast<uint8_t>(modes.playbackType) << 6);
 
         _beginPacket(PacketType::OBJECT_ANIMATION);
         mWriter << id
                 << animRef
-                << channelIndex
-                << speedModifier
-                << ignoreFlags
+                << modes.channel
+                << modes.speed
+                << modes.startTime
+                << modes.transitionTime
+                << flags
                 << realtime;
         _endPacket(LinkType::RELIABLE);
     }

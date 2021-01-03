@@ -64,14 +64,12 @@ namespace odState
 
     struct ObjectAnimEvent final : public Event
     {
-        ObjectAnimEvent(od::LevelObjectId obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed, const glm::bvec3 &ignoreRootNodeTranslation);
+        ObjectAnimEvent(od::LevelObjectId obj, const odDb::GlobalAssetRef &anim, const odAnim::AnimModes &modes);
 
         od::LevelObjectId objectId;
         odDb::GlobalAssetRef animRef;
         std::shared_ptr<odDb::Animation> anim;
-        int32_t channelIndex;
-        float speedModifier;
-        glm::bvec3 ignoreRootNodeTranslation;
+        odAnim::AnimModes modes;
     };
 
 

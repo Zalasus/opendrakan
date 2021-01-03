@@ -107,7 +107,9 @@ namespace dragonRfl
                                        odAnim::BoneMode::NORMAL,
                                        odAnim::BoneMode::NORMAL }, 0);
 
-            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
+            odAnim::AnimModes animModes;
+            animModes.playbackType = odAnim::PlaybackType::LOOPING;
+            animPlayer->playAnimation(mFields.readyAnim.getAsset(), animModes);
 
         }else
         {
@@ -233,25 +235,22 @@ namespace dragonRfl
 
     void HumanControl_Sv::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping, float skipAheadTime)
     {
-        static const odAnim::AxesBoneModes walkAccum{
-                                                       odAnim::BoneMode::ACCUMULATE,
-                                                       odAnim::BoneMode::NORMAL,
-                                                       odAnim::BoneMode::ACCUMULATE
-                                                    };
+        odAnim::AnimModes modes;
+        modes.playbackType = looping ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
+        if(skeletonOnly)
+        {
+            modes.boneModes = { odAnim::BoneMode::NORMAL, odAnim::BoneMode::NORMAL, odAnim::BoneMode::NORMAL };
 
-        static const odAnim::AxesBoneModes fixedAccum{
-                                                       odAnim::BoneMode::NORMAL,
-                                                       odAnim::BoneMode::NORMAL,
-                                                       odAnim::BoneMode::NORMAL
-                                                     };
-
-        auto playbackType = looping ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
+        }else
+        {
+            modes.boneModes = { odAnim::BoneMode::ACCUMULATE, odAnim::BoneMode::NORMAL, odAnim::BoneMode::ACCUMULATE};
+        }
 
         auto animPlayer = getLevelObject().getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
         {
-            animPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
-            animPlayer->setBoneModes(skeletonOnly ? fixedAccum : walkAccum, 0);
+            animPlayer->playAnimation(animRef.getAsset(), modes);
+            animPlayer->setBoneModes(modes.boneModes, 0);
             if(skipAheadTime > 0)
             {
                 animPlayer->update(skipAheadTime);
@@ -290,7 +289,9 @@ namespace dragonRfl
         auto animPlayer = obj.getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
         {
-            animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
+            odAnim::AnimModes modes;
+            modes.playbackType = odAnim::PlaybackType::LOOPING;
+            animPlayer->playAnimation(mFields.readyAnim.getAsset(), modes);
         }
 
         // create a tracking camera for me

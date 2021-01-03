@@ -621,19 +621,11 @@ namespace od
         }
     }
 
-    void LevelObject::playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, float speed, const odAnim::AxesBoneModes &axisModes)
+    void LevelObject::playAnimation(std::shared_ptr<odDb::Animation> anim, const odAnim::AnimModes &modes)
     {
-        playAnimationUntracked(anim, channelIndex, speed, axisModes);
+        playAnimationUntracked(anim, modes);
 
-        // since accumulation on the server is transmitted as a state change, the client should not care about accumulation at all.
-        //  instead, it only needs to know whether to ignore the root node translations or not.
-        glm::bvec3 ignoreRootNodeTranslation;
-        for(size_t i = 0; i < 3; ++i)
-        {
-            ignoreRootNodeTranslation[i] = (axisModes[i] != odAnim::BoneMode::NORMAL);
-        }
-
-        odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), channelIndex, speed, ignoreRootNodeTranslation);
+        odState::ObjectAnimEvent animEvent(getObjectId(), anim->getGlobalAssetRef(), modes);
         mLevel.getEngine().getEventQueue().logEvent(animEvent);
     }
 
@@ -654,7 +646,7 @@ namespace od
         OD_UNREACHABLE();
     }
 
-    void LevelObject::playAnimationUntracked(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, float speed, const odAnim::AxesBoneModes &axisModes)
+    void LevelObject::playAnimationUntracked(std::shared_ptr<odDb::Animation> anim, const odAnim::AnimModes &modes)
     {
         OD_CHECK_ARG_NONNULL(anim);
 
@@ -665,14 +657,14 @@ namespace od
 
         if(mSkeletonAnimationPlayer != nullptr)
         {
-            Logger::debug() << "Object " << getObjectId() << " playing animation " << anim->getName() << " on channel " << mSkeleton->getDefinition()->getChannelName(channelIndex).value()
-                             << " {" << _animModeToString(axisModes[0]) << ", " << _animModeToString(axisModes[1]) << ", " << _animModeToString(axisModes[2]) << "}";
-            auto playbackType = anim->isLooping() ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
-            mSkeletonAnimationPlayer->playAnimation(anim, channelIndex, playbackType, speed);
+            Logger::debug() << "Object " << getObjectId() << " playing animation " << anim->getName() << " on channel " << mSkeleton->getDefinition()->getChannelName(modes.channel).value()
+                             << " {" << _animModeToString(modes.boneModes[0]) << ", " << _animModeToString(modes.boneModes[1]) << ", " << _animModeToString(modes.boneModes[2]) << "}";
 
-            if(channelIndex == 0)
+            mSkeletonAnimationPlayer->playAnimation(anim, modes);
+
+            if(modes.channel == 0)
             {
-                mSkeletonAnimationPlayer->setBoneModes(axisModes, channelIndex);
+                mSkeletonAnimationPlayer->setBoneModes(modes.boneModes, 0);
             }
 
         }else
@@ -692,13 +684,7 @@ namespace od
                 return false;
             }
 
-            odAnim::AxesBoneModes axesModes;
-            for(size_t i = 0; i < 3; ++i)
-            {
-                axesModes[i] = animEvent->ignoreRootNodeTranslation[i] ? odAnim::BoneMode::IGNORE : odAnim::BoneMode::NORMAL;
-            }
-
-            playAnimationUntracked(animEvent->anim, animEvent->channelIndex, animEvent->speedModifier, axesModes);
+            playAnimationUntracked(animEvent->anim, animEvent->modes);
 
             if(mSkeletonAnimationPlayer != nullptr && timeDelta > 0)
             {
