@@ -7,15 +7,20 @@
 
 #include <odCore/input/InputManager.h>
 
+#include <algorithm>
+
+#include <odCore/Exception.h>
+
 #include <odCore/gui/Gui.h>
 
-#include <odCore/input/CursorListener.h>
+#include <odCore/input/InputListener.h>
+#include <odCore/input/RawActionListener.h>
 
 namespace odInput
 {
 
     InputManager::InputManager()
-    : mGui(nullptr)
+    : mMouseMoved(false)
     {
     }
 
@@ -23,148 +28,225 @@ namespace odInput
     {
     }
 
-    void InputManager::mouseMoved(float absX, float absY)
+    void InputManager::injectMouseMovement(float absX, float absY)
     {
-        glm::vec2 ndc(absX, absY);
-
-        if(mGui != nullptr)
-        {
-            mGui->setCursorPosition(ndc);
-        }
-
-        for(auto &cl : mCursorListeners)
-        {
-            if(cl.isNonNull())
-            {
-                auto listener = cl.aquire();
-                listener->triggerCallback(ndc);
-            }
-        }
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+        mMouseMoveTarget = {absX, absY};
+        mMouseMoved = true;
     }
 
-    void InputManager::mouseButtonDown(int buttonCode)
+    void InputManager::injectKey(Key key, bool pressed)
     {
-        if(mGui != nullptr)
-        {
-            mGui->mouseDown();
-        }
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+        mKeyQueue.push_back(std::make_pair(key, pressed));
     }
 
-    void InputManager::mouseButtonUp(int buttonCode)
+    void InputManager::injectAction(ActionCode actionCode, ActionState state)
     {
-
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+        mInjectedActionQueue.push_back(std::make_pair(actionCode, state));
     }
 
-    void InputManager::keyDown(Key key)
+    void InputManager::injectAnalogAction(ActionCode actionCode, const glm::vec2 &axisData)
     {
-        auto it = mBindings.find(key);
-        if(it == mBindings.end())
-        {
-            return; // no bindings for this key
-        }
-
-        InputEvent event;
-        event.key = key;
-        event.type = it->second.down ? InputEvent::Type::Repeat : InputEvent::Type::Down;
-
-        it->second.down = true;
-
-        for(auto &a : it->second.actions)
-        {
-            if(a != 0)
-            {
-                _triggerCallbackOnAction(a, event);
-            }
-        }
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+        mInjectedAnalogActionQueue.push_back(std::make_pair(actionCode, axisData));
     }
 
-    void InputManager::keyUp(Key key)
+    std::shared_ptr<InputListener> InputManager::createInputListener()
     {
-        auto it = mBindings.find(key);
-        if(it == mBindings.end())
-        {
-            return; // no bindings for this key
-        }
-
-        InputEvent event;
-        event.key = key;
-        event.type = InputEvent::Type::Up;
-
-        it->second.down = false;
-
-        for(auto &a : it->second.actions)
-        {
-            if(a != 0)
-            {
-                _triggerCallbackOnAction(a, event);
-            }
-        }
-    }
-
-    void InputManager::bindActionToKey(IAction *iaction, Key key)
-    {
-        Binding &binding = mBindings[key];
-        for(auto &a : binding.actions)
-        {
-            if(a == 0)
-            {
-                a = iaction->getActionAsInt();
-                return;
-            }
-        }
-
-        throw od::Exception("Exceeded maximum of actions per key");
-    }
-
-    void InputManager::unbindActionFromKey(IAction *iaction, Key key)
-    {
-        auto it = mBindings.find(key);
-        if(it == mBindings.end())
-        {
-            return;
-        }
-
-        for(auto &a : it->second.actions)
-        {
-            if(a == iaction->getActionAsInt())
-            {
-                a = 0;
-            }
-        }
-    }
-
-    od::RefPtr<CursorListener> InputManager::createCursorListener()
-    {
-        auto listener = od::make_refd<CursorListener>();
-
-        mCursorListeners.emplace_back(listener.get());
-
+        auto listener = std::make_shared<InputListener>();
+        mInputListeners.emplace_back(listener);
         return listener;
     }
 
-    void InputManager::_triggerCallbackOnAction(int action, InputEvent event)
+    std::shared_ptr<RawActionListener> InputManager::createRawActionListener()
     {
-        auto it = mActions.find(action);
-        if(it == mActions.end())
+        auto listener = std::make_shared<RawActionListener>();
+        mRawActionListeners.emplace_back(listener);
+        return listener;
+    }
+
+    void InputManager::update(float relTime)
+    {
+        std::lock_guard<std::mutex> lock(mInputEventQueueMutex);
+
+        if(mMouseMoved)
+        {
+            _processMouseMove(mMouseMoveTarget);
+            mMouseMoved = false;
+        }
+
+        for(auto &key : mKeyQueue)
+        {
+            _processKey(key.first, key.second);
+        }
+        mKeyQueue.clear();
+
+        for(auto &action : mInjectedActionQueue)
+        {
+            auto it = mActions.find(action.first);
+            if(it != mActions.end())
+            {
+                _triggerAction(*(it->second), action.second);
+            }
+        }
+        mInjectedActionQueue.clear();
+
+        for(auto &analogAction : mInjectedAnalogActionQueue)
+        {
+            auto it = mAnalogActions.find(analogAction.first);
+            if(it != mAnalogActions.end())
+            {
+                _triggerAnalogAction(*(it->second), analogAction.second);
+            }
+        }
+        mInjectedAnalogActionQueue.clear();
+    }
+
+    void InputManager::_bind(ActionHandleBase &action, Key key)
+    {
+        KeyBinding &binding = mKeyBindings[key];
+        for(auto &a : binding.actions)
+        {
+            if(a == nullptr)
+            {
+                a = &action;
+                return;
+            }
+        }
+
+        throw od::Exception("Exceeded maximum number of actions per key");
+    }
+
+    void InputManager::_unbind(ActionHandleBase &action, Key key)
+    {
+        auto it = mKeyBindings.find(key);
+        if(it == mKeyBindings.end())
         {
             return;
         }
 
-        if(it->second.isNonNull())
+        bool inUse = false;
+        for(auto &a : it->second.actions)
         {
-            auto action = it->second.aquire();
-
-            if(event.type == InputEvent::Type::Repeat && !action->isRepeatable())
+            if(a == &action)
             {
-                return;
+                a = nullptr;
 
-            }else if(event.type == InputEvent::Type::Up && action->ignoresUpEvents())
+            }else if(a != nullptr)
             {
-                return;
+                inUse = true;
+            }
+        }
+
+        if(!inUse)
+        {
+            mKeyBindings.erase(it);
+        }
+    }
+
+    void InputManager::_bind(AnalogActionHandleBase &action, AnalogSource source)
+    {
+        if(source != AnalogSource::MOUSE_POSITION)
+        {
+            throw od::Exception("Only mouse position is implemented at the moment");
+        }
+
+        mAnalogActionsBoundToMousePos.push_back(&action);
+    }
+
+    void InputManager::_unbind(AnalogActionHandleBase &action, AnalogSource source)
+    {
+        auto it = std::find(mAnalogActionsBoundToMousePos.begin(), mAnalogActionsBoundToMousePos.end(), &action);
+        if(it != mAnalogActionsBoundToMousePos.end())
+        {
+            mAnalogActionsBoundToMousePos.erase(it);
+        }
+    }
+
+    void InputManager::_processMouseMove(glm::vec2 pos)
+    {
+        _forEachInputListener([=](auto listener){ listener.mouseMoveEvent(pos); });
+
+        for(auto analogAction : mAnalogActionsBoundToMousePos)
+        {
+            glm::vec2 axis = pos;
+            if(analogAction->flipYAxis()) axis.y *= -1;
+            _triggerAnalogAction(*analogAction, axis);
+        }
+    }
+
+    void InputManager::_processKey(Key key, bool pressed)
+    {
+        _forEachInputListener([=](auto listener){ listener.keyEvent(key, pressed); });
+
+        auto it = mKeyBindings.find(key);
+        if(it != mKeyBindings.end())
+        {
+            ActionState state;
+            if(pressed)
+            {
+                state = it->second.down ? ActionState::REPEAT : ActionState::BEGIN;
+                it->second.down = true;
+
+            }else
+            {
+                state = ActionState::END;
+                it->second.down = false;
             }
 
-            action->triggerCallback(event);
+            for(auto &boundAction : it->second.actions)
+            {
+                if(boundAction != nullptr)
+                {
+                    if(state == ActionState::REPEAT && !boundAction->isRepeatable())
+                    {
+                        continue;
+
+                    }else if(state == ActionState::END && boundAction->ignoresUpEvents())
+                    {
+                        continue;
+                    }
+
+                    _triggerAction(*boundAction, state);
+                }
+            }
         }
+    }
+
+    void InputManager::_triggerAction(ActionHandleBase &action, ActionState state)
+    {
+        for(auto &l : mRawActionListeners)
+        {
+            if(!l.expired())
+            {
+                auto listener = l.lock();
+                if(listener != nullptr && listener->callback != nullptr)
+                {
+                    listener->callback(action.getActionCode(), state);
+                }
+            }
+        }
+
+        action.triggerCallback(state);
+    }
+
+    void InputManager::_triggerAnalogAction(AnalogActionHandleBase &analogAction, const glm::vec2 &axisData)
+    {
+        for(auto &l : mRawActionListeners)
+        {
+            if(!l.expired())
+            {
+                auto listener = l.lock();
+                if(listener != nullptr && listener->analogCallback != nullptr)
+                {
+                    listener->analogCallback(analogAction.getActionCode(), axisData);
+                }
+            }
+        }
+
+        analogAction.triggerCallback(axisData);
     }
 
 }

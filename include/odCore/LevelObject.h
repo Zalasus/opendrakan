@@ -9,41 +9,51 @@
 #define OBJECT_H_
 
 #include <memory>
-#include <list>
+#include <array>
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include <odCore/BoundingBox.h>
+#include <odCore/BoundingSphere.h>
+#include <odCore/IdTypes.h>
+#include <odCore/Message.h>
+#include <odCore/ObjectStates.h>
+#include <odCore/ObjectRecord.h>
+
+#include <odCore/anim/AnimModes.h>
+
 #include <odCore/db/Class.h>
-#include <odCore/rfl/RflMessage.h>
+
+#include <odCore/state/Event.h>
 
 namespace odAnim
 {
     class Skeleton;
+    class SkeletonAnimationPlayer;
+}
+
+namespace odDb
+{
+    class Animation;
+    class Model;
+}
+
+namespace odRender
+{
+    class Handle;
+}
+
+namespace odPhysics
+{
+    class ObjectHandle;
 }
 
 namespace od
 {
-
+    class ObjectLightReceiver;
     class Level;
     class Layer;
-
-    typedef uint32_t LevelObjectId;
-
-    enum class LevelObjectState
-    {
-        NotLoaded,
-        Loaded,
-        Spawned,
-        Destroyed
-    };
-
-    enum class LevelObjectType
-    {
-        Normal,
-        Light,
-        Detector
-    };
 
     enum class SpawnStrategy
     {
@@ -52,51 +62,113 @@ namespace od
         Always
     };
 
+    enum class ObjectRenderMode
+    {
+        NOT_RENDERED,
+        NORMAL,
+        NO_LIGHTING
+    };
+
+    enum class ObjectPhysicsMode
+    {
+        NO_PHYSICS,
+        SOLID
+    };
+
     class LevelObject
     {
     public:
 
-        LevelObject(Level &level);
+        /**
+         * Since many objects can be created from the same object records, the \c id argument is used instead of the ID stored in the record passed here.
+         */
+        LevelObject(Level &level, uint16_t recordIndex, ObjectRecordData &record, LevelObjectId id, std::shared_ptr<odDb::Class> dbClass);
+        LevelObject(LevelObject &&obj) = delete;
         virtual ~LevelObject();
 
+        inline uint16_t getRecordIndex() const { return mRecordIndex; }
         inline LevelObjectId getObjectId() const { return mId; }
-        inline odDb::Class *getClass() { return mClass; }
-        inline odRfl::RflClass *getClassInstance() { return mRflClassInstance.get(); }
+        inline std::shared_ptr<odDb::Class> getClass() { return mClass; }
+        inline std::shared_ptr<odDb::Model> getModel() { return mModel; }
+        inline odRfl::ClassBase *getClassInstance() { return mRflClassInstance.get(); }
+        inline odRfl::SpawnableClass *getSpawnableClassInstance() { return mSpawnableClass; }
         inline Level &getLevel() { return mLevel; }
-        inline glm::vec3 getPosition() const { return mPosition; }
-        inline glm::vec3 getScale() const { return mScale; }
-        inline glm::quat getRotation() const { return mRotation; }
-        inline LevelObjectState getState() const { return mState; }
-        inline LevelObjectType getObjectType() const { return mObjectType; }
+        inline glm::vec3 getPosition() const { return mStates.position.get(); }
+        inline glm::vec3 getScale() const { return mStates.scale.get(); }
+        inline glm::quat getRotation() const { return mStates.rotation.get(); }
         inline void setSpawnStrategy(SpawnStrategy s) { mSpawnStrategy = s; }
-        inline const std::vector<LevelObject*> &getLinkedObjects() const { return mLinkedObjects; }
+        inline SpawnStrategy getSpawnStrategy() const { return mSpawnStrategy; }
+        inline bool isSpawned() const { return mIsSpawned; }
+        inline const std::vector<LevelObjectId> &getLinkedObjects() const { return mLinkedObjects; }
         inline Layer *getLightSourceLayer() { return mLightingLayer; }
-        inline bool isVisible() const { return mIsVisible; }
-        inline bool isScaled() const { return mIsScaled; }
+        inline bool isVisible() const { return mStates.visibility.get(); }
+        inline bool isScaled() const { return (getScale() != glm::vec3(1,1,1)); }
+        inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
+        inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
-        void loadFromRecord(DataReader dr);
+        inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
+        inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
+        inline std::shared_ptr<odAnim::Skeleton> &getSkeleton() { return mSkeleton; }
+        inline std::shared_ptr<odAnim::SkeletonAnimationPlayer> &getSkeletonAnimationPlayer() { return mSkeletonAnimationPlayer; }
 
-        void buildLinks();
+        void spawn();
+        void despawn();
 
-        void spawned();
-        void despawned();
-        void destroyed();
-        void update(float relTime);
-        void messageReceived(LevelObject &sender, odRfl::RflMessage message);
-
+        // these are convenience methods that create and pass an ObjectStates object to setStates().
         void setPosition(const glm::vec3 &v);
         void setRotation(const glm::quat &q);
-        void setScale(const glm::vec3 &scale);
+        void setPositionRotation(const glm::vec3 &v, const glm::quat &q);
+        void setScale(const glm::vec3 &s);
         void setVisible(bool v);
-
-        void setObjectType(LevelObjectType type);
+        void setRunning(bool b);
 
         /**
-         * @brief Returns the skeleton for this object or builds it if that has not yet been done.
-         *
-         * This may return nullptr if this object has no model or the object's model has no skeleton.
+         * @brief Applies the passed states to this object and notifies the StateManager about any changes.
          */
-        odAnim::Skeleton *getOrCreateSkeleton();
+        void setStates(const ObjectStates &states);
+
+        /**
+         * @brief Same as setStates(), but will not notify the StateManager of the change.
+         *
+         * This is basically only used by the state manager itself.
+         */
+        void setStatesUntracked(const ObjectStates &states);
+
+        /**
+         * @brief Will cause the RFL instance's states to be probed and all changed states to be added to the snapshot.
+         */
+        void extraStatesDirty();
+
+        void setExtraStatesUntracked(const odState::StateBundleBase &states);
+
+        odState::StateBundleBase *getExtraStates();
+
+        /**
+         * @brief Enables or disables updates for this object.
+         *
+         * Changing this in the update hook will not prevent the postUpdate hook to be called. The change
+         * will only become effective with the next update.
+         */
+        void setEnableUpdate(bool enable);
+
+        /**
+         * @brief Called each tick during the update stage.
+         * @param relTime  The time passed since the last update, in seconds.
+         */
+        void update(float relTime);
+
+        /**
+         * @brief Called after everything in the level has been updated and a snapshot is about to occur.
+         *
+         * This is where an object can perform updates that only need to reflect the final level state for this tick.
+         * These updates should not affect other objects.
+         *
+         * One example for what might happen here is updating the object's associated layer, which only needs to consider
+         * the final position assigned during this tick.
+         */
+        void postUpdate(float relTime);
+
+        void setAssociatedLayer(od::Layer *l);
 
         /**
          * @brief Attaches this object to target object.
@@ -140,62 +212,80 @@ namespace od
          */
         void detach();
 
-        /**
-         * @brief Enables or disables the RFL update hook.
-         */
-        void setEnableRflUpdateHook(bool enableHook);
-        void messageAllLinkedObjects(odRfl::RflMessage message);
+        void receiveMessage(LevelObject &sender, od::Message message);
+        void receiveMessageWithoutDispatch(LevelObject &sender, od::Message message);
+        void messageAllLinkedObjects(od::Message message);
+
         void requestDestruction();
+
+        /**
+         * @brief Calculates a axis-aligned bounding box for this object from it's model, taking position, rotation and scale into account.
+         */
+        AxisAlignedBoundingBox getBoundingBox();
+
+        /**
+         * @brief Calculates a bounding sphere for this object from it's model, taking position and scale into account.
+         *
+         * Note that rotation does not affect bounding spheres.
+         */
+        BoundingSphere getBoundingSphere();
+
+        void updateAssociatedLayer(bool callChangedHook = true);
+
+        void setRflClassInstance(std::unique_ptr<odRfl::ClassBase> instance);
+
+        void setupRenderingAndPhysics(ObjectRenderMode renderMode, ObjectPhysicsMode physicsMode);
+        void setupSkeleton();
+
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, const odAnim::AnimModes &modes);
+        void playAnimationUntracked(std::shared_ptr<odDb::Animation> anim, const odAnim::AnimModes &modes);
+
+        /**
+         * This returns true if the event was handled (an event being ignored counts as handled in this context).
+         * However, sometimes events can not be processed immediately, like when an object is not being run.
+         * In that case, this will return false to indicate event processing should be delayed. The same event
+         * will be dispatched later (with a timeDelta reflecting that delay).
+         *
+         * @param timeDelta  Number of seconds that have elapsed since this event should have happened (always >= 0)
+         *
+         * @return true if the event was handled, false if handling needs to be retried later.
+         */
+        bool handleEvent(const odState::EventVariant &event, float timeDelta);
 
 
     private:
 
-        void _onTransformChanged(LevelObject *transformChangeSource);
-        void _updateLayerBelowObject();
-        void _attachmentTargetsTransformUpdated(LevelObject *transformChangeSource); // pass along source so we can detect circular attachments
-        void _detachAllAttachedObjects();
-
-
         Level &mLevel;
+
+        // loaded from the object record:
+        uint16_t mRecordIndex;
         LevelObjectId mId;
-        odDb::AssetRef mClassRef;
-        od::RefPtr<odDb::Class> mClass;
-        std::unique_ptr<odAnim::Skeleton> mSkeleton;
-        std::unique_ptr<odRfl::RflClass> mRflClassInstance;
-        uint32_t mLightingLayerId;
+        std::shared_ptr<odDb::Class> mClass;
+        std::shared_ptr<odDb::Model> mModel;
         Layer *mLightingLayer;
-        glm::vec3 mInitialPosition;
-        uint32_t mFlags;
-        uint16_t mInitialEventCount;
-        std::vector<uint16_t> mLinks;
-        glm::vec3 mInitialScale;
-        glm::quat mInitialRotation;
-        bool mIsScaled;
+        std::vector<LevelObjectId> mLinkedObjects; // this is sorta abused, since during load it stores the indices instead. those are later translated
 
-        glm::vec3 mPosition;
-        glm::quat mRotation;
-        glm::vec3 mScale;
+        ObjectStates mStates;
 
-        LevelObjectState mState;
-        LevelObjectType mObjectType;
+        bool mIsSpawned;
         SpawnStrategy mSpawnStrategy;
-        bool mIsVisible;
 
-        std::vector<LevelObject*> mLinkedObjects;
+        Layer *mAssociatedLayer;
+        bool mAssociateWithCeiling;
 
-        od::LevelObject *mAttachmentTarget;
-        std::list<od::LevelObject*> mAttachedObjects;
-        glm::vec3 mAttachmentTranslationOffset;
-        glm::quat mAttachmentRotationOffset;
-        glm::vec3 mAttachmentScaleRatio;
-        bool mIgnoreAttachmentTranslation;
-        bool mIgnoreAttachmentRotation;
-        bool mIgnoreAttachmentScale;
+        std::unique_ptr<odRfl::ClassBase> mRflClassInstance;
+        odRfl::SpawnableClass *mSpawnableClass; // downcast version of mRflClassInstance, so we don't have to cast for every call to Spawnable methods
 
-        bool mLayerBelowObjectDirty;
-        Layer *mLayerBelowObject;
+        bool mRunObjectAi;
+        bool mEnableUpdate;
 
-        bool mRflUpdateHookEnabled;
+        ObjectRenderMode mRenderMode;
+        ObjectPhysicsMode mPhysicsMode;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::unique_ptr<ObjectLightReceiver> mLightReceiver;
+        std::shared_ptr<odAnim::Skeleton> mSkeleton;
+        std::shared_ptr<odAnim::SkeletonAnimationPlayer> mSkeletonAnimationPlayer;
     };
 
 }

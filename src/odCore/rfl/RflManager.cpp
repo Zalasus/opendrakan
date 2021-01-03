@@ -16,21 +16,8 @@
 namespace odRfl
 {
 
-    RflManager::RflManager(od::Engine &engine)
-    : mEngine(engine)
+    RflManager::RflManager()
     {
-        // first, instantiate all statically linked RFLs
-        std::vector<RflRegistrar*> &rfls = RflRegistrar::getRflRegistrarListSingleton();
-        mLoadedRfls.reserve(rfls.size());
-        for(auto it = rfls.begin(); it != rfls.end(); ++it)
-        {
-            std::unique_ptr<Rfl> rfl((*it)->createInstance(mEngine));
-            mLoadedRfls.push_back(std::move(rfl));
-
-            Logger::info() << "Loaded RFL " << mLoadedRfls.back()->getName();
-        }
-
-        Logger::info() << "Loaded " << mLoadedRfls.size() << " RFL(s)";
     }
 
     Rfl *RflManager::getRfl(const std::string &name)
@@ -47,12 +34,20 @@ namespace odRfl
         return it->get();
     }
 
-    void RflManager::onStartup()
+    Rfl &RflManager::loadDynamicRfl(const od::FilePath &libPath)
     {
-        for(auto it = mLoadedRfls.begin(); it != mLoadedRfls.end(); ++it)
-        {
-            (*it)->onStartup();
-        }
+        throw od::UnsupportedException("Dynamic RFL loading is unimplemented ATM");
+    }
+
+
+    void RflManager::_addRflAndCallLoadHook(std::unique_ptr<Rfl> rfl)
+    {
+        if(rfl == nullptr) return;
+
+        Logger::info() << "Loaded RFL '" << rfl->getName() << "'";
+
+        mLoadedRfls.push_back(std::move(rfl));
+        mLoadedRfls.back()->onLoaded();
     }
 
 }

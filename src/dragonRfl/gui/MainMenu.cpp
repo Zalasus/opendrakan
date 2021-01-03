@@ -14,10 +14,11 @@
 #include <dragonRfl/gui/CrystalRingButton.h>
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
+#include <odCore/Client.h>
+
 #include <odCore/db/Model.h>
 
-#include <odCore/render/GuiNode.h>
-#include <odCore/render/GuiQuad.h>
+#include <odCore/gui/Quad.h>
 
 namespace dragonRfl
 {
@@ -29,29 +30,27 @@ namespace dragonRfl
         MainMenuImage(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            auto node = getRenderNode();
+            auto topLeft = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_TopLeft);
+            topLeft.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            topLeft.setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
+            this->addRenderHandle(topLeft.getHandle());
 
-            od::RefPtr<odRender::GuiQuad> topLeft = node->createGuiQuad();
-            topLeft->setTextureFromDb(gui, GuiTextures::MainMenu_TopLeft, gui.getRenderer());
-            topLeft->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            topLeft->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(0.5, 0.5));
+            auto topRight = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_TopRight);
+            topRight.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            topRight.setVertexCoords(glm::vec2(0.5, 0.0), glm::vec2(1, 0.5));
+            this->addRenderHandle(topRight.getHandle());
 
-            od::RefPtr<odRender::GuiQuad> topRight = node->createGuiQuad();
-            topRight->setTextureFromDb(gui, GuiTextures::MainMenu_TopRight, gui.getRenderer());
-            topRight->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            topRight->setVertexCoords(glm::vec2(0.5, 0.0), glm::vec2(1, 0.5));
+            auto bottomLeft = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_BottomLeft);
+            bottomLeft.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            bottomLeft.setVertexCoords(glm::vec2(0.0, 0.5), glm::vec2(0.5, 1));
+            this->addRenderHandle(bottomLeft.getHandle());
 
-            od::RefPtr<odRender::GuiQuad> bottomLeft = node->createGuiQuad();
-            bottomLeft->setTextureFromDb(gui, GuiTextures::MainMenu_BottomLeft, gui.getRenderer());
-            bottomLeft->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            bottomLeft->setVertexCoords(glm::vec2(0.0, 0.5), glm::vec2(0.5, 1));
+            auto bottomRight = gui.makeQuadFromGuiTexture(GuiTextures::MainMenu_BottomRight);
+            bottomRight.setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
+            bottomRight.setVertexCoords(glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
+            this->addRenderHandle(bottomRight.getHandle());
 
-            od::RefPtr<odRender::GuiQuad> bottomRight = node->createGuiQuad();
-            bottomRight->setTextureFromDb(gui, GuiTextures::MainMenu_BottomRight, gui.getRenderer());
-            bottomRight->setTextureCoordsFromPixels(glm::vec2(0, 0), glm::vec2(255, 255));
-            bottomRight->setVertexCoords(glm::vec2(0.5, 0.5), glm::vec2(1.0, 1.0));
-
-            this->setDimensions(512.0, 512.0, odGui::WidgetDimensionType::Pixels);
+            this->setDimensions({512.0, 512.0}, odGui::WidgetDimensionType::Pixels);
         }
 
     };
@@ -63,58 +62,58 @@ namespace dragonRfl
         MainMenuBackground(DragonGui &gui)
         : odGui::Widget(gui)
         {
-            od::RefPtr<odRender::GuiQuad> bg = getRenderNode()->createGuiQuad();
-            bg->setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1.0, 1.0));
-            bg->setColor(glm::vec4(0.0, 0.0, 0.0, 0.5));
+            odGui::Quad bg(gui.getRenderer());
+            bg.setVertexCoords(glm::vec2(0.0, 0.0), glm::vec2(1.0, 1.0));
+            bg.setColor(glm::vec4(0.0, 0.0, 0.0, 0.5));
+            this->addRenderHandle(bg.getHandle());
 
-            this->setDimensions(1.0, 1.0, odGui::WidgetDimensionType::ParentRelative);
+            this->setDimensions({1.0, 1.0}, odGui::WidgetDimensionType::ParentRelative);
         }
     };
 
 
 
-    MainMenu::MainMenu(DragonGui &gui, UserInterfaceProperties *uiProps)
+    MainMenu::MainMenu(DragonGui &gui, UserInterfacePropertiesFields *uiProps)
     : odGui::Widget(gui)
     , mDragonGui(gui)
     {
-        auto imageWidget = od::make_refd<MainMenuImage>(gui);
-        imageWidget->setZIndex(0);
+        auto imageWidget = std::make_shared<MainMenuImage>(gui);
         imageWidget->setOrigin(odGui::WidgetOrigin::Center);
         imageWidget->setPosition(glm::vec2(0.5, 0.5));
+        imageWidget->setZPosition(0.5);
         this->addChild(imageWidget);
 
-        auto bgWidget = od::make_refd<MainMenuBackground>(gui);
-        bgWidget->setZIndex(1);
+        auto bgWidget = std::make_shared<MainMenuBackground>(gui);
+        bgWidget->setZPosition(1.0);
         this->addChild(bgWidget);
 
-        this->setDimensions(1.0, 1.0, odGui::WidgetDimensionType::ParentRelative);
+        this->setDimensions({1.0, 1.0}, odGui::WidgetDimensionType::ParentRelative);
 
-        auto cont = od::make_refd<Widget>(gui);
-        cont->setDimensions(512, 512, odGui::WidgetDimensionType::Pixels);
+        auto cont = std::make_shared<Widget>(gui);
+        cont->setDimensions({512, 512}, odGui::WidgetDimensionType::Pixels);
         cont->setOrigin(odGui::WidgetOrigin::Center);
-        cont->setPosition(0.5, 0.5);
-        cont->setZIndex(-1);
+        cont->setPosition({0.5, 0.5});
         this->addChild(cont);
 
-        _addCrystal(gui, uiProps->mCrystalTop.getAsset(), uiProps->mCrystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
-        _addCrystal(gui, uiProps->mCrystalLeft.getAsset(), uiProps->mCrystalLeftNoteOffset, 57, 110, 195, uiProps, cont, BC_LOAD);
-        _addCrystal(gui, uiProps->mCrystalMiddle.getAsset(), uiProps->mCrystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
-        _addCrystal(gui, uiProps->mCrystalRight.getAsset(), uiProps->mCrystalRightNoteOffset, 57, 400, 195, uiProps, cont, BC_SAVE);
-        _addCrystal(gui, uiProps->mCrystalLowerLeft.getAsset(), uiProps->mCrystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
-        _addCrystal(gui, uiProps->mCrystalLowerRight.getAsset(), uiProps->mCrystalLowerRightNoteOffset, 35, 358, 292, uiProps, cont, BC_CREDITS);
-        _addCrystal(gui, uiProps->mCrystalBottom.getAsset(), uiProps->mCrystalBottomNoteOffset, 61, 255, 440, uiProps, cont, BC_QUIT);
+        _addCrystal(gui, uiProps->crystalTop.getAsset(), uiProps->crystalTopNoteOffset, 53, 255, 62, uiProps, cont, BC_MULTIPLAYER);
+        _addCrystal(gui, uiProps->crystalLeft.getAsset(), uiProps->crystalLeftNoteOffset, 57, 110, 195, uiProps, cont, BC_LOAD);
+        _addCrystal(gui, uiProps->crystalMiddle.getAsset(), uiProps->crystalMiddleNoteOffset, 67, 255, 191, uiProps, cont, BC_NEW);
+        _addCrystal(gui, uiProps->crystalRight.getAsset(), uiProps->crystalRightNoteOffset, 57, 400, 195, uiProps, cont, BC_SAVE);
+        _addCrystal(gui, uiProps->crystalLowerLeft.getAsset(), uiProps->crystalLowerLeftNoteOffset, 35, 152, 292, uiProps, cont, BC_OPTIONS);
+        _addCrystal(gui, uiProps->crystalLowerRight.getAsset(), uiProps->crystalLowerRightNoteOffset, 35, 358, 292, uiProps, cont, BC_CREDITS);
+        _addCrystal(gui, uiProps->crystalBottom.getAsset(), uiProps->crystalBottomNoteOffset, 61, 255, 440, uiProps, cont, BC_QUIT);
     }
 
-    void MainMenu::_addCrystal(DragonGui &gui, odDb::Model *crystalModel, float noteOffset, float dia, float x, float y,
-            UserInterfaceProperties *uiProps, odGui::Widget *cont, int buttonCode)
+    void MainMenu::_addCrystal(DragonGui &gui, std::shared_ptr<odDb::Model> crystalModel, float noteOffset, float dia, float x, float y,
+            UserInterfacePropertiesFields *uiProps, std::shared_ptr<odGui::Widget> cont, int buttonCode)
     {
-        auto crystal = od::make_refd<CrystalRingButton>(gui, crystalModel,
-                uiProps->mInnerRing.getAsset(),
-                uiProps->mOuterRing.getAsset(),
-                uiProps->mHoverSoundLooped.getAsset(),
+        auto crystal = std::make_shared<CrystalRingButton>(gui, crystalModel,
+                uiProps->innerRing.getAsset(),
+                uiProps->outerRing.getAsset(),
+                uiProps->hoverSoundLooped.getAsset(),
                 noteOffset);
-        crystal->setDimensions(dia, dia, odGui::WidgetDimensionType::Pixels);
-        crystal->setPosition(x/512, y/512);
+        crystal->setDimensions({dia, dia}, odGui::WidgetDimensionType::Pixels);
+        crystal->setPosition({x/512, y/512});
         crystal->setOrigin(odGui::WidgetOrigin::Center);
         crystal->setClickedCallback(std::bind(&MainMenu::_buttonClicked, this, std::placeholders::_1), buttonCode);
         cont->addChild(crystal);
@@ -135,7 +134,7 @@ namespace dragonRfl
 
         case BC_QUIT:
             Logger::info() << "Exit button clicked. Quitting game";
-            getGui().quit();
+            mDragonGui.getClient().setIsDone(true);
             break;
         }
     }

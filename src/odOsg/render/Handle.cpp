@@ -10,6 +10,7 @@
 #include <osg/Callback>
 
 #include <odCore/Downcast.h>
+#include <odCore/Logger.h>
 
 #include <odCore/render/FrameListener.h>
 
@@ -21,26 +22,12 @@
 namespace odOsg
 {
 
-    static void _assert_mutex_locked(std::mutex &mutex)
-    {
-#ifndef NDEBUG
-        /* FIXME: this synchronization concept is flawed. think of a better one
-        if(mutex.try_lock())
-        {
-            mutex.unlock();
-            throw od::Exception("Accessed Handle without locking it's mutex");
-        }*/
-#endif
-    }
-
-
-    class HandleFrameListenerCallback : public osg::Callback
+    /*class HandleUpdateCallback : public osg::Callback
     {
     public:
 
-        HandleFrameListenerCallback(Handle *handle, odRender::FrameListener *fl)
+        HandleUpdateCallback(Handle &handle)
         : mHandle(handle)
-        , mFrameListener(fl)
         , mLastSimTime(0.0)
         , mFirstUpdate(true)
         {
@@ -68,12 +55,7 @@ namespace odOsg
                 mFirstUpdate = false;
             }
 
-            if(mFrameListener != nullptr)
-            {
-                std::lock_guard<std::mutex> lock(mHandle->getMutex());
-
-                mFrameListener->onFrameUpdate(simTime, simTime-mLastSimTime, fs->getFrameNumber());
-            }
+            mHandle.update(simTime, simTime-mLastSimTime, fs->getFrameNumber());
 
             mLastSimTime = simTime;
 
@@ -83,45 +65,27 @@ namespace odOsg
 
     private:
 
-        Handle *mHandle;
-        odRender::FrameListener *mFrameListener;
+        Handle &mHandle;
         double mLastSimTime;
         bool mFirstUpdate;
-    };
+    };*/
 
 
-    Handle::Handle(Renderer *renderer, osg::Group *parentGroup)
-    : mParentGroup(parentGroup)
-    , mModel(nullptr)
+    Handle::Handle(Renderer &renderer)
+    : mParentGroup(nullptr)
     , mFrameListener(nullptr)
     , mTransform(new osg::PositionAttitudeTransform)
     , mLightStateAttribute(new LightStateAttribute(renderer, Constants::MAX_LIGHTS))
     {
         mTransform->getOrCreateStateSet()->setAttribute(mLightStateAttribute, osg::StateAttribute::ON);
-
-        if(mParentGroup != nullptr)
-        {
-            mParentGroup->addChild(mTransform);
-        }
     }
 
     Handle::~Handle()
     {
-        if(mUpdateCallback != nullptr)
-        {
-            mTransform->removeUpdateCallback(mUpdateCallback);
-            mUpdateCallback = nullptr;
-        }
-
         if(mParentGroup != nullptr)
         {
             mParentGroup->removeChild(mTransform);
         }
-    }
-
-    std::mutex &Handle::getMutex()
-    {
-        return mMutex;
     }
 
     glm::vec3 Handle::getPosition()
@@ -141,35 +105,27 @@ namespace odOsg
 
     void Handle::setPosition(const glm::vec3 &pos)
     {
-        _assert_mutex_locked(mMutex);
-
         mTransform->setPosition(GlmAdapter::toOsg(pos));
     }
 
     void Handle::setOrientation(const glm::quat &orientation)
     {
-        _assert_mutex_locked(mMutex);
-
         mTransform->setAttitude(GlmAdapter::toOsg(orientation));
     }
 
     void Handle::setScale(const glm::vec3 &scale)
     {
-        _assert_mutex_locked(mMutex);
-
         mTransform->setScale(GlmAdapter::toOsg(scale));
     }
 
     odRender::Model *Handle::getModel()
     {
-        return mModel;
+        return mModel.get();
     }
 
-    void Handle::setModel(odRender::Model *model)
+    void Handle::setModel(std::shared_ptr<odRender::Model> model)
     {
-        _assert_mutex_locked(mMutex);
-
-        auto *osgModel = od::confident_downcast<Model>(model);
+        auto osgModel = od::confident_downcast<Model>(model);
 
         if(mModel != nullptr)
         {
@@ -186,23 +142,17 @@ namespace odOsg
 
     void Handle::setVisible(bool visible)
     {
-        _assert_mutex_locked(mMutex);
-
         int mask = visible ? -1 : 0;
         mTransform->setNodeMask(mask);
     }
 
     void Handle::setModelPartVisible(size_t partIndex, bool visible)
     {
-        _assert_mutex_locked(mMutex);
-
         throw od::UnsupportedException("setModelPartVisible is unsupported");
     }
 
     void Handle::setRenderBin(odRender::RenderBin rb)
     {
-        _assert_mutex_locked(mMutex);
-
         osg::StateSet *ss = mTransform->getOrCreateStateSet();
 
         switch(rb)
@@ -214,6 +164,7 @@ namespace odOsg
                 mDepth = nullptr;
             }
             ss->setRenderBinDetails(0, "RenderBin");
+            ss->setMode(GL_BLEND, osg::StateAttribute::OFF);
             break;
 
         case odRender::RenderBin::SKY:
@@ -224,6 +175,7 @@ namespace odOsg
             }
             ss->setAttribute(mDepth, osg::StateAttribute::ON);
             ss->setRenderBinDetails(-1, "RenderBin");
+            ss->setMode(GL_BLEND, osg::StateAttribute::OFF);
             break;
 
         case odRender::RenderBin::TRANSPARENT:
@@ -233,6 +185,7 @@ namespace odOsg
                 mDepth = nullptr;
             }
             ss->setRenderBinDetails(1, "DepthSortedBin");
+            ss->setMode(GL_BLEND, osg::StateAttribute::ON);
             break;
 
         default:
@@ -242,43 +195,15 @@ namespace odOsg
 
     void Handle::addFrameListener(odRender::FrameListener *listener)
     {
-        _assert_mutex_locked(mMutex);
-
-        if(mFrameListener != nullptr)
-        {
-            throw od::UnsupportedException("Multiple frame listeners unsupported as of now");
-        }
-
-        mFrameListener = listener;
-
-        if(mFrameListener != nullptr && mUpdateCallback == nullptr)
-        {
-            mUpdateCallback = new HandleFrameListenerCallback(this, mFrameListener);
-            mTransform->addUpdateCallback(mUpdateCallback);
-
-        }else if(mFrameListener == nullptr && mUpdateCallback != nullptr)
-        {
-            mTransform->removeUpdateCallback(mUpdateCallback);
-            mUpdateCallback = nullptr;
-        }
+        throw od::UnsupportedException("Frame listeners unsupported right now");
     }
 
     void Handle::removeFrameListener(odRender::FrameListener *listener)
     {
-        _assert_mutex_locked(mMutex);
-
-        if(mFrameListener != listener)
-        {
-            return;
-        }
-
-        mFrameListener = nullptr;;
     }
 
     void Handle::setEnableColorModifier(bool enable)
     {
-        _assert_mutex_locked(mMutex);
-
         if(enable && mColorModifierUniform == nullptr)
         {
             mColorModifierUniform = new osg::Uniform("colorModifier", osg::Vec4(1.0, 1.0, 1.0, 1.0));
@@ -299,8 +224,6 @@ namespace odOsg
 
     void Handle::setColorModifier(const glm::vec4 &cm)
     {
-        _assert_mutex_locked(mMutex);
-
         if(mColorModifierUniform != nullptr)
         {
             mColorModifierUniform->set(GlmAdapter::toOsg(cm));
@@ -323,31 +246,23 @@ namespace odOsg
         return mRig.get();
     }
 
-    void Handle::addLight(od::Light *light)
+    void Handle::addLight(std::shared_ptr<od::Light> light)
     {
-        _assert_mutex_locked(mMutex);
-
         mLightStateAttribute->addLight(light);
     }
 
-    void Handle::removeLight(od::Light *light)
+    void Handle::removeLight(std::shared_ptr<od::Light> light)
     {
-        _assert_mutex_locked(mMutex);
-
         mLightStateAttribute->removeLight(light);
     }
 
     void Handle::clearLightList()
     {
-        _assert_mutex_locked(mMutex);
-
         mLightStateAttribute->clearLightList();
     }
 
     void Handle::setGlobalLight(const glm::vec3 &direction, const glm::vec3 &diffuse, const glm::vec3 &ambient)
     {
-        _assert_mutex_locked(mMutex);
-
         osg::Vec3f dif = GlmAdapter::toOsg(diffuse);
         osg::Vec3f amb = GlmAdapter::toOsg(ambient);
         osg::Vec3f dir = GlmAdapter::toOsg(direction);
@@ -356,4 +271,3 @@ namespace odOsg
     }
 
 }
-

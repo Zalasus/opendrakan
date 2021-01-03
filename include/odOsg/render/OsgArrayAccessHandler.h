@@ -19,20 +19,20 @@
 namespace odOsg
 {
 
-    template <typename _OdType, typename _OsgArrayType>
-    class OsgTVecArrayAccessHandler : public odRender::ArrayAccessHandler<_OdType>
+    template <typename _OdType, typename _OsgArrayType, typename _Converter>
+    class OsgConvertingArrayAccessHandler : public odRender::ArrayAccessHandler<_OdType>
     {
     public:
 
-        OsgTVecArrayAccessHandler(_OsgArrayType *osgArray)
+        OsgConvertingArrayAccessHandler(_OsgArrayType *osgArray)
         : mOsgArray(osgArray)
         , mAcquired(false)
         {
         }
 
-        virtual ~OsgTVecArrayAccessHandler()
+        virtual ~OsgConvertingArrayAccessHandler()
         {
-            release();
+            release(false);
         }
 
         virtual odRender::Array<_OdType> &getArray() override
@@ -45,43 +45,64 @@ namespace odOsg
             return mArray;
         }
 
-        virtual void acquire() override
+        virtual void acquire(bool readback) override
         {
             if(mAcquired)
             {
                 return;
             }
 
+            if(mOsgArray == nullptr)
+            {
+                throw od::Exception("Tried to acquire access handler with no array set");
+            }
+
             mArray.resize(mOsgArray->size());
 
-            for(size_t i = 0; i < mOsgArray->size(); ++i)
+            if(readback)
             {
-                mArray[i] = GlmAdapter::toGlm((*mOsgArray)[i]);
+                for(size_t i = 0; i < mOsgArray->size(); ++i)
+                {
+                    mArray[i] = _Converter::toGlm((*mOsgArray)[i]);
+                }
             }
 
             mAcquired = true;
         }
 
-        virtual void release() override
+        virtual void release(bool writeback) override
         {
             if(!mAcquired)
             {
                 return;
             }
 
-            mOsgArray->resize(mArray.size());
-
-            for(size_t i = 0; i < mArray.size(); ++i)
+            if(writeback)
             {
-                (*mOsgArray)[i] = GlmAdapter::toOsg(mArray[i]);
+                mOsgArray->resize(mArray.size());
+
+                for(size_t i = 0; i < mArray.size(); ++i)
+                {
+                    (*mOsgArray)[i] = _Converter::toOsg(mArray[i]);
+                }
+
+                mOsgArray->dirty();
             }
 
             mArray.clear();
             mArray.shrink_to_fit();
 
-            mOsgArray->dirty();
-
             mAcquired = false;
+        }
+
+        void setArray(_OsgArrayType *array)
+        {
+            if(mAcquired)
+            {
+                throw od::Exception("Tried to replace array while still acquired");
+            }
+
+            mOsgArray = array;
         }
 
 
@@ -94,10 +115,29 @@ namespace odOsg
 
     };
 
+    struct SimpleConverter
+    {
+
+        template <typename T>
+        static T toOsg(const T &v)
+        {
+            return v;
+        }
+
+        template <typename T>
+        static T toGlm(const T &v)
+        {
+            return v;
+        }
+
+    };
+
     // TODO: only forward specialize these and put explicit instantiation into source file
-    typedef OsgTVecArrayAccessHandler<glm::vec2, osg::Vec2Array> OsgVec2ArrayAccessHandler;
-    typedef OsgTVecArrayAccessHandler<glm::vec3, osg::Vec3Array> OsgVec3ArrayAccessHandler;
-    typedef OsgTVecArrayAccessHandler<glm::vec4, osg::Vec4Array> OsgVec4ArrayAccessHandler;
+    typedef OsgConvertingArrayAccessHandler<glm::vec2, osg::Vec2Array, GlmAdapter> OsgVec2ArrayAccessHandler;
+    typedef OsgConvertingArrayAccessHandler<glm::vec3, osg::Vec3Array, GlmAdapter> OsgVec3ArrayAccessHandler;
+    typedef OsgConvertingArrayAccessHandler<glm::vec4, osg::Vec4Array, GlmAdapter> OsgVec4ArrayAccessHandler;
+
+    using OsgIndexArrayAccessHandler = OsgConvertingArrayAccessHandler<int32_t, osg::DrawElementsUInt, SimpleConverter>;
 }
 
 

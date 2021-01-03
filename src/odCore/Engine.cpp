@@ -1,213 +1,133 @@
-/*
- * Engine.cpp
- *
- *  Created on: 14 Feb 2018
- *      Author: zal
- */
-
 
 #include <odCore/Engine.h>
 
-#include <chrono>
-#include <thread>
-
-#include <odCore/OdDefines.h>
+#include <odCore/Client.h>
+#include <odCore/Server.h>
 #include <odCore/Exception.h>
-#include <odCore/Logger.h>
-#include <odCore/Level.h>
-
-#include <odCore/input/InputManager.h>
-
-#include <odCore/rfl/RflManager.h>
-
-#include <odCore/render/Renderer.h>
-
-#include <odCore/audio/SoundSystem.h>
-
-#include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
 namespace od
 {
 
-	Engine::Engine()
-	: mRenderer(nullptr)
-	, mSoundSystem(nullptr)
-    , mHasInitialLevelOverride(false)
-	, mInitialLevelOverride("")
-	, mEngineRootDir("")
-	, mSetUp(false)
-	, mIsDone(false)
-	{
-        mInputManager = std::make_unique<odInput::InputManager>();
-	}
+    Engine::Engine(Client &client)
+    : mClient(&client)
+    , mServer(nullptr)
+    {
+    }
 
-	Engine::~Engine()
-	{
-	}
+    Engine::Engine(Server &server)
+    : mClient(nullptr)
+    , mServer(&server)
+    {
+    }
 
-	odPhysics::PhysicsSystem &Engine::getPhysicsSystem()
-	{
-	    if(mPhysicsSystem == nullptr)
-	    {
-	        throw Exception("Engine has no physics system");
-	    }
+    Client &Engine::getClient()
+    {
+        if(mClient == nullptr) throw Exception("Not a client");
 
-	    return *mPhysicsSystem;
-	}
+        return *mClient;
+    }
 
-	void Engine::setRenderer(odRender::Renderer *renderer)
-	{
-	    if(mRenderer != nullptr)
-	    {
-	        Logger::warn() << "Hotswapping renderer. This might have undesired side-effects";
-	    }
+    Server &Engine::getServer()
+    {
+        if(mServer == nullptr) throw Exception("Not a server");
 
-	    mRenderer = renderer;
+        return *mServer;
+    }
 
-	    if(mRenderer != nullptr)
-	    {
-	        mRenderer->setRendererEventListener(this);
-	    }
-	}
+    const od::FilePath &Engine::getEngineRootDir() const
+    {
+        _assertValid();
 
-	void Engine::setSoundSystem(odAudio::SoundSystem *soundSystem)
-	{
-	    if(mSoundSystem != nullptr)
-	    {
-	        Logger::warn() << "Hotswapping sound system. Prepare for chaos";
-	    }
-
-	    mSoundSystem = soundSystem;
-	}
-
-	void Engine::setUp()
-	{
-	    if(mSetUp)
-	    {
-	        return;
-	    }
-
-	    _findEngineRoot("Dragon.rrc");
-
-	    mDbManager = std::make_unique<odDb::DbManager>(*this);
-        mRflManager = std::make_unique<odRfl::RflManager>(*this);
-        mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(*this);
-
-	    mRflManager->onStartup();
-
-	    mSetUp = true;
-	}
-
-	void Engine::run()
-	{
-		Logger::info() << "Starting OpenDrakan...";
-
-		if(!mSetUp)
-		{
-		    setUp();
-		}
-
-		if(hasInitialLevelOverride())
+        if(mClient != nullptr)
         {
-		    FilePath levelPath(getInitialLevelOverride());
-            loadLevel(levelPath.adjustCase());
+            return mClient->getEngineRootDir();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getEngineRootDir();
         }
 
-		Logger::verbose() << "Everything set up. Starting main loop";
+        OD_UNREACHABLE();
+    }
 
-		if(mRenderer != nullptr)
-		{
-		    mRenderer->onStart();
-		}
+    odDb::DbManager &Engine::getDbManager()
+    {
+        _assertValid();
 
-		float targetUpdateIntervalUs = (1e6/60.0);
-		auto targetUpdateInterval = std::chrono::microseconds((int64_t)targetUpdateIntervalUs);
-		auto lastUpdateStartTime = std::chrono::high_resolution_clock::now();
-		while(!mIsDone)
-		{
-		    auto loopStart = std::chrono::high_resolution_clock::now();
-
-		    double relTime = 1e-6 * std::chrono::duration_cast<std::chrono::microseconds>(loopStart - lastUpdateStartTime).count();
-            lastUpdateStartTime = loopStart;
-
-		    if(mLevel != nullptr)
-		    {
-		        mLevel->update(relTime);
-		    }
-
-		    mPhysicsSystem->update(relTime);
-
-		    auto loopEnd = std::chrono::high_resolution_clock::now();
-		    auto loopTime = loopEnd - loopStart;
-		    if(loopTime < targetUpdateInterval)
-		    {
-		        std::this_thread::sleep_for(targetUpdateInterval - loopTime);
-
-		    }else
-		    {
-		        float loopTimeMs = 1e-3 * std::chrono::duration_cast<std::chrono::microseconds>(loopTime).count();
-		        Logger::warn() << "Update took too long. Took " << loopTimeMs << "ms, target update interval was " << (targetUpdateIntervalUs*1e-3) << "ms";
-		    }
-		}
-
-		Logger::info() << "Shutting down gracefully";
-
-		if(mRenderer != nullptr)
+        if(mClient != nullptr)
         {
-            mRenderer->onEnd();
-        }
-	}
+            return mClient->getDbManager();
 
-	void Engine::loadLevel(const FilePath &levelFile)
-	{
-	    if(mLevel != nullptr)
-	    {
-	        mLevel = nullptr;
-	    }
-
-	    mLevel = std::make_unique<od::Level>(levelFile, *this);
-        mLevel->loadLevel();
-
-        mLevel->spawnAllObjects();
-	}
-
-	void Engine::onRenderWindowClosed()
-	{
-	    if(mRenderer == nullptr)
-	    {
-	        return;
-	    }
-
-	    setDone(true);
-	}
-
-	void Engine::_findEngineRoot(const std::string &rrcFileName)
-	{
-	    // if we have been passed a level override, we need to find the engine root in that path.
-	    //  if not, assume the engine root is the current working directory.
-	    if(!hasInitialLevelOverride())
-	    {
-	        mEngineRootDir = FilePath(".");
-	        Logger::verbose() << "No level override found on command line. Assuming we are running in engine root";
-	        return;
-	    }
-
-	    // ascend in the passed initial level file path until we find a Dragon.rrc
-        FilePath path = FilePath(rrcFileName, getInitialLevelOverride().dir()).adjustCase();
-        while(!path.exists() && path.depth() > 1)
+        }else if(mServer != nullptr)
         {
-            path = FilePath(rrcFileName, path.dir().dir()).adjustCase();
+            return mServer->getDbManager();
         }
 
-        if(!path.exists())
+        OD_UNREACHABLE();
+    }
+
+    odRfl::RflManager &Engine::getRflManager()
+    {
+        _assertValid();
+
+        if(mClient != nullptr)
         {
-            Logger::error() << "Could not find engine root in passed level path. "
-                    << "Make sure your level is located in the same directory or a subdirectory of " << rrcFileName;
-            throw Exception("Could not find engine root in passed level path");
+            return mClient->getRflManager();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getRflManager();
         }
 
-        mEngineRootDir = path.dir();
-        Logger::verbose() << "Found engine root here: " << mEngineRootDir.str();
-	}
+        OD_UNREACHABLE();
+    }
+
+    odPhysics::PhysicsSystem &Engine::getPhysicsSystem()
+    {
+        _assertValid();
+
+        if(mClient != nullptr)
+        {
+            return mClient->getPhysicsSystem();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getPhysicsSystem();
+        }
+
+        OD_UNREACHABLE();
+    }
+
+    odState::StateManager &Engine::getStateManager()
+    {
+        _assertValid();
+
+        if(mClient != nullptr)
+        {
+            return mClient->getStateManager();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getStateManager();
+        }
+
+        OD_UNREACHABLE();
+    }
+
+    odState::EventQueue &Engine::getEventQueue()
+    {
+        _assertValid();
+
+        if(mClient != nullptr)
+        {
+            return mClient->getEventQueue();
+
+        }else if(mServer != nullptr)
+        {
+            return mServer->getEventQueue();
+        }
+
+        OD_UNREACHABLE();
+    }
 
 }

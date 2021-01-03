@@ -10,15 +10,14 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <vector>
-#include <functional>
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
+
 #include <odCore/db/Asset.h>
-#include <odCore/db/AssetProvider.h>
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/ModelFactory.h>
 #include <odCore/db/ClassFactory.h>
@@ -31,20 +30,19 @@ namespace odDb
 
 	class DbManager;
 	class Database;
+    class DependencyTable;
 
-
-    typedef std::reference_wrapper<Database> DbRefWrapper;
-
-	class Database : public AssetProvider
+	class Database
 	{
 	public:
 
-		Database(od::FilePath dbFilePath, DbManager &dbManager);
+		Database(const od::FilePath &dbFilePath, DbManager &dbManager, GlobalDatabaseIndex globalIndex);
 		~Database();
 
 		inline od::FilePath getDbFilePath() const { return mDbFilePath; }
 		inline std::string getShortName() const { return mDbFilePath.fileStrNoExt(); }
-		inline DbManager &getDbManager() { return mDbManager; }
+        inline GlobalDatabaseIndex getGlobalIndex() const { return mGlobalIndex; }
+        inline std::shared_ptr<DependencyTable> getDependencyTable() { return mDependencyTable; }
 		inline TextureFactory *getTextureFactory() { return mTextureFactory.get(); }
 		inline ClassFactory *getClassFactory() { return mClassFactory.get(); }
 		inline ModelFactory *getModelFactory() { return mModelFactory.get(); }
@@ -54,14 +52,15 @@ namespace odDb
 
 		void loadDbFileAndDependencies(size_t dependencyDepth);
 
-	    // override AssetProvider
-		virtual AssetProvider &getDependency(uint16_t index) override;
-        virtual od::RefPtr<Texture>   getTexture(od::RecordId recordId) override;
-        virtual od::RefPtr<Class>     getClass(od::RecordId recordId) override;
-        virtual od::RefPtr<Model>     getModel(od::RecordId recordId) override;
-        virtual od::RefPtr<Sequence>  getSequence(od::RecordId recordId) override;
-        virtual od::RefPtr<Animation> getAnimation(od::RecordId recordId) override;
-        virtual od::RefPtr<Sound>     getSound(od::RecordId recordId) override;
+        template <typename T>
+        std::shared_ptr<T> loadAsset(od::RecordId recordId);
+
+        std::shared_ptr<Texture>   loadTexture(od::RecordId recordId);
+        std::shared_ptr<Class>     loadClass(od::RecordId recordId);
+        std::shared_ptr<Model>     loadModel(od::RecordId recordId);
+        std::shared_ptr<Sequence>  loadSequence(od::RecordId recordId);
+        std::shared_ptr<Animation> loadAnimation(od::RecordId recordId);
+        std::shared_ptr<Sound>     loadSound(od::RecordId recordId);
 
 
 	private:
@@ -72,9 +71,10 @@ namespace odDb
 
 		od::FilePath mDbFilePath;
 		DbManager &mDbManager;
+        GlobalDatabaseIndex mGlobalIndex;
 
 		uint32_t mVersion;
-		std::map<uint16_t, DbRefWrapper> mDependencyMap;
+        std::shared_ptr<DependencyTable> mDependencyTable; // TODO: we have to check for dependency loops to prevent leaks
 
 		std::unique_ptr<TextureFactory> mTextureFactory;
 		std::unique_ptr<od::SrscFile> mTextureContainer;
@@ -95,22 +95,6 @@ namespace odDb
         std::unique_ptr<od::SrscFile> mSequenceContainer;
 	};
 
-	template <typename T>
-    void Database::_tryOpeningAssetContainer(std::unique_ptr<T> &factoryPtr, std::unique_ptr<od::SrscFile> &containerPtr, const char *extension)
-    {
-        od::FilePath path = mDbFilePath.ext(extension);
-        if(path.exists())
-        {
-            containerPtr = std::make_unique<od::SrscFile>(path);
-            factoryPtr = std::make_unique<T>(*this, *containerPtr);
-
-            Logger::verbose() << AssetTraits<typename T::AssetType>::name() << " container of database opened";
-
-        }else
-        {
-            Logger::verbose() << "Database has no " << AssetTraits<typename T::AssetType>::name() << " container";
-        }
-    }
 }
 
 #endif /* INCLUDE_DATABASE_H_ */

@@ -10,9 +10,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <odCore/Exception.h>
-#include <odCore/Engine.h>
+#include <odCore/Client.h>
 
-#include <odCore/render/GuiNode.h>
 #include <odCore/render/Renderer.h>
 
 #include <odCore/audio/SoundSystem.h>
@@ -35,19 +34,24 @@
 namespace dragonRfl
 {
 
-    CrystalRingButton::CrystalRingButton(DragonGui &gui, odDb::Model *crystalModel, odDb::Model *innerRingModel, odDb::Model *outerRingModel,
-            odDb::Sound *hoverSound, float noteOffset)
+    CrystalRingButton::CrystalRingButton(DragonGui &gui, std::shared_ptr<odDb::Model> crystalModel,
+                                      std::shared_ptr<odDb::Model> innerRingModel,
+                                      std::shared_ptr<odDb::Model> outerRingModel,
+                                      std::shared_ptr<odDb::Sound> hoverSound, float noteOffset)
     : odGui::Widget(gui)
     , mCrystalColorInactive(0.38431, 0.36471, 0.54902, 1.0)
     , mCrystalColorActive(0.95686275, 0.25882353, 0.63137255, 1.0)
+    , mRingColorInactive(1, 1, 1, 1)
+    , mRingColorActive(1, 1, 1, 1)
     , mCallbackUserData(-1)
-    , mCrystalSpeedPercent(0.0)
+    , mCrystalSpeed(0.0)
     , mClicked(false)
     , mRingAnimPercent(0.0)
     , mCrystalColor(mCrystalColorInactive)
+    , mRingColor(mRingColorInactive)
     {
         // select whatever model is not null for bounds calculation, starting with outer ring
-        od::RefPtr<odDb::Model> modelForBounds =
+        std::shared_ptr<odDb::Model> modelForBounds =
                 (outerRingModel != nullptr) ? outerRingModel : ((innerRingModel != nullptr) ? innerRingModel : crystalModel);
 
         if(modelForBounds == nullptr)
@@ -60,61 +64,67 @@ namespace dragonRfl
 
         glm::vec3 extends = aabb.max() - aabb.min();
         float aspectRatio = extends.x/extends.y;
-
         float fovDegrees = 70;
-        getRenderNode()->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
+        this->setPerspectiveMode(fovDegrees * M_PI/180, aspectRatio);
+
+        float depth = aabb.max().z - aabb.min().z;
+        this->setDepth(1/depth);
 
         glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
-        glm::vec3 lightAmbient(0.4, 0.4, 0.4);
+        glm::vec3 lightAmbient(0.15, 0.15, 0.15);
         glm::vec3 lightDirection(glm::normalize(glm::vec3(0.0, 1.0, 1.0)));
 
         if(crystalModel != nullptr)
         {
-            od::RefPtr<odRender::Model> mn = crystalModel->getOrCreateRenderModel(&getGui().getRenderer());
+            std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(crystalModel);
 
             mCrystalHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
             mCrystalHandle->setModel(mn);
             mCrystalHandle->setScale(glm::vec3(0.58/diameter));
             mCrystalHandle->setPosition(glm::vec3(0.5, 0.5, 0));
-            mCrystalHandle->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mCrystalHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
             mCrystalHandle->setEnableColorModifier(true);
             mCrystalHandle->setColorModifier(mCrystalColor);
 
-            getRenderNode()->addChildHandle(mCrystalHandle);
+            this->addRenderHandle(mCrystalHandle);
         }
 
         if(innerRingModel != nullptr)
         {
-            od::RefPtr<odRender::Model> mn = innerRingModel->getOrCreateRenderModel(&getGui().getRenderer());
+            std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(innerRingModel);
 
             mInnerRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
             mInnerRingHandle->setModel(mn);
             mInnerRingHandle->setScale(glm::vec3(1/diameter));
             mInnerRingHandle->setPosition(glm::vec3(0.5, 0.5, 0));
-            mInnerRingHandle->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mInnerRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+            mInnerRingHandle->setEnableColorModifier(true);
+            mInnerRingHandle->setColorModifier(mRingColor);
 
-            getRenderNode()->addChildHandle(mInnerRingHandle);
+            this->addRenderHandle(mInnerRingHandle);
         }
 
         if(outerRingModel != nullptr)
         {
-            od::RefPtr<odRender::Model> mn = outerRingModel->getOrCreateRenderModel(&getGui().getRenderer());
+            std::shared_ptr<odRender::Model> mn = getGui().getRenderer().getOrCreateModelFromDb(outerRingModel);
 
             mOuterRingHandle = getGui().getRenderer().createHandle(odRender::RenderSpace::NONE);
 
             mOuterRingHandle->setModel(mn);
             mOuterRingHandle->setScale(glm::vec3(1/diameter));
             mOuterRingHandle->setPosition(glm::vec3(0.5, 0.5, 0));
-            mOuterRingHandle->setGlobalLight(lightDiffuse, lightAmbient, lightDirection);
+            mOuterRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+            mOuterRingHandle->setEnableColorModifier(true);
+            mOuterRingHandle->setColorModifier(mRingColor);
 
-            getRenderNode()->addChildHandle(mOuterRingHandle);
+            this->addRenderHandle(mOuterRingHandle);
         }
 
-        if(hoverSound != nullptr && gui.getEngine().getSoundSystem() != nullptr)
+        if(hoverSound != nullptr && gui.getClient().getSoundSystem() != nullptr)
         {
-            mSoundSource = gui.getEngine().getSoundSystem()->createSource();
+            mSoundSource = gui.getClient().getSoundSystem()->createSource();
             mSoundSource->setPosition(glm::vec3(0.0));
             mSoundSource->setRelative(true);
             mSoundSource->setLooping(true);
@@ -128,6 +138,8 @@ namespace dragonRfl
             float soundPitch = std::pow(halfTonePitch, noteOffset) / resamplingFactor;
             mSoundSource->setPitch(soundPitch);
         }
+
+        this->setEnableUpdate(true);
     }
 
     CrystalRingButton::~CrystalRingButton()
@@ -154,6 +166,9 @@ namespace dragonRfl
         }
 
         mCrystalColor.move(mCrystalColorActive, 0.5);
+        mRingColor.move(mRingColorActive, 0.5);
+
+        mCrystalSpeed.move(OD_CRYSTAL_SPEED_MAX, OD_CRYSTAL_SPEED_RISETIME);
     }
 
     void CrystalRingButton::onMouseLeave(const glm::vec2 &pos)
@@ -164,24 +179,25 @@ namespace dragonRfl
         }
 
         mCrystalColor.move(mCrystalColorInactive, 1.0);
+        mRingColor.move(mRingColorInactive, 1.0);
+
+        mCrystalSpeed.move(0, OD_CRYSTAL_SPEED_FALLTIME);
     }
 
     void CrystalRingButton::onUpdate(float relTime)
     {
-        if(isMouseOver())
-        {
-            if(mCrystalSpeedPercent < 1.0)
-            {
-                mCrystalSpeedPercent = std::min(mCrystalSpeedPercent + relTime/OD_CRYSTAL_SPEED_RISETIME, 1.0);
-            }
-
-        }else
-        {
-            if(mCrystalSpeedPercent > 0.0)
-            {
-                mCrystalSpeedPercent = std::max(mCrystalSpeedPercent - relTime/OD_CRYSTAL_SPEED_FALLTIME, 0.0);
-            }
-        }
+        /*
+        for experimenting with different crystal light directions:
+        auto cursor = getGui().getCursorPosition();
+        float theta = (glm::pi<float>()/2)*cursor.y;
+        float phi = 2*glm::pi<float>()*cursor.x;
+        glm::vec3 lightDirection(std::sin(theta)*std::cos(phi), std::sin(theta)*std::sin(phi), std::cos(theta));
+        glm::vec3 lightDiffuse(1.0, 1.0, 1.0);
+        glm::vec3 lightAmbient(0.15, 0.15, 0.15);
+        if(mInnerRingHandle != nullptr) mInnerRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+        if(mOuterRingHandle != nullptr) mOuterRingHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+        if(mCrystalHandle != nullptr) mCrystalHandle->setGlobalLight(lightDirection, lightDiffuse, lightAmbient);
+        */
 
         if(mClicked)
         {
@@ -204,14 +220,11 @@ namespace dragonRfl
 
         if(mCrystalHandle != nullptr)
         {
-            // apply scaling function to speed percentage
-            float crystalSpeed = isMouseOver() ?
-                                    std::sin(mCrystalSpeedPercent * M_PI/2) * OD_CRYSTAL_SPEED_MAX
-                                  : (std::sin((mCrystalSpeedPercent - 1)*M_PI/2)+1) * OD_CRYSTAL_SPEED_MAX;
+            mCrystalSpeed.update(relTime);
 
             // apply rotation to crystal
             glm::quat q = mCrystalHandle->getOrientation();
-            q *= glm::quat(glm::vec3(0, -crystalSpeed*relTime, 0));
+            q *= glm::quat(glm::vec3(0, -mCrystalSpeed*relTime, 0));
             mCrystalHandle->setOrientation(q);
 
             if(mCrystalColor.update(relTime))
@@ -220,15 +233,28 @@ namespace dragonRfl
             }
         }
 
+        if(mRingColor.update(relTime))
+        {
+            if(mOuterRingHandle != nullptr)
+            {
+                mOuterRingHandle->setColorModifier(mRingColor);
+            }
+
+            if(mInnerRingHandle != nullptr)
+            {
+                mInnerRingHandle->setColorModifier(mRingColor);
+            }
+        }
+
         if(mOuterRingHandle != nullptr)
         {
-            glm::quat q(glm::vec3(-mRingAnimPercent*M_PI, 0, 0));
+            glm::quat q(glm::vec3(mRingAnimPercent*M_PI, 0, 0));
             mOuterRingHandle->setOrientation(q);
         }
 
         if(mInnerRingHandle != nullptr)
         {
-            glm::quat q(glm::vec3(0, -mRingAnimPercent*M_PI, 0));
+            glm::quat q(glm::vec3(0, mRingAnimPercent*M_PI, 0));
             mInnerRingHandle->setOrientation(q);
         }
     }

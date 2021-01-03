@@ -10,7 +10,7 @@
 
 #include <random>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -21,9 +21,8 @@ namespace odAudio
 
 namespace dragonRfl
 {
-    class DragonRfl;
 
-    class SoundEffect : public odRfl::RflClass
+    class SoundEffect : public odRfl::LevelObjectClassBase
     {
     public:
 
@@ -43,16 +42,17 @@ namespace dragonRfl
             Camera
         };
 
-        SoundEffect(DragonRfl &rfl);
+        SoundEffect();
+        virtual ~SoundEffect();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
-        virtual void onMoved(od::LevelObject &obj) override;
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
+        virtual void onUpdate(float relTime) override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
+        virtual void onTranslated(const glm::vec3 &from, const glm::vec3 &to) override;
 
 
     private:
@@ -74,6 +74,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0006, "Special Effect", "Sound Effect", dragonRfl::SoundEffect);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::SoundEffect, 0x0006, "Special Effect", "Sound Effect");
 
 #endif /* INCLUDE_DRAGONRFL_SOUNDEFFECT_H_ */

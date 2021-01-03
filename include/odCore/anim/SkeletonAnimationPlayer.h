@@ -8,66 +8,49 @@
 #ifndef INCLUDE_ODCORE_ANIM_SKELETONANIMATIONPLAYER_H_
 #define INCLUDE_ODCORE_ANIM_SKELETONANIMATIONPLAYER_H_
 
-#include <stdint.h>
 #include <vector>
-#include <queue>
+#include <memory>
 
 #include <glm/gtx/norm.hpp> // needed due to missing include in glm/gtx/dual_quaternion.hpp, version 0.9.8.3-3
 #include <glm/gtx/dual_quaternion.hpp>
 
-#include <odCore/RefCounted.h>
+#include <odCore/CTypes.h>
 
 #include <odCore/db/Animation.h>
 
+#include <odCore/anim/AnimModes.h>
 #include <odCore/anim/Skeleton.h>
-#include <odCore/anim/MotionAccumulator.h>
-
-#include <odCore/render/Handle.h>
-#include <odCore/render/FrameListener.h>
 
 namespace odAnim
 {
-
-    enum class PlaybackType
-    {
-        Normal,
-        Looping,
-        PingPong
-    };
-
+    class BoneAccumulator;
 
     class BoneAnimator
     {
     public:
 
-        BoneAnimator(Skeleton::Bone *bone);
+        BoneAnimator(Skeleton::Bone &bone);
+        ~BoneAnimator();
 
-        inline Skeleton::Bone *getBone() { return mBone; }
-        inline void setAccumulator(MotionAccumulator *accu) { mAccumulator = accu; }
+        inline Skeleton::Bone &getBone() { return mBone; }
+        inline void setAccumulator(std::shared_ptr<BoneAccumulator> a) { mAccumulator = a; }
+        inline std::shared_ptr<BoneAccumulator> getAccumulator() const { return mAccumulator; }
+        inline const AxesBoneModes &getBoneModes() const { return mModes.boneModes; }
         inline bool isPlaying() const { return mPlaying; }
-        inline odDb::Animation *getCurrentAnimation() { return mCurrentAnimation; }
+        inline std::shared_ptr<odDb::Animation> getCurrentAnimation() { return mCurrentAnimation; }
 
         /**
-         * @brief Instantly plays animation.
+         * @brief Sets whether to use linear interpolation (true) or sample frames by nearest-neighbour (false).
          *
-         * This will set up the animator to play the passed animation as if the animation has been
-         * started exactly after the last update.
+         * Original Drakan does not seem to use any sort of interpolation between frames, so false is the default.
          *
-         * The speedModifier argument may be negative for reverse playback. In that case, the animation
-         * will start at it's last frame.
-         *
-         * Only the current animation will be replaced; any animations in the queue will remain
-         * untouched.
-         *
-         * @param type             The type of playback to use (normal, looping, pingpong)
-         * @param speedMultiplier  Speed factor. 1.0 is normal playback speed. May be negative for reverse playback.
+         * This setting is overridden to true if movement accumulation is enabled on any axis.
          */
-        void playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+        inline void setUseInterpolation(bool b) { mUseInterpolation = b; }
 
-        /**
-         * Pushes to queue, animation will start after loop point yada yada documentation is fun!
-         */
-        void pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+        void setBoneModes(const AxesBoneModes &modes);
+
+        void playAnimation(std::shared_ptr<odDb::Animation> animation, const AnimModes &modes);
 
         /**
          * @brief Advances animation and performs necessary updates to the skeleton.
@@ -76,97 +59,86 @@ namespace odAnim
          */
         void update(float relTime);
 
-        void setAccumulationModes(const AxesModes &modes);
-
 
     private:
 
-        glm::dualquat _sampleLinear(float time);
+        glm::dualquat _sampleLinear(std::shared_ptr<odDb::Animation> &anim, float time);
+        glm::dualquat _sampleNearest(std::shared_ptr<odDb::Animation> &anim, float time);
+        glm::dualquat _sample(std::shared_ptr<odDb::Animation> &anim, float time, bool interpolated);
 
-        Skeleton::Bone *mBone;
+        Skeleton::Bone &mBone;
 
-        od::RefPtr<odDb::Animation> mCurrentAnimation;
-        PlaybackType mPlaybackType;
-        float mSpeedMultiplier;
-        odDb::Animation::KfIterator mFirstFrame;
-        odDb::Animation::KfIterator mLastFrame;
+        std::shared_ptr<odDb::Animation> mCurrentAnimation;
+        AnimModes mModes;
 
-        struct AnimationQueueEntry
-        {
-            AnimationQueueEntry(odDb::Animation *pAnim, PlaybackType pType, float pSpeed)
-            : animation(pAnim)
-            , type(pType)
-            , speedMultiplier(pSpeed)
-            {
-            }
-
-            od::RefPtr<odDb::Animation> animation;
-            PlaybackType type;
-            float speedMultiplier;
-        };
-        std::queue<AnimationQueueEntry> mAnimationQueue;
+        std::shared_ptr<odDb::Animation> mTransitionAnimation;
+        AnimModes mTransitionModes;
+        float mTransitionStartTime;
 
         bool mPlaying;
-        float mAnimTime;
-        odDb::Animation::KfIteratorPair mLastKeyframes;
-        glm::dualquat mLeftTransform;
-        glm::dualquat mRightTransform;
-
+        float mPlayerTime;
+        glm::vec3 mLoopJump;
         glm::dualquat mLastAppliedTransform;
 
-        MotionAccumulator *mAccumulator;
-        glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
-        glm::vec3 mObjectAccumulationFactors; // tells what part of translation is pushed to accumulator
+        std::shared_ptr<BoneAccumulator> mAccumulator;
+        AxesBoneModes mBoneModes;
+        bool mHasNonDefaultBoneMode;
+        bool mUseInterpolation;
     };
 
 
-    class SkeletonAnimationPlayer : public odRender::FrameListener
+    class SkeletonAnimationPlayer
     {
     public:
 
-        explicit SkeletonAnimationPlayer(odRender::Handle *renderHandle, Skeleton *skeleton);
-        virtual ~SkeletonAnimationPlayer();
+        explicit SkeletonAnimationPlayer(std::shared_ptr<Skeleton> skeleton);
+        ~SkeletonAnimationPlayer();
 
         inline bool isPlaying() const { return mPlaying; }
 
-        /// @brief Plays animation on whole skeleton.
-        void playAnimation(odDb::Animation *anim, PlaybackType type, float speedMultiplier);
+        /**
+         * @brief Plays an animation.
+         *
+         * If the channelIndex in the modes struct is non-negative, the
+         * animation will only play on the subtree starting from that channel.
+         * This will override any playing animations on that subtree. You can
+         * mix multiple animations this way, e.g. playing walking animation on
+         * whole skeleton, then playing talking animation on neck channel to
+         * make the character talk while walking.
+         *
+         * The speed field in modes may be negative for reverse playback. In
+         * that case, the animation will start at it's last frame.
+         *
+         * Currently, the bone modes in the modes struct are ignored. You'll
+         * have to set these manually via setBoneModes().
+         */
+        void playAnimation(std::shared_ptr<odDb::Animation> anim, const AnimModes &modes);
 
         /**
-         * @brief Plays animation on skeleton subtree, starting at \c jointIndex.
+         * @brief Sets accumulator for a bone.
          *
-         * This will override any playing animations on that subtree. You can mix multiple
-         * animations this way, e.g. playing walking animation on whole skeleton, then playing
-         * talking animation on neck joint to make the character talk while walking.
+         * If any axis of the target bone is set to BoneMode::ACCUMULATE, the relative movement of that bone
+         * will be reported to the provided accumulator.
          */
-        void playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier);
+        void setBoneAccumulator(std::shared_ptr<BoneAccumulator> accumulator, int32_t jointIndex);
 
-        void pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier);
+        void setBoneModes(const AxesBoneModes &modes, int32_t jointIndex);
+
+        std::shared_ptr<BoneAccumulator> getBoneAccumulator(int32_t jointIndex);
+        const AxesBoneModes &getBoneModes(int32_t jointIndex);
 
         /**
-         * @brief Sets accumulator for a root node.
+         * @brief Advances the animation by relTime and applies changes to the skeleton.
          *
-         * Setting this for a node overrides the default animation behaviour. Transforms will no
-         * longer be pushed to the rig for that node, but instead be reported to the accumulator.
-         *
-         * Passing nullptr as accumulator returns the bone to it's default behavior.
-         *
-         * The \c rootNodeIndex parameter determines which root node to assign the accumulator to
-         * for skeletons with multiple roots. This can be ignored most of the time.
+         * Returns true if any changes have been made to the skeleton (making flattening necessary), or false
+         * if not.
          */
-        void setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex = 0);
-
-        void setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex = 0);
-
-        // implement odRender::FrameListener
-        virtual void onFrameUpdate(double simTime, double relTime, uint32_t frameNumber) override;
+        bool update(float relTime);
 
 
     private:
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        Skeleton *mSkeleton;
-        odRender::Rig *mRig;
+        std::shared_ptr<Skeleton> mSkeleton;
         std::vector<BoneAnimator> mBoneAnimators; // indices in this correspond to bone/joint indices!
         bool mPlaying;
     };

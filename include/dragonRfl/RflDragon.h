@@ -10,11 +10,15 @@
 
 #include <memory>
 
-#include <odCore/input/Action.h>
+#include <odCore/input/InputManager.h>
+
+#include <odCore/net/IdTypes.h>
+#include <odCore/net/MessageDispatcher.h>
 
 #include <odCore/rfl/Rfl.h>
 
 #include <dragonRfl/Actions.h>
+#include <dragonRfl/MessageChannel.h>
 
 namespace dragonRfl
 {
@@ -22,32 +26,41 @@ namespace dragonRfl
     class LocalPlayer;
     class DragonGui;
 
-    class DragonRfl : public odRfl::AutoRegisteringRfl<DragonRfl>
+    class DragonRfl : public odRfl::Rfl
     {
     public:
 
-        DragonRfl(od::Engine &engine);
-        ~DragonRfl();
+        DragonRfl();
+        virtual ~DragonRfl();
 
         inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
         inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
 
-        virtual void onStartup() override;
+        /**
+         * @brief Spawns a controller for the given client.
+         */
+        void spawnHumanControlForPlayer(od::Server &localServer, odNet::ClientId client);
+
+        virtual const char *getName() const override;
+        virtual void onLoaded() override;
+        virtual void onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel) override;
+        virtual void onLevelLoaded(od::Server &localServer) override;
 
 
     private:
 
-        void _handleAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
+        void _bindActions(odInput::InputManager &im);
+        void _handleAction(Action action, odInput::ActionState state);
+
+        // note: this is defined in ClassRegistry.cpp, as to avoid having to include all the class headers in the main RFL logic code
+        void _registerClasses();
 
         LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
 
-        od::RefPtr<odInput::IAction> mMenuAction;
-        od::RefPtr<odInput::IAction> mPhysicsDebugAction;
+        std::shared_ptr<odNet::GlobalMessageListener<MessageChannel>> mControlCreationChannelListener;
     };
 
 }
-
-OD_DEFINE_RFL_TRAITS("Dragon", dragonRfl::DragonRfl);
 
 #endif /* INCLUDE_DRAGONRFL_RFLDRAGON_H_ */

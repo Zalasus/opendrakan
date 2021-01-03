@@ -14,13 +14,20 @@
 namespace odBulletPhysics
 {
 
+    static std::shared_ptr<odPhysics::Handle> _handlePtrFromObject(const btCollisionObject *object)
+    {
+        // FIXME: it would be great to find an alternative to enable_shared_from_this here
+        auto handle = static_cast<odPhysics::Handle*>(object->getUserPointer()); // user pointer is a void*, so we can't use od::downcast here :/
+        return handle->shared_from_this();
+    }
+
 
     static void _objectToResult(float fraction, const btVector3 &bHitPoint, const btVector3 &bHitNormal, const btCollisionObject *object, odPhysics::RayTestResult &result)
     {
         result.hitFraction = fraction;
         result.hitPoint = BulletAdapter::toGlm(bHitPoint);
         result.hitNormal = BulletAdapter::toGlm(bHitNormal);
-        result.handle = static_cast<odPhysics::Handle*>(object->getUserPointer()); // user pointer is a void*, so we can't use od::downcast here :/
+        result.handle = _handlePtrFromObject(object);
     }
 
 
@@ -51,7 +58,7 @@ namespace odBulletPhysics
     }
 
 
-    ClosestRayCallback::ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result)
+    ClosestRayCallback::ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &result)
     : mResult(result)
     , mStart(start)
     , mEnd(end)
@@ -73,7 +80,7 @@ namespace odBulletPhysics
         if(mExclude != nullptr)
         {
             odPhysics::Handle *userPointerAsHandle = static_cast<odPhysics::Handle*>(rayResult.m_collisionObject->getUserPointer());
-            if(mExclude == userPointerAsHandle)
+            if(mExclude.get() == userPointerAsHandle)
             {
                 return 1.0;
             }
@@ -128,7 +135,7 @@ namespace odBulletPhysics
 
         } else
         {
-            ///need to transform normal into worldspace
+            // need to transform normal into worldspace
             hitNormal = rayResult.m_collisionObject->getWorldTransform().getBasis()*rayResult.m_hitNormalLocal;
         }
 
@@ -144,7 +151,7 @@ namespace odBulletPhysics
     }
 
 
-    ContactResultCallback::ContactResultCallback(odPhysics::Handle *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
+    ContactResultCallback::ContactResultCallback(btCollisionObject *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results)
     : mMe(me)
     , mResults(results)
     , mContactCount(0)
@@ -164,16 +171,14 @@ namespace odBulletPhysics
         }
 
         odPhysics::ContactTestResult result;
-        odPhysics::Handle *handle0 = static_cast<odPhysics::Handle*>(colObj0Wrap->m_collisionObject->getUserPointer());
-        odPhysics::Handle *handle1 = static_cast<odPhysics::Handle*>(colObj1Wrap->m_collisionObject->getUserPointer());
-        if(handle0 == mMe)
+        if(colObj0Wrap->m_collisionObject == mMe)
         {
-            result.handle = handle1;
+            result.handle = _handlePtrFromObject(colObj1Wrap->m_collisionObject);
             mLastObject = colObj1Wrap->m_collisionObject;
 
-        }else if(handle1 == mMe)
+        }else if(colObj1Wrap->m_collisionObject == mMe)
         {
-            result.handle = handle0;
+            result.handle = _handlePtrFromObject(colObj0Wrap->m_collisionObject);;
             mLastObject = colObj0Wrap->m_collisionObject;
 
         }else
@@ -189,5 +194,3 @@ namespace odBulletPhysics
     }
 
 }
-
-

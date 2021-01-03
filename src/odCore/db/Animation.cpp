@@ -17,9 +17,8 @@
 namespace odDb
 {
 
-	Animation::Animation(AssetProvider &ap, od::RecordId id)
-	: Asset(ap, id)
-	, mDuration(0)
+	Animation::Animation()
+	: mDuration(0)
 	, mOriginalFrameCount(0)
 	, mFrameCount(0)
 	, mModelNodeCount(0)

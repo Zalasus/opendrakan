@@ -8,67 +8,61 @@
 #ifndef INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_
 #define INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-    class UserInterfaceProperties : public odRfl::RflClass
+    struct UserInterfacePropertiesFields final : public odRfl::FieldBundle
     {
-    public:
-
-        UserInterfaceProperties(DragonRfl &rfl);
+        UserInterfacePropertiesFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-
-    //protected:
-
-        odRfl::ModelRef     mInnerRing;
-        odRfl::ModelRef     mOuterRing;
-        odRfl::ModelRef     mCrystalTop;
-        odRfl::Float        mCrystalTopNoteOffset;
-        odRfl::ModelRef     mCrystalLeft;
-        odRfl::Float        mCrystalLeftNoteOffset;
-        odRfl::ModelRef     mCrystalMiddle;
-        odRfl::Float        mCrystalMiddleNoteOffset;
-        odRfl::ModelRef     mCrystalRight;
-        odRfl::Float        mCrystalRightNoteOffset;
-        odRfl::ModelRef     mCrystalLowerLeft;
-        odRfl::Float        mCrystalLowerLeftNoteOffset;
-        odRfl::ModelRef     mCrystalLowerRight;
-        odRfl::Float        mCrystalLowerRightNoteOffset;
-        odRfl::ModelRef     mCrystalBottom;
-        odRfl::Float        mCrystalBottomNoteOffset;
-        odRfl::ModelRef     mArrowUpCrystal;
-        odRfl::ModelRef     mButtonCrystal;
-        odRfl::ModelRef     mWideButtonCrystal;
-        odRfl::ModelRef     mNormalButtonRing;
-        odRfl::ModelRef     mWideButtonRing;
-        odRfl::SoundRef     mHoverSoundLooped;
-        odRfl::SoundRef     mButtonClickSound;
-        odRfl::SoundRef     mMainGuiButtonClickSound;
-        odRfl::SoundRef     mScrollbarClickSound;
-        odRfl::SoundRef     mScrollbarReleaseSound;
-        odRfl::SoundRef     mScrollbarSlideLoopingSound;
-        odRfl::SoundRef     mNextOptionSound;
-        odRfl::SoundRef     mPreviousOptionSound;
-        odRfl::SoundRef     mMessageBoxSound;
-        odRfl::SoundRef     mExitSound;
-        odRfl::Integer      mBackgroundMusicId;
-        odRfl::Integer      mCreditsMusicId;
-        odRfl::Integer      mEasyScalePercent;
-        odRfl::Integer      mHardScalePercent;
-        odRfl::String       mIntroLevelFilename;
-        odRfl::String       mFirstLevelFilename;
+        odRfl::ModelRef     innerRing;
+        odRfl::ModelRef     outerRing;
+        odRfl::ModelRef     crystalTop;
+        odRfl::Float        crystalTopNoteOffset;
+        odRfl::ModelRef     crystalLeft;
+        odRfl::Float        crystalLeftNoteOffset;
+        odRfl::ModelRef     crystalMiddle;
+        odRfl::Float        crystalMiddleNoteOffset;
+        odRfl::ModelRef     crystalRight;
+        odRfl::Float        crystalRightNoteOffset;
+        odRfl::ModelRef     crystalLowerLeft;
+        odRfl::Float        crystalLowerLeftNoteOffset;
+        odRfl::ModelRef     crystalLowerRight;
+        odRfl::Float        crystalLowerRightNoteOffset;
+        odRfl::ModelRef     crystalBottom;
+        odRfl::Float        crystalBottomNoteOffset;
+        odRfl::ModelRef     arrowUpCrystal;
+        odRfl::ModelRef     buttonCrystal;
+        odRfl::ModelRef     wideButtonCrystal;
+        odRfl::ModelRef     normalButtonRing;
+        odRfl::ModelRef     wideButtonRing;
+        odRfl::SoundRef     hoverSoundLooped;
+        odRfl::SoundRef     buttonClickSound;
+        odRfl::SoundRef     mainGuiButtonClickSound;
+        odRfl::SoundRef     scrollbarClickSound;
+        odRfl::SoundRef     scrollbarReleaseSound;
+        odRfl::SoundRef     scrollbarSlideLoopingSound;
+        odRfl::SoundRef     nextOptionSound;
+        odRfl::SoundRef     previousOptionSound;
+        odRfl::SoundRef     messageBoxSound;
+        odRfl::SoundRef     exitSound;
+        odRfl::Integer      backgroundMusicId;
+        odRfl::Integer      creditsMusicId;
+        odRfl::Integer      easyScalePercent;
+        odRfl::Integer      hardScalePercent;
+        odRfl::String       introLevelFilename;
+        odRfl::String       firstLevelFilename;
     };
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0062, "System", "User Interface Properties", dragonRfl::UserInterfaceProperties);
+    OD_DEFINE_CLASS(UserInterfaceProperties, 0x0062, "System", "User Interface Properties", odRfl::FieldsOnlyClassFactory<UserInterfacePropertiesFields>);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_USERINTERFACEPROPERTIES_H_ */

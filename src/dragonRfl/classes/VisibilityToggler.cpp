@@ -7,17 +7,18 @@
 
 #include <dragonRfl/classes/VisibilityToggler.h>
 
-#include <dragonRfl/RflDragon.h>
-#include <odCore/rfl/Rfl.h>
+#include <odCore/Level.h>
 #include <odCore/LevelObject.h>
+
+#include <dragonRfl/RflDragon.h>
 
 namespace dragonRfl
 {
 
-    VisibilityToggler::VisibilityToggler(DragonRfl &rfl)
+    VisibilityToggler::VisibilityToggler()
     : mTriggerMode(TriggerMode::DependsOnMessage)
-    , mShowMessage(odRfl::RflMessage::Off)
-    , mHideMessage(odRfl::RflMessage::Off)
+    , mShowMessage(od::Message::Off)
+    , mHideMessage(od::Message::Off)
     {
     }
 
@@ -29,48 +30,44 @@ namespace dragonRfl
                 (mHideMessage, "Hide Message");
     }
 
-    void VisibilityToggler::onLoaded(od::LevelObject &obj)
+    void VisibilityToggler::onLoaded()
     {
+        auto &obj = getLevelObject();
+
         obj.setSpawnStrategy(od::SpawnStrategy::Always);
         obj.setObjectType(od::LevelObjectType::Detector);
     }
 
-    void VisibilityToggler::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
+    void VisibilityToggler::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
-        const std::vector<od::LevelObject*> &linkedObjects = obj.getLinkedObjects();
+        const auto &linkedObjects = getLevelObject().getLinkedObjectIndices();
 
-        if(mTriggerMode == TriggerMode::ToggleVisibility)
+        for(auto index : linkedObjects)
         {
-            for(auto it = linkedObjects.begin(); it != linkedObjects.end(); ++it)
-            {
-                bool visible = (*it)->isVisible();
-                (*it)->setVisible(!visible);
-            }
+            od::LevelObject *obj = getLevelObject().getLevel().getLevelObjectByIndex(index);
+            if(obj == nullptr) continue;
 
-        }else if(mTriggerMode == TriggerMode::DependsOnMessage)
-        {
-            bool desiredVisibility;
-            if(message == mShowMessage)
+            if(mTriggerMode == TriggerMode::ToggleVisibility)
             {
-                desiredVisibility = true;
 
-            }else if(message == mHideMessage)
-            {
-                desiredVisibility = false;
+                obj->setVisible(!obj->isVisible());
 
-            }else
+            }else if(mTriggerMode == TriggerMode::DependsOnMessage)
             {
-                return; // ignore message
-            }
+                if(message == mShowMessage)
+                {
+                    obj->setVisible(true);
 
-            for(auto it = linkedObjects.begin(); it != linkedObjects.end(); ++it)
-            {
-                (*it)->setVisible(desiredVisibility);
+                }else if(message == mHideMessage)
+                {
+                    obj->setVisible(false);
+
+                }else
+                {
+                    return; // ignore message
+                }
             }
         }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, VisibilityToggler);
 
 }

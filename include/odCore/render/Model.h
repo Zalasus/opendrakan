@@ -9,8 +9,7 @@
 #define INCLUDE_ODCORE_RENDER_MODEL_H_
 
 #include <vector>
-
-#include <odCore/RefCounted.h>
+#include <memory>
 
 namespace odRender
 {
@@ -24,14 +23,14 @@ namespace odRender
         AMBIENT_DIFFUSE_SPECULAR
     };
 
-    class Model : public od::RefCounted
+    class Model
     {
     public:
 
         virtual size_t getGeometryCount() = 0;
-        virtual Geometry *getGeometry(size_t index) = 0;
-        virtual void addGeometry(Geometry *g) = 0;
-        virtual void removeGeometry(Geometry *g) = 0;
+        virtual std::shared_ptr<Geometry> getGeometry(size_t index) = 0;
+        virtual void addGeometry(std::shared_ptr<Geometry> g) = 0;
+        virtual void removeGeometry(std::shared_ptr<Geometry> g) = 0;
 
         virtual bool hasSharedVertexArrays() = 0;
 

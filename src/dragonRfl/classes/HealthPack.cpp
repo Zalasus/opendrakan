@@ -13,7 +13,7 @@
 namespace dragonRfl
 {
 
-	HealthPack::HealthPack(DragonRfl &rfl)
+	HealthPack::HealthPack()
 	: mHealthBoost(0)
 	{
 	}
@@ -25,8 +25,5 @@ namespace dragonRfl
 	    probe.beginCategory("Health Pack");
 	    probe.registerField(mHealthBoost, "Health Boost");
 	}
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, HealthPack);
 
 }

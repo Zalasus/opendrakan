@@ -8,9 +8,10 @@
 #ifndef INCLUDE_RFL_DRAGON_SKY_H_
 #define INCLUDE_RFL_DRAGON_SKY_H_
 
-#include <odCore/RefCounted.h>
+#include <memory>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
+#include <odCore/rfl/DummyClass.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -19,43 +20,70 @@
 namespace dragonRfl
 {
 
-    class DragonRfl;
+    struct DomedSkyFields final : public odRfl::FieldBundle
+    {
+        enum class FollowMode
+        {
+            ORIGINAL_HEIGHT,
+            CAMERA,
+            LANDSCAPE,
+            HOLD_POSITION
+        };
 
-    class DomedSky : public odRfl::RflClass
+        enum class Effects
+        {
+            NONE,
+            LIGHTNING
+        };
+
+        DomedSkyFields();
+
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+
+        odRfl::EnumYesNo	              primarySky;
+		odRfl::EnumImpl<FollowMode, 0, 3> followMode;
+		odRfl::Float		              offsetDown;
+		odRfl::EnumImpl<Effects, 0, 1>    effects;
+		odRfl::ClassRef		              lightningObject;
+		odRfl::Float		              aveLightningPeriod;
+		odRfl::Integer		              lightningHeight;
+		odRfl::Integer		              minLightningDist;
+		odRfl::Integer		              maxLightningDist;
+		odRfl::Float		              lightningWedgeAngle;
+		odRfl::ClassRef		              lensFlare;
+		odRfl::Integer		              flareElevation;
+		odRfl::Integer		              flareDirection;
+    };
+
+
+    class DomedSky_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<DomedSky_Cl>
     {
     public:
 
-        DomedSky(DragonRfl &rfl);
+        DomedSky_Cl();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
-
-    protected:
-
-        odRfl::EnumYesNo	mPrimarySky;
-		odRfl::Enum			mFollowMode;
-		odRfl::Float		mOffsetDown;
-		odRfl::Enum			mEffects;
-		odRfl::ClassRef		mLightningObject;
-		odRfl::Float		mAveLightningPeriod;
-		odRfl::Integer		mLightningHeight;
-		odRfl::Integer		mMinLightningDist;
-		odRfl::Integer		mMaxLightningDist;
-		odRfl::Float		mLightningWedgeAngle;
-		odRfl::ClassRef		mLensFlare;
-		odRfl::Integer		mFlareElevation;
-		odRfl::Integer		mFlareDirection;
+        virtual void onSpawned() override;
+        virtual void onPostUpdate(float relTime) override;
 
 
     private:
 
-		od::RefPtr<odRender::Handle> mRenderNode;
+        DomedSkyFields mFields;
+
+		std::shared_ptr<odRender::Handle> mRenderNode;
+
+        od::LevelObject *mCameraObject;
 
     };
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x001a, "System", "Domed Sky", dragonRfl::DomedSky);
+    using DomedSkyFactory = odRfl::ClientOnlyClassFactory<DomedSkyFields, DomedSky_Cl>;
+
+
+    OD_DEFINE_CLASS(DomedSky, 0x001a, "System", "Domed Sky", DomedSkyFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_SKY_H_ */

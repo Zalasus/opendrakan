@@ -13,7 +13,7 @@
 namespace dragonRfl
 {
 
-	Material::Material(DragonRfl &rfl)
+	Material::Material()
 	: mRynnFootSounds({})
 	, mDragonFootSounds({})
 	, mWalkerFootSounds({})
@@ -59,13 +59,8 @@ namespace dragonRfl
 	}
 
 
-    OD_REGISTER_RFLCLASS(DragonRfl, Material);
-
-
-
-	BlendedMaterial::BlendedMaterial(DragonRfl &rfl)
-	: Material(rfl)
-	, mFirstTexture(odDb::AssetRef::NULL_REF)
+	BlendedMaterial::BlendedMaterial()
+	: mFirstTexture(odDb::AssetRef::NULL_REF)
 	, mSecondTexture(odDb::AssetRef::NULL_REF)
 	, mDirectionOfFlow(0)
 	, mFirstSpeed(0.1)
@@ -84,8 +79,5 @@ namespace dragonRfl
         probe.registerField(mFirstSpeed, "First Speed (lu/s)");
         probe.registerField(mSecondSpeed, "Second Speed (lu/s)");
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, BlendedMaterial);
 
 }

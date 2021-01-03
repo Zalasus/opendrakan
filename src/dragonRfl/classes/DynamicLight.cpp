@@ -7,66 +7,90 @@
 
 #include <dragonRfl/classes/DynamicLight.h>
 
-#include <dragonRfl/RflDragon.h>
+#include <odCore/Client.h>
 #include <odCore/LevelObject.h>
+
+#include <odCore/physics/PhysicsSystem.h>
 
 namespace dragonRfl
 {
 
-    DynamicLight::DynamicLight(DragonRfl &rfl)
-    : StaticLight(rfl)
-    , mIntensityEffect(IntensityEffect::Off)
-    , mEffectTime(1.0)
-    , mEffectAmplitude(1.0)
-    , mStartEffect(EffectStartType::WhenCreated)
-    , mLightIsOn(true)
+    DynamicLightFields::DynamicLightFields()
+    : intensityEffect(IntensityEffect::Off)
+    , effectTime(1.0)
+    , effectAmplitude(1.0)
+    , startEffect(EffectStartType::WhenCreated)
+    {
+    }
+
+    void DynamicLightFields::probeFields(odRfl::FieldProbe &probe)
+    {
+        StaticLightFields::probeFields(probe);
+
+        probe("Lighting Effects")
+                (intensityEffect, "Intensity Effect")
+                (effectTime, "Effect Time (s)")
+                (effectAmplitude, "Effect Amplitude")
+                (startEffect, "Start Effect..");
+
+        // this should prevent dividing by zero
+        if(effectTime <= 0.0)
+        {
+            effectTime = std::numeric_limits<float>::epsilon();
+        }
+    }
+
+    DynamicLight_Cl::DynamicLight_Cl()
+    : mLightIsOn(true)
     , mStarted(false)
     , mColorFactor(1.0)
     , mPulseRising(false)
     {
     }
 
-    void DynamicLight::probeFields(odRfl::FieldProbe &probe)
+    void DynamicLight_Cl::onLoaded()
     {
-        StaticLight::probeFields(probe);
-
-        probe("Lighting Effects")
-                (mIntensityEffect, "Intensity Effect")
-                (mEffectTime, "Effect Time (s)")
-                (mEffectAmplitude, "Effect Amplitude")
-                (mStartEffect, "Start Effect..");
-
-        // this should prevent dividing by zero
-        if(mEffectTime <= 0.0)
-        {
-            mEffectTime = std::numeric_limits<float>::epsilon();
-        }
     }
 
-    void DynamicLight::onSpawned(od::LevelObject &obj)
+    void DynamicLight_Cl::onSpawned()
     {
-        StaticLight::onSpawned(obj);
+        auto &obj = getLevelObject();
 
-        mLight->setDynamic(true);
+        glm::vec4 color = mFields.color.asColorVector();
+        mLightColorVector = {color.r, color.g, color.b};
 
-        obj.setEnableRflUpdateHook(true);
+        od::Light lightPrototype;
+        lightPrototype.setRadius(mFields.radius);
+        lightPrototype.setColor(mLightColorVector);
+        lightPrototype.setIntensityScaling(mFields.intensityScaling);
+        lightPrototype.setRequiredQualityLevel(mFields.qualityLevelRequired);
+        lightPrototype.setPosition(obj.getPosition());
+        lightPrototype.setDynamic(true);
 
-        mStarted = (mStartEffect == EffectStartType::WhenCreated);
+        mLightHandle = getClient().getPhysicsSystem().createLightHandle(lightPrototype);
+        getClient().getPhysicsSystem().dispatchLighting(mLightHandle);
+
+        obj.setEnableUpdate(true);
+
+        mStarted = (mFields.startEffect == DynamicLightFields::EffectStartType::WhenCreated);
     }
 
-    void DynamicLight::onUpdate(od::LevelObject &obj, float relTime)
+    void DynamicLight_Cl::onDespawned()
     {
-        StaticLight::onUpdate(obj, relTime);
+        mLightHandle = nullptr;
+    }
 
-        if(mLight == nullptr || !mStarted)
+    void DynamicLight_Cl::onUpdate(float relTime)
+    {
+        if(mLightHandle == nullptr || !mStarted)
         {
             return;
         }
 
-        switch(mIntensityEffect)
+        switch(mFields.intensityEffect)
         {
-        case IntensityEffect::Pulse:
-            mColorFactor += (mPulseRising ? 1.0 : -1.0) * relTime/mEffectTime;
+        case DynamicLightFields::IntensityEffect::Pulse:
+            mColorFactor += (mPulseRising ? 1.0 : -1.0) * relTime/mFields.effectTime;
             if(mPulseRising && mColorFactor > 1.0)
             {
                 mColorFactor = 1.0;
@@ -79,10 +103,10 @@ namespace dragonRfl
             }
             break;
 
-        case IntensityEffect::Fade:
+        case DynamicLightFields::IntensityEffect::Fade:
             if(mColorFactor > 0.0)
             {
-                mColorFactor -= relTime/mEffectTime;
+                mColorFactor -= relTime/mFields.effectTime;
                 if(mColorFactor < 0.0)
                 {
                     mColorFactor = 0.0;
@@ -90,42 +114,42 @@ namespace dragonRfl
             }
             break;
 
-        case IntensityEffect::Off:
+        case DynamicLightFields::IntensityEffect::Off:
         default:
             break;
         }
 
         if(mLightIsOn)
         {
-            mLight->setColor(mLightColorVector*mColorFactor);
+            mLightHandle->getLight()->setColor(mLightColorVector*mColorFactor);
 
         }else
         {
-            mLight->setColor(glm::vec3(0.0, 0.0, 0.0)); // TODO: lights need an off-flag. an off-state light could free up one light slot
+            mLightHandle->getLight()->setColor(glm::vec3(0.0, 0.0, 0.0)); // TODO: lights need an off-flag. an off-state light could free up one light slot
         }
     }
 
-    void DynamicLight::onMoved(od::LevelObject &obj)
+    void DynamicLight_Cl::onTransformChanged()
     {
-        mNeedsUpdate = true;
+        getClient().getPhysicsSystem().dispatchLighting(mLightHandle);
     }
 
-    void DynamicLight::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
+    void DynamicLight_Cl::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         switch(message)
         {
-        case odRfl::RflMessage::Triggered:
-            if(mStartEffect == EffectStartType::WhenEnabled)
+        case od::Message::Triggered:
+            if(mFields.startEffect == DynamicLightFields::EffectStartType::WhenEnabled)
             {
                 mStarted = true;
             }
             break;
 
-        case odRfl::RflMessage::On:
+        case od::Message::On:
             mLightIsOn = true;
             break;
 
-        case odRfl::RflMessage::Off:
+        case od::Message::Off:
             mLightIsOn = false;
             break;
 
@@ -133,8 +157,5 @@ namespace dragonRfl
             break;
         }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, DynamicLight);
 
 }

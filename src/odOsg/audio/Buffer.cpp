@@ -15,15 +15,18 @@
 namespace odOsg
 {
 
-    Buffer::Buffer(SoundSystem &soundSystem, odDb::Sound *sound)
-    : mSoundSystem(soundSystem)
+    Buffer::Buffer(SoundSystem &ss)
+    : mSoundSystem(ss)
     , mBufferId(0)
-    , mSound(sound)
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alGenBuffers(1, &mBufferId);
         SoundSystem::doErrorCheck("Could not generate buffer");
+    }
+
+    Buffer::Buffer(SoundSystem &soundSystem, std::shared_ptr<odDb::Sound> sound)
+    : Buffer(soundSystem)
+    {
+        mSound = sound;
 
         uint32_t bitsPerChannel = mSound->getBitsPerChannel();
         uint32_t channelCount = mSound->getChannelCount();
@@ -58,8 +61,6 @@ namespace odOsg
 
     Buffer::~Buffer()
     {
-        std::lock_guard<std::mutex> lock(mSoundSystem.getWorkerMutex());
-
         alDeleteBuffers(1, &mBufferId);
         SoundSystem::doErrorCheck("Could not delete buffer");
     }

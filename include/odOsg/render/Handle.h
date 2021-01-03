@@ -13,8 +13,10 @@
 #include <osg/PositionAttitudeTransform>
 #include <osg/Depth>
 #include <osg/Uniform>
+#include <osg/Viewport>
 
 #include <odCore/render/Handle.h>
+#include <odCore/render/Renderer.h>
 
 #include <odOsg/render/LightState.h>
 
@@ -28,12 +30,12 @@ namespace odOsg
     {
     public:
 
-        Handle(Renderer *renderer, osg::Group *parent);
+        Handle(Renderer &renderer);
         virtual ~Handle();
 
         inline osg::Group *getOsgNode() { return mTransform; }
-
-        virtual std::mutex &getMutex() override;
+        inline osg::Group *getParentOsgGroup() { return mParentGroup; }
+        inline void setParentOsgGroup(osg::Group *p) { mParentGroup = p; }
 
         virtual glm::vec3 getPosition() override;
         virtual glm::quat getOrientation() override;
@@ -43,7 +45,7 @@ namespace odOsg
         virtual void setScale(const glm::vec3 &scale) override;
 
         virtual odRender::Model *getModel() override;
-        virtual void setModel(odRender::Model *model) override;
+        virtual void setModel(std::shared_ptr<odRender::Model> model) override;
 
         virtual void setVisible(bool visible) override;
         virtual void setModelPartVisible(size_t partIndex, bool visible) override;
@@ -58,8 +60,8 @@ namespace odOsg
 
         virtual odRender::Rig *getRig() override;
 
-        virtual void addLight(od::Light *light) override;
-        virtual void removeLight(od::Light *light) override;
+        virtual void addLight(std::shared_ptr<od::Light> light) override;
+        virtual void removeLight(std::shared_ptr<od::Light> light) override;
         virtual void clearLightList() override;
 
         /**
@@ -76,14 +78,14 @@ namespace odOsg
 
         osg::ref_ptr<osg::Group> mParentGroup;
 
-        std::mutex mMutex;
-        Model *mModel;
+        std::shared_ptr<Model> mModel;
         odRender::FrameListener *mFrameListener;
-        osg::ref_ptr<osg::Callback> mUpdateCallback;
         osg::ref_ptr<osg::PositionAttitudeTransform> mTransform;
         osg::ref_ptr<osg::Depth> mDepth;
         osg::ref_ptr<osg::Uniform> mColorModifierUniform;
         osg::ref_ptr<LightStateAttribute> mLightStateAttribute;
+        osg::ref_ptr<osg::Viewport> mViewport;
+
         std::unique_ptr<Rig> mRig;
     };
 

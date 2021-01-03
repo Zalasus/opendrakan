@@ -50,6 +50,7 @@ namespace odOsg
 
         inline static osg::Matrix toOsg(const glm::mat4 &m)
         {
+            // FIXME: it is quite possible that this needs to be transposed
             osg::Matrix om;
             for(size_t r = 0; r < 4; ++r)
             {

@@ -12,32 +12,21 @@
 namespace odInput
 {
 
-    IAction::IAction(InputManager &im, int actionCode)
-    : mInputManager(im)
-    , mActionCode(actionCode)
+    ActionHandleBase::ActionHandleBase(ActionCode actionCode)
+    : mActionCode(actionCode)
     , mRepeatable(false)
     , mIgnoreUpEvents(false)
     {
     }
 
-    void IAction::setRepeatable(bool b)
+    void ActionHandleBase::setRepeatable(bool b)
     {
         mRepeatable = b;
     }
 
-    void IAction::setIgnoreUpEvents(bool b)
+    void ActionHandleBase::setIgnoreUpEvents(bool b)
     {
         mIgnoreUpEvents = b;
-    }
-
-    void IAction::bindToKey(Key key)
-    {
-        mInputManager.bindActionToKey(this, key);
-    }
-
-    void IAction::unbindFromKey(Key key)
-    {
-        mInputManager.unbindActionFromKey(this, key);
     }
 
 }

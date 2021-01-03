@@ -15,10 +15,8 @@
 
 #include <odCore/BoundingSphere.h>
 #include <odCore/BoundingBox.h>
-#include <odCore/WeakRefPtr.h>
 
 #include <odCore/db/Asset.h>
-#include <odCore/db/SkeletonBuilder.h>
 
 namespace odRender
 {
@@ -35,6 +33,7 @@ namespace odPhysics
 namespace odDb
 {
     class ModelBounds;
+    class SkeletonDefinition;
 
 	class Model : public Asset
 	{
@@ -77,14 +76,14 @@ namespace odDb
             Smooth
         };
 
-		Model(AssetProvider &ap, od::RecordId modelId);
+		Model();
         Model(const Model &model) = delete; // models should never be copied as they can be reused throughout the scenegraph
         ~Model();
 
         inline const std::string &getName() const { return mModelName; }
-		inline SkeletonBuilder *getSkeletonBuilder() { return mSkeletonBuilder.get(); } ///< May return nullptr if no skeleton present.
+		inline std::shared_ptr<SkeletonDefinition> getSkeletonDefinition() { return mSkeletonDefinition; } ///< May return nullptr if no skeleton present
 		inline const std::vector<AssetRef> &getAnimationRefs() { return mAnimationRefs; }
-		inline bool hasSkeleton() const { return mSkeletonBuilder != nullptr; }
+		inline bool hasSkeleton() const { return mSkeletonDefinition != nullptr; }
 		inline ShadingType getShadingType() const { return mShadingType; }
 		inline bool isShiny() const { return mShiny; }
 		inline const std::vector<glm::vec3> &getVertexVector() { return mVertices; }
@@ -93,13 +92,12 @@ namespace odDb
 		inline const od::BoundingSphere &getCalculatedBoundingSphere() const { return mCalculatedBoundingSphere; }
 		inline const od::AxisAlignedBoundingBox &getCalculatedBoundingBox() const { return mCalculatedBoundingBox; }
 
-		ModelBounds &getModelBounds(size_t lodIndex = 0);
+        inline std::weak_ptr<odRender::Model> &getCachedRenderModel() { return mCachedRenderModel; }
+        inline std::weak_ptr<odPhysics::ModelShape> &getCachedPhysicsShape() { return mCachedPhysicsShape; }
+
+		const ModelBounds &getModelBounds(size_t lodIndex = 0);
 
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
-
-		odRender::Model *getOrCreateRenderModel(odRender::Renderer *renderer);
-
-		od::RefPtr<odPhysics::ModelShape> getOrCreateModelShape(odPhysics::PhysicsSystem &ps);
 
 
 	private:
@@ -123,7 +121,7 @@ namespace odDb
 		std::vector<LodMeshInfo> mLodMeshInfos;
 		std::vector<AssetRef> mAnimationRefs;
 		std::vector<ModelBounds> mModelBounds; // one for each LOD
-		std::unique_ptr<SkeletonBuilder> mSkeletonBuilder;
+		std::shared_ptr<SkeletonDefinition> mSkeletonDefinition;
 		bool mVerticesLoaded;
 		bool mTexturesLoaded;
 		bool mPolygonsLoaded;
@@ -131,9 +129,8 @@ namespace odDb
 		od::AxisAlignedBoundingBox mCalculatedBoundingBox;
 		od::BoundingSphere mCalculatedBoundingSphere;
 
-		od::RefPtr<odRender::Model> mRenderModel;
-
-		od::WeakObserverRefPtr<odPhysics::ModelShape> mPhysicsShape;
+		std::weak_ptr<odRender::Model> mCachedRenderModel;
+		std::weak_ptr<odPhysics::ModelShape> mCachedPhysicsShape;
 	};
 
 	template <>

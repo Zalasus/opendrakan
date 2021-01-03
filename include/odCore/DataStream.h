@@ -9,7 +9,9 @@
 #define INCLUDE_DATASTREAM_H_
 
 #include <istream>
+#include <vector>
 
+#include <odCore/CTypes.h>
 #include <odCore/Logger.h>
 
 namespace od
@@ -53,12 +55,39 @@ namespace od
 		std::istream &getStream();
 
 		template <typename T>
-		DataReader &operator>>(T &s);
+		DataReader &operator>>(T &s)
+        {
+            readTyped(s);
+            return *this;
+        }
 
-		DataReader &operator>>(const Ignore &s);
+        // const overload, basically only useful for Expect<T> and Ignore statements
+        template <typename T>
+        DataReader &operator>>(const T &s)
+        {
+            readTyped(s);
+            return *this;
+        }
+
+        // deserializers can specialize this template:
+        template <typename T>
+        void readTyped(T &s);
+
+		void readTyped(const Ignore &s);
 
 		template <typename T>
-		DataReader &operator>>(const Expect<T> &s);
+		void readTyped(const Expect<T> &s)
+        {
+            _checkStream();
+
+    		T value;
+    		(*this) >> value;
+
+    		if(value != s.getExpectedValue())
+    		{
+    			Logger::warn() << "Data error: expected value " << s.getExpectedValue() << ", found value " << value;
+    		}
+    	}
 
 		void read(char *data, size_t size);
 
@@ -69,52 +98,93 @@ namespace od
 
 	private:
 
-		template <typename T>
-        void _stupidlyReadIntegral(T &v)
-        {
-		    v = 0;
-
-            for(size_t i = 0; i < sizeof(T); ++i)
-            {
-                v |= _getNext() << 8*i;
-            }
-        }
-
-		uint8_t _getNext();
+        void _checkStream();
 
 		std::istream *mStream;
 	};
 
-	template <typename T>
-	DataReader &DataReader::operator>>(const DataReader::Expect<T> &s)
-	{
-		T value;
-		*this >> value;
 
-		if(value != s.getExpectedValue())
-		{
-			Logger::warn() << "Data error: expected value " << s.getExpectedValue() << ", found value " << value;
-		}
+    class DataWriter
+    {
+    public:
 
-		return *this;
-	}
+        DataWriter(std::ostream &out);
+
+        template <typename T>
+        DataWriter &operator<<(const T &v)
+        {
+            writeTyped(v);
+            return *this;
+        }
+
+        template <typename T>
+        void writeTyped(const T &v);
+
+        void write(const char *data, size_t size);
+
+        std::streamoff tell();
+        void seek(std::streamoff off);
 
 
-	class MemBuffer : public std::streambuf
+    private:
+
+        std::ostream *mStream;
+    };
+
+
+	class MemoryInputBuffer final : public std::streambuf
 	{
 	public:
 
-		MemBuffer(char *begin, char *end);
+        MemoryInputBuffer(const char *data, size_t size);
 
 		virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
 		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
 
-	private:
-
-		char *mBegin;
-		char *mEnd;
-
 	};
+
+
+    class MemoryOutputBuffer final : public std::streambuf
+    {
+    public:
+
+        MemoryOutputBuffer(char *data, size_t size);
+
+        //virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
+        virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
+		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
+
+    };
+
+
+    class VectorOutputBuffer final : public std::streambuf
+    {
+    public:
+
+        static constexpr size_t BACKBUFFER_SIZE = (1 << 8);
+
+        VectorOutputBuffer(std::vector<char> &v);
+        ~VectorOutputBuffer();
+
+        virtual std::streambuf::int_type overflow(std::streambuf::int_type ch) override;
+        virtual std::streampos seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which) override;
+		virtual std::streampos seekpos(std::streampos sp, std::ios_base::openmode which) override;
+
+        virtual int sync() override;
+
+
+    private:
+
+        bool _isPutAreaTheBackBuffer();
+
+        std::vector<char> &mVector;
+
+        // the design of streambuf does not allow to easily track the size and adjust the vector accordingly.
+        //  in order not to direct all writing through the virtual overflow method, we use a transparent internal buffer
+        //  that gets flushed to the actual vector.
+        std::array<char, BACKBUFFER_SIZE> mBackBuffer;
+
+    };
 
 }
 

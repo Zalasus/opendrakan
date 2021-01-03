@@ -6,3 +6,4 @@ build-release/
 .project
 .cproject
 .vscode/
+.clang_complete

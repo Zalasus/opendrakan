@@ -12,7 +12,6 @@
 #include <glm/common.hpp>
 
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 #include <odCore/Light.h>
 
 #include <odCore/render/Renderer.h>
@@ -46,6 +45,9 @@ namespace od
     , mLightDropoffType(DROPOFF_NONE)
     , mVisibleTriangles(0)
     , mCollidingTriangles(0)
+    , mMinHeight(0)
+    , mMaxHeight(0)
+    , mIsSpawned(false)
     {
     }
 
@@ -119,7 +121,7 @@ namespace od
 
             Vertex v;
             v.type = vertexType;
-            v.heightOffsetLu = OD_WORLD_SCALE*(heightOffsetBiased - 0x8000)*2;
+            v.heightOffsetLu = Units::worldUnitsToLengthUnits<float>((heightOffsetBiased - 0x8000)*2);
 
             if(v.heightOffsetLu < lowestHeightOffset)
             {
@@ -134,8 +136,10 @@ namespace od
             mVertices.push_back(v);
         }
 
-        glm::vec3 min(mOriginX, getWorldHeightLu()+lowestHeightOffset, mOriginZ);
-        glm::vec3 max(mOriginX+mWidth, getWorldHeightLu()+maxHeightOffset, mOriginZ+mHeight);
+        mMinHeight = lowestHeightOffset + getWorldHeightLu();
+        mMaxHeight = maxHeightOffset + getWorldHeightLu();
+        glm::vec3 min(mOriginX, mMinHeight, mOriginZ);
+        glm::vec3 max(mOriginX+mWidth, mMaxHeight, mOriginZ+mHeight);
         mBoundingBox = AxisAlignedBoundingBox(min, max);
 
         mCells.reserve(mWidth*mHeight);
@@ -180,23 +184,26 @@ namespace od
         }
     }
 
-    void Layer::spawn()
+    void Layer::spawn(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer)
     {
-        odRender::Renderer *renderer = mLevel.getEngine().getRenderer();
         if(renderer != nullptr)
         {
             mRenderHandle = renderer->createHandle(odRender::RenderSpace::LEVEL);
             mRenderModel = renderer->createModelFromLayer(this);
 
-            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
             mRenderHandle->setModel(mRenderModel);
             mRenderHandle->setPosition(getOrigin());
+
+            // global light is baked into vertices, so disable it here. shader should ignore it anyway
+            mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0,0,0), glm::vec3(0,0,0));
         }
 
-        mPhysicsHandle = mLevel.getEngine().getPhysicsSystem().createLayerHandle(*this);
+        mPhysicsHandle = physicsSystem.createLayerHandle(*this);
         mPhysicsHandle->setLightCallback(this);
 
         _bakeLocalLayerLight();
+
+        mIsSpawned = true;
     }
 
     void Layer::despawn()
@@ -204,6 +211,8 @@ namespace od
         mRenderHandle = nullptr;
         mRenderModel = nullptr;
         mPhysicsHandle = nullptr;
+
+        mIsSpawned = false;
     }
 
     bool Layer::hasHoleAt(const glm::vec2 &absolutePos)
@@ -388,7 +397,7 @@ namespace od
         return getWorldHeightLu() + heightAnchor + dx*heightDeltaX + dz*heightDeltaZ;
     }
 
-    void Layer::removeAffectingLight(od::Light *light)
+    void Layer::removeAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(light == nullptr)
         {
@@ -403,7 +412,7 @@ namespace od
         }
     }
 
-    void Layer::addAffectingLight(od::Light *light)
+    void Layer::addAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(light == nullptr)
         {
@@ -413,7 +422,7 @@ namespace od
         // static lights can be baked into the vertex colors. all others need to be passed to the renderer
         if(!light->isDynamic())
         {
-            _bakeStaticLight(light);
+            _bakeStaticLight(*light);
 
         }else
         {
@@ -429,9 +438,9 @@ namespace od
         mRenderHandle->clearLightList();
     }
 
-    void Layer::_bakeStaticLight(od::Light *light)
+    void Layer::_bakeStaticLight(od::Light &light)
     {
-        if(light == nullptr || mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
+        if(mRenderModel == nullptr || mRenderModel->getGeometryCount() == 0)
         {
             return;
         }
@@ -441,12 +450,12 @@ namespace od
             throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
         }
 
-        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
+        std::shared_ptr<odRender::Geometry> geometry = mRenderModel->getGeometry(0);
 
-        glm::vec3 relLightPosition = light->getPosition() - getOrigin(); // relative to layer origin
-        float lightRadius = light->getRadius();
-        float lightIntensity = light->getIntensityScaling();
-        glm::vec3 lightColor = light->getColor();
+        glm::vec3 relLightPosition = light.getPosition() - getOrigin(); // relative to layer origin
+        float lightRadius = light.getRadius();
+        float lightIntensity = light.getIntensityScaling();
+        glm::vec3 lightColor = light.getColor();
 
         // find maximum rectangular area that can possibly be intersected by the light so we can early-reject vertices
         //  without having to calculate the distance to the light everytime
@@ -501,7 +510,7 @@ namespace od
             throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
         }
 
-        odRender::Geometry *geometry = mRenderModel->getGeometry(0);
+        std::shared_ptr<odRender::Geometry> geometry = mRenderModel->getGeometry(0);
         odRender::ArrayAccessor<glm::vec3> vertexArray(geometry->getVertexArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec3> normalArray(geometry->getNormalArrayAccessHandler());
         odRender::ArrayAccessor<glm::vec4> colorArray(geometry->getColorArrayAccessHandler());
@@ -555,7 +564,7 @@ namespace od
                     float ourVertexHeight = mVertices.at(ourVertIndex).heightOffsetLu + getWorldHeightLu();
                     float theirVertexHeight = layer->mVertices.at(theirVertIndex).heightOffsetLu + layer->getWorldHeightLu();
 
-                    if(std::abs(ourVertexHeight - theirVertexHeight) <= 2*OD_WORLD_SCALE) // threshold is +/- 2wu
+                    if(std::abs(ourVertexHeight - theirVertexHeight) <= Units::worldUnitsToLengthUnits(2)) // threshold is +/- 2wu
                     {
                         // vertices are within range! add to list
                         overlapMap.at(ourVertIndex).addLayer(layer);
@@ -666,4 +675,3 @@ namespace od
         }
     }
 }
-

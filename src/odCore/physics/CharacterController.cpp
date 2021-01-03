@@ -9,7 +9,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 #include <odCore/physics/Handles.h>
@@ -20,10 +19,10 @@ namespace odPhysics
     static const float STEP_HEIGHT = 0.07f;
 
 
-	CharacterController::CharacterController(odPhysics::ObjectHandle *handle, od::LevelObject &charObject, float radius, float height)
-	: mCharObject(charObject)
+	CharacterController::CharacterController(PhysicsSystem &physicsSystem, std::shared_ptr<ObjectHandle> handle, od::LevelObject &charObject, float radius, float height)
+	: mPhysicsSystem(physicsSystem)
+    , mCharObject(charObject)
 	, mObjectHandle(handle)
-	, mPhysicsSystem(charObject.getLevel().getEngine().getPhysicsSystem())
 	, mUp(0, 1, 0)
 	, mVelocity(0, -1, 0)
 	, mIsFalling(false)
@@ -82,5 +81,3 @@ namespace odPhysics
 	}
 
 }
-
-

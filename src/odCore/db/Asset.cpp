@@ -1,5 +1,5 @@
 /*
- * RiotAsset.cpp
+ * Asset.cpp
  *
  *  Created on: 19 Jan 2018
  *      Author: zal
@@ -9,12 +9,13 @@
 
 #include <odCore/Exception.h>
 
+#include <odCore/db/DependencyTable.h>
+
 namespace odDb
 {
 
-	Asset::Asset(AssetProvider &ap, od::RecordId assetId)
-	: mAssetProvider(ap)
-	, mId(assetId)
+	Asset::Asset()
+	: mId(0)
 	{
 	}
 
@@ -22,37 +23,19 @@ namespace odDb
 	{
 	}
 
+    void Asset::setDepTableAndId(std::shared_ptr<DependencyTable> depTable, od::RecordId assetId)
+    {
+        mDependencyTable = depTable;
+        mId = assetId;
+    }
+
+    GlobalAssetRef Asset::getGlobalAssetRef() const
+    {
+        return *mDependencyTable->localToGlobalRef(getLocalAssetRef());
+    }
+
 	void Asset::postLoad()
 	{
 	}
 
-
-    bool AssetRef::operator<(const AssetRef &right) const
-    {
-        return (dbIndex << 16 | assetId) < (right.dbIndex << 16 | right.assetId);
-    }
-
-    bool AssetRef::operator==(const AssetRef &right) const
-	{
-    	return (dbIndex == right.dbIndex) && (assetId == right.assetId);
-	}
-
-    const AssetRef AssetRef::NULL_REF(0, 0);
-
-    od::DataReader &operator>>(od::DataReader &left, AssetRef &right)
-    {
-        left >> right.assetId
-             >> right.dbIndex;
-
-        return left;
-    }
-
-    std::ostream &operator<<(std::ostream &left, const AssetRef &right)
-    {
-        left << std::hex << right.dbIndex << ":" << right.assetId << std::dec;
-
-        return left;
-    }
 }
-
-

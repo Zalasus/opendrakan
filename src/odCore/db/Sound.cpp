@@ -19,9 +19,8 @@
 namespace odDb
 {
 
-	Sound::Sound(AssetProvider &ap, od::RecordId id)
-	: Asset(ap, id)
-	, mSoundName("")
+	Sound::Sound()
+	: mSoundName("")
 	, mFlags(0)
 	, mChannels(0)
     , mBits(0)
@@ -87,23 +86,4 @@ namespace odDb
         return std::pow(10.0f, mVolume/2000.0f);
     }
 
-    od::RefPtr<odAudio::Buffer> Sound::getOrCreateAudioBuffer(odAudio::SoundSystem *soundSystem)
-    {
-        if(!mSoundBuffer.isNull())
-        {
-            return mSoundBuffer.aquire();
-        }
-
-        if(soundSystem == nullptr)
-        {
-            throw od::Exception("Passed nullptr as soundSystem to Sound");
-        }
-
-        auto buffer = soundSystem->createBuffer(this);
-        mSoundBuffer = buffer.get();
-        return buffer;
-    }
-
 }
-
-

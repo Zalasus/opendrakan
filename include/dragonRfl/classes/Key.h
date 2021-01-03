@@ -13,13 +13,11 @@
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
 	class Key : public ItemCommon
 	{
 	public:
 
-		Key(DragonRfl &rfl);
+		Key();
 
 		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
@@ -32,6 +30,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0021, "Item", "Key", dragonRfl::Key);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::Key, 0x0021, "Item", "Key");
 
 #endif /* INCLUDE_RFL_DRAGON_KEY_H_ */

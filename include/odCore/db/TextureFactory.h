@@ -10,14 +10,10 @@
 
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
+
 #include <odCore/db/Asset.h>
 #include <odCore/db/AssetFactory.h>
 #include <odCore/db/Texture.h>
-
-namespace od
-{
-    class Engine;
-}
 
 namespace odDb
 {
@@ -34,12 +30,7 @@ namespace odDb
 			uint8_t dummy;
 		};
 
-		/**
-         * This needs an engine instance because classes pass it to the RFL loaded hook.
-         */
-		TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine);
-
-		inline od::Engine &getEngine() { return mEngine; }
+		TextureFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &textureContainer);
 
 		PaletteColor getPaletteColor(size_t index);
 
@@ -47,14 +38,13 @@ namespace odDb
 	protected:
 
 		// implement AssetFactory<Texture>
-		virtual od::RefPtr<Texture> createNewAsset(od::RecordId id) override;
+		virtual std::shared_ptr<Texture> createNewAsset(od::RecordId id) override;
 
 
 	private:
 
 		void _loadPalette();
 
-		od::Engine &mEngine;
 		std::vector<PaletteColor> mPalette;
 	};
 

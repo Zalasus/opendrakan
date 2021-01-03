@@ -17,9 +17,8 @@ namespace odDb
     static TextureFactory::PaletteColor UNSPECIFIED_PALETTE_COLOR = { 0, 0, 0, 0 };
 
 
-	TextureFactory::TextureFactory(AssetProvider &ap, od::SrscFile &textureContainer, od::Engine &engine)
-	: AssetFactory<Texture>(ap, textureContainer)
-	, mEngine(engine)
+	TextureFactory::TextureFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &textureContainer)
+	: AssetFactory<Texture>(depTable, textureContainer)
 	{
 		_loadPalette();
 	}
@@ -34,9 +33,9 @@ namespace odDb
 		return mPalette[index];
 	}
 
-	od::RefPtr<Texture> TextureFactory::createNewAsset(od::RecordId id)
+	std::shared_ptr<Texture> TextureFactory::createNewAsset(od::RecordId id)
 	{
-		return od::make_refd<Texture>(getAssetProvider(), id, *this);
+		return std::make_shared<Texture>(*this);
 	}
 
 	void TextureFactory::_loadPalette()

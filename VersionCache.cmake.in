@@ -1,0 +1,7 @@
+
+# template file for storing the latest version info. a bit hackish, but we can't
+#  use the cmake cache in custom target scripts (not that i know of, at least)
+
+set(VERSION_TAG @VERSION_TAG_NEW@)
+set(VERSION_BRANCH @VERSION_BRANCH_NEW@)
+set(VERSION_COMMIT @VERSION_COMMIT_NEW@)

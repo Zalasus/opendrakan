@@ -10,13 +10,11 @@
 #include <algorithm>
 #include <limits>
 
-#include <odCore/OdDefines.h>
 #include <odCore/Exception.h>
 
 #include <odCore/db/Asset.h>
-#include <odCore/db/AssetProvider.h>
 #include <odCore/db/ModelFactory.h>
-#include <odCore/db/SkeletonBuilder.h>
+#include <odCore/db/SkeletonDefinition.h>
 #include <odCore/db/Texture.h>
 #include <odCore/db/ModelBounds.h>
 
@@ -31,9 +29,8 @@
 namespace odDb
 {
 
-	Model::Model(AssetProvider &ap, od::RecordId modelId)
-	: Asset(ap, modelId)
-	, mModelName("")
+	Model::Model()
+	: mModelName("")
 	, mShadingType(ShadingType::None)
 	, mBlendWithLandscape(false)
 	, mShiny(false)
@@ -42,7 +39,6 @@ namespace odDb
 	, mVerticesLoaded(false)
 	, mTexturesLoaded(false)
 	, mPolygonsLoaded(false)
-	, mRenderModel(nullptr)
 	{
 	}
 
@@ -50,7 +46,7 @@ namespace odDb
 	{
 	}
 
-	ModelBounds &Model::getModelBounds(size_t lodIndex)
+	const ModelBounds &Model::getModelBounds(size_t lodIndex)
 	{
 	    if(lodIndex >= mModelBounds.size())
 	    {
@@ -100,33 +96,6 @@ namespace odDb
             _loadBoundingData(cursor.getReader());
         }
 	}
-
-	odRender::Model *Model::getOrCreateRenderModel(odRender::Renderer *renderer)
-	{
-	    if(renderer == nullptr)
-	    {
-	        throw od::InvalidArgumentException("Got null renderer");
-	    }
-
-	    if(mRenderModel == nullptr)
-	    {
-	        mRenderModel = renderer->createModelFromDb(this);
-	    }
-
-        return mRenderModel;
-	}
-
-	od::RefPtr<odPhysics::ModelShape> Model::getOrCreateModelShape(odPhysics::PhysicsSystem &ps)
-    {
-	    if(!mPhysicsShape.isNull())
-	    {
-	        return mPhysicsShape.aquire();
-	    }
-
-	    od::RefPtr<odPhysics::ModelShape> shape = ps.createModelShape(*this);
-        mPhysicsShape = shape.get();
-        return shape;
-    }
 
 	void Model::_loadNameAndShading(od::DataReader dr)
     {
@@ -316,7 +285,7 @@ namespace odDb
         }
 
 
-        mSkeletonBuilder = std::make_unique<SkeletonBuilder>();
+        mSkeletonDefinition = std::make_shared<SkeletonDefinition>();
 
         // node info
         uint16_t nodeInfoCount;
@@ -329,7 +298,7 @@ namespace odDb
             dr.read(nodeName, 32);
             dr >> jointInfoIndex;
 
-            mSkeletonBuilder->addJointNameInfo(std::string(nodeName), jointInfoIndex);
+            mSkeletonDefinition->addJointNameInfo(std::string(nodeName), jointInfoIndex);
         }
 
         // joint info
@@ -347,7 +316,7 @@ namespace odDb
                >> firstChildIndex
                >> nextSiblingIndex;
 
-            mSkeletonBuilder->addJointInfo(glm::mat4(inverseBoneTransform), meshIndex, firstChildIndex, nextSiblingIndex);
+            mSkeletonDefinition->addJointInfo(glm::mat4(inverseBoneTransform), meshIndex, firstChildIndex, nextSiblingIndex);
 
             // affected vertex lists, one for each LOD
             for(size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
@@ -415,6 +384,7 @@ namespace odDb
         // channels
         uint16_t channelCount;
         dr >> channelCount;
+        mSkeletonDefinition->reserveChannels(channelCount);
         for(size_t channelIndex = 0; channelIndex < channelCount; ++channelIndex)
         {
             uint32_t jointIndex;
@@ -427,7 +397,7 @@ namespace odDb
                >> xformB
                >> capCount;
 
-            mSkeletonBuilder->markJointAsChannel(jointIndex);
+            mSkeletonDefinition->markJointAsChannel(jointIndex, channelIndex);
 
             for(size_t capIndex = 0; capIndex < capCount; ++capIndex)
             {
@@ -455,8 +425,7 @@ namespace odDb
             }
         }
 
-        //Logger::info() << "Skel info for model " << mModelName;
-        //mSkeletonBuilder->printInfo(std::cout);
+        mSkeletonDefinition->finalize();
 
         dr >> od::DataReader::Expect<uint16_t>(lodCount);
 
@@ -502,4 +471,3 @@ namespace odDb
         }
     }
 }
-

@@ -8,9 +8,10 @@
 #ifndef INCLUDE_ODOSG_AUDIO_BUFFER_H_
 #define INCLUDE_ODOSG_AUDIO_BUFFER_H_
 
-#include <odCore/audio/Buffer.h>
-
+#include <memory>
 #include <AL/al.h>
+
+#include <odCore/audio/Buffer.h>
 
 namespace odDb
 {
@@ -26,7 +27,8 @@ namespace odOsg
     {
     public:
 
-        Buffer(SoundSystem &ss, odDb::Sound *sound);
+        Buffer(SoundSystem &ss);
+        Buffer(SoundSystem &ss, std::shared_ptr<odDb::Sound> sound);
         virtual ~Buffer();
 
         inline ALuint getBufferId() const { return mBufferId; }
@@ -37,7 +39,7 @@ namespace odOsg
         SoundSystem &mSoundSystem;
         ALuint mBufferId;
 
-        od::RefPtr<odDb::Sound> mSound;
+        std::shared_ptr<odDb::Sound> mSound;
 
     };
 

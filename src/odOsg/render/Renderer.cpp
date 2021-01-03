@@ -16,10 +16,10 @@
 #include <odCore/Light.h>
 #include <odCore/Layer.h>
 #include <odCore/Level.h>
-#include <odCore/OdDefines.h>
 #include <odCore/Downcast.h>
 
 #include <odCore/render/RendererEventListener.h>
+#include <odCore/render/GuiCallback.h>
 
 #include <odCore/db/Model.h>
 
@@ -30,7 +30,7 @@
 #include <odOsg/render/Image.h>
 #include <odOsg/render/Texture.h>
 #include <odOsg/render/Camera.h>
-#include <odOsg/render/GuiNode.h>
+#include <odOsg/render/Group.h>
 #include <odOsg/render/Handle.h>
 #include <odOsg/render/Model.h>
 #include <odOsg/render/ModelBuilder.h>
@@ -44,17 +44,19 @@ namespace odOsg
     , mEventListener(nullptr)
     , mFreeLook(false)
     , mLightingEnabled(true)
+    , mSimTime(0.0)
     {
         mViewer = new osgViewer::Viewer;
 
-        mCamera = od::make_refd<Camera>(mViewer->getCamera());
+        mCamera = std::make_shared<Camera>(mViewer->getCamera());
 
         osg::ref_ptr<osgViewer::StatsHandler> statsHandler(new osgViewer::StatsHandler);
         statsHandler->setKeyEventPrintsOutStats(0);
         statsHandler->setKeyEventTogglesOnScreenStats(osgGA::GUIEventAdapter::KEY_F1);
         mViewer->addEventHandler(statsHandler);
 
-        mViewer->setKeyEventSetsDone(osgGA::GUIEventAdapter::KEY_Escape);
+        //mViewer->setKeyEventSetsDone(osgGA::GUIEventAdapter::KEY_Escape);
+        mViewer->setKeyEventSetsDone(0); // TODO: report closing of render window back to the engine somehow (or let Main.cpp trigger the shutdown)
 
         mSceneRoot = new osg::Group;
         mViewer->setSceneData(mSceneRoot);
@@ -94,28 +96,7 @@ namespace odOsg
     {
         if(mViewer != nullptr)
         {
-            Logger::warn() << "Render thread was not stopped when renderer was destroyed";
             mViewer->setDone(true);
-        }
-
-        // note: we need to do this even if the render thread already left it's thread function, or else it will std::terminate() us
-        if(mRenderThread.joinable())
-        {
-            mRenderThread.join();
-        }
-    }
-
-    void Renderer::onStart()
-    {
-        mRenderThread = std::thread(&Renderer::_threadedRender, this);
-    }
-
-    void Renderer::onEnd()
-    {
-        if(mRenderThread.joinable() && mViewer != nullptr)
-        {
-            mViewer->setDone(true);
-            mRenderThread.join();
         }
     }
 
@@ -139,60 +120,46 @@ namespace odOsg
         return mLightingEnabled;
     }
 
-    od::RefPtr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
+    std::shared_ptr<odRender::Handle> Renderer::createHandle(odRender::RenderSpace space)
     {
-        od::RefPtr<Handle> handle;
+        auto newHandle = std::make_shared<Handle>(*this);
 
-        switch(space)
-        {
-        case odRender::RenderSpace::NONE:
-            handle = od::make_refd<Handle>(this, nullptr);
-            break;
+        moveToRenderSpace(newHandle, space);
 
-        case odRender::RenderSpace::LEVEL:
-            handle = od::make_refd<Handle>(this, mLevelRoot);
-            break;
-
-        case odRender::RenderSpace::GUI:
-            handle = od::make_refd<Handle>(this, mGuiRoot);
-            break;
-
-        default:
-            throw od::Exception("Unknown render space");
-        }
-
-        return handle.get();
+        return newHandle;
     }
 
-    od::RefPtr<odRender::Model> Renderer::createModel()
+    std::shared_ptr<odRender::Model> Renderer::createModel()
     {
-        auto model = od::make_refd<Model>();
-
-        return model.get();
+        return std::make_shared<Model>();
     }
 
-    od::RefPtr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
+    std::shared_ptr<odRender::Geometry> Renderer::createGeometry(odRender::PrimitiveType primitiveType, bool indexed)
     {
-        auto newGeometry = od::make_refd<Geometry>(primitiveType, indexed);
-
-        return newGeometry.get();
+        return std::make_shared<Geometry>(primitiveType, indexed);
     }
 
-    od::RefPtr<odRender::Model> Renderer::createModelFromDb(odDb::Model *model)
+    std::shared_ptr<odRender::Group> Renderer::createGroup(odRender::RenderSpace space)
     {
-        if(model == nullptr)
-        {
-            throw od::InvalidArgumentException("Got null model");
-        }
+        auto newGroup = std::make_shared<Group>();
 
-        od::RefPtr<Model> renderModel;
+        moveToRenderSpace(newGroup, space);
+
+        return newGroup;
+    }
+
+    std::shared_ptr<odRender::Model> Renderer::createModelFromDb(std::shared_ptr<odDb::Model> model)
+    {
+        OD_CHECK_ARG_NONNULL(model);
+
+        std::shared_ptr<Model> renderModel;
         if(model->getLodInfoVector().empty())
         {
-            renderModel = _buildSingleLodModelNode(model);
+            renderModel = _buildSingleLodModelNode(*model);
 
         }else
         {
-            renderModel = _buildMultiLodModelNode(model);
+            renderModel = _buildMultiLodModelNode(*model);
         }
 
         // assign correct lighting modes. note that some of the shading types are baked into the geometry (flat shading)
@@ -214,12 +181,12 @@ namespace odOsg
         modelProgram->addBindAttribLocation("vertexWeights", Constants::ATTRIB_WEIGHT_LOCATION);
         renderModel->getGeode()->getOrCreateStateSet()->setAttribute(modelProgram, osg::StateAttribute::ON);
 
-        return renderModel.get();
+        return renderModel;
     }
 
-    od::RefPtr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
+    std::shared_ptr<odRender::Model> Renderer::createModelFromLayer(od::Layer *layer)
     {
-        ModelBuilder mb(this, "layer " + layer->getName(), layer->getLevel());
+        ModelBuilder mb(*this, "layer " + layer->getName(), layer->getLevel().getDependencyTable());
         mb.setCWPolygonFlag(false);
         mb.setUseClampedTextures(true);
 
@@ -327,41 +294,183 @@ namespace odOsg
         }
         mb.setPolygonVector(polygons.begin(), polygons.end());
 
-        od::RefPtr<Model> builtModel = mb.build();
+        std::shared_ptr<Model> builtModel = mb.build();
 
         osg::ref_ptr<osg::Program> layerProg = getShaderFactory().getProgram("layer");
         builtModel->getGeode()->getOrCreateStateSet()->setAttribute(layerProg, osg::StateAttribute::ON);
 
-        return builtModel.get();
+        return builtModel;
     }
 
-    od::RefPtr<odRender::Image> Renderer::createImage(odDb::Texture *dbTexture)
+    std::shared_ptr<odRender::Image> Renderer::createImageFromDb(std::shared_ptr<odDb::Texture> dbTexture)
     {
-        auto image = od::make_refd<Image>(dbTexture);
-        return od::RefPtr<odRender::Image>(image);
+        OD_CHECK_ARG_NONNULL(dbTexture);
+
+        return std::make_shared<Image>(dbTexture);;
     }
 
-    od::RefPtr<odRender::Texture> Renderer::createTexture(odRender::Image *image)
+    std::shared_ptr<odRender::Texture> Renderer::createTexture(std::shared_ptr<odRender::Image> image, odRender::TextureReuseSlot reuseSlot)
     {
-        Image *odOsgImage = od::confident_downcast<Image>(image);
-        auto texture = od::make_refd<Texture>(odOsgImage);
-        return od::RefPtr<odRender::Texture>(texture);
+        OD_CHECK_ARG_NONNULL(image);
+
+        auto odOsgImage = od::confident_downcast<Image>(image);
+
+        switch(reuseSlot)
+        {
+        case odRender::TextureReuseSlot::NONE:
+            return std::make_shared<Texture>(odOsgImage);
+
+        case odRender::TextureReuseSlot::OBJECT:
+            if(odOsgImage->getSharedObjectTexture().expired())
+            {
+                auto newTexture = std::make_shared<Texture>(odOsgImage);
+                newTexture->setEnableWrapping(true);
+                odOsgImage->getSharedObjectTexture() = newTexture;
+                return newTexture;
+            }
+            return std::shared_ptr<odRender::Texture>(odOsgImage->getSharedObjectTexture());
+
+        case odRender::TextureReuseSlot::LAYER:
+            if(odOsgImage->getSharedLayerTexture().expired())
+            {
+                auto newTexture = std::make_shared<Texture>(odOsgImage);
+                newTexture->setEnableWrapping(false);
+                odOsgImage->getSharedLayerTexture() = newTexture;
+                return newTexture;
+            }
+            return std::shared_ptr<odRender::Texture>(odOsgImage->getSharedLayerTexture());
+        }
+
+        OD_UNREACHABLE();
     }
 
-    od::RefPtr<odRender::GuiNode> Renderer::createGuiNode(odGui::Widget *widget)
+    void Renderer::moveToRenderSpace(std::shared_ptr<odRender::Handle> handle, odRender::RenderSpace space)
     {
-        auto gn = od::make_refd<GuiNode>(this, widget);
-        return od::RefPtr<odRender::GuiNode>(gn);
+        OD_CHECK_ARG_NONNULL(handle);
+
+        auto myHandle = od::confident_downcast<Handle>(handle);
+
+        if(myHandle->getParentOsgGroup() != nullptr)
+        {
+            myHandle->getParentOsgGroup()->removeChild(myHandle->getOsgNode());
+        }
+
+        auto newParentGroup = _getOsgGroupForRenderSpace(space);
+        myHandle->setParentOsgGroup(newParentGroup);
+        if(newParentGroup != nullptr)
+        {
+            newParentGroup->addChild(myHandle->getOsgNode());
+        }
     }
 
-    odRender::GuiNode *Renderer::getGuiRootNode()
+    void Renderer::moveToRenderSpace(std::shared_ptr<odRender::Group> group, odRender::RenderSpace space)
     {
-        return mGuiRootNode;
+        OD_CHECK_ARG_NONNULL(group);
+
+        auto myGroup = od::confident_downcast<Group>(group);
+
+        if(myGroup->getParentOsgGroup() != nullptr)
+        {
+            myGroup->getParentOsgGroup()->removeChild(myGroup->getOsgNode());
+        }
+
+        auto newParentGroup = _getOsgGroupForRenderSpace(space);
+        myGroup->setParentOsgGroup(newParentGroup);
+        if(newParentGroup != nullptr)
+        {
+            newParentGroup->addChild(myGroup->getOsgNode());
+        }
+    }
+
+    void Renderer::addGuiCallback(odRender::GuiCallback *callback)
+    {
+        OD_CHECK_ARG_NONNULL(callback);
+
+        mGuiCallbacks.push_back(callback);
+    }
+
+    void Renderer::removeGuiCallback(odRender::GuiCallback *callback)
+    {
+        OD_CHECK_ARG_NONNULL(callback);
+
+        auto it = std::find(mGuiCallbacks.begin(), mGuiCallbacks.end(), callback);
+        if(it != mGuiCallbacks.end())
+        {
+            mGuiCallbacks.erase(it);
+        }
+    }
+
+    glm::vec2 Renderer::getFramebufferDimensions()
+    {
+        if(mWindow == nullptr)
+        {
+             // no window created yet. return a default size. a resize event will fix this later
+            return { 640, 480 };
+
+        }else
+        {
+            int x, y, width, height;
+            mWindow->getWindowRectangle(x, y, width, height);
+            return { width, height };
+        }
     }
 
     odRender::Camera *Renderer::getCamera()
     {
-        return mCamera;
+        return mCamera.get();
+    }
+
+    void Renderer::setup()
+    {
+        mViewer->realize();
+
+        osgViewer::Viewer::Windows windows;
+        mViewer->getWindows(windows, true);
+        if(windows.empty()) throw od::Exception("Viewer created no windows");
+        mWindow = windows[0];
+
+        mWindow->setWindowName("OpenDrakan (OSG)");
+
+        if(!mFreeLook)
+        {
+            mWindow->setCursor(osgViewer::GraphicsWindow::NoCursor);
+        }
+
+        int x, y, width, height;
+        mWindow->getWindowRectangle(x, y, width, height);
+
+        for(auto guiCallback : mGuiCallbacks)
+        {
+            guiCallback->onFramebufferResize({width, height});
+        }
+
+        double aspect = static_cast<double>(width)/height;
+        mViewer->getCamera()->setProjectionMatrixAsPerspective(45, aspect, 1, 10000);
+    }
+
+    void Renderer::shutdown()
+    {
+        if(mViewer != nullptr)
+        {
+            mViewer->setDone(true);
+            mViewer = nullptr;
+        }
+    }
+
+    void Renderer::frame(float relTime)
+    {
+        mSimTime += relTime;
+
+        // TODO: frame rate limiter ("timeUntilNextFrame" or smth)
+
+        mViewer->advance(mSimTime);
+        mViewer->eventTraversal();
+        mViewer->updateTraversal();
+        for(auto guiCallback : mGuiCallbacks)
+        {
+            guiCallback->onUpdate(relTime);
+        }
+        mViewer->renderingTraversals();
     }
 
     void Renderer::applyLayerLight(const osg::Matrix &viewMatrix, const osg::Vec3 &diffuse, const osg::Vec3 &ambient, const osg::Vec3 &direction)
@@ -378,16 +487,11 @@ namespace odOsg
         mGlobalLightDirection->set(osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
 
-    void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, od::Light *light, size_t index)
+    void Renderer::applyToLightUniform(const osg::Matrix &viewMatrix, od::Light &light, size_t index)
     {
         if(index >= mLocalLightsColor->getNumElements())
         {
             throw od::InvalidArgumentException("Tried to apply light at out-of-bounds index");
-        }
-
-        if(light == nullptr)
-        {
-            throw od::InvalidArgumentException("Passed nullptr light to renderer");
         }
 
         if(!mLightingEnabled)
@@ -395,11 +499,11 @@ namespace odOsg
             return;
         }
 
-        mLocalLightsColor->setElement(index, GlmAdapter::toOsg(light->getColor()));
-        mLocalLightsIntensity->setElement(index, light->getIntensityScaling());
-        mLocalLightsRadius->setElement(index, light->getRadius());
+        mLocalLightsColor->setElement(index, GlmAdapter::toOsg(light.getColor()));
+        mLocalLightsIntensity->setElement(index, light.getIntensityScaling());
+        mLocalLightsRadius->setElement(index, light.getRadius());
 
-        osg::Vec3 posWs = GlmAdapter::toOsg(light->getPosition());
+        osg::Vec3 posWs = GlmAdapter::toOsg(light.getPosition());
         osg::Vec4 dirCs = osg::Vec4(posWs, 1.0) * viewMatrix;
         mLocalLightsPosition->setElement(index, osg::Vec3(dirCs.x(), dirCs.y(), dirCs.z()));
     }
@@ -436,12 +540,33 @@ namespace odOsg
         }
     }
 
+    osg::Group *Renderer::_getOsgGroupForRenderSpace(odRender::RenderSpace space)
+    {
+        switch(space)
+        {
+        case odRender::RenderSpace::NONE:
+            return nullptr;
+
+        case odRender::RenderSpace::LEVEL:
+            return mLevelRoot;
+
+        case odRender::RenderSpace::GUI:
+            return mGuiRoot;
+        }
+
+        OD_UNREACHABLE();
+    }
+
     void Renderer::_setupGuiStuff()
     {
+        osg::Matrix guiSpaceToNdc = osg::Matrix::scale(2.0, -2.0, -1.0);
+        guiSpaceToNdc.setTrans(-1.0, 1.0, 0.0);
+        mNdcToGuiSpaceTransform.invert(guiSpaceToNdc);
+
         mGuiCamera = new osg::Camera;
         mGuiCamera->setReferenceFrame(osg::Transform::ABSOLUTE_RF);
         mGuiCamera->setProjectionMatrix(osg::Matrix::ortho2D(-1, 1, -1, 1));
-        mGuiCamera->setViewMatrix(osg::Matrix::identity());
+        mGuiCamera->setViewMatrix(guiSpaceToNdc);
         mGuiCamera->setClearMask(GL_DEPTH_BUFFER_BIT);
         mGuiCamera->setRenderOrder(osg::Camera::POST_RENDER);
         mGuiCamera->setAllowEventFocus(false);
@@ -449,94 +574,37 @@ namespace odOsg
 
         mGuiRoot = new osg::Group;
         mGuiRoot->setCullingActive(false);
-        osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
-        ss->setMode(GL_BLEND, osg::StateAttribute::ON);
-        ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
-        ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
+        //osg::StateSet *ss = mGuiRoot->getOrCreateStateSet();
+        //ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+        //ss->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+        //ss->setMode(GL_CULL_FACE, osg::StateAttribute::OFF);
         mGuiCamera->addChild(mGuiRoot);
-
-        mGuiRootNode = od::make_refd<GuiNode>(this, nullptr);
-        mGuiRoot->addChild(mGuiRootNode->getOsgNode());
     }
 
-    void Renderer::_threadedRender()
+    std::shared_ptr<Model> Renderer::_buildSingleLodModelNode(odDb::Model &model)
     {
-        static const double maxFrameRate = 60;
-
-        mViewer->realize();
-
-        osgViewer::Viewer::Windows windows;
-        mViewer->getWindows(windows, true);
-        for(osgViewer::GraphicsWindow *window: windows)
-        {
-            window->setWindowName("OpenDrakan (OSG)");
-
-            if(!mFreeLook)
-            {
-                window->setCursor(osgViewer::GraphicsWindow::NoCursor);
-            }
-        }
-
-        double simTime = 0;
-        double frameTime = 0;
-        while(!mViewer->done())
-        {
-            double minFrameTime = (maxFrameRate > 0.0) ? (1.0/maxFrameRate) : 0.0;
-            osg::Timer_t startFrameTick = osg::Timer::instance()->tick();
-
-            {
-                std::lock_guard<std::mutex> lock(mRenderMutex);
-
-                mViewer->advance(simTime);
-                mViewer->eventTraversal();
-                mViewer->updateTraversal();
-                mViewer->renderingTraversals();
-            }
-
-            osg::Timer_t endFrameTick = osg::Timer::instance()->tick();
-            frameTime = osg::Timer::instance()->delta_s(startFrameTick, endFrameTick);
-            simTime += frameTime;
-            if(frameTime < minFrameTime)
-            {
-                simTime += (minFrameTime-frameTime);
-                std::this_thread::sleep_for(std::chrono::microseconds(1000000*static_cast<size_t>(minFrameTime-frameTime)));
-            }
-        }
-
-        mViewer = nullptr;
-
-        if(mEventListener != nullptr)
-        {
-            mEventListener->onRenderWindowClosed();
-        }
-
-        Logger::verbose() << "Render thread terminated";
-    }
-
-    od::RefPtr<Model> Renderer::_buildSingleLodModelNode(odDb::Model *model)
-    {
-        ModelBuilder mb(this, model->getName(), model->getAssetProvider());
+        ModelBuilder mb(*this, model.getName(), model.getDependencyTable());
 
         mb.setCWPolygonFlag(true);
-        mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
-        mb.setVertexVector(model->getVertexVector().begin(), model->getVertexVector().end());
-        mb.setPolygonVector(model->getPolygonVector().begin(), model->getPolygonVector().end());
+        mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
+        mb.setVertexVector(model.getVertexVector().begin(), model.getVertexVector().end());
+        mb.setPolygonVector(model.getPolygonVector().begin(), model.getPolygonVector().end());
 
         return mb.build();
     }
 
-    od::RefPtr<Model> Renderer::_buildMultiLodModelNode(odDb::Model *model)
+    std::shared_ptr<Model> Renderer::_buildMultiLodModelNode(odDb::Model &model)
     {
-        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model->getLodInfoVector();
-        const std::vector<glm::vec3> &vertices = model->getVertexVector();
-        const std::vector<odDb::Model::Polygon> &polygons = model->getPolygonVector();
+        const std::vector<odDb::Model::LodMeshInfo> &lodMeshInfos = model.getLodInfoVector();
+        const std::vector<glm::vec3> &vertices = model.getVertexVector();
+        const std::vector<odDb::Model::Polygon> &polygons = model.getPolygonVector();
 
         for(auto it = lodMeshInfos.begin(); it != lodMeshInfos.end(); ++it)
         {
-            ModelBuilder mb(this, model->getName() + " (LOD '" + it->lodName + "')", model->getAssetProvider());
+            ModelBuilder mb(*this, model.getName() + " (LOD '" + it->lodName + "')", model.getDependencyTable());
 
             mb.setCWPolygonFlag(true);
-            mb.setBuildSmoothNormals(model->getShadingType() != odDb::Model::ShadingType::Flat);
+            mb.setBuildSmoothNormals(model.getShadingType() != odDb::Model::ShadingType::Flat);
 
             // the count fields in the mesh info sometimes do not cover all vertices and polygons. gotta be something with those "LOD caps"
             //  instead of using those values, use all vertices up until the next lod until we figure out how else to handle this
@@ -564,7 +632,7 @@ namespace odOsg
             addGeometry(geometry, lodIndex);*/
         }
 
-        return nullptr;
+        OD_UNREACHABLE();
     }
 
 }

@@ -16,6 +16,7 @@
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 #include <odCore/db/DbManager.h>
+#include <odCore/db/DependencyTable.h>
 
 #include <odCore/render/Renderer.h>
 #include <odCore/render/Image.h>
@@ -34,9 +35,8 @@
 namespace odDb
 {
 
-    Texture::Texture(AssetProvider &ap, od::RecordId id, TextureFactory &factory)
-    : Asset(ap, id)
-    , mTextureFactory(factory)
+    Texture::Texture(TextureFactory &factory)
+    : mTextureFactory(factory)
     , mWidth(0)
     , mHeight(0)
     , mBitsPerPixel(0)
@@ -56,15 +56,6 @@ namespace odDb
 
     Texture::~Texture()
     {
-    }
-
-    void Texture::exportToPng(const od::FilePath &path)
-    {
-        Logger::verbose() << "Exporting texture " << std::hex << getAssetId() << std::dec
-                << " with dimensions " << mWidth << "x" << mHeight
-                << " to file '" << path.str() << "'";
-
-		throw od::UnsupportedException("PNG export is unsupported as of now");
     }
 
     void Texture::load(od::SrscFile::RecordInputCursor cursor)
@@ -106,7 +97,8 @@ namespace odDb
             mNextAnimationFrames.reserve(mAnimFrameCount-1);
             for(size_t i = 1; i < mAnimFrameCount; ++i)
             {
-                auto frame = getAssetProvider().getAsset<Texture>(getAssetId() + i);
+                AssetRef frameRef(getAssetId() + i, 0);
+                auto frame = getDependencyTable()->loadAsset<Texture>(frameRef);
                 mNextAnimationFrames.push_back(frame);
             }
         }
@@ -117,30 +109,8 @@ namespace odDb
         // of loading it in load(...). better safe than sorry.
         if(!mMaterialClassRef.isNull())
         {
-            mMaterialClass = this->getAssetProvider().getAssetByRef<Class>(mMaterialClassRef);
-            mMaterialInstance = mMaterialClass->makeInstance();
-            if(mMaterialInstance != nullptr)
-            {
-                mMaterialInstance->onLoaded(mTextureFactory.getEngine());
-            }
+            mMaterialClass = getDependencyTable()->loadAsset<Class>(mMaterialClassRef);
         }
-    }
-
-    od::RefPtr<odRender::Image> Texture::getRenderImage(odRender::Renderer *renderer)
-    {
-        if(renderer == nullptr)
-        {
-            throw od::Exception("Passed nullptr as renderer to getRenderImage");
-        }
-
-        if(mRenderImage.isNull())
-        {
-            od::RefPtr<odRender::Image> image = renderer->createImage(this);
-            mRenderImage = image.get();
-            return image;
-        }
-
-        return mRenderImage.aquire();
     }
 
     void Texture::_loadFromRecord(od::DataReader &dr)

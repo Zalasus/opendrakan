@@ -12,13 +12,13 @@
 
 #include <odCore/SrscFile.h>
 
+#include <odCore/input/Action.h>
+
 namespace dragonRfl
 {
 
     enum class Action
     {
-        Unknown = 0, // TODO: document somewhere that the action with zero representation can't be bound
-
         Forward,
         Backward,
         Strafe_Left,
@@ -66,8 +66,11 @@ namespace dragonRfl
         Demo_Playback,
 
         // these are our own, additional actions
-        PhysicsDebug_Toggle
+        PhysicsDebug_Toggle,
+        Look
     };
+
+    using ActionHandle = odInput::ActionHandle<Action>;
 
     // TODO: move this out of global scope
     const extern std::map<Action, od::RecordId> sActionNameMap;

@@ -43,6 +43,7 @@ namespace od
 		SEQUENCE_GROUP      = 0x0312,
 
 		LOCALIZED_STRING    = 0x0400,
+		MUSIC               = 0x0401,
 
 		ANIMATION_INFO      = 0x0501,
         ANIMATION_FRAMES    = 0x0502,

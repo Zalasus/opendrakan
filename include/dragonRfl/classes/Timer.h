@@ -8,47 +8,48 @@
 #ifndef INCLUDE_RFL_DRAGON_TIMER_H_
 #define INCLUDE_RFL_DRAGON_TIMER_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
+#include <odCore/rfl/DummyClass.h>
+
+#include <dragonRfl/classes/common/Enums.h>
 
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-    enum class TimerStartMode
+    struct TimerFields : public odRfl::FieldBundle
     {
-        RunInstantly,
-        RunWhenTriggered
+        TimerFields();
+
+        virtual void probeFields(odRfl::FieldProbe &probe) override final;
+
+        odRfl::Float         timeUntilTrigger;
+        EnumStartMode        startMode;
+        odRfl::EnumYesNo     repeat;
+        odRfl::EnumYesNo     destroyAfterTimeout;
+        odRfl::EnumMessage   triggerMessage; // message that will be sent upon timeout
+        odRfl::EnumYesNo     toggle;
+        odRfl::EnumMessage   disableReenableMessage;
     };
 
-    typedef odRfl::EnumImpl<TimerStartMode, 0, 1> EnumTimerStartMode;
 
-
-	class Timer : public odRfl::RflClass
+	class Timer_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Timer_Sv>
 	{
 	public:
 
-		Timer(DragonRfl &rfl);
+		Timer_Sv();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
+		virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime) override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
-	protected:
-
-		odRfl::Float 		 mTimeUntilTrigger;
-		EnumTimerStartMode   mStartMode;
-		odRfl::EnumYesNo	 mRepeat;
-		odRfl::EnumYesNo     mDestroyAfterTimeout;
-		odRfl::EnumMessage   mTriggerMessage; // message that will be sent upon timeout
-		odRfl::EnumYesNo     mToggle;
-		odRfl::EnumMessage   mDisableReenableMessage;
 
 	private:
+
+        TimerFields mFields;
 
 		bool mGotStartTrigger;
 		bool mTimerRunning;
@@ -56,8 +57,11 @@ namespace dragonRfl
 
 	};
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x003e, "System", "Timer", dragonRfl::Timer);
+    using TimerFactory = odRfl::ServerOnlyClassFactory<TimerFields, Timer_Sv>;
+
+    OD_DEFINE_CLASS(Timer, 0x003e, "System", "Timer", TimerFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_TIMER_H_ */

@@ -17,6 +17,9 @@ namespace od
 	/**
 	 * Simple and primitive abstraction for file paths that is able to handle paths with mixed seperators and
 	 * can convert paths into the format preferred by the OS.
+     *
+     * TODO: This class is a prime example of some of my early bad design choices. Rename methods, get data members down to a minimum, make mutable and moveable!
+     * Why is the relative-to-constructor parameter order reversed? ughhh...
 	 */
 	class FilePath
 	{
@@ -29,6 +32,11 @@ namespace od
 			RELATIVE
 		};
 
+        /**
+         * @brief Constructs an empty FilePath.
+         */
+        FilePath();
+
 		/**
 		 * Constructs a new FilePath object from the given path. If path is
 		 * relative, it is assumed to be relative to the current working directory.
@@ -40,8 +48,6 @@ namespace od
 		 * relative, it is assumed to be relative to relativeTo.
 		 */
 		FilePath(const std::string &path, const FilePath &relativeTo);
-
-		FilePath(const FilePath &p, size_t omitLastNComponents = 0);
 
 		/**
 		 * @brief Returns this path's depth in the file system.
@@ -113,15 +119,26 @@ namespace od
 		 */
 		FilePath adjustCase() const;
 
+        /**
+         * If this path starts with the passed prefixPath, a new path will be returned
+         * that does not have that part. Otherwise, a copy of this path will be returned.
+         *
+         * This only works if the roots of both parts are the same and of the same type.
+         * The resulting path will always be a relative path.
+         */
+        FilePath removePrefix(const od::FilePath &prefixPath) const;
+
 		bool operator==(const FilePath &right) const;
 
 
 	private:
 
+        using ComponentIterator = std::vector<std::string>::const_iterator;
+        FilePath(PathRootStyle rootStyle, const std::string &root, ComponentIterator begin, ComponentIterator end);
+
 		void _parsePath(const std::string &path);
 		std::string _buildHostPath() const;
 
-		std::string mOriginalPath;
 		std::string mRoot;
 		PathRootStyle mRootStyle;
 		std::vector<std::string> mPathComponents;

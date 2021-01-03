@@ -64,7 +64,7 @@ namespace od
     }
 
     template <>
-    DataReader &DataReader::operator >> <BoundingSphere>(BoundingSphere &bs)
+    void DataReader::readTyped<BoundingSphere>(BoundingSphere &bs)
     {
         glm::vec3 center;
         float radius;
@@ -73,11 +73,7 @@ namespace od
                 >> radius;
 
         bs = BoundingSphere(center, radius);
-
-        return *this;
     }
 
 
 }
-
-

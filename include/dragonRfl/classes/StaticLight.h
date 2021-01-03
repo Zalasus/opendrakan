@@ -8,9 +8,10 @@
 #ifndef INCLUDE_RFL_DRAGON_STATICLIGHT_H_
 #define INCLUDE_RFL_DRAGON_STATICLIGHT_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
+#include <odCore/rfl/DummyClass.h>
 
 #include <glm/vec3.hpp>
 
@@ -21,37 +22,45 @@
 namespace dragonRfl
 {
 
-    class DragonRfl;
+    struct StaticLightFields : public odRfl::FieldBundle
+    {
 
-    class StaticLight : public odRfl::RflClass
+        StaticLightFields();
+
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+
+        odRfl::Color        color;
+        odRfl::Float        intensityScaling;
+        odRfl::Float        radius;
+        odRfl::TextureRef   lightMap;
+        odRfl::Enum         qualityLevelRequired;
+    };
+
+
+    class StaticLight_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<StaticLight_Cl>
     {
     public:
 
-        StaticLight(DragonRfl &rfl);
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
 
 
-    protected:
+    private:
 
-        odRfl::Color        mColor;
-        odRfl::Float        mIntensityScaling;
-        odRfl::Float        mRadius;
-        odRfl::TextureRef   mLightMap;
-        odRfl::Enum         mQualityLevelRequired;
+        StaticLightFields mFields;
 
         glm::vec3 mLightColorVector;
-        od::RefPtr<od::Light> mLight;
-        bool mNeedsUpdate;
+        std::shared_ptr<odPhysics::LightHandle> mLightHandle;
 
     };
 
-}
+    using StaticLightFactory = odRfl::ClientOnlyClassFactory<StaticLightFields, StaticLight_Cl>;
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0084, "Light Source", "Static Light", dragonRfl::StaticLight);
+    OD_DEFINE_CLASS(StaticLight, 0x0084, "Light Source", "Static Light", StaticLightFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_STATICLIGHT_H_ */

@@ -14,6 +14,10 @@ namespace odInput
     /**
      * Key code enum. The order and values of these items were directly adapted from OSG's GUIEventAdapter.
      * See http://www.openscenegraph.org/images/LICENSE.txt
+     *
+     * This originally happened out of laziness. As it stands now, the renderer/input source has to do a translation step
+     * no matter what. and by using the same order and values as OSG, that conversion is just a cast as long as we stick to OSG.
+     * TODO: once we switch to our own renderer, we might just replace this enum and also adapt it to the changed enum code style.
      */
     enum class Key
     {
@@ -214,7 +218,12 @@ namespace odInput
         Hyper_L         = 0xFFED,
         Hyper_R         = 0xFFEE,
 
-        _HighestKeyId // not a key. keep this at the end so InputManager can allocate a key map
+        // these are not from OSG. but since I find it silly to use separate
+        //  keymaps for keyboard keys and mouse buttons, i add them here. the
+        //  necessary translation is trivial.
+        Mouse_Left,
+        Mouse_Right,
+        Mouse_Middle
     };
 
 }

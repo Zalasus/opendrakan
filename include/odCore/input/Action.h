@@ -11,46 +11,38 @@
 #include <functional>
 #include <vector>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/input/Keys.h>
 
 namespace odInput
 {
-
     class InputManager;
 
-    struct InputEvent
-    {
-        enum class Type
-        {
-            Down,
-            Repeat,
-            Up
-        };
+    using ActionCode = int;
 
-        Key key;
-        float time;
-        Type type;
+    enum class ActionState
+    {
+        BEGIN,
+        END,
+        REPEAT
     };
 
     /**
-     * Interface for a registration of a input action. It allows configuration of the action and manages
-     * a set of callbacks. The InputManager keeps weak references to actions, so if all references to an action
+     * Interface for a registration of an input action. It allows configuration of the action and manages
+     * a set of listeners. The InputManager keeps weak references to actions, so if all references to an action
      * outside of the InputManager are destroyed, the action itself will be cleanly deallocated and no longer considered
      * by the InputManager. Thus, ActionHandles require no registration and unregistration mechanism
      *
      * Note: the only abstraction happening here is the type of the action enum. In theory, this whole abstract thing
      * could be omitted if we were willing to have the user either use unscoped enums or cast everything to int by himself.
      */
-    class IAction : public od::RefCounted
+    class ActionHandleBase
     {
     public:
 
-        IAction(InputManager &im, int actionCode);
-        virtual ~IAction() = default;
+        ActionHandleBase(int actionCode);
+        virtual ~ActionHandleBase() = default;
 
-        inline int getActionAsInt() const { return mActionCode; }
+        inline ActionCode getActionCode() const { return mActionCode; }
         inline bool isRepeatable() const { return mRepeatable; }
         inline bool ignoresUpEvents() const { return mIgnoreUpEvents; }
 
@@ -67,16 +59,15 @@ namespace odInput
          */
         void setIgnoreUpEvents(bool b);
 
-        void bindToKey(Key key);
-        void unbindFromKey(Key key);
+        virtual void triggerCallback(ActionState state) = 0;
 
-        virtual void triggerCallback(InputEvent) = 0;
 
+    protected:
+
+        ActionCode mActionCode;
 
     private:
 
-        InputManager &mInputManager;
-        int mActionCode;
         bool mRepeatable;
         bool mIgnoreUpEvents;
 
@@ -84,37 +75,35 @@ namespace odInput
 
 
     template <typename _ActionEnum>
-    class ActionHandle : public IAction
+    class ActionHandle final : public ActionHandleBase
     {
     public:
 
-        typedef std::function<void(ActionHandle<_ActionEnum>*, InputEvent)> CallbackType;
+        typedef std::function<void(_ActionEnum, ActionState)> CallbackType;
 
-        ActionHandle(InputManager &im, _ActionEnum action)
-        : IAction(im, static_cast<int>(action))
-        , mAction(action)
+        ActionHandle(_ActionEnum action)
+        : ActionHandleBase(static_cast<ActionCode>(action))
         {
         }
 
-        inline _ActionEnum getAction() const { return mAction; }
+        inline _ActionEnum getAction() const { return static_cast<_ActionEnum>(mActionCode); }
 
         void addCallback(const CallbackType &callback)
         {
             mCallbacks.push_back(callback);
         }
 
-        virtual void triggerCallback(InputEvent event) override
+        virtual void triggerCallback(ActionState state) override
         {
             for(auto &cb : mCallbacks)
             {
-                cb(this, event);
+                cb(getAction(), state);
             }
         }
 
 
     private:
 
-        _ActionEnum mAction;
         std::vector<CallbackType> mCallbacks;
 
     };

@@ -5,7 +5,7 @@
 
 This file documents the database file format ("SRSC") used by the Riot Game Engine by Surreal Software.
 
-All of the following information has been aquired through reverse engineering. 
+All of the following information has been aquired through reverse engineering.
 Some basic information was taken from a script found at: http://aluigi.altervista.org/bms/drakan.bms.
 
 This document uses a pseudo-C syntax for data structure definitions. You'll figure it out.
@@ -25,20 +25,20 @@ This info was compiled by Zalasus and also these people from the arokhslair.net 
 
 How the engine manages it's assets
 ==================================
-    
+
     The Riot Engine stores all it's assets in database files with a common format. All these files use
     the magic number "SRSC", so that's what we are gonna call the format from now on.
-    
+
     An SRSC file consists of a list of records of which one or more may represent a single game asset.
     Sounds for instance consist of only one record, while models are made up of at least 6 records each.
-    
-    Assets are managed in so called "databases", defined by a *.db file. The name of that file (without extension) 
+
+    Assets are managed in so called "databases", defined by a *.db file. The name of that file (without extension)
     is that database's name. The *.db file is plaintext formatted. More about that file can be found in chapter "Database definition".
 
     A database's different types of assets are stored in seperate SRSC files stored in the same directory as the defining *.db file.
     The type of asset contained in an SRSC file is identified by it's file extensions.
     These are the possible file extensions and their associated asset types for databases:
-    
+
         *.mod    Models
         *.adb    Character model animations
         *.ssd    "STOMP"-Sequences
@@ -55,7 +55,7 @@ How the engine manages it's assets
 Database definition
 ===================
     A database is defined by it's *.db file. It is a plaintext file with the structure:
-        
+
         version <version number>
         dependencies <dependency count>
         <index of dependency 1>  <path of dependency 1>
@@ -65,9 +65,9 @@ Database definition
 
     The listed database paths omit the *.db extension and are relative to the location of the current *.db file.
     Note that the given indices aren't necessarily consecutive or start at a given number (e.g. 2,4,6). The only
-    rule is that these are 1-based. Index 0 is used to refer to the current database and can not be used for 
+    rule is that these are 1-based. Index 0 is used to refer to the current database and can not be used for
     dependencies.
-    
+
     These dependencies are used for internally referencing records. See subchapter "Referencing a record"
     in chapter "Basic SRSC format".
 
@@ -80,12 +80,12 @@ Basic SRSC format
         All fields are little-endian.
 
         Strings are plain ASCII, prefixed with a 16-bit length field. Strings with an odd length
-        are padded with a single 0 byte. This padding is also included in the length field, so a 
+        are padded with a single 0 byte. This padding is also included in the length field, so a
         string length can only ever be even. Strings are not zero-terminated.
 
         Floats use standard IEEE 754 format, single precision.
 
-   
+
     File structure
     --------------
         Header:
@@ -111,12 +111,12 @@ Basic SRSC format
 
             // end of file
 
-        
+
     Record types
     ------------
         All records have a 16-bit type ID. This type ID determines the structure of the record body.
         See top chapter "Record types" for a list of all known record structures.
-        
+
 
     Record ID and grouping
     ----------------------
@@ -127,7 +127,7 @@ Basic SRSC format
         record type for group definitions (not the same across different asset types: Classes use 0x0101 while sequences use 0x0313).
         That record's body consists of a single string, which is the groups name.
         The record ID of that group definition record is that group's ID. All records whose directory entry states a group ID
-        different than 0 are part of the group with the ID stated. 
+        different than 0 are part of the group with the ID stated.
         Group definition records can also be part of a group, making them subgroups of the given group. Record that are children of
         those subgroup use the subgroup's ID instead.
         Note that even across groups, all record IDs must be unique, IDs of groups included.
@@ -153,9 +153,9 @@ Record types
 
     Level (0x0000 - 0x0020)
     -----------------------
-    
+
         see lvl_format.txt
-        
+
 
     Texture (0x0030-0x0040)
     -----------------------
@@ -178,14 +178,14 @@ Record types
         uint8         animation_fps;  // Only valid if not "next frame".
         // Flags (the following are partially speculative)
         // 0x80 "keep high quality",
-        // 0x40 "dynamic texture" is ticked, 
-        // 0x20 "next frame", 
+        // 0x40 "dynamic texture" is ticked,
+        // 0x20 "next frame",
         // 0x08 this is a mipmap
         // 0x04 this is an alternate of another texture,
         // 0x02 an alpha channel is integrated into the image data
         // 0x01 this has a seperate alpha map attached after the image data
-        uint8         flags;  
-        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps         
+        uint8         flags;
+        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps
         ref           material_object;
         uint32        ref_count;
         uint32        compression_level; // (0 = none, 1 = lowest, 9 = highest)
@@ -196,7 +196,7 @@ Record types
             // This data might need to be appended to the above, or maybe not.
             // Or maybe this data is corrupt and unusable.
             uint8[uint32] separate_alphamap_data;
-            
+
         // Texture animations are built by appending consecutive "next frame" textures to the first frame.
 
     Class (0x0100 - 0x0102)
@@ -205,14 +205,14 @@ Record types
     [0x0100] Riot Function Library reference
         uint8[8]    ???
         string      relative_path_to_rfl_file; // for Drakan, this is always Dragon.rfl in the engine root dir
-     
+
     [0x0101] Class group definition
         string      group_name;
 
     [0x0102] Class data
         struct field_def { uint32 type; string name; };
-        /*LSB of type is base type 
-         type 0x01 = integer (signed) 
+        /*LSB of type is base type
+         type 0x01 = integer (signed)
          type 0x02 = float
          type 0x03 = class
          type 0x04 = model
@@ -245,18 +245,18 @@ Record types
 
     struct vect2f { float x, y; };
     struct vect3f { float x, y, z; };
-    struct mat3f { float f[9]; }; // matrix in row-major order. (f[0] f[1] f[2]) is the first row vector and so on 
+    struct mat3f { float f[9]; }; // matrix in row-major order. (f[0] f[1] f[2]) is the first row vector and so on
     struct mat3x4f { mat3f linear; vect3f translation; };
     struct sphere { vect3f center; float radius; };
     struct obb { vect3f center; mat3f xform; };
     struct obb_ex { obb obb; uint16[uint16] unk_poly_indices; };
     struct bounding_info { sphere sphere; obb obb; };
-    
+
     [0x0200] Model name ( this one is always the first record in the directory with the model's ID)
         string      model_name;
         uint32      shading_type; // 0x01=flat, 0x02=smooth, 0x04=blend with landscape , 0x08=shiny, 0x10=additive blend, 0x20=environment mapped, 0x8000 seems always set
                                   //   additive blending is selectable even when no shading is used, but only applied when shading is at least flat
-                                  
+
     [0x0201] Model group definition
         string      group_name;
 
@@ -264,20 +264,20 @@ Record types
         uint16      group_count;
         uint16      last_group_id; // speculative. looks like new groups use this+1 as their ID
         uint16      last_model_id; // speculative. looks like new models use this+1 as their ID
-    
+
 
     The following records must all appear once per model (also 0x0200) and thus have the same record ID.
 
     [0x0203] Vertices
         vect3f[uint16]   vertices; // mesh and bounding vertex positions
-        
+
     [0x0204] Polygons
         struct poly_vertex
         {
             uint16 vertex_index; // not absolute indices of vertex array but relative to where current LOD starts in vertex array
             vect2f uv;
         };
-        
+
         struct polygon
         {
             uint16 flags; // 0x0002 = double sided (probably)
@@ -285,9 +285,9 @@ Record types
             uint16 texture_index; // Indexes into the model's texture list.
             poly_vertex[vertex_count] vertex_list;
         };
-        
+
         polygon[uint16]  polygons;
-        
+
     [0x0205] BSP Tree (?) // Rare. See Resources Powerups Fire02 for an example. Models added with "Generate BSP Tree" ticked have this
         struct table_entry
         {
@@ -295,10 +295,10 @@ Record types
             uint16[2 + uint16]  polys; // Typically, there's 4 or 5 polys in this list.
         };
         table_entry[uint16]  unk_table;
-    
+
     [0x0206] Texture list
         ref[uint32]  textures;
-        
+
     [0x0207] Bounding data // Possibly for culling. Possibly for physics. Only found on non-character models
         bounding_info bounding_info;
         uint16        num_shapes;
@@ -308,7 +308,7 @@ Record types
             obb_ex[num_shapes] boxes;
         else:
             sphere[num_shapes] spheres;
-            
+
     [0x0208] Character data // LOD, scene tree, channels, animation refs, bounding info
         // Node info contains all nodes from the original bone tree as created by the original modeler (probably Softimage),
         //  but only some of them are used (only joints). Effector and chain node names are kept, but seem to be unused otherwise.
@@ -353,7 +353,7 @@ Record types
                 uint32 unk;
                 vertex_weight[uint16] vertex_weights;
             };
-            
+
             int32           node_index;
             mat3x4f         xform_a; // original matrix as stored in the .rec. The 3x3 gives transform/scale and the last line gives the position of the joint.
             mat3x4f         xform_b; // precomputed transformation matrix for xform_a above. This is the exact same matrix as stored for non channel joints in joint_info inverted_model_rel_xform. Can be calculated back to xform_a by: take transposed(3x3) and append transposed(3x3)*last row * -1
@@ -370,10 +370,10 @@ Record types
                 uint16    channel_index;
                 uint16    unknown2;
             };
-            
+
             char_sphere[uint16]  bounding_spheres;
         };
-        
+
         bounding_info                    bounding_info;
         uint16                           num_lods; // always >= 1
         string[num_lods - 1]             lod_names;  // first LODs name is the model name. Not listed here
@@ -383,18 +383,18 @@ Record types
         ref[uint16]                      anim_ids; // database index always 0
         channel[uint16]                  channels;
         char_bounds[uint16]              char_bounds; // one for each LOD. length field seems to be redundant with num_lods
-        
-    [0x0209] ??? 
+
+    [0x0209] ???
         uint8[6]    ???
         (These could be related to model rotations. Some models appear incorrectly rotated, and this is always non-zero for those)
-        
+
 
     Sound (0x0301 - 0x0302)
     -----------------------
 
     [0x0301] Sound group definition
         string      group_name;
-        
+
     [0x0302] Sound data;
         string     sound_name;
         uint32     flags; // 0x04 = flush after playing, 0x08 = play looping
@@ -410,37 +410,59 @@ Record types
             uint8[uint32] audio_data;
         else:
             uint8[decompressed_size] audio_data;
-        
+
     Sequence (0x0310 - 0x0312)
     --------------------------
-    
+
     [0x0310] ???
         // 8 bytes. not all zero
-        
+
     [0x0311] Sequence
         struct quat { float x, y, z, w; };
-        
+
         struct action
         {
             struct xform_key_frame
             {
                 quat rotation;
-                vect3f position;
-                uint32 flags; // Probably. Always 0.
-                uint16 interpolation; // 0x00 == NONE, 0x10 == LINEAR_LINEAR, 0x30 == SINE_SPLINE
-                uint16 relative_to; // Probably. Always 0.
+                vect3f position; // wu!
+                uint32 relative_actor_id; // uses the actor id as stated in the sequence. only valid if "relative to another actor" or "look at actor"
+                uint32 options; // this basically consists of two bitfields and some flags
+                                //  bits 0-1: relative to
+                                //    00 = the world
+                                //    01 = another actor
+                                //    10 = look at actor
+                                //  bits 4-5: interpolation type
+                                //    00 = none
+                                //    01 = linear-linear
+                                //    10 = linear-spline
+                                //    11 = sine-spline
+                                // 0x0100 = ignore position
+                                // 0x0200 = ignore rotation
             };
-            
+
             struct start_anim
             {
                 uint32 channel_index;
                 ref anim;
-                uint32 unk08; // Always 0.
+                float begin_play_at;
                 float transition_time;
                 float speed;
-                uint32 root_node_translation_mode_flags; // 2 bits for each axis. 0b00 == MESH, 0b01 == FRAME, 0b10 == NONE, 0b11 = INVALID.
+                uint32 flags; // bits 0-1: root node translation (x axis)
+                              // bits 2-3: root node translation (y axis)
+                              // bits 4-5: root node translation (z axis)
+                              //   00 = Mesh
+                              //   01 = Frame
+                              //   10 = None
+                              //   11 = Invalid / Unknown
+                              // bit 8: no attached sound
+                              // (the 11 root node translation flag is produced
+                              //  when switching from a non-root to a root
+                              //  channel in the STOMP editor. it actually
+                              //  appears in some Drakan levels, so the engine
+                              //  must have some way of handling this.)
             };
-            
+
             struct play_sound
             {
                 ref sound;
@@ -448,23 +470,23 @@ Record types
                 uint16 volume; // [0..10000]
                 uint16 flags; // 0x8 == flush from memory after playing, 0x10 == mono, 0x30 == notify actor (what does this do?)
             };
-            
+
             struct attach
             {
                 uint32 other_actor_id = 0;
                 uint32 this_actor_channel_id = 0;
             };
-            
+
             struct run_stop_ai
             {
                 uint32 enable_ai;
             };
-            
+
             struct show_hide
             {
                 uint32 is_visible;
             };
-            
+
             struct message
             {
                 // message numbers correspond to RFL messages, but not in the same range or order as in object/class records:
@@ -475,10 +497,18 @@ Record types
                 //  4257 = Play Sequence
                 //  4259 = Blow Up
                 //  4103 = Triggered
-                uint32 message_number; 
+                uint32 message_number;
                 uint32 unk0; // Always 0.
             };
-            
+
+            struct music
+            {
+                u32 music_id;
+                u32 dls_id;
+                float fade_in_time;
+                float fade_out_time;
+            };
+
             uint16 type;
             float t;
 
@@ -489,34 +519,46 @@ Record types
             if type == 5: run_stop_ai data;
             if type == 6: show_hide data;
             if type == 7: message data;
-            // Type 2 is probably texture anims, and 8 is probably music, else, you've found something new.
+            if type == 8: music data;
+            // Type 2 is probably texture anims. else, you've found something new.
         };
-        
+
         struct actor
         {
             string name;
             uint32 id;
-            uint32 unk0; // Always 1
-            uint32 unk1; // Always 0
-            uint32 level_entity_id; // probably
+            uint32 actor_type; // 0 = null actor, 1 == object, 2 == assigned by ai
+            uint32 assigned_as; // the different "parameter n"-options. is probably unused for any other type than "assigned by AI"
+            if(actor_type == 0) uint32 unused;
+            if(actor_type == 1) uint32 level_object_id;
+            if(actor_type == 2) ref ai_class; // no idea to what end this is used yet
             action[uint32] actions;
         };
-        
+
         string        sequence_name;
-        uint32        unk0; // flags?
-        uint32        unk1;
+        uint32        flags; // 0x01 = play looped
+                             // 0x02 = flush sequence on exit
+                             // 0x04 = preload animations on play
+                             // 0x08 = flush animations on stop
+                             // 0x10 = preload sounds on play
+                             // 0x20 = flush sounds on stop
+                             // 0x40 = can fast forward
+        uint32        modify_run_states; // 0 = do not modify
+                                         // 1 = stop running all objects
+                                         // 2 = stop running non-actors
+                                         // 3 = stop running actors
         uint32        unk2;
         actor[uint32] actors;
-        
-    
+
+
     [0x0312] Sequence group definition
         string      group_name;
-        
-    
+
+
     Misc
     ----
-    
-    [0x0400] Encrypted string 
+
+    [0x0400] Encrypted string
         uint8[*] string;  // no length field. string fills entire record
         (found in Dragon.rrc, used for localization. XOR encrypted, see algorithm in chapter "String decryption" below)
 
@@ -526,7 +568,7 @@ Record types
 
     [0x0402] End record?
         (one of these appears in many databases, often last. it's size seems to always be 4)
-        
+
     Animation (0x0501 - 0x0503)
     ---------------------------
 
@@ -543,23 +585,23 @@ Record types
         float rotation_threshold;
         float scale_threshold;
         float translation_threshold; // Probably.
-        
+
     [0x0502] Data
         struct frame
         {
             float t;
             mat3x4f xform; // seems like these are relative to parent joint
         };
-        
+
         frame[uint16] frames;
-        
+
     [0x0503] Frame Lookup
         struct node_frames_index_range
         {
             uint32 first_frame_index;
             uint32 num_frames;
         };
-        
+
         node_frames_index_range[uint16] frames_lookup; // One for each node.
 
 Audio format
@@ -576,37 +618,37 @@ Texture format
 ==============
     Textures are encoded as zlib-compressed raw pixels.
     Rows are stored bottom-up from left to right.
-    
+
     The pixel format is selected by the bpp-field in the texture header.
     The following pixel formats have been found:
-    
+
     8 bpp
     -----
         Each pixel is represented by one byte that is an index in the colour palette, found in the 0x0030 record.
-        
-    
+
+
     16 bpp
     ------
         Format depends on the type of alpha map used. If no alpha map is present or it is stored seperately (flag 0x01),
         the following format is used:
             5-6-5-format (note the LE byte order!)
-            
+
             RRRRRGGG GGGBBBBB
              Byte 1   Byte 0
-         
+
             Note that the green channel uses 6 bit while red and blue only use 5.
-            
+
         If the alpha map is integrated into the texture (alpha channel, indicated by flag 0x02),
         the format used is determined by the alpha-bpp-field. The following formats have been found:
-        
+
             ABPP    R:G:B+A bits   Bit pattern (LE adjusted!)
             0       5:6:5+0        RRRRRGGG GGGBBBBB
             1       5:5:5+1        ARRRRRGG GGGBBBBB
             4       4:4:4+4        AAAARRRR GGGGBBBB
             8       3:3:2+8        AAAAAAAA RRRGGGBB
-            
-        
-            
+
+
+
         The 8:8:8+8 is sometimes listed in the editor but reported as "not yet implemented", probably due to the
         fact the 8-alpha-bit setting is already occupied by the 3:3:2+8 format.
         Please note that these formats also use LE encoding.
@@ -618,18 +660,18 @@ Texture format
 
         RRRRRRRR GGGGGGGG BBBBBBBB
          Byte 0   Byte 1   Byte 2
-         
+
         Note that this is not adjusted for any byte order!
 
 
     32 bpp
     ------
-    
+
         As written by the editor's 'convert'-function:
-        
+
         RRRRRRRR GGGGGGGG BBBBBBBB XXXXXXXX
          Byte 0   Byte 1   Byte 2   Byte 3
-        
+
         Note that this is not adjusted for any byte order! X is unused, but may be alpha.
         32 bit textures with alpha can't be created using the editor (reports them as being "unimplemented").
 
@@ -641,35 +683,34 @@ Class format
     the field's name. It is likely that the index of the field definition can be used to identify the field (objects in level
     files, which list only modified fields, explicitly state the index these fields have in their class). Otherwise, a field's
     name is a safe albeit inefficient way to identify it.
-    
-    Each of the field definitions corresponds to one dword in the data area, in the same order as they appear in the field 
+
+    Each of the field definitions corresponds to one dword in the data area, in the same order as they appear in the field
     definition list (so the first field defined would correspond to the first dword at the beginning of the data area).
-    
+
     Some fields, however, may require more than a dword to store their contents. These are namely strings and arrays.
     For this reason, the data area may contain more dwords than the number of fields. In this trailing area, the actual string
     or array data is stored, while the dword at the string's/array's index instead looks like this:
-    
+
         uint16 offset;
         uint16 length;
 
     Where offset is the offset in dwords starting from the beginning of the data area where the string's/array's data can be found,
     and length is the number of dwords contained in that trailing field. For arrays this is equal to the number of elements contained,
     while strings are packed into as many dwords as required, and then padded with zero bytes if the string's size is not divisible by 4.
-    
+
     Colors are stored as ARGB.
-    
-    
+
+
 String decryption
 =================
     Strings in 0x402 records can be decrypted using the following alogrithm:
-    
+
         uint32_t key = 0x5FDD390D;
-    
+
         for(size_t i = 0; i < len; ++i)
         {
             str[i] ^= key & 0xFF;
             key = (key<<3) | (key>>(32-3));
         }
-        
+
     (Thanks to UCyborg for figuring this out!)
-    

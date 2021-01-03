@@ -20,15 +20,12 @@
 
 namespace od
 {
-    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *physicsHandle, odRender::Handle *renderHandle)
+    ObjectLightReceiver::ObjectLightReceiver(odPhysics::PhysicsSystem &ps, std::shared_ptr<odPhysics::ObjectHandle> physicsHandle, std::shared_ptr<odRender::Handle> renderHandle)
     : mPhysicsSystem(ps)
     , mPhysicsHandle(physicsHandle)
     , mRenderHandle(renderHandle)
     {
-        if(mPhysicsHandle == nullptr)
-        {
-            throw od::InvalidArgumentException("Created ObjectLightReceiver with physics handle = nullptr");
-        }
+        OD_CHECK_ARG_NONNULL(physicsHandle);
 
         mPhysicsHandle->setLightCallback(this);
     }
@@ -38,7 +35,7 @@ namespace od
         mPhysicsHandle->setLightCallback(nullptr);
     }
 
-    void ObjectLightReceiver::removeAffectingLight(od::Light *light)
+    void ObjectLightReceiver::removeAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(mRenderHandle != nullptr)
         {
@@ -52,7 +49,7 @@ namespace od
         }
     }
 
-    void ObjectLightReceiver::addAffectingLight(od::Light *light)
+    void ObjectLightReceiver::addAffectingLight(std::shared_ptr<od::Light> light)
     {
         if(mRenderHandle != nullptr)
         {
@@ -79,25 +76,7 @@ namespace od
 
     void ObjectLightReceiver::updateAffectingLights()
     {
-        this->clearLightList();
-
-        odPhysics::ContactTestResultVector results;
-
-        static const odPhysics::PhysicsTypeMasks::Mask mask = odPhysics::PhysicsTypeMasks::Light;
-
-        mPhysicsSystem.contactTest(mPhysicsHandle, mask, results);
-
-        for(auto &r : results)
-        {
-            odPhysics::LightHandle *handle = r.handle->asLightHandle();
-            if(handle != nullptr)
-            {
-                Light &light = handle->getLight();
-                this->addAffectingLight(&light);
-                light.addAffected(handle);
-            }
-        }
+        mPhysicsSystem.dispatchLighting(mPhysicsHandle);
     }
 
 }
-

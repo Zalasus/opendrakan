@@ -9,13 +9,13 @@
 #define INCLUDE_ODOSG_LIGHTSTATE_H_
 
 #include <vector>
+#include <memory>
 
 #include <osg/Vec3>
 #include <osg/StateAttribute>
 #include <osg/NodeCallback>
 
 #include <odCore/Light.h>
-#include <odCore/WeakRefPtr.h>
 
 namespace odOsg
 {
@@ -29,16 +29,19 @@ namespace odOsg
     {
     public:
 
-        LightStateAttribute(Renderer *renderer, size_t maxLightCount);
+        LightStateAttribute(Renderer &renderer, size_t maxLightCount);
         LightStateAttribute(const LightStateAttribute &l, const osg::CopyOp &copyOp = osg::CopyOp::SHALLOW_COPY);
 
         // implement pure virtual stuff from osg::StateAttribute
-        virtual const char* libraryName() const { return "odOsg"; }
-        virtual const char* className() const { return "LightStateAttribute"; }
-        virtual Type getType() const { return osg::StateAttribute::LIGHT; }
-        virtual osg::Object *cloneType() const;
-        virtual osg::Object *clone(const osg::CopyOp& copyop) const;
-        virtual bool isSameKindAs(const osg::Object* obj) const;
+        virtual const char* libraryName() const override { return "odOsg"; }
+        virtual const char* className() const override { return "LightStateAttribute"; }
+        virtual Type getType() const override { return osg::StateAttribute::LIGHT; }
+        virtual osg::Object *cloneType() const override;
+        virtual osg::Object *clone(const osg::CopyOp& copyop) const override;
+        virtual bool isSameKindAs(const osg::Object* obj) const override;
+        virtual bool getModeUsage(ModeUsage &usage) const override;
+        virtual void apply(osg::State &state) const override;
+        virtual int compare(const StateAttribute& sa) const override;
 
         inline void setLayerLight(const osg::Vec3 &color, const osg::Vec3 &ambient, const osg::Vec3 &direction)
         {
@@ -47,10 +50,6 @@ namespace odOsg
             mLayerLightDirection = direction;
         }
 
-        virtual bool getModeUsage(ModeUsage &usage) const override;
-        virtual void apply(osg::State &state) const override;
-        virtual int compare(const StateAttribute& sa) const override;
-
         void clearLightList();
 
         /**
@@ -58,16 +57,16 @@ namespace odOsg
          *
          * If more lights than the maximum possible number of lights are added, the additional calls are ignored.
          */
-        void addLight(od::Light *light);
+        void addLight(std::shared_ptr<od::Light> light);
 
-        void removeLight(od::Light *light);
+        void removeLight(std::shared_ptr<od::Light> light);
 
 
     private:
 
-        Renderer *mRenderer;
+        Renderer &mRenderer;
         size_t mMaxLightCount;
-        std::vector<od::WeakRefPtr<od::Light>> mLights;
+        std::vector<std::weak_ptr<od::Light>> mLights; // weak pointers so lights that get removed will stop being rendered
         osg::Vec3 mLayerLightDiffuse;
         osg::Vec3 mLayerLightAmbient;
         osg::Vec3 mLayerLightDirection;

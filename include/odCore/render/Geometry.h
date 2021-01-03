@@ -15,8 +15,6 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include <odCore/RefCounted.h>
-
 #include <odCore/render/Array.h>
 
 namespace odRender
@@ -43,23 +41,23 @@ namespace odRender
      * In a split model, the vertex attributes can be shared among multiple geometries, so modifying
      * an array in one geometry might change it in all of the model's geometries.
      */
-    class Geometry : public od::RefCounted
+    class Geometry
     {
     public:
 
         virtual void setHasBoneInfo(bool b) = 0;
         virtual bool hasBoneInfo() const = 0;
-        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getBoneIndexArrayAccessHandler() = 0;
-        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getBoneWeightArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<glm::vec4> &getBoneIndexArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<glm::vec4> &getBoneWeightArrayAccessHandler() = 0;
 
-        virtual std::unique_ptr<ArrayAccessHandler<glm::vec3>> getVertexArrayAccessHandler() = 0;
-        virtual std::unique_ptr<ArrayAccessHandler<glm::vec4>> getColorArrayAccessHandler() = 0;
-        virtual std::unique_ptr<ArrayAccessHandler<glm::vec3>> getNormalArrayAccessHandler() = 0;
-        virtual std::unique_ptr<ArrayAccessHandler<glm::vec2>> getTextureCoordArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<glm::vec3> &getVertexArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<glm::vec4> &getColorArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<glm::vec3> &getNormalArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<glm::vec2> &getTextureCoordArrayAccessHandler() = 0;
 
-        virtual std::unique_ptr<ArrayAccessHandler<int32_t>> getIndexArrayAccessHandler() = 0;
+        virtual ArrayAccessHandler<int32_t> &getIndexArrayAccessHandler() = 0;
 
-        virtual void setTexture(Texture *texture) = 0;
+        virtual void setTexture(std::shared_ptr<Texture> texture) = 0;
 
         virtual bool usesIndexedRendering() = 0;
         virtual PrimitiveType getPrimitiveType() = 0;

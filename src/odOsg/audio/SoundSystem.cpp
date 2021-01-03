@@ -10,9 +10,24 @@
 #include <AL/al.h>
 
 #include <odCore/Exception.h>
+#include <odCore/ThreadUtils.h>
+
+#include <odCore/db/Sound.h>
+#include <odCore/db/MusicContainer.h>
+#include <odCore/db/Segment.h>
+
+#include <odCore/audio/music/SegmentPlayer.h>
 
 #include <odOsg/audio/Source.h>
+#include <odOsg/audio/StreamingSource.h>
 #include <odOsg/audio/Buffer.h>
+
+#ifdef USE_FLUIDSYNTH
+    #include <odOsg/audio/music/FluidSynth.h>
+#else
+    #include <odOsg/audio/music/DummySynth.h>
+    #include <odOsg/audio/music/StupidSineSynth.h>
+#endif
 
 namespace odOsg
 {
@@ -20,30 +35,33 @@ namespace odOsg
     SoundSystem::SoundSystem()
     : mContext() // only support default device for now
     , mTerminateFlag(false)
+    , mSegmentPlayer(nullptr)
     {
         mContext.makeCurrent();
 
         mWorkerThread = std::thread(&SoundSystem::_doWorkerStuff, this);
+        od::ThreadUtils::setThreadName(mWorkerThread, "sound worker");
     }
 
     SoundSystem::~SoundSystem()
     {
+        if(mMusicSource != nullptr)
+        {
+            mMusicSource->setBufferFillCallback(nullptr);
+        }
+
         mTerminateFlag = true;
-        mWorkerThread.join();
+        if(mWorkerThread.joinable()) mWorkerThread.join();
     }
 
     void SoundSystem::setListenerPosition(const glm::vec3 &pos)
     {
-        std::lock_guard<std::mutex> lock(mWorkerMutex);
-
         alListener3f(AL_POSITION, pos.x, pos.y, pos.z);
         doErrorCheck("Could not set listener position");
     }
 
     void SoundSystem::setListenerOrientation(const glm::vec3 &at, const glm::vec3 &up)
     {
-        std::lock_guard<std::mutex> lock(mWorkerMutex);
-
         float atAndUp[6] = { at.x, at.y, at.z,
                              up.x, up.y, up.z  };
 
@@ -53,30 +71,84 @@ namespace odOsg
 
     void SoundSystem::setListenerVelocity(const glm::vec3 &v)
     {
-        std::lock_guard<std::mutex> lock(mWorkerMutex);
-
         alListener3f(AL_VELOCITY, v.x, v.y, v.z);
         doErrorCheck("Could not set listener velocity");
     }
 
-    od::RefPtr<odAudio::Source> SoundSystem::createSource()
+    std::shared_ptr<odAudio::Source> SoundSystem::createSource()
     {
-        auto source = od::make_refd<Source>(*this);
+        auto source = std::make_shared<Source>(*this);
 
-        mSources.emplace_back(source.get());
+        std::lock_guard<std::mutex> lock(mWorkerMutex);
+        mSources.emplace_back(source);
 
-        return source.get();
+        return source;
     }
 
-    od::RefPtr<odAudio::Buffer> SoundSystem::createBuffer(odDb::Sound *sound)
+    std::shared_ptr<odAudio::Buffer> SoundSystem::createBuffer(std::shared_ptr<odDb::Sound> sound)
     {
-        auto buffer = od::make_refd<Buffer>(*this, sound);
-
-        return buffer.get();
+        return std::make_shared<Buffer>(*this, sound);
     }
 
     void SoundSystem::setEaxPreset(odAudio::EaxPreset preset)
     {
+        throw od::UnsupportedException("EAX is still unimplemented");
+    }
+
+    void SoundSystem::loadMusicContainer(const od::FilePath &rrcPath)
+    {
+        mMusicContainer = std::make_unique<odDb::MusicContainer>(rrcPath);
+
+#ifdef USE_FLUIDSYNTH
+        auto fluidSynth = std::make_unique<FluidSynth>();
+        fluidSynth->setMusicContainer(mMusicContainer.get());
+        mSynth = std::move(fluidSynth);
+#else
+        mSynth = std::make_unique<DummySynth>();
+        //mSynth = std::make_unique<StupidSineSynth>(5);
+#endif
+        mSegmentPlayer = std::make_unique<odAudio::SegmentPlayer>(*mSynth);
+
+        auto musicSource = std::make_shared<StreamingSource>(*this, 128, 64, true);
+        auto fillCallback = [this](int16_t *buffer, size_t size)
+        {
+            assert(size % 2 == 0);
+
+            mSynth->fillInterleavedStereoBuffer(buffer, size);
+
+            float passedTime = size/(2.0*mContext.getOutputFrequency());
+            mSegmentPlayer->update(passedTime);
+        };
+        musicSource->setBufferFillCallback(fillCallback);
+        mMusicSource = musicSource;
+
+        std::lock_guard<std::mutex> lock(mWorkerMutex);
+        mSources.emplace_back(musicSource);
+    }
+
+    void SoundSystem::playMusic(odAudio::MusicId musicId)
+    {
+        if(mMusicContainer == nullptr)
+        {
+            throw od::Exception("No music container loaded. Make sure to load one before trying to play music");
+        }
+
+        if(mSegmentPlayer == nullptr)
+        {
+            throw od::Exception("No segment player present. Seems like the music thread died");
+        }
+
+        auto segment = mMusicContainer->loadSegment(musicId);
+
+        mSegmentPlayer->setSegment(segment);
+        mSegmentPlayer->play();
+
+        mMusicSource->play(0.0);
+    }
+
+    void SoundSystem::stopMusic()
+    {
+        mSegmentPlayer->pause();
     }
 
     void SoundSystem::doErrorCheck(const std::string &failmsg)
@@ -129,15 +201,16 @@ namespace odOsg
 
             try
             {
+                std::lock_guard<std::mutex> lock(mWorkerMutex);
                 for(auto &weakSource : mSources)
                 {
-                    if(weakSource.isNonNull())
+                    auto source = weakSource.lock();
+                    if(source != nullptr)
                     {
-                        auto source = weakSource.aquire();
                         source->update(relTime);
                     }
 
-                    //TODO: maybe delete null entries here? leaving them in poses a minor memory leak
+                    //TODO: maybe delete expired entries here? leaving them in poses a minor memory leak
                     //  (not that severe since we don't create sources on the fly)
                 }
 
@@ -155,5 +228,3 @@ namespace odOsg
     }
 
 }
-
-

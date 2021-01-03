@@ -10,13 +10,12 @@
 #include <dragonRfl/RflDragon.h>
 #include <odCore/rfl/Rfl.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
 
 namespace dragonRfl
 {
 
-    PushableObject::PushableObject(DragonRfl &rfl)
+    PushableObject::PushableObject()
     : mWaitForTrigger(false)
     , mBurnable(false)
     , mBounceSounds({})
@@ -64,16 +63,13 @@ namespace dragonRfl
                 (mDamagePlayer, "Damage Player");
     }
 
-    void PushableObject::onSpawned(od::LevelObject &obj)
+    void PushableObject::onSpawned()
     {
     }
 
-    void PushableObject::onDespawned(od::LevelObject &obj)
+    void PushableObject::onDespawned()
     {
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, PushableObject);
 
 }
 

@@ -12,9 +12,10 @@
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
+#include <odCore/IdTypes.h>
+#include <odCore/Units.h>
 #include <odCore/DataStream.h>
 #include <odCore/BoundingBox.h>
-#include <odCore/OdDefines.h>
 #include <odCore/LightCallback.h>
 
 #include <odCore/db/Asset.h>
@@ -25,7 +26,13 @@
 
 namespace odPhysics
 {
+    class PhysicsSystem;
     class LayerHandle;
+}
+
+namespace odRender
+{
+    class Renderer;
 }
 
 namespace od
@@ -78,24 +85,27 @@ namespace od
         virtual ~Layer();
 
         inline Level &getLevel() { return mLevel; }
-        inline uint32_t getId() const { return mId; };
+        inline LayerId getId() const { return mId; };
         inline std::string getName() const { return mLayerName; };
-        inline std::vector<uint32_t> &getVisibleLayers() { return mVisibleLayers; };
+        inline std::vector<uint32_t> &getVisibleLayerIndices() { return mVisibleLayers; };
         inline uint32_t getOriginX() const { return mOriginX; }
         inline uint32_t getOriginZ() const { return mOriginZ; }
         inline uint32_t getWidth() const { return mWidth; }
         inline uint32_t getHeight() const { return mHeight; }
         inline float getWorldHeightWu() const { return mWorldHeightWu; }
-        inline float getWorldHeightLu() const { return OD_WORLD_SCALE * mWorldHeightWu; }
+        inline float getWorldHeightLu() const { return Units::worldUnitsToLengthUnits(mWorldHeightWu); }
         inline glm::vec3 getLightColor() const { return mLightColor; }
         inline glm::vec3 getAmbientColor() const { return mAmbientColor; }
         inline glm::vec3 getLightDirection() const { return mLightDirectionVector; } ///< Returns direction towards layer light
+        inline float getMinHeight() const { return mMinHeight; }
+        inline float getMaxHeight() const { return mMaxHeight; }
         inline const AxisAlignedBoundingBox &getBoundingBox() { return mBoundingBox; }
         inline const std::vector<Vertex> &getVertexVector() { return mVertices; }
         inline const std::vector<Cell> &getCellVector() { return mCells; }
         inline size_t getVisibleTriangleCount() const { return mVisibleTriangles; }
         inline size_t getCollidingTriangleCount() const { return mCollidingTriangles; }
         inline LayerType getLayerType() const { return mType; }
+        inline bool isSpawned() const { return mIsSpawned; }
 
         inline glm::vec3 getOrigin() const { return glm::vec3(mOriginX, getWorldHeightLu(), mOriginZ); }
 
@@ -122,7 +132,7 @@ namespace od
         void loadDefinition(DataReader &dr);
         void loadPolyData(DataReader &dr);
 
-        void spawn();
+        void spawn(odPhysics::PhysicsSystem &physicsSystem, odRender::Renderer *renderer);
         void despawn();
 
         /**
@@ -138,20 +148,20 @@ namespace od
 
         float getAbsoluteHeightAt(const glm::vec2 &xzCoord);
 
-        virtual void removeAffectingLight(od::Light *light) override;
-        virtual void addAffectingLight(od::Light *light) override;
+        virtual void removeAffectingLight(std::shared_ptr<od::Light> light) override;
+        virtual void addAffectingLight(std::shared_ptr<od::Light> light) override;
         virtual void clearLightList() override;
 
 
     private:
 
-        void _bakeStaticLight(od::Light *light);
+        void _bakeStaticLight(od::Light &light);
         void _bakeLocalLayerLight();
 
         void _calculateNormalsInternal();
 
         Level              	   &mLevel;
-        uint32_t                mId;
+        LayerId                 mId;
         uint32_t                mWidth;
         uint32_t                mHeight;
         LayerType               mType;
@@ -173,13 +183,17 @@ namespace od
         size_t mVisibleTriangles;
         size_t mCollidingTriangles;
 
+        float mMinHeight;
+        float mMaxHeight;
         AxisAlignedBoundingBox mBoundingBox;
 
-        od::RefPtr<odRender::Handle> mRenderHandle;
-        od::RefPtr<odRender::Model> mRenderModel;
-        od::RefPtr<odPhysics::LayerHandle> mPhysicsHandle;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odRender::Model> mRenderModel;
+        std::shared_ptr<odPhysics::LayerHandle> mPhysicsHandle;
 
         std::vector<glm::vec3> mLocalNormals; // temporary array, unused right now
+
+        bool mIsSpawned;
     };
 
 }

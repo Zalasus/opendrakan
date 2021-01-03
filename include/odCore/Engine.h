@@ -1,28 +1,18 @@
 /*
- * Engine.h
- *
- *  Created on: 14 Feb 2018
- *      Author: zal
+ * @file Engine.h
+ * @author zal
  */
 
 #ifndef INCLUDE_ENGINE_H_
 #define INCLUDE_ENGINE_H_
 
-#include <memory>
-#include <atomic>
+#include <cassert>
 
 #include <odCore/FilePath.h>
-
-#include <odCore/render/RendererEventListener.h>
 
 namespace odDb
 {
     class DbManager;
-}
-
-namespace odInput
-{
-    class InputManager;
 }
 
 namespace odRfl
@@ -30,83 +20,67 @@ namespace odRfl
     class RflManager;
 }
 
-namespace odRender
-{
-    class Renderer;
-}
-
-namespace odAudio
-{
-    class SoundSystem;
-}
-
 namespace odPhysics
 {
     class PhysicsSystem;
 }
 
+namespace odState
+{
+    class EventQueue;
+    class StateManager;
+}
+
 namespace od
 {
+    class Client;
+    class Server;
 
-    class Level;
+    /**
+     * @brief Variant for either an od::Client or an od::Server.
+     *
+     * For convenience, this provides access to subsystems both Client and
+     * Server can provide.
+     *
+     * This is strictly a *variant*. It is *not* meant as a container for both
+     * Client and Server at the same time even if both happen to exist in the
+     * same process like during startup or in a singleplayer game.
+     *
+     * TODO: why not make this an interface that Client and Server implement instead?
+     */
+    class Engine
+    {
+    public:
 
-	class Engine : public odRender::RendererEventListener
-	{
-	public:
+        Engine(Client &client);
+        Engine(Server &server);
 
-	    Engine();
-		Engine(Engine &e) = delete;
-		Engine(const Engine &e) = delete;
-		~Engine();
+        inline bool isServer() const { _assertValid(); return mServer != nullptr; }
+        inline bool isClient() const { _assertValid(); return mClient != nullptr; }
 
-		inline bool hasInitialLevelOverride() const { return mHasInitialLevelOverride; }
-		inline const FilePath &getInitialLevelOverride() const { return mInitialLevelOverride; }
-		inline void setInitialLevelOverride(const FilePath &level) { mInitialLevelOverride = level; mHasInitialLevelOverride = true; }
-		inline const FilePath &getEngineRootDir() const { return mEngineRootDir; }
-		inline odDb::DbManager &getDbManager() { return *mDbManager; }
-		inline odRfl::RflManager &getRflManager() { return *mRflManager; }
-		inline odInput::InputManager &getInputManager() { return *mInputManager; }
-		inline odRender::Renderer *getRenderer() { return mRenderer; }
-		inline odAudio::SoundSystem *getSoundSystem() { return mSoundSystem; }
-		inline Level &getLevel() { return *mLevel; } // FIXME: throw if no level present
-		inline bool isDone() { return mIsDone; }
-		inline void setDone(bool done) { mIsDone = done; }
+        od::Client &getClient();
+        od::Server &getServer();
 
+        const od::FilePath &getEngineRootDir() const;
+        odDb::DbManager &getDbManager();
+        odRfl::RflManager &getRflManager();
         odPhysics::PhysicsSystem &getPhysicsSystem();
-
-		void setRenderer(odRender::Renderer *renderer);
-		void setSoundSystem(odAudio::SoundSystem *soundSystem);
-
-		void setUp();
-		void run();
-
-		void loadLevel(const FilePath &levelFile);
-
-		virtual void onRenderWindowClosed() override;
+        odState::StateManager &getStateManager();
+        odState::EventQueue &getEventQueue();
 
 
-	private:
+    private:
 
-		void _findEngineRoot(const std::string &rrcFileName);
+        inline void _assertValid() const
+        {
+            assert((mClient != nullptr) != (mServer != nullptr));
+        }
 
-		// intrinsic subsystems. these _must_ be initialized before, and destroyed after all other engine property
-		std::unique_ptr<odDb::DbManager> mDbManager;
-		std::unique_ptr<odInput::InputManager> mInputManager;
-		std::unique_ptr<odRfl::RflManager> mRflManager;
-		std::unique_ptr<odPhysics::PhysicsSystem> mPhysicsSystem;
+        Client *mClient;
+        Server *mServer;
 
-		// external subsystems. these are managed from the outside, but still must live longer than this Engine object.
-		odRender::Renderer *mRenderer;
-		odAudio::SoundSystem *mSoundSystem;
-
-		bool mHasInitialLevelOverride;
-		FilePath mInitialLevelOverride;
-		FilePath mEngineRootDir;
-		std::unique_ptr<Level> mLevel;
-		bool mSetUp;
-		std::atomic_bool mIsDone;
-	};
+    };
 
 }
 
-#endif /* INCLUDE_ENGINE_H_ */
+#endif

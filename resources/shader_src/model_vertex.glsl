@@ -29,8 +29,9 @@ varying vec4 vertexColor;
         vec3 resultLightColor;
         
         // layer light first
+        //  note that the riot engine seems to add the layer ambient light twice
         float layerCosTheta = max(dot(normal_cs, layerLightDirection), 0.0);
-        resultLightColor = layerLightAmbient + layerLightDiffuse*layerCosTheta;
+        resultLightColor = 2*layerLightAmbient + layerLightDiffuse*layerCosTheta;
         
         #ifdef SPECULAR
             vec3 halfVector = normalize(layerLightDirection + normalize(-vertex_cs));

@@ -8,10 +8,10 @@
 #ifndef INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 #define INCLUDE_ODCORE_PHYSICS_HANDLES_H_
 
+#include <memory>
+#include <vector>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include <odCore/RefCounted.h>
 
 namespace od
 {
@@ -28,7 +28,12 @@ namespace odPhysics
     class LayerHandle;
     class LightHandle;
 
-    class Handle : public od::RefCounted
+    /*
+     * Note: This inherits from std::enable_shared_from_this because the Bullet implementation gives us no option to
+     * directly store a weak_ptr in a btCollisionObject, but callbacks need to get owned references to the associated handle.
+     * Unfortunately, that shortcoming forces us to make all handles inherit this. This will hopefully change in the future.
+     */
+    class Handle : public std::enable_shared_from_this<Handle>
     {
     public:
 
@@ -116,13 +121,59 @@ namespace odPhysics
     public:
 
         virtual LightHandle *asLightHandle() override;
-
         virtual Type getHandleType() override;
 
-        virtual void setRadius(float radius) = 0;
-        virtual void setPosition(const glm::vec3 &pos) = 0;
+        /**
+         * @brief Sets the radius around the center in which objects are affected by this.
+         *
+         * If modifyLight is true (the default), the underlying light source will be modified to reflect
+         * this change (a light source's rendered radius and it's radius of effect may differ).
+         *
+         * Note that this will not trigger a light dispatch at the moment. You have to call PhysicsSystem::dispatchLighting()
+         * yourself to make other objects notice this.
+         *
+         * @param modifyLight  If true, the underlying light source will also adopt this value.
+         */
+        virtual void setRadius(float radius, bool modifyLight = true) = 0;
 
-        virtual od::Light &getLight() = 0;
+        /**
+         * @brief Sets the position/center of this light.
+         *
+         * If modifyLight is true (the default), the underlying light source will be modified to reflect
+         * this change (a light source's rendered position and it's center of effect may differ).
+         *
+         * Note that this will not trigger a light dispatch at the moment. You have to call PhysicsSystem::dispatchLighting()
+         * yourself to make other objects notice this.
+         *
+         * @param modifyLight  If true, the underlying light source will also adopt this value.
+         */
+        virtual void setPosition(const glm::vec3 &pos, bool modifyLight = true) = 0;
+
+        /**
+         * @brief Returns the internal light source that determines how this LightHandle will be rendered.
+         *
+         * Changes of the returned reference's properties will be reflected by the renderer. Note that
+         * changing the returned object's position or radius will *not* cause light affection to be updated.
+         */
+        virtual std::shared_ptr<od::Light> getLight() = 0;
+
+        /**
+         * @brief Registers the passed handle as being affected by this light.
+         */
+        void addAffectedHandle(std::shared_ptr<Handle> handle);
+
+        /**
+         * @brief Removes this light from all affected handles, then clears the list of affected handles.
+         *
+         * This is used before updating a light so all objects that were previously affected are cleared.
+         * Should they turn out to still be affected, they will be re-added by the update.
+         */
+        void clearLightAffection();
+
+
+    private:
+
+        std::vector<std::weak_ptr<Handle>> mAffectedHandles;
 
     };
 

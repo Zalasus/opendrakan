@@ -8,11 +8,13 @@
 #ifndef INCLUDE_RFL_PREFETCHPROBE_H_
 #define INCLUDE_RFL_PREFETCHPROBE_H_
 
+#include <memory>
+
 #include <odCore/rfl/FieldProbe.h>
 
 namespace odDb
 {
-    class AssetProvider;
+    class DependencyTable;
 }
 
 namespace odRfl
@@ -22,14 +24,14 @@ namespace odRfl
     {
     public:
 
-        PrefetchProbe(odDb::AssetProvider &ap, bool ignoreMissing = true);
+        PrefetchProbe(std::shared_ptr<odDb::DependencyTable> dt, bool ignoreMissing = true);
 
         virtual void registerField(AssetRefField &field, const char *fieldName) override;
 
 
     private:
 
-        odDb::AssetProvider &mAssetProvider;
+        std::shared_ptr<odDb::DependencyTable> mDependencyTable;
         bool mIgnoreMissing;
 
     };

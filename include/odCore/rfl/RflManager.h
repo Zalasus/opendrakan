@@ -11,8 +11,9 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <type_traits>
 
-#include <odCore/rfl/RflEventInterface.h>
+#include <odCore/FilePath.h>
 
 namespace od
 {
@@ -24,20 +25,59 @@ namespace odRfl
     class Rfl;
     class RflRegistrar;
 
-    class RflManager : public RflEventInterface
+    class RflManager
     {
     public:
 
-        RflManager(od::Engine &e);
+        RflManager();
 
+        /**
+         * @brief Finds a loaded RFL with the given name, ignoring case.
+         */
         Rfl *getRfl(const std::string &name);
 
-        virtual void onStartup() override;
+        /**
+         * @brief Loads a statically linked RFL.
+         *
+         * Pass the RFL class as a template argument.
+         *
+         * @return The RFL instance that was just loaded.
+         */
+        template <typename _Rfl>
+        Rfl &loadStaticRfl()
+        {
+            static_assert(std::is_base_of<Rfl, _Rfl>::value, "Template argument to loadStaticRfl must inherit from odRfl::Rfl");
+
+            auto newRfl = std::make_unique<_Rfl>();
+            auto &rflRef = *newRfl;
+            _addRflAndCallLoadHook(std::move(newRfl));
+
+            return rflRef;
+        }
+
+        /**
+         * @brief Loads an RFL from a dynamic library.
+         * @brief The RFL instance that was just loaded.
+         */
+        Rfl &loadDynamicRfl(const od::FilePath &libPath);
+
+        size_t getLoadedRflCount() const { return mLoadedRfls.size(); }
+        Rfl &getLoadedRflByIndex(size_t i) { return *mLoadedRfls[i]; }
+
+        template <typename T>
+        void forEachLoadedRfl(const T &functor)
+        {
+            for(auto &rfl : mLoadedRfls)
+            {
+                functor(*rfl);
+            }
+        }
 
 
     private:
 
-        od::Engine &mEngine;
+        void _addRflAndCallLoadHook(std::unique_ptr<Rfl> rfl);
+
         std::vector<std::unique_ptr<Rfl>> mLoadedRfls;
     };
 

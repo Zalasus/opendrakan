@@ -7,8 +7,13 @@
 
 #include <odCore/Exception.h>
 
+#include <sstream>
+
 namespace od
 {
+    Exception::Exception()
+	{
+	}
 
 	Exception::Exception(const std::string &msg)
 	: mMsg(msg)
@@ -43,5 +48,24 @@ namespace od
 	: Exception(msg)
 	{
 	}
+
+
+    UnreachableException::UnreachableException(const char *file, const char *function, int line)
+    {
+        std::ostringstream oss;
+        oss << "Reached supposedly unreachable code in function " << function
+            << " in file " << file << " @ line " << line;
+        mMsg = oss.str();
+    }
+
+
+    UnimplementedException::UnimplementedException(const char *file, const char *function, int line)
+    {
+        std::ostringstream oss;
+        oss << "Function " << function
+            << " in file " << file << " @ line " << line
+            << " is unimplemented";
+        mMsg = oss.str();
+    }
 
 }

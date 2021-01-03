@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ODOSG_TEXTURE_H_
 #define INCLUDE_ODOSG_TEXTURE_H_
 
+#include <memory>
 #include <osg/Texture2D>
 
 #include <odCore/render/Texture.h>
@@ -20,7 +21,7 @@ namespace odOsg
     {
     public:
 
-        explicit Texture(Image *image);
+        explicit Texture(std::shared_ptr<Image> image);
         virtual ~Texture();
 
         inline osg::Texture2D *getOsgTexture() { return mTexture; }
@@ -32,7 +33,7 @@ namespace odOsg
 
     private:
 
-        od::RefPtr<odOsg::Image> mImage;
+        std::shared_ptr<odOsg::Image> mImage;
 
         osg::ref_ptr<osg::Texture2D> mTexture;
 

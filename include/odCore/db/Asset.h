@@ -8,25 +8,37 @@
 #ifndef INCLUDE_ASSET_H_
 #define INCLUDE_ASSET_H_
 
+#include <memory>
+
 #include <odCore/SrscFile.h>
-#include <odCore/RefCounted.h>
+
+#include <odCore/db/AssetRef.h>
 
 namespace odDb
 {
 
-	class AssetProvider;
+    class DependencyTable;
 
-	class Asset : public od::RefCounted
+	class Asset
 	{
 	public:
 
-		Asset(AssetProvider &ap, od::RecordId assetId);
-		Asset(Asset &a) = delete;
+		Asset();
 		Asset(const Asset &a) = delete;
 		virtual ~Asset();
 
+        inline AssetRef getLocalAssetRef() const { return AssetRef(mId, AssetRef::SELF_DBINDEX); }
 		inline od::RecordId getAssetId() const { return mId; }
-		inline AssetProvider &getAssetProvider() { return mAssetProvider; };
+        inline std::shared_ptr<DependencyTable> getDependencyTable() { return mDependencyTable; }
+
+        /**
+         * @brief Only to be used by AssetFactory during loading.
+         *
+         * We pass these values through a setter to reduce redundant constructors in asset types.
+         */
+        void setDepTableAndId(std::shared_ptr<DependencyTable> depTable, od::RecordId assetId);
+
+        GlobalAssetRef getGlobalAssetRef() const;
 
 		/**
 		 * Implemented by an asset to facilitate loading from a record.
@@ -51,7 +63,7 @@ namespace odDb
 
 	private:
 
-		AssetProvider &mAssetProvider;
+        std::shared_ptr<DependencyTable> mDependencyTable;
 		od::RecordId mId;
 
 	};
@@ -62,36 +74,6 @@ namespace odDb
 	    static const char *name();
 	    static constexpr od::RecordType baseType();
 	};
-
-	/**
-	 * Structure for representing a Record-ID & Database-Index pair as they
-	 * appear all over the engines files when referencing another asset.
-	 */
-	struct AssetRef
-	{
-		AssetRef() : assetId(0), dbIndex(0) {}
-		AssetRef(od::RecordId id, uint16_t index) : assetId(id), dbIndex(index) {}
-
-		od::RecordId assetId;
-		uint16_t dbIndex;
-
-		// so we can use this in a map
-		bool operator<(const AssetRef &right) const;
-
-		bool operator==(const AssetRef &right) const;
-		inline bool operator!=(const AssetRef &right) const { return !(this->operator==(right)); }
-
-		/**
-		 * @brief Checks if this is a null reference i.e. not referencing anything. Not applicable to layer textures.
-		 */
-		inline bool isNull() const { return dbIndex == 0 && assetId == 0; }
-
-		static const AssetRef NULL_REF;
-	};
-
-	od::DataReader &operator>>(od::DataReader &left, AssetRef &right);
-
-	std::ostream &operator<<(std::ostream &left, const AssetRef &right);
 
 }
 

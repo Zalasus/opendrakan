@@ -8,92 +8,105 @@
 #ifndef INCLUDE_RFL_DRAGON_DETECTOR_H_
 #define INCLUDE_RFL_DRAGON_DETECTOR_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
+#include <odCore/rfl/DummyClass.h>
 
 #include <odCore/physics/Handles.h>
 #include <odCore/physics/PhysicsSystem.h>
 
 namespace dragonRfl
 {
-    class DragonRfl;
 
-    class Detector : public odRfl::RflClass
+    struct DetectorFields final : public odRfl::FieldBundle
     {
-    public:
 
         enum class Task
         {
-            TransferLink,
-            EnableDisableSaving,
-            MessageScreen,
-            NoFlyZone,
-            PlaySequence,
-            Reserved,
-            TriggerOnly,
-            CaveEntrance,
-            Message,
-            TeleportDragon
+            TRANSFER_LINK,
+            ENABLE_DISABLE_SAVING,
+            MESSAGE_SCREEN,
+            NO_FLY_ZONE,
+            PLAY_SEQUENCE,
+            RESERVED,
+            TRIGGER_ONLY,
+            CAVE_ENTRANCE,
+            MESSAGE,
+            TELEPORT_DRAGON
         };
         typedef odRfl::EnumImpl<Task, 0, 9> EnumTask;
 
         enum class DetectWhich
         {
-            RynnOnGround,
-            RynnOnDragon,
-            Both, // both of the above! not rynn or dragon!
-            RynnOrDragonOrNpcs
+            RYNN_ON_GROUND,
+            RYNN_ON_DRAGON,
+            BOTH, // both of the above! not rynn or dragon!
+            RYNN_ON_DRAGON_OR_NPCS
         };
         typedef odRfl::EnumImpl<DetectWhich, 0, 3> EnumDetectWhich;
 
         enum class DetectMethod
         {
-            OutsideToInside,
-            InsideToOutside
+            OUTSIDE_TO_INSIDE,
+            INSIDE_TO_OUTSIDE
         };
         typedef odRfl::EnumImpl<DetectMethod, 0, 1> EnumDetectMethod;
 
         enum class InitialState
         {
-            Enabled, // yeah, they honestly thought 0 would be good for indicating enabled
-            Disabled
+            ENABLED, // yeah, they honestly thought 0 would be good for indicating enabled
+            DISABLED
         };
         typedef odRfl::EnumImpl<InitialState, 0, 1> EnumInitialState;
 
-        Detector(DragonRfl &rfl);
+        DetectorFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
+
+        EnumTask            task;
+        EnumDetectWhich     detectWhich;
+        EnumDetectMethod    detectMethod;
+        odRfl::EnumYesNo    oneWay;
+        odRfl::ClassRef     triggerOnlyIfCarryingItem;
+        EnumInitialState    initialState;
+        odRfl::EnumMessage  triggerMessage;
+        odRfl::EnumYesNo    detectOnlyOnce;
+        odRfl::SequenceRef  sequenceToPlay;
+        odRfl::String       messageString;
+        odRfl::EnumYesNo    doesCaveEntranceTeleport;
+        odRfl::EnumYesNo    dragonTakesOffUponTeleport;
+    };
 
 
-    protected:
+    class Detector_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<Detector_Sv>
+    {
+    public:
 
-        EnumTask            mTask;
-        EnumDetectWhich     mDetectWhich;
-        EnumDetectMethod    mDetectMethod;
-        odRfl::EnumYesNo    mOneWay;
-        odRfl::ClassRef     mTriggerOnlyIfCarryingItem;
-        EnumInitialState    mInitialState;
-        odRfl::EnumMessage  mTriggerMessage;
-        odRfl::EnumYesNo    mDetectOnlyOnce;
-        odRfl::SequenceRef  mSequenceToPlay;
-        odRfl::String       mMessageString;
-        odRfl::EnumYesNo    mDoesCaveEntranceTeleport;
-        odRfl::EnumYesNo    mDragonTakesOffUponTeleport;
+        Detector_Sv();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime) override;
+
 
     private:
 
-        DragonRfl &mRfl;
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
+        DetectorFields mFields;
+
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
         odPhysics::ContactTestResultVector mResultCache;
         bool mPlayerWasIn;
     };
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x003d, "System", "Detector", dragonRfl::Detector);
+    using DetectorFactory = odRfl::ServerOnlyClassFactory<DetectorFields, Detector_Sv>;
+
+
+    OD_DEFINE_CLASS(Detector, 0x003d, "System", "Detector", DetectorFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_DETECTOR_H_ */

@@ -12,12 +12,14 @@
 
 #include <glm/vec4.hpp>
 
-#include <odCore/rfl/RflMessage.h>
+#include <odCore/Message.h>
 #include <odCore/DataStream.h>
 #include <odCore/Exception.h>
 
 namespace odRfl
 {
+
+    // TODO: with our visitor pattern FieldProbe, most of these don't have to be virtual. devirtualize them!!!
 
     /**
      * Common parent to all Fields.
@@ -37,7 +39,7 @@ namespace odRfl
             CHAR_CHANNEL    = 0x08,
             ANIMATION       = 0x09,
             STRING          = 0x0a,
-            SEUQUENCE       = 0x0b,
+            SEQUENCE        = 0x0b,
             TEXTURE         = 0x0e,
             COLOR           = 0x0f
         };
@@ -114,6 +116,11 @@ namespace odRfl
     class Color : public PodField<uint32_t, Field::Type::COLOR>
     {
     public:
+
+        Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255)
+        : PodField<uint32_t, Field::Type::COLOR>((a << 24) | (r << 16) | (g << 8) | b)
+        {
+        }
 
         using PodField<uint32_t, Field::Type::COLOR>::PodField;
 
@@ -201,7 +208,7 @@ namespace odRfl
 
     typedef EnumImpl<uint32_t>          Enum;
     typedef EnumImpl<bool, 0, 1>        EnumYesNo;
-    typedef EnumImpl<RflMessage, 0, 9>  EnumMessage;
+    typedef EnumImpl<od::Message, 0, 9> EnumMessage;
 
 }
 

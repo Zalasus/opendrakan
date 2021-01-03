@@ -7,7 +7,6 @@
 
 #include <odCore/rfl/DefaultObjectClass.h>
 
-#include <odCore/Engine.h>
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
@@ -24,6 +23,23 @@
 namespace odRfl
 {
 
+    static void _assignLayerLight(odRender::Handle *handle, od::Layer *layer)
+    {
+        std::lock_guard<std::mutex> lock(handle->getMutex());
+        if(layer != nullptr)
+        {
+            handle->setGlobalLight(layer->getLightDirection(), layer->getLightColor(), layer->getAmbientColor());
+
+        }else
+        {
+            handle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(0));
+        }
+    }
+
+    DefaultObjectClass::DefaultObjectClass()
+    {
+    }
+
     DefaultObjectClass::~DefaultObjectClass()
     {
     }
@@ -32,70 +48,134 @@ namespace odRfl
     {
     }
 
-    void DefaultObjectClass::onSpawned(od::LevelObject &obj)
+    void DefaultObjectClass::onSpawned()
     {
+        od::LevelObject &obj = getLevelObject();
+
         // create render node if applicable
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
+        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
         if(renderer != nullptr && obj.getClass()->hasModel())
         {
             mRenderHandle = renderer->createHandleFromObject(obj);
+
+            od::Layer *lightingLayer = obj.getLightSourceLayer();
+            if(lightingLayer == nullptr) lightingLayer = obj.getAssociatedLayer();
+            _assignLayerLight(mRenderHandle, lightingLayer);
         }
 
         // if we created a rendering handle, create physics handle, too
-        odPhysics::PhysicsSystem &ps = obj.getLevel().getEngine().getPhysicsSystem();
+        odPhysics::PhysicsSystem &ps = obj.getLevel().getPhysicsSystem(); // FIXME: get this from Client when we implement split-classes
         if(obj.getClass()->hasModel())
         {
             bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;
             mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
 
             mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
+            mLightReceiver->updateAffectingLights();
         }
-
-        _updateLighting(obj);
     }
 
-    void DefaultObjectClass::onDespawned(od::LevelObject &obj)
+    void DefaultObjectClass::onDespawned()
     {
         mRenderHandle = nullptr;
         mPhysicsHandle = nullptr;
         mLightReceiver = nullptr;
     }
 
-    void DefaultObjectClass::onMoved(od::LevelObject &obj)
+    void DefaultObjectClass::onTransformChanged()
     {
-        _updateLighting(obj);
-    }
-
-    void DefaultObjectClass::_updateLighting(od::LevelObject &obj)
-    {
-        if(mRenderHandle != nullptr)
-        {
-            od::Layer *lightingLayer;
-            if(obj.getLightSourceLayer() != nullptr)
-            {
-                lightingLayer = obj.getLightSourceLayer();
-
-            }else
-            {
-                // a slight upwards offset fixes many lighting issues with objects whose origin is exactly on the ground
-                glm::vec3 probePoint = obj.getPosition() + glm::vec3(0, 0.1, 0);
-                lightingLayer = obj.getLevel().getFirstLayerBelowPoint(probePoint);
-            }
-
-            if(lightingLayer != nullptr)
-            {
-                mRenderHandle->setGlobalLight(lightingLayer->getLightDirection(), lightingLayer->getLightColor(), lightingLayer->getAmbientColor());
-
-            }else
-            {
-                mRenderHandle->setGlobalLight(glm::vec3(1,0,0), glm::vec3(0), glm::vec3(0));
-            }
-        }
+        od::LevelObject &obj = getLevelObject();
 
         if(mLightReceiver != nullptr)
         {
             mLightReceiver->updateAffectingLights();
         }
+
+        if(mRenderHandle != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setPosition(obj.getPosition());
+            mRenderHandle->setOrientation(obj.getRotation());
+            mRenderHandle->setScale(obj.getScale());
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setPosition(obj.getPosition());
+            mPhysicsHandle->setOrientation(obj.getRotation());
+            mPhysicsHandle->setScale(obj.getScale());
+        }
+    }
+
+    void DefaultObjectClass::onVisibilityChanged()
+    {
+        if(mRenderHandle != nullptr)
+        {
+            std::lock_guard<std::mutex> lock(mRenderHandle->getMutex());
+            mRenderHandle->setVisible(getLevelObject().isVisible());
+        }
+
+        if(mPhysicsHandle != nullptr)
+        {
+            mPhysicsHandle->setEnableCollision(getLevelObject().isVisible());
+        }
+    }
+
+    void DefaultObjectClass::onLayerChanged(od::Layer *from, od::Layer *to)
+    {
+        if(mRenderHandle != nullptr && getLevelObject().getLightSourceLayer() == nullptr)
+        {
+            _assignLayerLight(mRenderHandle, to);
+        }
+    }
+
+
+    void DefaultServerObjectClass::probeFields(FieldProbe &probe)
+    {
+    }
+
+
+    void DefaultClientObjectClass::probeFields(FieldProbe &probe)
+    {
+    }
+
+    void DefaultClientObjectClass::onSpawned()
+    {
+        od::LevelObject &obj = getLevelObject();
+
+        // create render node if applicable
+        odRender::Renderer *renderer = nullptr; //obj.getLevel().getEngine().getRenderer();
+        if(renderer != nullptr && obj.getClass()->hasModel())
+        {
+            mRenderHandle = renderer->createHandleFromObject(obj);
+
+            od::Layer *lightingLayer = obj.getLightSourceLayer();
+            if(lightingLayer == nullptr) lightingLayer = obj.getAssociatedLayer();
+            _assignLayerLight(mRenderHandle, lightingLayer);
+        }
+
+        // if we created a rendering handle, create physics handle, too
+        odPhysics::PhysicsSystem &ps = obj.getLevel().getPhysicsSystem();
+        if(obj.getClass()->hasModel())
+        {
+            bool hasCollision = obj.getClass()->getModel()->getModelBounds().getShapeCount() != 0;
+            mPhysicsHandle = ps.createObjectHandle(obj, !hasCollision);
+
+            mLightReceiver = std::make_unique<od::ObjectLightReceiver>(ps, mPhysicsHandle, mRenderHandle);
+            mLightReceiver->updateAffectingLights();
+        }
+    }
+
+    void DefaultClientObjectClass::onDespawned()
+    {
+        mRenderHandle = nullptr;
+        mPhysicsHandle = nullptr;
+        mLightReceiver = nullptr;
+    }
+
+    void DefaultClientObjectClass::onVisibilityChanged()
+    {
+
     }
 
 }

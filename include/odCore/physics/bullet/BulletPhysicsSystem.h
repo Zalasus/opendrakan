@@ -15,14 +15,13 @@
 #include <BulletCollision/CollisionDispatch/btCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionDispatcher.h>
 #include <BulletCollision/CollisionDispatch/btCollisionWorld.h>
-
-#include <odCore/WeakRefPtr.h>
+#include <BulletCollision/CollisionShapes/btSphereShape.h>
 
 #include <odCore/physics/PhysicsSystem.h>
 
-namespace od
+namespace odRender
 {
-    class Engine;
+    class Renderer;
 }
 
 namespace odBulletPhysics
@@ -37,23 +36,28 @@ namespace odBulletPhysics
      * Since this is a non-optional component and I have no plans to provide alternatives to bullet yet,
      * this still is contained within the engine core, making Bullet a dependency.
      */
-    class BulletPhysicsSystem : public odPhysics::PhysicsSystem
+    class BulletPhysicsSystem final : public odPhysics::PhysicsSystem
     {
     public:
 
-        BulletPhysicsSystem(od::Engine &engine);
+        /**
+         * @param renderer  Optional renderer. If non-null, will be used for debug drawing
+         */
+        explicit BulletPhysicsSystem(odRender::Renderer *renderer);
         virtual ~BulletPhysicsSystem();
 
         virtual size_t rayTest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::RayTestResultVector &resultsOut) override;
-        virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::Handle *exclude, odPhysics::RayTestResult &resultOut) override;
+        virtual bool rayTestClosest(const glm::vec3 &from, const glm::vec3 &to, odPhysics::PhysicsTypeMasks::Mask typeMask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &resultOut) override;
 
-        virtual size_t contactTest(odPhysics::Handle *handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
+        virtual size_t contactTest(std::shared_ptr<odPhysics::Handle> handle, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
 
-        virtual od::RefPtr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
-        virtual od::RefPtr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
-        virtual od::RefPtr<odPhysics::LightHandle>  createLightHandle(od::Light &light) override;
+        virtual void sphereTest(const glm::vec3 &position, float radius, odPhysics::PhysicsTypeMasks::Mask typeMask, odPhysics::ContactTestResultVector &resultsOut) override;
 
-        virtual od::RefPtr<odPhysics::ModelShape> createModelShape(odDb::Model &model) override;
+        virtual std::shared_ptr<odPhysics::ObjectHandle> createObjectHandle(od::LevelObject &obj, bool isDetector) override;
+        virtual std::shared_ptr<odPhysics::LayerHandle>  createLayerHandle(od::Layer &layer) override;
+        virtual std::shared_ptr<odPhysics::LightHandle>  createLightHandle(const od::Light &light) override;
+
+        virtual std::shared_ptr<odPhysics::ModelShape> createModelShape(std::shared_ptr<odDb::Model> model) override;
 
         virtual void setEnableDebugDrawing(bool enable) override;
         virtual bool isDebugDrawingEnabled() override;
@@ -70,6 +74,10 @@ namespace odBulletPhysics
         std::unique_ptr<btCollisionDispatcher> mDispatcher; // depends on mCollisionConfiguration. init after that
         std::unique_ptr<btGhostPairCallback> mGhostPairCallback;
         std::unique_ptr<btCollisionWorld> mCollisionWorld;
+
+        // a sphere object that is used for all sphere tests
+        std::unique_ptr<btCollisionObject> mSphereObject;
+        std::unique_ptr<btSphereShape> mSphereShape;
 
         std::unique_ptr<DebugDrawer> mDebugDrawer;
     };

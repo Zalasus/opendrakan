@@ -48,220 +48,301 @@ namespace od
 
 	std::istream &DataReader::getStream()
 	{
-	    if(mStream == nullptr)
-	    {
-	        throw Exception("Called getStream() on DataReaer without assigned stream");
-	    }
+	    _checkStream();
 
 	    return *mStream;
 	}
 
 	void DataReader::ignore(size_t n)
 	{
-		for(size_t i = 0; i < n; ++i)
-		{
-			_getNext();
-		}
+        _checkStream();
+
+        mStream->ignore(n);
+        if(mStream->eof())
+        {
+            throw IoException("Unexpected EOF while ignoring characters");
+
+        }else if(mStream->fail())
+        {
+             throw IoException("Failed to ignore characters");
+        }
 	}
 
 	void DataReader::seek(size_t offset)
 	{
-	    if(mStream == nullptr)
-	    {
-	        throw Exception("Called seek() on DataReader without assigned stream");
-	    }
+	    _checkStream();
 
 		mStream->seekg(offset);
 	}
 
 	size_t DataReader::tell()
 	{
-		if(mStream == nullptr)
-        {
-            throw Exception("Called tell() on DataReader without assigned stream");
-        }
+		_checkStream();
 
 		return mStream->tellg();
 	}
 
 	void DataReader::read(char *data, size_t size)
 	{
-	    if(mStream == nullptr)
-	    {
-	        throw Exception("Called read() on a DataReader without assigned stream");
-	    }
+        _checkStream();
 
 		mStream->read(data, size);
 
-		size_t charsRead = mStream->gcount();
-		if(charsRead != size)
+		if(mStream->eof())
 		{
-		    throw IoException("DataReader encountered unexpected EOF while reading block of data");
+            throw IoException("Unexpected EOF while reading block of data");
+
+        }else if(mStream->fail())
+        {
+		    throw IoException("Failed to read block of data");
 		}
 	}
 
-	uint8_t DataReader::_getNext()
-	{
-	    if(mStream == nullptr)
-	    {
-	        throw IoException("Tried to read from DataReader without assigned stream");
-	    }
-
-		int c = mStream->get();
-
-		if(c == std::istream::traits_type::eof())
-		{
-			throw IoException("DataReader encountered unexpected EOF");
-		}
-
-		return c;
-	}
-
-    DataReader &DataReader::operator >> (const DataReader::Ignore &i)
+    void DataReader::readTyped(const Ignore &i)
     {
+        _checkStream();
+
 	    this->ignore(i.getCount());
-
-        return *this;
     }
 
-	template <>
-	DataReader &DataReader::operator >> <uint64_t>(uint64_t &l)
-	{
-		_stupidlyReadIntegral<uint64_t>(l);
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <uint32_t>(uint32_t &i)
-	{
-		_stupidlyReadIntegral<uint32_t>(i);
-
-		return *this;
-	}
-
-    template <>
-    DataReader &DataReader::operator >> <uint16_t>(uint16_t &s)
-	{
-		_stupidlyReadIntegral<uint16_t>(s);
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <uint8_t>(uint8_t &b)
-	{
-		b = _getNext();
-
-		return *this;
-	}
-
-	template <>
-	DataReader &DataReader::operator >> <int64_t>(int64_t &l)
-	{
-		_stupidlyReadIntegral<int64_t>(l);
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <int32_t>(int32_t &i)
-	{
-		_stupidlyReadIntegral<int32_t>(i);
-
-		return *this;
-	}
-
-    template <>
-    DataReader &DataReader::operator >> <int16_t>(int16_t &s)
-	{
-		_stupidlyReadIntegral<int16_t>(s);
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <int8_t>(int8_t &b)
-	{
-		b = _getNext();
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <char>(char &b)
-	{
-		b = _getNext();
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <float>(float &f)
-	{
-		union
-		{
-			float v;
-			char data[sizeof(v)];  // evil!
-		};
-
-		for(uint8_t i = 0; i < sizeof(v); ++i)
-		{
-			data[i] = _getNext();
-		}
-
-		f = v;
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <double>(double &d)
-	{
-		union
-		{
-			double v;
-			char data[sizeof(v)];  // evil!
-		};
-
-		for(uint8_t i = 0; i < sizeof(v); ++i)
-		{
-			data[i] = _getNext();
-		}
-
-		d = v;
-
-		return *this;
-	}
-
-    template <>
-	DataReader &DataReader::operator >> <std::string>(std::string &s)
-	{
-		uint16_t len;
-		*this >> len;
-		if(len == 0)
-		{
-			s = "";
-			return *this;
-		}
-
-		std::vector<char> buf(len+1, 0);
-		read(buf.data(), len);
-
-		s.assign(buf.data());
-
-		return *this;
-	}
-
-
-    MemBuffer::MemBuffer(char *begin, char *end)
-    : mBegin(begin)
-    , mEnd(end)
+    template <typename T>
+    static void _readIntegral(DataReader &dr, T &value)
     {
-    	this->setg(begin, begin, end);
+        using ValType = typename std::remove_reference<T>::type;
+        using UnsignedValType = typename std::make_unsigned<T>::type;
+
+        // read into byte array first, then combine to value (only one IO call).
+        //  using bitshifts makes this endianess-independent.
+        uint8_t bytes[sizeof(ValType)];
+        dr.read(reinterpret_cast<char*>(&bytes[0]), sizeof(ValType));
+
+        ValType tempValue = 0;
+        for(size_t i = 0; i < sizeof(ValType); ++i)
+        {
+            tempValue |= static_cast<UnsignedValType>(bytes[i]) << (i*8);
+        }
+
+        value = tempValue;
     }
 
-    std::streampos MemBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+	template <>
+	void DataReader::readTyped<uint64_t>(uint64_t &v)
+	{
+		_readIntegral(*this, v);
+	}
+
+    template <>
+	void DataReader::readTyped<uint32_t>(uint32_t &v)
+    {
+		_readIntegral(*this, v);
+	}
+
+    template <>
+    void DataReader::readTyped<uint16_t>(uint16_t &v)
+    {
+		_readIntegral(*this, v);
+	}
+
+    template <>
+	void DataReader::readTyped<uint8_t>(uint8_t &v)
+    {
+		_readIntegral(*this, v);
+	}
+
+	template <>
+	void DataReader::readTyped<int64_t>(int64_t &v)
+    {
+		_readIntegral(*this, v);
+	}
+
+    template <>
+	void DataReader::readTyped<int32_t>(int32_t &v)
+    {
+		_readIntegral(*this, v);
+	}
+
+    template <>
+    void DataReader::readTyped<int16_t>(int16_t &v)
+    {
+		_readIntegral(*this, v);
+	}
+
+    template <>
+	void DataReader::readTyped<int8_t>(int8_t &v)
+    {
+		this->read(reinterpret_cast<char*>(v), 1);
+	}
+
+    template <>
+	void DataReader::readTyped<char>(char &v)
+	{
+		this->read(reinterpret_cast<char*>(v), 1);
+	}
+
+    template <>
+	void DataReader::readTyped<float>(float &v)
+	{
+        // FIXME: host endianess dependent
+		auto valuePtr = reinterpret_cast<char*>(&v);
+        this->read(valuePtr, sizeof(v));
+	}
+
+    template <>
+	void DataReader::readTyped<double>(double &v)
+	{
+        // FIXME: host endianess dependent
+		auto valuePtr = reinterpret_cast<char*>(&v);
+        this->read(valuePtr, sizeof(v));
+	}
+
+    template <>
+	void DataReader::readTyped<std::string>(std::string &s)
+	{
+		uint16_t length;
+		*this >> length;
+		if(length == 0)
+		{
+			s.clear();
+			return;
+		}
+
+		s.resize(length);
+        this->read(&s[0], length);
+
+        // since the padding is included in the length field, we have to
+        //  manually trim it off if it exists
+        if(s.back() == '\0')
+        {
+            s.resize(length-1);
+        }
+	}
+
+    void DataReader::_checkStream()
+    {
+        if(mStream == nullptr)
+	    {
+	        throw Exception("Tried to use a DataReader without assigned stream");
+	    }
+    }
+
+
+    DataWriter::DataWriter(std::ostream &out)
+    : mStream(&out)
+    {
+    }
+
+    template <typename T>
+    static void _writeIntegral(DataWriter &dw, T value)
+    {
+        static_assert(std::is_integral<T>::value, "T must be integral");
+
+        // turn value into byte array first, then write it out (only one IO call).
+        //  using bitshifts makes this endianess-independent.
+        uint8_t bytes[sizeof(T)];
+        for(size_t i = 0; i < sizeof(T); ++i)
+        {
+            bytes[i] = (value >> i*8) & 0xff;
+        }
+
+        dw.write(reinterpret_cast<const char*>(&bytes[0]), sizeof(T));
+    }
+
+    // you figure out this SFINAE stuff. I'm done.
+    template <>
+    void DataWriter::writeTyped<uint8_t>(const uint8_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint16_t>(const uint16_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint32_t>(const uint32_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<uint64_t>(const uint64_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int8_t>(const int8_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int16_t>(const int16_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int32_t>(const int32_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<int64_t>(const int64_t &v)
+    {
+        _writeIntegral(*this, v);
+    }
+
+    template <>
+    void DataWriter::writeTyped<float>(const float &v)
+    {
+        // FIXME: host-endianess-dependent
+        auto valuePtr = reinterpret_cast<const char*>(&v);
+        this->write(valuePtr, sizeof(v));
+    }
+
+    template <>
+    void DataWriter::writeTyped<double>(const double &v)
+    {
+        // FIXME: host-endianess-dependent
+        auto valuePtr = reinterpret_cast<const char*>(&v);
+        this->write(valuePtr, sizeof(v));
+    }
+
+    void DataWriter::write(const char *data, size_t size)
+    {
+        if(mStream == nullptr) throw Exception("Invalid stream");
+
+        mStream->write(data, size);
+        if(mStream->fail())
+        {
+            throw IoException("Failed to write data block");
+        }
+    }
+
+    std::streamoff DataWriter::tell()
+    {
+        return mStream->tellp();
+    }
+
+    void DataWriter::seek(std::streamoff off)
+    {
+        mStream->seekp(off);
+    }
+
+
+    MemoryInputBuffer::MemoryInputBuffer(const char *data, size_t size)
+    {
+        // for some reason, the stdlib can only use non-const pointers in streambufs.
+        //  given that we never modify the buffer, using const_cast'ing the constness away should probably be okay.
+        char *mutData = const_cast<char*>(data);
+    	this->setg(mutData, mutData, mutData+size);
+    }
+
+    std::streampos MemoryInputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
     {
     	if(which != std::ios_base::in)
     	{
@@ -284,9 +365,157 @@ namespace od
     	return gptr() - eback();
     }
 
-    std::streampos MemBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    std::streampos MemoryInputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
     {
     	return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
     }
 
+
+    MemoryOutputBuffer::MemoryOutputBuffer(char *data, size_t size)
+    {
+        this->setp(data, data+size);
+    }
+
+    std::streampos MemoryOutputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+    {
+        OD_UNIMPLEMENTED();
+    }
+
+    std::streampos MemoryOutputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    {
+        return seekoff(sp - pos_type(off_type(0)), std::ios_base::beg, which);
+    }
+
+
+    VectorOutputBuffer::VectorOutputBuffer(std::vector<char> &v)
+    : mVector(v)
+    {
+        this->setp(&mBackBuffer[0], &mBackBuffer[0] + BACKBUFFER_SIZE);
+    }
+
+    VectorOutputBuffer::~VectorOutputBuffer()
+    {
+        this->sync();
+    }
+
+    std::streambuf::int_type VectorOutputBuffer::overflow(std::streambuf::int_type ch)
+    {
+        int syncResult = this->sync();
+        if(syncResult != 0)
+        {
+            return std::streambuf::traits_type::eof();
+        }
+
+        if(ch != std::streambuf::traits_type::eof())
+        {
+            return this->sputc(ch);
+
+        }else
+        {
+            return std::streambuf::traits_type::eof() + 1; // standard says this has to be "not std::streambuf::traits_type::eof()" on success.
+        }
+    }
+
+    std::streampos VectorOutputBuffer::seekoff(std::streamoff off, std::ios_base::seekdir way, std::ios_base::openmode which)
+    {
+        if(which != std::ios_base::out)
+        {
+            return -1;
+        }
+
+        switch(way)
+        {
+        case std::ios_base::beg:
+            return this->seekpos(off, which);
+
+        case std::ios_base::end:
+            {
+                ptrdiff_t currentPosInPutArea = this->pptr() - this->pbase();
+                std::streampos currentEnd = mVector.size() + (_isPutAreaTheBackBuffer() ? currentPosInPutArea : 0);
+                return this->seekpos(currentEnd+off, which);
+            }
+            break;
+
+        case std::ios_base::cur:
+            {
+                ptrdiff_t currentPosInPutArea = this->pptr() - this->pbase();
+                std::streampos currentPos = currentPosInPutArea + (_isPutAreaTheBackBuffer() ? mVector.size() : 0);
+                if(off == 0)
+                {
+                    // as done by some implementations of ostream
+                    return currentPos;
+
+                }else
+                {
+                    return this->seekpos(currentPos + off, which);
+                }
+            }
+            break;
+
+        default:
+            return -1;
+        }
+    }
+
+    std::streampos VectorOutputBuffer::seekpos(std::streampos sp, std::ios_base::openmode which)
+    {
+        if(which != std::ios_base::out)
+        {
+            return -1;
+        }
+
+        // in case we are in backbuffer, empty it first so we don't have to remember the size it had before seeking
+        int syncResult = this->sync();
+        if(syncResult != 0)
+        {
+            return -1;
+        }
+
+        if(sp >= 0 && static_cast<size_t>(sp) < mVector.size())
+        {
+            this->setp(mVector.data()+sp, mVector.data()+mVector.size());
+            return sp;
+
+        }else if(sp > 0 && static_cast<size_t>(sp) == mVector.size())
+        {
+            this->setp(mBackBuffer.data(), mBackBuffer.data()+BACKBUFFER_SIZE);
+            return sp;
+
+        }else
+        {
+            return -1;
+        }
+    }
+
+    int VectorOutputBuffer::sync()
+    {
+        if(!_isPutAreaTheBackBuffer())
+        {
+            // this only needs to do something if the put area is within the back buffer
+            return 0;
+        }
+
+        ptrdiff_t backbufferSize = this->pptr() - this->pbase();
+        if(backbufferSize >= 0 && static_cast<size_t>(backbufferSize) <= BACKBUFFER_SIZE)
+        {
+            if(backbufferSize > 0)
+            {
+                mVector.insert(mVector.end(), mBackBuffer.begin(), mBackBuffer.begin() + backbufferSize);
+            }
+
+            this->setp(mBackBuffer.data(), mBackBuffer.data()+BACKBUFFER_SIZE);
+
+            return 0;
+
+        }else
+        {
+            Logger::error() << "Bad pptr or pbase in VectorOutputBuffer";
+            return -1;
+        }
+    }
+
+    bool VectorOutputBuffer::_isPutAreaTheBackBuffer()
+    {
+        return this->pbase() == mBackBuffer.data();
+    }
 }

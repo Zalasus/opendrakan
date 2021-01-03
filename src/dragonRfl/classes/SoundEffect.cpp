@@ -9,7 +9,6 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 #include <odCore/audio/SoundSystem.h>
 #include <odCore/audio/Source.h>
@@ -19,7 +18,7 @@
 namespace dragonRfl
 {
 
-    SoundEffect::SoundEffect(DragonRfl &rfl)
+    SoundEffect::SoundEffect()
     : mSounds({})
     , mPlayMode(PlayMode::Looping)
     , mAveragePeriod(6.0f)
@@ -27,6 +26,11 @@ namespace dragonRfl
     , mLocation(Location::EffectSite)
     , mTimeUntilNextPlay(0.0)
     {
+    }
+
+    SoundEffect::~SoundEffect()
+    {
+
     }
 
     void SoundEffect::probeFields(odRfl::FieldProbe &probe)
@@ -39,29 +43,29 @@ namespace dragonRfl
                 (mLocation, "Location");
     }
 
-    void SoundEffect::onLoaded(od::LevelObject &obj)
+    void SoundEffect::onLoaded()
     {
-        obj.setObjectType(od::LevelObjectType::Detector);
+        getLevelObject().setObjectType(od::LevelObjectType::Detector);
 
-        odAudio::SoundSystem *soundSystem = obj.getLevel().getEngine().getSoundSystem();
+        odAudio::SoundSystem *soundSystem = nullptr; //getLevelObject().getLevel().getEngine().getSoundSystem();
         if(soundSystem != nullptr)
         {
             mSoundSource = soundSystem->createSource();
         }
     }
 
-    void SoundEffect::onSpawned(od::LevelObject &obj)
+    void SoundEffect::onSpawned()
     {
         if(mSoundSource == nullptr)
         {
             return;
         }
 
-        mSounds.fetchAssets(obj.getClass()->getAssetProvider());
+        mSounds.fetchAssets(getLevelObject().getClass()->getAssetProvider());
 
         if(mPlayMode == PlayMode::Once || mPlayMode == PlayMode::Intermittent)
         {
-            obj.setEnableRflUpdateHook(true);
+            getLevelObject().setEnableUpdate(true);
             mSoundSource->setLooping(false);
 
         }else if(mPlayMode == PlayMode::Looping || mPlayMode == PlayMode::LoopingAndTriggered)
@@ -76,16 +80,16 @@ namespace dragonRfl
 
         if(mLocation == Location::EffectSite)
         {
-            mSoundSource->setPosition(obj.getPosition());
+            mSoundSource->setPosition(getLevelObject().getPosition());
         }
     }
 
-    void SoundEffect::onDespawned(od::LevelObject &obj)
+    void SoundEffect::onDespawned()
     {
         mSounds.releaseAssets();
     }
 
-    void SoundEffect::onUpdate(od::LevelObject &obj, float relTime)
+    void SoundEffect::onUpdate(float relTime)
     {
         if(mSoundSource == nullptr || mSoundSource->isPlaying())
         {
@@ -94,7 +98,7 @@ namespace dragonRfl
 
         if(mPlayMode == PlayMode::Once)
         {
-            obj.requestDestruction();
+            getLevelObject().requestDestruction();
             return;
 
         }else if(mPlayMode == PlayMode::Intermittent)
@@ -113,7 +117,7 @@ namespace dragonRfl
         }
     }
 
-    void SoundEffect::onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message)
+    void SoundEffect::onMessageReceived(od::LevelObject &sender, od::Message message)
     {
         if(mSoundSource == nullptr || mSoundSource->isPlaying())
         {
@@ -127,7 +131,7 @@ namespace dragonRfl
         }
     }
 
-    void SoundEffect::onMoved(od::LevelObject &obj)
+    void SoundEffect::onTranslated(const glm::vec3 &from, const glm::vec3 &to)
     {
         if(mLocation != Location::EffectSite)
         {
@@ -136,7 +140,7 @@ namespace dragonRfl
 
         if(mSoundSource != nullptr)
         {
-            mSoundSource->setPosition(obj.getPosition());
+            mSoundSource->setPosition(to);
         }
     }
 
@@ -168,9 +172,6 @@ namespace dragonRfl
             Logger::verbose() << "Sound Source now playing '" << sound->getName() << "'";
         }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, SoundEffect);
 
 }
 

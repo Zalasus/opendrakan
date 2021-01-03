@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
@@ -21,24 +21,33 @@
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-    class AnimationDemo : public odRfl::RflClass
+    class AnimationDemoFields : public odRfl::FieldBundle
     {
     public:
 
-        AnimationDemo(DragonRfl &rfl);
+        AnimationDemoFields();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
-
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime) override;
+        virtual void probeFields(odRfl::FieldProbe &probe) override final;
 
 
     protected:
 
         odRfl::AnimRefArray mAnimations;
         odRfl::Float        mSwitchPeriodSeconds;
+    };
+
+
+    class AnimationDemo : public odRfl::ClassBase, public odRfl::ClientClassImpl, private odRfl::Spawnable, private AnimationDemoFields
+    {
+    public:
+
+        AnimationDemo();
+
+        virtual odRfl::Spawnable *getSpawnable() override final;
+        virtual odRfl::FieldBundle &getFieldBundle() override final;
+
+        virtual void onSpawned() override;
+        virtual void onUpdate(float relTime) override;
 
 
     private:
@@ -47,7 +56,7 @@ namespace dragonRfl
         float mRunningTime;
         size_t mCurrentAnimIndex;
 
-        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mPlayer;
+        std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
 
         od::RefPtr<odRender::Handle> mRenderHandle;
 
@@ -55,6 +64,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x000c, "Debug", "Animation Demo", dragonRfl::AnimationDemo);
+ODRFL_DEFINE_CLASS(dragonRfl::AnimationDemo, 0x000c, "Debug", "Animation Demo");
 
 #endif /* INCLUDE_RFL_DRAGON_ANIMATIONDEMO_H_ */

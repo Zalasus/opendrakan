@@ -9,8 +9,14 @@
 #define INCLUDE_DB_SEQUENCE_H_
 
 #include <memory>
+#include <vector>
+#include <variant>
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
+
+#include <odCore/Exception.h>
+
+#include <odCore/anim/AnimModes.h>
 
 #include <odCore/db/Asset.h>
 
@@ -25,85 +31,179 @@ namespace odDb
         ATTACH      = 4,
         RUN_STOP_AI = 5,
         SHOW_HIDE   = 6,
-        MESSAGE     = 7
+        MESSAGE     = 7,
+        MUSIC       = 8
     };
 
-    enum class InterpolationType : uint16_t
+
+    enum class ModifyRunStateStyle
     {
-        NONE = 0,
-        LINEAR_LINEAR = 0x10,
-        LINEAR_SPLINE = 0x20,
-        SPLINE_SPLINE = 0x30
+        DO_NOT_MODIFY,
+        STOP_ALL_OBJECTS,
+        STOP_NON_ACTORS,
+        STOP_ACTORS
     };
 
-    class Action
+
+    /**
+     * @brief Common base for all actions. Helps with writing visitors.
+     */
+    struct Action
+    {
+        Action(float t);
+
+        float timeOffset;
+
+        template <typename T>
+        static float getTimeFromVariant(const T &v)
+        {
+            auto visitor = [](const Action &a) -> float
+            {
+                return a.timeOffset;
+            };
+
+            return std::visit(visitor, v);
+        }
+    };
+
+
+    struct ActionTransform : public Action
+    {
+        enum class InterpolationType
+        {
+            NONE,
+            LINEAR_LINEAR,
+            LINEAR_SPLINE,
+            SINE_SPLINE
+        };
+
+        enum class RelativeTo
+        {
+            WORLD,
+            ACTOR,
+            LOOK_AT_ACTOR
+        };
+
+        ActionTransform(float t, od::DataReader &dr);
+
+        InterpolationType getInterpolationType() const;
+        RelativeTo getRelativeTo() const;
+
+        bool ignorePosition() const
+        {
+            return options & 0x0100;
+        }
+
+        bool ignoreRotation() const
+        {
+            return options & 0x0200;
+        }
+
+        glm::quat rotation;
+        glm::vec3 position;
+        uint32_t relativeActorId;
+        uint32_t options;
+    };
+
+
+    struct ActionStartAnim : public Action
+    {
+        ActionStartAnim(float t, od::DataReader &dr);
+
+        inline bool shouldIgnoreAttachedSound() const { return flags & 0x0100; }
+
+        /**
+         * Note that OD uses a different terminology than the Riot Engine here.
+         * "Mesh" in the Riot Engine is equivalent to BoneMode::NORMAL. "Frame"
+         * is equivalent to BoneMode::ACCUMULATE, and "None" is equivalent to
+         * BoneMode::IGNORE.
+         */
+        odAnim::AxesBoneModes getRootNodeTranslationModes() const;
+
+        uint32_t channelIndex;
+        AssetRef animationRef;
+        float beginPlayAt;
+        float transitionTime;
+        float speed;
+        uint32_t flags;
+    };
+
+
+    struct ActionPlaySound : public Action
+    {
+        ActionPlaySound(float t, od::DataReader &dr);
+
+        AssetRef soundRef;
+        float duration;
+        uint16_t volume; // [0..10000]
+        uint16_t flags; // 0x8 == flush from memory after playing, 0x10 == mono, 0x30 == notify actor (what does this do?)
+    };
+
+
+    struct ActionAttach : public Action
+    {
+        ActionAttach(float t, od::DataReader &dr);
+
+        uint32_t targetObjectId;
+        uint32_t thisActorChannelId;
+    };
+
+
+    struct ActionRunStopAi : public Action
+    {
+        ActionRunStopAi(float t, od::DataReader &dr);
+
+        uint32_t enableAi;
+    };
+
+
+    struct ActionShowHide : public Action
+    {
+        ActionShowHide(float t, od::DataReader &dr);
+
+        uint32_t visible;
+    };
+
+
+    struct ActionMessage : public Action
+    {
+        ActionMessage(float t, od::DataReader &dr);
+
+        uint32_t messageCode; // no trivial relation with class enums!
+    };
+
+
+    struct ActionMusic : public Action
+    {
+        ActionMusic(float t, od::DataReader &dr);
+
+        uint32_t musicId;
+        uint32_t dlsId;
+        float fadeInTime;
+        float fadeOutTime;
+    };
+
+
+    using ActionVariant = std::variant<ActionTransform,
+                                       ActionStartAnim,
+                                       ActionPlaySound,
+                                       ActionAttach,
+                                       ActionRunStopAi,
+                                       ActionShowHide,
+                                       ActionMessage,
+                                       ActionMusic>;
+
+
+    class SequenceActor
     {
     public:
 
-        Action(ActionType type, float timeOffset);
-        virtual ~Action() = default;
+        SequenceActor();
 
-        inline ActionType getActionType() const { return mActionType; }
-        inline float getTimeOffset() const { return mTimeOffset; }
-
-        virtual void load(od::DataReader &dr) = 0;
-
-
-    protected:
-
-        ActionType mActionType;
-        float mTimeOffset;
-    };
-
-
-    class ActionTransform : public Action
-    {
-    public:
-
-        ActionTransform(float timeOffset);
-
-        virtual void load(od::DataReader &dr) override;
-
-
-    private:
-
-        glm::quat mRotation;
-        glm::vec3 mPosition;
-        InterpolationType mInterpolationType;
-    };
-
-
-    class ActionStartAnim : public Action
-    {
-    public:
-
-        ActionStartAnim(float timeOffset);
-
-        virtual void load(od::DataReader &dr) override;
-
-
-    private:
-
-        uint32_t mChannelIndex;
-        AssetRef mAnimationRef;
-        float mTransitionTime;
-        float mSpeed;
-        uint32_t mRootNodeTranslationFlags;
-    };
-
-    class ActionPlaySound : public Action
-    {
-    public:
-
-        ActionPlaySound(float timeOffset);
-
-        virtual void load(od::DataReader &dr) override;
-    };
-
-
-    class Actor
-    {
-    public:
+        inline const std::string &getName() const { return mName; }
+        inline uint32_t getActorId() const { return mActorId; }
+        inline uint32_t getLevelObjectId() const { return mLevelObjectId; }
+        inline const std::vector<ActionVariant> &getActions() const { return mActions; }
 
         void load(od::DataReader &dr);
 
@@ -113,7 +213,7 @@ namespace odDb
         std::string mName;
         uint32_t mActorId;
         uint32_t mLevelObjectId;
-        std::vector<std::unique_ptr<Action>> mActions;
+        std::vector<ActionVariant> mActions;
     };
 
 
@@ -121,7 +221,11 @@ namespace odDb
 	{
 	public:
 
-	    Sequence(AssetProvider &ap, od::RecordId id);
+	    Sequence();
+
+        inline const std::string &getName() const { return mSequenceName; }
+        inline const std::vector<SequenceActor> &getActors() const { return mActors; }
+        inline ModifyRunStateStyle getRunStateModifyStyle() const { return mRunStateModifyStyle; }
 
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
@@ -129,7 +233,9 @@ namespace odDb
 	private:
 
 		std::string mSequenceName;
-		std::vector<std::unique_ptr<Actor>> mActors;
+        ModifyRunStateStyle mRunStateModifyStyle;
+        bool mLooping;
+		std::vector<SequenceActor> mActors;
 	};
 
 

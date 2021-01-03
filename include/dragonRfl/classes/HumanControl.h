@@ -14,11 +14,13 @@
 #include <odCore/physics/CharacterController.h>
 
 #include <odCore/input/Action.h>
-#include <odCore/input/CursorListener.h>
+#include <odCore/input/InputListener.h>
 
-#include <odCore/anim/SkeletonAnimationPlayer.h>
+#include <odCore/net/IdTypes.h>
 
 #include <odCore/render/Handle.h>
+
+#include <odCore/rfl/DummyClass.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
 #include <dragonRfl/LocalPlayer.h>
@@ -26,67 +28,104 @@
 
 namespace dragonRfl
 {
-    class DragonRfl;
 
-	class HumanControl : public HumanControlFields, public LocalPlayer
+	class HumanControl_Sv : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Sv>
 	{
 	public:
 
-		HumanControl(DragonRfl &rfl);
-		virtual ~HumanControl();
+		HumanControl_Sv(odNet::ClientId clientId);
+		virtual ~HumanControl_Sv();
 
-		virtual void onLoaded(od::LevelObject &obj) override;
-		virtual void onSpawned(od::LevelObject &obj) override;
-		virtual void onUpdate(od::LevelObject &obj, float relTime) override;
-		virtual void onMoved(od::LevelObject &obj) override;
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
 
-		virtual float getYaw() const override { return mYaw; }
-		virtual void setYaw(float f) override { mYaw = f; }
-		virtual float getPitch() const override { return mPitch; }
-		virtual void setPitch(float f) override { mPitch = f; }
-		virtual glm::vec3 getPosition() override;
-		virtual od::LevelObject &getLevelObject() override;
-		virtual odPhysics::Handle *getPhysicsHandle() override;
+        virtual void onLoaded() override;
+		virtual void onSpawned() override;
+		virtual void onUpdate(float relTime) override;
 
 
 	 private:
 
-		enum class State
-		{
-		    Idling,
-		    TurningLeft,
-		    TurningRight,
-		    RunningForward,
-		    RunningBackward
-		};
+        enum class State
+        {
+            Idling,
+            TurningLeft,
+            TurningRight,
+            RunningForward,
+            RunningBackward
+        };
 
-		void _handleMovementAction(odInput::ActionHandle<Action> *action, odInput::InputEvent event);
-		void _handleCursorMovement(const glm::vec2 &posNdc);
-		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping);
+        void _handleAction(Action action, odInput::ActionState state);
+        void _handleAnalogAction(Action action, const glm::vec2 &pos);
+        void _attack();
+		void _playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping, float skipAhead = 0.0);
 
-		DragonRfl &mRfl;
+		HumanControlFields mFields;
 
-		float mYaw;
+        odNet::ClientId mClientId;
+        float mYaw;
 		float mPitch;
-		od::LevelObject *mPlayerObject;
-
 		State mState;
-		float mLastUpdatedYaw;
+        float mLastUpdatedYaw;
 
-		std::unique_ptr<odAnim::SkeletonAnimationPlayer> mAnimPlayer;
+		std::shared_ptr<odPhysics::CharacterController> mCharacterController;
+	};
 
-		od::RefPtr<odRender::Handle> mRenderHandle;
-		od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
-		std::unique_ptr<odPhysics::CharacterController> mCharacterController;
 
-		od::RefPtr<odInput::ActionHandle<Action>> mForwardAction;
-		od::RefPtr<odInput::ActionHandle<Action>> mBackwardAction;
-		od::RefPtr<odInput::CursorListener> mCursorListener;
+    class HumanControl_Cl : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControl_Cl>
+	{
+	public:
+
+		HumanControl_Cl();
+		virtual ~HumanControl_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+		virtual void onLoaded() override;
+		virtual void onSpawned() override;
+		virtual void onTransformChanged() override;
+        virtual void onUpdate(float relTime) override;
+
+
+	 private:
+
+        void _handleAnalogAction(Action action, const glm::vec2 &pos);
+
+		HumanControlFields mFields;
 
 	};
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0009, "Player", "Human Control", dragonRfl::HumanControl);
+    /**
+     * A dummy used to represent all HumanControls created by the server, i.e. other players.
+     * HumanControl_Cl contains the actual controller code. A custom downlink message is used to
+     * turn the object that represents the client in question into a HumanControl_Cl.
+     */
+    class HumanControlDummy_Cl : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<HumanControlDummy_Cl>
+	{
+    public:
+
+        HumanControlDummy_Cl();
+		virtual ~HumanControlDummy_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+		virtual void onSpawned() override;
+
+
+	 private:
+
+		HumanControlFields mFields;
+
+    };
+
+
+    // server: never create. always needs special treatment
+    // client: always some kind of rendered dummy. HumanControl_Cl creation is handled via a custom message
+    using HumanControlFactory = odRfl::DefaultClassFactory<HumanControlFields, HumanControlDummy_Cl, odRfl::DummyClass>;
+
+
+    OD_DEFINE_CLASS(HumanControl, 0x0009, "Player", "Human Control", HumanControlFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_HUMANCONTROL_H_ */

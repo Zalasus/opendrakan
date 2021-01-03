@@ -9,6 +9,7 @@
 #define INCLUDE_ODOSG_AUDIO_SOURCE_H_
 
 #include <string>
+#include <mutex>
 
 #include <odCore/audio/Source.h>
 
@@ -34,6 +35,8 @@ namespace odOsg
         Source(const Source &s) = delete;
         virtual ~Source();
 
+        inline std::mutex &getMutex() { return mMutex; }
+
         virtual State getState() override;
 
         virtual void setPosition(const glm::vec3 &p) override;
@@ -44,11 +47,19 @@ namespace odOsg
         virtual void setLooping(bool looping) override;
         virtual void setGain(float gain) override;
 
-        virtual void setSound(odDb::Sound *s) override;
+        virtual void setSound(std::shared_ptr<odDb::Sound> s) override;
         virtual void play(float fadeInTime) override;
         virtual void stop(float fadeOutTime) override;
 
-        virtual void update(float relTime) override;
+        /// @brief Called from the sound worker thread with the mutex already held.
+        virtual void update(float relTime);
+
+
+    protected:
+
+        SoundSystem &mSoundSystem;
+        ALuint mSourceId;
+        std::mutex mMutex;
 
 
     private:
@@ -58,11 +69,8 @@ namespace odOsg
 
         void _updateSourceGain_locked(); // call only with worker mutex held
 
-        SoundSystem &mSoundSystem;
-        ALuint mSourceId;
-
-        od::RefPtr<odDb::Sound> mCurrentSound;
-        od::RefPtr<Buffer> mCurrentBuffer;
+        std::shared_ptr<odDb::Sound> mCurrentSound;
+        std::shared_ptr<Buffer> mCurrentBuffer;
 
         float mSourceGain;
         float mSoundGain;

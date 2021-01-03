@@ -10,7 +10,7 @@
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
-#include <odCore/anim/MotionAccumulator.h>
+#include <odCore/anim/BoneAccumulator.h>
 
 namespace odAnim
 {
@@ -28,24 +28,46 @@ namespace odAnim
     }
 
 
-    BoneAnimator::BoneAnimator(Skeleton::Bone *bone)
+    BoneAnimator::BoneAnimator(Skeleton::Bone &bone)
     : mBone(bone)
-    , mPlaybackType(PlaybackType::Normal)
-    , mSpeedMultiplier(1.0f)
+    , mTransitionAnimation(nullptr)
+    , mTransitionStartTime(0.0f)
     , mPlaying(false)
-    , mAnimTime(0.0f)
-    , mAccumulator(nullptr)
-    , mBoneAccumulationFactors(0.0)
-    , mObjectAccumulationFactors(0.0)
+    , mPlayerTime(0.0f)
+    , mBoneModes({BoneMode::NORMAL, BoneMode::NORMAL, BoneMode::NORMAL})
+    , mHasNonDefaultBoneMode(false)
+    , mUseInterpolation(false)
     {
-        if(mBone == nullptr)
+    }
+
+    BoneAnimator::~BoneAnimator()
+    {
+    }
+
+    void BoneAnimator::setBoneModes(const AxesBoneModes &modes)
+    {
+        mBoneModes = modes;
+
+        mHasNonDefaultBoneMode = false;
+        for(auto mode : modes)
         {
-            throw od::Exception("Created BoneAnimator with bone = nullptr");
+            if(mode != BoneMode::NORMAL)
+            {
+                mHasNonDefaultBoneMode = true;
+                break;
+            }
         }
     }
 
-    void BoneAnimator::playAnimation(odDb::Animation *animation, PlaybackType type, float speedMultiplier)
+    void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, const AnimModes &modes)
     {
+        if(modes.transitionTime > 0.0f)
+        {
+            mTransitionAnimation = mCurrentAnimation;
+            mTransitionStartTime = mPlayerTime;
+            mTransitionModes = mModes;
+        }
+
         if(animation == nullptr)
         {
             mPlaying = false;
@@ -54,57 +76,51 @@ namespace odAnim
         }
 
         mCurrentAnimation = animation;
-        mPlaybackType = type;
-        mSpeedMultiplier = speedMultiplier;
+        mModes = modes;
         mPlaying = true;
+        mPlayerTime = 0.0f;
 
-        odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone->getJointIndex());
+        bool reverse = (mModes.speed < 0.0f);
+
+        odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone.getJointIndex());
         size_t frameCount = newStartEnd.second - newStartEnd.first;
-        mFirstFrame = newStartEnd.first;
-        mLastFrame = mFirstFrame + (frameCount - 1);
-
-        bool reverse = (mSpeedMultiplier < 0.0f);
-
-        mAnimTime = reverse ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
-
-        mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
-    }
-
-    void BoneAnimator::pushAnimationToQueue(odDb::Animation *animation, PlaybackType type, float speedMultiplier)
-    {
-        if(mCurrentAnimation == nullptr)
+        auto firstFrame = newStartEnd.first;
+        auto lastFrame = firstFrame + (frameCount - 1);
+        mLastAppliedTransform = glm::dualquat(reverse ? lastFrame->xform : firstFrame->xform);
+        mLoopJump = _translationFrom3x4(firstFrame->xform) - _translationFrom3x4(lastFrame->xform);
+        if(reverse)
         {
-            playAnimation(animation, type, speedMultiplier);
-
-        }else
-        {
-            mAnimationQueue.emplace(animation, type, speedMultiplier);
+            mLoopJump *= -1.0f;
         }
     }
 
-    void BoneAnimator::setAccumulationModes(const AxesModes &modes)
+    static float _linearToAnimTime(float duration, const AnimModes &modes, float time)
     {
-        for(size_t i = 0; i < 3; ++i)
+        float animTime = (modes.speed >= 0.0f) ? (time*modes.speed) : (duration + time*modes.speed);
+        animTime += modes.startTime;
+
+        switch(modes.playbackType)
         {
-            switch(modes[i])
+        case PlaybackType::NORMAL:
+            return glm::clamp(animTime, 0.0f, duration);
+
+        case PlaybackType::LOOPING:
+            return std::fmod(animTime, duration);
+
+        case PlaybackType::PINGPONG:
+            if(static_cast<int32_t>(animTime/duration) % 2 == 0)
             {
-            case AccumulationMode::Bone:
-                mObjectAccumulationFactors[i] = 0.0;
-                mBoneAccumulationFactors[i] = 1.0;
-                break;
+                // forward phase
+                return std::fmod(animTime, duration);
 
-            case AccumulationMode::Accumulate:
-                mObjectAccumulationFactors[i] = 1.0;
-                mBoneAccumulationFactors[i] = 0.0;
-                break;
-
-            case AccumulationMode::Ignore:
-            default:
-                mObjectAccumulationFactors[i] = 0.0;
-                mBoneAccumulationFactors[i] = 0.0;
-                break;
+            }else
+            {
+                // backward phase
+                return duration - std::fmod(animTime, duration);
             }
         }
+
+        OD_UNREACHABLE();
     }
 
     void BoneAnimator::update(float relTime)
@@ -114,91 +130,106 @@ namespace odAnim
             return;
         }
 
-        mAnimTime += relTime * mSpeedMultiplier;
+        float prevPlayerTime = mPlayerTime;
+        mPlayerTime += relTime;
 
-        bool loopedBack = false; // for correcting relative movement in case of a loop (unneeded when no accumulator used)
-        glm::vec3 loopJump(0.0f);
+        // for correcting relative movement in case of a loop
+        bool loopedBack = false;
 
-        bool movingBackInTime = (mSpeedMultiplier < 0.0f);
+        float animTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mModes, mPlayerTime);
 
         // have we moved beyond start/end of the current animation? if yes, we need to take appropriate actions before
         //  deciding how and where to move the bones, depending on whether we are looping, playing ping-pong etc.
-        if((!movingBackInTime && mAnimTime > mCurrentAnimation->getMaxTime()) || (movingBackInTime && mAnimTime < mCurrentAnimation->getMinTime()))
+        switch(mModes.playbackType)
         {
-            // when looping or playing ping-pong, we want to add any time we have moved beyond the end of the animation
-            //  back to the start/end of the timeline so we don't skip any frames.
-            float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
-            float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
-            float residualTime = mAnimTime - endTime; // negative for reverse playback!
-
-            if(!mAnimationQueue.empty())
+        case PlaybackType::NORMAL:
+            if(mPlayerTime >= mCurrentAnimation->getDuration())
             {
-                AnimationQueueEntry &queueEntry = mAnimationQueue.back();
-                mAnimationQueue.pop();
+                mPlaying = false;
+            }
+            break;
 
-                playAnimation(queueEntry.animation, queueEntry.type, queueEntry.speedMultiplier);
-
-                mAnimTime += residualTime;
-
-            }else
+        case PlaybackType::LOOPING:
             {
-                switch(mPlaybackType)
-                {
-                case PlaybackType::Normal:
-                default:
-                    mPlaying = false;
-                    break;
+                float prevAnimTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mModes, prevPlayerTime);
+                loopedBack = (animTime < prevAnimTime);
+            }
+            break;
 
-                case PlaybackType::Looping:
-                    mAnimTime = startTime + residualTime;
-                    loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
-                    loopJump *= movingBackInTime ? -1.0f : 1.0f;
-                    loopedBack = true;
-                    break;
+        case PlaybackType::PINGPONG:
+            break;
+        }
 
-                case PlaybackType::PingPong:
-                    mSpeedMultiplier = -mSpeedMultiplier;
-                    mAnimTime = endTime - residualTime;
-                    break;
-                }
+        bool needInterpolation = mUseInterpolation || (mAccumulator != nullptr); // accumulated motion should always be interpolated
+        glm::dualquat sampledTransform = _sample(mCurrentAnimation, animTime, needInterpolation);
+
+        if(mTransitionAnimation != nullptr)
+        {
+            float transitionAnimTime = _linearToAnimTime(mTransitionAnimation->getDuration(), mTransitionModes, mTransitionStartTime + mPlayerTime);
+            float transitionDelta = mPlayerTime / mModes.transitionTime;
+            glm::dualquat sampledTransitionTransform = _sample(mTransitionAnimation, transitionAnimTime, needInterpolation);
+            sampledTransform = glm::lerp(sampledTransitionTransform, sampledTransform, glm::clamp(transitionDelta, 0.0f, 1.0f));
+            if(transitionDelta >= 1.0f)
+            {
+                mTransitionAnimation = nullptr;
             }
         }
 
-        glm::dualquat sampledTransform = _sampleLinear(mAnimTime);
-
-        if(mAccumulator == nullptr)
+        if(!mHasNonDefaultBoneMode)
         {
             glm::mat4 asMat(glm::mat3x4_cast(sampledTransform));
-            mBone->move(asMat);
+            mBone.move(asMat);
 
         }else
         {
-            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
             glm::vec3 currentOffset = _translationFromDquat(sampledTransform);
-
+            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
             glm::vec3 relativeOffset = currentOffset - prevOffset;
 
             // if the current animation step jumped in time, we need to factor out the offset
             //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
             if(loopedBack)
             {
-                relativeOffset -= loopJump;
+                relativeOffset -= mLoopJump;
             }
 
-            mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
+            glm::vec3 boneTranslation = currentOffset;
+            glm::vec3 accumulatorTranslation = relativeOffset;
+            for(size_t i = 0; i < 3; ++i)
+            {
+                switch(mBoneModes[i])
+                {
+                case BoneMode::NORMAL:
+                    accumulatorTranslation[i] = 0.0f;
+                    break;
+
+                case BoneMode::ACCUMULATE:
+                    boneTranslation[i] = 0.0f;
+                    break;
+
+                case BoneMode::IGNORE:
+                    boneTranslation[i] = 0.0f;
+                    accumulatorTranslation[i] = 0.0f;
+                    break;
+                }
+            }
+
+            if(mAccumulator != nullptr)
+            {
+                mAccumulator->moveRelative(accumulatorTranslation, relTime);
+            }
 
             glm::mat4 boneMatrix = glm::mat4_cast(sampledTransform.real); // real part represents rotation
-            glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
-            boneMatrix[3] = glm::vec4(boneTranslation, 1.0);
-            mBone->move(glm::transpose(boneMatrix));
+            boneMatrix[3] = glm::vec4(boneTranslation, 1.0f);
+            mBone.move(glm::transpose(boneMatrix));
         }
 
         mLastAppliedTransform = sampledTransform;
     }
 
-    glm::dualquat BoneAnimator::_sampleLinear(float time)
+    glm::dualquat BoneAnimator::_sampleLinear(std::shared_ptr<odDb::Animation> &anim, float time)
     {
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone->getJointIndex(), time);
+        auto currentKeyframes = anim->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
@@ -207,25 +238,40 @@ namespace odAnim
         }
 
         // we are are somewhere between keyframes, and have to interpolate
-
-        if(mLastKeyframes != currentKeyframes) // only update decompositions when necessary
-        {
-            mLeftTransform = glm::dualquat(currentKeyframes.first->xform);
-            mRightTransform = glm::dualquat(currentKeyframes.second->xform);
-            mLastKeyframes = currentKeyframes;
-        }
+        //  TODO: cache decompositions
+        glm::dualquat leftTransform(currentKeyframes.first->xform);
+        glm::dualquat rightTransform(currentKeyframes.second->xform);
 
         // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
-        float delta = (mAnimTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
+        float delta = (time - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
 
-        return glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
+        return glm::lerp(leftTransform, rightTransform, glm::clamp(delta, 0.0f, 1.0f));
+    }
+
+    glm::dualquat BoneAnimator::_sampleNearest(std::shared_ptr<odDb::Animation> &anim, float time)
+    {
+        auto currentKeyframes = anim->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
+
+        if(currentKeyframes.first == currentKeyframes.second)
+        {
+            // clamped state. no need to interpolate
+            return glm::dualquat(currentKeyframes.first->xform);
+        }
+
+        // we are are somewhere between keyframes, and have to pick the closer one
+        //  TODO: cache decompositions
+        bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
+        return glm::dualquat(firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform);
+    }
+
+    glm::dualquat BoneAnimator::_sample(std::shared_ptr<odDb::Animation> &anim, float time, bool interpolated)
+    {
+         return interpolated ? _sampleLinear(anim, time) : _sampleNearest(anim, time);
     }
 
 
-    SkeletonAnimationPlayer::SkeletonAnimationPlayer(odRender::Handle *renderHandle, Skeleton *skeleton)
-    : mRenderHandle(renderHandle)
-    , mSkeleton(skeleton)
-    , mRig(nullptr)
+    SkeletonAnimationPlayer::SkeletonAnimationPlayer(std::shared_ptr<Skeleton> skeleton)
+    : mSkeleton(skeleton)
     , mPlaying(false)
     {
         if(mSkeleton == nullptr)
@@ -236,102 +282,70 @@ namespace odAnim
         mBoneAnimators.reserve(mSkeleton->getBoneCount());
         for(size_t i = 0; i < mSkeleton->getBoneCount(); ++i)
         {
-            mBoneAnimators.push_back(BoneAnimator(mSkeleton->getBoneByJointIndex(i)));
-        }
-
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->addFrameListener(this);
-
-            mRig = mRenderHandle->getRig();
-            if(mRig == nullptr)
-            {
-                throw od::Exception("Failed to get Rig from object node");
-            }
-
-        }else
-        {
-            // TODO: Hook us into another update callback here
+            mBoneAnimators.emplace_back(mSkeleton->getBoneByJointIndex(i));
         }
     }
 
     SkeletonAnimationPlayer::~SkeletonAnimationPlayer()
     {
-        if(mRenderHandle != nullptr)
-        {
-            mRenderHandle->removeFrameListener(this);
-        }
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim,  PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, const AnimModes &modes)
     {
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        if(modes.channel < 0)
         {
-            it->playAnimation(anim, type, speedMultiplier);
+            // play on whole skeleton
+            for(auto &animator : mBoneAnimators)
+            {
+                animator.playAnimation(anim, modes);
+            }
+
+        }else
+        {
+            auto &bone = mSkeleton->getBoneByChannelIndex(modes.channel);
+            auto p = [this, anim, modes](odAnim::Skeleton::Bone &b)
+            {
+                mBoneAnimators[b.getJointIndex()].playAnimation(anim, modes);
+                return true;
+            };
+            bone.traverse(p);
         }
 
         mPlaying = true;
     }
 
-    void SkeletonAnimationPlayer::playAnimation(odDb::Animation *anim, int32_t jointIndex, PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::setBoneAccumulator(std::shared_ptr<BoneAccumulator> accu, int32_t nodeIndex)
     {
-        throw od::UnsupportedException("Partial skeleton animation not implemented yet");
+        mBoneAnimators.at(nodeIndex).setAccumulator(accu);
     }
 
-    void SkeletonAnimationPlayer::pushAnimationToQueue(odDb::Animation *anim, PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::setBoneModes(const AxesBoneModes &modes, int32_t nodeIndex)
     {
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
-        {
-            it->pushAnimationToQueue(anim, type, speedMultiplier);
-        }
-
-        mPlaying = true;
+        mBoneAnimators.at(nodeIndex).setBoneModes(modes);
     }
 
-    void SkeletonAnimationPlayer::setRootNodeAccumulator(MotionAccumulator *accu, int32_t rootNodeIndex)
+    std::shared_ptr<BoneAccumulator> SkeletonAnimationPlayer::getBoneAccumulator(int32_t jointIndex)
     {
-        if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
-        {
-            throw od::InvalidArgumentException("Root node index out of bounds");
-        }
-
-        BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
-        if(!animator.getBone()->isRoot())
-        {
-            throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
-        }
-
-        animator.setAccumulator(accu);
+        return mBoneAnimators.at(jointIndex).getAccumulator();
     }
 
-    void SkeletonAnimationPlayer::setRootNodeAccumulationModes(const AxesModes &modes, int32_t rootNodeIndex)
+    const AxesBoneModes &SkeletonAnimationPlayer::getBoneModes(int32_t jointIndex)
     {
-        if(rootNodeIndex < 0 || rootNodeIndex >= (int32_t)mBoneAnimators.size())
-        {
-            throw od::InvalidArgumentException("Root node index out of bounds");
-        }
-
-        BoneAnimator &animator = mBoneAnimators[rootNodeIndex];
-        if(!animator.getBone()->isRoot())
-        {
-            throw od::InvalidArgumentException("Selected bone for accumulation is not a root bone");
-        }
-
-        animator.setAccumulationModes(modes);
+        return mBoneAnimators.at(jointIndex).getBoneModes();
     }
 
-    void SkeletonAnimationPlayer::onFrameUpdate(double simTime, double relTime, uint32_t frameNumber)
+    bool SkeletonAnimationPlayer::update(float relTime)
     {
         if(!mPlaying)
         {
-            return;
+            return false;
         }
 
         bool stillPlaying = true;
-        for(auto it = mBoneAnimators.begin(); it != mBoneAnimators.end(); ++it)
+        for(auto &animator : mBoneAnimators)
         {
-            it->update((float)relTime);
-            stillPlaying |= it->isPlaying();
+            animator.update((float)relTime);
+            stillPlaying |= animator.isPlaying();
         }
 
         if(mPlaying && !stillPlaying)
@@ -341,12 +355,7 @@ namespace odAnim
         }
         mPlaying = stillPlaying;
 
-        // note: even if we are no longer playing by now, we still might need to flatten the last frame.
-        //   thus, we don't check for the playing flag here
-        if(mRig != nullptr)
-        {
-            mSkeleton->flatten(mRig);
-        }
+        return true; // last frame might still have changed the skeleton
     }
 
 }

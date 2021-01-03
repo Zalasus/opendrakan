@@ -8,14 +8,12 @@
 #ifndef INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_
 #define INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
-#include <odCore/rfl/RflMessage.h>
+#include <odCore/rfl/DummyClass.h>
 
 namespace dragonRfl
 {
-
-    class DragonRfl;
 
     enum class TimerTriggerMode
     {
@@ -23,36 +21,60 @@ namespace dragonRfl
         DependsOnMessage
     };
 
-    class CountDownToZero : public odRfl::RflClass
+
+    struct CountDownToZeroFields final : public odRfl::FieldBundle
+    {
+        CountDownToZeroFields();
+
+        virtual void probeFields(odRfl::FieldProbe &probe) override;
+
+        odRfl::Integer                          initialCounterValue;
+        odRfl::EnumImpl<TimerTriggerMode, 0, 1> whenTriggered;
+        odRfl::EnumMessage                      messageToSend;
+        odRfl::EnumMessage                      incrementMessage;
+        odRfl::EnumMessage                      decrementMessage;
+        odRfl::EnumMessage                      resetMessage;
+    };
+
+
+    /*struct CountDownToZeroStates final : public odState::StateBundle
+    {
+        virtual void probeStates(odState::StateProbe &probe) override
+        {
+            probe(counterValue);
+        }
+
+        odState::State<uint32_t, odState::SAVED> counterValue;
+    };*/
+
+
+    class CountDownToZero_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<CountDownToZero_Sv>
     {
     public:
 
-        CountDownToZero(DragonRfl &rfl);
+        CountDownToZero_Sv();
 
-        virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onLoaded(od::LevelObject &obj) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+        //virtual odState::StateBundle *getStates() override { return &mStates; }
 
-
-    protected:
-
-        odRfl::Integer     mInitialCounterValue;
-        odRfl::EnumImpl<TimerTriggerMode, 0, 1> mWhenTriggered;
-        odRfl::EnumMessage mMessageToSend;
-        odRfl::EnumMessage mIncrementMessage;
-        odRfl::EnumMessage mDecrementMessage;
-        odRfl::EnumMessage mResetMessage;
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
     private:
 
-        uint32_t mCounterValue;
+        CountDownToZeroFields mFields;
+        int mCounterValue;
+        //CountDownToZeroStates mStates;
 
     };
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0007, "System", "Count Down To Zero", dragonRfl::CountDownToZero);
+    using CountDownToZeroFactory = odRfl::ServerOnlyClassFactory<CountDownToZeroFields, CountDownToZero_Sv>;
+
+    OD_DEFINE_CLASS(CountDownToZero, 0x0007, "System", "Count Down To Zero", CountDownToZeroFactory);
+
+}
 
 #endif /* INCLUDE_RFL_DRAGON_COUNTDOWNTOZERO_H_ */

@@ -14,7 +14,9 @@
 
 #include <odCore/Logger.h>
 #include <odCore/SrscRecordTypes.h>
-#include <odCore/Engine.h>
+
+#include <odCore/input/InputManager.h>
+#include <odCore/input/InputListener.h>
 
 #include <odCore/render/Renderer.h>
 
@@ -23,58 +25,61 @@
 namespace odGui
 {
 
-    Gui::Gui(odRender::Renderer &renderer)
+    Gui::Gui(odRender::Renderer &renderer, odInput::InputManager &inputManager)
     : mRenderer(renderer)
     , mMenuMode(false)
+    , mMeasurementsDirty(false)
+    , mNeedsFlattening(false)
     {
         _setupGui();
+
+        mRenderer.addGuiCallback(this);
+
+        mInputListener = inputManager.createInputListener();
+        mInputListener->setMouseMoveCallback(std::bind(&Gui::setCursorPosition, this, std::placeholders::_1));
+        mInputListener->setKeyDownCallback(std::bind(&Gui::keyDown, this, std::placeholders::_1));
     }
 
     Gui::~Gui()
     {
+        mRenderer.removeGuiCallback(this);
     }
 
-    void Gui::quit()
+    void Gui::keyDown(odInput::Key key)
     {
-    }
-
-    void Gui::mouseDown()
-    {
-        if(!mMenuMode)
+        if(key == odInput::Key::Mouse_Left)
         {
-            return;
-        }
+            if(!mMenuMode)
+            {
+                return;
+            }
 
-        mCurrentHitWidgets.clear();
-        glm::mat4 eye(1.0);
-        mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
+            mCurrentHitWidgets.clear();
+            mRootWidget->intersect(mCursorPos, mCurrentHitWidgets);
 
-        Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
+            Logger::debug() << "Hit " << mCurrentHitWidgets.size() << " widgets!";
 
-        for(auto it = mCurrentHitWidgets.begin(); it != mCurrentHitWidgets.end(); ++it)
-        {
-            it->widget->onMouseDown(it->hitPointInWidget, 0);
+            for(auto it = mCurrentHitWidgets.begin(); it != mCurrentHitWidgets.end(); ++it)
+            {
+                it->widget->onMouseDown(it->hitPointInWidget, 0);
+            }
         }
     }
 
-    void Gui::addWidget(Widget *widget)
+    void Gui::addWidget(std::shared_ptr<Widget> widget)
     {
-        if(widget == nullptr)
+        if(widget != nullptr)
         {
-            return;
+            mRootWidget->addChild(widget);
         }
-
-        mRootWidget->addChild(widget);
     }
 
-    void Gui::removeWidget(Widget *widget)
+    void Gui::removeWidget(std::shared_ptr<Widget> widget)
     {
-        if(widget == nullptr)
+        if(widget != nullptr)
         {
-            return;
+            mRootWidget->removeChild(widget);
         }
-
-        mRootWidget->removeChild(widget);
     }
 
     void Gui::setMenuMode(bool b)
@@ -89,7 +94,7 @@ namespace odGui
         this->onMenuModeChanged();
     }
 
-    void Gui::setCursorWidget(Widget *cursor)
+    void Gui::setCursorWidget(std::shared_ptr<Widget> cursor)
     {
         if(mCursorWidget != nullptr)
         {
@@ -97,30 +102,30 @@ namespace odGui
         }
 
         mCursorWidget = cursor;
-        mCursorWidget->setZIndex(-1000);
-        mCursorWidget->setVisible(mMenuMode);
-        this->addWidget(mCursorWidget);
 
-        glm::vec4 widgetToNdc = mWidgetSpaceToNdcTransform * glm::vec4(mCursorWidget->getPosition(), 0.0, 1.0);
-        mCursorPosInNdc = glm::vec2(widgetToNdc.x, widgetToNdc.y);
+        if(mCursorWidget != nullptr)
+        {
+            mCursorWidget->setZPosition(-0.1);
+            mCursorWidget->setVisible(mMenuMode);
+            this->addWidget(mCursorWidget);
+
+            mCursorPos = mCursorWidget->getPosition();
+        }
     }
 
     void Gui::setCursorPosition(const glm::vec2 &pos)
     {
-        if(mCursorPosInNdc == pos)
+        if(mCursorPos == pos)
         {
             // no change -> no need to perform costly update
             return;
         }
 
-        mCursorPosInNdc = pos;
-
-        // pos is in NDC, we need it in widget space
-        glm::vec4 posWs = mNdcToWidgetSpaceTransform * glm::vec4(pos, 0.0, 1.0);
+        mCursorPos = pos;
 
         if(mCursorWidget != nullptr)
         {
-            mCursorWidget->setPosition(posWs.x, posWs.y);
+            mCursorWidget->setPosition({mCursorPos.x, mCursorPos.y});
         }
 
         if(!mMenuMode)
@@ -135,8 +140,7 @@ namespace odGui
         //  happened can be determined from the mouse-over state that is stored in those widgets.
         //  FIXME: this only works if every widget in the scenegraph is unique
         mCurrentHitWidgets.clear();
-        glm::mat4 eye(1.0);
-        mRootWidget->intersect(mCursorPosInNdc, eye, mCurrentHitWidgets);
+        mRootWidget->intersect(mCursorPos, mCurrentHitWidgets);
 
         mJoinedHitWidgets.clear();
         mJoinedHitWidgets.insert(mJoinedHitWidgets.end(), mCurrentHitWidgets.begin(), mCurrentHitWidgets.end());
@@ -181,17 +185,38 @@ namespace odGui
     {
     }
 
+    void Gui::rebuild()
+    {
+        if(mMeasurementsDirty)
+        {
+            mRootWidget->measure(mRenderer.getFramebufferDimensions());
+            mMeasurementsDirty = false;
+        }
+
+        if(mNeedsFlattening)
+        {
+            mRootWidget->flatten();
+            mNeedsFlattening = false;
+        }
+    }
+
+    void Gui::onUpdate(float relTime)
+    {
+        rebuild();
+
+        mRootWidget->update(relTime);
+    }
+
+    void Gui::onFramebufferResize(glm::vec2 dimensionsPx)
+    {
+        mRootWidget->measure(dimensionsPx);
+    }
+
     void Gui::_setupGui()
     {
-        mWidgetSpaceToNdcTransform = glm::mat4(1.0);
-        mWidgetSpaceToNdcTransform = glm::scale(mWidgetSpaceToNdcTransform, glm::vec3(2.0, -2.0, 1.0));
-        mWidgetSpaceToNdcTransform = glm::translate(mWidgetSpaceToNdcTransform, glm::vec3(-0.5, -0.5, 0.0));
-
-        mNdcToWidgetSpaceTransform = glm::inverse(mWidgetSpaceToNdcTransform);
-
-        mRootWidget = od::make_refd<Widget>(*this, mRenderer.getGuiRootNode());
-        mRootWidget->setDimensions(glm::vec2(1920, 1080), WidgetDimensionType::Pixels); // FIXME: get actual dimensions here
-        mRootWidget->update(0); // the root GuiNode has no reference to the root widget, so it can't trigger the initial update itself
+        mRootWidget = std::make_shared<Widget>(*this);
+        mRootWidget->setDepth(0.5);
+        mRootWidget->setZPosition(0.5);
     }
 
 }

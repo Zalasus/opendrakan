@@ -38,9 +38,10 @@ namespace odOsg
     };
 
 
-    InputListener::InputListener(Renderer &renderer, odInput::InputManager &inputManager)
+    InputListener::InputListener(Renderer &renderer, odInput::InputManager &inputManager, bool consumeEvents)
     : mRenderer(renderer)
     , mInputManager(inputManager)
+    , mConsumeEvents(consumeEvents)
     , mMouseWarped(false)
     {
         assert(mRenderer.getViewer() != nullptr);
@@ -62,25 +63,29 @@ namespace odOsg
         switch(ea.getEventType())
         {
         case osgGA::GUIEventAdapter::KEYDOWN:
-            mInputManager.keyDown(_osgKeyToOdKey(ea.getKey()));
-            return true;
+            mInputManager.injectKey(_osgKeyToOdKey(ea.getKey()), true);
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::KEYUP:
-            mInputManager.keyUp(_osgKeyToOdKey(ea.getKey()));
-            return true;
+            mInputManager.injectKey(_osgKeyToOdKey(ea.getKey()), false);
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::PUSH:
-            mInputManager.mouseButtonDown(ea.getButton());
-            return true;
+            if(ea.getButton() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Left, true);
+            if(ea.getButton() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Right, true);
+            if(ea.getButton() & osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Middle, true);
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::RELEASE:
-            mInputManager.mouseButtonUp(ea.getButton());
-            return true;
+            if(ea.getButton() & osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Left, false);
+            if(ea.getButton() & osgGA::GUIEventAdapter::RIGHT_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Right, false);
+            if(ea.getButton() & osgGA::GUIEventAdapter::MIDDLE_MOUSE_BUTTON) mInputManager.injectKey(odInput::Key::Mouse_Middle, false);
+            return mConsumeEvents;
 
         case osgGA::GUIEventAdapter::MOVE:
         case osgGA::GUIEventAdapter::DRAG:
             _handleMouseMove(ea, aa);
-            return true;
+            return mConsumeEvents;
 
         default:
             break;
@@ -95,7 +100,10 @@ namespace odOsg
         float x = ea.getXnormalized();
         float y = ea.getYnormalized();
 
-        mInputManager.mouseMoved(x, y);
+        osg::Vec4 posNdc(x, y, 0, 1);
+        osg::Vec4 posGui = posNdc * mRenderer.getNdcToGuiSpaceTransform();
+
+        mInputManager.injectMouseMovement(posGui.x(), posGui.y());
 
         // wrap cursor when hitting left or right border
         float epsilon = 2.0/(ea.getXmax() - ea.getXmin()); // epsilon of one pixel

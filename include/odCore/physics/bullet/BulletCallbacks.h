@@ -15,7 +15,7 @@
 
 namespace odBulletPhysics
 {
-    class ClosestNotMeConvexResultCallback : public btCollisionWorld::ClosestConvexResultCallback
+    class ClosestNotMeConvexResultCallback final : public btCollisionWorld::ClosestConvexResultCallback
     {
     public:
 
@@ -30,11 +30,11 @@ namespace odBulletPhysics
     };
 
 
-    class ClosestRayCallback : public btCollisionWorld::RayResultCallback
+    class ClosestRayCallback final : public btCollisionWorld::RayResultCallback
     {
     public:
 
-        ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::Handle *exclude, odPhysics::RayTestResult &result);
+        ClosestRayCallback(const btVector3 &start, const btVector3 &end, odPhysics::PhysicsTypeMasks::Mask mask, std::shared_ptr<odPhysics::Handle> exclude, odPhysics::RayTestResult &result);
 
         virtual btScalar addSingleResult(btCollisionWorld::LocalRayResult& rayResult, bool normalInWorldSpace) override;
 
@@ -44,11 +44,11 @@ namespace odBulletPhysics
         odPhysics::RayTestResult &mResult;
         btVector3 mStart;
         btVector3 mEnd;
-        od::RefPtr<odPhysics::Handle> mExclude;
+        std::shared_ptr<odPhysics::Handle> mExclude;
     };
 
 
-    class AllRayCallback : public btCollisionWorld::RayResultCallback
+    class AllRayCallback final : public btCollisionWorld::RayResultCallback
     {
     public:
 
@@ -68,11 +68,11 @@ namespace odBulletPhysics
     };
 
 
-    class ContactResultCallback : public btCollisionWorld::ContactResultCallback
+    class ContactResultCallback final : public btCollisionWorld::ContactResultCallback
     {
     public:
 
-        ContactResultCallback(odPhysics::Handle *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
+        ContactResultCallback(btCollisionObject *me, odPhysics::PhysicsTypeMasks::Mask mask, odPhysics::ContactTestResultVector &results);
 
         inline size_t getContactCount() const { return mContactCount; }
 
@@ -81,7 +81,7 @@ namespace odBulletPhysics
 
     private:
 
-        odPhysics::Handle *mMe;
+        btCollisionObject *mMe;
         odPhysics::ContactTestResultVector &mResults;
         size_t mContactCount;
 

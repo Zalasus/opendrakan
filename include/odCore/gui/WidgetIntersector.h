@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ODCORE_GUI_WIDGETINTERSECTOR_H_
 #define INCLUDE_ODCORE_GUI_WIDGETINTERSECTOR_H_
 
+#include <memory>
 
 namespace odGui
 {
@@ -17,7 +18,7 @@ namespace odGui
     struct HitWidgetInfo
     {
         glm::vec2 hitPointInWidget;
-        Widget *widget;
+        Widget *widget; // FIXME: bare pointer, but the way widgets store themselves here makes a shared_ptr difficult
     };
 
 }

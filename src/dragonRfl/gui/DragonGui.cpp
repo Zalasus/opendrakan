@@ -7,14 +7,22 @@
 
 #include <dragonRfl/gui/DragonGui.h>
 
-#include <odCore/Engine.h>
-#include <odCore/db/DbManager.h>
+#include <odCore/Client.h>
+
 #include <odCore/rfl/PrefetchProbe.h>
+
+#include <odCore/db/DbManager.h>
+#include <odCore/db/DependencyTable.h>
+
+#include <odCore/gui/Quad.h>
+
+#include <odCore/render/Renderer.h>
 
 #include <dragonRfl/classes/UserInterfaceProperties.h>
 
 #include <dragonRfl/gui/Cursor.h>
 #include <dragonRfl/gui/MainMenu.h>
+#include <dragonRfl/gui/HealthIndicator.h>
 
 #define OD_INTERFACE_DB_PATH "Common/Interface/Interface.db"
 #define OD_DRAGONRRC_PATH "Dragon.rrc"
@@ -22,20 +30,17 @@
 namespace dragonRfl
 {
 
-    DragonGui::DragonGui(od::Engine &engine)
-    : odGui::Gui(*engine.getRenderer())
-    , mEngine(engine)
-    , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, engine.getEngineRootDir()).adjustCase())
-    , mRrcTextureFactory(*this, mRrcFile, engine)
+    DragonGui::DragonGui(od::Client &client)
+    : odGui::Gui(client.getRenderer(), client.getInputManager())
+    , mClient(client)
+    , mRrcFile(od::FilePath(OD_DRAGONRRC_PATH, client.getEngineRootDir()).adjustCase())
+    , mDummyDependencyTable(std::make_shared<odDb::DependencyTable>()) // currently, we still need an empty DependencyTable because assets assume to always have one
+    , mRrcTextureFactory(mDummyDependencyTable, mRrcFile)
     , mInterfaceDb(nullptr)
+    , mFaderQuad(client.getRenderer())
     {
-        if(engine.getRenderer() == nullptr)
-        {
-            Logger::warn() << "Created DragonGui using Engine without renderer. Prepare for chaos";
-        }
-
-        od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, engine.getEngineRootDir());
-        mInterfaceDb = &engine.getDbManager().loadDb(interfaceDbPath.adjustCase());
+        od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
+        mInterfaceDb = client.getDbManager().loadDatabase(interfaceDbPath.adjustCase());
 
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb->getClassFactory() == nullptr)
@@ -43,32 +48,39 @@ namespace dragonRfl
             throw od::Exception("Can not initialize user interface. Interface.db has no class container");
         }
 
-        odRfl::RflClassId uiPropsClassId = odRfl::RflClassTraits<UserInterfaceProperties>::classId();
+        odRfl::ClassId uiPropsClassId = UserInterfaceProperties::classId();
         od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
         if(id == odDb::AssetRef::NULL_REF.assetId)
         {
             throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
         }
 
-        od::RefPtr<odDb::Class> uiPropsClass = mInterfaceDb->getClass(id);
-        std::unique_ptr<odRfl::RflClass> uiPropsInstance = uiPropsClass->makeInstance();
-        mUserInterfaceProperties.reset(dynamic_cast<UserInterfaceProperties*>(uiPropsInstance.release()));
-        if(mUserInterfaceProperties == nullptr)
-        {
-            throw od::Exception("Could not cast or instantiate User Interface Properties instance");
-        }
-        mUserInterfaceProperties->onLoaded(engine);
+        std::shared_ptr<odDb::Class> uiPropsClass = mInterfaceDb->loadClass(id);
+        assert(uiPropsClass != nullptr); // this should not be null, given that the DB just gave us the ID
+        uiPropsClass->fillFields(mUserInterfaceProperties);
 
-        odRfl::PrefetchProbe probe(*mInterfaceDb);
-        mUserInterfaceProperties->probeFields(probe);
+        odRfl::PrefetchProbe probe(mInterfaceDb->getDependencyTable());
+        mUserInterfaceProperties.probeFields(probe);
 
-        auto cursor = od::make_refd<Cursor>(*this);
+        auto cursor = std::make_shared<Cursor>(*this);
         setCursorWidget(cursor);
 
         setCursorPosition(glm::vec2(0, 0));
 
-        mMainMenu = od::make_refd<MainMenu>(*this, mUserInterfaceProperties.get());
+        auto healthIndicator = std::make_shared<HealthIndicator>(*this);
+        healthIndicator->setOrigin(odGui::WidgetOrigin::BottomLeft);
+        healthIndicator->setPosition({0, 1});
+        addWidget(healthIndicator);
+
+        mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);
+
+        mFaderQuad.setVertexCoords({0,0}, {1,1});
+        mFaderQuad.setColor({0,0,0,0});
+        auto faderWidget = std::make_shared<odGui::Widget>(*this);
+        faderWidget->addRenderHandle(mFaderQuad.getHandle());
+        faderWidget->setZPosition(1000);
+        addWidget(faderWidget);
 
         setMenuMode(false);
     }
@@ -148,9 +160,17 @@ namespace dragonRfl
         return std::move(decryptedString);
     }
 
-    od::RefPtr<odDb::Texture> DragonGui::getTexture(od::RecordId recordId)
+    odGui::Quad DragonGui::makeQuadFromGuiTexture(od::RecordId id)
     {
-        return mRrcTextureFactory.getAsset(recordId);
+        auto &renderer = mClient.getRenderer();
+
+        odGui::Quad quad(renderer);
+        std::shared_ptr<odDb::Texture> dbTexture = mRrcTextureFactory.getAsset(id);
+        std::shared_ptr<odRender::Image> image = renderer.getOrCreateImageFromDb(dbTexture);
+        std::shared_ptr<odRender::Texture> texture = renderer.createTexture(image, odRender::TextureReuseSlot::NONE);
+        quad.setTexture(texture);
+
+        return std::move(quad);
     }
 
     void DragonGui::onMenuModeChanged()

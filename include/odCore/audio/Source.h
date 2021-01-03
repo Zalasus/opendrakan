@@ -8,9 +8,9 @@
 #ifndef INCLUDE_ODCORE_AUDIO_SOURCE_H_
 #define INCLUDE_ODCORE_AUDIO_SOURCE_H_
 
-#include <glm/vec3.hpp>
+#include <memory>
 
-#include <odCore/RefCounted.h>
+#include <glm/vec3.hpp>
 
 namespace odDb
 {
@@ -23,7 +23,7 @@ namespace odAudio
     class SoundManager;
     class Buffer;
 
-    class Source : public od::RefCounted
+    class Source
     {
     public:
 
@@ -49,11 +49,9 @@ namespace odAudio
         virtual void setLooping(bool looping) = 0;
         virtual void setGain(float gain) = 0;
 
-        virtual void setSound(odDb::Sound *s) = 0;
+        virtual void setSound(std::shared_ptr<odDb::Sound> s) = 0;
         virtual void play(float fadeInTime) = 0;
         virtual void stop(float fadeOutTime) = 0;
-
-        virtual void update(float relTime) = 0;
 
     };
 

@@ -26,7 +26,7 @@ namespace odOsg
         return mGeometries.size();
     }
 
-    odRender::Geometry *Model::getGeometry(size_t index)
+    std::shared_ptr<odRender::Geometry> Model::getGeometry(size_t index)
     {
         if(index >= mGeometries.size())
         {
@@ -36,7 +36,7 @@ namespace odOsg
         return mGeometries[index];
     }
 
-    void Model::addGeometry(odRender::Geometry *g)
+    void Model::addGeometry(std::shared_ptr<odRender::Geometry> g)
     {
         if(g == nullptr)
         {
@@ -50,7 +50,7 @@ namespace odOsg
         mGeode->addDrawable(geo->getOsgGeometry());
     }
 
-    void Model::removeGeometry(odRender::Geometry *g)
+    void Model::removeGeometry(std::shared_ptr<odRender::Geometry> g)
     {
         auto it = std::find(mGeometries.begin(), mGeometries.end(), g);
         if(it != mGeometries.end())
@@ -90,4 +90,3 @@ namespace odOsg
     }
 
 }
-

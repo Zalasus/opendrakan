@@ -26,7 +26,7 @@ namespace odBulletPhysics
     class BulletPhysicsSystem;
     class ModelShape;
 
-    class ObjectHandle : public odPhysics::ObjectHandle
+    class ObjectHandle final : public odPhysics::ObjectHandle
     {
     public:
 
@@ -49,7 +49,7 @@ namespace odBulletPhysics
         od::LevelObject &mLevelObject;
         btCollisionWorld *mCollisionWorld;
 
-        od::RefPtr<ModelShape> mModelShape;
+        std::shared_ptr<ModelShape> mModelShape;
 
         std::unique_ptr<btCollisionShape> mUniqueShape;
         std::unique_ptr<btCollisionObject> mCollisionObject;

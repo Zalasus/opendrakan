@@ -11,17 +11,44 @@
 
 #include <odCore/db/Class.h>
 #include <odCore/db/Model.h>
+#include <odCore/db/Texture.h>
 
 #include <odCore/render/Handle.h>
 
 namespace odRender
 {
 
-    od::RefPtr<Handle> Renderer::createHandleFromObject(od::LevelObject &obj)
+    std::shared_ptr<Model> Renderer::getOrCreateModelFromDb(std::shared_ptr<odDb::Model> model)
     {
-        auto handle = createHandle(RenderSpace::LEVEL);
+        OD_CHECK_ARG_NONNULL(model);
 
-        std::lock_guard<std::mutex> lock(handle->getMutex());
+        if(!model->getCachedRenderModel().expired())
+        {
+            return std::shared_ptr<odRender::Model>(model->getCachedRenderModel());
+        }
+
+        auto newRenderModel = this->createModelFromDb(model);
+        model->getCachedRenderModel() = newRenderModel;
+        return newRenderModel;
+    }
+
+    std::shared_ptr<Image> Renderer::getOrCreateImageFromDb(std::shared_ptr<odDb::Texture> dbTexture)
+    {
+        OD_CHECK_ARG_NONNULL(dbTexture);
+
+        if(!dbTexture->getCachedRenderImage().expired())
+        {
+            return std::shared_ptr<odRender::Image>(dbTexture->getCachedRenderImage());
+        }
+
+        auto newRenderTexture = this->createImageFromDb(dbTexture);
+        dbTexture->getCachedRenderImage() = newRenderTexture;
+        return newRenderTexture;
+    }
+
+    std::shared_ptr<Handle> Renderer::createHandleFromObject(od::LevelObject &obj)
+    {
+        auto handle = this->createHandle(RenderSpace::LEVEL);
 
         handle->setPosition(obj.getPosition());
         handle->setOrientation(obj.getRotation());
@@ -29,7 +56,7 @@ namespace odRender
 
         if(obj.getClass()->hasModel())
         {
-            auto model = obj.getClass()->getModel()->getOrCreateRenderModel(this);
+            auto model = this->createModelFromDb(obj.getModel());
             handle->setModel(model);
         }
 
@@ -37,4 +64,3 @@ namespace odRender
     }
 
 }
-

@@ -8,76 +8,82 @@
 #include <dragonRfl/classes/Detector.h>
 
 #include <dragonRfl/RflDragon.h>
-#include <dragonRfl/LocalPlayer.h>
+#include <dragonRfl/classes/HumanControl.h>
+
+#include <odCore/Server.h>
+#include <odCore/LevelObject.h>
 
 #include <odCore/rfl/Rfl.h>
-
-#include <odCore/LevelObject.h>
-#include <odCore/Level.h>
-#include <odCore/Engine.h>
 
 namespace dragonRfl
 {
 
-    Detector::Detector(DragonRfl &rfl)
-    : mTask(Task::TriggerOnly)
-    , mDetectWhich(DetectWhich::Both)
-    , mDetectMethod(DetectMethod::OutsideToInside)
-    , mOneWay(false)
-    , mTriggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
-    , mInitialState(InitialState::Enabled)
-    , mTriggerMessage(odRfl::RflMessage::Off)
-    , mDetectOnlyOnce(false)
-    , mSequenceToPlay(odDb::AssetRef::NULL_REF)
-    , mMessageString("")
-    , mDoesCaveEntranceTeleport(true)
-    , mDragonTakesOffUponTeleport(true)
-    , mRfl(rfl)
-    , mPlayerWasIn(false)
+    DetectorFields::DetectorFields()
+    : task(Task::TRIGGER_ONLY)
+    , detectWhich(DetectWhich::BOTH)
+    , detectMethod(DetectMethod::OUTSIDE_TO_INSIDE)
+    , oneWay(false)
+    , triggerOnlyIfCarryingItem(odDb::AssetRef::NULL_REF)
+    , initialState(InitialState::ENABLED)
+    , triggerMessage(od::Message::Off)
+    , detectOnlyOnce(false)
+    , sequenceToPlay(odDb::AssetRef::NULL_REF)
+    , messageString("")
+    , doesCaveEntranceTeleport(true)
+    , dragonTakesOffUponTeleport(true)
     {
     }
 
-    void Detector::probeFields(odRfl::FieldProbe &probe)
+    void DetectorFields::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Detector")
-                (mTask, "Task")
-                (mDetectWhich, "Detect Which?")
-                (mDetectMethod, "Detect Method")
-                (mOneWay, "One Way?")
-                (mTriggerOnlyIfCarryingItem, "Trigger Only If Carrying Item...")
-                (mInitialState, "Initial State")
-                (mTriggerMessage, "Trigger Message")
-                (mDetectOnlyOnce, "Detect Only Once?")
-                (mSequenceToPlay, "Sequence To Play")
-                (mMessageString, "Message String")
-                (mDoesCaveEntranceTeleport, "Does Cave Entrance Teleport?")
-                (mDragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
+                (task, "Task")
+                (detectWhich, "Detect Which?")
+                (detectMethod, "Detect Method")
+                (oneWay, "One Way?")
+                (triggerOnlyIfCarryingItem, "Trigger Only If Carrying Item...")
+                (initialState, "Initial State")
+                (triggerMessage, "Trigger Message")
+                (detectOnlyOnce, "Detect Only Once?")
+                (sequenceToPlay, "Sequence To Play")
+                (messageString, "Message String")
+                (doesCaveEntranceTeleport, "Does Cave Entrance Teleport?")
+                (dragonTakesOffUponTeleport, "Dragon Takes Off Upon Teleport?");
     }
 
-    void Detector::onLoaded(od::LevelObject &obj)
+
+    Detector_Sv::Detector_Sv()
+    : mPlayerWasIn(false)
     {
-        obj.setObjectType(od::LevelObjectType::Detector);
     }
 
-    void Detector::onSpawned(od::LevelObject &obj)
+    void Detector_Sv::onLoaded()
     {
-        obj.setEnableRflUpdateHook(true);
+    }
 
-        mPhysicsHandle = obj.getLevel().getEngine().getPhysicsSystem().createObjectHandle(obj, true);
+    void Detector_Sv::onSpawned()
+    {
+        getLevelObject().setEnableUpdate(true);
+
+        mPhysicsHandle = getServer().getPhysicsSystem().createObjectHandle(getLevelObject(), true);
         mPhysicsHandle->setEnableCollision(false);
     }
 
-    void Detector::onUpdate(od::LevelObject &obj, float relTime)
+    void Detector_Sv::onUpdate(float relTime)
     {
-        if(mTask != Task::TriggerOnly || mPhysicsHandle == nullptr)
+        if(mFields.task != DetectorFields::Task::TRIGGER_ONLY || mPhysicsHandle == nullptr)
         {
             return;
         }
 
-        od::LevelObject *playerObject = (mRfl.getLocalPlayer() != nullptr) ? &mRfl.getLocalPlayer()->getLevelObject() : nullptr;
+        od::LevelObject &obj = getLevelObject();
+
+        // TODO: since we currently only can detect the player (no definition of "NPC" exists yet), we could speed things up a bit by only
+        //  performing the costly contact test if the player position is inside our bounding sphere. later we should further improve this
+        //  by using a "single contact test" for the methods that only detect the player.
 
         mResultCache.clear();
-        obj.getLevel().getEngine().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::All, mResultCache);
+        getServer().getPhysicsSystem().contactTest(mPhysicsHandle, odPhysics::PhysicsTypeMasks::LevelObject, mResultCache);
 
         bool playerIsIn = false;
         for(auto &result : mResultCache)
@@ -88,7 +94,10 @@ namespace dragonRfl
                 continue;
             }
 
-            if(&objectHandle->getLevelObject() == playerObject)
+            // the server has no notion on what a "player" is, yet. to not break the detector, we check whether the
+            //  object in question is of the HumanControl class
+            odRfl::ClassId objectClassId = objectHandle->getLevelObject().getClass()->getRflClassId();
+            if(objectClassId == HumanControl::classId())
             {
                 playerIsIn = true;
                 break;
@@ -96,28 +105,23 @@ namespace dragonRfl
         }
 
         bool triggered = false;
-        switch(mDetectMethod)
+        switch(mFields.detectMethod)
         {
-        case DetectMethod::InsideToOutside:
+        case DetectorFields::DetectMethod::INSIDE_TO_OUTSIDE:
             triggered = mPlayerWasIn && !playerIsIn;
             break;
 
-        case DetectMethod::OutsideToInside:
+        case DetectorFields::DetectMethod::OUTSIDE_TO_INSIDE:
             triggered = !mPlayerWasIn && playerIsIn;
             break;
         }
 
         if(triggered)
         {
-            obj.messageAllLinkedObjects(mTriggerMessage);
+            obj.messageAllLinkedObjects(mFields.triggerMessage);
         }
 
         mPlayerWasIn = playerIsIn;
     }
 
-    OD_REGISTER_RFLCLASS(DragonRfl, Detector);
-
 }
-
-
-

@@ -11,77 +11,102 @@
 
 #include <odCore/rfl/Rfl.h>
 
+#include <odCore/Client.h>
 #include <odCore/Level.h>
-#include <odCore/Engine.h>
 #include <odCore/LevelObject.h>
+#include <odCore/Layer.h>
 
 #include <odCore/physics/PhysicsSystem.h>
+
+#include <odCore/render/Renderer.h>
 
 namespace dragonRfl
 {
 
-	Building::Building(DragonRfl &rfl)
-	: mInitialHealth(0)
-	, mSnapMode(0)
-	, mSoundEffectObject(odDb::AssetRef::NULL_REF)
-	, mIsDoorWay(false)
-	, mCanArokhLandOn(false)
-	, mDoorWayAlong(0)
-	, mMessageToSend(odRfl::RflMessage::Off)
+    BuildingFields::BuildingFields()
+    : initialHealth(0)
+	, snapMode(0)
+	, soundEffectObject(odDb::AssetRef::NULL_REF)
+	, isDoorWay(false)
+	, canArokhLandOn(false)
+	, doorWayAlong(0)
+	, messageToSend(od::Message::Off)
 	, m2DExplosionObject(odDb::AssetRef::NULL_REF)
-	, mExplosionGenerator(odDb::AssetRef::NULL_REF)
-	, mSmokeGenerator(odDb::AssetRef::NULL_REF)
-	, mRubbleAnimation({})
-	, mRubbleAnimRate(6.0)
-	, mFlammable(true)
-	, mPushOverMode(0)
-	, mFallWhenDead(true)
-	, mHitGroundSound(odDb::AssetRef::NULL_REF)
-	, mSendMessageWhenPushed(true)
-	, mMessageToSendWhenPushed(odRfl::RflMessage::Off)
-	, mSendMessageAfterPushed(true)
-	, mMessageToSendAfterPushed(odRfl::RflMessage::Off)
-	{
-	}
-
-	void Building::probeFields(odRfl::FieldProbe &probe)
+	, explosionGenerator(odDb::AssetRef::NULL_REF)
+	, smokeGenerator(odDb::AssetRef::NULL_REF)
+	, rubbleAnimation({})
+	, rubbleAnimRate(6.0)
+	, flammable(true)
+	, pushOverMode(0)
+	, fallWhenDead(true)
+	, hitGroundSound(odDb::AssetRef::NULL_REF)
+	, sendMessageWhenPushed(true)
+	, messageToSendWhenPushed(od::Message::Off)
+	, sendMessageAfterPushed(true)
+	, messageToSendAfterPushed(od::Message::Off)
     {
-		probe("Basics")
-				(mInitialHealth, "Initial Health")
-				(mSnapMode, "Snap Mode")
-				(mSoundEffectObject, "Sound Effect Object")
-				(mIsDoorWay, "Is Door Way?")
-				(mCanArokhLandOn, "Can Arokh Land On?")
-				(mDoorWayAlong, "Door Way Along")
+    }
+
+    void BuildingFields::probeFields(odRfl::FieldProbe &probe)
+    {
+        probe("Basics")
+				(initialHealth, "Initial Health")
+				(snapMode, "Snap Mode")
+				(soundEffectObject, "Sound Effect Object")
+				(isDoorWay, "Is Door Way?")
+				(canArokhLandOn, "Can Arokh Land On?")
+				(doorWayAlong, "Door Way Along")
 			("Destruction")
-				(mMessageToSend, "Message To Send")
+				(messageToSend, "Message To Send")
 				(m2DExplosionObject, "2D Explosion Object")
-				(mExplosionGenerator, "Explosion Generator")
-				(mSmokeGenerator, "Smoke Generator")
-				(mRubbleAnimation, "Rubble Animation")
-				(mRubbleAnimRate, "Rubble Anim Rate")
-				(mFlammable, "Flammable")
+				(explosionGenerator, "Explosion Generator")
+				(smokeGenerator, "Smoke Generator")
+				(rubbleAnimation, "Rubble Animation")
+				(rubbleAnimRate, "Rubble Anim Rate")
+				(flammable, "Flammable")
 			("Physics")
-				(mPushOverMode, "Push Over Mode")
-				(mFallWhenDead, "Fall When Dead")
-				(mHitGroundSound, "Hit Ground Sound")
-				(mSendMessageWhenPushed, "Send Message When Pushed?")
-				(mMessageToSendWhenPushed, "Message To Send When Pushed")
-				(mSendMessageAfterPushed, "Send Message After Pushed?")
-				(mMessageToSendAfterPushed, "Message to Send After Pushed");
+				(pushOverMode, "Push Over Mode")
+				(fallWhenDead, "Fall When Dead")
+				(hitGroundSound, "Hit Ground Sound")
+				(sendMessageWhenPushed, "Send Message When Pushed?")
+				(messageToSendWhenPushed, "Message To Send When Pushed")
+				(sendMessageAfterPushed, "Send Message After Pushed?")
+				(messageToSendAfterPushed, "Message to Send After Pushed");
     }
 
-    void Building::onSpawned(od::LevelObject &obj)
+
+    void Building_Sv::onSpawned()
 	{
-        DefaultObjectClass::onSpawned(obj);
 	}
 
-    void Building::onDespawned(od::LevelObject &obj)
+    void Building_Sv::onDespawned()
     {
-        DefaultObjectClass::onDespawned(obj);
     }
 
 
-    OD_REGISTER_RFLCLASS(DragonRfl, Building);
+    Building_Cl::Building_Cl()
+    : mHealth(0.0)
+    {
+    }
+
+    void Building_Cl::onLoaded()
+    {
+        mHealth = mFields.initialHealth;
+    }
+
+    void Building_Cl::onSpawned()
+    {
+        auto &obj = getLevelObject();
+
+        obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::SOLID);
+    }
+
+    DamageResult Building_Cl::onAttackHit(od::LevelObject &attacker, const Damage &damage)
+    {
+        mHealth -= damage.strength;
+        if(mHealth < 0) mHealth = 0;
+
+        return DamageResult::HIT;
+    }
 
 }

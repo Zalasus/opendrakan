@@ -8,6 +8,7 @@
 #ifndef INCLUDE_ODCORE_LIGHTCALLBACK_H_
 #define INCLUDE_ODCORE_LIGHTCALLBACK_H_
 
+#include <memory>
 
 namespace od
 {
@@ -19,8 +20,8 @@ namespace od
 
         virtual ~LightCallback() = default;
 
-        virtual void removeAffectingLight(od::Light *light) = 0;
-        virtual void addAffectingLight(od::Light *light) = 0;
+        virtual void removeAffectingLight(std::shared_ptr<od::Light> light) = 0;
+        virtual void addAffectingLight(std::shared_ptr<od::Light> light) = 0;
         virtual void clearLightList() = 0;
 
     };

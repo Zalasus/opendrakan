@@ -8,15 +8,13 @@
 #ifndef INCLUDE_ODCORE_PHYSICS_MODELSHAPE_H_
 #define INCLUDE_ODCORE_PHYSICS_MODELSHAPE_H_
 
-#include <odCore/RefCounted.h>
-
 namespace odPhysics
 {
 
     /**
      * Abstract interface for a model's bounding shape. Implementation is provided by the physics system.
      */
-    class ModelShape : public od::RefCounted
+    class ModelShape
     {
     public:
 

@@ -11,7 +11,6 @@
 #include <vector>
 
 #include <odCore/LightCallback.h>
-#include <odCore/RefCounted.h>
 
 namespace odPhysics
 {
@@ -41,11 +40,11 @@ namespace od
          * @param physicsHandle  Physics object handle to use for light queries. Not nullptr
          * @param renderHandle   Render handle to receive the discovered lights. May be nullptr
          */
-        ObjectLightReceiver(odPhysics::PhysicsSystem &ps, odPhysics::ObjectHandle *physicsHandle, odRender::Handle *renderHandle);
+        ObjectLightReceiver(odPhysics::PhysicsSystem &ps, std::shared_ptr<odPhysics::ObjectHandle> physicsHandle, std::shared_ptr<odRender::Handle> renderHandle);
         virtual ~ObjectLightReceiver();
 
-        virtual void removeAffectingLight(od::Light *light) override;
-        virtual void addAffectingLight(od::Light *light) override;
+        virtual void removeAffectingLight(std::shared_ptr<od::Light> light) override;
+        virtual void addAffectingLight(std::shared_ptr<od::Light> light) override;
         virtual void clearLightList() override;
 
         void updateAffectingLights();
@@ -54,10 +53,10 @@ namespace od
     private:
 
         odPhysics::PhysicsSystem &mPhysicsSystem;
-        od::RefPtr<odPhysics::ObjectHandle> mPhysicsHandle;
-        od::RefPtr<odRender::Handle> mRenderHandle;
+        std::shared_ptr<odPhysics::ObjectHandle> mPhysicsHandle;
+        std::shared_ptr<odRender::Handle> mRenderHandle;
 
-        std::vector<od::RefPtr<Light>> mAffectingLights;
+        std::vector<std::shared_ptr<Light>> mAffectingLights;
 
     };
 

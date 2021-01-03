@@ -14,31 +14,47 @@
 
 #include <odCore/render/Renderer.h>
 
-#include <odCore/Engine.h>
+#include <odCore/Client.h>
 #include <odCore/LevelObject.h>
-#include <odCore/Level.h>
 
 namespace dragonRfl
 {
 
-    AnimationDemo::AnimationDemo(DragonRfl &rfl)
+    AnimationDemoFields::AnimationDemoFields()
     : mAnimations({})
     , mSwitchPeriodSeconds(10.0)
-    , mFirstUpdate(true)
-    , mRunningTime(0.0)
-    , mCurrentAnimIndex(0)
     {
     }
 
-    void AnimationDemo::probeFields(odRfl::FieldProbe &probe)
+    void AnimationDemoFields::probeFields(odRfl::FieldProbe &probe)
     {
         probe("Animation Demo")
                 (mAnimations, "Animations")
                 (mSwitchPeriodSeconds, "Switch Period (s)");
     }
 
-    void AnimationDemo::onSpawned(od::LevelObject &obj)
+
+    AnimationDemo::AnimationDemo()
+    : mFirstUpdate(true)
+    , mRunningTime(0.0)
+    , mCurrentAnimIndex(0)
     {
+    }
+
+    odRfl::Spawnable *AnimationDemo::getSpawnable()
+    {
+        return this;
+    }
+
+    odRfl::FieldBundle &AnimationDemo::getFieldBundle()
+    {
+        return *this;
+    }
+
+    void AnimationDemo::onSpawned()
+    {
+        od::LevelObject &obj = getLevelObject();
+
         if(!obj.getClass()->hasModel())
         {
             return;
@@ -46,12 +62,7 @@ namespace dragonRfl
 
         mAnimations.fetchAssets(obj.getClass()->getModel()->getAssetProvider());
 
-        odRender::Renderer *renderer = obj.getLevel().getEngine().getRenderer();
-        if(renderer == nullptr)
-        {
-            return;
-        }
-        mRenderHandle = renderer->createHandleFromObject(obj);
+        mRenderHandle = getClient().getRenderer().createHandleFromObject(obj);
 
         odAnim::Skeleton *skeleton = obj.getOrCreateSkeleton();
         if(skeleton == nullptr)
@@ -60,12 +71,12 @@ namespace dragonRfl
             return;
         }
 
-        mPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(mRenderHandle, skeleton);
+        mAnimPlayer = std::make_unique<odAnim::SkeletonAnimationPlayer>(skeleton);
 
-        obj.setEnableRflUpdateHook(true);
+        obj.setEnableUpdate(true);
     }
 
-    void AnimationDemo::onUpdate(od::LevelObject &obj, float relTime)
+    void AnimationDemo::onUpdate(float relTime)
     {
         if(mAnimations.getAssetCount() == 0)
         {
@@ -86,20 +97,26 @@ namespace dragonRfl
             }
 
             odDb::Animation *currentAnimation = mAnimations.getAsset(mCurrentAnimIndex);
-            if(currentAnimation == nullptr || mPlayer == nullptr)
+            if(currentAnimation == nullptr || mAnimPlayer == nullptr)
             {
                 return;
             }
 
             auto playbackType = currentAnimation->isLooping() ? odAnim::PlaybackType::Looping : odAnim::PlaybackType::Normal;
 
-            mPlayer->playAnimation(currentAnimation, playbackType, 1.0f);
+            mAnimPlayer->playAnimation(currentAnimation, playbackType, 1.0f);
 
             Logger::verbose() << "Animation Demo now playing '" << currentAnimation->getName() << "'";
         }
+
+        if(mAnimPlayer != nullptr)
+        {
+            bool skeletonChanged = mAnimPlayer->update(relTime);
+            if(skeletonChanged && mRenderHandle != nullptr)
+            {
+                getLevelObject().getOrCreateSkeleton()->flatten(mRenderHandle->getRig());
+            }
+        }
     }
-
-
-    OD_REGISTER_RFLCLASS(DragonRfl, AnimationDemo);
 
 }

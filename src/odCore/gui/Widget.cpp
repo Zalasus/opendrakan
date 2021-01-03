@@ -17,37 +17,90 @@
 #include <odCore/gui/Gui.h>
 
 #include <odCore/render/Renderer.h>
-#include <odCore/render/GuiNode.h>
+#include <odCore/render/Handle.h>
+#include <odCore/render/Group.h>
 
 namespace odGui
 {
-
     Widget::Widget(Gui &gui)
-    : Widget(gui, nullptr)
-    {
-        // don't put this in the initializer list, especially not as an argument
-        //  to the other constructor. undefined evalutation order may fuck up the
-        //  weak reference created by the GuiNode
-        mRenderNode = mGui.getRenderer().createGuiNode(this);
-    }
-
-    Widget::Widget(Gui &gui, odRender::GuiNode *node)
     : mGui(gui)
     , mOrigin(WidgetOrigin::TopLeft)
     , mDimensionType(WidgetDimensionType::ParentRelative)
     , mDimensions(1.0, 1.0)
     , mPositionInParentSpace(0.0, 0.0)
-    , mZIndex(0)
+    , mDepthInParentSpace(1.0)
+    , mZPositionInParentSpace(0.0)
+    , mVisible(true)
     , mParentWidget(nullptr)
+    , mNeedsUpdate(false)
     , mMatrixDirty(true)
     , mMouseOver(false)
-    , mChildOrderDirty(false)
-    , mRenderNode(node)
     {
     }
 
     Widget::~Widget()
     {
+    }
+
+    void Widget::setPosition(const glm::vec2 &pos)
+    {
+        // TODO: handle edge cases where we have no children and could directly apply the change from a stored, previously flattened matrix
+        mPositionInParentSpace = pos;
+        mMatrixDirty = true;
+
+        mGui.markNeedsFlattening();
+    }
+
+    void Widget::setDimensions(const glm::vec2 &dim)
+    {
+        mDimensions = dim;
+        mMatrixDirty = true;
+
+        mGui.markMeasurementsDirty();
+        mGui.markNeedsFlattening();
+    }
+
+    void Widget::setDimensions(const glm::vec2 &dim, WidgetDimensionType type)
+    {
+        mDimensions = dim;
+        mDimensionType = type;
+        mMatrixDirty = true;
+
+        mGui.markMeasurementsDirty();
+        mGui.markNeedsFlattening();
+    }
+
+    void Widget::setDimensionType(WidgetDimensionType type)
+    {
+        mDimensionType = type;
+        mMatrixDirty = true;
+
+        mGui.markMeasurementsDirty();
+        mGui.markNeedsFlattening();
+    }
+
+    void Widget::setOrigin(WidgetOrigin origin)
+    {
+        mOrigin = origin;
+        mMatrixDirty = true;
+
+        mGui.markNeedsFlattening();
+    }
+
+    void Widget::setDepth(float d)
+    {
+        mDepthInParentSpace = d;
+        mMatrixDirty = true;
+
+        mGui.markNeedsFlattening();
+    }
+
+    void Widget::setZPosition(float z)
+    {
+        mZPositionInParentSpace = z;
+        mMatrixDirty = true;
+
+        mGui.markNeedsFlattening();
     }
 
     bool Widget::liesWithinLogicalArea(const glm::vec2 &pos)
@@ -71,154 +124,207 @@ namespace odGui
     {
     }
 
-    void Widget::addChild(Widget *w)
+    void Widget::addChild(std::shared_ptr<Widget> w)
     {
-        if(w == nullptr || w == this)
+        OD_CHECK_ARG_NONNULL(w);
+
+        if(w->mParentWidget != nullptr)
         {
-            return;
+            throw od::Exception("Tried to add Widget that already had a parent");
         }
 
-        mChildWidgets.push_back(od::RefPtr<Widget>(w));
+        mChildWidgets.push_back(w);
+        w->mParentWidget = this;
 
-        w->setParent(this);
-
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->addChild(w->getRenderNode());
-        }
+        mGui.markMeasurementsDirty();
+        mGui.markNeedsFlattening();
     }
 
-    void Widget::removeChild(Widget *w)
+    void Widget::removeChild(std::shared_ptr<Widget> w)
     {
-        if(w == nullptr || w == this)
-        {
-            return;
-        }
+        OD_CHECK_ARG_NONNULL(w);
 
         auto it = std::find(mChildWidgets.begin(), mChildWidgets.end(), w);
         if(it != mChildWidgets.end())
         {
+            w->mParentWidget = nullptr;
+            w->_moveToNoneRenderSpaceRecursive();
             mChildWidgets.erase(it);
-
-            if(mRenderNode != nullptr)
-            {
-                mRenderNode->removeChild(w->getRenderNode());
-            }
         }
 
-        w->setParent(nullptr);
+        // removing a widget from the tree does not invalidate the flattened hierarchy!
     }
 
-    void Widget::intersect(const glm::vec2 &pointNdc, const glm::mat4 &parentMatrix, std::vector<HitWidgetInfo> &hitWidgets)
+    void Widget::addRenderHandle(std::shared_ptr<odRender::Handle> r)
     {
-        glm::mat4 currentMatrix = mParentSpaceToWidgetSpace * parentMatrix;
+        OD_CHECK_ARG_NONNULL(r);
 
-        glm::vec4 pointInWidget = currentMatrix * glm::vec4(pointNdc, 0.0, 1.0);
-
-        if(this->liesWithinLogicalArea(glm::vec2(pointInWidget)))
+        if(mRenderGroup == nullptr)
         {
-            HitWidgetInfo info;
-            info.hitPointInWidget.x = pointInWidget.x;
-            info.hitPointInWidget.y = pointInWidget.y;
-            info.widget = this;
-            hitWidgets.push_back(info);
+            // create without renderspace. will be moved to GUI space once encountered during flattening
+            mRenderGroup = mGui.getRenderer().createGroup(odRender::RenderSpace::NONE);
+            mRenderGroup->setVisible(mVisible);
+        }
 
-            for(auto &&child : mChildWidgets)
-            {
-                child->intersect(pointNdc, currentMatrix, hitWidgets);
-            }
+        mRenderGroup->addHandle(r);
+    }
+
+    void Widget::removeRenderHandle(std::shared_ptr<odRender::Handle> r)
+    {
+        OD_CHECK_ARG_NONNULL(r);
+
+        if(mRenderGroup != nullptr)
+        {
+            mRenderGroup->removeHandle(r);
         }
     }
 
-    glm::vec2 Widget::getDimensionsInPixels()
+    void Widget::intersect(const glm::vec2 &point, std::vector<HitWidgetInfo> &hitWidgets)
     {
-        if(this->getDimensionType() == WidgetDimensionType::Pixels)
-        {
-            return this->getDimensions();
-
-        }else
-        {
-            if(mParentWidget == nullptr)
-            {
-                throw od::Exception("Widget without parent asked to translate parent-relative dimensions to pixels. Is the GuiManager's root widget configured properly?");
-            }
-
-            return mParentWidget->getDimensionsInPixels() * this->getDimensions();
-        }
+        _intersectRecursive(point, hitWidgets);
     }
 
     void Widget::setVisible(bool b)
     {
-        if(mRenderNode != nullptr)
+        mVisible = b;
+
+        if(mRenderGroup != nullptr)
         {
-            mRenderNode->setVisible(b);
+            mRenderGroup->setVisible(mVisible);
+        }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->setVisible(b);
         }
     }
 
-    void Widget::setZIndex(int32_t zIndex)
+    void Widget::setPerspectiveMode(float fov, float aspect)
     {
-        mZIndex = zIndex;
-
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setZIndex(zIndex);
-        }
-
-        if(mParentWidget != nullptr)
-        {
-            mParentWidget->mChildOrderDirty = true;
-        }
     }
 
-    void Widget::reorderChildren()
+    void Widget::setOrthogonalMode()
     {
-        auto pred = [](od::RefPtr<Widget> &left, od::RefPtr<Widget> &right) { return left->getZIndex() < right->getZIndex(); };
-        std::sort(mChildWidgets.begin(), mChildWidgets.end(), pred);
-
-        mChildOrderDirty = false;
     }
 
-    void Widget::updateMatrix()
+    void Widget::setEnableUpdate(bool needsUpdate)
     {
-        if(mParentWidget == nullptr)
-        {
-            mParentSpaceToWidgetSpace = mGui.getNdcToWidgetSpaceTransform();
-            mWidgetSpaceToParentSpace = mGui.getWidgetSpaceToNdcTransform();
-
-        }else
-        {
-            mWidgetSpaceToParentSpace = glm::mat4(1.0);
-            mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(mPositionInParentSpace, 0.0));
-            glm::vec2 widgetSizeInParentSpace =
-                    (mDimensionType == WidgetDimensionType::ParentRelative) ?
-                      mDimensions : (getDimensionsInPixels() / mParentWidget->getDimensionsInPixels());
-            mWidgetSpaceToParentSpace = glm::scale(mWidgetSpaceToParentSpace, glm::vec3(widgetSizeInParentSpace, 1.0));
-            mWidgetSpaceToParentSpace = glm::translate(mWidgetSpaceToParentSpace, glm::vec3(-_getOriginVector(), 0.0));
-
-            mParentSpaceToWidgetSpace = glm::inverse(mWidgetSpaceToParentSpace);
-        }
-
-        if(mRenderNode != nullptr)
-        {
-            mRenderNode->setMatrix(glm::transpose(mWidgetSpaceToParentSpace));
-        }
-
-        mMatrixDirty = false;
+        mNeedsUpdate = needsUpdate;
     }
 
     void Widget::update(float relTime)
     {
-        if(mMatrixDirty)
+        if(mNeedsUpdate)
         {
-            updateMatrix();
+            this->onUpdate(relTime);
         }
 
-        this->onUpdate(relTime);
+        for(auto &child : mChildWidgets)
+        {
+            child->update(relTime);
+        }
     }
 
-    odRender::GuiNode *Widget::getRenderNode()
+    void Widget::measure(glm::vec2 parentDimensionsPx)
     {
-        return mRenderNode;
+        switch(mDimensionType)
+        {
+        case WidgetDimensionType::ParentRelative:
+            mMeasuredDimensionsPx = parentDimensionsPx * mDimensions;
+            break;
+
+        case WidgetDimensionType::Pixels:
+            mMeasuredDimensionsPx = mDimensions;
+            break;
+        }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->measure(mMeasuredDimensionsPx);
+        }
+    }
+
+    void Widget::flatten()
+    {
+        glm::mat4 m(1.0);
+        _flattenRecursive(m);
+    }
+
+    void Widget::_moveToNoneRenderSpaceRecursive()
+    {
+        mGui.getRenderer().moveToRenderSpace(mRenderGroup, odRender::RenderSpace::NONE);
+
+        for(auto &child : mChildWidgets)
+        {
+            child->_moveToNoneRenderSpaceRecursive();
+        }
+    }
+
+    void Widget::_recalculateMatrix()
+    {
+        glm::vec2 mySizeInParentSpace;
+        switch(mDimensionType)
+        {
+        case WidgetDimensionType::ParentRelative:
+            mySizeInParentSpace = mDimensions;
+            break;
+
+        case WidgetDimensionType::Pixels:
+            if(mParentWidget == nullptr) throw od::UnsupportedException("Set pixels dimensions on a root widget. This is unsupported");
+            mySizeInParentSpace = getMeasuredDimensions() / mParentWidget->getMeasuredDimensions();
+            break;
+        }
+
+        mParentSpaceToMySpace = glm::mat4(1.0);
+        auto offsetOfCoordinateOrigin = mPositionInParentSpace - _getOriginVector()*mySizeInParentSpace;
+        mParentSpaceToMySpace = glm::scale(mParentSpaceToMySpace, glm::vec3(1.0/mySizeInParentSpace.x, 1.0/mySizeInParentSpace.y, 1.0/mDepthInParentSpace));
+        mParentSpaceToMySpace = glm::translate(mParentSpaceToMySpace, glm::vec3(-offsetOfCoordinateOrigin, -mZPositionInParentSpace));
+
+        mMySpaceToParentSpace = glm::inverse(mParentSpaceToMySpace);
+
+        mMatrixDirty = false;
+    }
+
+    void Widget::_flattenRecursive(const glm::mat4 &parentToRoot)
+    {
+        if(mMatrixDirty)
+        {
+            _recalculateMatrix();
+        }
+
+        glm::mat4 thisToRoot = parentToRoot * mMySpaceToParentSpace;
+        if(mRenderGroup != nullptr)
+        {
+            mRenderGroup->setMatrix(thisToRoot);
+
+            // if this gets called, we are connected to the root widget and thus
+            //  can move our render group to the GUI space
+            mGui.getRenderer().moveToRenderSpace(mRenderGroup, odRender::RenderSpace::GUI);
+        }
+
+        for(auto &child : mChildWidgets)
+        {
+            child->_flattenRecursive(thisToRoot);
+        }
+    }
+
+    void Widget::_intersectRecursive(const glm::vec2 &pointInParent, std::vector<HitWidgetInfo> &hitWidgets)
+    {
+        glm::vec2 pointInThis(mParentSpaceToMySpace * glm::vec4(pointInParent, 0.0, 1.0));
+
+        if(this->liesWithinLogicalArea(pointInThis))
+        {
+            HitWidgetInfo info;
+            info.hitPointInWidget.x = pointInThis.x;
+            info.hitPointInWidget.y = pointInThis.y;
+            info.widget = this;
+            hitWidgets.push_back(info);
+
+            for(auto &child : mChildWidgets)
+            {
+                child->_intersectRecursive(pointInThis, hitWidgets);
+            }
+        }
     }
 
     glm::vec2 Widget::_getOriginVector()

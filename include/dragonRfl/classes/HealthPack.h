@@ -19,7 +19,7 @@ namespace dragonRfl
 	{
 	public:
 
-		HealthPack(DragonRfl &rfl);
+		HealthPack();
 
 		virtual void probeFields(odRfl::FieldProbe &probe) override;
 
@@ -32,6 +32,6 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x000A, "Item", "Health Pack", dragonRfl::HealthPack);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::HealthPack, 0x000A, "Item", "Health Pack");
 
 #endif /* INCLUDE_RFL_DRAGON_HEALTHPACK_H_ */

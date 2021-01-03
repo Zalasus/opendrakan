@@ -8,66 +8,63 @@
 #ifndef INCLUDE_RFL_COMMON_PLAYERCOMMON_H_
 #define INCLUDE_RFL_COMMON_PLAYERCOMMON_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
 
-    class PlayerCommon : public odRfl::RflClass
+    class PlayerCommonFields : public odRfl::FieldBundle
     {
     public:
 
-        PlayerCommon();
+        PlayerCommonFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-
-    protected:
-
-        odRfl::SoundRefArray    mSeparatedSounds;
-        odRfl::Integer          mSeparatedSoundChance;
-        odRfl::Float            mCameraHorzDistance;
-        odRfl::Float            mCameraVertDistance;
-        odRfl::Float            mCameraTiltFactor;
-        odRfl::Float            mCameraCollisionTiltFactor;
-        odRfl::Float            mMaxProximity;
-        odRfl::AnimRef          mReadyAnim;
-        odRfl::AnimRef          mWalkAnim;
-        odRfl::AnimRef          mRunAnim;
-        odRfl::AnimRef          mGroundStrafeLAnim;
-        odRfl::AnimRef          mGroundStrafeRAnim;
-        odRfl::AnimRefArray     mIdleAnims;
-        odRfl::Float            mRunSpeed;
-        odRfl::Float            mWalkSpeed;
-        odRfl::Float            mWalkBackSpeed;
-        odRfl::Float            mThrottleAccel;
-        odRfl::Float            mThrottleDecel;
-        odRfl::Float            mSideStrafeSpeed;
-        odRfl::Float            mRollSpeed;
-        odRfl::Float            mPitchSpeed;
-        odRfl::Float            mSideAccel;
-        odRfl::Float            mRollDamping;
-        odRfl::Float            mPitchDamping;
-        odRfl::CharChannel      mNeckChannel;
-        odRfl::CharChannel      mHeadChannel;
-        odRfl::Integer          mFootSphere;
-        odRfl::Integer          mBeginHealth;
-        odRfl::ClassRef         mGotHitBloodGen;
-        odRfl::AnimRefArray     mGroundDeathAnims;
-        odRfl::ClassRef         m3DExplosion;
-        odRfl::SoundRef         mDeathSound;
-        odRfl::ClassRef         mAmputationBloodGen;
-        odRfl::ClassRef         mBodyPart;
-        odRfl::ClassRef         mBodyPartLarge;
-        odRfl::Float            mBodyPartPercentage;
-        odRfl::CharChannelArray mChoppableChansAlive;
-        odRfl::Integer          mGibCutoff;
-        odRfl::ClassRefArray    mGibGensLarge;
-        odRfl::ClassRefArray    mGibGensSmall;
-        odRfl::CharChannelArray mLargeGibChans;
-        odRfl::Float            mBodyPartVelocity;
+        odRfl::SoundRefArray    separatedSounds;
+        odRfl::Integer          separatedSoundChance;
+        odRfl::Float            cameraHorzDistance;
+        odRfl::Float            cameraVertDistance;
+        odRfl::Float            cameraTiltFactor;
+        odRfl::Float            cameraCollisionTiltFactor;
+        odRfl::Float            maxProximity;
+        odRfl::AnimRef          readyAnim;
+        odRfl::AnimRef          walkAnim;
+        odRfl::AnimRef          runAnim;
+        odRfl::AnimRef          groundStrafeLAnim;
+        odRfl::AnimRef          groundStrafeRAnim;
+        odRfl::AnimRefArray     idleAnims;
+        odRfl::Float            runSpeed;
+        odRfl::Float            walkSpeed;
+        odRfl::Float            walkBackSpeed;
+        odRfl::Float            throttleAccel;
+        odRfl::Float            throttleDecel;
+        odRfl::Float            sideStrafeSpeed;
+        odRfl::Float            rollSpeed;
+        odRfl::Float            pitchSpeed;
+        odRfl::Float            sideAccel;
+        odRfl::Float            rollDamping;
+        odRfl::Float            pitchDamping;
+        odRfl::CharChannel      neckChannel;
+        odRfl::CharChannel      headChannel;
+        odRfl::Integer          footSphere;
+        odRfl::Integer          beginHealth;
+        odRfl::ClassRef         gotHitBloodGen;
+        odRfl::AnimRefArray     groundDeathAnims;
+        odRfl::ClassRef         _3DExplosion;
+        odRfl::SoundRef         deathSound;
+        odRfl::ClassRef         amputationBloodGen;
+        odRfl::ClassRef         bodyPart;
+        odRfl::ClassRef         bodyPartLarge;
+        odRfl::Float            bodyPartPercentage;
+        odRfl::CharChannelArray choppableChansAlive;
+        odRfl::Integer          gibCutoff;
+        odRfl::ClassRefArray    gibGensLarge;
+        odRfl::ClassRefArray    gibGensSmall;
+        odRfl::CharChannelArray largeGibChans;
+        odRfl::Float            bodyPartVelocity;
     };
 }
 

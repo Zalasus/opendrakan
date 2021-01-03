@@ -10,13 +10,13 @@
 
 #include <algorithm>
 
-#include <odCore/OdDefines.h>
+#include <odCore/Client.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
 #include <odCore/ZStream.h>
 #include <odCore/Exception.h>
-#include <odCore/Engine.h>
+#include <odCore/Layer.h>
 #include <odCore/LevelObject.h>
 #include <odCore/BoundingBox.h>
 
@@ -26,65 +26,53 @@
 namespace od
 {
 
-    Level::Level(const FilePath &levelPath, Engine &engine)
-    : mLevelPath(levelPath)
-    , mEngine(engine)
-    , mDbManager(engine.getDbManager())
+    Level::Level(Engine engine)
+    : mEngine(engine)
+    , mPhysicsSystem(engine.getPhysicsSystem())
+    , mRenderer(nullptr)
     , mMaxWidth(0)
     , mMaxHeight(0)
+    , mDependencyTable(std::make_shared<odDb::DependencyTable>())
+    , mVerticalExtent(0)
+    , mCurrentActivePvsLayer(nullptr)
     {
+        if(engine.isClient())
+        {
+            mRenderer = &engine.getClient().getRenderer();
+        }
     }
 
     Level::~Level()
     {
     	// despawn all remaining objects
-    	for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+    	for(auto &objMap : mLevelObjects)
     	{
-    		(*it)->despawned();
+    		objMap.second->despawn();
     	}
     }
 
-    void Level::loadLevel()
+    void Level::loadLevel(const FilePath &levelPath, odDb::DbManager &dbManager)
     {
-        Logger::info() << "Loading level " << mLevelPath.str();
+        Logger::info() << "Loading level " << levelPath.str();
 
-        SrscFile file(mLevelPath);
+        SrscFile file(levelPath);
 
-        _loadNameAndDeps(file);
+        _loadNameAndDeps(file, dbManager);
         _loadLayers(file);
         //_loadLayerGroups(file); unnecessary, as this is probably just an editor thing
-        _loadObjects(file);
-
-        for(auto &object : mLevelObjects)
-        {
-            object->buildLinks();
-        }
+        _loadObjects(file, dbManager);
 
         Logger::info() << "Level loaded successfully";
     }
 
-    void Level::spawnAllObjects()
+    void Level::addToDestructionQueue(LevelObjectId objId)
     {
-        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
-
-        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
-        {
-            (*it)->spawn();
-        }
-
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
-        {
-            (*it)->spawned();
-        }
-    }
-
-    void Level::requestLevelObjectDestruction(LevelObject *obj)
-    {
-        mDestructionQueue.push_back(obj);
+        mDestructionQueue.insert(objId);
     }
 
     Layer *Level::getLayerById(uint32_t id)
     {
+        // TODO: we can do better than O(n)
         auto pred = [id](std::unique_ptr<Layer> &l){ return l->getId() == id; };
 
         auto it = std::find_if(mLayers.begin(), mLayers.end(), pred);
@@ -104,30 +92,6 @@ namespace od
         }
 
         return mLayers[index].get();
-    }
-
-    Layer *Level::getFirstLayerBelowPoint(const glm::vec3 &v)
-    {
-        // TODO: should we implement an efficient quadtree structure for spatial lookups of layers,
-        //  we might want to switch to using that here. until then, we make the lookup using the physics system
-
-        glm::vec3 end = v + glm::vec3(0, -1000, 0); // FIXME: we should make the ray length dynamic
-
-        odPhysics::RayTestResult result;
-        bool hasHit = mEngine.getPhysicsSystem().rayTestClosest(v, end, odPhysics::PhysicsTypeMasks::Layer, nullptr, result);
-
-        if(hasHit)
-        {
-            odPhysics::LayerHandle *handle = result.handle->asLayerHandle();
-            if(handle == nullptr)
-            {
-                throw od::Exception("Unexpected non-layer handle found during layer-below-object-search");
-            }
-
-            return &handle->getLayer();
-        }
-
-        return nullptr;
     }
 
     void Level::findAdjacentAndOverlappingLayers(Layer *checkLayer, std::vector<Layer*> &results)
@@ -153,49 +117,185 @@ namespace od
         }
     }
 
+    void Level::initialSpawn()
+    {
+        for(auto &objMap : mLevelObjects)
+        {
+            auto &obj = objMap.second;
+            if(obj->getSpawnStrategy() == SpawnStrategy::Always)
+            {
+                obj->spawn();
+            }
+        }
+    }
+
+    void Level::spawnAllObjects()
+    {
+        Logger::info() << "Spawning all objects for debugging (conditional spawning not implemented yet)";
+
+        for(auto it = mLayers.begin(); it != mLayers.end(); ++it)
+        {
+            (*it)->spawn(mPhysicsSystem, mRenderer);
+        }
+
+        for(auto &objMap : mLevelObjects)
+        {
+            objMap.second->spawn();
+        }
+    }
+
     void Level::update(float relTime)
     {
         if(!mDestructionQueue.empty())
         {
-            auto it = mDestructionQueue.begin();
-            while(it != mDestructionQueue.end())
+            for(auto objId : mDestructionQueue)
             {
-                (*it)->despawned();
-                (*it)->destroyed();
+                auto it = mLevelObjects.find(objId);
+                if(it == mLevelObjects.end()) continue;
 
-                it = mDestructionQueue.erase(it);
+                it->second->despawn();
+
+                mLevelObjects.erase(it);
             }
+            mDestructionQueue.clear();
         }
 
-        for(auto it = mLevelObjects.begin(); it != mLevelObjects.end(); ++it)
+        for(auto &objIt : mLevelObjects)
         {
-            (*it)->update(relTime);
+            objIt.second->update(relTime);
+        }
+
+        for(auto &objIt : mLevelObjects)
+        {
+            objIt.second->postUpdate(relTime);
         }
     }
 
-    LevelObject *Level::getLevelObjectByIndex(uint16_t index)
+    ObjectRecordData &Level::getObjectRecord(uint16_t index)
     {
-        if(index >= mLevelObjects.size())
+        if(index < 0 || index >= mObjectRecords.size())
+        {
+            throw Exception("Object index out of bounds");
+        }
+
+        return mObjectRecords[index];
+    }
+
+    LevelObject *Level::getLevelObjectById(LevelObjectId id)
+    {
+        auto it = mLevelObjects.find(id);
+        if(it == mLevelObjects.end())
         {
             return nullptr;
         }
 
-        return mLevelObjects[index].get();
+        return it->second.get();
     }
 
-    odDb::AssetProvider &Level::getDependency(uint16_t index)
+    LevelObject *Level::findFirstObjectOfType(odRfl::ClassId id)
     {
-        auto it = mDependencyMap.find(index);
-        if(it == mDependencyMap.end())
+        for(auto &objMap : mLevelObjects)
         {
-            Logger::error() << "Database index " << index << " not found in level dependencies";
-            throw NotFoundException("Database index not found in level dependencies");
+            auto &obj = objMap.second;
+            if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
+            {
+                return obj.get();
+            }
         }
 
-        return it->second;
+        return nullptr;
     }
 
-    void Level::_loadNameAndDeps(SrscFile &file)
+    void Level::findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results)
+    {
+        for(auto &objMap : mLevelObjects)
+        {
+            auto &obj = objMap.second;
+            if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
+            {
+                results.push_back(obj.get());
+            }
+        }
+    }
+
+    void Level::activateLayerPVS(Layer *layer)
+    {
+        if(layer == nullptr)
+        {
+            for(auto &layer : mLayers)
+            {
+                layer->despawn();
+            }
+
+        }else if(mCurrentActivePvsLayer == nullptr)
+        {
+            for(auto index : layer->getVisibleLayerIndices())
+            {
+                getLayerByIndex(index)->spawn(mPhysicsSystem, mRenderer);
+            }
+
+        }else
+        {
+            // we want to despawn all layers that are in the previous layer's PVS but not in the passed layer's PVS,
+            // while keeping all the ones that are in both. despawning all active layers and respawning the relevant
+            // ones would be too inefficient
+
+            auto &newPvs = layer->getVisibleLayerIndices();
+            auto &oldPvs = mCurrentActivePvsLayer->getVisibleLayerIndices();
+
+            std::vector<uint32_t> layerPvsMerged = newPvs;
+            layerPvsMerged.insert(layerPvsMerged.end(), oldPvs.begin(), oldPvs.end());
+            std::sort(layerPvsMerged.begin(), layerPvsMerged.end());
+
+            for(size_t i = 0; i < layerPvsMerged.size()-1; ++i)
+            {
+                if(layerPvsMerged[i] == layerPvsMerged[i+1])
+                {
+                    // this layer stays
+                    i++;
+                    continue;
+
+                }else
+                {
+                    // this layer changed
+                    Layer *layerToToggle = getLayerByIndex(layerPvsMerged[i]);
+                    if(layerToToggle->isSpawned())
+                    {
+                        layerToToggle->despawn();
+
+                    }else
+                    {
+                        layerToToggle->spawn(mPhysicsSystem, mRenderer);
+                    }
+                }
+            }
+        }
+
+        mCurrentActivePvsLayer = layer;
+    }
+
+    void Level::calculateInitialLayerAssociations()
+    {
+        // create temporary physics handles for all layers (without lighting, etc.)
+        std::vector<std::shared_ptr<odPhysics::LayerHandle>> layerHandles;
+        layerHandles.reserve(mLayers.size());
+        for(auto &layer : mLayers)
+        {
+            if(layer->isSpawned())
+            {
+                continue;
+            }
+
+            layerHandles.push_back(mPhysicsSystem.createLayerHandle(*layer));
+        }
+
+        for(auto &obj : mLevelObjects)
+        {
+            obj.second->updateAssociatedLayer(false);
+        }
+    }
+
+    void Level::_loadNameAndDeps(SrscFile &file, odDb::DbManager &dbManager)
     {
         auto cursor = file.getFirstRecordOfType(SrscRecordType::LEVEL_NAME);
     	DataReader dr = cursor.getReader();
@@ -218,12 +318,12 @@ namespace od
             std::string dbPathStr;
             dr >> dbPathStr;
 
-            FilePath dbPath(dbPathStr, mLevelPath.dir());
-            odDb::Database &db = mDbManager.loadDb(dbPath.adjustCase());
+            FilePath dbPath(dbPathStr, file.getFilePath().dir());
 
-            Logger::debug() << "Level dependency index " << dbIndex << ": " << dbPath;
+            Logger::debug() << "Gonna load level dependency index " << dbIndex << ": " << dbPath;
+            auto db = dbManager.loadDatabase(dbPath.ext(".db").adjustCase());
 
-            mDependencyMap.insert(std::pair<uint16_t, odDb::DbRefWrapper>(dbIndex, db));
+            mDependencyTable->addDependency(dbIndex, db);
         }
     }
 
@@ -249,6 +349,9 @@ namespace od
 
     	dr >> DataReader::Expect<uint32_t>(1);
 
+    	float minHeight = std::numeric_limits<float>::max();
+    	float maxHeight = std::numeric_limits<float>::lowest();
+
     	for(size_t i = 0; i < layerCount; ++i)
     	{
     		uint32_t compressedDataSize;
@@ -258,7 +361,19 @@ namespace od
 			DataReader zdr(zstr);
 			mLayers[i]->loadPolyData(zdr);
 			zstr.seekToEndOfZlib();
+
+			if(mLayers[i]->getMinHeight() < minHeight)
+			{
+			    minHeight = mLayers[i]->getMinHeight();
+			}
+
+			if(mLayers[i]->getMaxHeight() > maxHeight)
+			{
+			    maxHeight = mLayers[i]->getMaxHeight();
+			}
     	}
+
+    	mVerticalExtent = maxHeight - minHeight;
     }
 
     void Level::_loadLayerGroups(SrscFile &file)
@@ -284,11 +399,10 @@ namespace od
     			uint32_t layer;
     			dr >> layer;
     		}
-
     	}
     }
 
-    void Level::_loadObjects(SrscFile &file)
+    void Level::_loadObjects(SrscFile &file, odDb::DbManager &dbManager)
     {
     	Logger::verbose() << "Loading level objects";
 
@@ -303,18 +417,44 @@ namespace od
 
     	uint16_t objectCount;
     	dr >> objectCount;
-
     	Logger::verbose() << "Level has " << objectCount << " objects";
 
-    	mLevelObjects.reserve(objectCount);
-    	for(size_t i = 0; i < objectCount; ++i)
+        mObjectRecords.reserve(objectCount);
+        for(size_t i = 0; i < objectCount; ++i)
     	{
-    		std::unique_ptr<od::LevelObject> object = std::make_unique<od::LevelObject>(*this);
-    		object->loadFromRecord(dr);
+            mObjectRecords.emplace_back(dr);
+        }
 
-    		mLevelObjects.push_back(std::move(object));
+    	mLevelObjects.reserve(objectCount);
+        for(size_t i = 0; i < objectCount; ++i)
+    	{
+            auto &record = mObjectRecords[i];
+
+            auto dbClass = mDependencyTable->loadAsset<odDb::Class>(record.getClassRef());
+            if(dbClass == nullptr)
+            {
+                // ignore objects whose class we failed to load
+                Logger::warn() << "Failed to load Class of object. Ignoring object";
+                continue;
+            }
+
+            auto rflClassInstance = dbClass->makeInstance(mEngine);
+            if(rflClassInstance == nullptr)
+            {
+                // ignore objects without a class implementation. they will sit around doing nothing anyways.
+                continue;
+            }
+
+            auto newObject = std::make_unique<LevelObject>(*this, i, record, record.getObjectId(), dbClass);
+            newObject->setRflClassInstance(std::move(rflClassInstance));
+
+            auto &ptrInMap = mLevelObjects[record.getObjectId()];
+            if(ptrInMap != nullptr)
+            {
+                throw od::Exception("Level contains non-unique object IDs (this might actually be an error in our level file interpretation)");
+            }
+
+            ptrInMap = std::move(newObject);
     	}
     }
 }
-
-

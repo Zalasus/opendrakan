@@ -9,36 +9,47 @@
 #define INCLUDE_DRAGONRFL_GUI_DRAGONGUI_H_
 
 #include <memory>
+#include <unordered_map>
 
-#include <odCore/db/AssetProvider.h>
+#include <odCore/FilePath.h>
+
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
 
 #include <odCore/gui/Gui.h>
+#include <odCore/gui/Quad.h>
+
+#include <dragonRfl/classes/UserInterfaceProperties.h>
 
 namespace od
 {
-    class Engine;
+    class Client;
+}
+
+namespace odDb
+{
+    class DependencyTable;
 }
 
 namespace dragonRfl
 {
 
-    class UserInterfaceProperties;
     class MainMenu;
 
     /**
      * Class handling Drakan's GUI, as well as providing GUI resources via Dragon.rrc and Interface.db.
      */
-    class DragonGui : public odGui::Gui, public odDb::AssetProvider
+    class DragonGui final : public odGui::Gui
     {
     public:
 
-        DragonGui(od::Engine &engine);
+        DragonGui(od::Client &client);
         ~DragonGui();
 
-        inline od::Engine &getEngine() { return mEngine; }
-        inline UserInterfaceProperties *getUserInterfaceProperties() { return mUserInterfaceProperties.get(); }
+        inline od::Client &getClient() { return mClient; }
+        inline const UserInterfacePropertiesFields &getUserInterfaceProperties() const { return mUserInterfaceProperties; }
+        inline odGui::Quad &getFaderQuad() { return mFaderQuad; }
+        inline odDb::TextureFactory &getGuiTextureFactory() { return mRrcTextureFactory; }
 
         /**
          * @brief Localizes string with localization tag.
@@ -54,28 +65,28 @@ namespace dragonRfl
          */
         std::string getStringById(od::RecordId stringId);
 
+        odGui::Quad makeQuadFromGuiTexture(od::RecordId id);
+
         virtual void onMenuModeChanged() override;
-
-
-    protected:
-
-        virtual od::RefPtr<odDb::Texture> getTexture(od::RecordId recordId) override;
 
 
     private:
 
         void _decryptString(char * const str, const size_t len);
 
-        od::Engine &mEngine;
+        od::Client &mClient;
         od::SrscFile mRrcFile;
+        std::shared_ptr<odDb::DependencyTable> mDummyDependencyTable;
         odDb::TextureFactory mRrcTextureFactory;
-        odDb::Database *mInterfaceDb;
+        std::shared_ptr<odDb::Database> mInterfaceDb;
 
-        std::unique_ptr<UserInterfaceProperties> mUserInterfaceProperties;
+        UserInterfacePropertiesFields mUserInterfaceProperties;
 
-        std::map<od::RecordId, std::string> mLocalizedStringCache;
+        std::unordered_map<od::RecordId, std::string> mLocalizedStringCache;
 
-        od::RefPtr<MainMenu> mMainMenu;
+        std::shared_ptr<MainMenu> mMainMenu;
+
+        odGui::Quad mFaderQuad; // a fullscreen quad that faders can use to fade to black (or whatever color)
     };
 
 }

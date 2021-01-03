@@ -7,20 +7,20 @@
 
 #include <odCore/db/ClassFactory.h>
 
-#include <odCore/Engine.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/StringUtils.h>
+
 #include <odCore/db/Database.h>
+
 #include <odCore/rfl/Rfl.h>
 #include <odCore/rfl/RflManager.h>
 
 namespace odDb
 {
 
-	ClassFactory::ClassFactory(AssetProvider &ap, od::SrscFile &classContainer, od::Engine &engine)
-    : AssetFactory<Class>(ap, classContainer)
-    , mRflManager(engine.getRflManager())
+	ClassFactory::ClassFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &classContainer)
+    : AssetFactory<Class>(depTable, classContainer)
     {
         _loadRflRecord();
     }
@@ -46,12 +46,12 @@ namespace odDb
 	        cursor.nextOfType(od::SrscRecordType::CLASS);
 	    }
 
-	    return AssetRef::NULL_REF.assetId;
+	    return AssetRef::NULL_ASSET;
     }
 
-    od::RefPtr<Class> ClassFactory::createNewAsset(od::RecordId id)
+    std::shared_ptr<Class> ClassFactory::createNewAsset(od::RecordId id)
     {
-        return od::make_refd<Class>(getAssetProvider(), id, *this);
+        return std::make_shared<Class>(*this);
     }
 
     void ClassFactory::_loadRflRecord()
@@ -68,12 +68,7 @@ namespace odDb
         dr >> od::DataReader::Ignore(8)
            >> rflPathStr;
 
-        od::FilePath rflPath(rflPathStr, getSrscFile().getFilePath().dir());
-
-        // ignore path part. should we ever encouter multiple RFLs with the same name in different
-        //  directories, we need to handle this differently
-        mRfl = mRflManager.getRfl(rflPath.fileStrNoExt()); // TODO: catch NotFoundException and throw one with meaningful description
+        mRflPath = od::FilePath(rflPathStr, getSrscFile().getFilePath().dir());
     }
 
 }
-

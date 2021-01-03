@@ -8,24 +8,22 @@
 #ifndef PUSHABLEOBJECT_H_
 #define PUSHABLEOBJECT_H_
 
-#include <odCore/rfl/RflClass.h>
+#include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/AssetRefField.h>
 
 namespace dragonRfl
 {
 
-    class DragonRfl;
-
-    class PushableObject : public odRfl::RflClass
+    class PushableObject : public odRfl::LevelObjectClassBase
     {
     public:
 
-        PushableObject(DragonRfl &rfl);
+        PushableObject();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onDespawned(od::LevelObject &obj) override;
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
 
 
     protected:
@@ -53,7 +51,7 @@ namespace dragonRfl
 
 }
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0010, "Ground Object", "Pushable Object", dragonRfl::PushableObject);
+ODRFL_DEFINE_CLASS_BASE(dragonRfl::PushableObject, 0x0010, "Ground Object", "Pushable Object");
 
 
 #endif /* PUSHABLEOBJECT_H_ */

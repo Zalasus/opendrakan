@@ -33,7 +33,7 @@ namespace dragonRfl
         virtual void setPitch(float f) = 0;
         virtual glm::vec3 getPosition() = 0;
         virtual od::LevelObject &getLevelObject() = 0;
-        virtual odPhysics::Handle *getPhysicsHandle() = 0;
+        virtual std::shared_ptr<odPhysics::Handle> getPhysicsHandle() = 0;
 
     };
 

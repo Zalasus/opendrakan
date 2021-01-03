@@ -20,7 +20,7 @@
 namespace odOsg
 {
 
-    LightStateAttribute::LightStateAttribute(Renderer *renderer, size_t maxLightCount)
+    LightStateAttribute::LightStateAttribute(Renderer &renderer, size_t maxLightCount)
     : mRenderer(renderer)
     , mMaxLightCount(maxLightCount)
     {
@@ -65,17 +65,19 @@ namespace odOsg
         mLights.clear();
     }
 
-    void LightStateAttribute::addLight(od::Light *light)
+    void LightStateAttribute::addLight(std::shared_ptr<od::Light> light)
     {
+        // TODO: replace light if the new one fits better (like is closer or something)
         if(mLights.size() < mMaxLightCount)
         {
             mLights.emplace_back(light);
         }
     }
 
-    void LightStateAttribute::removeLight(od::Light *light)
+    void LightStateAttribute::removeLight(std::shared_ptr<od::Light> light)
     {
-        auto it = std::find(mLights.begin(), mLights.end(), light);
+        auto pred = [&light](std::weak_ptr<od::Light> &p){ return p.lock() == light; };
+        auto it = std::find_if(mLights.begin(), mLights.end(), pred);
         if(it != mLights.end())
         {
             mLights.erase(it);
@@ -86,18 +88,21 @@ namespace odOsg
     {
         const osg::Matrix &viewMatrix = state.getInitialViewMatrix();
 
-        mRenderer->applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
+        mRenderer.applyLayerLight(viewMatrix, mLayerLightDiffuse, mLayerLightAmbient, mLayerLightDirection);
 
         for(size_t i = 0; i < mMaxLightCount; ++i)
         {
-            if(i < mLights.size() && mLights[i].isNonNull())
+            if(i < mLights.size() && !mLights[i].expired())
             {
-                auto light = mLights[i].aquire();
-                mRenderer->applyToLightUniform(viewMatrix, light, i);
+                auto light = mLights[i].lock();
+                if(light != nullptr)
+                {
+                    mRenderer.applyToLightUniform(viewMatrix, *light, i);
+                }
 
             }else
             {
-                mRenderer->applyNullLight(i);
+                mRenderer.applyNullLight(i);
             }
         }
     }

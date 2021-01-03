@@ -10,24 +10,15 @@
 namespace odRfl
 {
 
-    Rfl::Rfl(od::Engine &engine)
-    : mEngine(engine)
+    ClassFactory *Rfl::getFactoryForClassId(ClassId id)
     {
-    }
+        auto it = mRegisteredClasses.find(id);
+        if(it == mRegisteredClasses.end())
+        {
+            return nullptr;
+        }
 
-    void Rfl::onStartup()
-    {
-    }
-
-    std::vector<RflRegistrar*> &RflRegistrar::getRflRegistrarListSingleton()
-    {
-        static std::vector<RflRegistrar*> list;
-
-        return list;
+        return &it->second.get();
     }
 
 }
-
-
-
-

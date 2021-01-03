@@ -7,6 +7,8 @@
 
 #include <odCore/physics/Handles.h>
 
+#include <odCore/LightCallback.h>
+
 namespace odPhysics
 {
 
@@ -62,5 +64,26 @@ namespace odPhysics
     {
         return Type::Light;
     }
-}
 
+    void LightHandle::addAffectedHandle(std::shared_ptr<Handle> handle)
+    {
+        mAffectedHandles.push_back(handle);
+    }
+
+    void LightHandle::clearLightAffection()
+    {
+        for(auto &weakHandle : mAffectedHandles)
+        {
+            if(!weakHandle.expired())
+            {
+                auto handle = weakHandle.lock();
+                if(handle != nullptr && handle->getLightCallback() != nullptr)
+                {
+                    handle->getLightCallback()->removeAffectingLight(this->getLight());
+                }
+            }
+        }
+
+        mAffectedHandles.clear();
+    }
+}

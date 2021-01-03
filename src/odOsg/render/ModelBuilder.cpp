@@ -17,7 +17,7 @@
 #include <odCore/Exception.h>
 #include <odCore/Downcast.h>
 
-#include <odCore/db/AssetProvider.h>
+#include <odCore/db/DependencyTable.h>
 #include <odCore/db/Texture.h>
 
 #include <odCore/render/Geometry.h>
@@ -34,10 +34,10 @@
 namespace odOsg
 {
 
-    ModelBuilder::ModelBuilder(Renderer *renderer, const std::string &geometryName, odDb::AssetProvider &assetProvider)
+    ModelBuilder::ModelBuilder(Renderer &renderer, const std::string &geometryName, std::shared_ptr<odDb::DependencyTable> depTable)
     : mRenderer(renderer)
     , mGeometryName(geometryName)
-    , mAssetProvider(assetProvider)
+    , mDependencyTable(depTable)
     , mSmoothNormals(true)
     , mCWPolys(false)
     , mUseClampedTextures(false)
@@ -165,12 +165,12 @@ namespace odOsg
         mHasBoneInfo = true;
     }
 
-    od::RefPtr<Model> ModelBuilder::build()
+    std::shared_ptr<Model> ModelBuilder::build()
     {
         // TODO: if textureCount is 1, use a more lightweight Model implementation
-        auto model = od::make_refd<Model>();
+        auto model = std::make_shared<Model>();
 
-        buildAndAppend(model);
+        buildAndAppend(model.get());
 
         return model;
     }
@@ -189,7 +189,7 @@ namespace odOsg
         }
 
         // sort by texture. most models are already sorted, so this is O(n) most of the time
-        auto pred = [](Triangle &left, Triangle &right){ return left.texture < right.texture; };
+        auto pred = [](Triangle &left, Triangle &right){ return (left.texture.dbIndex << 16 | left.texture.assetId) < (right.texture.dbIndex << 16 | right.texture.assetId); };
         std::sort(mTriangles.begin(), mTriangles.end(), pred);
 
         // count number of unique textures
@@ -295,9 +295,12 @@ namespace odOsg
                 }
                 osgGeometry->addPrimitiveSet(drawElements);
 
-                od::RefPtr<odDb::Texture> dbTexture = mAssetProvider.getAssetByRef<odDb::Texture>(it->texture);
-                odRender::TextureUsage textureUsage = mUseClampedTextures ? odRender::TextureUsage::Layer : odRender::TextureUsage::Model; // FIXME: rename property
-                od::RefPtr<odRender::Texture> renderTexture = dbTexture->getRenderImage(mRenderer)->getTextureForUsage(textureUsage);
+                // FIXME: rename property (or change interface to directly expose this)
+                odRender::TextureReuseSlot reuseSlot = mUseClampedTextures ? odRender::TextureReuseSlot::LAYER : odRender::TextureReuseSlot::OBJECT;
+
+                auto dbTexture = mDependencyTable->loadAsset<odDb::Texture>(it->texture);
+                auto renderImage = mRenderer.createImageFromDb(dbTexture);
+                auto renderTexture = mRenderer.createTexture(renderImage, reuseSlot);
 
                 if(dbTexture->hasAlpha())
                 {
@@ -307,7 +310,7 @@ namespace odOsg
                     geomSs->setMode(GL_BLEND, osg::StateAttribute::ON);
                 }
 
-                auto geometry = od::make_refd<Geometry>(osgGeometry);
+                auto geometry = std::make_shared<Geometry>(osgGeometry);
                 geometry->setTexture(renderTexture);
                 model->addGeometry(geometry);
 
@@ -443,4 +446,3 @@ namespace odOsg
         }
     }
 }
-

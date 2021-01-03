@@ -8,7 +8,7 @@
 #ifndef INCLUDE_ODOSG_CONSTANTS_H_
 #define INCLUDE_ODOSG_CONSTANTS_H_
 
-#include <stdint.h>
+#include <odCore/CTypes.h>
 
 namespace odOsg
 {
@@ -49,6 +49,12 @@ namespace odOsg
          * @brief Path relative to engine executable where shader sources are to be found.
          */
         static constexpr const char *SHADER_SOURCE_PATH = "resources/shader_src";
+
+
+        /**
+         * @brief Default sample rate to be used for audio output.
+         */
+        static constexpr uint32_t AUDIO_SAMPLE_RATE = 44100;
 
     };
 

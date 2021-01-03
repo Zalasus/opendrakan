@@ -25,7 +25,10 @@ namespace odOsg
     {
     public:
 
-        InputListener(Renderer &renderer, odInput::InputManager &inputManager);
+        /**
+         * @param consumeEvents  If true, the input listener will prevent events from being handled by any other OSG GUIEventHandler
+         */
+        InputListener(Renderer &renderer, odInput::InputManager &inputManager, bool consumeEvents);
         ~InputListener();
 
         bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
@@ -39,6 +42,7 @@ namespace odOsg
 
         Renderer &mRenderer;
         odInput::InputManager &mInputManager;
+        bool mConsumeEvents;
 
         bool mMouseWarped;
 

@@ -110,7 +110,7 @@ namespace od
     }
 
     template <>
-    DataReader &DataReader::operator >> <OrientedBoundingBox>(OrientedBoundingBox &obb)
+    void DataReader::readTyped<OrientedBoundingBox>(OrientedBoundingBox &obb)
     {
         // an OBB is defined by it's minimum corner and a scale*rotation matrix.
         //  we need to decompose that matrix to get the center+scale+orientation definition we use
@@ -144,10 +144,7 @@ namespace od
         glm::vec3 center = cornerOffset + orientation*(scale*0.5f);
 
         obb = OrientedBoundingBox(scale, center, orientation);
-
-        return *this;
     }
 
 
 }
-

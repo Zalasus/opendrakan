@@ -13,10 +13,8 @@
 namespace dragonRfl
 {
 
-    class DynamicLight : public StaticLight
+    struct DynamicLightFields : public StaticLightFields
     {
-    public:
-
         enum class IntensityEffect
         {
             Off,
@@ -32,31 +30,54 @@ namespace dragonRfl
             WhenEnabled
         };
 
-        DynamicLight(DragonRfl &rfl);
+        DynamicLightFields();
 
         virtual void probeFields(odRfl::FieldProbe &probe) override;
 
-        virtual void onSpawned(od::LevelObject &obj) override;
-        virtual void onUpdate(od::LevelObject &obj, float relTime);
-        virtual void onMoved(od::LevelObject &obj) override;
-        virtual void onMessageReceived(od::LevelObject &obj, od::LevelObject &sender, odRfl::RflMessage message) override;
-
-
-    protected:
-
-        odRfl::EnumImpl<IntensityEffect, 0, 4>  mIntensityEffect;
-        odRfl::Float                            mEffectTime;
-        odRfl::Float                            mEffectAmplitude;
-        odRfl::EnumImpl<EffectStartType, 0, 1>  mStartEffect;
-
-        bool mLightIsOn;
-        bool mStarted;
-        float mColorFactor;
-        bool mPulseRising;
+        odRfl::EnumImpl<IntensityEffect, 0, 4>  intensityEffect;
+        odRfl::Float                            effectTime;
+        odRfl::Float                            effectAmplitude;
+        odRfl::EnumImpl<EffectStartType, 0, 1>  startEffect;
     };
 
-}
 
-OD_DEFINE_RFLCLASS_TRAITS(dragonRfl::DragonRfl, 0x0085, "Light Source", "Dynamic Light", dragonRfl::DynamicLight);
+    class DynamicLight_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<DynamicLight_Cl>
+    {
+    public:
+
+        DynamicLight_Cl();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+        virtual void onLoaded() override;
+        virtual void onSpawned() override;
+        virtual void onDespawned() override;
+        virtual void onUpdate(float relTime) override;
+        virtual void onTransformChanged() override;
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
+
+
+    private:
+
+        DynamicLightFields mFields;
+
+        std::shared_ptr<odPhysics::LightHandle> mLightHandle;
+
+        glm::vec3 mLightColorVector;
+        bool  mLightIsOn;
+        bool  mStarted;
+        float mColorFactor;
+        bool  mPulseRising;
+    };
+
+
+    // this is not a client-only class! the server side has to exists, even if it's just a dummy. but the server might
+    //  want to move this light around or switch it off or on, so it can't be deleted there.
+    using DynamicLightFactory = odRfl::DefaultClassFactory<DynamicLightFields, DynamicLight_Cl, odRfl::DummyClass>;
+
+
+    OD_DEFINE_CLASS(DynamicLight, 0x0085, "Light Source", "Dynamic Light", DynamicLightFactory);
+
+}
 
 #endif /* INCLUDE_DRAGONRFL_DYNAMICLIGHT_H_ */
