@@ -77,6 +77,13 @@ namespace odAnim
         void play(od::LevelObject *playerObject);
 
         /**
+         * @brief Stops the sequence and performs cleanup.
+         *
+         * This will restart all objects that have been stopped automatically.
+         */
+        void stop();
+
+        /**
          * @brief Returns false if no further updates are required i.e. the sequence has ended.
          */
         bool update(float relTime);
@@ -117,6 +124,8 @@ namespace odAnim
         float mSequenceTime;
 
         std::unordered_map<od::LevelObjectId, Actor> mActors;
+
+        bool mPlaying;
 
     };
 

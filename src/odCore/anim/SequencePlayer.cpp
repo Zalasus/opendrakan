@@ -50,6 +50,7 @@ namespace odAnim
     SequencePlayer::SequencePlayer(od::Level &level)
     : mLevel(level)
     , mSequenceTime(0.0)
+    , mPlaying(false)
     {
     }
 
@@ -158,6 +159,11 @@ namespace odAnim
 
     void SequencePlayer::play(od::LevelObject *playerObject)
     {
+        if(mSequence == nullptr)
+        {
+            return;
+        }
+
         if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_ACTORS)
         {
             for(auto &actor : mActors)
@@ -190,6 +196,55 @@ namespace odAnim
 
                 obj.setRunning(false);
 
+            });
+        }
+
+        mPlaying = true;
+    }
+
+    void SequencePlayer::stop()
+    {
+        if(mSequence == nullptr)
+        {
+            return;
+        }
+
+        mPlaying = false;
+
+        // restore previous accumulator if we created our own
+        for(auto &pActor : mActors)
+        {
+            auto &actor = pActor.second;
+            auto animPlayer = actor.actorObject.getSkeletonAnimationPlayer();
+            if(actor.motionToPositionRootAccumulator != nullptr && animPlayer != nullptr)
+            {
+                animPlayer->setBoneAccumulator(actor.prevRootAccumulator, 0);
+                animPlayer->setBoneModes(actor.prevRootBoneModes, 0);
+            }
+        }
+
+        // restart objects based on what we did in play()
+        if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_ACTORS)
+        {
+            for(auto &actor : mActors)
+            {
+                actor.second.actorObject.setRunning(true);
+            }
+
+        }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_NON_ACTORS)
+        {
+            mLevel.forEachObject([this](od::LevelObject &obj){
+                auto it = mActors.find(obj.getObjectId());
+                if(it == mActors.end())
+                {
+                    obj.setRunning(true);
+                }
+            });
+
+        }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_ALL_OBJECTS)
+        {
+            mLevel.forEachObject([](od::LevelObject &obj){
+                obj.setRunning(true);
             });
         }
     }
@@ -303,6 +358,11 @@ namespace odAnim
 
     bool SequencePlayer::update(float relTime)
     {
+        if(!mPlaying)
+        {
+            return false;
+        }
+
         float lastTime = mSequenceTime;
         mSequenceTime += relTime;
 
@@ -359,6 +419,11 @@ namespace odAnim
                     }
                 }
             }
+        }
+
+        if(!sequenceRunning)
+        {
+            stop();
         }
 
         return sequenceRunning;
