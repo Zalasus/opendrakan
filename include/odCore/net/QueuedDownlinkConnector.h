@@ -29,7 +29,7 @@ namespace odNet
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) override;
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, const glm::bvec3 &ignoreRootNodeTranslation, double realtime) override;
 
 
     private:
@@ -84,6 +84,7 @@ namespace odNet
             odDb::GlobalAssetRef animRef;
             int32_t channelIndex;
             float speedModifier;
+            glm::bvec3 ignoreRootNodeTranslation;
             double realtime;
         };
 

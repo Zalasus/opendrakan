@@ -110,13 +110,22 @@ namespace odDb
     {
         ActionStartAnim(float t, od::DataReader &dr);
 
-        odAnim::AxesAccumulationModes getRootNodeTranslationModes();
+        inline bool shouldIgnoreAttachedSound() const { return flags & 0x0100; }
+
+        /**
+         * Note that OD uses a different terminology than the Riot Engine here.
+         * "Mesh" in the Riot Engine is equivalent to BoneMode::NORMAL. "Frame"
+         * is equivalent to BoneMode::ACCUMULATE, and "None" is equivalent to
+         * BoneMode::IGNORE.
+         */
+        odAnim::AxesBoneModes getRootNodeTranslationModes() const;
 
         uint32_t channelIndex;
         AssetRef animationRef;
+        float beginPlayAt;
         float transitionTime;
         float speed;
-        uint32_t rootNodeTranslationFlags;
+        uint32_t flags;
     };
 
 

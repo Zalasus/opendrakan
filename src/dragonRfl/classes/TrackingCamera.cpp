@@ -60,6 +60,7 @@ namespace dragonRfl
 
     void TrackingCamera_Cl::onSpawned()
     {
+        Logger::debug() << "Spawned Camera, ID=" << getLevelObject().getObjectId();
         //_setupCameraModel();
     }
 

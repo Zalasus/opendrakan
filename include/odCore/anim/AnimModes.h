@@ -14,14 +14,14 @@ namespace odAnim
         PINGPONG
     };
 
-    enum class AccumulationMode
+    enum class BoneMode
     {
-        BONE, ///< The transform is applied to the bone, only deforming the mesh
+        NORMAL, ///< The transform is applied to the bone, only deforming the mesh
         ACCUMULATE, ///< The transform is not applied to the bone, but reported to the accumulator
         IGNORE ///< The transform is neither applied to the bone nor the accumulator
     };
 
-    using AxesAccumulationModes = std::array<AccumulationMode, 3>;
+    using AxesBoneModes = std::array<BoneMode, 3>;
 
 }
 

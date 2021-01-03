@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include <odCore/anim/MotionAccumulator.h>
+#include <odCore/anim/BoneAccumulator.h>
 
 namespace od
 {
@@ -23,13 +23,13 @@ namespace odPhysics
 	class PhysicsSystem;
 	class ObjectHandle;
 
-	class CharacterController : public odAnim::MotionAccumulator
+	class CharacterController : public odAnim::BoneAccumulator
 	{
 	public:
 
 		CharacterController(PhysicsSystem &physicsSystem, std::shared_ptr<ObjectHandle> handle, od::LevelObject &charObject, float radius, float height);
 
-		// implement odAnim::MotionAccumulator
+		// implement odAnim::BoneAccumulator
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override;
 
 		void update(float relTime);

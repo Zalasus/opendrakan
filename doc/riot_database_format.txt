@@ -444,10 +444,22 @@ Record types
             {
                 uint32 channel_index;
                 ref anim;
-                uint32 unk08; // Always 0.
+                float begin_play_at;
                 float transition_time;
                 float speed;
-                uint32 root_node_translation_mode_flags; // 2 bits for each axis. 0b00 == MESH, 0b01 == FRAME, 0b10 == NONE, 0b11 = INVALID.
+                uint32 flags; // bits 0-1: root node translation (x axis)
+                              // bits 2-3: root node translation (y axis)
+                              // bits 4-5: root node translation (z axis)
+                              //   00 = Mesh
+                              //   01 = Frame
+                              //   10 = None
+                              //   11 = Invalid / Unknown
+                              // bit 8: no attached sound
+                              // (the 11 root node translation flag is produced
+                              //  when switching from a non-root to a root
+                              //  channel in the STOMP editor. it actually
+                              //  appears in some Drakan levels, so the engine
+                              //  must have some way of handling this.)
             };
 
             struct play_sound

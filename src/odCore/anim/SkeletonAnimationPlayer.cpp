@@ -10,7 +10,7 @@
 #include <odCore/Logger.h>
 #include <odCore/Exception.h>
 
-#include <odCore/anim/MotionAccumulator.h>
+#include <odCore/anim/BoneAccumulator.h>
 
 namespace odAnim
 {
@@ -35,10 +35,29 @@ namespace odAnim
     , mPlaying(false)
     , mAnimTime(0.0f)
     , mAccumulator(nullptr)
-    , mBoneAccumulationFactors(0.0)
-    , mObjectAccumulationFactors(0.0)
+    , mBoneModes({BoneMode::NORMAL, BoneMode::NORMAL, BoneMode::NORMAL})
+    , mHasNonDefaultBoneMode(false)
     , mUseInterpolation(false)
     {
+    }
+
+    BoneAnimator::~BoneAnimator()
+    {
+    }
+
+    void BoneAnimator::setBoneModes(const AxesBoneModes &modes)
+    {
+        mBoneModes = modes;
+
+        mHasNonDefaultBoneMode = false;
+        for(auto mode : modes)
+        {
+            if(mode != BoneMode::NORMAL)
+            {
+                mHasNonDefaultBoneMode = true;
+                break;
+            }
+        }
     }
 
     void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier)
@@ -65,32 +84,6 @@ namespace odAnim
         mAnimTime = reverse ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
 
         mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
-    }
-
-    void BoneAnimator::setAccumulationModes(const AxesAccumulationModes &modes)
-    {
-        for(size_t i = 0; i < 3; ++i)
-        {
-            switch(modes[i])
-            {
-            case AccumulationMode::BONE:
-                mObjectAccumulationFactors[i] = 0.0;
-                mBoneAccumulationFactors[i] = 1.0;
-                break;
-
-            case AccumulationMode::ACCUMULATE:
-                mUseInterpolation = true; // accumulated motion should always be interpolated
-                mObjectAccumulationFactors[i] = 1.0;
-                mBoneAccumulationFactors[i] = 0.0;
-                break;
-
-            case AccumulationMode::IGNORE:
-            default:
-                mObjectAccumulationFactors[i] = 0.0;
-                mBoneAccumulationFactors[i] = 0.0;
-                break;
-            }
-        }
     }
 
     void BoneAnimator::update(float relTime)
@@ -138,18 +131,18 @@ namespace odAnim
             }
         }
 
-        glm::dualquat sampledTransform = mUseInterpolation ? _sampleLinear(mAnimTime) : _sampleNearest(mAnimTime);
+        bool needInterpolation = mUseInterpolation || (mAccumulator != nullptr); // accumulated motion should always be interpolated
+        glm::dualquat sampledTransform = needInterpolation ? _sampleLinear(mAnimTime) : _sampleNearest(mAnimTime);
 
-        if(mAccumulator == nullptr)
+        if(!mHasNonDefaultBoneMode)
         {
             glm::mat4 asMat(glm::mat3x4_cast(sampledTransform));
             mBone.move(asMat);
 
         }else
         {
-            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
             glm::vec3 currentOffset = _translationFromDquat(sampledTransform);
-
+            glm::vec3 prevOffset = _translationFromDquat(mLastAppliedTransform);
             glm::vec3 relativeOffset = currentOffset - prevOffset;
 
             // if the current animation step jumped in time, we need to factor out the offset
@@ -159,11 +152,34 @@ namespace odAnim
                 relativeOffset -= loopJump;
             }
 
-            mAccumulator->moveRelative(relativeOffset * mObjectAccumulationFactors, relTime);
+            glm::vec3 boneTranslation = currentOffset;
+            glm::vec3 accumulatorTranslation = relativeOffset;
+            for(size_t i = 0; i < 3; ++i)
+            {
+                switch(mBoneModes[i])
+                {
+                case BoneMode::NORMAL:
+                    accumulatorTranslation[i] = 0.0f;
+                    break;
+
+                case BoneMode::ACCUMULATE:
+                    boneTranslation[i] = 0.0f;
+                    break;
+
+                case BoneMode::IGNORE:
+                    boneTranslation[i] = 0.0f;
+                    accumulatorTranslation[i] = 0.0f;
+                    break;
+                }
+            }
+
+            if(mAccumulator != nullptr)
+            {
+                mAccumulator->moveRelative(accumulatorTranslation, relTime);
+            }
 
             glm::mat4 boneMatrix = glm::mat4_cast(sampledTransform.real); // real part represents rotation
-            glm::vec3 boneTranslation = currentOffset * mBoneAccumulationFactors;
-            boneMatrix[3] = glm::vec4(boneTranslation, 1.0);
+            boneMatrix[3] = glm::vec4(boneTranslation, 1.0f);
             mBone.move(glm::transpose(boneMatrix));
         }
 
@@ -239,7 +255,7 @@ namespace odAnim
     {
     }
 
-    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim,  PlaybackType type, float speedMultiplier)
+    void SkeletonAnimationPlayer::playAnimation(std::shared_ptr<odDb::Animation> anim, PlaybackType type, float speedMultiplier)
     {
         for(auto &animator : mBoneAnimators)
         {
@@ -262,24 +278,24 @@ namespace odAnim
         mPlaying = true;
     }
 
-    void SkeletonAnimationPlayer::setNodeAccumulator(std::shared_ptr<MotionAccumulator> accu, int32_t nodeIndex)
+    void SkeletonAnimationPlayer::setBoneAccumulator(std::shared_ptr<BoneAccumulator> accu, int32_t nodeIndex)
     {
-        if(nodeIndex < 0 || nodeIndex >= (int32_t)mBoneAnimators.size())
-        {
-            throw od::InvalidArgumentException("Node index out of bounds");
-        }
-
-        mBoneAnimators[nodeIndex].setAccumulator(accu);
+        mBoneAnimators.at(nodeIndex).setAccumulator(accu);
     }
 
-    void SkeletonAnimationPlayer::setNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t nodeIndex)
+    void SkeletonAnimationPlayer::setBoneModes(const AxesBoneModes &modes, int32_t nodeIndex)
     {
-        if(nodeIndex < 0 || nodeIndex >= (int32_t)mBoneAnimators.size())
-        {
-            throw od::InvalidArgumentException("Node index out of bounds");
-        }
+        mBoneAnimators.at(nodeIndex).setBoneModes(modes);
+    }
 
-        mBoneAnimators[nodeIndex].setAccumulationModes(modes);
+    std::shared_ptr<BoneAccumulator> SkeletonAnimationPlayer::getBoneAccumulator(int32_t jointIndex)
+    {
+        return mBoneAnimators.at(jointIndex).getAccumulator();
+    }
+
+    const AxesBoneModes &SkeletonAnimationPlayer::getBoneModes(int32_t jointIndex)
+    {
+        return mBoneAnimators.at(jointIndex).getBoneModes();
     }
 
     bool SkeletonAnimationPlayer::update(float relTime)

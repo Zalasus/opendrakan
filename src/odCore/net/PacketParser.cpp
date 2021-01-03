@@ -137,16 +137,23 @@ namespace odNet
                 odDb::GlobalAssetRef animRef;
                 int32_t channelIndex;
                 float speedModifier;
+                uint8_t ignoreRootFlags;
                 double realtime;
                 dr >> id
                    >> animRef
                    >> channelIndex
                    >> speedModifier
+                   >> ignoreRootFlags
                    >> realtime;
+
+                glm::bvec3 ignoreRootNodeTranslation;
+                ignoreRootNodeTranslation.x = ignoreRootFlags & 0x01;
+                ignoreRootNodeTranslation.y = ignoreRootFlags & 0x02;
+                ignoreRootNodeTranslation.z = ignoreRootFlags & 0x04;
 
                 if(mDownlinkOutput != nullptr)
                 {
-                    mDownlinkOutput->objectAnimation(id, animRef, channelIndex, speedModifier, realtime);
+                    mDownlinkOutput->objectAnimation(id, animRef, channelIndex, speedModifier, ignoreRootNodeTranslation, realtime);
                 }
             }
             break;

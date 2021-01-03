@@ -23,6 +23,8 @@ namespace odDb
 
 namespace odAnim
 {
+    class BoneAccumulator;
+
     struct PlayerActionStartAnim : odDb::ActionStartAnim
     {
         PlayerActionStartAnim(const odDb::ActionStartAnim &a)
@@ -86,18 +88,28 @@ namespace odAnim
         {
             Actor(od::LevelObject &o)
             : actorObject(o)
+            , lastAppliedKeyframe(nullptr)
             {
             }
 
             od::LevelObject &actorObject;
             std::vector<odDb::ActionTransform> transformActions;
             std::vector<PlayerActionVariant> nonTransformActions;
+            const odDb::ActionTransform* lastAppliedKeyframe; // dirty hack to prevent applying the same single kf over and over again, causing conflicts with anim accumulation
+
+            // sometimes animations in sequences use root bone accumulation. for that, we need to provide
+            //  a bone accumulator that directly applies translations to the object. however, we need to preserve
+            //  any accumulator already present for when the sequence finishes, so we store them here, too.
+            std::shared_ptr<BoneAccumulator> motionToPositionRootAccumulator;
+            std::shared_ptr<BoneAccumulator> prevRootAccumulator;
+            AxesBoneModes prevRootBoneModes;
         };
 
         friend class ActionLoadVisitor;
+        friend class NonTransformApplyVisitor;
 
-        void _applySingleKeyframe(od::LevelObject &obj, const odDb::ActionTransform &kf);
-        void _applyInterpolatedKeyframes(od::LevelObject &obj, const odDb::ActionTransform &left, const odDb::ActionTransform &right);
+        void _applySingleKeyframe(Actor &actor, const odDb::ActionTransform &kf);
+        void _applyInterpolatedKeyframes(Actor &actor, const odDb::ActionTransform &left, const odDb::ActionTransform &right);
 
         od::Level &mLevel;
 

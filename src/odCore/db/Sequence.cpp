@@ -77,29 +77,30 @@ namespace odDb
     {
         dr >> channelIndex
            >> animationRef
-           >> od::DataReader::Ignore(4)
+           >> beginPlayAt
            >> transitionTime
            >> speed
-           >> rootNodeTranslationFlags;
+           >> flags;
     }
 
-    odAnim::AxesAccumulationModes ActionStartAnim::getRootNodeTranslationModes()
+    odAnim::AxesBoneModes ActionStartAnim::getRootNodeTranslationModes() const
     {
         auto bitsToMode = [this](int bits)
         {
-            switch((rootNodeTranslationFlags >> bits) & 0x03)
+            switch((flags >> bits) & 0x03)
             {
-            case 0x00:
-                return odAnim::AccumulationMode::BONE;
+            case 0x00: // Mesh
+                return odAnim::BoneMode::NORMAL;
 
-            case 0x01:
-                return odAnim::AccumulationMode::ACCUMULATE;
+            case 0x01: // Frame
+                return odAnim::BoneMode::ACCUMULATE;
 
-            case 0x02:
-                return odAnim::AccumulationMode::IGNORE;
+            case 0x02: // None
+                return odAnim::BoneMode::IGNORE;
 
             default:
-                throw od::Exception("Invalid root node translation flags");
+                Logger::warn() << "Invalid root node accumulation flag";
+                return odAnim::BoneMode::NORMAL;
             }
         };
 

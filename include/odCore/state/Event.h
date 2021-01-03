@@ -16,9 +16,13 @@
 #include <variant>
 #include <memory>
 
+#include <glm/vec3.hpp>
+
 #include <odCore/IdTypes.h>
 #include <odCore/Exception.h>
 #include <odCore/Message.h>
+
+#include <odCore/anim/AnimModes.h>
 
 #include <odCore/db/Asset.h>
 #include <odCore/db/Animation.h>
@@ -60,13 +64,14 @@ namespace odState
 
     struct ObjectAnimEvent final : public Event
     {
-        ObjectAnimEvent(od::LevelObjectId obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed);
+        ObjectAnimEvent(od::LevelObjectId obj, const odDb::GlobalAssetRef &anim, int32_t channel, float speed, const glm::bvec3 &ignoreRootNodeTranslation);
 
         od::LevelObjectId objectId;
         odDb::GlobalAssetRef animRef;
         std::shared_ptr<odDb::Animation> anim;
         int32_t channelIndex;
         float speedModifier;
+        glm::bvec3 ignoreRootNodeTranslation;
     };
 
 

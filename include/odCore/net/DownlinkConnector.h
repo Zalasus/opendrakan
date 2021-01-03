@@ -58,7 +58,7 @@ namespace odNet
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
 
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime) = 0;
+        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, const glm::bvec3 &ignoreRootNodeTranslation, double realtime) = 0;
     };
 
 }

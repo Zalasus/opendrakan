@@ -20,19 +20,22 @@
 
 #include <odCore/anim/AnimModes.h>
 #include <odCore/anim/Skeleton.h>
-#include <odCore/anim/MotionAccumulator.h>
 
 namespace odAnim
 {
+    class BoneAccumulator;
 
     class BoneAnimator
     {
     public:
 
         BoneAnimator(Skeleton::Bone &bone);
+        ~BoneAnimator();
 
         inline Skeleton::Bone &getBone() { return mBone; }
-        inline void setAccumulator(std::shared_ptr<MotionAccumulator> a) { mAccumulator = a; }
+        inline void setAccumulator(std::shared_ptr<BoneAccumulator> a) { mAccumulator = a; }
+        inline std::shared_ptr<BoneAccumulator> getAccumulator() const { return mAccumulator; }
+        inline const AxesBoneModes &getBoneModes() const { return mBoneModes; }
         inline bool isPlaying() const { return mPlaying; }
         inline std::shared_ptr<odDb::Animation> getCurrentAnimation() { return mCurrentAnimation; }
 
@@ -41,9 +44,11 @@ namespace odAnim
          *
          * Original Drakan does not seem to use any sort of interpolation between frames, so false is the default.
          *
-         * This is automatically set to true if movement accumulation is enabled on any axis.
+         * This setting is overridden to true if movement accumulation is enabled on any axis.
          */
         inline void setUseInterpolation(bool b) { mUseInterpolation = b; }
+
+        void setBoneModes(const AxesBoneModes &modes);
 
         /**
          * @brief Instantly plays animation.
@@ -69,8 +74,6 @@ namespace odAnim
          */
         void update(float relTime);
 
-        void setAccumulationModes(const AxesAccumulationModes &modes);
-
 
     private:
 
@@ -93,9 +96,9 @@ namespace odAnim
 
         glm::dualquat mLastAppliedTransform;
 
-        std::shared_ptr<MotionAccumulator> mAccumulator;
-        glm::vec3 mBoneAccumulationFactors; // tells what part of translation is applied to bone
-        glm::vec3 mObjectAccumulationFactors; // tells what part of translation is pushed to accumulator
+        std::shared_ptr<BoneAccumulator> mAccumulator;
+        AxesBoneModes mBoneModes;
+        bool mHasNonDefaultBoneMode;
 
         bool mUseInterpolation;
     };
@@ -106,7 +109,7 @@ namespace odAnim
     public:
 
         explicit SkeletonAnimationPlayer(std::shared_ptr<Skeleton> skeleton);
-        virtual ~SkeletonAnimationPlayer();
+        ~SkeletonAnimationPlayer();
 
         inline bool isPlaying() const { return mPlaying; }
 
@@ -123,16 +126,17 @@ namespace odAnim
         void playAnimation(std::shared_ptr<odDb::Animation> anim, int32_t channelIndex, PlaybackType type, float speedMultiplier);
 
         /**
-         * @brief Sets accumulator for a joint.
+         * @brief Sets accumulator for a bone.
          *
-         * Setting this for a joint overrides the default animation behaviour. Transforms will no
-         * longer be pushed to the rig for that joint, but instead be reported to the accumulator.
-         *
-         * Passing nullptr as accumulator returns the bone to it's default behavior.
+         * If any axis of the target bone is set to BoneMode::ACCUMULATE, the relative movement of that bone
+         * will be reported to the provided accumulator.
          */
-        void setNodeAccumulator(std::shared_ptr<MotionAccumulator> accumulator, int32_t jointIndex);
+        void setBoneAccumulator(std::shared_ptr<BoneAccumulator> accumulator, int32_t jointIndex);
 
-        void setNodeAccumulationModes(const AxesAccumulationModes &modes, int32_t jointIndex);
+        void setBoneModes(const AxesBoneModes &modes, int32_t jointIndex);
+
+        std::shared_ptr<BoneAccumulator> getBoneAccumulator(int32_t jointIndex);
+        const AxesBoneModes &getBoneModes(int32_t jointIndex);
 
         /**
          * @brief Advances the animation by relTime and applies changes to the skeleton.

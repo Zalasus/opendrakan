@@ -72,13 +72,19 @@ namespace odNet
         _endPacket(LinkType::RELIABLE);
     }
 
-    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, double realtime)
+    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, int32_t channelIndex, float speedModifier, const glm::bvec3 &ignoreRootNodeTranslation, double realtime)
     {
+        uint8_t ignoreFlags =
+              ignoreRootNodeTranslation.x ? 0x01 : 0x00
+            | ignoreRootNodeTranslation.y ? 0x02 : 0x00
+            | ignoreRootNodeTranslation.z ? 0x04 : 0x00;
+
         _beginPacket(PacketType::OBJECT_ANIMATION);
         mWriter << id
                 << animRef
                 << channelIndex
                 << speedModifier
+                << ignoreFlags
                 << realtime;
         _endPacket(LinkType::RELIABLE);
     }

@@ -8,6 +8,7 @@
 #include <odCore/Message.h>
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
+#include <odCore/anim/BoneAccumulator.h>
 
 namespace odAnim
 {
@@ -193,12 +194,35 @@ namespace odAnim
         }
     }
 
+
+    class MotionToPositionAccumulator final : public odAnim::BoneAccumulator
+    {
+    public:
+
+        MotionToPositionAccumulator(od::LevelObject &obj)
+        : mObject(obj)
+        {
+        }
+
+        virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) override
+        {
+            mObject.setPosition(mObject.getPosition() + mObject.getRotation()*relTranslation);
+        }
+
+
+    private:
+
+        od::LevelObject &mObject; // FIXME: we should remove this accumulator on the object's destructor
+
+    };
+
+
     class NonTransformApplyVisitor
     {
     public:
 
-        NonTransformApplyVisitor(od::LevelObject &obj, float sequenceTime)
-        : mObject(obj)
+        NonTransformApplyVisitor(SequencePlayer::Actor &actor, float sequenceTime)
+        : mActor(actor)
         , mSequenceTime(sequenceTime)
         {
         }
@@ -213,7 +237,21 @@ namespace odAnim
         void operator()(const PlayerActionStartAnim &a)
         {
             //float dt = mSequenceTime - a.timeOffset;
-            mObject.playAnimation(a.animation, a.channelIndex, a.speed);
+            auto modes = a.getRootNodeTranslationModes();
+
+            mActor.actorObject.playAnimation(a.animation, a.channelIndex, a.speed, modes);
+
+            // create accumulator on demand
+            bool needsAccumulator = std::any_of(modes.begin(), modes.end(), [](auto mode){ return mode == BoneMode::ACCUMULATE; });
+            auto animPlayer = mActor.actorObject.getSkeletonAnimationPlayer();
+            if(needsAccumulator && mActor.motionToPositionRootAccumulator == nullptr && animPlayer != nullptr)
+            {
+                mActor.prevRootAccumulator = animPlayer->getBoneAccumulator(0);
+                mActor.prevRootBoneModes = animPlayer->getBoneModes(0);
+
+                mActor.motionToPositionRootAccumulator = std::make_shared<MotionToPositionAccumulator>(mActor.actorObject);
+                animPlayer->setBoneAccumulator(mActor.motionToPositionRootAccumulator, 0);
+            }
         }
 
         void operator()(const PlayerActionPlaySound &a)
@@ -228,18 +266,18 @@ namespace odAnim
 
         void operator()(const odDb::ActionRunStopAi &a)
         {
-            mObject.setRunning(a.enableAi);
+            mActor.actorObject.setRunning(a.enableAi);
         }
 
         void operator()(const odDb::ActionShowHide &a)
         {
-            mObject.setVisible(a.visible);
+            mActor.actorObject.setVisible(a.visible);
         }
 
         void operator()(const odDb::ActionMessage &a)
         {
             od::Message message = getMessageForCode(a.messageCode);
-            mObject.receiveMessage(mObject, message);
+            mActor.actorObject.receiveMessage(mActor.actorObject, message);
         }
 
         void operator()(const odDb::ActionMusic &a)
@@ -250,7 +288,7 @@ namespace odAnim
 
     private:
 
-        od::LevelObject &mObject;
+        SequencePlayer::Actor &mActor;
         float mSequenceTime;
 
     };
@@ -279,12 +317,12 @@ namespace odAnim
                     if(right == actor.transformActions.end())
                     {
                         // no keyframe right of us -> apply left as it is, marked as jump
-                        _applySingleKeyframe(actor.actorObject, *left);
+                        _applySingleKeyframe(actor, *left);
 
                     }else
                     {
                         // there is a keyframe both left and right of us. we can interpolate!
-                        _applyInterpolatedKeyframes(actor.actorObject, *left, *right);
+                        _applyInterpolatedKeyframes(actor, *left, *right);
                         sequenceRunning = true;
                     }
                 } // else: no keyframe left of us, so no transforms have happened yet.
@@ -294,7 +332,7 @@ namespace odAnim
             {
                 // for non-transforms, we can't interpolate anything. here we simply search all events that happened since last time and apply them.
                 //  any missed time can be added by them as they see fit
-                NonTransformApplyVisitor visitor(actor.actorObject, mSequenceTime);
+                NonTransformApplyVisitor visitor(actor, mSequenceTime);
                 auto nonTfPredUpper = [](float t, PlayerActionVariant &action){ return t < odDb::Action::getTimeFromVariant(action); };
                 auto nonTfPredLower = [](PlayerActionVariant &action, float t){ return odDb::Action::getTimeFromVariant(action) < t; };
                 auto begin = std::lower_bound(actor.nonTransformActions.begin(), actor.nonTransformActions.end(), lastTime, nonTfPredLower);
@@ -318,8 +356,13 @@ namespace odAnim
         return sequenceRunning;
     }
 
-    void SequencePlayer::_applySingleKeyframe(od::LevelObject &obj, const odDb::ActionTransform &kf)
+    void SequencePlayer::_applySingleKeyframe(Actor &actor, const odDb::ActionTransform &kf)
     {
+        if(actor.lastAppliedKeyframe == &kf)
+        {
+            return;
+        }
+
         od::ObjectStates states;
 
         if(!kf.ignorePosition())
@@ -334,10 +377,12 @@ namespace odAnim
             states.rotation.setJump(true);
         }
 
-        obj.setStates(states);
+        actor.actorObject.setStates(states);
+
+        actor.lastAppliedKeyframe = &kf;
     }
 
-    void SequencePlayer::_applyInterpolatedKeyframes(od::LevelObject &obj, const odDb::ActionTransform &left, const odDb::ActionTransform &right)
+    void SequencePlayer::_applyInterpolatedKeyframes(Actor &actor, const odDb::ActionTransform &left, const odDb::ActionTransform &right)
     {
         if(left.getRelativeTo() != odDb::ActionTransform::RelativeTo::WORLD || right.getRelativeTo() != odDb::ActionTransform::RelativeTo::WORLD)
         {
@@ -347,7 +392,7 @@ namespace odAnim
         // it seems to me like interpolation styles always affect the curve *left* of the keyframe
         if(right.getInterpolationType() == odDb::ActionTransform::InterpolationType::NONE)
         {
-            _applySingleKeyframe(obj, left);
+            _applySingleKeyframe(actor, left);
 
         }else
         {
@@ -385,7 +430,7 @@ namespace odAnim
                 states.rotation = rotation;
             }
 
-            obj.setStates(states);
+            actor.actorObject.setStates(states);
         }
 
     }

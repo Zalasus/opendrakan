@@ -1,12 +1,12 @@
 /*
- * MotionAccumulator.h
+ * BoneAccumulator.h
  *
  *  Created on: 22 Jan 2019
  *      Author: zal
  */
 
-#ifndef INCLUDE_ODCORE_ANIM_MOTIONACCUMULATOR_H_
-#define INCLUDE_ODCORE_ANIM_MOTIONACCUMULATOR_H_
+#ifndef INCLUDE_ODCORE_ANIM_BONEACCUMULATOR_H_
+#define INCLUDE_ODCORE_ANIM_BONEACCUMULATOR_H_
 
 #include <array>
 
@@ -19,11 +19,11 @@ namespace odAnim
     /**
      * Interface for objects that need to accumulate movement from an animation.
      */
-    class MotionAccumulator
+    class BoneAccumulator
     {
     public:
 
-        virtual ~MotionAccumulator() = default;
+        virtual ~BoneAccumulator() = default;
 
         virtual void moveRelative(const glm::vec3 &relTranslation, float relTime) = 0;
 
@@ -31,4 +31,4 @@ namespace odAnim
 
 }
 
-#endif /* INCLUDE_ODCORE_ANIM_MOTIONACCUMULATOR_H_ */
+#endif /* INCLUDE_ODCORE_ANIM_BONEACCUMULATOR_H_ */

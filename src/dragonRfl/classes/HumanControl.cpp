@@ -102,11 +102,10 @@ namespace dragonRfl
         {
             mCharacterController = std::make_shared<odPhysics::CharacterController>(getServer().getPhysicsSystem(), obj.getPhysicsHandle(), obj, 0.05, 0.3);
 
-            animPlayer->setNodeAccumulator(mCharacterController, 0);
-            animPlayer->setNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::BONE
-                                                 }, 0);
+            animPlayer->setBoneAccumulator(mCharacterController, 0);
+            animPlayer->setBoneModes({ odAnim::BoneMode::NORMAL,
+                                       odAnim::BoneMode::NORMAL,
+                                       odAnim::BoneMode::NORMAL }, 0);
 
             animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
 
@@ -165,11 +164,6 @@ namespace dragonRfl
         if(mCharacterController != nullptr)
         {
             mCharacterController->update(relTime);
-        }
-
-        if(animPlayer != nullptr)
-        {
-            animPlayer->update(relTime);
         }
     }
 
@@ -239,17 +233,17 @@ namespace dragonRfl
 
     void HumanControl_Sv::_playAnim(const odRfl::AnimRef &animRef, bool skeletonOnly, bool looping, float skipAheadTime)
     {
-        static const odAnim::AxesAccumulationModes walkAccum{
-                                                   odAnim::AccumulationMode::ACCUMULATE,
-                                                   odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::ACCUMULATE
-                                                };
+        static const odAnim::AxesBoneModes walkAccum{
+                                                       odAnim::BoneMode::ACCUMULATE,
+                                                       odAnim::BoneMode::NORMAL,
+                                                       odAnim::BoneMode::ACCUMULATE
+                                                    };
 
-        static const odAnim::AxesAccumulationModes fixedAccum{
-                                                   odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::BONE
-                                                 };
+        static const odAnim::AxesBoneModes fixedAccum{
+                                                       odAnim::BoneMode::NORMAL,
+                                                       odAnim::BoneMode::NORMAL,
+                                                       odAnim::BoneMode::NORMAL
+                                                     };
 
         auto playbackType = looping ? odAnim::PlaybackType::LOOPING : odAnim::PlaybackType::NORMAL;
 
@@ -257,7 +251,7 @@ namespace dragonRfl
         if(animPlayer != nullptr)
         {
             animPlayer->playAnimation(animRef.getAsset(), playbackType, 1.0f);
-            animPlayer->setNodeAccumulationModes(skeletonOnly ? fixedAccum : walkAccum, 0);
+            animPlayer->setBoneModes(skeletonOnly ? fixedAccum : walkAccum, 0);
             if(skipAheadTime > 0)
             {
                 animPlayer->update(skipAheadTime);
@@ -296,13 +290,7 @@ namespace dragonRfl
         auto animPlayer = obj.getSkeletonAnimationPlayer();
         if(animPlayer != nullptr)
         {
-            animPlayer->setNodeAccumulationModes({ odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::BONE,
-                                                   odAnim::AccumulationMode::BONE
-                                                 }, 0);
-
             animPlayer->playAnimation(mFields.readyAnim.getAsset(), odAnim::PlaybackType::LOOPING, 1.0f);
-            obj.setEnableUpdate(true);
         }
 
         // create a tracking camera for me
@@ -345,20 +333,6 @@ namespace dragonRfl
 
     void HumanControl_Cl::onUpdate(float relTime)
     {
-        auto &obj = getLevelObject();
-
-        // TODO: move anim-stuff into LevelObject. it owns the skeleton, anyways
-        auto animPlayer = obj.getSkeletonAnimationPlayer();
-        if(animPlayer != nullptr)
-        {
-            animPlayer->update(relTime);
-
-            auto skeleton = obj.getSkeleton();
-            if(skeleton != nullptr && obj.getRenderHandle() != nullptr)
-            {
-                skeleton->flatten(*obj.getRenderHandle()->getRig());
-            }
-        }
     }
 
     void HumanControl_Cl::_handleAnalogAction(Action action, const glm::vec2 &pos)
