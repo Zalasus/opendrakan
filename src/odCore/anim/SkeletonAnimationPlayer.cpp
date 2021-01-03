@@ -31,9 +31,14 @@ namespace odAnim
     BoneAnimator::BoneAnimator(Skeleton::Bone &bone)
     : mBone(bone)
     , mPlaybackType(PlaybackType::NORMAL)
-    , mSpeedMultiplier(1.0f)
+    , mSpeed(1.0f)
+    , mTransitionAnimation(nullptr)
+    , mTransitionPlaybackType(PlaybackType::NORMAL)
+    , mTransitionSpeed(1.0f)
+    , mTransitionTime(0.0f)
+    , mTransitionStartTime(0.0f)
     , mPlaying(false)
-    , mAnimTime(0.0f)
+    , mPlayerTime(0.0f)
     , mAccumulator(nullptr)
     , mBoneModes({BoneMode::NORMAL, BoneMode::NORMAL, BoneMode::NORMAL})
     , mHasNonDefaultBoneMode(false)
@@ -60,8 +65,17 @@ namespace odAnim
         }
     }
 
-    void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier)
+    void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speed, float transitionTime)
     {
+        if(transitionTime > 0.0f)
+        {
+            mTransitionAnimation = mCurrentAnimation;
+            mTransitionTime = transitionTime;
+            mTransitionStartTime = mPlayerTime;
+            mTransitionPlaybackType = mPlaybackType;
+            mTransitionSpeed = mSpeed;
+        }
+
         if(animation == nullptr)
         {
             mPlaying = false;
@@ -71,19 +85,51 @@ namespace odAnim
 
         mCurrentAnimation = animation;
         mPlaybackType = type;
-        mSpeedMultiplier = speedMultiplier;
+        mSpeed = speed;
         mPlaying = true;
+        mPlayerTime = 0.0f;
+
+        bool reverse = (mSpeed < 0.0f);
 
         odDb::Animation::KfIteratorPair newStartEnd = animation->getKeyframesForNode(mBone.getJointIndex());
         size_t frameCount = newStartEnd.second - newStartEnd.first;
-        mFirstFrame = newStartEnd.first;
-        mLastFrame = mFirstFrame + (frameCount - 1);
+        auto firstFrame = newStartEnd.first;
+        auto lastFrame = firstFrame + (frameCount - 1);
+        mLastAppliedTransform = glm::dualquat(reverse ? lastFrame->xform : firstFrame->xform);
+        mLoopJump = _translationFrom3x4(firstFrame->xform) - _translationFrom3x4(lastFrame->xform);
+        if(reverse)
+        {
+            mLoopJump += -1.0f;
+        }
+    }
 
-        bool reverse = (mSpeedMultiplier < 0.0f);
+    static float _linearToAnimTime(float duration, PlaybackType type, float startTime, float speed, float time)
+    {
+        float animTime = (speed >= 0.0f) ? (time*speed) : (duration + time*speed);
+        animTime += startTime;
 
-        mAnimTime = reverse ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
+        switch(type)
+        {
+        case PlaybackType::NORMAL:
+            return glm::clamp(animTime, 0.0f, duration);
 
-        mLastAppliedTransform = glm::dualquat(reverse ? mLastFrame->xform : mFirstFrame->xform);
+        case PlaybackType::LOOPING:
+            return std::fmod(animTime, duration);
+
+        case PlaybackType::PINGPONG:
+            if(static_cast<int32_t>(animTime/duration) % 2 == 0)
+            {
+                // forward phase
+                return std::fmod(animTime, duration);
+
+            }else
+            {
+                // backward phase
+                return duration - std::fmod(animTime, duration);
+            }
+        }
+
+        OD_UNREACHABLE();
     }
 
     void BoneAnimator::update(float relTime)
@@ -93,46 +139,50 @@ namespace odAnim
             return;
         }
 
-        mAnimTime += relTime * mSpeedMultiplier;
+        float prevPlayerTime = mPlayerTime;
+        mPlayerTime += relTime;
 
-        bool loopedBack = false; // for correcting relative movement in case of a loop (unneeded when no accumulator used)
-        glm::vec3 loopJump(0.0f);
+        // for correcting relative movement in case of a loop
+        bool loopedBack = false;
 
-        bool movingBackInTime = (mSpeedMultiplier < 0.0f);
+        float animTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mPlaybackType, 0.0f, mSpeed, mPlayerTime);
 
         // have we moved beyond start/end of the current animation? if yes, we need to take appropriate actions before
         //  deciding how and where to move the bones, depending on whether we are looping, playing ping-pong etc.
-        if((!movingBackInTime && mAnimTime > mCurrentAnimation->getMaxTime()) || (movingBackInTime && mAnimTime < mCurrentAnimation->getMinTime()))
+        switch(mPlaybackType)
         {
-            // when looping or playing ping-pong, we want to add any time we have moved beyond the end of the animation
-            //  back to the start/end of the timeline so we don't skip any frames.
-            float startTime = movingBackInTime ? mCurrentAnimation->getMaxTime() : mCurrentAnimation->getMinTime();
-            float endTime   = movingBackInTime ? mCurrentAnimation->getMinTime() : mCurrentAnimation->getMaxTime();
-            float residualTime = mAnimTime - endTime; // negative for reverse playback!
-
-            switch(mPlaybackType)
+        case PlaybackType::NORMAL:
+            if(mPlayerTime >= mCurrentAnimation->getDuration())
             {
-            case PlaybackType::NORMAL:
-            default:
                 mPlaying = false;
-                break;
-
-            case PlaybackType::LOOPING:
-                mAnimTime = startTime + residualTime;
-                loopJump = _translationFrom3x4(mFirstFrame->xform) - _translationFrom3x4(mLastFrame->xform);
-                loopJump *= movingBackInTime ? -1.0f : 1.0f;
-                loopedBack = true;
-                break;
-
-            case PlaybackType::PINGPONG:
-                mSpeedMultiplier = -mSpeedMultiplier;
-                mAnimTime = endTime - residualTime;
-                break;
             }
+            break;
+
+        case PlaybackType::LOOPING:
+            {
+                float prevAnimTime = _linearToAnimTime(mCurrentAnimation->getDuration(), mPlaybackType, 0.0f, mSpeed, prevPlayerTime);
+                loopedBack = (animTime < prevAnimTime);
+            }
+            break;
+
+        case PlaybackType::PINGPONG:
+            break;
         }
 
         bool needInterpolation = mUseInterpolation || (mAccumulator != nullptr); // accumulated motion should always be interpolated
-        glm::dualquat sampledTransform = needInterpolation ? _sampleLinear(mAnimTime) : _sampleNearest(mAnimTime);
+        glm::dualquat sampledTransform = _sample(mCurrentAnimation, animTime, needInterpolation);
+
+        if(mTransitionAnimation != nullptr)
+        {
+            float transitionAnimTime = _linearToAnimTime(mTransitionAnimation->getDuration(), mTransitionPlaybackType, 0.0f, mTransitionSpeed, mTransitionStartTime + mPlayerTime);
+            float transitionDelta = (mPlayerTime - mTransitionStartTime) / mTransitionTime;
+            glm::dualquat sampledTransitionTransform = _sample(mTransitionAnimation, transitionAnimTime, needInterpolation);
+            sampledTransform = glm::lerp(sampledTransitionTransform, sampledTransform, glm::clamp(transitionDelta, 0.0f, 1.0f));
+            if(transitionDelta >= 1.0f)
+            {
+                mTransitionAnimation = nullptr;
+            }
+        }
 
         if(!mHasNonDefaultBoneMode)
         {
@@ -149,7 +199,7 @@ namespace odAnim
             //  between the last keyframe and the first (see diagram I drew which I keep in a drawer somewhere)
             if(loopedBack)
             {
-                relativeOffset -= loopJump;
+                relativeOffset -= mLoopJump;
             }
 
             glm::vec3 boneTranslation = currentOffset;
@@ -186,9 +236,9 @@ namespace odAnim
         mLastAppliedTransform = sampledTransform;
     }
 
-    glm::dualquat BoneAnimator::_sampleLinear(float time)
+    glm::dualquat BoneAnimator::_sampleLinear(std::shared_ptr<odDb::Animation> &anim, float time)
     {
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
+        auto currentKeyframes = anim->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
@@ -197,23 +247,19 @@ namespace odAnim
         }
 
         // we are are somewhere between keyframes, and have to interpolate
-
-        if(mLastKeyframes != currentKeyframes) // only update decompositions when necessary
-        {
-            mLeftTransform = glm::dualquat(currentKeyframes.first->xform);
-            mRightTransform = glm::dualquat(currentKeyframes.second->xform);
-            mLastKeyframes = currentKeyframes;
-        }
+        //  TODO: cache decompositions
+        glm::dualquat leftTransform(currentKeyframes.first->xform);
+        glm::dualquat rightTransform(currentKeyframes.second->xform);
 
         // delta==0 -> exactly at current frame, delta==1 -> exactly at next frame
-        float delta = (mAnimTime - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
+        float delta = (time - currentKeyframes.first->time)/(currentKeyframes.second->time - currentKeyframes.first->time);
 
-        return glm::lerp(mLeftTransform, mRightTransform, glm::clamp(delta, 0.0f, 1.0f));
+        return glm::lerp(leftTransform, rightTransform, glm::clamp(delta, 0.0f, 1.0f));
     }
 
-    glm::dualquat BoneAnimator::_sampleNearest(float time)
+    glm::dualquat BoneAnimator::_sampleNearest(std::shared_ptr<odDb::Animation> &anim, float time)
     {
-        odDb::Animation::KfIteratorPair currentKeyframes = mCurrentAnimation->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
+        auto currentKeyframes = anim->getLeftAndRightKeyframe(mBone.getJointIndex(), time);
 
         if(currentKeyframes.first == currentKeyframes.second)
         {
@@ -222,16 +268,14 @@ namespace odAnim
         }
 
         // we are are somewhere between keyframes, and have to pick the closer one
+        //  TODO: cache decompositions
+        bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
+        return glm::dualquat(firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform);
+    }
 
-        if(mLastKeyframes != currentKeyframes) // only update decompositions when necessary
-        {
-            bool firstIsCloser = (time - currentKeyframes.first->time) < (currentKeyframes.second->time - time);
-            mLeftTransform = glm::dualquat(firstIsCloser ? currentKeyframes.first->xform : currentKeyframes.second->xform);
-            mRightTransform = mLeftTransform;
-            mLastKeyframes = currentKeyframes;
-        }
-
-        return mLeftTransform;
+    glm::dualquat BoneAnimator::_sample(std::shared_ptr<odDb::Animation> &anim, float time, bool interpolated)
+    {
+         return interpolated ? _sampleLinear(anim, time) : _sampleNearest(anim, time);
     }
 
 

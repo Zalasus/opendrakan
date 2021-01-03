@@ -59,13 +59,10 @@ namespace odAnim
          * The speedModifier argument may be negative for reverse playback. In that case, the animation
          * will start at it's last frame.
          *
-         * Only the current animation will be replaced; any animations in the queue will remain
-         * untouched.
-         *
          * @param type             The type of playback to use (normal, looping, pingpong)
          * @param speedMultiplier  Speed factor. 1.0 is normal playback speed. May be negative for reverse playback.
          */
-        void playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier);
+        void playAnimation(std::shared_ptr<odDb::Animation> animation, PlaybackType type, float speedMultiplier, float transitionTime = 0.0f);
 
         /**
          * @brief Advances animation and performs necessary updates to the skeleton.
@@ -77,22 +74,28 @@ namespace odAnim
 
     private:
 
-        glm::dualquat _sampleLinear(float time);
-        glm::dualquat _sampleNearest(float time);
+        glm::dualquat _sampleLinear(std::shared_ptr<odDb::Animation> &anim, float time);
+        glm::dualquat _sampleNearest(std::shared_ptr<odDb::Animation> &anim, float time);
+        glm::dualquat _sample(std::shared_ptr<odDb::Animation> &anim, float time, bool interpolated);
 
         Skeleton::Bone &mBone;
 
         std::shared_ptr<odDb::Animation> mCurrentAnimation;
         PlaybackType mPlaybackType;
-        float mSpeedMultiplier;
-        odDb::Animation::KfIterator mFirstFrame;
-        odDb::Animation::KfIterator mLastFrame;
+        float mSpeed;
+
+        std::shared_ptr<odDb::Animation> mTransitionAnimation;
+        PlaybackType mTransitionPlaybackType;
+        float mTransitionSpeed;
+        float mTransitionTime;
+        float mTransitionStartTime;
 
         bool mPlaying;
-        float mAnimTime;
+        float mPlayerTime;
         odDb::Animation::KfIteratorPair mLastKeyframes;
         glm::dualquat mLeftTransform;
         glm::dualquat mRightTransform;
+        glm::vec3 mLoopJump;
 
         glm::dualquat mLastAppliedTransform;
 
