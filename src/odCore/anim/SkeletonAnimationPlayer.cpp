@@ -61,7 +61,7 @@ namespace odAnim
 
     void BoneAnimator::playAnimation(std::shared_ptr<odDb::Animation> animation, const AnimModes &modes)
     {
-        if(false && modes.transitionTime > 0.0f)
+        if(modes.transitionTime > 0.0f)
         {
             mTransitionAnimation = mCurrentAnimation;
             mTransitionStartTime = mPlayerTime;
@@ -166,7 +166,7 @@ namespace odAnim
         if(mTransitionAnimation != nullptr)
         {
             float transitionAnimTime = _linearToAnimTime(mTransitionAnimation->getDuration(), mTransitionModes, mTransitionStartTime + mPlayerTime);
-            float transitionDelta = (mPlayerTime - mTransitionStartTime) / mModes.transitionTime;
+            float transitionDelta = mPlayerTime / mModes.transitionTime;
             glm::dualquat sampledTransitionTransform = _sample(mTransitionAnimation, transitionAnimTime, needInterpolation);
             sampledTransform = glm::lerp(sampledTransitionTransform, sampledTransform, glm::clamp(transitionDelta, 0.0f, 1.0f));
             if(transitionDelta >= 1.0f)
