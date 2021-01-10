@@ -255,6 +255,8 @@ namespace od
 
     private:
 
+        friend class HandleVisitor;
+
         Level &mLevel;
 
         // loaded from the object record:

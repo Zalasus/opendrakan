@@ -28,6 +28,17 @@ namespace odState
             return true;
         }
 
+        bool operator()(const ObjectMessageEvent &event)
+        {
+            auto obj = level.getLevelObjectById(event.receiverObjectId);
+            if(obj != nullptr)
+            {
+                return obj->handleEvent(event, timeDelta);
+            }
+
+            return true;
+        }
+
         bool operator()(const ObjectAnimEvent &event)
         {
             auto obj = level.getLevelObjectById(event.objectId);
