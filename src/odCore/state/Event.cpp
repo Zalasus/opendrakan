@@ -1,6 +1,8 @@
 
 #include <odCore/state/Event.h>
 
+#include <limits>
+
 #include <odCore/DataStream.h>
 
 namespace odState
@@ -100,9 +102,13 @@ namespace odState
     }
 
 
+    // we serialize the index as a narrower type than size_t to save some bytes
+    using SerializedIndex = uint8_t;
+    static_assert(std::variant_size_v<EventVariant> <= std::numeric_limits<SerializedIndex>::max(), "Too many event variants. Need a bigger SerializedIndex type");
+
     void EventVariantSerializer::serialize(const EventVariant &ev, od::DataWriter &dw)
     {
-        dw << static_cast<uint8_t>(ev.index());
+        dw << static_cast<SerializedIndex>(ev.index());
         std::visit([&dw](auto &e){ e.serialize(dw); }, ev);
     }
 
@@ -133,7 +139,7 @@ namespace odState
 
     EventVariant EventVariantSerializer::deserialize(od::DataReader &dr)
     {
-        uint8_t index;
+        SerializedIndex index;
         dr >> index;
 
         return deserializeImpl(static_cast<size_t>(index), dr, DummyTag<EventVariant>());
