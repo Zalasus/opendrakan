@@ -76,16 +76,9 @@ namespace odNet
 
     void PacketBuilder::event(const odState::EventVariant &e, double realtime)
     {
-        /*
-        // FIXME: this only works as long as there are no more than four bone modes/playback types
-        uint8_t flags =
-              (static_cast<uint8_t>(modes.boneModes[0]) << 0)
-            | (static_cast<uint8_t>(modes.boneModes[1]) << 2)
-            | (static_cast<uint8_t>(modes.boneModes[2]) << 4)
-            | (static_cast<uint8_t>(modes.playbackType) << 6);*/
-
         _beginPacket(PacketType::EVENT);
         mWriter << realtime;
+        odState::EventVariantSerializer::serialize(e, mWriter);
         _endPacket(LinkType::RELIABLE);
     }
 
