@@ -77,9 +77,6 @@ static std::string typeIdToString(uint32_t type)
 
 static void printClassStats(std::shared_ptr<odDb::Database> db, odDb::Class &c)
 {
-    auto modelDb = (c.getModelRef().dbIndex == 0) ? db : db->getDependencyTable()->getDependency(c.getModelRef().dbIndex);
-    auto model = db->getDependencyTable()->loadAsset<odDb::Model>(c.getModelRef());
-
     std::cout << "[" << c.getName() << "]" << std::endl
               << "ID: " << c.getAssetId() << std::endl
               << "RFL class ID: 0x" << std::hex << c.getRflClassId() << std::dec << std::endl;
@@ -88,13 +85,19 @@ static void printClassStats(std::shared_ptr<odDb::Database> db, odDb::Class &c)
     {
         std::cout << "Model: none" << std::endl;
 
-    }else if(modelDb != nullptr && model != nullptr)
-    {
-        std::cout << "Model: " << c.getModelRef() << " ('" << model->getName() << "' from DB '" << modelDb->getShortName() << "')" << std::endl;
-
     }else
     {
-        std::cout << "Model: " << c.getModelRef() << " (invalid reference or failed to load)" << std::endl;
+        auto modelDb = (c.getModelRef().dbIndex == 0) ? db : db->getDependencyTable()->getDependency(c.getModelRef().dbIndex);
+        auto model = db->getDependencyTable()->loadAsset<odDb::Model>(c.getModelRef());
+
+        if(modelDb != nullptr && model != nullptr)
+        {
+            std::cout << "Model: " << c.getModelRef() << " ('" << model->getName() << "' from DB '" << modelDb->getShortName() << "')" << std::endl;
+
+        }else
+        {
+            std::cout << "Model: " << c.getModelRef() << " (invalid reference or failed to load)" << std::endl;
+        }
     }
 
     std::cout << "Fields: " << std::endl;
