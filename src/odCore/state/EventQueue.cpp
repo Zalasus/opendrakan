@@ -41,27 +41,6 @@ namespace odState
     };
 
 
-    struct SendVisitor
-    {
-        odNet::DownlinkConnector &connector;
-        double realtime;
-
-        SendVisitor(odNet::DownlinkConnector &c, double rt)
-        : connector(c)
-        , realtime(rt)
-        {
-        }
-
-        void operator()(const Event &event)
-        {
-        }
-
-        void operator()(const ObjectAnimEvent &event)
-        {
-            connector.objectAnimation(event.objectId, event.animRef, event.modes, realtime);
-        }
-    };
-
     struct PrefetchVisitor
     {
         odDb::DbManager &dbManager;
@@ -138,8 +117,7 @@ namespace odState
             {
                 if(!eventData.sent)
                 {
-                    SendVisitor visitor(connector, eventData.realtime);
-                    std::visit(visitor, eventData.event);
+                    connector.event(eventData.event, eventData.realtime);
                 }
 
             }else

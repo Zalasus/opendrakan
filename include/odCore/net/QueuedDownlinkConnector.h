@@ -31,7 +31,7 @@ namespace odNet
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override;
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime) override;
+        virtual void event(const odState::EventVariant &e, double realtime) override;
 
 
     private:
@@ -80,11 +80,9 @@ namespace odNet
             size_t size;
         };
 
-        struct ObjectAnimation
+        struct Event
         {
-            od::LevelObjectId id;
-            odDb::GlobalAssetRef animRef;
-            odAnim::AnimModes modes;
+            odState::EventVariant event;
             double realtime;
         };
 
@@ -94,7 +92,7 @@ namespace odNet
                                         ObjectExtraStatesChanged,
                                         ConfirmSnapshot,
                                         GlobalMessage,
-                                        ObjectAnimation>;
+                                        Event>;
 
         std::vector<QueuedCall> mCalls;
         std::vector<char> mMessages;

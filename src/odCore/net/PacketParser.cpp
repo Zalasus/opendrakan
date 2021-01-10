@@ -133,22 +133,12 @@ namespace odNet
             }
             break;
 
-        case PacketType::OBJECT_ANIMATION:
+        case PacketType::EVENT:
             {
-                od::LevelObjectId id;
-                odDb::GlobalAssetRef animRef;
-                odAnim::AnimModes modes;
-                uint8_t modeFlags;
                 double realtime;
-                dr >> id
-                   >> animRef
-                   >> modes.channel
-                   >> modes.speed
-                   >> modes.startTime
-                   >> modes.transitionTime
-                   >> modeFlags
-                   >> realtime;
+                dr >> realtime;
 
+                /*
                 // FIXME: validate
                 modes.boneModes[0] = static_cast<odAnim::BoneMode>((modeFlags & 0x03) >> 0);
                 modes.boneModes[1] = static_cast<odAnim::BoneMode>((modeFlags & 0x0c) >> 2);
@@ -158,7 +148,7 @@ namespace odNet
                 if(mDownlinkOutput != nullptr)
                 {
                     mDownlinkOutput->objectAnimation(id, animRef, modes, realtime);
-                }
+                }*/
             }
             break;
 

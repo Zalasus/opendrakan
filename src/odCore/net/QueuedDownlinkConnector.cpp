@@ -53,9 +53,9 @@ namespace odNet
                 connector.globalMessage(m.code, data, m.size);
             }
 
-            void operator()(const ObjectAnimation &a)
+            void operator()(const Event &a)
             {
-                connector.objectAnimation(a.id, a.animRef, a.modes, a.realtime);
+                connector.event(a.event, a.realtime);
             }
 
         };
@@ -115,10 +115,10 @@ namespace odNet
         mMessages.insert(mMessages.end(), data, data+size);
     }
 
-    void QueuedDownlinkConnector::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime)
+    void QueuedDownlinkConnector::event(const odState::EventVariant &e, double realtime)
     {
         lock_guard lock(mMutex);
-        mCalls.emplace_back(ObjectAnimation{id, animRef, modes, realtime});
+        mCalls.emplace_back(Event{e, realtime});
     }
 
 }

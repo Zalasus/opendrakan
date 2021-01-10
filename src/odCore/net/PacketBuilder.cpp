@@ -74,24 +74,18 @@ namespace odNet
         _endPacket(LinkType::RELIABLE);
     }
 
-    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime)
+    void PacketBuilder::event(const odState::EventVariant &e, double realtime)
     {
+        /*
         // FIXME: this only works as long as there are no more than four bone modes/playback types
         uint8_t flags =
               (static_cast<uint8_t>(modes.boneModes[0]) << 0)
             | (static_cast<uint8_t>(modes.boneModes[1]) << 2)
             | (static_cast<uint8_t>(modes.boneModes[2]) << 4)
-            | (static_cast<uint8_t>(modes.playbackType) << 6);
+            | (static_cast<uint8_t>(modes.playbackType) << 6);*/
 
-        _beginPacket(PacketType::OBJECT_ANIMATION);
-        mWriter << id
-                << animRef
-                << modes.channel
-                << modes.speed
-                << modes.startTime
-                << modes.transitionTime
-                << flags
-                << realtime;
+        _beginPacket(PacketType::EVENT);
+        mWriter << realtime;
         _endPacket(LinkType::RELIABLE);
     }
 
