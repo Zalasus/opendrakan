@@ -34,6 +34,7 @@ namespace dragonRfl
         {
         case UserInterfaceLauncherFields::LaunchWhat::MAIN_MENU:
             Logger::verbose() << "UserInterfaceLauncher opening main menu";
+            rfl.setShowMenu(true);
             break;
 
         case UserInterfaceLauncherFields::LaunchWhat::MAP_SCREEN:

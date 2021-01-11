@@ -40,6 +40,7 @@ namespace odState
 
 namespace odRfl
 {
+    class Rfl;
 
     typedef uint16_t ClassId;
 
@@ -109,6 +110,7 @@ namespace odRfl
     {
     public:
 
+        ClassBase();
         virtual ~ClassBase(); // = default;
 
         /**
@@ -124,6 +126,27 @@ namespace odRfl
         virtual SpawnableClass *asSpawnableClass() = 0;
         virtual ClientClass *asClientClass() = 0;
         virtual ServerClass *asServerClass() = 0;
+
+        template <typename T>
+        T &getRfl()
+        {
+            static_assert(std::is_base_of<Rfl, T>::value, "T in getRfl<T>() must have a visible odRfl::Rfl base");
+
+            if(mRfl == nullptr)
+            {
+                throw od::Exception("No RFL set");
+            }
+
+            return *od::confident_downcast<T>(mRfl);
+        }
+
+        void setRfl(Rfl &rfl);
+
+
+    private:
+
+        Rfl *mRfl;
+
     };
 
 

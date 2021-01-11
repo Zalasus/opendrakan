@@ -159,6 +159,14 @@ namespace dragonRfl
         });
     }
 
+    void DragonRfl::setShowMenu(bool b)
+    {
+        if(mGui != nullptr)
+        {
+            mGui->setMenuMode(b);
+        }
+    }
+
     void DragonRfl::onLevelLoaded(od::Server &localServer)
     {
         localServer.forEachClient([this, &localServer](odNet::ClientId id)
