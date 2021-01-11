@@ -8,6 +8,7 @@
 
 #include <odCore/render/Renderer.h>
 
+#include <dragonRfl/RflDragon.h>
 #include <dragonRfl/classes/TrackingCamera.h>
 
 namespace dragonRfl
@@ -27,6 +28,8 @@ namespace dragonRfl
 
     void UserInterfaceLauncher_Cl::onMessageReceived(od::LevelObject &sender, od::Message message)
 	{
+        auto &rfl = getRfl<DragonRfl>();
+
         switch(mFields.launchWhat)
         {
         case UserInterfaceLauncherFields::LaunchWhat::MAIN_MENU:

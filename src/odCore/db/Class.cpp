@@ -62,6 +62,7 @@ namespace odDb
         if(newInstance != nullptr)
         {
             fillFields(newInstance->getFields());
+            newInstance->setRfl(*mClassFactory.getRfl(engine.getRflManager())); // if we reached this, rfl must be non-null, so this is safe
         }
 
         return newInstance;
@@ -85,12 +86,12 @@ namespace odDb
     {
         if(mCachedRflClassFactory == nullptr)
         {
-            odRfl::Rfl *rfl = rflManager.getRfl(mClassFactory.getRflPath().fileStrNoExt());
+            auto rfl = mClassFactory.getRfl(rflManager);
             if(rfl == nullptr)
             {
                 Logger::warn() << "RFL '" << mClassFactory.getRflPath() << "' needed for instantiating class '" << mClassName << "' not loaded";
 
-            } else
+            }else
             {
                 try
                 {

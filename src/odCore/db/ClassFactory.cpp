@@ -21,6 +21,7 @@ namespace odDb
 
 	ClassFactory::ClassFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &classContainer)
     : AssetFactory<Class>(depTable, classContainer)
+    , mCachedRfl(nullptr)
     {
         _loadRflRecord();
     }
@@ -47,6 +48,16 @@ namespace odDb
 	    }
 
 	    return AssetRef::NULL_ASSET;
+    }
+
+    odRfl::Rfl *ClassFactory::getRfl(odRfl::RflManager &rflManager)
+    {
+        if(mCachedRfl == nullptr)
+        {
+            mCachedRfl = rflManager.getRfl(getRflPath().fileStrNoExt());
+        }
+
+        return mCachedRfl;
     }
 
     std::shared_ptr<Class> ClassFactory::createNewAsset(od::RecordId id)

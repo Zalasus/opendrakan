@@ -19,8 +19,23 @@ namespace odRfl
     }
 
 
+    ClassBase::ClassBase()
+    : mRfl(nullptr)
+    {
+    }
+
     ClassBase::~ClassBase()
     {
+    }
+
+    void ClassBase::setRfl(Rfl &rfl)
+    {
+        if(mRfl != nullptr)
+        {
+            throw od::Exception("Double assigned RFL to class base");
+        }
+
+        mRfl = &rfl;
     }
 
     void ClassBase::onLoaded()
