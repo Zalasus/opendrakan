@@ -28,6 +28,7 @@ target_sources(dragonRfl PRIVATE
     "classes/StompPlayer.cpp"
     "classes/Timer.cpp"
     "classes/TrackingCamera.cpp"
+    "classes/UserInterfaceLauncher.cpp"
     "classes/UserInterfaceProperties.cpp"
     #"classes/VisibilityToggler.cpp"
     "gui/CrystalRingButton.cpp"

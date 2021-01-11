@@ -2,6 +2,10 @@
 #ifndef INCLUDE_RFL_DRAGON_USERINTERFACELAUNCHER_H_
 #define INCLUDE_RFL_DRAGON_USERINTERFACELAUNCHER_H_
 
+#include <odCore/rfl/Class.h>
+#include <odCore/rfl/DummyClass.h>
+#include <odCore/rfl/Field.h>
+
 namespace dragonRfl
 {
 
@@ -18,23 +22,7 @@ namespace dragonRfl
             ROLL_CREDITS
         };
 
-        odRfl::EnumImpl<UiTypeEnum, 0, 2> launchWhat;
-    };
-
-
-    class UserInterfaceLauncher_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<UserInterfaceLauncher_Sv>
-    {
-    public:
-
-        virtual odRfl::FieldBundle &getFields() override { return mFields; }
-
-        virtual void onMessageReceived() override { bounce(); }
-
-
-    private:
-
-        UserInterfaceLauncherFields mFields;
-
+        odRfl::EnumImpl<LaunchWhat, 0, 2> launchWhat;
     };
 
 
@@ -42,7 +30,9 @@ namespace dragonRfl
     {
     public:
 
-        virtual void onRemoteMessageReceived() override;
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+        virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
 
 
     private:
@@ -50,6 +40,9 @@ namespace dragonRfl
         UserInterfaceLauncherFields mFields;
 
     };
+
+
+    using UserInterfaceLauncherFactory = odRfl::DefaultClassFactory<UserInterfaceLauncherFields, UserInterfaceLauncher_Cl, odRfl::DummyClass>;
 
 
     OD_DEFINE_CLASS(UserInterfaceLauncher, 0x008d, "System", "User Interface Launcher", UserInterfaceLauncherFactory);
