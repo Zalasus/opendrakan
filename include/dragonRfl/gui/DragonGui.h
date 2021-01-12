@@ -48,7 +48,6 @@ namespace dragonRfl
 
         inline od::Client &getClient() { return mClient; }
         inline const UserInterfacePropertiesFields &getUserInterfaceProperties() const { return mUserInterfaceProperties; }
-        inline odGui::Quad &getFaderQuad() { return mFaderQuad; }
         inline odDb::TextureFactory &getGuiTextureFactory() { return mRrcTextureFactory; }
 
         /**
@@ -85,8 +84,6 @@ namespace dragonRfl
         std::unordered_map<od::RecordId, std::string> mLocalizedStringCache;
 
         std::shared_ptr<MainMenu> mMainMenu;
-
-        odGui::Quad mFaderQuad; // a fullscreen quad that faders can use to fade to black (or whatever color)
     };
 
 }

@@ -37,7 +37,6 @@ namespace dragonRfl
     , mDummyDependencyTable(std::make_shared<odDb::DependencyTable>()) // currently, we still need an empty DependencyTable because assets assume to always have one
     , mRrcTextureFactory(mDummyDependencyTable, mRrcFile)
     , mInterfaceDb(nullptr)
-    , mFaderQuad(client.getRenderer())
     {
         od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
         mInterfaceDb = client.getDbManager().loadDatabase(interfaceDbPath.adjustCase());
@@ -74,13 +73,6 @@ namespace dragonRfl
 
         mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);
-
-        mFaderQuad.setVertexCoords({0,0}, {1,1});
-        mFaderQuad.setColor({0,0,0,0});
-        auto faderWidget = std::make_shared<odGui::Widget>(*this);
-        faderWidget->addRenderHandle(mFaderQuad.getHandle());
-        faderWidget->setZPosition(1000);
-        addWidget(faderWidget);
 
         setMenuMode(false);
     }
