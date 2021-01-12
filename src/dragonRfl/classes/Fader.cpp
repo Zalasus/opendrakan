@@ -1,9 +1,18 @@
 
 #include <dragonRfl/classes/Fader.h>
 
+#include <odCore/Client.h>
 #include <odCore/LevelObject.h>
 
+#include <odCore/db/Class.h>
+
+#include <odCore/gui/Quad.h>
+
 #include <odCore/render/Handle.h>
+#include <odCore/render/Renderer.h>
+
+#include <dragonRfl/RflDragon.h>
+#include <dragonRfl/gui/DragonGui.h>
 
 namespace dragonRfl
 {
@@ -52,8 +61,8 @@ namespace dragonRfl
         switch(mPhase)
         {
         case FadePhase::NOT_TRIGGERED:
-            fadeState = 1.0f;
-            break;
+            //fadeState = 1.0f;
+            return;
 
         case FadePhase::FADE_IN:
             mTime += relTime;
@@ -66,7 +75,7 @@ namespace dragonRfl
             break;
 
         case FadePhase::FADED:
-            fadeState = 1.0f;
+            //fadeState = 1.0f;
             if(mFields.fadedTime >= 0) // negative faded-time would mean "wait for trigger to start fade-out"
             {
                 mTime += relTime;
@@ -76,7 +85,7 @@ namespace dragonRfl
                     mPhase = FadePhase::FADE_OUT;
                 }
             }
-            break;
+            return;
 
         case FadePhase::FADE_OUT:
             if(mTime < mFields.fadeOutTime)
@@ -87,6 +96,7 @@ namespace dragonRfl
             }else
             {
                 fadeState = 0.0f;
+                mPhase = FadePhase::NOT_TRIGGERED;
             }
             break;
         }
@@ -129,30 +139,57 @@ namespace dragonRfl
 	void Fader_Cl::onSpawned()
 	{
         auto &obj = getLevelObject();
-        obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::NO_PHYSICS);
 
-        auto renderHandle = obj.getRenderHandle();
-        if(renderHandle != nullptr)
+        auto initialColorMod = mFields.color.asColorVector();
+
+        if(obj.getClass()->hasModel())
         {
-            auto colorMod = mFields.color.asColorVector();
+            obj.setupRenderingAndPhysics(od::ObjectRenderMode::NORMAL, od::ObjectPhysicsMode::NO_PHYSICS);
+            mHandleToFade = obj.getRenderHandle();
 
             // if we should run instantly, make sure we start invisible until the first state update arrives
-            colorMod.a = (mFields.startMode == StartMode::RUN_INSTANTLY) ? 0.0 : 1.0;
+            initialColorMod.a = (mFields.startMode == StartMode::RUN_INSTANTLY) ? 0.0f : 1.0f;
 
-            renderHandle->setEnableColorModifier(true);
-            renderHandle->setColorModifier(colorMod);
-            renderHandle->setRenderBin(odRender::RenderBin::TRANSPARENT);
+        }else
+        {
+            auto &renderer = getClient().getRenderer();
+
+            odGui::Quad quad(renderer);
+            quad.setVertexCoords({0.0f,0.0f}, {1.0f,1.0f});
+            quad.setColor({1.0f, 1.0f, 1.0f, 1.0f});
+
+            mHandleToFade = quad.getHandle();
+            mHandleToFade->setVisible(getLevelObject().isVisible());
+
+            renderer.moveToRenderSpace(mHandleToFade, odRender::RenderSpace::GUI);
+
+            // while models start as visible, full-screen quads start invisible
+            initialColorMod.a = 0.0f;
+        }
+
+        if(mHandleToFade != nullptr)
+        {
+            mHandleToFade->setEnableColorModifier(true);
+            mHandleToFade->setColorModifier(initialColorMod);
+            mHandleToFade->setRenderBin(odRender::RenderBin::TRANSPARENT);
         }
 	}
 
+    void Fader_Cl::onVisibilityChanged(bool v)
+    {
+        if(mHandleToFade != nullptr)
+        {
+            mHandleToFade->setVisible(v);
+        }
+    }
+
     void Fader_Cl::onExtraStatesChanged()
     {
-        auto renderHandle = getLevelObject().getRenderHandle();
-        if(renderHandle != nullptr)
+        if(mHandleToFade != nullptr)
         {
             auto colorMod = mFields.color.asColorVector();
             colorMod.a = mStates.fade.get();
-            renderHandle->setColorModifier(colorMod);
+            mHandleToFade->setColorModifier(colorMod);
         }
     }
 

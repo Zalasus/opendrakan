@@ -2,6 +2,8 @@
 #ifndef INCLUDE_RFL_DRAGON_FADER_H_
 #define INCLUDE_RFL_DRAGON_FADER_H_
 
+#include <odCore/render/Handle.h>
+
 #include <odCore/rfl/Class.h>
 #include <odCore/rfl/Field.h>
 #include <odCore/rfl/DummyClass.h>
@@ -79,6 +81,7 @@ namespace dragonRfl
         virtual odState::StateBundleBase *getExtraStates() override { return &mStates; }
 
         virtual void onSpawned() override;
+        virtual void onVisibilityChanged(bool v) override;
         virtual void onExtraStatesChanged() override;
 
 
@@ -86,6 +89,8 @@ namespace dragonRfl
 
         FaderFields mFields;
         FaderStates mStates;
+
+        std::shared_ptr<odRender::Handle> mHandleToFade;
     };
 
 
