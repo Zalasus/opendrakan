@@ -461,7 +461,7 @@ namespace od
     {
         for(auto linkedId : mLinkedObjects)
         {
-            od::LevelObject *obj = mLevel.getLevelObjectById(linkedId);
+            auto obj = mLevel.getLevelObjectById(linkedId);
             if(obj != nullptr)
             {
                 obj->receiveMessage(*this, message);

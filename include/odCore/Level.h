@@ -84,20 +84,19 @@ namespace od
         inline LevelObjectId getObjectIdForRecordIndex(uint16_t index) { return getObjectRecord(index).getObjectId(); }
 
 
-        LevelObject *getLevelObjectById(LevelObjectId id);
+        std::shared_ptr<LevelObject> getLevelObjectById(LevelObjectId id);
 
         /**
          * @brief Finds the first object with the given class type.
-         * TODO: change LevelObject storage to shared_ptr and replace these pointers
+         *
          * @return The first object of class type \c id or nullptr if none found.
          */
-        LevelObject *findFirstObjectOfType(odRfl::ClassId id);
+        std::shared_ptr<LevelObject> findFirstObjectOfType(odRfl::ClassId id);
 
         /**
          * @brief Finds all objects with the given class type and adds them to the provided vector.
-         * TODO: change LevelObject storage to shared_ptr and replace these pointers
          */
-        void findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results);
+        void findObjectsOfType(odRfl::ClassId id, std::vector<std::shared_ptr<LevelObject>> &results);
 
         void activateLayerPVS(Layer *layer);
 
@@ -138,7 +137,7 @@ namespace od
         std::unordered_set<LevelObjectId> mDestructionQueue;
 
         std::vector<std::unique_ptr<Layer>> mLayers;
-        std::unordered_map<LevelObjectId, std::unique_ptr<LevelObject>> mLevelObjects;
+        std::unordered_map<LevelObjectId, std::shared_ptr<LevelObject>> mLevelObjects;
     };
 
 

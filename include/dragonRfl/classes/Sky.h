@@ -74,7 +74,7 @@ namespace dragonRfl
 
 		std::shared_ptr<odRender::Handle> mRenderNode;
 
-        od::LevelObject *mCameraObject;
+        std::shared_ptr<od::LevelObject> mCameraObject;
 
     };
 

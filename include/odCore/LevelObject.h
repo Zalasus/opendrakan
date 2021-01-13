@@ -106,10 +106,10 @@ namespace od
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
-        inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
-        inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
-        inline std::shared_ptr<odAnim::Skeleton> &getSkeleton() { return mSkeleton; }
-        inline std::shared_ptr<odAnim::SkeletonAnimationPlayer> &getSkeletonAnimationPlayer() { return mSkeletonAnimationPlayer; }
+        inline std::shared_ptr<odRender::Handle> getRenderHandle() { return mRenderHandle; }
+        inline std::shared_ptr<odPhysics::ObjectHandle> getPhysicsHandle() { return mPhysicsHandle; }
+        inline std::shared_ptr<odAnim::Skeleton> getSkeleton() { return mSkeleton; }
+        inline std::shared_ptr<odAnim::SkeletonAnimationPlayer> getSkeletonAnimationPlayer() { return mSkeletonAnimationPlayer; }
 
         void spawn();
         void despawn();

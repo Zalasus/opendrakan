@@ -181,7 +181,7 @@ namespace od
         return mObjectRecords[index];
     }
 
-    LevelObject *Level::getLevelObjectById(LevelObjectId id)
+    std::shared_ptr<LevelObject> Level::getLevelObjectById(LevelObjectId id)
     {
         auto it = mLevelObjects.find(id);
         if(it == mLevelObjects.end())
@@ -189,31 +189,31 @@ namespace od
             return nullptr;
         }
 
-        return it->second.get();
+        return it->second;
     }
 
-    LevelObject *Level::findFirstObjectOfType(odRfl::ClassId id)
+    std::shared_ptr<LevelObject> Level::findFirstObjectOfType(odRfl::ClassId id)
     {
         for(auto &objMap : mLevelObjects)
         {
             auto &obj = objMap.second;
             if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
             {
-                return obj.get();
+                return obj;
             }
         }
 
         return nullptr;
     }
 
-    void Level::findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results)
+    void Level::findObjectsOfType(odRfl::ClassId id, std::vector<std::shared_ptr<LevelObject>> &results)
     {
         for(auto &objMap : mLevelObjects)
         {
             auto &obj = objMap.second;
             if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
             {
-                results.push_back(obj.get());
+                results.push_back(obj);
             }
         }
     }

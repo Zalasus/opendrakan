@@ -183,7 +183,7 @@ namespace odState
             //  TODO: extrapolation not implemented. applying latest snapshot verbatim for now
             for(auto &states : mSnapshots.back().statesMap)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
+                auto obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
                 states.second.applyToObject(*obj);
@@ -195,7 +195,7 @@ namespace odState
             //  extrapolating here is probably unnecessary, so we just apply the snapshot as if it happened right now.
             for(auto &states : it->statesMap)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
+                auto obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
                 states.second.applyToObject(*obj);
@@ -210,7 +210,7 @@ namespace odState
 
             for(auto &states : a.statesMap)
             {
-                od::LevelObject *obj = mLevel.getLevelObjectById(states.first);
+                auto obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
                 auto stateInB = b.statesMap.find(states.first);

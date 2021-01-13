@@ -93,13 +93,20 @@ namespace odAnim
 
         struct Actor
         {
-            Actor(od::LevelObject &o)
-            : actorObject(o)
+            Actor(od::LevelObjectId objId)
+            : actorObjectId(objId)
             , lastAppliedKeyframe(nullptr)
             {
             }
 
-            od::LevelObject &actorObject;
+            od::LevelObjectId actorObjectId;
+
+            // Note: if the player is itself owned by an object, this pointer
+            //  creates a reference cycle for as long as a sequence is playing.
+            //  this is probably non-critical due to the unlikelyhood of a
+            //  player being an actor and the temporary nature of the cycle.
+            std::shared_ptr<od::LevelObject> actorObject;
+
             std::vector<odDb::ActionTransform> transformActions;
             std::vector<PlayerActionVariant> nonTransformActions;
             const odDb::ActionTransform* lastAppliedKeyframe; // dirty hack to prevent applying the same single kf over and over again, causing conflicts with anim accumulation

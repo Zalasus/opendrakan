@@ -50,7 +50,7 @@ namespace dragonRfl
         // TODO: spawning behaviour is different between SP and MP. do the switch here!
         // in case of SP: locate HumanControl-dummy in level and replace it with a HumanControl_Sv instance
 
-        std::vector<od::LevelObject*> foundObjects;
+        std::vector<std::shared_ptr<od::LevelObject>> foundObjects;
         localServer.getLevel()->findObjectsOfType(HumanControl::classId(), foundObjects);
         if(foundObjects.empty())
         {
