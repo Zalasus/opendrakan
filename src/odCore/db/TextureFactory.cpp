@@ -7,7 +7,6 @@
 
 #include <odCore/db/TextureFactory.h>
 
-#include <odCore/Exception.h>
 #include <odCore/SrscRecordTypes.h>
 #include <odCore/Logger.h>
 

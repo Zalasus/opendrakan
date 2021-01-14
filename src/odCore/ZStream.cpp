@@ -7,7 +7,7 @@
 
 #include <odCore/ZStream.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -47,7 +47,7 @@ namespace od
     {
     	if(!mStreamEnded)
     	{
-    		throw IoException("Can't seek to end of zlib data. Stream has not ended yet");
+    		OD_PANIC() << "Can't seek to end of zlib data. Stream has not ended yet";
     	}
 
     	mInputStream.clear(); // as buffer reading had us hitting EOF most likely
@@ -155,42 +155,35 @@ namespace od
 
     void ZStreamBuffer::_error(int zlibError)
     {
-    	std::string msg = mZStream.msg;
-
-    	msg += " (";
-
+        const char *msg = "";
     	switch(zlibError)
         {
         case Z_STREAM_ERROR:
-            msg += "Z_STREAM_ERROR";
+            msg = "Z_STREAM_ERROR";
             break;
 
         case Z_DATA_ERROR:
-            msg += "Z_DATA_ERROR";
+            msg = "Z_DATA_ERROR";
             break;
 
         case Z_MEM_ERROR:
-            msg += "Z_MEM_ERROR";
+            msg = "Z_MEM_ERROR";
             break;
 
         case Z_VERSION_ERROR:
-            msg += "Z_VERSION_ERROR";
+            msg = "Z_VERSION_ERROR";
             break;
 
         case Z_BUF_ERROR:
-            msg += "Z_BUF_ERROR";
+            msg = "Z_BUF_ERROR";
             break;
 
         default:
-            std::ostringstream oss;
-            oss << zlibError;
-            msg += oss.str();
+            msg = "unknown zlib error";
             break;
         }
 
-    	msg += ")";
-
-        throw IoException(msg);
+        OD_PANIC() << mZStream.msg << " (" << msg << ")";
     }
 
 
@@ -217,4 +210,3 @@ namespace od
     }
 
 }
-

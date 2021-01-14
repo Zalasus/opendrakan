@@ -10,11 +10,12 @@
 #include <iostream>
 #include <memory>
 #include <thread>
+#include <exception>
 
 #include <odCore/Logger.h>
 #include <odCore/Client.h>
 #include <odCore/Server.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/FilePath.h>
 #include <odCore/Version.h>
 #include <odCore/ThreadUtils.h>
@@ -77,9 +78,8 @@ static od::FilePath findEngineRoot(const od::FilePath &dir, const std::string &r
 
     if(!path.exists())
     {
-        Logger::error() << "Could not find engine root in passed level path. "
+        OD_PANIC() << "Could not find engine root in passed level path. "
                 << "Make sure your level is located in the same directory or a subdirectory of " << rrcFileName;
-        throw od::Exception("Could not find engine root in passed level path");
     }
 
     od::FilePath root = path.dir();
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
         {
             server.run();
 
-        }catch(od::Exception &e)
+        }catch(std::exception &e)
         {
             Logger::error() << "Terminating server due to fatal error: " << e.what();
         }
@@ -254,7 +254,7 @@ int main(int argc, char **argv)
         {
             client.run();
 
-        }catch(od::Exception &e)
+        }catch(std::exception &e)
         {
             Logger::error() << "Terminating client due to fatal error: " << e.what();
         }

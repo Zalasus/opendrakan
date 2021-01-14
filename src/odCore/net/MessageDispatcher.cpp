@@ -64,7 +64,7 @@ namespace odNet
 
     void UplinkMessageDispatcher::objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size)
     {
-        throw od::UnsupportedException("Can't send object messages in the uplink!");
+        OD_PANIC() << "Can't send object messages in the uplink!";
     }
 
 }

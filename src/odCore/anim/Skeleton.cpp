@@ -11,7 +11,7 @@
 
 #include <glm/matrix.hpp>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/SkeletonDefinition.h>
 
@@ -36,7 +36,7 @@ namespace odAnim
     {
         if(index >= mChildBones.size())
         {
-            throw od::Exception("Child bone index out of bounds");
+            OD_PANIC() << "Child bone index out of bounds: index=" << index << " size=" << mChildBones.size();
         }
 
         return *mChildBones[index];
@@ -46,14 +46,14 @@ namespace odAnim
     {
         if(jointIndex < 0 || (size_t)jointIndex >= mSkeleton.mBones.size())
         {
-            throw od::Exception("Child bone joint index passed to bone out of bounds");
+            OD_PANIC() << "Child bone joint index passed to bone out of bounds: index=" << jointIndex << " size=" << mSkeleton.mBones.size();
         }
 
         Bone &childBone = mSkeleton.mBones[jointIndex];
 
         if(&childBone == this)
         {
-            throw od::Exception("Tried to add bone to itself as a child");
+            OD_PANIC() << "Tried to add bone to itself as a child";
         }
 
         childBone.mParent = this;
@@ -102,7 +102,7 @@ namespace odAnim
     {
         if(jointIndex < 0 || (size_t)jointIndex >= mBones.size())
         {
-            throw od::Exception("Root bone joint index passed to skeleton out of bounds");
+            OD_PANIC() << "Root bone joint index passed to skeleton out of bounds: index=" << jointIndex << " size=" << mBones.size();
         }
 
         Bone &rootBone = mBones[jointIndex];
@@ -116,7 +116,7 @@ namespace odAnim
     {
         if(jointIndex < 0 || (size_t)jointIndex >= mBones.size())
         {
-            throw od::Exception("Joint index passed to skeleton out of bounds");
+            OD_PANIC() << "Joint index passed to skeleton out of bounds: index=" << jointIndex << " size=" << mBones.size();
         }
 
         return mBones[jointIndex];

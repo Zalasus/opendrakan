@@ -10,7 +10,7 @@
 #include <memory>
 #include <cmath>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/ZStream.h>
 
 #include <odCore/audio/SoundSystem.h>
@@ -60,12 +60,12 @@ namespace odDb
 
         if(mChannels != 1 && mChannels != 2)
         {
-            throw od::UnsupportedException("Unsupported channel count");
+            OD_PANIC() << "Unsupported channel count " << mChannels;
         }
 
         if(mBits != 8 && mBits != 16)
         {
-        	throw od::UnsupportedException("Unsupported bit count per sample");
+        	OD_PANIC() << "Unsupported bit count per sample " << mBits;
         }
 
         std::unique_ptr<od::ZStream> zstr;

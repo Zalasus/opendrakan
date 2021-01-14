@@ -15,7 +15,7 @@
 #include <algorithm>
 
 #include <odCore/DataStream.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -53,7 +53,7 @@ namespace od
     {
         if(!mLock.owns_lock())
         {
-            throw od::Exception("Created input cursor for SrscFile when file was still locked (probably by another cursor)");
+            OD_PANIC() << "Created input cursor for SrscFile when file was still locked (probably by another cursor)";
         }
     }
 
@@ -68,7 +68,7 @@ namespace od
     {
         if(!isValid())
         {
-            throw od::Exception("Tried to access record using invalid cursor");
+            OD_PANIC() << "Tried to access record using invalid cursor";
         }
 
         //size_t availableBytes = mDirIterator->dataSize;
@@ -124,7 +124,7 @@ namespace od
 		mInputStream.open(mFilePath.str().c_str(), std::ios::in | std::ios::binary);
 		if(mInputStream.fail())
 		{
-			throw IoException("Could not open SRSC file '" + mFilePath.str() + "'");
+			OD_PANIC() << "Could not open SRSC file '" << mFilePath.str() << "'";
 		}
 
 		_readHeaderAndDirectory();
@@ -210,7 +210,7 @@ namespace od
 
 		}else
 		{
-		    throw UnsupportedException("The 'decompress' feature in SrscFile is historic and no longer supported. Use odDb to access decompressed record data");
+		    OD_PANIC() << "The 'decompress' feature in SrscFile is historic and no longer supported. Use odDb to access decompressed record data";
 		}
 	}
 
@@ -222,13 +222,13 @@ namespace od
 		in >> magic;
 		if(magic != 0x43535253) // 'SRSC' in LE
 		{
-			throw Exception("Invalid magic number in SRSC file");
+			OD_PANIC() << "Invalid magic number in SRSC file";
 		}
 
 		in >> mVersion;
 		if(mVersion != 0x100 && mVersion != 0x101)
 		{
-			throw UnsupportedException("Unsupported SRSC version");
+			OD_PANIC() << "Unsupported SRSC version " << mVersion;
 		}
 
 		in >> mDirectoryOffset;
@@ -259,7 +259,7 @@ namespace od
     {
         if(dirIt == getDirectoryEnd())
         {
-            throw od::Exception("Tried to use directory iterator not within directory bounds");
+            OD_PANIC() << "Tried to use directory iterator not within directory bounds";
         }
 
         // ugly hack: DirIterator is a typedef of std::vector's iterator, but that gives us no proper
@@ -268,7 +268,7 @@ namespace od
         DirEntry *entry = &(*dirIt);
         if(entry < mDirectory.data() || entry > (mDirectory.data() + mDirectory.size()))
         {
-            throw od::Exception("Tried use directory iterator that does not belong to this SrscFile instance");
+            OD_PANIC() << "Tried use directory iterator that does not belong to this SrscFile instance";
         }
     }
 }

@@ -11,7 +11,6 @@
 #include <ostream>
 
 #include <odCore/DataStream.h>
-#include <odCore/Exception.h>
 
 namespace od
 {
@@ -137,18 +136,6 @@ namespace od
 
         size_t mSubchunkCount;
         bool mSubchunkCountValid;
-    };
-
-
-    class RiffException : public od::Exception
-    {
-    public:
-
-        RiffException(const std::string &msg)
-        : Exception(msg)
-        {
-        }
-
     };
 
 }

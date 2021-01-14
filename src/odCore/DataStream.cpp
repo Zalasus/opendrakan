@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -28,9 +28,9 @@ namespace od
 	DataReader::DataReader(std::istream &stream)
 	: mStream(&stream)
 	{
-		if(mStream == nullptr || !mStream->good())
+		if(mStream == nullptr || mStream->bad())
 		{
-			throw IoException("Constructed DataReader with bad stream");
+			OD_PANIC() << "Constructed DataReader with bad stream";
 		}
 	}
 
@@ -60,11 +60,11 @@ namespace od
         mStream->ignore(n);
         if(mStream->eof())
         {
-            throw IoException("Unexpected EOF while ignoring characters");
+            OD_PANIC() << "Unexpected EOF while ignoring characters";
 
         }else if(mStream->fail())
         {
-             throw IoException("Failed to ignore characters");
+            OD_PANIC() << "Failed to ignore characters";
         }
 	}
 
@@ -90,11 +90,11 @@ namespace od
 
 		if(mStream->eof())
 		{
-            throw IoException("Unexpected EOF while reading block of data");
+            OD_PANIC() << "Unexpected EOF while reading block of data";
 
         }else if(mStream->fail())
         {
-		    throw IoException("Failed to read block of data");
+		    OD_PANIC() << "Failed to read block of data";
 		}
 	}
 
@@ -221,7 +221,7 @@ namespace od
     {
         if(mStream == nullptr)
 	    {
-	        throw Exception("Tried to use a DataReader without assigned stream");
+	        OD_PANIC() << "Tried to use a DataReader without assigned stream";
 	    }
     }
 
@@ -314,12 +314,12 @@ namespace od
 
     void DataWriter::write(const char *data, size_t size)
     {
-        if(mStream == nullptr) throw Exception("Invalid stream");
+        if(mStream == nullptr) OD_PANIC() << "Invalid stream";
 
         mStream->write(data, size);
         if(mStream->fail())
         {
-            throw IoException("Failed to write data block");
+            OD_PANIC() << "Failed to write data block";
         }
     }
 

@@ -44,7 +44,7 @@ namespace dragonRfl
     {
         if(localServer.getLevel() == nullptr)
         {
-            throw od::Exception("Tried to spawn human control on server without level");
+            OD_PANIC() << "Tried to spawn human control on server without level";
         }
 
         // TODO: spawning behaviour is different between SP and MP. do the switch here!

@@ -11,7 +11,7 @@
 
 #include <glm/matrix.hpp>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace odDb
 {
@@ -52,7 +52,7 @@ namespace odDb
     {
         if(jointIndex >= mJointInfos.size())
         {
-            throw od::Exception("Channel index in skeleton out of joint index range");
+            OD_PANIC() << "Channel index in skeleton out of joint index range: index=" << jointIndex << " size=" << mJointInfos.size();
         }
 
         mJointInfos[jointIndex].isChannel = true;
@@ -76,7 +76,7 @@ namespace odDb
 
                 }else if(nameInfo.jointIndex >= (int32_t)mJointInfos.size())
                 {
-                    throw od::Exception("Joint name info's referenced joint index is out of bounds");
+                    OD_PANIC() << "Joint name info's referenced joint index is out of bounds: index=" << nameInfo.jointIndex << " size=" << mJointInfos.size();
                 }
 
                 mJointInfos[nameInfo.jointIndex].nameInfo = &nameInfo;
@@ -116,7 +116,7 @@ namespace odDb
             {
                 return nameInfo->name;
             }
-            
+
         }else
         {
             return {};
@@ -147,7 +147,7 @@ namespace odDb
 
         if(skeleton.checkForLoops())
         {
-            throw od::Exception("SkeletonDefinition fucked up and built skeleton with loops");
+            OD_PANIC() << "SkeletonDefinition fucked up and built skeleton with loops";
         }
     }
 
@@ -155,7 +155,7 @@ namespace odDb
     {
         if(!mFinalized)
         {
-            throw od::Exception("SkeletonDefinition not finalized before use");
+            OD_PANIC() << "SkeletonDefinition not finalized before use";
         }
     }
 
@@ -163,7 +163,7 @@ namespace odDb
     {
         if(jointInfo.visited)
         {
-            throw od::Exception("SkeletonDefinition encountered loop in bone tree");
+            OD_PANIC() << "SkeletonDefinition encountered loop in bone tree";
 
         }else
         {
@@ -175,7 +175,7 @@ namespace odDb
         {
             if(jointInfo.firstChildIndex >= (int32_t)mJointInfos.size())
             {
-                throw od::Exception("First child index in joint info out of bounds");
+                OD_PANIC() << "First child index in joint info out of bounds";
             }
 
             JointInfo &firstChildJointInfo = mJointInfos[jointInfo.firstChildIndex];
@@ -186,7 +186,7 @@ namespace odDb
         {
             if(jointInfo.nextSiblingIndex >= (int32_t)mJointInfos.size())
             {
-                throw od::Exception("Next sibling index in joint info out of bounds");
+                OD_PANIC() << "Next sibling index in joint info out of bounds";
             }
 
             JointInfo &nextSiblingJointInfo = mJointInfos[jointInfo.nextSiblingIndex];

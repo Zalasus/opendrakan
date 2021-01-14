@@ -7,7 +7,7 @@
 
 #include <odOsg/render/ShaderFactory.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace odOsg
 {
@@ -51,12 +51,12 @@ namespace odOsg
 
         if(vertexShader == nullptr)
         {
-            throw od::Exception("Passed nullptr as vertex shader when making program");
+            OD_PANIC() << "Passed nullptr as vertex shader when making program";
         }
 
         if(fragmentShader == nullptr)
         {
-            throw od::Exception("Passed nullptr as fragment shader when making program");
+            OD_PANIC() << "Passed nullptr as fragment shader when making program";
         }
 
         osg::ref_ptr<osg::Program> newProgram(new osg::Program);
@@ -68,5 +68,3 @@ namespace odOsg
     }
 
 }
-
-

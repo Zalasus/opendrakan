@@ -9,7 +9,7 @@
 
 #include <cassert>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -29,7 +29,7 @@ namespace od
     {
         if(c[0] == '\0' || c[1] == '\0' || c[2] == '\0' || c[3] == '\0')
         {
-            throw od::Exception("FourCC string too short");
+            OD_PANIC() << "FourCC string too short";
         }
 
         code = (c[0] << 24) | (c[1] << 16) | (c[2] << 8) | c[3];
@@ -60,7 +60,7 @@ namespace od
 
         if(mChunkId != RIFF_CHUNK_ID)
         {
-            throw RiffException("Not a RIFF file");
+            OD_PANIC() << "Not a RIFF file";
         }
 
         mParentEnd = mChunkEnd;
@@ -131,7 +131,7 @@ namespace od
     {
         if(!mHasSubchunks)
         {
-            throw RiffException("Chunk has no subchunks");
+            OD_PANIC() << "Chunk has no subchunks";
         }
 
         mReader.seek(mChunkStart + LIST_CHUNK_DATAOFFSET);
@@ -159,7 +159,7 @@ namespace od
     {
         if(!mHasSubchunks)
         {
-            throw RiffException("Chunk has no subchunks");
+            OD_PANIC() << "Chunk has no subchunks";
         }
 
         return RiffReader(mReader, mChunkEnd, mChunkStart + LIST_CHUNK_DATAOFFSET);
@@ -187,7 +187,7 @@ namespace od
     {
         if(isEnd())
         {
-            throw od::Exception("Tried to get data reader from invalid RiffReader");
+            OD_PANIC() << "Tried to get data reader from invalid RiffReader";
         }
 
         if(mHasSubchunks)
@@ -302,4 +302,3 @@ namespace od
     }
 
 }
-

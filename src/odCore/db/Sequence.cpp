@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include <odCore/Panic.h>
 #include <odCore/Units.h>
 
 namespace odDb
@@ -49,7 +50,7 @@ namespace odDb
             return InterpolationType::SINE_SPLINE;
 
         default:
-            throw od::Exception("Invalid interpolation type");
+            OD_PANIC() << "Invalid interpolation type";
         }
     }
 
@@ -67,7 +68,7 @@ namespace odDb
             return RelativeTo::LOOK_AT_ACTOR;
 
         default:
-            throw od::Exception("Invalid relative-to type");
+            OD_PANIC() << "Invalid relative-to type";
         }
     }
 
@@ -218,8 +219,7 @@ namespace odDb
 
             default:
                 // can't continue to load as we have no idea where this action ends
-                Logger::error() << "Sequence '" << mName << "' contains unknown action type " << actionType;
-                throw od::Exception("Unknown action type in sequence actor '" + mName + "'");
+                OD_PANIC() << "Sequence '" << mName << "' contains unknown action type " << actionType;
             }
         }
 
@@ -271,7 +271,7 @@ namespace odDb
             break;
 
         default:
-            throw od::Exception("Unknown modify-run-state-style");
+            OD_PANIC() << "Unknown modify-run-state-style";
         }
 
         mLooping = flags & 1;

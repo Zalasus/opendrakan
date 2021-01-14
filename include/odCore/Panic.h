@@ -17,9 +17,10 @@
  * ```
  */
 
-#ifndef INCLUDE_ODCORE_EXCEPTION_H_
-#define INCLUDE_ODCORE_EXCEPTION_H_
+#ifndef INCLUDE_ODCORE_PANIC_H_
+#define INCLUDE_ODCORE_PANIC_H_
 
+#include <exception>
 #include <sstream>
 #include <string>
 
@@ -54,9 +55,8 @@ namespace od
 
 #define OD_PANIC() od::PanicMessageProxy(__FILE__, __func__, __LINE__)
 
-#define OD_UNREACHABLE() OD_PANIC() << PANIC_UNREACHABLE_MSG;
-#define OD_UNIMPLEMENTED() OD_PANIC() << PANIC_UNIMPLEMENTED_MSG;
+#define OD_UNREACHABLE() OD_PANIC() << od::PANIC_UNREACHABLE_MSG;
+#define OD_UNIMPLEMENTED() OD_PANIC() << od::PANIC_UNIMPLEMENTED_MSG;
 #define OD_CHECK_ARG_NONNULL(arg) if((arg) == nullptr) OD_PANIC() << "Argument " #arg " was nullptr";
 
-
-#endif // INCLUDE_ODCORE_EXCEPTION_H_
+#endif // INCLUDE_ODCORE_PANIC_H_

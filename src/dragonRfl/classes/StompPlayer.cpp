@@ -4,6 +4,7 @@
 #include <cstdlib>
 
 #include <odCore/LevelObject.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Sequence.h>
 
@@ -37,7 +38,7 @@ namespace dragonRfl
     {
         if(getLevelObject().getClass() != nullptr)
         {
-            mFields.sequenceList.fetchAssets(*getLevelObject().getClass()->getDependencyTable(), true);
+            mFields.sequenceList.fetchAssets(*getLevelObject().getClass()->getDependencyTable());
             mPlayer = std::make_unique<odAnim::SequencePlayer>(getLevelObject().getLevel());
         }
     }

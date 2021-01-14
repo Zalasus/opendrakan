@@ -12,7 +12,7 @@
 
 #include <glm/mat3x4.hpp>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace odDb
 {
@@ -41,14 +41,14 @@ namespace odDb
 
         if(!cursor.nextOfTypeId(od::SrscRecordType::ANIMATION_FRAMES, getAssetId(), 2))
         {
-            throw od::Exception("Found no frames record after animation info record");
+            OD_PANIC() << "Found no frames record after animation info record";
         }
         _loadFrames(cursor.getReader());
 
         cursor.moveTo(dirIt);
         if(!cursor.nextOfTypeId(od::SrscRecordType::ANIMATION_LOOKUP, getAssetId(), 2))
         {
-            throw od::Exception("Found no lookup record after animation info record");
+            OD_PANIC() << "Found no lookup record after animation info record";
         }
         _loadFrameLookup(cursor.getReader());
     }
@@ -57,7 +57,7 @@ namespace odDb
 	{
 		if(nodeId < 0 || (size_t)nodeId >= mFrameLookup.size())
 		{
-			throw od::Exception("Animation has no keyframes for requested node");
+			OD_PANIC() << "Animation has no keyframes for requested node " << nodeId;
 		}
 
 		uint32_t firstFrameIndex = mFrameLookup[nodeId].first;
@@ -65,8 +65,7 @@ namespace odDb
 
 		if(firstFrameIndex + frameCount  > mKeyframes.size())
 		{
-			Logger::error() << "Frame index " << (firstFrameIndex + frameCount) << " in lookup table of animation '" << mAnimationName << "' out of bounds";
-			throw od::Exception("Frame lookup entry in animation is out of bounds");
+			OD_PANIC() << "Frame index " << (firstFrameIndex + frameCount) << " in lookup table of animation '" << mAnimationName << "' out of bounds";
 		}
 
 		return std::make_pair(mKeyframes.cbegin() + firstFrameIndex, mKeyframes.cbegin() + firstFrameIndex + frameCount);
@@ -76,7 +75,7 @@ namespace odDb
     {
 	    if(nodeId < 0 || (size_t)nodeId >= mFrameLookup.size())
         {
-            throw od::Exception("Animation has no keyframes for requested node");
+            OD_PANIC() << "Animation has no keyframes for node " << nodeId;
         }
 
 	    uint32_t firstFrameIndex = mFrameLookup[nodeId].first;
@@ -86,7 +85,7 @@ namespace odDb
 
 	    if(frameCount == 0)
 	    {
-	        throw od::Exception("Frame lookup table contained node with 0 frames");
+	        OD_PANIC() << "Frame lookup table contained node with 0 frames";
 
 	    }else if(frameCount == 1)
 	    {
@@ -117,7 +116,7 @@ namespace odDb
 	    auto it = std::lower_bound(begin, end, time, pred); // upper_bound??? should only be relevent for keyframes with same time
 	    if(it == end || it == begin)
 	    {
-	        throw od::Exception("lower_bound found no valid keyframe. Did catching edge cases fail?");
+	        OD_PANIC() << "lower_bound found no valid keyframe. Did catching edge cases fail?";
 	    }
 
 	    return std::make_pair(it-1, it);

@@ -266,7 +266,7 @@ namespace od
         auto it = mGlobalDbIndexMap.find(serverSideIndex);
         if(it == mGlobalDbIndexMap.end())
         {
-            throw od::Exception("Server-side global DB index not found in table. Server must have sent incomplete table");
+            OD_PANIC() << "Server-side global DB index " << serverSideIndex << " not found in table. Server must have sent incomplete table";
         }
 
         return it->second;

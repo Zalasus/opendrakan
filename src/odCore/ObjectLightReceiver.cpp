@@ -10,7 +10,7 @@
 #include <algorithm>
 
 #include <odCore/Light.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Logger.h>
 
 #include <odCore/physics/Handles.h>

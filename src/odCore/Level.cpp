@@ -15,7 +15,7 @@
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
 #include <odCore/ZStream.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Layer.h>
 #include <odCore/LevelObject.h>
 #include <odCore/BoundingBox.h>
@@ -175,7 +175,7 @@ namespace od
     {
         if(index < 0 || index >= mObjectRecords.size())
         {
-            throw Exception("Object index out of bounds");
+            OD_PANIC() << "Object index out of bounds";
         }
 
         return mObjectRecords[index];
@@ -451,7 +451,7 @@ namespace od
             auto &ptrInMap = mLevelObjects[record.getObjectId()];
             if(ptrInMap != nullptr)
             {
-                throw od::Exception("Level contains non-unique object IDs (this might actually be an error in our level file interpretation)");
+                OD_PANIC() << "Level contains non-unique object IDs (this might actually be an error in our level file interpretation)";
             }
 
             ptrInMap = std::move(newObject);

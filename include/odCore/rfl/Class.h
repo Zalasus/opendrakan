@@ -14,9 +14,9 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <odCore/Engine.h>
-#include <odCore/Exception.h>
 #include <odCore/Message.h>
 #include <odCore/Downcast.h>
+#include <odCore/Panic.h>
 
 #include <odCore/rfl/FieldProbe.h>
 
@@ -134,7 +134,7 @@ namespace odRfl
 
             if(mRfl == nullptr)
             {
-                throw od::Exception("No RFL set");
+                OD_PANIC() << "No RFL set";
             }
 
             return *od::confident_downcast<T>(mRfl);
@@ -475,11 +475,10 @@ namespace odRfl
 
             }else
             {
-                throw od::Exception("Failed to instantiate class due to invalid Engine variant state");
+                OD_PANIC() << "Failed to instantiate class due to invalid Engine variant state";
             }
         }
     };
-
 
     /**
      * @brief A class factory that can only instantiate a field bundle.
@@ -500,7 +499,14 @@ namespace odRfl
 
         virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) override
         {
-            throw od::Exception("Tried to make instance of field-only class");
+            OD_PANIC() << "Tried to make instance of field-only class";
+
+            // a (yet unfixed) bug in GCC causes it to output a -Wreturn-type
+            //  warning here even though the function never gets past the panic.
+            //  this bug only occurs in templates under very specific
+            //  circumstances. however, this simple return fixes that.
+            //  see related: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79021
+            return nullptr;
         }
 
     };

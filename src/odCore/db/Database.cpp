@@ -12,8 +12,8 @@
 #include <regex>
 
 #include <odCore/Logger.h>
+#include <odCore/Panic.h>
 #include <odCore/StringUtils.h>
-#include <odCore/Exception.h>
 
 #include <odCore/db/DbManager.h>
 #include <odCore/db/DependencyTable.h>
@@ -65,7 +65,7 @@ namespace odDb
 		std::ifstream in(mDbFilePath.str(), std::ios::in | std::ios::binary);
 		if(in.fail())
 		{
-		    throw od::IoException("Could not open db definition file " + mDbFilePath.str());
+		    OD_PANIC() << "Could not open db definition file " + mDbFilePath.str();
 		}
 
 		std::string line;
@@ -92,7 +92,7 @@ namespace odDb
 
 				if(mVersion > MAX_DB_VERSION)
 				{
-					throw od::UnsupportedException("Unsupported database version");
+					OD_PANIC() << "Unsupported database version " << mVersion;
 				}
 
 			}else if(std::regex_match(line, results, dependenciesRegex))
@@ -118,7 +118,7 @@ namespace odDb
 
 				if(depIndex == 0)
 				{
-					throw od::Exception("Invalid dependency index");
+					OD_PANIC() << "Invalid dependency index " << depIndex;
 				}
 
 				// note: dependency paths are always stored relative to the path of the db file defining it
@@ -138,7 +138,7 @@ namespace odDb
 
 			}else
 			{
-				throw od::Exception("Malformed line in database file: " + line);
+				OD_PANIC() << "Malformed line in database file: " << line;
 			}
 		}
 
@@ -196,7 +196,7 @@ namespace odDb
 	{
 		if(mTextureFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't load texture. Database has no texture container");
+			OD_PANIC() << "Can't load texture. Database has no texture container";
 		}
 
 		return mTextureFactory->getAsset(recordId);
@@ -206,7 +206,7 @@ namespace odDb
 	{
 		if(mClassFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't load class. Database has no class container");
+			OD_PANIC() << "Can't load class. Database has no class container";
 		}
 
 		return mClassFactory->getAsset(recordId);
@@ -216,7 +216,7 @@ namespace odDb
 	{
 		if(mModelFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't load model. Database has no model container");
+			OD_PANIC() << "Can't load model. Database has no model container";
 		}
 
         return mModelFactory->getAsset(recordId);
@@ -226,7 +226,7 @@ namespace odDb
 	{
         if(mSequenceFactory == nullptr)
         {
-            throw od::NotFoundException("Can't load sequence. Database has no sequence container");
+            OD_PANIC() << "Can't load sequence. Database has no sequence container";
         }
 
         return mSequenceFactory->getAsset(recordId);
@@ -236,7 +236,7 @@ namespace odDb
 	{
 		if(mAnimFactory == nullptr)
 		{
-			throw od::NotFoundException("Can't load animation. Database has no animation container");
+			OD_PANIC() << "Can't load animation. Database has no animation container";
 		}
 
 		return mAnimFactory->getAsset(recordId);
@@ -246,7 +246,7 @@ namespace odDb
     {
         if(mSoundFactory == nullptr)
         {
-            throw od::NotFoundException("Can't load sound. Database has no sound container");
+            OD_PANIC() << "Can't load sound. Database has no sound container";
         }
 
         return mSoundFactory->getAsset(recordId);

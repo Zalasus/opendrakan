@@ -12,7 +12,7 @@
 #include <glm/matrix.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/gui/Gui.h>
 
@@ -130,7 +130,7 @@ namespace odGui
 
         if(w->mParentWidget != nullptr)
         {
-            throw od::Exception("Tried to add Widget that already had a parent");
+            OD_PANIC() << "Tried to add Widget that already had a parent";
         }
 
         mChildWidgets.push_back(w);
@@ -270,7 +270,7 @@ namespace odGui
             break;
 
         case WidgetDimensionType::Pixels:
-            if(mParentWidget == nullptr) throw od::UnsupportedException("Set pixels dimensions on a root widget. This is unsupported");
+            if(mParentWidget == nullptr) OD_PANIC() << "Set pixels dimensions on a root widget. This is unsupported";
             mySizeInParentSpace = getMeasuredDimensions() / mParentWidget->getMeasuredDimensions();
             break;
         }

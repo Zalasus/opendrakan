@@ -12,8 +12,9 @@
 #include <unordered_map>
 #include <istream>
 #include <sstream>
+#include <vector>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -76,7 +77,7 @@ namespace od
 
         if(iss.bad())
         {
-            throw od::Exception("Failed to parse key in config file: " + key);
+            OD_PANIC() << "Failed to parse key in config file: " << key;
         }
 
         return value;

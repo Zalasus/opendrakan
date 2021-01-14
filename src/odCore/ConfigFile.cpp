@@ -58,7 +58,7 @@ namespace od
 
             }else
             {
-                throw od::Exception("Malformed line in config file: " + line);
+                OD_PANIC() << "Malformed line in config file: " << line;
             }
         }
     }
@@ -69,13 +69,13 @@ namespace od
         auto sectionIt = mSections.find(section);
         if(sectionIt == mSections.end())
         {
-            throw od::Exception("Section not found in config file: " + section);
+            OD_PANIC() << "Section not found in config file: " << section;
         }
 
         auto keyIt = sectionIt->second.keyValueMap.find(key);
         if(keyIt == sectionIt->second.keyValueMap.end())
         {
-            throw od::Exception("Key not found in config file: " + key);
+            OD_PANIC() << "Key not found in config file: " << key;
         }
 
         return keyIt->second;

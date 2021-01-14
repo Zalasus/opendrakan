@@ -10,7 +10,7 @@
 #include <BulletCollision/CollisionShapes/btSphereShape.h>
 #include <BulletCollision/CollisionShapes/btBoxShape.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Model.h>
 #include <odCore/db/ModelBounds.h>

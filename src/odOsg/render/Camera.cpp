@@ -7,10 +7,9 @@
 
 #include <odOsg/render/Camera.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odOsg/GlmAdapter.h>
-
 
 namespace odOsg
 {
@@ -19,10 +18,7 @@ namespace odOsg
     : mOsgCamera(osgCam)
     , mIgnoreViewChanges(false)
     {
-        if(osgCam == nullptr)
-        {
-            throw od::InvalidArgumentException("Passed nullptr as camera");
-        }
+        OD_CHECK_ARG_NONNULL(osgCam);
     }
 
     glm::vec3 Camera::getEyePoint()
@@ -52,6 +48,3 @@ namespace odOsg
 
 
 }
-
-
-

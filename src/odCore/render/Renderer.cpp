@@ -8,6 +8,7 @@
 #include <odCore/render/Renderer.h>
 
 #include <odCore/LevelObject.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Class.h>
 #include <odCore/db/Model.h>

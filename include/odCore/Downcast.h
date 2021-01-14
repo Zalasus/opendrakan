@@ -10,7 +10,7 @@
 
 #include <memory>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -31,7 +31,7 @@ namespace od
        _To *t = dynamic_cast<_To*>(f);
        if(t == nullptr)
        {
-           throw od::Exception("Bad downcast");
+           OD_PANIC() << "Bad downcast";
        }
 
        return t;
@@ -51,7 +51,7 @@ namespace od
        _To *t = dynamic_cast<_To*>(f.get());
        if(t == nullptr)
        {
-           throw od::Exception("Bad downcast");
+           OD_PANIC() << "Bad downcast";
        }
 
        return std::shared_ptr<_To>(f, t); // aliasing constructor. returned pointer will own f but deref into t
@@ -79,7 +79,7 @@ namespace od
        _To *t = dynamic_cast<_To*>(f);
        if(t == nullptr)
        {
-           throw od::Exception("Bad confident_downcast");
+           OD_PANIC() << "Bad confident_downcast";
        }
 
        return t;
@@ -104,7 +104,7 @@ namespace od
         t = dynamic_cast<_To*>(f.get());
         if(t == nullptr)
         {
-            throw od::Exception("Bad confident_downcast");
+            OD_PANIC() << "Bad confident_downcast";
         }
 #endif
         return std::shared_ptr<_To>(f, t); // aliasing constructor. returned pointer will own f but deref into t

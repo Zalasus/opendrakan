@@ -9,8 +9,8 @@
 
 #include <cassert>
 
-#include <odCore/Exception.h>
 #include <odCore/Logger.h>
+#include <odCore/Panic.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 
@@ -28,10 +28,7 @@ namespace odBulletPhysics
     , mSingleShotUpdate(false)
     , mLastMaxVertexCount(0)
     {
-        if(mCollisionWorld == nullptr)
-        {
-            throw od::Exception("Created Bullet debug drawer without a collision world");
-        }
+        OD_CHECK_ARG_NONNULL(collisionWorld);
 
         mGeometry = renderer.createGeometry(odRender::PrimitiveType::LINES, false);
 
@@ -39,7 +36,7 @@ namespace odBulletPhysics
 
         auto model = renderer.createModel();
         model->addGeometry(mGeometry);
-        
+
         mRenderHandle->setModel(model);
 
         mCollisionWorld->setDebugDrawer(this);

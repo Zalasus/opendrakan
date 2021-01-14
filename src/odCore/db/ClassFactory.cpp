@@ -8,7 +8,7 @@
 #include <odCore/db/ClassFactory.h>
 
 #include <odCore/SrscRecordTypes.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/StringUtils.h>
 
 #include <odCore/db/Database.h>
@@ -70,7 +70,7 @@ namespace odDb
         auto cursor = getSrscFile().getFirstRecordOfType(od::SrscRecordType::CLASS_RFL);
         if(!cursor.isValid())
         {
-            throw od::Exception("Class database contained no RFL definition record");
+            OD_PANIC() << "Class database contained no RFL definition record";
         }
 
         od::DataReader dr = cursor.getReader();

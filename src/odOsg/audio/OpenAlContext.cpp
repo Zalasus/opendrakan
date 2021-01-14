@@ -7,7 +7,8 @@
 
 #include <odOsg/audio/OpenAlContext.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Logger.h>
+#include <odCore/Panic.h>
 
 namespace odOsg
 {
@@ -23,7 +24,7 @@ namespace odOsg
         _doContextErrorCheck("Could not open device");
         if(mDeviceHandle == nullptr)
         {
-            throw od::Exception("Could not open device (alcOpenDevice return nullptr)");
+            OD_PANIC() << "Could not open device (alcOpenDevice return nullptr)";
         }
 
         const ALCint contextAttributes[] =
@@ -95,7 +96,7 @@ namespace odOsg
             break;
         }
 
-        throw od::Exception(failmsg + alErrorMsg);
+        OD_PANIC() << failmsg << alErrorMsg;
     }
 
 }

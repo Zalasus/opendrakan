@@ -1,7 +1,7 @@
 
 #include <odCore/gui/Quad.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Texture.h>
 
@@ -111,7 +111,7 @@ namespace odGui
     {
         if(empty())
         {
-            throw od::Exception("Quad is empty");
+            OD_PANIC() << "Quad is empty";
         }
     }
 

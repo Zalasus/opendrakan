@@ -7,7 +7,8 @@
 
 #include <odCore/physics/bullet/BulletCallbacks.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
+
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/BulletPhysicsSystem.h>
 
@@ -74,7 +75,7 @@ namespace odBulletPhysics
 
         if(rayResult.m_collisionObject == nullptr)
         {
-            throw od::Exception("Got nullptr as collision object");
+            OD_PANIC() << "Got nullptr as collision object";
         }
 
         if(mExclude != nullptr)
@@ -123,7 +124,7 @@ namespace odBulletPhysics
     {
         if(rayResult.m_collisionObject == nullptr)
         {
-            throw od::Exception("Got nullptr as collision object");
+            OD_PANIC() << "Got nullptr as collision object";
         }
 
         m_collisionObject = rayResult.m_collisionObject;
@@ -183,7 +184,7 @@ namespace odBulletPhysics
 
         }else
         {
-            throw od::Exception("Contact test yielded manifold where neither of the two pair objects was the initiator");
+            OD_PANIC() << "Contact test yielded manifold where neither of the two pair objects was the initiator";
         }
 
         mResults.push_back(result);

@@ -13,6 +13,8 @@
 #include <glm/common.hpp>
 #include <glm/gtc/constants.hpp>
 
+#include <odCore/Panic.h>
+
 #include <odCore/db/Segment.h>
 
 #include <odCore/audio/music/MidiSynth.h>
@@ -200,7 +202,7 @@ namespace odAudio
             break;
 
         default:
-            throw od::Exception("Unknown curve shape");
+            OD_PANIC() << "Unknown curve shape";
         }
 
         int32_t curveValue = curve.startValue*(1-deltaCurve) + curve.endValue*deltaCurve;
@@ -228,7 +230,7 @@ namespace odAudio
         case directmusic::DMUS_CURVET_RPNCURVE: // registered parameter number curve (probably DX8)
         case directmusic::DMUS_CURVET_NRPNCURVE:  // non-registered parameter number curve (probably DX8)
         default:
-           throw od::Exception("Unsupported/unknown curve type");
+            OD_PANIC() << "Unsupported/unknown curve type";
         }
     }
 

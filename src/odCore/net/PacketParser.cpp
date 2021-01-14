@@ -44,14 +44,14 @@ namespace odNet
         {
             const char *rawPayload = data + PacketConstants::HEADER_SIZE;
 
-            try
-            {
+            //try
+            //{
                 _parsePacket(type, length, dr, rawPayload);
 
-            }catch(od::IoException &e) // kinda ugly to use this to detect an underrun condition. this could cause us to miss actually bad states in the data reader
-            {
-                _badPacket("unexpected size");
-            }
+            //}catch(od::IoException &e) // kinda ugly to use this to detect an underrun condition. this could cause us to miss actually bad states in the data reader
+            //{
+            //    _badPacket("unexpected size");
+            //}
 
             return length + PacketConstants::HEADER_SIZE; // TODO: consume more than one packet
 

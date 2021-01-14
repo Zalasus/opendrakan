@@ -194,7 +194,7 @@ namespace odInput
 
         struct KeyBinding
         {
-            static const size_t MAX_BINDINGS = 4;
+            static inline constexpr size_t MAX_BINDINGS = 4;
 
             KeyBinding()
             : down(false)

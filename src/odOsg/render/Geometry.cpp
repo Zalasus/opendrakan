@@ -7,7 +7,7 @@
 
 #include <odOsg/render/Geometry.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Downcast.h>
 
 #include <odOsg/GlmAdapter.h>
@@ -94,7 +94,7 @@ namespace odOsg
             break;
 
         default:
-            throw od::UnsupportedException("Unsupported or unknown primitive type");
+            OD_PANIC() << "Unsupported or unknown primitive type";
         }
 
         if(indexed)
@@ -129,28 +129,28 @@ namespace odOsg
         mOsgVertexArray = dynamic_cast<osg::Vec3Array*>(mGeometry->getVertexArray());
         if(mOsgVertexArray == nullptr)
         {
-            throw od::Exception("Passed geometry had no valid vertex array");
+            OD_PANIC() << "Passed geometry had no valid vertex array";
         }
         mVertexArrayAccessHandler.setArray(mOsgVertexArray);
 
         mOsgColorArray = dynamic_cast<osg::Vec4Array*>(mGeometry->getColorArray());
         if(mOsgColorArray == nullptr)
         {
-            throw od::Exception("Passed geometry had no valid color array");
+            OD_PANIC() << "Passed geometry had no valid color array";
         }
         mColorArrayAccessHandler.setArray(mOsgColorArray);
 
         mOsgNormalArray = dynamic_cast<osg::Vec3Array*>(mGeometry->getNormalArray());
         if(mOsgNormalArray == nullptr)
         {
-            throw od::Exception("Passed geometry had no valid normal array");
+            OD_PANIC() << "Passed geometry had no valid normal array";
         }
         mNormalArrayAccessHandler.setArray(mOsgNormalArray);
 
         mOsgTextureCoordArray = dynamic_cast<osg::Vec2Array*>(mGeometry->getTexCoordArray(0));
         if(mOsgTextureCoordArray == nullptr)
         {
-            throw od::Exception("Passed geometry had no valid texture coordinate array");
+            OD_PANIC() << "Passed geometry had no valid texture coordinate array";
         }
         mTextureCoordArrayAccessHandler.setArray(mOsgTextureCoordArray);
 
@@ -158,14 +158,14 @@ namespace odOsg
         mOsgBoneWeightArray = dynamic_cast<osg::Vec4Array*>(mGeometry->getVertexAttribArray(Constants::ATTRIB_WEIGHT_LOCATION));
         if((mOsgBoneIndexArray == nullptr) != (mOsgBoneWeightArray == nullptr))
         {
-            throw od::Exception("Passed geometry had one of weight/index array, but not the other. Must have either none or both");
+            OD_PANIC() << "Passed geometry had one of weight/index array, but not the other. Must have either none or both";
         }
         mBoneIndexArrayAccessHandler.setArray(mOsgBoneIndexArray);
         mBoneWeightArrayAccessHandler.setArray(mOsgBoneWeightArray);
 
         if(mGeometry->getNumPrimitiveSets() == 0)
         {
-            throw od::Exception("Passed geometry had no primitive set");
+            OD_PANIC() << "Passed geometry had no primitive set";
         }
         mPrimitiveSet = mGeometry->getPrimitiveSet(0);
 
@@ -204,7 +204,7 @@ namespace odOsg
             break;
 
         default:
-            throw od::UnsupportedException("Unsupported or unknown primitive type");
+            OD_PANIC() << "Unsupported or unknown primitive type";
         }
     }
 
@@ -265,7 +265,7 @@ namespace odOsg
     {
         if(!mIndexed)
         {
-            throw od::Exception("Not indexed");
+            OD_PANIC() << "Not indexed";
         }
 
         return mIndexArrayAccessHandler;

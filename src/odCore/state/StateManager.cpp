@@ -5,6 +5,7 @@
 
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
+#include <odCore/Panic.h>
 
 #include <odCore/net/DownlinkConnector.h>
 #include <odCore/net/UplinkConnector.h>
@@ -104,7 +105,7 @@ namespace odState
             auto obj = mLevel.getLevelObjectById(objectId);
             if(obj == nullptr || obj->getExtraStates() == nullptr)
             {
-                throw od::Exception("No states available to clone");
+                OD_PANIC() << "No states available to clone";
             }
 
             states = obj->getExtraStates()->cloneShared();
@@ -239,7 +240,7 @@ namespace odState
         auto toSend = _getSnapshot(tickToSend, mSnapshots, false);
         if(toSend == mSnapshots.end())
         {
-            throw od::Exception("Snapshot with given tick not available for sending");
+            OD_PANIC() << "Snapshot with given tick not available for sending";
         }
 
         size_t discreteChangeCount = 0;
@@ -335,7 +336,7 @@ namespace odState
                 auto referenceSnapshot = _getSnapshot(incomingSnapshot->referenceSnapshot, mSnapshots, false);
                 if(referenceSnapshot == mSnapshots.end())
                 {
-                    throw od::Exception("Reference snapshot no longer contained in timeline");
+                    OD_PANIC() << "Reference snapshot no longer contained in timeline";
                 }
 
                 for(auto &referenceStates : referenceSnapshot->statesMap)
@@ -346,7 +347,7 @@ namespace odState
             }
 
             auto snapshot = _getSnapshot(tick, mSnapshots, true);
-            if(snapshot->confirmed) throw od::Exception("Re-committing snapshot");
+            if(snapshot->confirmed) OD_PANIC() << "Re-committing snapshot";
             *snapshot = std::move(*incomingSnapshot);
             mIncomingSnapshots.erase(incomingSnapshot);
 
@@ -365,7 +366,7 @@ namespace odState
     {
         if(mDisallowStateUpdates)
         {
-            throw od::Exception("State updates disallowed while applying states");
+            OD_PANIC() << "State updates disallowed while applying states";
         }
     }
 

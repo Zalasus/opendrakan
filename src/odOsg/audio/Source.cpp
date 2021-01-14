@@ -7,9 +7,10 @@
 
 #include <odOsg/audio/Source.h>
 
-#include <odCore/Exception.h>
-#include <odCore/db/Sound.h>
 #include <odCore/Downcast.h>
+#include <odCore/Panic.h>
+
+#include <odCore/db/Sound.h>
 
 #include <odOsg/audio/SoundSystem.h>
 #include <odOsg/audio/Buffer.h>
@@ -91,7 +92,7 @@ namespace odOsg
             return State::Stopped;
         }
 
-        throw od::Exception("Got unknown source state");
+        OD_PANIC() << "Got unknown source state";
     }
 
     void Source::setPosition(const glm::vec3 &p)

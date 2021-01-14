@@ -9,8 +9,8 @@
 
 #include <algorithm>
 
-#include <odCore/Exception.h>
 #include <odCore/Downcast.h>
+#include <odCore/Panic.h>
 
 namespace odOsg
 {
@@ -30,7 +30,7 @@ namespace odOsg
     {
         if(index >= mGeometries.size())
         {
-            throw od::Exception("Geometry index out of bounds");
+            OD_PANIC() << "Geometry index out of bounds";
         }
 
         return mGeometries[index];
