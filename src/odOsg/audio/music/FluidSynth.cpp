@@ -135,7 +135,7 @@ namespace odOsg
     {
         if(errorCode != FLUID_OK)
         {
-            throw od::Exception(errorMessage);
+            OD_PANIC() << errorMessage;
         }
     }
 
