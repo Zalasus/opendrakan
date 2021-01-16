@@ -16,7 +16,7 @@ namespace od
 {
 
     /**
-     * An downcast which must succeed, and will throw otherwise.
+     * An downcast which must succeed, and will panic otherwise.
      *
      * In contrast to od::confident_downcast(), this will always perform a dynamic_cast.
      */

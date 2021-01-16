@@ -483,7 +483,7 @@ namespace odRfl
     /**
      * @brief A class factory that can only instantiate a field bundle.
      *
-     * Trying to make a class instance from this will cause a throw.
+     * Trying to make a class instance from this will cause a panic.
      */
     template <typename _Fields>
     class FieldsOnlyClassFactory final : public ClassFactory

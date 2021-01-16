@@ -66,7 +66,7 @@ namespace odState
 
     void StateManager::objectStatesChanged(od::LevelObject &object, const od::ObjectStates &newStates)
     {
-        _throwIfStateUpdatesDisallowed();
+        _panicIfStateUpdatesDisallowed();
 
         auto &storedStates = mCurrentUpdateStatesMap[object.getObjectId()].basicStates;
         storedStates.merge(storedStates, newStates);
@@ -74,7 +74,7 @@ namespace odState
 
     void StateManager::objectExtraStatesChanged(od::LevelObject &object, const StateBundleBase &newStates)
     {
-        _throwIfStateUpdatesDisallowed();
+        _panicIfStateUpdatesDisallowed();
 
         auto &storedStates = mCurrentUpdateStatesMap[object.getObjectId()].extraStates;
 
@@ -362,7 +362,7 @@ namespace odState
         }
     }
 
-    void StateManager::_throwIfStateUpdatesDisallowed()
+    void StateManager::_panicIfStateUpdatesDisallowed()
     {
         if(mDisallowStateUpdates)
         {
