@@ -67,14 +67,18 @@ namespace odDb
         auto cursor = mRrc.getFirstRecordOfType(od::SrscRecordType::MUSIC);
         while(cursor.isValid())
         {
-            od::RiffReader riffReader(cursor.getReader());
-            if(riffReader.getListId() == "DLS ")
+            auto readerOption = od::RiffReader::create(cursor.getReader());
+            if(readerOption.has_value())
             {
-                _addDlsToIndex(riffReader, cursor.getDirIterator()->recordId);
+                auto &riffReader = *readerOption;
+                if(riffReader.getListId() == "DLS ")
+                {
+                    _addDlsToIndex(riffReader, cursor.getDirIterator()->recordId);
 
-            }else if(riffReader.getListId() == "DMSG")
-            {
-                _addSegmentToIndex(riffReader, cursor.getDirIterator()->recordId);
+                }else if(riffReader.getListId() == "DMSG")
+                {
+                    _addSegmentToIndex(riffReader, cursor.getDirIterator()->recordId);
+                }
             }
 
             cursor.nextOfType(od::SrscRecordType::MUSIC);

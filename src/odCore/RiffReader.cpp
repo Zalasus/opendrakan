@@ -53,16 +53,33 @@ namespace od
     const FourCC RiffReader::RIFF_CHUNK_ID = FourCC("RIFF");
     const FourCC RiffReader::LIST_CHUNK_ID = FourCC("LIST");
 
+    std::optional<RiffReader> RiffReader::create(od::DataReader dr)
+    {
+        RiffReader reader(dr, 0);
+
+        if(reader.mChunkId != RIFF_CHUNK_ID)
+        {
+            return {};
+
+        }else
+        {
+            return reader;
+        }
+    }
+
     RiffReader::RiffReader(od::DataReader reader)
+    : RiffReader(reader, 0)
+    {
+        if(mChunkId != RIFF_CHUNK_ID)
+        {
+            OD_PANIC() << "Not a RIFF chunk";
+        }
+    }
+
+    RiffReader::RiffReader(od::DataReader reader, int)
     : mReader(reader)
     {
         _readChunkHeader();
-
-        if(mChunkId != RIFF_CHUNK_ID)
-        {
-            OD_PANIC() << "Not a RIFF file";
-        }
-
         mParentEnd = mChunkEnd;
     }
 
