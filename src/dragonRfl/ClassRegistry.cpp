@@ -25,6 +25,7 @@
 #include <dragonRfl/classes/StompPlayer.h>
 #include <dragonRfl/classes/Timer.h>
 #include <dragonRfl/classes/TrackingCamera.h>
+#include <dragonRfl/classes/UserInterfaceLauncher.h>
 // #include <dragonRfl/classes/UserInterfaceProperties.h>
 // #include <dragonRfl/classes/VisibilityToggler.h>
 
@@ -52,6 +53,7 @@ namespace dragonRfl
         registerClass<StompPlayer>();
         registerClass<Timer>();
         registerClass<TrackingCamera>();
+        registerClass<UserInterfaceLauncher>();
         // registerClass<UserInterfaceProperties>();
         // registerClass<VisibilityToggler>();
     }

@@ -35,7 +35,7 @@ namespace odNet
         virtual void objectExtraStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const char *data, size_t size) override final;
         virtual void confirmSnapshot(odState::TickNumber tick, double realtime, size_t discreteChangeCount, odState::TickNumber referenceTick) override final;
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) override final;
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime) override final;
+        virtual void event(const odState::EventVariant &e, double realtime) override final;
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override final;
         virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override final;

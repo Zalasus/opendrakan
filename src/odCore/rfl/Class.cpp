@@ -7,7 +7,7 @@
 
 #include <odCore/rfl/Class.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/physics/Handles.h>
 
@@ -19,8 +19,23 @@ namespace odRfl
     }
 
 
+    ClassBase::ClassBase()
+    : mRfl(nullptr)
+    {
+    }
+
     ClassBase::~ClassBase()
     {
+    }
+
+    void ClassBase::setRfl(Rfl &rfl)
+    {
+        if(mRfl != nullptr)
+        {
+            OD_PANIC() << "Double assigned RFL to class base";
+        }
+
+        mRfl = &rfl;
     }
 
     void ClassBase::onLoaded()

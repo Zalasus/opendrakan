@@ -13,6 +13,12 @@
 #include <odCore/db/Class.h>
 #include <odCore/db/AssetFactory.h>
 
+namespace odRfl
+{
+    class Rfl;
+    class RflManager;
+}
+
 namespace odDb
 {
 
@@ -34,6 +40,8 @@ namespace odDb
          */
         od::RecordId findFirstClassOfType(uint16_t rflClassType);
 
+        odRfl::Rfl *getRfl(odRfl::RflManager &rflManager);
+
 
     protected:
 
@@ -46,6 +54,7 @@ namespace odDb
         void _loadRflRecord();
 
         od::FilePath mRflPath;
+        odRfl::Rfl *mCachedRfl;
     };
 
 }

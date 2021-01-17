@@ -19,7 +19,6 @@
 #include <glm/vec3.hpp>
 
 #include <odCore/IdTypes.h>
-#include <odCore/Exception.h>
 #include <odCore/Message.h>
 
 #include <odCore/anim/AnimModes.h>
@@ -32,6 +31,8 @@
 namespace od
 {
     class LevelObject;
+    class DataReader;
+    class DataWriter;
 }
 
 namespace odDb
@@ -56,6 +57,9 @@ namespace odState
     struct ActionEvent final : public Event
     {
         ActionEvent(odInput::ActionCode code, bool down);
+        ActionEvent(od::DataReader &dr);
+
+        void serialize(od::DataWriter &dw) const;
 
         odInput::ActionCode actionCode;
         bool keyDown;
@@ -65,6 +69,9 @@ namespace odState
     struct ObjectAnimEvent final : public Event
     {
         ObjectAnimEvent(od::LevelObjectId obj, const odDb::GlobalAssetRef &anim, const odAnim::AnimModes &modes);
+        ObjectAnimEvent(od::DataReader &dr);
+
+        void serialize(od::DataWriter &dw) const;
 
         od::LevelObjectId objectId;
         odDb::GlobalAssetRef animRef;
@@ -76,6 +83,9 @@ namespace odState
     struct ObjectMessageEvent final : public Event
     {
         ObjectMessageEvent(od::LevelObjectId sender, od::LevelObjectId receiver, const od::Message &msg);
+        ObjectMessageEvent(od::DataReader &dr);
+
+        void serialize(od::DataWriter &dw) const;
 
         od::LevelObjectId senderObjectId;
         od::LevelObjectId receiverObjectId;
@@ -88,7 +98,20 @@ namespace odState
     };*/
 
 
-    using EventVariant = std::variant<ActionEvent, ObjectAnimEvent, ObjectMessageEvent>;
+    // NOTE: The order of type parameters determines the type discriminant,
+    //        which is part of the network protocol! So always add types at the
+    //        end, and instead of removing one, replace it with a dummy instead.
+    using EventVariant = std::variant<ActionEvent,
+                                      ObjectAnimEvent,
+                                      ObjectMessageEvent>;
+
+
+    struct EventVariantSerializer
+    {
+        static void serialize(const EventVariant &e, od::DataWriter &dw);
+        static EventVariant deserialize(od::DataReader &dr);
+    };
+
 
 }
 

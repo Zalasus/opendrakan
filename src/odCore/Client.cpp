@@ -32,6 +32,32 @@
 namespace od
 {
 
+    class TranslateEventAssetRefVisitor
+    {
+    public:
+
+        TranslateEventAssetRefVisitor(Client &client)
+        : mClient(client)
+        {
+        }
+
+        void operator()(odState::Event &e)
+        {
+        }
+
+        void operator()(odState::ObjectAnimEvent &e)
+        {
+            e.animRef.globalDbIndex = mClient.translateGlobalDatabaseIndex(e.animRef.globalDbIndex);
+        }
+
+
+    private:
+
+        Client &mClient;
+
+    };
+
+
     /**
      * @brief DownlinkConnector for connecting the local client to a server.
      */
@@ -87,11 +113,13 @@ namespace od
             mClient.getMessageDispatcher().receiveGlobalMessage(code, data, size);
         }
 
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime) override
+        virtual void event(const odState::EventVariant &e, double realtime) override
         {
-            animRef.globalDbIndex = mClient.translateGlobalDatabaseIndex(animRef.globalDbIndex);
-            odState::ObjectAnimEvent animEvent(id, animRef, modes);
-            mClient.getEventQueue().addIncomingEvent(realtime, animEvent);
+            auto translatedEvent = e;
+            TranslateEventAssetRefVisitor visitor(mClient);
+            std::visit(visitor, translatedEvent);
+
+            mClient.getEventQueue().addIncomingEvent(realtime, translatedEvent);
         }
 
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
@@ -238,7 +266,7 @@ namespace od
         auto it = mGlobalDbIndexMap.find(serverSideIndex);
         if(it == mGlobalDbIndexMap.end())
         {
-            throw od::Exception("Server-side global DB index not found in table. Server must have sent incomplete table");
+            OD_PANIC() << "Server-side global DB index " << serverSideIndex << " not found in table. Server must have sent incomplete table";
         }
 
         return it->second;

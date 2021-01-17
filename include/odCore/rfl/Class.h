@@ -14,9 +14,9 @@
 #include <glm/gtc/quaternion.hpp>
 
 #include <odCore/Engine.h>
-#include <odCore/Exception.h>
 #include <odCore/Message.h>
 #include <odCore/Downcast.h>
+#include <odCore/Panic.h>
 
 #include <odCore/rfl/FieldProbe.h>
 
@@ -40,6 +40,7 @@ namespace odState
 
 namespace odRfl
 {
+    class Rfl;
 
     typedef uint16_t ClassId;
 
@@ -109,6 +110,7 @@ namespace odRfl
     {
     public:
 
+        ClassBase();
         virtual ~ClassBase(); // = default;
 
         /**
@@ -124,6 +126,27 @@ namespace odRfl
         virtual SpawnableClass *asSpawnableClass() = 0;
         virtual ClientClass *asClientClass() = 0;
         virtual ServerClass *asServerClass() = 0;
+
+        template <typename T>
+        T &getRfl()
+        {
+            static_assert(std::is_base_of<Rfl, T>::value, "T in getRfl<T>() must have a visible odRfl::Rfl base");
+
+            if(mRfl == nullptr)
+            {
+                OD_PANIC() << "No RFL set";
+            }
+
+            return *od::confident_downcast<T>(mRfl);
+        }
+
+        void setRfl(Rfl &rfl);
+
+
+    private:
+
+        Rfl *mRfl;
+
     };
 
 
@@ -452,16 +475,15 @@ namespace odRfl
 
             }else
             {
-                throw od::Exception("Failed to instantiate class due to invalid Engine variant state");
+                OD_PANIC() << "Failed to instantiate class due to invalid Engine variant state";
             }
         }
     };
 
-
     /**
      * @brief A class factory that can only instantiate a field bundle.
      *
-     * Trying to make a class instance from this will cause a throw.
+     * Trying to make a class instance from this will cause a panic.
      */
     template <typename _Fields>
     class FieldsOnlyClassFactory final : public ClassFactory
@@ -477,7 +499,14 @@ namespace odRfl
 
         virtual std::unique_ptr<ClassBase> makeInstance(od::Engine &engine) override
         {
-            throw od::Exception("Tried to make instance of field-only class");
+            OD_PANIC() << "Tried to make instance of field-only class";
+
+            // a (yet unfixed) bug in GCC causes it to output a -Wreturn-type
+            //  warning here even though the function never gets past the panic.
+            //  this bug only occurs in templates under very specific
+            //  circumstances. however, this simple return fixes that.
+            //  see related: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79021
+            return nullptr;
         }
 
     };

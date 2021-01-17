@@ -12,14 +12,13 @@
 namespace odState
 {
 
-    struct DispatchVisitor
+    class DispatchVisitor
     {
-        od::Level &level;
-        double timeDelta;
+    public:
 
         DispatchVisitor(od::Level &l, double dt)
-        : level(l)
-        , timeDelta(dt)
+        : mLevel(l)
+        , mTimeDelta(dt)
         {
         }
 
@@ -28,39 +27,34 @@ namespace odState
             return true;
         }
 
+        bool operator()(const ObjectMessageEvent &event)
+        {
+            return _objectEvent(event, event.receiverObjectId);
+        }
+
         bool operator()(const ObjectAnimEvent &event)
         {
-            auto obj = level.getLevelObjectById(event.objectId);
+            return _objectEvent(event, event.objectId);
+        }
+
+
+    private:
+
+        bool _objectEvent(EventVariant event, od::LevelObjectId receiverId)
+        {
+            auto obj = mLevel.getLevelObjectById(receiverId);
             if(obj != nullptr)
             {
-                return obj->handleEvent(event, timeDelta);
+                return obj->handleEvent(event, mTimeDelta);
             }
 
             return true;
         }
+
+        od::Level &mLevel;
+        double mTimeDelta;
     };
 
-
-    struct SendVisitor
-    {
-        odNet::DownlinkConnector &connector;
-        double realtime;
-
-        SendVisitor(odNet::DownlinkConnector &c, double rt)
-        : connector(c)
-        , realtime(rt)
-        {
-        }
-
-        void operator()(const Event &event)
-        {
-        }
-
-        void operator()(const ObjectAnimEvent &event)
-        {
-            connector.objectAnimation(event.objectId, event.animRef, event.modes, realtime);
-        }
-    };
 
     struct PrefetchVisitor
     {
@@ -138,8 +132,7 @@ namespace odState
             {
                 if(!eventData.sent)
                 {
-                    SendVisitor visitor(connector, eventData.realtime);
-                    std::visit(visitor, eventData.event);
+                    connector.event(eventData.event, eventData.realtime);
                 }
 
             }else

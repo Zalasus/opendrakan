@@ -17,7 +17,8 @@ namespace odNet
         CONFIRM_SNAPSHOT,
         GLOBAL_MESSAGE,
         OBJECT_MESSAGE,
-        OBJECT_ANIMATION,
+        
+        EVENT,
 
         ACKNOWLEDGE_SNAPSHOT,
         ACTION_TRIGGERED,

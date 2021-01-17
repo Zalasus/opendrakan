@@ -29,7 +29,7 @@ namespace odNet
     {
         if(loadedDatabaseCount > std::numeric_limits<uint32_t>::max())
         {
-            throw od::Exception("Entry count out of bounds");
+            OD_PANIC() << "Entry count out of bounds";
         }
 
         _beginPacket(PacketType::LOAD_LEVEL);
@@ -74,24 +74,11 @@ namespace odNet
         _endPacket(LinkType::RELIABLE);
     }
 
-    void PacketBuilder::objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime)
+    void PacketBuilder::event(const odState::EventVariant &e, double realtime)
     {
-        // FIXME: this only works as long as there are no more than four bone modes/playback types
-        uint8_t flags =
-              (static_cast<uint8_t>(modes.boneModes[0]) << 0)
-            | (static_cast<uint8_t>(modes.boneModes[1]) << 2)
-            | (static_cast<uint8_t>(modes.boneModes[2]) << 4)
-            | (static_cast<uint8_t>(modes.playbackType) << 6);
-
-        _beginPacket(PacketType::OBJECT_ANIMATION);
-        mWriter << id
-                << animRef
-                << modes.channel
-                << modes.speed
-                << modes.startTime
-                << modes.transitionTime
-                << flags
-                << realtime;
+        _beginPacket(PacketType::EVENT);
+        mWriter << realtime;
+        odState::EventVariantSerializer::serialize(e, mWriter);
         _endPacket(LinkType::RELIABLE);
     }
 
@@ -131,7 +118,7 @@ namespace odNet
         size_t payloadSize = mPacketBuffer.size() - PacketConstants::HEADER_SIZE;
         if(payloadSize > 0xffff)
         {
-            throw od::Exception("Packet payload size exceeds size fields limits");
+            OD_PANIC() << "Packet payload size exceeds size fields limits";
         }
 
         auto p = mWriter.tell();

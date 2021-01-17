@@ -9,7 +9,7 @@
 #include <odCore/db/DbManager.h>
 
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Database.h>
 #include <odCore/db/DependencyTable.h>
@@ -32,7 +32,7 @@ namespace odDb
     {
     	if(dependencyDepth > MAX_DEPENDENCY_DEPTH)
     	{
-    		throw od::Exception("Dependency depth exceeded maximum. Possible undetected circular dependency?");
+    		OD_PANIC() << "Dependency depth exceeded maximum. Possible undetected circular dependency?";
     	}
 
     	if(auto db = getDatabaseByPath(dbFilePath); db != nullptr)

@@ -12,7 +12,7 @@
 #include <fstream>
 
 #include <odCore/StringUtils.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #if defined (__WIN32__)
 #	define OD_FILEPATH_SEPERATOR	    '\\'
@@ -61,7 +61,7 @@ namespace od
 	{
 	    if(mPathComponents.size() == 0)
 	    {
-	        throw Exception("Tried to ascend above path root with FilePath::dir()");
+	        OD_PANIC() << "Tried to ascend above path root with FilePath::dir()";
 	    }
 
 		return FilePath(mRootStyle, mRoot, mPathComponents.begin(), mPathComponents.end()-1);
@@ -81,7 +81,7 @@ namespace od
 	{
 		if(mPathComponents.size() == 0)
 		{
-			throw Exception("Tried to access file part of empty path");
+			OD_PANIC() << "Tried to access file part of empty path";
 		}
 
 		return mPathComponents[mPathComponents.size() - 1];
@@ -245,7 +245,7 @@ namespace od
 			{
 				if(mPathComponents.empty())
 				{
-					throw Exception("Invalid path: '..' used beyond path root.");
+					OD_PANIC() << "Invalid path: '..' used beyond path root.";
 				}
 
 				mPathComponents.pop_back();
@@ -280,7 +280,7 @@ namespace od
 		{
 			if(mRootStyle != OD_FILEPATH_HOST_STYLE)
 			{
-				throw UnsupportedException("Can't convert absolute path roots right now");
+				OD_PANIC() << "Can't convert absolute path roots right now";
 			}
 
 			oss << mRoot;

@@ -15,7 +15,6 @@
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
 
 #include <odCore/db/Asset.h>
 
@@ -61,7 +60,7 @@ namespace odDb
                 mAssetCache.erase(assetId);
 
                 Logger::error() << AssetTraits<_AssetType>::name() << " " << std::hex << assetId << std::dec << " neither found in cache nor asset container " << mSrscFile.getFilePath().fileStr();
-                throw od::NotFoundException("Asset not found in cache or asset container");
+                return nullptr;
             }
 
             asset = loaded; // this effectively inserts the asset into the cache

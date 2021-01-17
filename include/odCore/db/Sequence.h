@@ -11,10 +11,9 @@
 #include <memory>
 #include <vector>
 #include <variant>
+
 #include <glm/vec3.hpp>
 #include <glm/gtc/quaternion.hpp>
-
-#include <odCore/Exception.h>
 
 #include <odCore/anim/AnimModes.h>
 

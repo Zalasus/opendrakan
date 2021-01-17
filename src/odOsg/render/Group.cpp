@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <glm/glm.hpp>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Downcast.h>
 
 #include <odOsg/render/Handle.h>

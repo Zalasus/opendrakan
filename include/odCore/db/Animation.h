@@ -54,7 +54,7 @@ namespace odDb
 		 * only specifies a single keyframe, both entries in the returned pair will be identical to the first,
 		 * last, or only keyframe in the timeline, respectively.
 		 *
-		 * If the passed node does not exist in this animation, the method will throw.
+		 * If the passed node does not exist in this animation, the method will panic.
 		 */
 		std::pair<KfIterator, KfIterator> getLeftAndRightKeyframe(int32_t nodeId, float time);
 

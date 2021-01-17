@@ -9,6 +9,7 @@
 
 #include <limits>
 
+#include <odCore/Panic.h>
 #include <odCore/SrscRecordTypes.h>
 
 #include <odCore/db/Segment.h>
@@ -29,7 +30,7 @@ namespace odDb
         auto it = mDlsGuidMap.find(guid);
         if(it == mDlsGuidMap.end())
         {
-            throw od::NotFoundException("No DLS with given GUID found");
+            OD_PANIC() << "No DLS with given GUID " << guid << " found";
         }
 
         return it->second;
@@ -45,13 +46,13 @@ namespace odDb
     {
         if(id > std::numeric_limits<od::RecordId>::max())
         {
-            throw od::Exception("Music ID out of record ID limits");
+            OD_PANIC() << "Music ID out of record ID limits: " << id;
         }
 
         auto cursor = mRrc.getFirstRecordOfTypeId(od::SrscRecordType::MUSIC, static_cast<od::RecordId>(id));
         if(!cursor.isValid())
         {
-            throw od::NotFoundException("Music with given ID not found");
+            OD_PANIC() << "Music with ID " << id << " not found";
         }
 
         Logger::verbose() << "Loading music segment " << std::hex << id << std::dec;
@@ -66,10 +67,10 @@ namespace odDb
         auto cursor = mRrc.getFirstRecordOfType(od::SrscRecordType::MUSIC);
         while(cursor.isValid())
         {
-            try
+            auto readerOption = od::RiffReader::create(cursor.getReader());
+            if(readerOption.has_value())
             {
-                od::RiffReader riffReader(cursor.getReader());
-
+                auto &riffReader = *readerOption;
                 if(riffReader.getListId() == "DLS ")
                 {
                     _addDlsToIndex(riffReader, cursor.getDirIterator()->recordId);
@@ -78,10 +79,6 @@ namespace odDb
                 {
                     _addSegmentToIndex(riffReader, cursor.getDirIterator()->recordId);
                 }
-
-            }catch(od::RiffException &r)
-            {
-                // if the record contains no RIFF data, simply ignore it
             }
 
             cursor.nextOfType(od::SrscRecordType::MUSIC);

@@ -13,7 +13,7 @@
 #include <odCore/Server.h>
 #include <odCore/Level.h>
 #include <odCore/Layer.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/ObjectLightReceiver.h>
 
 #include <odCore/anim/Skeleton.h>
@@ -441,13 +441,10 @@ namespace od
 
     void LevelObject::receiveMessage(LevelObject &sender, od::Message message)
     {
-        // object messages are only sent in the downlink
-        if(mLevel.getEngine().isServer())
-        {
-
-        }
-
         receiveMessageWithoutDispatch(sender, message);
+
+        odState::ObjectMessageEvent event(sender.getObjectId(), getObjectId(), message);
+        getLevel().getEngine().getEventQueue().logEvent(event);
     }
 
     void LevelObject::receiveMessageWithoutDispatch(LevelObject &sender, od::Message message)
@@ -464,7 +461,7 @@ namespace od
     {
         for(auto linkedId : mLinkedObjects)
         {
-            od::LevelObject *obj = mLevel.getLevelObjectById(linkedId);
+            auto obj = mLevel.getLevelObjectById(linkedId);
             if(obj != nullptr)
             {
                 obj->receiveMessage(*this, message);
@@ -532,7 +529,7 @@ namespace od
     {
         if(mIsSpawned)
         {
-            throw od::Exception("An object must not be spawned when assigning an instance to it");
+            OD_PANIC() << "An object must not be spawned when assigning an instance to it";
         }
 
         mRflClassInstance = std::move(i);
@@ -577,7 +574,7 @@ namespace od
         {
             if(getLevel().getEngine().isServer())
             {
-                throw od::Exception("Can't enable rendering on servers");
+                OD_PANIC() << "Can't enable rendering on servers";
             }
 
             auto &client = getLevel().getEngine().getClient();
@@ -673,26 +670,72 @@ namespace od
         }
     }
 
-    bool LevelObject::handleEvent(const odState::EventVariant &event, float timeDelta)
+    class HandleVisitor
     {
-        auto animEvent = std::get_if<odState::ObjectAnimEvent>(&event);
-        if(animEvent != nullptr)
+    public:
+
+        HandleVisitor(od::LevelObject &obj, double dt)
+        : mObj(obj)
+        , mTimeDelta(dt)
         {
-            if(animEvent->anim == nullptr)
+        }
+
+        bool operator()(const odState::Event &)
+        {
+            Logger::warn() << "Unhandled object event";
+            return true;
+        }
+
+        bool operator()(const odState::ObjectAnimEvent &event)
+        {
+            if(event.anim == nullptr)
             {
-                Logger::warn() << "Event queue failed to prefetch animation for event. Retrying later. dt=" << timeDelta;
+                Logger::warn() << "Event queue failed to prefetch animation for event. Retrying later. dt=" << mTimeDelta;
                 return false;
             }
 
-            playAnimationUntracked(animEvent->anim, animEvent->modes);
+            mObj.playAnimationUntracked(event.anim, event.modes);
 
-            if(mSkeletonAnimationPlayer != nullptr && timeDelta > 0)
+            if(mObj.mSkeletonAnimationPlayer != nullptr && mTimeDelta > 0)
             {
-                mSkeletonAnimationPlayer->update(timeDelta);
+                mObj.mSkeletonAnimationPlayer->update(mTimeDelta);
             }
+
+            return true;
         }
 
-        return true;
+        bool operator()(const odState::ObjectMessageEvent &event)
+        {
+            if(!mObj.mStates.running.get())
+            {
+                return false;
+            }
+
+            auto sender = mObj.getLevel().getLevelObjectById(event.senderObjectId);
+            if(sender != nullptr)
+            {
+                mObj.receiveMessageWithoutDispatch(*sender, event.message);
+
+            }else
+            {
+                Logger::warn() << "Message sender not present in level that processed message event";
+            }
+
+            return true;
+        }
+
+
+    private:
+
+        od::LevelObject &mObj;
+        double mTimeDelta;
+
+    };
+
+    bool LevelObject::handleEvent(const odState::EventVariant &event, float timeDelta)
+    {
+        HandleVisitor hv(*this, timeDelta);
+        return std::visit(hv, event);
     }
 
 }

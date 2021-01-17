@@ -295,7 +295,7 @@ namespace dragonRfl
         }
 
         // create a tracking camera for me
-        std::vector<od::LevelObject*> foundCameras;
+        std::vector<std::shared_ptr<od::LevelObject>> foundCameras;
         obj.getLevel().findObjectsOfType(TrackingCamera::classId(), foundCameras);
         if(foundCameras.empty())
         {

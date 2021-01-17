@@ -310,7 +310,7 @@ namespace od
         auto it = mClients.find(id);
         if(it == mClients.end())
         {
-            throw od::NotFoundException("Invalid client ID");
+            OD_PANIC() << "Invalid client ID: " << id;
         }
 
         return *it->second;

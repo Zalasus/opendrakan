@@ -12,6 +12,8 @@
 
 #include <glm/vec2.hpp>
 
+#include <odCore/Panic.h>
+
 #include <odCore/render/Array.h>
 
 #include <odOsg/GlmAdapter.h>
@@ -39,7 +41,7 @@ namespace odOsg
         {
             if(!mAcquired)
             {
-                throw od::Exception("Accessed array of array accessor without acquiring it first");
+                OD_PANIC() << "Accessed array of array accessor without acquiring it first";
             }
 
             return mArray;
@@ -54,7 +56,7 @@ namespace odOsg
 
             if(mOsgArray == nullptr)
             {
-                throw od::Exception("Tried to acquire access handler with no array set");
+                OD_PANIC() << "Tried to acquire access handler with no array set";
             }
 
             mArray.resize(mOsgArray->size());
@@ -99,7 +101,7 @@ namespace odOsg
         {
             if(mAcquired)
             {
-                throw od::Exception("Tried to replace array while still acquired");
+                OD_PANIC() << "Tried to replace array while still acquired";
             }
 
             mOsgArray = array;

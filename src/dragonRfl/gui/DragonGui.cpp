@@ -37,7 +37,6 @@ namespace dragonRfl
     , mDummyDependencyTable(std::make_shared<odDb::DependencyTable>()) // currently, we still need an empty DependencyTable because assets assume to always have one
     , mRrcTextureFactory(mDummyDependencyTable, mRrcFile)
     , mInterfaceDb(nullptr)
-    , mFaderQuad(client.getRenderer())
     {
         od::FilePath interfaceDbPath(OD_INTERFACE_DB_PATH, client.getEngineRootDir());
         mInterfaceDb = client.getDbManager().loadDatabase(interfaceDbPath.adjustCase());
@@ -45,14 +44,14 @@ namespace dragonRfl
         // retrieve UserInterfaceProperties object
         if(mInterfaceDb->getClassFactory() == nullptr)
         {
-            throw od::Exception("Can not initialize user interface. Interface.db has no class container");
+            OD_PANIC() << "Can not initialize user interface. Interface.db has no class container";
         }
 
         odRfl::ClassId uiPropsClassId = UserInterfaceProperties::classId();
         od::RecordId id = mInterfaceDb->getClassFactory()->findFirstClassOfType(uiPropsClassId);
         if(id == odDb::AssetRef::NULL_REF.assetId)
         {
-            throw od::Exception("Can not initialize user interface. Interface class container has no User Interface Properties class");
+            OD_PANIC() << "Can not initialize user interface. Interface class container has no User Interface Properties class";
         }
 
         std::shared_ptr<odDb::Class> uiPropsClass = mInterfaceDb->loadClass(id);
@@ -74,13 +73,6 @@ namespace dragonRfl
 
         mMainMenu = std::make_shared<MainMenu>(*this, &mUserInterfaceProperties);
         addWidget(mMainMenu);
-
-        mFaderQuad.setVertexCoords({0,0}, {1,1});
-        mFaderQuad.setColor({0,0,0,0});
-        auto faderWidget = std::make_shared<odGui::Widget>(*this);
-        faderWidget->addRenderHandle(mFaderQuad.getHandle());
-        faderWidget->setZPosition(1000);
-        addWidget(faderWidget);
 
         setMenuMode(false);
     }
@@ -106,19 +98,17 @@ namespace dragonRfl
 
         Logger::debug() << "Localized string " << std::hex << stringId << " requested from RRC";
 
-        try
+        auto localized = getStringById(stringId);
+        if(localized.has_value())
         {
-            return getStringById(stringId);
-
-        }catch(od::NotFoundException &e)
-        {
+            return *localized;
         }
 
         // string not found. return unlocalized one
         return s.substr(8, std::string::npos);
     }
 
-    std::string DragonGui::getStringById(od::RecordId stringId)
+    std::optional<std::string> DragonGui::getStringById(od::RecordId stringId)
     {
         // was string cached? if yes, no need to load and decrypt it again
         auto cacheIt = mLocalizedStringCache.find(stringId);
@@ -131,17 +121,15 @@ namespace dragonRfl
         auto cursor = mRrcFile.getFirstRecordOfTypeId(od::SrscRecordType::LOCALIZED_STRING, stringId);
         if(!cursor.isValid())
         {
-            std::ostringstream oss;
-            oss << "String with ID 0x" << std::hex << stringId << std::dec << " not found";
-
-            throw od::NotFoundException(oss.str());
+            Logger::warn() << "String with ID 0x" << std::hex << stringId << std::dec << " not found";
+            return {};
         }
 
         auto dirIt = cursor.getDirIterator();
 
         if(dirIt->dataSize > 255)
         {
-            throw od::Exception("String buffer too small");
+            OD_PANIC() << "String decryption buffer too small";
         }
 
         std::istream &in = mRrcFile.getStreamForRecord(dirIt);

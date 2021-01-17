@@ -6,6 +6,7 @@
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Message.h>
+#include <odCore/Panic.h>
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 #include <odCore/anim/BoneAccumulator.h>
@@ -58,29 +59,27 @@ namespace odAnim
     {
     public:
 
-        SequencePlayer::Actor &actor;
-        odDb::Sequence &sequence;
-
-        ActionLoadVisitor(SequencePlayer::Actor &a, odDb::Sequence &s)
-        : actor(a)
-        , sequence(s)
+        ActionLoadVisitor(SequencePlayer::Actor &actor, odDb::Sequence &sequence, od::LevelObject &object)
+        : mActor(actor)
+        , mSequence(sequence)
+        , mObject(object)
         {
         }
 
         void operator()(const odDb::ActionTransform &a)
         {
-            actor.transformActions.emplace_back(a);
+            mActor.transformActions.emplace_back(a);
         }
 
         void operator()(const odDb::ActionStartAnim &a)
         {
             // for some reason, animation refs are stored relative to the object's model's DB, not the sequence DB
-            if(actor.actorObject.getModel() == nullptr)
+            if(mObject.getModel() == nullptr)
             {
                 Logger::error() << "Animation on object without loaded model. Can't load animation asset";
                 return;
             }
-            auto animDepTable = actor.actorObject.getModel()->getDependencyTable();
+            auto animDepTable = mObject.getModel()->getDependencyTable();
 
             PlayerActionStartAnim newAction(a);
             newAction.animation = animDepTable->loadAsset<odDb::Animation>(a.animationRef);
@@ -90,27 +89,39 @@ namespace odAnim
                 return;
             }
 
-            actor.nonTransformActions.emplace_back(newAction);
+            mActor.nonTransformActions.emplace_back(newAction);
         }
 
         void operator()(const odDb::ActionPlaySound &a)
         {
             PlayerActionPlaySound newAction(a);
-            newAction.sound = sequence.getDependencyTable()->loadAsset<odDb::Sound>(a.soundRef);
+            newAction.sound = mSequence.getDependencyTable()->loadAsset<odDb::Sound>(a.soundRef);
             if(newAction.sound == nullptr)
             {
                 Logger::error() << "Missing sound in sequence: " << a.soundRef;
                 return;
             }
 
-            actor.nonTransformActions.emplace_back(newAction);
+            mActor.nonTransformActions.emplace_back(newAction);
         }
 
         template <typename _OtherAction>
         void operator()(const _OtherAction &a)
         {
-            actor.nonTransformActions.emplace_back(a);
+            mActor.nonTransformActions.emplace_back(a);
         }
+
+
+    private:
+
+        SequencePlayer::Actor &mActor;
+        odDb::Sequence &mSequence;
+
+        // can't use mActor.actorObject, since at this point is is still nullptr
+        //  (won't get filled until play() is called to avoid permanent
+        //  reference cycles)
+        od::LevelObject &mObject;
+
     };
 
     void SequencePlayer::loadSequence(std::shared_ptr<odDb::Sequence> sequence)
@@ -125,14 +136,15 @@ namespace odAnim
         mActors.reserve(actors.size());
         for(auto &dbActor : actors)
         {
-            od::LevelObject *actorObject = mLevel.getLevelObjectById(dbActor.getLevelObjectId());
+            auto actorObject = mLevel.getLevelObjectById(dbActor.getLevelObjectId());
             if(actorObject == nullptr)
             {
                 Logger::warn() << "Actor '" << dbActor.getName() << "' in sequence '" << sequence->getName() << "' has invalid object reference";
                 continue;
             }
 
-            auto newActorIt = mActors.insert(std::make_pair(actorObject->getObjectId(), Actor(*actorObject)));
+            auto objectId = actorObject->getObjectId();
+            auto newActorIt = mActors.insert(std::make_pair(objectId, Actor{objectId}));
             auto &playerActor = (newActorIt.first)->second;
 
             // we need to split off transform and non-transform actions into their own vectors, as to make interpolation easier.
@@ -141,7 +153,7 @@ namespace odAnim
             //        cached, and let the event queue handle the prefetching. since the assets are still loaded and owned by our vector,
             //        the prefetch in the event queue will only take as long as it takes to retrieve an asset from the cache
 
-            ActionLoadVisitor visitor(playerActor, *sequence);
+            ActionLoadVisitor visitor(playerActor, *sequence, *actorObject);
 
             for(auto &action : dbActor.getActions())
             {
@@ -164,20 +176,33 @@ namespace odAnim
             return;
         }
 
+        // we fill the object pointers in the actors at the beginning of playback
+        //  and clear them at the end as to avoid permanent reference cycles if
+        //  an actor owns the sequence player.
+        for(auto &actor : mActors)
+        {
+            actor.second.actorObject = mLevel.getLevelObjectById(actor.second.actorObjectId);
+
+            if(playerObject != nullptr && playerObject == actor.second.actorObject.get())
+            {
+                Logger::warn() << "Player object is also an actor. This could result in memory leaks if playback never stops";
+            }
+        }
+
         if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_ACTORS)
         {
             for(auto &actor : mActors)
             {
-                if(playerObject != nullptr && actor.second.actorObject.getObjectId() == playerObject->getObjectId()) continue;
+                if(playerObject == actor.second.actorObject.get()) continue;
 
-                actor.second.actorObject.setRunning(false);
+                actor.second.actorObject->setRunning(false);
             }
 
         }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_NON_ACTORS)
         {
             mLevel.forEachObject([this, playerObject](od::LevelObject &obj){
 
-                if(playerObject != nullptr && obj.getObjectId() == playerObject->getObjectId()) return;
+                if(playerObject == &obj) return;
 
                 auto it = mActors.find(obj.getObjectId());
                 if(it == mActors.end())
@@ -192,7 +217,7 @@ namespace odAnim
         {
             mLevel.forEachObject([playerObject](od::LevelObject &obj){
 
-                if(playerObject != nullptr && obj.getObjectId() == playerObject->getObjectId()) return;
+                if(playerObject == &obj) return;
 
                 obj.setRunning(false);
 
@@ -215,7 +240,7 @@ namespace odAnim
         for(auto &pActor : mActors)
         {
             auto &actor = pActor.second;
-            auto animPlayer = actor.actorObject.getSkeletonAnimationPlayer();
+            auto animPlayer = actor.actorObject->getSkeletonAnimationPlayer();
             if(actor.motionToPositionRootAccumulator != nullptr && animPlayer != nullptr)
             {
                 animPlayer->setBoneAccumulator(actor.prevRootAccumulator, 0);
@@ -228,7 +253,7 @@ namespace odAnim
         {
             for(auto &actor : mActors)
             {
-                actor.second.actorObject.setRunning(true);
+                actor.second.actorObject->setRunning(true);
             }
 
         }else if(mSequence->getRunStateModifyStyle() == odDb::ModifyRunStateStyle::STOP_NON_ACTORS)
@@ -246,6 +271,12 @@ namespace odAnim
             mLevel.forEachObject([](od::LevelObject &obj){
                 obj.setRunning(true);
             });
+        }
+
+        // as to prevent reference cycles. see comment in play()
+        for(auto &actor : mActors)
+        {
+            actor.second.actorObject = nullptr;
         }
     }
 
@@ -302,17 +333,17 @@ namespace odAnim
             animModes.startTime = a.beginPlayAt;
             animModes.transitionTime = a.transitionTime;
 
-            mActor.actorObject.playAnimation(a.animation, animModes);
+            mActor.actorObject->playAnimation(a.animation, animModes);
 
             // create accumulator on demand
             bool needsAccumulator = std::any_of(boneModes.begin(), boneModes.end(), [](auto mode){ return mode == BoneMode::ACCUMULATE; });
-            auto animPlayer = mActor.actorObject.getSkeletonAnimationPlayer();
+            auto animPlayer = mActor.actorObject->getSkeletonAnimationPlayer();
             if(needsAccumulator && mActor.motionToPositionRootAccumulator == nullptr && animPlayer != nullptr)
             {
                 mActor.prevRootAccumulator = animPlayer->getBoneAccumulator(0);
                 mActor.prevRootBoneModes = animPlayer->getBoneModes(0);
 
-                mActor.motionToPositionRootAccumulator = std::make_shared<MotionToPositionAccumulator>(mActor.actorObject);
+                mActor.motionToPositionRootAccumulator = std::make_shared<MotionToPositionAccumulator>(*mActor.actorObject);
                 animPlayer->setBoneAccumulator(mActor.motionToPositionRootAccumulator, 0);
             }
         }
@@ -329,18 +360,18 @@ namespace odAnim
 
         void operator()(const odDb::ActionRunStopAi &a)
         {
-            mActor.actorObject.setRunning(a.enableAi);
+            mActor.actorObject->setRunning(a.enableAi);
         }
 
         void operator()(const odDb::ActionShowHide &a)
         {
-            mActor.actorObject.setVisible(a.visible);
+            mActor.actorObject->setVisible(a.visible);
         }
 
         void operator()(const odDb::ActionMessage &a)
         {
             od::Message message = getMessageForCode(a.messageCode);
-            mActor.actorObject.receiveMessage(mActor.actorObject, message);
+            mActor.actorObject->receiveMessage(*mActor.actorObject, message);
         }
 
         void operator()(const odDb::ActionMusic &a)
@@ -450,7 +481,7 @@ namespace odAnim
             states.rotation.setJump(true);
         }
 
-        actor.actorObject.setStates(states);
+        actor.actorObject->setStates(states);
 
         actor.lastAppliedKeyframe = &kf;
     }
@@ -503,7 +534,7 @@ namespace odAnim
                 states.rotation = rotation;
             }
 
-            actor.actorObject.setStates(states);
+            actor.actorObject->setStates(states);
         }
 
     }

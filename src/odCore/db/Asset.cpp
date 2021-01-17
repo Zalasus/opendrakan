@@ -7,8 +7,6 @@
 
 #include <odCore/db/Asset.h>
 
-#include <odCore/Exception.h>
-
 #include <odCore/db/DependencyTable.h>
 
 namespace odDb

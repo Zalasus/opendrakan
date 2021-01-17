@@ -3,7 +3,7 @@
 
 #include <odCore/Client.h>
 #include <odCore/Server.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -22,14 +22,14 @@ namespace od
 
     Client &Engine::getClient()
     {
-        if(mClient == nullptr) throw Exception("Not a client");
+        if(mClient == nullptr) OD_PANIC() << "Not a client";
 
         return *mClient;
     }
 
     Server &Engine::getServer()
     {
-        if(mServer == nullptr) throw Exception("Not a server");
+        if(mServer == nullptr) OD_PANIC() << "Not a server";
 
         return *mServer;
     }

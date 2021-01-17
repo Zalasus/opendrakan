@@ -11,7 +11,7 @@
 #include <cstdio>
 
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/MusicContainer.h>
 
@@ -54,7 +54,7 @@ namespace odOsg
                 break;
 
             default:
-                throw od::Exception("Unsupported seek offset");
+                OD_PANIC() << "Unsupported seek offset";
             }
         }
 
@@ -135,7 +135,7 @@ namespace odOsg
     {
         if(errorCode != FLUID_OK)
         {
-            throw od::Exception(errorMessage);
+            OD_PANIC() << errorMessage;
         }
     }
 
@@ -145,7 +145,7 @@ namespace odOsg
         mInstance = new_fluid_settings();
         if(mInstance == nullptr)
         {
-            throw od::Exception("Failed to create fluid synth settings");
+            OD_PANIC() << "Failed to create fluid synth settings";
         }
     }
 
@@ -167,10 +167,10 @@ namespace odOsg
         mSettings.setString("player.timing-source", "sample");
 
         mSynth = new_fluid_synth(mSettings.getInstance());
-        if(mSynth == nullptr) throw od::Exception("Failed to create fluid synth");
+        if(mSynth == nullptr) OD_PANIC() << "Failed to create fluid synth";
 
         fluid_sfloader_t *sfloader = new_fluid_defsfloader(mSettings.getInstance()); // TODO: do I have to delete this? o.o
-        if(sfloader == nullptr) throw od::Exception("Failed to create fluid soundfont loader");
+        if(sfloader == nullptr) OD_PANIC() << "Failed to create fluid soundfont loader";
         int result = fluid_sfloader_set_callbacks(sfloader,
                                                   &DlsLoaderWrapper::_dlsLoader_open,
                                                   &DlsLoaderWrapper::_dlsLoader_read,
@@ -257,7 +257,7 @@ namespace odOsg
 
         if(mMusicContainer == nullptr)
         {
-            throw od::Exception("No music container provided to FluidSynth when a DLS needed to be loaded");
+            OD_PANIC() << "No music container provided to FluidSynth when a DLS needed to be loaded";
         }
 
         // beware: pretty bad pointer/string abuse. there is much that can go wrong here, but as I see it, fluidsynth
@@ -270,7 +270,7 @@ namespace odOsg
         std::string str = ss.str();
 
         int sfId = fluid_synth_sfload(mSynth, str.c_str(), 0);
-        if(sfId == FLUID_FAILED) throw od::Exception("Failed to load DLS");
+        if(sfId == FLUID_FAILED) OD_PANIC() << "Failed to load DLS";
 
         mSoundFontIdMap.insert(std::make_pair(dlsGuid, sfId));
 

@@ -8,7 +8,7 @@
 #include <odCore/db/ClassFactory.h>
 
 #include <odCore/SrscRecordTypes.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/StringUtils.h>
 
 #include <odCore/db/Database.h>
@@ -21,6 +21,7 @@ namespace odDb
 
 	ClassFactory::ClassFactory(std::shared_ptr<DependencyTable> depTable, od::SrscFile &classContainer)
     : AssetFactory<Class>(depTable, classContainer)
+    , mCachedRfl(nullptr)
     {
         _loadRflRecord();
     }
@@ -49,6 +50,16 @@ namespace odDb
 	    return AssetRef::NULL_ASSET;
     }
 
+    odRfl::Rfl *ClassFactory::getRfl(odRfl::RflManager &rflManager)
+    {
+        if(mCachedRfl == nullptr)
+        {
+            mCachedRfl = rflManager.getRfl(getRflPath().fileStrNoExt());
+        }
+
+        return mCachedRfl;
+    }
+
     std::shared_ptr<Class> ClassFactory::createNewAsset(od::RecordId id)
     {
         return std::make_shared<Class>(*this);
@@ -59,7 +70,7 @@ namespace odDb
         auto cursor = getSrscFile().getFirstRecordOfType(od::SrscRecordType::CLASS_RFL);
         if(!cursor.isValid())
         {
-            throw od::Exception("Class database contained no RFL definition record");
+            OD_PANIC() << "Class database contained no RFL definition record";
         }
 
         od::DataReader dr = cursor.getReader();

@@ -9,6 +9,7 @@
 #define INCLUDE_DRAGONRFL_GUI_DRAGONGUI_H_
 
 #include <memory>
+#include <optional>
 #include <unordered_map>
 
 #include <odCore/FilePath.h>
@@ -48,7 +49,6 @@ namespace dragonRfl
 
         inline od::Client &getClient() { return mClient; }
         inline const UserInterfacePropertiesFields &getUserInterfaceProperties() const { return mUserInterfaceProperties; }
-        inline odGui::Quad &getFaderQuad() { return mFaderQuad; }
         inline odDb::TextureFactory &getGuiTextureFactory() { return mRrcTextureFactory; }
 
         /**
@@ -61,9 +61,9 @@ namespace dragonRfl
         std::string localizeString(const std::string &s);
 
         /**
-         * @brief Returns the string with the given ID or throws if string can not be found.
+         * @brief Returns the string with the given ID or an empty option if not found.
          */
-        std::string getStringById(od::RecordId stringId);
+        std::optional<std::string> getStringById(od::RecordId stringId);
 
         odGui::Quad makeQuadFromGuiTexture(od::RecordId id);
 
@@ -85,8 +85,6 @@ namespace dragonRfl
         std::unordered_map<od::RecordId, std::string> mLocalizedStringCache;
 
         std::shared_ptr<MainMenu> mMainMenu;
-
-        odGui::Quad mFaderQuad; // a fullscreen quad that faders can use to fade to black (or whatever color)
     };
 
 }

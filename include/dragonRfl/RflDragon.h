@@ -46,6 +46,8 @@ namespace dragonRfl
         virtual void onGameStartup(od::Server &localServer, od::Client &localClient, bool loadIntroLevel) override;
         virtual void onLevelLoaded(od::Server &localServer) override;
 
+        void setShowMenu(bool b);
+
 
     private:
 

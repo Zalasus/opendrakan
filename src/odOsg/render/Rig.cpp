@@ -7,7 +7,7 @@
 
 #include <odOsg/render/Rig.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/Constants.h>
@@ -39,7 +39,7 @@ namespace odOsg
     {
         if(boneIndex >= mBoneMatrixUniform->getNumElements())
         {
-            throw od::Exception("Bone index passed to renderer exceeds supported number of bones");
+            OD_PANIC() << "Bone index passed to renderer exceeds supported number of bones: index=" << boneIndex << " size=" << mBoneMatrixUniform->getNumElements();
         }
 
         mBoneMatrixUniform->setElement(boneIndex, GlmAdapter::toOsg(transform));

@@ -18,6 +18,7 @@
 
 #include <odCore/net/IdTypes.h>
 
+#include <odCore/state/Event.h>
 #include <odCore/state/Timeline.h>
 
 namespace odAnim
@@ -47,7 +48,7 @@ namespace odNet
 
         virtual ~DownlinkConnector() = default;
 
-        virtual void globalDatabaseTableEntry(odDb::GlobalDatabaseIndex dbIndex, const std::string &path) = 0;
+        virtual void globalDatabaseTableEntry(odDb::GlobalDatabaseIndex dbIndex, const std::string &path) = 0; // TODO: replace strings with string_views
         virtual void loadLevel(const std::string &path, size_t loadedDatabaseCount) = 0;
 
         virtual void objectStatesChanged(odState::TickNumber tick, od::LevelObjectId id, const od::ObjectStates &states) = 0;
@@ -63,7 +64,7 @@ namespace odNet
         virtual void globalMessage(MessageChannelCode code, const char *data, size_t size) = 0;
         //virtual void objectMessage(MessageChannelCode code, od::LevelObjectId sender, od::LevelObjectId receiver, const char *data, size_t size) = 0;
 
-        virtual void objectAnimation(od::LevelObjectId id, odDb::GlobalAssetRef animRef, const odAnim::AnimModes &modes, double realtime) = 0;
+        virtual void event(const odState::EventVariant &e, double realtime) = 0;
     };
 
 }

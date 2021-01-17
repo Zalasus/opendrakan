@@ -7,9 +7,11 @@
 
 #include <odOsg/audio/SoundSystem.h>
 
+#include <exception>
+
 #include <AL/al.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/ThreadUtils.h>
 
 #include <odCore/db/Sound.h>
@@ -92,7 +94,7 @@ namespace odOsg
 
     void SoundSystem::setEaxPreset(odAudio::EaxPreset preset)
     {
-        throw od::UnsupportedException("EAX is still unimplemented");
+        OD_PANIC() << "EAX is still unimplemented";
     }
 
     void SoundSystem::loadMusicContainer(const od::FilePath &rrcPath)
@@ -130,12 +132,12 @@ namespace odOsg
     {
         if(mMusicContainer == nullptr)
         {
-            throw od::Exception("No music container loaded. Make sure to load one before trying to play music");
+            OD_PANIC() << "No music container loaded. Make sure to load one before trying to play music";
         }
 
         if(mSegmentPlayer == nullptr)
         {
-            throw od::Exception("No segment player present. Seems like the music thread died");
+            OD_PANIC() << "No segment player present. Seems like the music thread died";
         }
 
         auto segment = mMusicContainer->loadSegment(musicId);
@@ -185,7 +187,7 @@ namespace odOsg
             break;
         }
 
-        throw od::Exception(failmsg + alErrorMsg);
+        OD_PANIC() << failmsg << alErrorMsg;
     }
 
     void SoundSystem::_doWorkerStuff()
@@ -214,7 +216,7 @@ namespace odOsg
                     //  (not that severe since we don't create sources on the fly)
                 }
 
-            }catch(od::Exception &e)
+            }catch(std::exception &e)
             {
                 Logger::error() << "Error in sound worker thread: " << e.what();
                 Logger::error() << "Terminating sound worker thread...";

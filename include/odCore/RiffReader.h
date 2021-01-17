@@ -8,10 +8,10 @@
 #ifndef INCLUDE_ODCORE_AUDIO_RIFFREADER_H_
 #define INCLUDE_ODCORE_AUDIO_RIFFREADER_H_
 
+#include <optional>
 #include <ostream>
 
 #include <odCore/DataStream.h>
-#include <odCore/Exception.h>
 
 namespace od
 {
@@ -113,9 +113,13 @@ namespace od
 
         void printTree(std::ostream &out);
 
+        // expects a RIFF chunk at the start
+        static std::optional<RiffReader> create(od::DataReader dr);
+
 
     private:
 
+        RiffReader(od::DataReader reader, int); // non-panicking version of the public constructor
         RiffReader(od::DataReader reader, std::streamoff end, std::nullptr_t); // creates a reader with a defined end-condition
         RiffReader(od::DataReader reader, std::streamoff parentEnd);
         RiffReader(od::DataReader reader, std::streamoff parentEnd, std::streamoff myStart); // same as above, but seeks to myStart before reading header
@@ -137,18 +141,6 @@ namespace od
 
         size_t mSubchunkCount;
         bool mSubchunkCountValid;
-    };
-
-
-    class RiffException : public od::Exception
-    {
-    public:
-
-        RiffException(const std::string &msg)
-        : Exception(msg)
-        {
-        }
-
     };
 
 }

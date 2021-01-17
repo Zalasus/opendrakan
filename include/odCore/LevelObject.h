@@ -106,10 +106,10 @@ namespace od
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
 
-        inline std::shared_ptr<odRender::Handle> &getRenderHandle() { return mRenderHandle; }
-        inline std::shared_ptr<odPhysics::ObjectHandle> &getPhysicsHandle() { return mPhysicsHandle; }
-        inline std::shared_ptr<odAnim::Skeleton> &getSkeleton() { return mSkeleton; }
-        inline std::shared_ptr<odAnim::SkeletonAnimationPlayer> &getSkeletonAnimationPlayer() { return mSkeletonAnimationPlayer; }
+        inline std::shared_ptr<odRender::Handle> getRenderHandle() { return mRenderHandle; }
+        inline std::shared_ptr<odPhysics::ObjectHandle> getPhysicsHandle() { return mPhysicsHandle; }
+        inline std::shared_ptr<odAnim::Skeleton> getSkeleton() { return mSkeleton; }
+        inline std::shared_ptr<odAnim::SkeletonAnimationPlayer> getSkeletonAnimationPlayer() { return mSkeletonAnimationPlayer; }
 
         void spawn();
         void despawn();
@@ -182,7 +182,7 @@ namespace od
          * If \c ignoreRotation is true, rotation  changesapplied to \c target will not be transferred to this object.
          * If \c ignoreScale is true, scaling changes applied to \c target will not be transferred to this object.
          *
-         * If \c ignoreTranslation, \c ignoreRotation and \c ignoreScale are all true, this method will throw.
+         * If \c ignoreTranslation, \c ignoreRotation and \c ignoreScale are all true, this method will panic.
          *
          * Calling this with \c target as \c nullptr is equivalent to calling \c detach().
          *
@@ -198,7 +198,7 @@ namespace od
          * Attaches this LevelObject to the channel with index \c channelIndex in LevelObject \c target.
          * Any transformation applied to the respective channel in \c target will also be applied to
          * \c this. Any rotations transferred from the channel to this will pivot relative to the channel's origin.
-         * If \c target has no skeleton or no channel with the given index, this method will throw.
+         * If \c target has no skeleton or no channel with the given index, this method will panic.
          *
          * If \c clearOffset is true, \c this will be moved to target channel prior to attachment so their transformation will be kept equal
          * for the duration of the attachment.
@@ -254,6 +254,8 @@ namespace od
 
 
     private:
+
+        friend class HandleVisitor;
 
         Level &mLevel;
 

@@ -15,7 +15,7 @@
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
 #include <odCore/ZStream.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Layer.h>
 #include <odCore/LevelObject.h>
 #include <odCore/BoundingBox.h>
@@ -175,13 +175,13 @@ namespace od
     {
         if(index < 0 || index >= mObjectRecords.size())
         {
-            throw Exception("Object index out of bounds");
+            OD_PANIC() << "Object index out of bounds";
         }
 
         return mObjectRecords[index];
     }
 
-    LevelObject *Level::getLevelObjectById(LevelObjectId id)
+    std::shared_ptr<LevelObject> Level::getLevelObjectById(LevelObjectId id)
     {
         auto it = mLevelObjects.find(id);
         if(it == mLevelObjects.end())
@@ -189,31 +189,31 @@ namespace od
             return nullptr;
         }
 
-        return it->second.get();
+        return it->second;
     }
 
-    LevelObject *Level::findFirstObjectOfType(odRfl::ClassId id)
+    std::shared_ptr<LevelObject> Level::findFirstObjectOfType(odRfl::ClassId id)
     {
         for(auto &objMap : mLevelObjects)
         {
             auto &obj = objMap.second;
             if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
             {
-                return obj.get();
+                return obj;
             }
         }
 
         return nullptr;
     }
 
-    void Level::findObjectsOfType(odRfl::ClassId id, std::vector<LevelObject*> &results)
+    void Level::findObjectsOfType(odRfl::ClassId id, std::vector<std::shared_ptr<LevelObject>> &results)
     {
         for(auto &objMap : mLevelObjects)
         {
             auto &obj = objMap.second;
             if(obj->getClass() != nullptr && obj->getClass()->getRflClassId() == id)
             {
-                results.push_back(obj.get());
+                results.push_back(obj);
             }
         }
     }
@@ -451,7 +451,7 @@ namespace od
             auto &ptrInMap = mLevelObjects[record.getObjectId()];
             if(ptrInMap != nullptr)
             {
-                throw od::Exception("Level contains non-unique object IDs (this might actually be an error in our level file interpretation)");
+                OD_PANIC() << "Level contains non-unique object IDs (this might actually be an error in our level file interpretation)";
             }
 
             ptrInMap = std::move(newObject);

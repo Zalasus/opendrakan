@@ -148,7 +148,7 @@ namespace odOsg
 
     void Handle::setModelPartVisible(size_t partIndex, bool visible)
     {
-        throw od::UnsupportedException("setModelPartVisible is unsupported");
+        OD_UNIMPLEMENTED();
     }
 
     void Handle::setRenderBin(odRender::RenderBin rb)
@@ -195,7 +195,7 @@ namespace odOsg
 
     void Handle::addFrameListener(odRender::FrameListener *listener)
     {
-        throw od::UnsupportedException("Frame listeners unsupported right now");
+        OD_PANIC() << "Frame listeners unsupported right now";
     }
 
     void Handle::removeFrameListener(odRender::FrameListener *listener)
@@ -230,7 +230,7 @@ namespace odOsg
 
         }else
         {
-            throw od::Exception("Tried to set color modifier on Handle with disabled color modifier");
+            OD_PANIC() << "Tried to set color modifier on Handle with disabled color modifier";
         }
     }
 

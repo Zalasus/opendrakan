@@ -7,7 +7,7 @@
 
 #include <odCore/physics/bullet/LightHandleImpl.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Light.h>
 #include <odCore/LevelObject.h>
 

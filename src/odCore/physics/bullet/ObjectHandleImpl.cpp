@@ -31,7 +31,7 @@ namespace odBulletPhysics
         std::shared_ptr<odDb::Model> model = obj.getModel();
         if(model == nullptr)
         {
-            throw od::Exception("Created physics handle for object without model");
+            OD_PANIC() << "Created physics handle for object without model";
         }
         std::shared_ptr<odPhysics::ModelShape> shapeIface = ps.getOrCreateModelShape(model);
         mModelShape = od::confident_downcast<ModelShape>(shapeIface);

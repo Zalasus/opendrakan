@@ -12,7 +12,7 @@
 
 #include <cerrno>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -27,11 +27,11 @@ namespace od
 
                 if(result == ERANGE)
                 {
-                    throw od::Exception("Thread name too long");
+                    OD_PANIC() << "Thread name too long";
 
                 }else if(result != 0)
                 {
-                    throw od::Exception("Failed to set thread name for unknown reason");
+                    OD_PANIC() << "Failed to set thread name for unknown reason";
                 }
             #endif
         }

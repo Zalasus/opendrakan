@@ -11,7 +11,7 @@
 #include <iomanip>
 #include <sstream>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -20,7 +20,7 @@ namespace od
     {
         if(rr.getChunkLength() != Guid::LENGTH)
         {
-            throw od::Exception("Can't load GUID from RIFF chunk because it has an invalid length");
+            OD_PANIC() << "Can't load GUID from RIFF chunk because it has an invalid length";
         }
 
         od::DataReader dr = rr.getDataReader();
@@ -53,6 +53,3 @@ namespace od
     }
 
 }
-
-
-
