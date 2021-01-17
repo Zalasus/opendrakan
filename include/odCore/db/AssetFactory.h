@@ -15,7 +15,6 @@
 #include <odCore/FilePath.h>
 #include <odCore/SrscFile.h>
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
 
 #include <odCore/db/Asset.h>
 

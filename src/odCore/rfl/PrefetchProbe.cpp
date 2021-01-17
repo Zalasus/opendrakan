@@ -7,6 +7,8 @@
 
 #include <odCore/rfl/PrefetchProbe.h>
 
+#include <odCore/Panic.h>
+
 #include <odCore/rfl/AssetRefField.h>
 
 namespace odRfl
@@ -21,17 +23,13 @@ namespace odRfl
 
     void PrefetchProbe::registerField(AssetRefField &field, const char *fieldName)
     {
-        try
-        {
-            field.fetchAssets(*mDependencyTable, false);
+        bool success = field.fetchAssets(*mDependencyTable);
 
-        }catch(od::NotFoundException &e)
+        if(!success)
         {
-            Logger::warn() << "Field '" << fieldName << "' contains invalid asset reference";
-
             if(!mIgnoreMissing)
             {
-                throw;
+                OD_PANIC() << "Field '" << fieldName << "' contains invalid asset reference";
             }
         }
     }

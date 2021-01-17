@@ -3,7 +3,8 @@
 
 #include <algorithm>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
+
 #include <odCore/rfl/Field.h>
 
 namespace odRfl
@@ -94,19 +95,17 @@ namespace odRfl
 
         if(entry.fieldType != static_cast<uint32_t>(field.getFieldType()))
         {
-            throw od::Exception("Type mismatch in class record. Field type as defined in RflClass does not match the one found in record.");
+            OD_PANIC() << "Type mismatch in class record. Field type as defined in RflClass does not match the one found in record.";
         }
 
         if(entry.fieldName != fieldName) // TODO: costly comparison. might want to make this optional
         {
-            Logger::error() << "Field name mismatch: Field in RflClass was named '" << fieldName << "' where field in record was named '" << entry.fieldName << "'";
-            throw od::Exception("Field name mismatch in class record. Field name as defined in RflClass does not match the one found in record.");
+            OD_PANIC() << "Field name mismatch: Field in RflClass was named '" << fieldName << "' where field in record was named '" << entry.fieldName << "'";
         }
 
         if(entry.isArray != field.isArray())
         {
-            Logger::error() << "Field array flag mismatch: Field '" << fieldName << "' was array in RFL or file while in the other it was not.";
-            throw od::Exception("Field as defined in RflClass does not match array state as found in class record.");
+            OD_PANIC() << "Field array flag mismatch: Field '" << fieldName << "' was array in RFL or file while in the other it was not.";
         }
 
         // field seems reasonable. let's fill it

@@ -7,19 +7,19 @@
 
 #include <odCore/rfl/Field.h>
 
+#include <odCore/Panic.h>
+
 namespace odRfl
 {
 
     void Field::fill(od::DataReader &dr)
     {
-        throw od::Exception("Tried to fill() field without fill implementation "
-                "(this probably means something tried to fill an array field from non-array data).");
+        OD_PANIC() << "Tried to fill() field without fill implementation (this probably means something tried to fill an array field from non-array data)";
     }
 
     void Field::fillArray(uint16_t size, od::DataReader &dr)
     {
-        throw od::Exception("Tried to fillArray() field without fillArray implementation "
-                "(this probably means something tried to fill a normal field from array data).");
+        OD_PANIC() << "Tried to fillArray() field without fillArray implementation (this probably means something tried to fill a normal field from array data)";
     }
 
 
@@ -38,4 +38,3 @@ namespace odRfl
     }
 
 }
-

@@ -1,7 +1,7 @@
 
 #include <odCore/audio/SoundSystem.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Sound.h>
 

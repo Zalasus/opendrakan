@@ -73,7 +73,7 @@ namespace odState
         /**
          * @brief Sends all actions and state transitions of the snapshot with the given tick to the given downlink.
          *
-         * Will throw if no committed snapshot with that tick exists in the timeline.
+         * Will panic if no committed snapshot with that tick exists in the timeline.
          *
          * This will perform delta-encoding against the snapshot with tick
          * referenceSnapshot if that snapshot is still in the timeline. This
@@ -138,7 +138,7 @@ namespace odState
          */
         SnapshotIterator _getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound);
         void _commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot);
-        void _throwIfStateUpdatesDisallowed();
+        void _panicIfStateUpdatesDisallowed();
 
         od::Level &mLevel;
 

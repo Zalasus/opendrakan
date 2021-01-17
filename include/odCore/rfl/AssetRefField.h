@@ -28,7 +28,7 @@ namespace odRfl
 
         virtual ~AssetRefField() = default;
 
-        virtual void fetchAssets(const odDb::DependencyTable &dt, bool ignoreMissing = true) = 0;
+        virtual bool fetchAssets(const odDb::DependencyTable &dt) = 0;
         virtual void releaseAssets() = 0;
     };
 
@@ -50,16 +50,14 @@ namespace odRfl
             dr >> mReference;
         }
 
-        virtual void fetchAssets(const odDb::DependencyTable &dt, bool ignoreMissing = true) override
+        virtual bool fetchAssets(const odDb::DependencyTable &dt) override
         {
             if(mReferencedAsset == nullptr && !mReference.isNull())
             {
                 mReferencedAsset = dt.loadAsset<_AssetType>(mReference);
-                if(!ignoreMissing && mReferencedAsset == nullptr)
-                {
-                    throw od::NotFoundException("Asset referenced by class could not be found");
-                }
             }
+
+            return mReferencedAsset == nullptr;
         }
 
         virtual void releaseAssets() override
@@ -131,20 +129,23 @@ namespace odRfl
             mReferences.shrink_to_fit();
         }
 
-        virtual void fetchAssets(const odDb::DependencyTable &dt, bool ignoreMissing = true) override
+        virtual bool fetchAssets(const odDb::DependencyTable &dt) override
         {
             mReferencedAssets.reserve(mReferences.size());
 
+            bool fetchedAll = true;
             for(auto &ref : mReferences)
             {
                 auto asset = dt.loadAsset<_AssetType>(ref);
-                if(!ignoreMissing && asset == nullptr)
+                if(asset == nullptr)
                 {
-                    throw od::NotFoundException("Asset referenced by class could not be found");
+                    fetchedAll = false;
                 }
 
                 mReferencedAssets.push_back(asset);
             }
+
+            return fetchedAll;
         }
 
         virtual void releaseAssets() override
@@ -164,7 +165,7 @@ namespace odRfl
         {
             if(i >= mReferencedAssets.size())
             {
-                throw od::Exception("Index of asset ref array access out of bounds");
+                OD_PANIC() << "Index of asset array access out of bounds: index=" << i << " size=" << mReferencedAssets.size();
             }
 
             return mReferencedAssets[i];
@@ -174,7 +175,7 @@ namespace odRfl
         {
             if(i >= mReferences.size())
             {
-                throw od::Exception("Index of asset ref array access out of bounds");
+                OD_PANIC() << "Index of asset ref array access out of bounds: index=" << i << " size=" << mReferences.size();
             }
 
             return mReferences[i];

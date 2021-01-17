@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace odDb
 {
@@ -45,7 +45,7 @@ namespace odDb
 	{
 		if(mType != SPHERES)
 		{
-			throw od::Exception("Can't add spheres to box-based model bounds");
+			OD_PANIC() << "Can't add spheres to box-based model bounds";
 		}
 
 		mSpheres.push_back(sphere);
@@ -55,7 +55,7 @@ namespace odDb
 	{
 		if(mType != BOXES)
 		{
-			throw od::Exception("Can't add boxes to sphere-based model bounds");
+			OD_PANIC() << "Can't add boxes to sphere-based model bounds";
 		}
 
 		mBoxes.push_back(box);

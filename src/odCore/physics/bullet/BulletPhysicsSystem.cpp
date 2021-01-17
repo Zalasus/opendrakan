@@ -10,10 +10,11 @@
 #include <BulletCollision/BroadphaseCollision/btDbvtBroadphase.h>
 #include <BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
-#include <odCore/Downcast.h>
 
+#include <odCore/Downcast.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
+#include <odCore/Panic.h>
 
 #include <odCore/physics/bullet/BulletAdapter.h>
 #include <odCore/physics/bullet/LayerHandleImpl.h>
@@ -88,12 +89,12 @@ namespace odBulletPhysics
             break;
 
         default:
-             throw od::Exception("Got physics handle of unknown type");
+             OD_PANIC() << "Got physics handle of unknown type";
         }
 
         if(bulletObject == nullptr)
         {
-            throw od::Exception("Handle for contact test contained nullptr bullet object");
+            OD_PANIC() << "Handle for contact test contained nullptr bullet object";
         }
 
         ContactResultCallback callback(bulletObject, typeMask, resultsOut);

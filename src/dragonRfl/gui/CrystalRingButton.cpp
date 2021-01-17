@@ -9,8 +9,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include <odCore/Exception.h>
 #include <odCore/Client.h>
+#include <odCore/Panic.h>
 
 #include <odCore/render/Renderer.h>
 
@@ -56,7 +56,7 @@ namespace dragonRfl
 
         if(modelForBounds == nullptr)
         {
-            throw od::Exception("Passed no non-null models to CrystalRingButton");
+            OD_PANIC() << "Passed no non-null models to CrystalRingButton";
         }
 
         od::AxisAlignedBoundingBox aabb = modelForBounds->getCalculatedBoundingBox();

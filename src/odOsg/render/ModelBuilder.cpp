@@ -14,7 +14,7 @@
 #include <osg/Texture2D>
 #include <osg/FrontFace>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/Downcast.h>
 
 #include <odCore/db/DependencyTable.h>
@@ -68,7 +68,7 @@ namespace odOsg
         {
             if(it->vertexCount != 3 && it->vertexCount != 4)
             {
-                throw od::UnsupportedException("Only triangle or quad polygons supported");
+                OD_PANIC() << "Only triangle or quad polygons supported";
             }
 
             // the 0 1 2 triangle always appears
@@ -140,8 +140,7 @@ namespace odOsg
         {
             if(it->vertexIndex >= mVertices.size())
             {
-                Logger::error() << "Affected vertex index of bone out of bounds. Was " << it->vertexIndex << " where size was " << mVertices.size();
-                throw od::Exception("Affected vertex index of bone out of bounds");
+                OD_PANIC() << "Affected vertex index of bone out of bounds. Was " << it->vertexIndex << " where size was " << mVertices.size();
             }
 
             size_t &currentBoneCount = influencingBonesCount[it->vertexIndex];

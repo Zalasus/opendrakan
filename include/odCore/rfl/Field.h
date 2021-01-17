@@ -14,7 +14,6 @@
 
 #include <odCore/Message.h>
 #include <odCore/DataStream.h>
-#include <odCore/Exception.h>
 
 namespace odRfl
 {

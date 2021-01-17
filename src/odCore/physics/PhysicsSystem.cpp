@@ -1,7 +1,7 @@
 
 #include <odCore/physics/PhysicsSystem.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/LightCallback.h>
 
 #include <odCore/db/Model.h>

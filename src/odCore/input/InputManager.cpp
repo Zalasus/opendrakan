@@ -9,7 +9,7 @@
 
 #include <algorithm>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/gui/Gui.h>
 
@@ -116,7 +116,7 @@ namespace odInput
             }
         }
 
-        throw od::Exception("Exceeded maximum number of actions per key");
+        OD_PANIC() << "Exceeded maximum number of " << KeyBinding::MAX_BINDINGS << " actions per key";
     }
 
     void InputManager::_unbind(ActionHandleBase &action, Key key)
@@ -150,7 +150,7 @@ namespace odInput
     {
         if(source != AnalogSource::MOUSE_POSITION)
         {
-            throw od::Exception("Only mouse position is implemented at the moment");
+            OD_PANIC() << "Only mouse position is implemented at the moment";
         }
 
         mAnalogActionsBoundToMousePos.push_back(&action);

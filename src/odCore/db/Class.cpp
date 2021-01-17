@@ -9,7 +9,6 @@
 
 #include <odCore/Engine.h>
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
 
 #include <odCore/db/ClassFactory.h>
 #include <odCore/db/DependencyTable.h>
@@ -93,11 +92,9 @@ namespace odDb
 
             }else
             {
-                try
-                {
-                    mCachedRflClassFactory = rfl->getFactoryForClassId(mRflClassId);
+                mCachedRflClassFactory = rfl->getFactoryForClassId(mRflClassId);
 
-                }catch(od::NotFoundException &e)
+                if(mCachedRflClassFactory == nullptr)
                 {
                     Logger::debug() << "RFL class type " << std::hex << mRflClassId << std::dec <<
                         " of class '" << mClassName << "' not found. Probably unimplemented";

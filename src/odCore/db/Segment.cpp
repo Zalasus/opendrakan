@@ -11,13 +11,17 @@
 #include <algorithm>
 
 #include <odCore/Logger.h>
+#include <odCore/Panic.h>
 
 namespace odDb
 {
 
     Band::Band(od::RiffReader rr)
     {
-        if(rr.getChunkOrListId() != "DMBD") throw od::Exception("Not a Band form");
+        if(rr.getChunkOrListId() != "DMBD")
+        {
+            OD_PANIC() << "Not a Band form";
+        }
 
         od::RiffReader instrumentList = rr.getReaderForFirstSubchunkOfType("LIST", "lbil");
         mInstruments.reserve(instrumentList.getSubchunkCount());
@@ -26,7 +30,10 @@ namespace odDb
             if(instrument.getChunkOrListId() != "lbin") continue;
 
             od::RiffReader header = instrument.getReaderForFirstSubchunkOfType("bins");
-            if(header.isEnd()) throw od::Exception("No bins chunk in instrument");
+            if(header.isEnd())
+            {
+                OD_PANIC() << "No bins chunk in instrument";
+            }
             od::DataReader dr = header.getDataReader();
 
             Instrument ins;
@@ -51,7 +58,10 @@ namespace odDb
                 continue;
             }
             ref.skipToFirstSubchunkOfType("guid");
-            if(ref.isEnd()) throw od::Exception("No DLS GUID in instrument");
+            if(ref.isEnd())
+            {
+                OD_PANIC() << "No DLS GUID in instrument";
+            }
 
             ins.dlsGuid = od::Guid(ref);
 
@@ -71,7 +81,7 @@ namespace odDb
     {
         if(rr.getChunkOrListId() != "DMSG")
         {
-            throw od::Exception("Not a DirectMusic segment");
+            OD_PANIC() << "Not a DirectMusic segment";
         }
 
         rr.skipToFirstSubchunk();
@@ -134,7 +144,10 @@ namespace odDb
             }
 
             od::RiffReader header = track.getReaderForFirstSubchunkOfType("trkh");
-            if(header.isEnd()) throw od::Exception("Segment track has no header");
+            if(header.isEnd())
+            {
+                OD_PANIC() << "Segment track has no header";
+            }
             od::DataReader dr = header.getDataReader();
             uint32_t headerType;
             uint32_t headerListType;
@@ -247,7 +260,10 @@ namespace odDb
         assert(rr.getChunkOrListId() == "DMBT");
 
         rr.skipToFirstSubchunkOfType("LIST", "lbdl");
-        if(rr.isEnd()) throw od::Exception("No lbdl subchunk in band list");
+        if(rr.isEnd())
+        {
+            OD_PANIC() << "No lbdl subchunk in band list";
+        }
 
         mBandEvents.reserve(rr.getSubchunkCount());
         for(od::RiffReader bandItem = rr.getReaderForFirstSubchunk(); !bandItem.isEnd(); bandItem.skipToNextChunk())
@@ -262,7 +278,10 @@ namespace odDb
             if(header.isEnd())
             {
                 header = bandItem.getReaderForFirstSubchunkOfType("bd2h");
-                if(header.isEnd()) throw od::Exception("No band header in band form (neither bdih nor bd2h)");
+                if(header.isEnd())
+                {
+                    OD_PANIC() << "No band header in band form (neither bdih nor bd2h)";
+                }
                 newStyleHeader = true;
             }
 

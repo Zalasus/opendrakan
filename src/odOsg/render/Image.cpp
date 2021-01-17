@@ -9,7 +9,7 @@
 
 #include <osg/ImageSequence>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Texture.h>
 
@@ -23,7 +23,7 @@ namespace odOsg
     {
         if(dbTexture == nullptr)
         {
-            throw od::Exception("Tried to create osg image from null texture");
+            OD_PANIC() << "Tried to create osg image from null texture";
         }
 
         mOsgImage = new osg::Image;

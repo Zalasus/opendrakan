@@ -17,7 +17,7 @@ namespace od
          * setting thread names, this will be a no-op.
          *
          * Linux imposes a 16 character limit on thread names. If the given name
-         * exceeds that limit, this fuction will throw.
+         * exceeds that limit, this fuction will panic.
          */
         void setThreadName(std::thread &thread, const char *name);
 

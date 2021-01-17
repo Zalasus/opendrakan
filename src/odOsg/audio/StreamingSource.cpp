@@ -11,7 +11,7 @@
 #include <mutex>
 #include <vector>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odOsg/audio/SoundSystem.h>
 
@@ -72,7 +72,7 @@ namespace odOsg
 
     void StreamingSource::setSound(std::shared_ptr<odDb::Sound> s)
     {
-        throw od::UnsupportedException("Streaming sources can't play database sounds");
+        OD_PANIC() << "Streaming sources can't play database sounds";
     }
 
     void StreamingSource::update(float relTime)

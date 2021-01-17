@@ -12,8 +12,9 @@
 #include <unordered_map>
 #include <istream>
 #include <sstream>
+#include <vector>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 namespace od
 {
@@ -34,7 +35,7 @@ namespace od
          *
          * Keys that appear in the file before any section statement use an empty string as section name.
          *
-         * If the key can not be found or not be parsed, this method will throw.
+         * If the key can not be found or not be parsed, this method will panic.
          *
          * A specialization for T=std::string is provided, which gives direct access to the key's value without
          * parsing anything.
@@ -46,7 +47,7 @@ namespace od
          * @brief Accesses a value, trying to parse it as a certain type or return a default value.
          *
          * This is identical to the method without a defaultValue parameter, except that this method will
-         * not throw, but return defaultValue instead.
+         * not panic, but return defaultValue instead.
          */
         template <typename T>
         T get(const std::string &section, const std::string &key, const T &defaultValue);
@@ -76,7 +77,7 @@ namespace od
 
         if(iss.bad())
         {
-            throw od::Exception("Failed to parse key in config file: " + key);
+            OD_PANIC() << "Failed to parse key in config file: " << key;
         }
 
         return value;

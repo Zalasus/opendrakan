@@ -426,7 +426,7 @@ namespace odOsg
 
         osgViewer::Viewer::Windows windows;
         mViewer->getWindows(windows, true);
-        if(windows.empty()) throw od::Exception("Viewer created no windows");
+        if(windows.empty()) OD_PANIC() << "Viewer created no windows";
         mWindow = windows[0];
 
         mWindow->setWindowName("OpenDrakan (OSG)");
@@ -491,7 +491,7 @@ namespace odOsg
     {
         if(index >= mLocalLightsColor->getNumElements())
         {
-            throw od::InvalidArgumentException("Tried to apply light at out-of-bounds index");
+            OD_PANIC() << "Tried to apply light at out-of-bounds index " << index;
         }
 
         if(!mLightingEnabled)
@@ -512,7 +512,7 @@ namespace odOsg
     {
         if(index >= mLocalLightsColor->getNumElements())
         {
-            throw od::InvalidArgumentException("Tried to apply null light at out-of-bounds index");
+            OD_PANIC() << "Tried to apply null light at out-of-bounds index " << index;
         }
 
         if(!mLightingEnabled)

@@ -7,7 +7,8 @@
 
 #include <odOsg/audio/Buffer.h>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
+
 #include <odCore/db/Sound.h>
 
 #include <odOsg/audio/SoundSystem.h>
@@ -49,9 +50,8 @@ namespace odOsg
 
         }else
         {
-            Logger::error() << "Sound '" << sound->getName() << "' has unsupported format (bits/channel=" << bitsPerChannel
+            OD_PANIC() << "Sound '" << sound->getName() << "' has unsupported format (bits/channel=" << bitsPerChannel
                     << ", channels=" << channelCount << ")";
-            throw od::UnsupportedException("Sound has unsupported format");
         }
 
         const auto &data = mSound->getDataBuffer();

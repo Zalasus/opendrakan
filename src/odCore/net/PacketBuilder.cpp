@@ -29,7 +29,7 @@ namespace odNet
     {
         if(loadedDatabaseCount > std::numeric_limits<uint32_t>::max())
         {
-            throw od::Exception("Entry count out of bounds");
+            OD_PANIC() << "Entry count out of bounds";
         }
 
         _beginPacket(PacketType::LOAD_LEVEL);
@@ -118,7 +118,7 @@ namespace odNet
         size_t payloadSize = mPacketBuffer.size() - PacketConstants::HEADER_SIZE;
         if(payloadSize > 0xffff)
         {
-            throw od::Exception("Packet payload size exceeds size fields limits");
+            OD_PANIC() << "Packet payload size exceeds size fields limits";
         }
 
         auto p = mWriter.tell();

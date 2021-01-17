@@ -6,6 +6,7 @@
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
 #include <odCore/Message.h>
+#include <odCore/Panic.h>
 
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 #include <odCore/anim/BoneAccumulator.h>

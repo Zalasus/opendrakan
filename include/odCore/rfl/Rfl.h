@@ -14,9 +14,6 @@
 
 #include <odCore/rfl/Class.h>
 
-#include <odCore/Logger.h>
-#include <odCore/Exception.h>
-
 namespace od
 {
     class Server;

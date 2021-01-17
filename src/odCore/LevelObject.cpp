@@ -13,7 +13,7 @@
 #include <odCore/Server.h>
 #include <odCore/Level.h>
 #include <odCore/Layer.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 #include <odCore/ObjectLightReceiver.h>
 
 #include <odCore/anim/Skeleton.h>
@@ -529,7 +529,7 @@ namespace od
     {
         if(mIsSpawned)
         {
-            throw od::Exception("An object must not be spawned when assigning an instance to it");
+            OD_PANIC() << "An object must not be spawned when assigning an instance to it";
         }
 
         mRflClassInstance = std::move(i);
@@ -574,7 +574,7 @@ namespace od
         {
             if(getLevel().getEngine().isServer())
             {
-                throw od::Exception("Can't enable rendering on servers");
+                OD_PANIC() << "Can't enable rendering on servers";
             }
 
             auto &client = getLevel().getEngine().getClient();

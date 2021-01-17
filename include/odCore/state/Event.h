@@ -19,7 +19,6 @@
 #include <glm/vec3.hpp>
 
 #include <odCore/IdTypes.h>
-#include <odCore/Exception.h>
 #include <odCore/Message.h>
 
 #include <odCore/anim/AnimModes.h>

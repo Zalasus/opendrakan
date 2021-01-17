@@ -253,7 +253,7 @@ namespace od
         if(cellIndex >= mCells.size())
         {
             // should we just return false here?
-            throw Exception("Calculated cell index lies outside of cell array. Seems like the layer bounds check is incorrect");
+            OD_PANIC() << "Calculated cell index lies outside of cell array. Seems like the layer bounds check is incorrect";
         }
 
         Cell &cell = mCells[cellIndex];
@@ -323,7 +323,7 @@ namespace od
         size_t cellIndex = cellX + cellZ*mWidth;
         if(cellIndex >= mCells.size())
         {
-            throw Exception("Calculated cell index lies outside of cell array. Seems like the layer bounds check is incorrect");
+            OD_PANIC() << "Calculated cell index lies outside of cell array. Seems like the layer bounds check is incorrect";
         }
 
         Cell &cell = mCells[cellIndex];
@@ -447,7 +447,7 @@ namespace od
 
         if(mRenderModel->getGeometryCount() > 1 && !mRenderModel->hasSharedVertexArrays())
         {
-            throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
+            OD_PANIC() << "Baking layer lighting on models with multiple geometries only works if those share vertex arrays";
         }
 
         std::shared_ptr<odRender::Geometry> geometry = mRenderModel->getGeometry(0);
@@ -507,7 +507,7 @@ namespace od
 
         if(mRenderModel->getGeometryCount() > 1 && !mRenderModel->hasSharedVertexArrays())
         {
-            throw od::Exception("Baking layer lighting on models with multiple geometries only works if those share vertex arrays");
+            OD_PANIC() << "Baking layer lighting on models with multiple geometries only works if those share vertex arrays";
         }
 
         std::shared_ptr<odRender::Geometry> geometry = mRenderModel->getGeometry(0);
@@ -517,7 +517,7 @@ namespace od
 
         if(normalArray.size() != vertexArray.size())
         {
-            throw Exception("Bad generated geometry arrays. Normal and vertex array sizes must match for baking lighting");
+            OD_PANIC() << "Bad generated geometry arrays. Normal and vertex array sizes must match for baking lighting";
         }
 
         // build overlap map

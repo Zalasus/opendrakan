@@ -49,7 +49,7 @@ namespace odNet
     {
         if(min < 0 || min > max)
         {
-            throw od::Exception("Invalid latency value");
+            OD_PANIC() << "Invalid latency range [" << min << ", " << max << "]";
         }
 
         mLatencyMin = min;
@@ -130,7 +130,7 @@ namespace odNet
         size_t usedBytes = isUplink ? mUplinkPacketParser.parse(data, size) : mDownlinkPacketParser.parse(data, size);
         if(usedBytes != size)
         {
-            throw od::Exception("Parser did not use all packet bytes, but it should have");
+            OD_PANIC() << "Parser did not use all packet bytes, but it should have";
         }
     }
 

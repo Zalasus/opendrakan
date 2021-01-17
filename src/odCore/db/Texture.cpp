@@ -9,9 +9,9 @@
 
 #include <functional>
 
-#include <odCore/ZStream.h>
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
+#include <odCore/ZStream.h>
 
 #include <odCore/db/TextureFactory.h>
 #include <odCore/db/Database.h>
@@ -141,14 +141,13 @@ namespace odDb
 
         if(mFlags & OD_TEX_FLAG_ALPHAMAP)
         {
-            Logger::error() << "Unsupported alpha map with " << mAlphaBitsPerPixel << "BPP";
-            throw od::UnsupportedException("Alpha maps unsupported right now");
+            OD_PANIC() << "Unsupported alpha map with " << mAlphaBitsPerPixel << "BPP";
         }
 
         uint32_t trailingBytes = rowSpacing - mWidth*(mBitsPerPixel/8);
         if(trailingBytes)
         {
-            throw od::UnsupportedException("Can only load packed textures right now");
+            OD_PANIC() << "Can only load packed textures right now";
         }
 
         if(mBitsPerPixel == 32)
@@ -261,7 +260,7 @@ namespace odDb
                 break;
 
             default:
-                throw od::Exception("Invalid alpha BPP count");
+                OD_PANIC() << "Invalid alpha BPP count: " << aBits;
             }
 
             aShift = rBits + gBits + bBits;
@@ -325,7 +324,7 @@ namespace odDb
 
         }else
         {
-            throw od::Exception("Invalid BPP");
+            OD_PANIC() << "Invalid BPP: " << mBitsPerPixel;
         }
 
         // translate whatever is stored in texture into 8-bit RGBA format

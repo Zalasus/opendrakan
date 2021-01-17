@@ -8,7 +8,7 @@
 #include <odCore/anim/SkeletonAnimationPlayer.h>
 
 #include <odCore/Logger.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/anim/BoneAccumulator.h>
 
@@ -274,10 +274,7 @@ namespace odAnim
     : mSkeleton(skeleton)
     , mPlaying(false)
     {
-        if(mSkeleton == nullptr)
-        {
-            throw od::Exception("Tried to create SkeletonAnimationPlayer with null skeleton");
-        }
+        OD_CHECK_ARG_NONNULL(mSkeleton);
 
         mBoneAnimators.reserve(mSkeleton->getBoneCount());
         for(size_t i = 0; i < mSkeleton->getBoneCount(); ++i)

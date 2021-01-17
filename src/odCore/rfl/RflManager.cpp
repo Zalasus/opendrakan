@@ -9,9 +9,11 @@
 
 #include <algorithm>
 
-#include <odCore/rfl/Rfl.h>
-#include <odCore/Exception.h>
+#include <odCore/Logger.h>
+#include <odCore/Panic.h>
 #include <odCore/StringUtils.h>
+
+#include <odCore/rfl/Rfl.h>
 
 namespace odRfl
 {
@@ -27,8 +29,7 @@ namespace odRfl
 
         if(it == mLoadedRfls.end())
         {
-            Logger::error() << "RFL '" << name << "' is not loaded";
-            throw od::NotFoundException("RFL with given name is not loaded");
+            OD_PANIC() << "RFL '" << name << "' is not loaded";
         }
 
         return it->get();
@@ -36,7 +37,7 @@ namespace odRfl
 
     Rfl &RflManager::loadDynamicRfl(const od::FilePath &libPath)
     {
-        throw od::UnsupportedException("Dynamic RFL loading is unimplemented ATM");
+        OD_PANIC() << "Dynamic RFL loading is unimplemented ATM";
     }
 
 
@@ -51,5 +52,3 @@ namespace odRfl
     }
 
 }
-
-

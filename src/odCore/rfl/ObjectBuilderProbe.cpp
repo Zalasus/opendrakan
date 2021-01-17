@@ -9,7 +9,8 @@
 
 #include <algorithm>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
+
 #include <odCore/rfl/Field.h>
 
 namespace odRfl
@@ -57,19 +58,17 @@ namespace odRfl
 
             if(reg.field.getFieldType() != fieldType)
             {
-                throw od::Exception("Field type mismatch in object record. Field type as defined in RflClass does not match the one found in record.");
+                OD_PANIC() << "Field type mismatch in object record. Field type as defined in RflClass does not match the one found in record.";
             }
 
             if(reg.fieldName != name) // TODO: costly comparison. might want to make this optional
             {
-                Logger::error() << "Field name mismatch: Field in RflClass was named '" << reg.fieldName << "' where field in object record was named '" << name << "'";
-                throw od::Exception("Field name mismatch in object record. Field name as defined in RflClass does not match the one found in object record.");
+                OD_PANIC() << "Field name mismatch: Field in RflClass was named '" << reg.fieldName << "' where field in object record was named '" << name << "'";
             }
 
             if(reg.field.isArray() != isArray)
             {
-                Logger::error() << "Field array flag mismatch: Field '" << name << "' was array in RFL or object record while in the other it was not.";
-                throw od::Exception("Field as defined in RflClass does not match array state as found in object record.");
+                OD_PANIC() << "Field array flag mismatch: Field '" << name << "' was array in RFL or object record while in the other it was not.";
             }
 
             size_t fieldDefEndOffset = dr.tell();

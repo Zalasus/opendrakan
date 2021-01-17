@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <limits>
 
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odCore/db/Asset.h>
 #include <odCore/db/ModelFactory.h>
@@ -50,7 +50,7 @@ namespace odDb
 	{
 	    if(lodIndex >= mModelBounds.size())
 	    {
-	        throw od::Exception("LOD index for getting model bounds out of bounds. Lol");
+	        OD_PANIC() << "LOD index for getting model bounds out of bounds: " << lodIndex;
 	    }
 
 	    return mModelBounds[lodIndex];
@@ -65,21 +65,21 @@ namespace odDb
 
         if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_VERTICES, getAssetId(), 8))
         {
-            throw od::Exception("Found no vertex record after model name record");
+            OD_PANIC() << "Found no vertex record after model name record";
         }
         _loadVertices(cursor.getReader());
 
         cursor.moveTo(nameRecordIt);
         if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_TEXTURES, getAssetId(), 8))
         {
-            throw od::Exception("Found no texture record after model name record");
+            OD_PANIC() << "Found no texture record after model name record";
         }
         _loadTextures(cursor.getReader());
 
         cursor.moveTo(nameRecordIt);
         if(!cursor.nextOfTypeId(od::SrscRecordType::MODEL_POLYGONS, getAssetId(), 8))
         {
-            throw od::Exception("Found no polyon record after model name record");
+            OD_PANIC() << "Found no polyon record after model name record";
         }
         _loadPolygons(cursor.getReader());
 
@@ -164,7 +164,7 @@ namespace odDb
     {
         if(!mTexturesLoaded || !mVerticesLoaded)
         {
-            throw od::Exception("Must load vertices and textures before loading polygons!");
+            OD_PANIC() << "Must load vertices and textures before loading polygons!";
         }
 
         uint16_t polygonCount;
@@ -188,7 +188,7 @@ namespace odDb
 
             if(poly.vertexCount != 3 && poly.vertexCount != 4)
             {
-                throw od::UnsupportedException("Can't load model with non-triangle/non-quad primitives");
+                OD_PANIC() << "Can't load model with non-triangle/non-quad primitives";
             }
 
             for(size_t i = 0; i < poly.vertexCount; ++i)
@@ -274,7 +274,7 @@ namespace odDb
 
         if(lodCount == 0)
         {
-            throw od::Exception("Expected at least one LOD in model");
+            OD_PANIC() << "Expected at least one LOD in model";
         }
         mLodMeshInfos.resize(lodCount);
 
@@ -350,7 +350,7 @@ namespace odDb
 
             if(meshCount != 1)
             {
-                throw od::UnsupportedException("Multi-mesh-models currently unsupported");
+                OD_PANIC() << "Multi-mesh-models currently unsupported";
             }
 
             for(size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)

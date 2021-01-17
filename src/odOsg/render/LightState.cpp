@@ -12,7 +12,7 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Layer.h>
-#include <odCore/Exception.h>
+#include <odCore/Panic.h>
 
 #include <odOsg/GlmAdapter.h>
 #include <odOsg/render/Renderer.h>
@@ -37,7 +37,7 @@ namespace odOsg
 
     osg::Object *LightStateAttribute::cloneType() const
     {
-        throw od::Exception("Can't cloneType LightStateAttribute");
+        OD_PANIC() << "Can't cloneType LightStateAttribute";
     }
 
     osg::Object *LightStateAttribute::clone(const osg::CopyOp& copyop) const
@@ -57,7 +57,7 @@ namespace odOsg
 
     int LightStateAttribute::compare(const StateAttribute& sa) const
     {
-        throw od::UnsupportedException("LightStateAttribute::compare is not yet implemented");
+        OD_PANIC() << "LightStateAttribute::compare is not yet implemented";
     }
 
     void LightStateAttribute::clearLightList()
