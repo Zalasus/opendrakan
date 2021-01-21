@@ -272,7 +272,9 @@ namespace dragonRfl
         odRfl::PrefetchProbe probe(getLevelObject().getClass()->getDependencyTable());
         mFields.probeFields(probe);
 
-        getLevelObject().setSpawnStrategy(od::SpawnStrategy::Always);
+        auto &obj = getLevelObject();
+        obj.setSpawnStrategy(od::SpawnStrategy::Always);
+        obj.setEnableStatePrediction(true);
 
         auto analogActionHandler = std::bind(&HumanControl_Cl::_handleAnalogAction, this, std::placeholders::_1, std::placeholders::_2);
         auto &lookAction = getClient().getInputManager().getAnalogAction(Action::Look);

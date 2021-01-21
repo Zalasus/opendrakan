@@ -228,6 +228,11 @@ namespace od
 
             mDownlinkConnector->flushQueue(localDownlinkConnector);
 
+            if(mStateManager != nullptr)
+            {
+                mStateManager->beginClientTick();
+            }
+
             if(mLevel != nullptr)
             {
                 mLevel->update(relTime);
@@ -245,7 +250,7 @@ namespace od
                     Logger::info() << "Client resyncing (servertime=" << latestServerTime << " clienttime=" << clientTime << ")";
                     clientTime = latestServerTime - lerpTime;
                 }
-
+                
                 mStateManager->apply(clientTime);
             }
 

@@ -117,6 +117,7 @@ namespace od
     , mSpawnableClass(nullptr)
     , mRunObjectAi(true)
     , mEnableUpdate(false)
+    , mEnableStatePrediction(false)
     {
         mStates.position = record.getPosition();
         mStates.rotation = record.getRotation();
@@ -339,6 +340,11 @@ namespace od
     odState::StateBundleBase *LevelObject::getExtraStates()
     {
         return (mSpawnableClass != nullptr) ? mSpawnableClass->getExtraStates() : nullptr;
+    }
+
+    void LevelObject::setEnableStatePrediction(bool b)
+    {
+        mEnableStatePrediction = b;
     }
 
     void LevelObject::spawn()

@@ -187,7 +187,7 @@ namespace odState
                 auto obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                states.second.applyToObject(*obj);
+                _applyToObject(states.second, *obj);
             }
 
         }else if(it == mSnapshots.begin())
@@ -199,7 +199,7 @@ namespace odState
                 auto obj = mLevel.getLevelObjectById(states.first);
                 if(obj == nullptr) continue;
 
-                states.second.applyToObject(*obj);
+                _applyToObject(states.second, *obj);
             }
 
         }else
@@ -220,7 +220,7 @@ namespace odState
                     // no corresponding change in B. this should not happen, as
                     //  all snapshots reflect all changes since load. for now, assume steady state
                     Logger::warn() << "Incomplete timeline. A tracked state seems to have disappeared";
-                    states.second.applyToObject(*obj);
+                    _applyToObject(states.second, *obj);
 
                 }else
                 {
@@ -229,10 +229,15 @@ namespace odState
                     //  search previous and intermediate snapshots to recover the original state
                     CombinedStates lerped;
                     lerped.lerp(states.second, stateInB->second, delta);
-                    lerped.applyToObject(*obj);
+                    _applyToObject(lerped, *obj);
                 }
             }
         }
+    }
+
+    void StateManager::beginClientTick()
+    {
+        mCurrentUpdateStatesMap.clear();
     }
 
     void StateManager::sendSnapshotToClient(TickNumber tickToSend, odNet::DownlinkConnector &c, TickNumber referenceSnapshot)
@@ -370,6 +375,33 @@ namespace odState
         }
     }
 
+    void StateManager::_applyToObject(const StateManager::CombinedStates &states, od::LevelObject &obj)
+    {
+        if(obj.isStatePredictionEnabled())
+        {
+            // unimplemented. for now, apply server states only if the client
+            //  made no updates to the object this tick.
+            auto predicted = mCurrentUpdateStatesMap.find(obj.getObjectId());
+            if(predicted == mCurrentUpdateStatesMap.end())
+            {
+                obj.setStatesUntracked(states.basicStates);
+                if(states.extraStates != nullptr)
+                {
+                    obj.setExtraStatesUntracked(*states.extraStates);
+                }
+            }
+
+        }else
+        {
+            obj.setStatesUntracked(states.basicStates);
+            if(states.extraStates != nullptr)
+            {
+                obj.setExtraStatesUntracked(*states.extraStates);
+            }
+        }
+    }
+
+
 
     size_t StateManager::CombinedStates::countStatesWithValue() const
     {
@@ -497,16 +529,5 @@ namespace odState
             extraStates = extraStates->cloneShared();
         }
     }
-
-    void StateManager::CombinedStates::applyToObject(od::LevelObject &obj)
-    {
-        obj.setStatesUntracked(basicStates);
-
-        if(extraStates != nullptr)
-        {
-            obj.setExtraStatesUntracked(*extraStates);
-        }
-    }
-
 
 }

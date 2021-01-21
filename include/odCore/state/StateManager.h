@@ -71,6 +71,14 @@ namespace odState
         void apply(double realtime);
 
         /**
+         * Clears the current update map. All updates that are made after this
+         * are considered predictions by apply().
+         *
+         * Client only.
+         */
+        void beginClientTick();
+
+        /**
          * @brief Sends all actions and state transitions of the snapshot with the given tick to the given downlink.
          *
          * Will panic if no committed snapshot with that tick exists in the timeline.
@@ -99,7 +107,6 @@ namespace odState
             void deltaEncode(const CombinedStates &reference, const CombinedStates &toEncode);
 
             void makeExtraStatesUnique();
-            void applyToObject(od::LevelObject &obj);
 
             od::ObjectStates basicStates;
             std::shared_ptr<StateBundleBase> extraStates;
@@ -139,6 +146,7 @@ namespace odState
         SnapshotIterator _getSnapshot(TickNumber tick, std::deque<Snapshot> &snapshots, bool createIfNotFound);
         void _commitIncomingIfComplete(TickNumber tick, SnapshotIterator incomingSnapshot);
         void _panicIfStateUpdatesDisallowed();
+        void _applyToObject(const CombinedStates &states, od::LevelObject &obj);
 
         od::Level &mLevel;
 

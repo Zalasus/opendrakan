@@ -105,6 +105,7 @@ namespace od
         inline bool isScaled() const { return (getScale() != glm::vec3(1,1,1)); }
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
+        inline bool isStatePredictionEnabled() const { return mEnableStatePrediction; }
 
         inline std::shared_ptr<odRender::Handle> getRenderHandle() { return mRenderHandle; }
         inline std::shared_ptr<odPhysics::ObjectHandle> getPhysicsHandle() { return mPhysicsHandle; }
@@ -142,6 +143,13 @@ namespace od
         void setExtraStatesUntracked(const odState::StateBundleBase &states);
 
         odState::StateBundleBase *getExtraStates();
+
+        /**
+         * If enabled, any updates to networked states of this object are
+         * considered to be predictions and are handled via a consensus
+         * algorithm to smoothly compensate prediction errors.
+         */
+        void setEnableStatePrediction(bool b);
 
         /**
          * @brief Enables or disables updates for this object.
@@ -280,6 +288,7 @@ namespace od
 
         bool mRunObjectAi;
         bool mEnableUpdate;
+        bool mEnableStatePrediction;
 
         ObjectRenderMode mRenderMode;
         ObjectPhysicsMode mPhysicsMode;
