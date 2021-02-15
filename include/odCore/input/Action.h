@@ -39,7 +39,8 @@ namespace odInput
     {
     public:
 
-        ActionHandleBase(int actionCode);
+        explicit ActionHandleBase(int actionCode);
+        ActionHandleBase(ActionHandleBase&) = delete;
         virtual ~ActionHandleBase() = default;
 
         inline ActionCode getActionCode() const { return mActionCode; }
