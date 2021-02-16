@@ -174,6 +174,8 @@ namespace dragonRfl
         // TODO: we probably have to add the packet and view latency to these state changes
         float clientLag = getServer().getEstimatedClientLag(mClientId); // skip animations ahead by this time
 
+        //auto rollbackGuard = getServer().beginRollbackForClient(mClientId);
+
         if(state == odInput::ActionState::BEGIN)
         {
             switch(action)

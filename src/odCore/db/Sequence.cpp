@@ -235,8 +235,12 @@ namespace odDb
     Sequence::Sequence()
     : mRunStateModifyStyle(ModifyRunStateStyle::DO_NOT_MODIFY)
     , mLooping(false)
+    , mSkippable(false)
     {
     }
+
+    static constexpr uint32_t FLAG_LOOPING   = 0x01;
+    static constexpr uint32_t FLAG_SKIPPABLE = 0x40;
 
 	void Sequence::load(od::SrscFile::RecordInputCursor cursor)
 	{
@@ -274,7 +278,8 @@ namespace odDb
             OD_PANIC() << "Unknown modify-run-state-style";
         }
 
-        mLooping = flags & 1;
+        mLooping = flags & FLAG_LOOPING;
+        mSkippable = flags & FLAG_SKIPPABLE;
 
 		mActors.reserve(actorCount);
 		for(size_t i = 0; i < actorCount; ++i)

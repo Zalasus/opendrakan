@@ -86,4 +86,10 @@ namespace odDb
         return std::pow(10.0f, mVolume/2000.0f);
     }
 
+    float Sound::getDuration() const
+    {
+        size_t bytesPerSample = mChannels*(mBits/8);
+        size_t sampleCount = mDataBuffer.size() / bytesPerSample;
+        return static_cast<float>(sampleCount * 1.0f/mFrequency);
+    }
 }

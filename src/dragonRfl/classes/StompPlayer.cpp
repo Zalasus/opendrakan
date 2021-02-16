@@ -5,8 +5,14 @@
 
 #include <odCore/LevelObject.h>
 #include <odCore/Panic.h>
+#include <odCore/Server.h>
+
+#include <odCore/input/Action.h>
+#include <odCore/input/InputManager.h>
 
 #include <odCore/db/Sequence.h>
+
+#include <dragonRfl/Actions.h>
 
 namespace dragonRfl
 {
@@ -41,6 +47,16 @@ namespace dragonRfl
             mFields.sequenceList.fetchAssets(*getLevelObject().getClass()->getDependencyTable());
             mPlayer = std::make_unique<odAnim::SequencePlayer>(getLevelObject().getLevel());
         }
+
+        // skipping sequences seems to be mapped to the interact key
+        auto &interact = getServer().getGlobalInputManager().getAction(Action::Interact);
+        interact.addCallback([this](auto action, odInput::ActionState state)
+        {
+            if(state == odInput::ActionState::BEGIN)
+            {
+                skipSequence();
+            }
+        });
     }
 
     void StompPlayer_Sv::onSpawned()
@@ -71,6 +87,28 @@ namespace dragonRfl
             if(!stillRunning)
             {
                 getLevelObject().setEnableUpdate(false);
+            }
+        }
+    }
+
+    void StompPlayer_Sv::skipSequence()
+    {
+        if(mPlayer == nullptr)
+        {
+            return;
+        }
+
+        auto sequence = mPlayer->getCurrentSequence();
+        if(mPlayer->isPlaying() && sequence != nullptr)
+        {
+            if(sequence->isSkippable())
+            {
+                Logger::info() << "Skipping sequence...";
+                mPlayer->skipSequence();
+
+            }else
+            {
+                Logger::info() << "Current sequence unskippable. Ignoring skip request";
             }
         }
     }

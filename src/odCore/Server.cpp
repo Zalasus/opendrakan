@@ -63,11 +63,13 @@ namespace od
 
         virtual void actionTriggered(odInput::ActionCode code, odInput::ActionState state) override
         {
+            mServer.getGlobalInputManager().injectAction(code, state);
             mClient.inputManager->injectAction(code, state);
         }
 
         virtual void analogActionTriggered(odInput::ActionCode code, const glm::vec2 &axes) override
         {
+            mServer.getGlobalInputManager().injectAnalogAction(code, axes);
             mClient.inputManager->injectAnalogAction(code, axes);
         }
 
@@ -95,6 +97,7 @@ namespace od
     , mNextClientId(1)
     {
         mPhysicsSystem = std::make_unique<odBulletPhysics::BulletPhysicsSystem>(nullptr);
+        mGlobalInputManager = std::make_unique<odInput::InputManager>();
     }
 
     Server::~Server()
@@ -261,6 +264,8 @@ namespace od
 
                 client->inputManager->update(relTime);
             }
+
+            mGlobalInputManager->update(relTime);
 
             // commit update
             mStateManager->commit(mServerTime);

@@ -60,6 +60,9 @@ namespace odAnim
 
         SequencePlayer(od::Level &level);
 
+        inline std::shared_ptr<odDb::Sequence> getCurrentSequence() const { return mSequence; }
+        inline bool isPlaying() const { return mPlaying; }
+
         /**
          * @brief Assigns a sequence and prepares the player for playing it, prefetching necessary assets.
          */
@@ -87,6 +90,13 @@ namespace odAnim
          * @brief Returns false if no further updates are required i.e. the sequence has ended.
          */
         bool update(float relTime);
+
+        /**
+         * @brief Advances the world to the final frame of the current sequence, then stops playback.
+         *
+         * Does nothing if no sequence is playing.
+         */
+        void skipSequence();
 
 
     private:
@@ -129,6 +139,8 @@ namespace odAnim
 
         std::shared_ptr<odDb::Sequence> mSequence;
         float mSequenceTime;
+        float mSequenceDuration;
+        float mLastUpdateSequenceTime;
 
         std::unordered_map<od::LevelObjectId, Actor> mActors;
 

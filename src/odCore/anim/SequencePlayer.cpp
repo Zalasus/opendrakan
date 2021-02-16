@@ -2,6 +2,7 @@
 #include <odCore/anim/SequencePlayer.h>
 
 #include <algorithm>
+#include <limits>
 
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
@@ -51,10 +52,13 @@ namespace odAnim
     SequencePlayer::SequencePlayer(od::Level &level)
     : mLevel(level)
     , mSequenceTime(0.0)
+    , mSequenceDuration(0.0)
+    , mLastUpdateSequenceTime(0.0)
     , mPlaying(false)
     {
     }
 
+    // splits TF and non-TF events. also calculates end time for each event (for calculating the duration of the sequence)
     class ActionLoadVisitor
     {
     public:
@@ -66,18 +70,20 @@ namespace odAnim
         {
         }
 
-        void operator()(const odDb::ActionTransform &a)
+        float operator()(const odDb::ActionTransform &a)
         {
             mActor.transformActions.emplace_back(a);
+
+            return a.timeOffset;
         }
 
-        void operator()(const odDb::ActionStartAnim &a)
+        float operator()(const odDb::ActionStartAnim &a)
         {
             // for some reason, animation refs are stored relative to the object's model's DB, not the sequence DB
             if(mObject.getModel() == nullptr)
             {
                 Logger::error() << "Animation on object without loaded model. Can't load animation asset";
-                return;
+                return a.timeOffset;
             }
             auto animDepTable = mObject.getModel()->getDependencyTable();
 
@@ -86,29 +92,35 @@ namespace odAnim
             if(newAction.animation == nullptr)
             {
                 Logger::error() << "Missing animation in sequence: " << a.animationRef;
-                return;
+                return a.timeOffset;
             }
 
             mActor.nonTransformActions.emplace_back(newAction);
+
+            return a.timeOffset + newAction.animation->getDuration();
         }
 
-        void operator()(const odDb::ActionPlaySound &a)
+        float operator()(const odDb::ActionPlaySound &a)
         {
             PlayerActionPlaySound newAction(a);
             newAction.sound = mSequence.getDependencyTable()->loadAsset<odDb::Sound>(a.soundRef);
             if(newAction.sound == nullptr)
             {
                 Logger::error() << "Missing sound in sequence: " << a.soundRef;
-                return;
+                return a.timeOffset;
             }
 
             mActor.nonTransformActions.emplace_back(newAction);
+
+            return a.timeOffset + newAction.sound->getDuration();
         }
 
         template <typename _OtherAction>
-        void operator()(const _OtherAction &a)
+        float operator()(const _OtherAction &a)
         {
             mActor.nonTransformActions.emplace_back(a);
+
+            return a.timeOffset;
         }
 
 
@@ -130,6 +142,7 @@ namespace odAnim
 
         mSequence = sequence;
         mSequenceTime = 0.0;
+        mSequenceDuration = 0.0;
 
         auto &actors = sequence->getActors();
         mActors.clear();
@@ -157,7 +170,11 @@ namespace odAnim
 
             for(auto &action : dbActor.getActions())
             {
-                std::visit(visitor, action);
+                float actionEndTime = std::visit(visitor, action);
+                if(actionEndTime > mSequenceDuration)
+                {
+                    mSequenceDuration = actionEndTime;
+                }
             }
 
             // sorting is unnecessary. the splitting operation does not affect sortedness, and the database guarantees that actions are sorted
@@ -322,7 +339,6 @@ namespace odAnim
 
         void operator()(const PlayerActionStartAnim &a)
         {
-            //float dt = mSequenceTime - a.timeOffset;
             auto boneModes = a.getRootNodeTranslationModes();
 
             AnimModes animModes;
@@ -346,16 +362,27 @@ namespace odAnim
                 mActor.motionToPositionRootAccumulator = std::make_shared<MotionToPositionAccumulator>(*mActor.actorObject);
                 animPlayer->setBoneAccumulator(mActor.motionToPositionRootAccumulator, 0);
             }
+
+            if(animPlayer != nullptr)
+            {
+                float dt = mSequenceTime - a.timeOffset;
+                animPlayer->update(dt);
+            }
         }
 
         void operator()(const PlayerActionPlaySound &a)
         {
-            //float dt = mSequenceTime - a.timeOffset;
+            float dt = mSequenceTime - a.timeOffset;
+            if(dt > a.duration)
+            {
+                return;
+            }
+
+            // TODO: play sound
         }
 
         void operator()(const odDb::ActionAttach &a)
         {
-            //float dt = mSequenceTime - a.timeOffset;
         }
 
         void operator()(const odDb::ActionRunStopAi &a)
@@ -394,8 +421,9 @@ namespace odAnim
             return false;
         }
 
-        float lastTime = mSequenceTime;
+        float lastTime = mLastUpdateSequenceTime;
         mSequenceTime += relTime;
+        mLastUpdateSequenceTime = mSequenceTime;
 
         bool sequenceRunning = false;
 
@@ -458,6 +486,16 @@ namespace odAnim
         }
 
         return sequenceRunning;
+    }
+
+    void SequencePlayer::skipSequence()
+    {
+        if(!mPlaying || mSequence == nullptr)
+        {
+            return;
+        }
+
+        mSequenceTime = mSequenceDuration;
     }
 
     void SequencePlayer::_applySingleKeyframe(Actor &actor, const odDb::ActionTransform &kf)

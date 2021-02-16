@@ -56,6 +56,8 @@ namespace dragonRfl
         virtual void onMessageReceived(od::LevelObject &sender, od::Message message) override;
         virtual void onUpdate(float relTime) override;
 
+        void skipSequence();
+
 
     private:
 
@@ -65,6 +67,19 @@ namespace dragonRfl
 
         std::unique_ptr<odAnim::SequencePlayer> mPlayer;
         int mLastPlayedSequence;
+    };
+
+    class StompPlayer_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<StompPlayer_Cl>
+    {
+    public:
+
+        StompPlayer_Cl();
+
+        virtual void onLoaded() override;
+
+    private:
+
+        bool mSkipRequested;
 
     };
 

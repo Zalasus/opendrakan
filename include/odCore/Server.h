@@ -90,6 +90,7 @@ namespace od
         inline void setEngineRootDir(const od::FilePath &path) { mEngineRoot = path; }
         inline const od::FilePath &getEngineRootDir() const { return mEngineRoot; }
         inline Level *getLevel() { return mLevel.get(); }
+        inline size_t getClientCount() const { return mClients.size(); }
 
         inline odDb::DbManager &getDbManager() { return mDbManager; }
         inline odRfl::RflManager &getRflManager() { return mRflManager; }
@@ -142,6 +143,8 @@ namespace od
          */
         odInput::InputManager &getInputManagerForClient(odNet::ClientId id);
 
+        odInput::InputManager &getGlobalInputManager() { return *mGlobalInputManager; }
+
         /**
          * @brief Returns the message dispatcher for the given client.
          *
@@ -167,6 +170,20 @@ namespace od
         void loadLevel(const FilePath &path);
 
         void run();
+
+        /**
+         * @brief Initiates a rollback, winding back time to the given client's time.
+         *
+         * State changes made after this call will happen at approximately the
+         * time the given client is rendering at.
+         *
+         * This returns a guard object which will end the rollback upon it's destruction.
+         *
+         * Once the rollback ends, all objects that have received relevant state
+         * changes will be updated to bring them back to the current simulation
+         * time.
+         */
+        int beginRollbackForClient(odNet::ClientId client);
 
 
     private:
@@ -201,6 +218,7 @@ namespace od
         std::unique_ptr<Level> mLevel;
         std::unique_ptr<odState::StateManager> mStateManager;
         std::unique_ptr<odState::EventQueue> mEventQueue;
+        std::unique_ptr<odInput::InputManager> mGlobalInputManager;
 
         FilePath mEngineRoot;
 

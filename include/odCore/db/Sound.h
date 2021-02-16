@@ -43,6 +43,7 @@ namespace odDb
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
 
 		float getLinearGain() const;
+        float getDuration() const;
 
 
 	private:

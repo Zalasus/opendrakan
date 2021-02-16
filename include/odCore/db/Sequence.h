@@ -225,16 +225,21 @@ namespace odDb
         inline const std::string &getName() const { return mSequenceName; }
         inline const std::vector<SequenceActor> &getActors() const { return mActors; }
         inline ModifyRunStateStyle getRunStateModifyStyle() const { return mRunStateModifyStyle; }
+        inline bool isSkippable() const { return mSkippable; }
 
 		virtual void load(od::SrscFile::RecordInputCursor cursor) override;
+
+        // commented. this is not feasable, as animation events have no duration field, so we'd have to recursively load animations for this
+        //float getDuration();
 
 
 	private:
 
 		std::string mSequenceName;
         ModifyRunStateStyle mRunStateModifyStyle;
-        bool mLooping;
 		std::vector<SequenceActor> mActors;
+        bool mLooping;
+        bool mSkippable;
 	};
 
 
