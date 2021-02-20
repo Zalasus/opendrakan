@@ -223,4 +223,26 @@ namespace od
     }
 
 
+    template <>
+    Logger::StreamProxy &Logger::StreamProxy::operator<< <glm::vec2>(const glm::vec2 &t)
+    {
+        mLogger.mProxyStream << "[" << t.x << ", " << t.y << "]";
+        return *this;
+    }
+
+    template <>
+    Logger::StreamProxy &Logger::StreamProxy::operator<< <glm::vec3>(const glm::vec3 &t)
+    {
+        mLogger.mProxyStream << "[" << t.x << ", " << t.y << ", " << t.z << "]";
+        return *this;
+    }
+
+    template <>
+    Logger::StreamProxy &Logger::StreamProxy::operator<< <glm::vec4>(const glm::vec4 &t)
+    {
+        mLogger.mProxyStream << "[" << t.x << ", " << t.y << ", " << t.z << ", " << t.w << "]";
+        return *this;
+    }
+
+
 }

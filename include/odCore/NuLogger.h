@@ -13,6 +13,10 @@
 #include <sstream>
 #include <vector>
 
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+
 namespace od
 {
     enum class LogLevel
@@ -143,6 +147,15 @@ namespace od
         std::mutex mLogMutex;
         std::ostringstream mProxyStream;
     };
+
+    template <>
+    Logger::StreamProxy &Logger::StreamProxy::operator<< <glm::vec2>(const glm::vec2 &t);
+
+    template <>
+    Logger::StreamProxy &Logger::StreamProxy::operator<< <glm::vec3>(const glm::vec3 &t);
+
+    template <>
+    Logger::StreamProxy &Logger::StreamProxy::operator<< <glm::vec4>(const glm::vec4 &t);
 
 }
 
