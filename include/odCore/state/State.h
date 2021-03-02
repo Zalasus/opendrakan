@@ -66,18 +66,17 @@ namespace odState
 
         bool hasValue() const { return mInternalFlags & HAS_VALUE; }
         bool isJump() const { return mInternalFlags & IS_JUMP; } ///< Ths only makes sense if the state has a value
+        bool isPredictionCandiate() const { return mInternalFlags & IS_PREDICTION_CANDIDATE; }
         uint16_t getRevision() const { return mRevisionCounter; }
 
         void setJump(bool b)
         {
-            if(b)
-            {
-                mInternalFlags |= IS_JUMP;
+            _setFlag(b, IS_JUMP);
+        }
 
-            }else
-            {
-                mInternalFlags &= ~IS_JUMP;
-            }
+        void setPredictionCandidate(bool b)
+        {
+            _setFlag(b, IS_PREDICTION_CANDIDATE);
         }
 
         bool operator==(const ThisType &rhs) const
@@ -110,8 +109,21 @@ namespace odState
 
     private:
 
-        static constexpr uint16_t HAS_VALUE = (1 << 0);
-        static constexpr uint16_t IS_JUMP   = (1 << 1);
+        inline void _setFlag(bool b, uint16_t mask)
+        {
+            if(b)
+            {
+                mInternalFlags |= mask;
+
+            }else
+            {
+                mInternalFlags &= ~mask;
+            }
+        }
+
+        static constexpr uint16_t HAS_VALUE               = (1 << 0);
+        static constexpr uint16_t IS_JUMP                 = (1 << 1);
+        static constexpr uint16_t IS_PREDICTION_CANDIDATE = (1 << 2);
 
         T mValue;
         uint16_t mInternalFlags;
