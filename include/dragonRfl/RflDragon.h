@@ -22,8 +22,6 @@
 
 namespace dragonRfl
 {
-
-    class LocalPlayer;
     class DragonGui;
 
     class DragonRfl : public odRfl::Rfl
@@ -32,9 +30,6 @@ namespace dragonRfl
 
         DragonRfl();
         virtual ~DragonRfl();
-
-        inline LocalPlayer *getLocalPlayer() { return mLocalPlayer; }
-        inline void setLocalPlayer(LocalPlayer *lp) { mLocalPlayer = lp; }
 
         /**
          * @brief Spawns a controller for the given client.
@@ -57,7 +52,6 @@ namespace dragonRfl
         // note: this is defined in ClassRegistry.cpp, as to avoid having to include all the class headers in the main RFL logic code
         void _registerClasses();
 
-        LocalPlayer *mLocalPlayer;
         std::unique_ptr<DragonGui> mGui;
 
         std::shared_ptr<odNet::GlobalMessageListener<MessageChannel>> mControlCreationChannelListener;

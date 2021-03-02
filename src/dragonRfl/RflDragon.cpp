@@ -32,7 +32,6 @@ namespace dragonRfl
 {
 
     DragonRfl::DragonRfl()
-    : mLocalPlayer(nullptr)
     {
     }
 

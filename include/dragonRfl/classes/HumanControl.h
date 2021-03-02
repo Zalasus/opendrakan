@@ -23,7 +23,6 @@
 #include <odCore/rfl/DummyClass.h>
 
 #include <dragonRfl/classes/HumanControlFields.h>
-#include <dragonRfl/LocalPlayer.h>
 #include <dragonRfl/Actions.h>
 
 namespace dragonRfl

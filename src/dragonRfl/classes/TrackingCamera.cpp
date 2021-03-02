@@ -8,7 +8,6 @@
 #include <dragonRfl/classes/TrackingCamera.h>
 
 #include <dragonRfl/RflDragon.h>
-#include <dragonRfl/LocalPlayer.h>
 
 #include <odCore/Level.h>
 #include <odCore/LevelObject.h>
