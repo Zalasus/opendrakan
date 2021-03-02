@@ -49,19 +49,24 @@ namespace odState
         using ThisType = State<T>;
 
         State()
-        : mInternalFlags(0)
-        , mValue()
+        : mValue()
+        , mInternalFlags(0)
+        , mRevisionCounter(0)
         {
         }
 
         explicit State(T v)
-        : mInternalFlags(HAS_VALUE)
-        , mValue(v)
+        : mValue(v)
+        , mInternalFlags(HAS_VALUE)
+        , mRevisionCounter(0)
         {
         }
 
+        State(const ThisType &v) = default;
+
         bool hasValue() const { return mInternalFlags & HAS_VALUE; }
         bool isJump() const { return mInternalFlags & IS_JUMP; } ///< Ths only makes sense if the state has a value
+        uint16_t getRevision() const { return mRevisionCounter; }
 
         void setJump(bool b)
         {
@@ -96,24 +101,21 @@ namespace odState
         {
             mValue = v;
             mInternalFlags |= HAS_VALUE;
+            mRevisionCounter += 1;
             return *this;
         }
 
-        ThisType &operator=(const ThisType &s)
-        {
-            mValue = s.mValue;
-            mInternalFlags = s.mInternalFlags;
-            return *this;
-        }
+        ThisType &operator=(const ThisType &s) = default;
 
 
     private:
 
-        static constexpr uint8_t HAS_VALUE = (1 << 0);
-        static constexpr uint8_t IS_JUMP   = (1 << 1);
+        static constexpr uint16_t HAS_VALUE = (1 << 0);
+        static constexpr uint16_t IS_JUMP   = (1 << 1);
 
-        uint8_t mInternalFlags;
         T mValue;
+        uint16_t mInternalFlags;
+        uint16_t mRevisionCounter;
     };
 
 }
