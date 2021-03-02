@@ -100,6 +100,8 @@ namespace od
 
         inline double getCurrentTime() const { return mServerTime; }
 
+        void setTime(double t);
+
         /**
          * @brief Creates a new client and assigns a new client ID to it. It's downlink connector has to be assigned separately.
          *

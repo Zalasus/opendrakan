@@ -46,7 +46,7 @@ namespace od
     {
         if(mStateManager != nullptr)
         {
-            mStateManager->apply(mRollbackTime);
+            mStateManager->apply(mRollbackTime, true);
         }
     }
 
@@ -104,6 +104,11 @@ namespace od
     {
     }
 
+    void Server::setTime(double t)
+    {
+        
+    }
+
     odNet::ClientId Server::addClient()
     {
         std::lock_guard<std::mutex> lock(mClientsMutex);
@@ -152,7 +157,7 @@ namespace od
     {
         double predictedClientViewTime = mServerTime - getEstimatedClientLag(id);
 
-        mStateManager->apply(predictedClientViewTime);
+        mStateManager->apply(predictedClientViewTime, true);
 
         return { *mStateManager, mServerTime };
     }

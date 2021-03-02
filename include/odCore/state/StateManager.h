@@ -68,7 +68,14 @@ namespace odState
          */
         void commit(double realtime);
 
-        void apply(double realtime);
+        /**
+         * If full is true, all recorded states at the given time will be
+         * applied. Otherwise, only the ones that changed since the last apply
+         * will be considered.
+         *
+         * @param full  Whether to apply snapshot in full or only changed states.
+         */
+        void apply(double realtime, bool full);
 
         /**
          * Clears the current update map. All updates that are made after this

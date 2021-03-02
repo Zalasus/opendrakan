@@ -161,12 +161,13 @@ namespace odState
         }
     }
 
-    void StateManager::apply(double realtime)
+    void StateManager::apply(double realtime, bool full)
     {
         ApplyGuard applyGuard(*this);
 
         // TODO: not all states change everytime! we should remember the last tick we applied and only process states that changed between the two.
         //  right now we apply *every* tracked state every single frame even if it didn't change, and that wastes a lot of time
+        // note that there might be cases where that behaviour is desired (like reverting changes not made by the state manager)
 
         if(mSnapshots.empty())
         {
@@ -393,7 +394,12 @@ namespace odState
 
         }else
         {
-            obj.setStatesUntracked(states.basicStates);
+            // delta-encode with current states so we don't re-apply unchanged states
+            //  TODO: there must be a better way of doing this. this is not a real optimization
+            od::ObjectStates encoded = states.basicStates;
+            encoded.deltaEncode(obj.getStates(), states.basicStates);
+            obj.setStatesUntracked(encoded);
+
             if(states.extraStates != nullptr)
             {
                 obj.setExtraStatesUntracked(*states.extraStates);

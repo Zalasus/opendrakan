@@ -365,6 +365,11 @@ namespace od
         if(mSpawnableClass != nullptr)
         {
             mSpawnableClass->onSpawned();
+
+            if(mStates.running.get())
+            {
+                mSpawnableClass->onStart();
+            }
         }
 
         Logger::debug() << "Object " << getObjectId() << " spawned";

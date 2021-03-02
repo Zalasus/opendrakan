@@ -106,6 +106,8 @@ namespace od
         inline void setAssociateWithCeiling(bool b) { mAssociateWithCeiling = b; }
         inline Layer *getAssociatedLayer() const { return mAssociatedLayer; } ///< @return The layer this object is associated with, or nullptr if none
         inline bool isStatePredictionEnabled() const { return mEnableStatePrediction; }
+        inline ObjectStates &getStates() { return mStates; }
+        inline const ObjectStates &getStates() const { return mStates; }
 
         inline std::shared_ptr<odRender::Handle> getRenderHandle() { return mRenderHandle; }
         inline std::shared_ptr<odPhysics::ObjectHandle> getPhysicsHandle() { return mPhysicsHandle; }

@@ -250,8 +250,8 @@ namespace od
                     Logger::info() << "Client resyncing (servertime=" << latestServerTime << " clienttime=" << clientTime << ")";
                     clientTime = latestServerTime - lerpTime;
                 }
-                
-                mStateManager->apply(clientTime);
+
+                mStateManager->apply(clientTime, false);
             }
 
             if(mEventQueue != nullptr)
