@@ -67,6 +67,8 @@ namespace odState
         bool hasValue() const { return mInternalFlags & HAS_VALUE; }
         bool isJump() const { return mInternalFlags & IS_JUMP; } ///< Ths only makes sense if the state has a value
         bool isPredictionDisabled() const { return mInternalFlags & DO_NOT_PREDICT; }
+        bool isSendingDisabled() const { return mInternalFlags & DO_NOT_SEND; }
+        bool isSavingDisabled() const { return mInternalFlags & DO_NOT_SAVE; }
         uint16_t getRevision() const { return mRevisionCounter; }
 
         void setJump(bool b)
@@ -77,6 +79,16 @@ namespace odState
         void setPredictionDisabled(bool b)
         {
             _setFlag(b, DO_NOT_PREDICT);
+        }
+
+        void setSendingDisabled(bool b)
+        {
+            _setFlag(b, DO_NOT_SEND);
+        }
+
+        void setSavingDisabled(bool b)
+        {
+            _setFlag(b, DO_NOT_SAVE);
         }
 
         bool operator==(const ThisType &rhs) const
@@ -124,6 +136,8 @@ namespace odState
         static constexpr uint16_t HAS_VALUE      = (1 << 0);
         static constexpr uint16_t IS_JUMP        = (1 << 1);
         static constexpr uint16_t DO_NOT_PREDICT = (1 << 2);
+        static constexpr uint16_t DO_NOT_SEND    = (1 << 3);
+        static constexpr uint16_t DO_NOT_SAVE    = (1 << 4);
 
         T mValue;
         uint16_t mInternalFlags;
