@@ -150,6 +150,9 @@ namespace od
          * If enabled, any updates to networked states of this object are
          * considered to be predictions and are handled via a consensus
          * algorithm to smoothly compensate prediction errors.
+         *
+         * Individual states can be excluded from this via their do-not-predict
+         * mask.
          */
         void setEnableStatePrediction(bool b);
 

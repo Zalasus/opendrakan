@@ -47,6 +47,26 @@ namespace dragonRfl
 	}
 
 
+    TrackingCamera_Sv::TrackingCamera_Sv() = default;
+
+    void TrackingCamera_Sv::onStart()
+    {
+        // since a camera is basically client-only, we want to disable sending
+        //  state updates while it is running. only once a camera is stopped
+        //  (like during cutscenes) the server state becomes relevant
+        auto &states = getLevelObject().getStates();
+        states.position.setSendingDisabled(true);
+        states.rotation.setSendingDisabled(true);
+    }
+
+    void TrackingCamera_Sv::onStop()
+    {
+        auto &states = getLevelObject().getStates();
+        states.position.setSendingDisabled(false);
+        states.rotation.setSendingDisabled(false);
+    }
+
+
     TrackingCamera_Cl::TrackingCamera_Cl()
     : mObjectToTrack(nullptr)
     {
@@ -70,6 +90,9 @@ namespace dragonRfl
 
     void TrackingCamera_Cl::onStart()
     {
+        // on a client, a running camera will track it's associated human
+        //  control object. the server should disable sending updates to the
+        //  position and rotation states while running the camera
         auto &obj = getLevelObject();
 
         //obj.getLevel().activateLayerPVS(obj.getAssociatedLayer());
@@ -79,6 +102,8 @@ namespace dragonRfl
 
 	    obj.setEnableUpdate(true);
 
+        Logger::info() << "cam started";
+
         mInputListener = getClient().getInputManager().createInputListener();
         mInputListener->setMouseMoveCallback([this](auto pos){ this->_mouseHandler(pos); });
     }
@@ -86,6 +111,7 @@ namespace dragonRfl
     void TrackingCamera_Cl::onStop()
     {
         mInputListener = nullptr;
+        Logger::info() << "cam stopped";
     }
 
 	void TrackingCamera_Cl::onUpdate(float relTime)

@@ -73,6 +73,34 @@ namespace odState
         };
 
 
+        template <typename T>
+        struct StateDiffCompare
+        {
+            using ScalarType = float;
+
+            bool diffExceedsThreshold(const T &a, const T &b, ScalarType threshold)
+            {
+                return a != b;
+            }
+        };
+
+        template <>
+        struct StateDiffCompare<glm::quat>
+        {
+            using ScalarType = float;
+
+            bool diffExceedsThreshold(const glm::quat &a, const glm::quat &b, ScalarType threshold)
+            {
+                glm::vec3 testVec(0, 0, 1);
+                auto testVec1 = a * testVec;
+                auto testVec2 = b * testVec1;
+                float angleDiff = std::acos(glm::dot(testVec1, testVec2));
+
+                return angleDiff > threshold;
+            }
+        };
+
+
         template <typename _Bundle>
         class StateCountOp
         {
@@ -224,7 +252,36 @@ namespace odState
         constexpr size_t MAX_MASK_STATES{ sizeof(MaskType)*8 - 1 };
         constexpr size_t EXTENDED_BIT{ 1 << MAX_MASK_STATES };
 
-        bool shouldBeIncludedInSerialization(StateSerializationPurpose purpose, StateFlags::Type flags);
+        template <typename T>
+        bool shouldBeIncludedInSerialization(StateSerializationPurpose purpose, StateFlags::Type flags, const State<T> &state)
+        {
+            switch(purpose)
+            {
+            case StateSerializationPurpose::NETWORK:
+                if(flags & StateFlags::NOT_NETWORKED)
+                {
+                    return false;
+
+                }else if(state.isSendingDisabled())
+                {
+                    return false;
+                }
+                return true;
+
+            case StateSerializationPurpose::SAVEGAME:
+                if(flags & StateFlags::NOT_SAVED)
+                {
+                    return false;
+
+                }else if(state.isSavingDisabled())
+                {
+                    return false;
+                }
+                return true;
+            }
+
+            OD_UNREACHABLE();
+        }
 
         template <typename _StateType>
         void wrappedStateValueWrite(od::DataWriter &writer, const _StateType &value)
@@ -270,16 +327,18 @@ namespace odState
             template <typename _StateType>
             StateSerializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
             {
-                if(shouldBeIncludedInSerialization(mPurpose, flags) && (mBundle.*state).hasValue())
+                auto &stateRef = mBundle.*state;
+
+                if(shouldBeIncludedInSerialization(mPurpose, flags, stateRef) && stateRef.hasValue())
                 {
                     mValueMask |= (1 << mStateIndexInMask);
 
-                    if((mBundle.*state).isJump())
+                    if(stateRef.isJump())
                     {
                         mJumpMask |= (1 << mStateIndexInMask);
                     }
 
-                    wrappedStateValueWrite(mWriter, (mBundle.*state).get());
+                    wrappedStateValueWrite(mWriter, stateRef.get());
                 }
 
                 ++mStateIndexInMask;
@@ -343,15 +402,17 @@ namespace odState
             template <typename _StateType>
             StateDeserializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
             {
+                auto &stateRef = mBundle.*state;
+
                 if(mValueMask & (1 << mStateIndexInMask))
                 {
                     _StateType value;
                     wrappedStateValueRead(mReader, value);
 
-                    if(shouldBeIncludedInSerialization(mPurpose, flags))
+                    if(shouldBeIncludedInSerialization(mPurpose, flags, stateRef))
                     {
-                        (mBundle.*state) = value;
-                        (mBundle.*state).setJump(mJumpMask & (1 << mStateIndexInMask));
+                        stateRef = value;
+                        stateRef.setJump(mJumpMask & (1 << mStateIndexInMask));
 
                     }else
                     {

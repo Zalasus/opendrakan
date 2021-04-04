@@ -43,6 +43,25 @@ namespace dragonRfl
     };
 
 
+    class TrackingCamera_Sv final : public odRfl::ServerClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<TrackingCamera_Sv>
+	{
+	public:
+
+        TrackingCamera_Sv();
+
+        virtual odRfl::FieldBundle &getFields() override { return mFields; }
+
+        virtual void onStart() override;
+        virtual void onStop() override;
+
+
+    private:
+
+        TrackingCameraFields mFields;
+
+    };
+
+
 	class TrackingCamera_Cl final : public odRfl::ClientClass, public odRfl::SpawnableClass, public odRfl::ClassImpl<TrackingCamera_Cl>
 	{
 	public:
@@ -85,8 +104,7 @@ namespace dragonRfl
 	};
 
 
-    // TODO: this needs a bit more consideration for multiplayer
-    using TrackingCameraFactory = odRfl::DefaultClassFactory<TrackingCameraFields, TrackingCamera_Cl, odRfl::DummyClass>;
+    using TrackingCameraFactory = odRfl::DefaultClassFactory<TrackingCameraFields, TrackingCamera_Cl, TrackingCamera_Sv>;
 
 
     OD_DEFINE_CLASS(TrackingCamera, 0x001b, "System", "Tracking Camera", TrackingCameraFactory);
