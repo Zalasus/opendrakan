@@ -32,10 +32,12 @@ namespace dragonRfl
     struct FaderStates final : public odState::StateBundle<FaderStates>
     {
         OD_BEGIN_STATE_LIST()
-            OD_STATE(fade, odState::StateFlags::LERPED)
+            OD_STATE(fade)
         OD_END_STATE_LIST()
 
-        odState::State<float> fade;
+        using odState::StateFlags::LERPED;
+
+        odState::State<float, LERPED> fade;
     };
 
 

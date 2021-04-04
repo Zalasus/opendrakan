@@ -25,14 +25,14 @@ namespace odState
     };
 
 
-    namespace StateFlags
+    struct StateFlags
     {
         using Type = int;
 
-        constexpr Type NOT_SAVED     = (1 << 0);
-        constexpr Type NOT_NETWORKED = (1 << 1);
-        constexpr Type LERPED        = (1 << 2);
-    }
+        static constexpr Type NOT_SAVED     = (1 << 0);
+        static constexpr Type NOT_NETWORKED = (1 << 1);
+        static constexpr Type LERPED        = (1 << 2);
+    };
 
 
     /**
@@ -41,12 +41,12 @@ namespace odState
      *
      * This works like an Optional, so this can either contain a value or not.
      */
-    template <typename T>
+    template <typename T, StateFlags::Type _Flags = 0>
     struct State
     {
     public:
 
-        using ThisType = State<T>;
+        using ThisType = State<T, _Flags>;
 
         State()
         : mValue()

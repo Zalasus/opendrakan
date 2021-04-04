@@ -20,15 +20,16 @@ namespace odState
         virtual void merge(const StateBundleBase &lhs, const StateBundleBase &rhs) = 0;
         virtual void lerp(const StateBundleBase &lhs, const StateBundleBase &rhs, float delta) = 0;
         virtual void deltaEncode(const StateBundleBase &reference, const StateBundleBase &toEncode) = 0;
-        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) const = 0;
+        virtual void serialize(od::DataWriter &writer, StateSerializationPurpose purpose) const = 0; // TODO: make the purpose arg compile-time
         virtual void deserialize(od::DataReader &reader, StateSerializationPurpose purpose) = 0;
         virtual std::unique_ptr<StateBundleBase> clone() const = 0;
         virtual std::shared_ptr<StateBundleBase> cloneShared() const = 0;
     };
 
 
+    // the StateFlags base is a dumb way to allow using-directives for state flags in bundle bodies
     template <typename _Bundle>
-    class StateBundle : public StateBundleBase
+    class StateBundle : public StateBundleBase, protected StateFlags
     {
     public:
 
@@ -157,7 +158,7 @@ namespace odState
      * between a call to OD_BEGIN_STATE_LIST and OD_END_STATE_LIST. Do not put
      * a semicolon after this!
      */
-    #define OD_STATE(name, flags) (&BundleType::name, (flags))
+    #define OD_STATE(name) (&BundleType::name)
 
     /**
      * @brief Helper macro for generating the stateOp function in StateBundles.

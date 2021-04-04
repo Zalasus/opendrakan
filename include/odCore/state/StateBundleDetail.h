@@ -43,24 +43,13 @@ namespace odState
         template <typename T>
         struct StateLerp
         {
-            struct LerpableTag {};
-            struct NonLerpableTag {};
-            using LerpTagType = typename std::conditional<HasGlmMix<T>::value, LerpableTag, NonLerpableTag>::type;
+            static_assert(HasGlmMix<T>::value, "glm::mix is not defined for T. You need to provide a specialization of StateLerp<T>");
 
             T operator()(const T &left, const T &right, float delta)
-            {
-                return doTheThing(left, right, delta, LerpTagType());
-            }
-
-            T doTheThing(const T &left, const T &right, float delta, LerpableTag)
             {
                 return glm::mix(left, right, delta);
             }
 
-            T doTheThing(const T &left, const T &right, float delta, NonLerpableTag)
-            {
-                return left;
-            }
         };
 
         template <>
@@ -114,8 +103,8 @@ namespace odState
 
             size_t getCount() const { return mCount; }
 
-            template <typename _StateType>
-            StateCountOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+            template <typename _StateType, StateFlags::Type _Flags>
+            StateCountOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
                 if((mBundle.*state).hasValue())
                 {
@@ -146,8 +135,8 @@ namespace odState
             {
             }
 
-            template <typename _StateType>
-            StateMergeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+            template <typename _StateType, StateFlags::Type _Flags>
+            StateMergeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
                 if((mRightBundle.*state).hasValue())
                 {
@@ -183,13 +172,20 @@ namespace odState
             {
             }
 
-            template <typename _StateType>
-            StateLerpOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+            template <typename _StateType, StateFlags::Type _Flags>
+            StateLerpOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
-                if((flags & StateFlags::LERPED) && (mLeftBundle.*state).hasValue() && (mRightBundle.*state).hasValue() && !(mRightBundle.*state).isJump())
+                if constexpr(_Flags & StateFlags::LERPED)
                 {
-                    StateLerp<_StateType> lerper;
-                    mResultBundle.*state = lerper((mLeftBundle.*state).get(), (mRightBundle.*state).get(), mDelta);
+                    if((mLeftBundle.*state).hasValue() && (mRightBundle.*state).hasValue() && !(mRightBundle.*state).isJump())
+                    {
+                        StateLerp<_StateType> lerper;
+                        mResultBundle.*state = lerper((mLeftBundle.*state).get(), (mRightBundle.*state).get(), mDelta);
+
+                    }else
+                    {
+                        mResultBundle.*state = (mLeftBundle.*state);
+                    }
 
                 }else
                 {
@@ -221,12 +217,12 @@ namespace odState
             {
             }
 
-            template <typename _StateType>
-            StateDeltaEncOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+            template <typename _StateType, StateFlags::Type _Flags>
+            StateDeltaEncOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
                 if((mReference.*state).hasValue() && mToEncode.*state == mReference.*state)
                 {
-                    mResultBundle.*state = State<_StateType>();
+                    mResultBundle.*state = State<_StateType, _Flags>();
 
                 }else
                 {
@@ -252,32 +248,30 @@ namespace odState
         constexpr size_t MAX_MASK_STATES{ sizeof(MaskType)*8 - 1 };
         constexpr size_t EXTENDED_BIT{ 1 << MAX_MASK_STATES };
 
-        template <typename T>
-        bool shouldBeIncludedInSerialization(StateSerializationPurpose purpose, StateFlags::Type flags, const State<T> &state)
+        template <typename _StateType, StateFlags::Type _Flags>
+        bool shouldBeIncludedInSerialization(StateSerializationPurpose purpose, const State<_StateType, _Flags> &state)
         {
             switch(purpose)
             {
             case StateSerializationPurpose::NETWORK:
-                if(flags & StateFlags::NOT_NETWORKED)
+                if constexpr(_Flags & StateFlags::NOT_NETWORKED)
                 {
                     return false;
 
-                }else if(state.isSendingDisabled())
+                }else
                 {
-                    return false;
+                    return !state.isSendingDisabled();
                 }
-                return true;
 
             case StateSerializationPurpose::SAVEGAME:
-                if(flags & StateFlags::NOT_SAVED)
+                if constexpr(_Flags & StateFlags::NOT_SAVED)
                 {
                     return false;
 
-                }else if(state.isSavingDisabled())
+                }else
                 {
-                    return false;
+                    return !state.isSavingDisabled();
                 }
-                return true;
             }
 
             OD_UNREACHABLE();
@@ -324,12 +318,12 @@ namespace odState
                  _updateMask();
             }
 
-            template <typename _StateType>
-            StateSerializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+            template <typename _StateType, StateFlags::Type _Flags>
+            StateSerializeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
                 auto &stateRef = mBundle.*state;
 
-                if(shouldBeIncludedInSerialization(mPurpose, flags, stateRef) && stateRef.hasValue())
+                if(shouldBeIncludedInSerialization(mPurpose, stateRef) && stateRef.hasValue())
                 {
                     mValueMask |= (1 << mStateIndexInMask);
 
@@ -399,8 +393,8 @@ namespace odState
                 mReader >> mValueMask >> mJumpMask;
             }
 
-            template <typename _StateType>
-            StateDeserializeOp &operator()(State<_StateType> _Bundle::* state, StateFlags::Type flags)
+            template <typename _StateType, StateFlags::Type _Flags>
+            StateDeserializeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
                 auto &stateRef = mBundle.*state;
 
@@ -409,7 +403,7 @@ namespace odState
                     _StateType value;
                     wrappedStateValueRead(mReader, value);
 
-                    if(shouldBeIncludedInSerialization(mPurpose, flags, stateRef))
+                    if(shouldBeIncludedInSerialization(mPurpose, stateRef))
                     {
                         stateRef = value;
                         stateRef.setJump(mJumpMask & (1 << mStateIndexInMask));

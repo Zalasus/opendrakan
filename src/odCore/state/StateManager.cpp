@@ -392,9 +392,6 @@ namespace odState
                 }
             }
 
-            od::ObjectStates newStates;
-            newStates.lerp
-
         }else
         {
             // delta-encode with current states so we don't re-apply unchanged states
@@ -409,7 +406,6 @@ namespace odState
             }
         }
     }
-
 
 
     size_t StateManager::CombinedStates::countStatesWithValue() const
