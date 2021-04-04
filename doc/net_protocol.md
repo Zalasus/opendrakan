@@ -79,6 +79,11 @@ first, only that these ones now apply to the states 7 to 13. Serialization is
 repeated in the same manner until all states have been serialized. Note that the
 highest bit of the jump mask is currently unused.
 
+Boolean states are handled specially. If 8 or less boolean states are serialized
+after each other, they are combined into a single byte, starting with the least
+significant bit. This makes it desireable to always group boolean states
+together.
+
 Part of the state structure could be expressed as such:
 ```
 u8 valueMask0;
@@ -97,8 +102,8 @@ Object states have a fixed order which is as follows:
 vec3 translation;
 quat rotation;
 vec3 scale;
-u8 visibility;
-u8 running;
+bool visibility;
+bool running;
 ```
 
 Data structures

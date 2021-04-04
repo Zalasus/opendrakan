@@ -277,24 +277,6 @@ namespace odState
             OD_UNREACHABLE();
         }
 
-        template <typename _StateType>
-        void wrappedStateValueWrite(od::DataWriter &writer, const _StateType &value)
-        {
-            writer << value;
-        }
-
-        template <>
-        void wrappedStateValueWrite<bool>(od::DataWriter &writer, const bool &value);
-
-        template <typename _StateType>
-        void wrappedStateValueRead(od::DataReader &reader, _StateType &value)
-        {
-            reader >> value;
-        }
-
-        template <>
-        void wrappedStateValueRead<bool>(od::DataReader &reader, bool &value);
-
 
         template <typename _Bundle>
         class StateSerializeOp
@@ -308,6 +290,8 @@ namespace odState
             , mStateIndexInMask(0)
             , mValueMask(0)
             , mJumpMask(0)
+            , mBitFieldSize(0)
+            , mBitField(0)
             {
                 mMaskOffset = mWriter.tell();
                 mWriter << mValueMask << mJumpMask;
@@ -315,7 +299,8 @@ namespace odState
 
             ~StateSerializeOp()
             {
-                 _updateMask();
+                _flushBitField();
+                _updateMask();
             }
 
             template <typename _StateType, StateFlags::Type _Flags>
@@ -334,7 +319,7 @@ namespace odState
                             mJumpMask |= (1 << mStateIndexInMask);
                         }
 
-                        wrappedStateValueWrite(mWriter, stateRef.get());
+                        _write(stateRef.get());
                     }
                 }
 
@@ -356,8 +341,6 @@ namespace odState
                 return *this;
             }
 
-            // TODO: later, add specialization for boolean states that implements squeezing them into bitfields
-
 
         private:
 
@@ -369,6 +352,38 @@ namespace odState
                 mWriter.seek(p);
             }
 
+            void _flushBitField()
+            {
+                if(mBitFieldSize > 0)
+                {
+                    mWriter << mBitField;
+                    mBitFieldSize = 0;
+                    mBitField = 0;
+                }
+            }
+
+            template <typename T>
+            void _write(const T &v)
+            {
+                _flushBitField();
+                mWriter << v;
+            }
+
+            void _write(bool v)
+            {
+                if(v)
+                {
+                    mBitField |= (1 << mBitFieldSize);
+                }
+
+                mBitFieldSize += 1;
+                if(mBitFieldSize >= 8)
+                {
+                    _flushBitField();
+                }
+            }
+
+
             const _Bundle &mBundle;
             od::DataWriter &mWriter;
             StateSerializationPurpose mPurpose;
@@ -377,6 +392,9 @@ namespace odState
             MaskType mValueMask;
             MaskType mJumpMask;
             std::streamoff mMaskOffset;
+
+            int mBitFieldSize;
+            uint8_t mBitField;
         };
 
 
@@ -392,6 +410,8 @@ namespace odState
             , mStateIndexInMask(0)
             , mValueMask(0)
             , mJumpMask(0)
+            , mBitFieldSize(0)
+            , mBitField(0)
             {
                 mReader >> mValueMask >> mJumpMask;
             }
@@ -406,7 +426,7 @@ namespace odState
                     if(mValueMask & (1 << mStateIndexInMask))
                     {
                         _StateType value;
-                        wrappedStateValueRead(mReader, value);
+                        _read(value);
 
                         if(shouldBeIncludedInSerialization(mPurpose, stateRef))
                         {
@@ -441,10 +461,35 @@ namespace odState
                 return *this;
             }
 
-            // TODO: later, add specialization for boolean states that implements squeezing them into bitfields
-
 
         private:
+
+            template <typename T>
+            void _read(T &v)
+            {
+                if(mBitFieldSize > 0)
+                {
+                    mBitFieldSize = 0;
+                }
+
+                mReader >> v;
+            }
+
+            void _read(bool &b)
+            {
+                if(mBitFieldSize == 0)
+                {
+                    mReader >> mBitField;
+                }
+
+                b = mBitField & (1 << mBitFieldSize);
+
+                mBitFieldSize += 1;
+                if(mBitFieldSize >= 8)
+                {
+                    mBitFieldSize = 0;
+                }
+            }
 
             _Bundle &mBundle;
             od::DataReader &mReader;
@@ -453,6 +498,9 @@ namespace odState
             size_t mStateIndexInMask;
             MaskType mValueMask;
             MaskType mJumpMask;
+
+            int mBitFieldSize;
+            uint8_t mBitField;
         };
 
     }
