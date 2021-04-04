@@ -321,18 +321,21 @@ namespace odState
             template <typename _StateType, StateFlags::Type _Flags>
             StateSerializeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
-                auto &stateRef = mBundle.*state;
-
-                if(shouldBeIncludedInSerialization(mPurpose, stateRef) && stateRef.hasValue())
+                if constexpr(!(_Flags & StateFlags::NOT_SAVED) || !(_Flags & StateFlags::NOT_NETWORKED))
                 {
-                    mValueMask |= (1 << mStateIndexInMask);
+                    auto &stateRef = mBundle.*state;
 
-                    if(stateRef.isJump())
+                    if(shouldBeIncludedInSerialization(mPurpose, stateRef) && stateRef.hasValue())
                     {
-                        mJumpMask |= (1 << mStateIndexInMask);
-                    }
+                        mValueMask |= (1 << mStateIndexInMask);
 
-                    wrappedStateValueWrite(mWriter, stateRef.get());
+                        if(stateRef.isJump())
+                        {
+                            mJumpMask |= (1 << mStateIndexInMask);
+                        }
+
+                        wrappedStateValueWrite(mWriter, stateRef.get());
+                    }
                 }
 
                 ++mStateIndexInMask;
@@ -396,22 +399,25 @@ namespace odState
             template <typename _StateType, StateFlags::Type _Flags>
             StateDeserializeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
-                auto &stateRef = mBundle.*state;
-
-                if(mValueMask & (1 << mStateIndexInMask))
+                if constexpr(!(_Flags & StateFlags::NOT_SAVED) || !(_Flags & StateFlags::NOT_NETWORKED))
                 {
-                    _StateType value;
-                    wrappedStateValueRead(mReader, value);
+                    auto &stateRef = mBundle.*state;
 
-                    if(shouldBeIncludedInSerialization(mPurpose, stateRef))
+                    if(mValueMask & (1 << mStateIndexInMask))
                     {
-                        stateRef = value;
-                        stateRef.setJump(mJumpMask & (1 << mStateIndexInMask));
+                        _StateType value;
+                        wrappedStateValueRead(mReader, value);
 
-                    }else
-                    {
-                        Logger::warn() << "State with index " << mStateIndexInMask << " from bundle " << typeid(_Bundle).name()
-                          << " was included in serialization when it shouldn't have been. Ignoring state";
+                        if(shouldBeIncludedInSerialization(mPurpose, stateRef))
+                        {
+                            stateRef = value;
+                            stateRef.setJump(mJumpMask & (1 << mStateIndexInMask));
+
+                        }else
+                        {
+                            Logger::warn() << "State with index " << mStateIndexInMask << " from bundle " << typeid(_Bundle).name()
+                              << " was included in serialization when it shouldn't have been. Ignoring state";
+                        }
                     }
                 }
 
