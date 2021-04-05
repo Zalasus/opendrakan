@@ -36,8 +36,9 @@ namespace dragonRfl
         OD_END_STATE_LIST()
 
         using odState::StateFlags::LERPED;
+        using odState::StateFlags::DEFAULT;
 
-        odState::State<float, LERPED> fade;
+        odState::State<float, DEFAULT | LERPED> fade;
     };
 
 

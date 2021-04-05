@@ -25,18 +25,44 @@ namespace odState
     };
 
 
+    // forward StateValueHolder so we can befriend it to make private state flags accessible
+    namespace detail
+    {
+        template <typename>
+        class StateValueHolder;
+    }
+
+
     struct StateFlags
     {
-        using Type = int;
+        using Type = uint16_t;
 
-        static constexpr Type NOT_SAVED     = (1 << 0);
-        static constexpr Type NOT_NETWORKED = (1 << 1);
+        static constexpr Type SAVED         = (1 << 0);
+        static constexpr Type NETWORKED     = (1 << 1);
         static constexpr Type LERPED        = (1 << 2);
+        static constexpr Type PREDICTED     = (1 << 3);
+
+        static constexpr Type DEFAULT       = SAVED | NETWORKED;
+
+    private:
+
+        // these private flags are only used internally by State<T> and
+        //  StateValueHolder. they must not be used in the static flags.
+
+        template <typename, Type>
+        friend class State;
+
+        friend class detail::StateValueHolder<bool>;
+
+        static constexpr Type HAS_VALUE     = (1 << 13);
+        static constexpr Type JUMP          = (1 << 14);
+        static constexpr Type BOOLEAN       = (1 << 15);
     };
 
 
     namespace detail
     {
+
         /**
          * Base class for State<T> holding it's value.
          *
@@ -48,17 +74,17 @@ namespace odState
         {
         public:
 
-            inline const T &_get(uint16_t) const
+            inline const T &_get(StateFlags::Type) const
             {
                 return mValue;
             }
 
-            inline T &_get(uint16_t)
+            inline T &_get(StateFlags::Type)
             {
                 return mValue;
             }
 
-            inline void _set(const T &v, uint16_t&)
+            inline void _set(const T &v, StateFlags::Type&)
             {
                 mValue = v;
             }
@@ -74,28 +100,22 @@ namespace odState
         {
         public:
 
-            inline bool _get(uint16_t flags) const
+            inline bool _get(StateFlags::Type flags) const
             {
-                return flags & BOOLEAN_FLAG;
+                return flags & StateFlags::BOOLEAN;
             }
 
-            inline void _set(const bool &v, uint16_t &flags)
+            inline void _set(const bool &v, StateFlags::Type &flags)
             {
                 if(v)
                 {
-                    flags |= BOOLEAN_FLAG;
+                    flags |= StateFlags::BOOLEAN;
 
                 }else
                 {
-                    flags &= ~BOOLEAN_FLAG;
+                    flags &= ~StateFlags::BOOLEAN;
                 }
             }
-
-
-        private:
-
-            static constexpr uint16_t BOOLEAN_FLAG = (1 << 15);
-
         };
     }
 
@@ -106,60 +126,60 @@ namespace odState
      *
      * This works like an Optional, so this can either contain a value or not.
      */
-    template <typename T, StateFlags::Type _Flags = 0>
+    template <typename T, StateFlags::Type _GlobalFlags = StateFlags::DEFAULT>
     struct State : private detail::StateValueHolder<T>
     {
     public:
 
-        using ThisType = State<T, _Flags>;
+        using ThisType = State<T, _GlobalFlags>;
 
         State()
-        : mInternalFlags(0)
+        : mFlags(_GlobalFlags)
         , mRevisionCounter(0)
         {
         }
 
         explicit State(T v)
-        : mInternalFlags(HAS_VALUE)
+        : mFlags(_GlobalFlags | StateFlags::HAS_VALUE)
         , mRevisionCounter(0)
         {
-            this->_set(v, mInternalFlags);
+            this->_set(v, mFlags);
         }
 
         State(const ThisType &v) = default;
 
-        bool hasValue() const { return mInternalFlags & HAS_VALUE; }
-        bool isJump() const { return mInternalFlags & IS_JUMP; } ///< Ths only makes sense if the state has a value
-        bool isPredicted() const { return mInternalFlags & IS_PREDICTED; }
-        bool isSendingDisabled() const { return mInternalFlags & DO_NOT_SEND; }
-        bool isSavingDisabled() const { return mInternalFlags & DO_NOT_SAVE; }
+        bool hasValue() const { return mFlags & StateFlags::HAS_VALUE; }
+        bool isJump() const { return mFlags & StateFlags::JUMP; } ///< Ths only makes sense if the state has a value
+        bool isPredicted() const { return mFlags & StateFlags::PREDICTED; }
+        bool isNetworked() const { return mFlags & StateFlags::NETWORKED; }
+        bool isSaved() const { return mFlags & StateFlags::SAVED; }
         uint16_t getRevision() const { return mRevisionCounter; }
 
         void setJump(bool b)
         {
-            _setFlag(b, IS_JUMP);
+            _setFlag(b, StateFlags::JUMP);
         }
 
         void setPredicted(bool b)
         {
-            _setFlag(b, IS_PREDICTED);
+            _setFlag(b, StateFlags::PREDICTED);
         }
 
-        void setSendingDisabled(bool b)
+        void setNetworked(bool b)
         {
-            _setFlag(b, DO_NOT_SEND);
+            _setFlag(b, StateFlags::NETWORKED);
         }
 
-        void setSavingDisabled(bool b)
+        void setSaved(bool b)
         {
-            _setFlag(b, DO_NOT_SAVE);
+            _setFlag(b, StateFlags::SAVED);
         }
 
         bool operator==(const ThisType &rhs) const
         {
             if(this->hasValue() && rhs.hasValue())
             {
-                return this->_get(mInternalFlags) == rhs._get(rhs.mInternalFlags);
+                return this->_get(mFlags) == rhs._get(rhs.mFlags);
 
             }else
             {
@@ -169,13 +189,13 @@ namespace odState
 
         T get() const
         {
-            return this->_get(mInternalFlags);
+            return this->_get(mFlags);
         }
 
         ThisType &operator=(const T &v)
         {
-            this->_set(v, mInternalFlags);
-            mInternalFlags |= HAS_VALUE;
+            this->_set(v, mFlags);
+            _setFlag(true, StateFlags::HAS_VALUE);
             mRevisionCounter += 1;
             return *this;
         }
@@ -185,26 +205,19 @@ namespace odState
 
     private:
 
-        inline void _setFlag(bool b, uint16_t mask)
+        inline void _setFlag(bool b, StateFlags::Type mask)
         {
             if(b)
             {
-                mInternalFlags |= mask;
+                mFlags |= mask;
 
             }else
             {
-                mInternalFlags &= ~mask;
+                mFlags &= ~mask;
             }
         }
 
-        static constexpr uint16_t HAS_VALUE      = (1 << 0);
-        static constexpr uint16_t IS_JUMP        = (1 << 1);
-        static constexpr uint16_t IS_PREDICTED   = (1 << 2);
-        static constexpr uint16_t DO_NOT_SEND    = (1 << 3);
-        static constexpr uint16_t DO_NOT_SAVE    = (1 << 4);
-        // highest bit is reserved for booleans!
-
-        uint16_t mInternalFlags;
+        StateFlags::Type mFlags; // TODO: it is desirable that this is always 16 bits (most states have 4-byte alignment). how do we convey this intent?
         uint16_t mRevisionCounter;
     };
 

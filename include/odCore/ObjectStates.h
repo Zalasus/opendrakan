@@ -36,12 +36,13 @@ namespace od
         OD_END_STATE_LIST()
 
         using odState::StateFlags::LERPED;
+        using odState::StateFlags::DEFAULT;
 
-        odState::State<glm::vec3, LERPED> position;
-        odState::State<glm::quat, LERPED> rotation;
-        odState::State<glm::vec3, LERPED> scale;
-        odState::State<bool>              visibility;
-        odState::State<bool>              running;
+        odState::State<glm::vec3, DEFAULT | LERPED> position;
+        odState::State<glm::quat, DEFAULT | LERPED> rotation;
+        odState::State<glm::vec3, DEFAULT | LERPED> scale;
+        odState::State<bool>                        visibility;
+        odState::State<bool>                        running;
     };
 
 }

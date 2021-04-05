@@ -55,15 +55,15 @@ namespace dragonRfl
         //  state updates while it is running. only once a camera is stopped
         //  (like during cutscenes) the server state becomes relevant
         auto &states = getLevelObject().getStates();
-        states.position.setSendingDisabled(true);
-        states.rotation.setSendingDisabled(true);
+        states.position.setNetworked(false);
+        states.rotation.setNetworked(true);
     }
 
     void TrackingCamera_Sv::onStop()
     {
         auto &states = getLevelObject().getStates();
-        states.position.setSendingDisabled(false);
-        states.rotation.setSendingDisabled(false);
+        states.position.setNetworked(false);
+        states.rotation.setNetworked(false);
     }
 
 
@@ -102,6 +102,10 @@ namespace dragonRfl
 
 	    obj.setEnableUpdate(true);
 
+        auto &states = getLevelObject().getStates();
+        states.position.setNetworked(false);
+        states.rotation.setNetworked(false);
+
         Logger::info() << "cam started";
 
         mInputListener = getClient().getInputManager().createInputListener();
@@ -112,6 +116,10 @@ namespace dragonRfl
     {
         mInputListener = nullptr;
         Logger::info() << "cam stopped";
+
+        auto &states = getLevelObject().getStates();
+        states.position.setNetworked(true);
+        states.rotation.setNetworked(true);
     }
 
 	void TrackingCamera_Cl::onUpdate(float relTime)

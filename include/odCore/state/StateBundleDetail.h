@@ -254,24 +254,10 @@ namespace odState
             switch(purpose)
             {
             case StateSerializationPurpose::NETWORK:
-                if constexpr(_Flags & StateFlags::NOT_NETWORKED)
-                {
-                    return false;
-
-                }else
-                {
-                    return !state.isSendingDisabled();
-                }
+                return state.isNetworked();
 
             case StateSerializationPurpose::SAVEGAME:
-                if constexpr(_Flags & StateFlags::NOT_SAVED)
-                {
-                    return false;
-
-                }else
-                {
-                    return !state.isSavingDisabled();
-                }
+                return state.isSaved();
             }
 
             OD_UNREACHABLE();
@@ -306,21 +292,18 @@ namespace odState
             template <typename _StateType, StateFlags::Type _Flags>
             StateSerializeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
-                if constexpr(!(_Flags & StateFlags::NOT_SAVED) || !(_Flags & StateFlags::NOT_NETWORKED))
+                auto &stateRef = mBundle.*state;
+
+                if(shouldBeIncludedInSerialization(mPurpose, stateRef) && stateRef.hasValue())
                 {
-                    auto &stateRef = mBundle.*state;
+                    mValueMask |= (1 << mStateIndexInMask);
 
-                    if(shouldBeIncludedInSerialization(mPurpose, stateRef) && stateRef.hasValue())
+                    if(stateRef.isJump())
                     {
-                        mValueMask |= (1 << mStateIndexInMask);
-
-                        if(stateRef.isJump())
-                        {
-                            mJumpMask |= (1 << mStateIndexInMask);
-                        }
-
-                        _write(stateRef.get());
+                        mJumpMask |= (1 << mStateIndexInMask);
                     }
+
+                    _write(stateRef.get());
                 }
 
                 ++mStateIndexInMask;
@@ -419,25 +402,22 @@ namespace odState
             template <typename _StateType, StateFlags::Type _Flags>
             StateDeserializeOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
-                if constexpr(!(_Flags & StateFlags::NOT_SAVED) || !(_Flags & StateFlags::NOT_NETWORKED))
+                auto &stateRef = mBundle.*state;
+
+                if(mValueMask & (1 << mStateIndexInMask))
                 {
-                    auto &stateRef = mBundle.*state;
+                    _StateType value;
+                    _read(value);
 
-                    if(mValueMask & (1 << mStateIndexInMask))
+                    if(shouldBeIncludedInSerialization(mPurpose, stateRef))
                     {
-                        _StateType value;
-                        _read(value);
+                        stateRef = value;
+                        stateRef.setJump(mJumpMask & (1 << mStateIndexInMask));
 
-                        if(shouldBeIncludedInSerialization(mPurpose, stateRef))
-                        {
-                            stateRef = value;
-                            stateRef.setJump(mJumpMask & (1 << mStateIndexInMask));
-
-                        }else
-                        {
-                            Logger::warn() << "State with index " << mStateIndexInMask << " from bundle " << typeid(_Bundle).name()
-                              << " was included in serialization when it shouldn't have been. Ignoring state";
-                        }
+                    }else
+                    {
+                        Logger::warn() << "State with index " << mStateIndexInMask << " from bundle " << typeid(_Bundle).name()
+                          << " was included in serialization when it shouldn't have been. Ignoring state";
                     }
                 }
 
