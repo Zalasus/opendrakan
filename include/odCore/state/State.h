@@ -35,6 +35,71 @@ namespace odState
     };
 
 
+    namespace detail
+    {
+        /**
+         * Base class for State<T> holding it's value.
+         *
+         * This allows us to store bool states inside the flags instead of a
+         * dedicated member, saving memory due to empty-base-optimization.
+         */
+        template <typename T>
+        class StateValueHolder
+        {
+        public:
+
+            inline const T &_get(uint16_t) const
+            {
+                return mValue;
+            }
+
+            inline T &_get(uint16_t)
+            {
+                return mValue;
+            }
+
+            inline void _set(const T &v, uint16_t&)
+            {
+                mValue = v;
+            }
+
+
+        private:
+
+            T mValue;
+        };
+
+        template <>
+        class StateValueHolder<bool>
+        {
+        public:
+
+            inline bool _get(uint16_t flags) const
+            {
+                return flags & BOOLEAN_FLAG;
+            }
+
+            inline void _set(const bool &v, uint16_t &flags)
+            {
+                if(v)
+                {
+                    flags |= BOOLEAN_FLAG;
+
+                }else
+                {
+                    flags &= ~BOOLEAN_FLAG;
+                }
+            }
+
+
+        private:
+
+            static constexpr uint16_t BOOLEAN_FLAG = (1 << 15);
+
+        };
+    }
+
+
     /**
      * A template for a simple state type. This should handle most basic types
      * of states (ints, floats, glm vectors etc.).
@@ -42,24 +107,23 @@ namespace odState
      * This works like an Optional, so this can either contain a value or not.
      */
     template <typename T, StateFlags::Type _Flags = 0>
-    struct State
+    struct State : private detail::StateValueHolder<T>
     {
     public:
 
         using ThisType = State<T, _Flags>;
 
         State()
-        : mValue()
-        , mInternalFlags(0)
+        : mInternalFlags(0)
         , mRevisionCounter(0)
         {
         }
 
         explicit State(T v)
-        : mValue(v)
-        , mInternalFlags(HAS_VALUE)
+        : mInternalFlags(HAS_VALUE)
         , mRevisionCounter(0)
         {
+            this->_set(v, mInternalFlags);
         }
 
         State(const ThisType &v) = default;
@@ -95,7 +159,7 @@ namespace odState
         {
             if(this->hasValue() && rhs.hasValue())
             {
-                return mValue == rhs.mValue;
+                return this->_get(mInternalFlags) == rhs._get(rhs.mInternalFlags);
 
             }else
             {
@@ -105,12 +169,12 @@ namespace odState
 
         T get() const
         {
-            return mValue;
+            return this->_get(mInternalFlags);
         }
 
         ThisType &operator=(const T &v)
         {
-            mValue = v;
+            this->_set(v, mInternalFlags);
             mInternalFlags |= HAS_VALUE;
             mRevisionCounter += 1;
             return *this;
@@ -138,8 +202,8 @@ namespace odState
         static constexpr uint16_t DO_NOT_PREDICT = (1 << 2);
         static constexpr uint16_t DO_NOT_SEND    = (1 << 3);
         static constexpr uint16_t DO_NOT_SAVE    = (1 << 4);
+        // highest bit is reserved for booleans!
 
-        T mValue;
         uint16_t mInternalFlags;
         uint16_t mRevisionCounter;
     };
