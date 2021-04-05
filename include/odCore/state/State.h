@@ -130,7 +130,7 @@ namespace odState
 
         bool hasValue() const { return mInternalFlags & HAS_VALUE; }
         bool isJump() const { return mInternalFlags & IS_JUMP; } ///< Ths only makes sense if the state has a value
-        bool isPredictionDisabled() const { return mInternalFlags & DO_NOT_PREDICT; }
+        bool isPredicted() const { return mInternalFlags & IS_PREDICTED; }
         bool isSendingDisabled() const { return mInternalFlags & DO_NOT_SEND; }
         bool isSavingDisabled() const { return mInternalFlags & DO_NOT_SAVE; }
         uint16_t getRevision() const { return mRevisionCounter; }
@@ -140,9 +140,9 @@ namespace odState
             _setFlag(b, IS_JUMP);
         }
 
-        void setPredictionDisabled(bool b)
+        void setPredicted(bool b)
         {
-            _setFlag(b, DO_NOT_PREDICT);
+            _setFlag(b, IS_PREDICTED);
         }
 
         void setSendingDisabled(bool b)
@@ -199,7 +199,7 @@ namespace odState
 
         static constexpr uint16_t HAS_VALUE      = (1 << 0);
         static constexpr uint16_t IS_JUMP        = (1 << 1);
-        static constexpr uint16_t DO_NOT_PREDICT = (1 << 2);
+        static constexpr uint16_t IS_PREDICTED   = (1 << 2);
         static constexpr uint16_t DO_NOT_SEND    = (1 << 3);
         static constexpr uint16_t DO_NOT_SAVE    = (1 << 4);
         // highest bit is reserved for booleans!
