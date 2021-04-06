@@ -2,7 +2,7 @@
 #ifndef INCLUDE_ODCORE_STATE_STATE_H_
 #define INCLUDE_ODCORE_STATE_STATE_H_
 
-#include <odCore/Downcast.h>
+#include <odCore/CTypes.h>
 
 namespace odState
 {
@@ -258,4 +258,4 @@ namespace odState
 
 }
 
-#endif
+#endif // INCLUDE_ODCORE_STATE_STATE_H_

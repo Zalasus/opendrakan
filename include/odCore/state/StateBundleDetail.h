@@ -20,6 +20,7 @@
 
 #include <odCore/Logger.h>
 #include <odCore/DataStream.h>
+#include <odCore/Panic.h>
 
 #include <odCore/state/State.h>
 
@@ -175,7 +176,7 @@ namespace odState
             template <typename _StateType, StateFlags::Type _Flags>
             StateLerpOp &operator()(State<_StateType, _Flags> _Bundle::* state)
             {
-                if constexpr(_Flags & StateFlags::LERPED)
+                if constexpr((_Flags & StateFlags::LERPED) != 0)
                 {
                     if((mLeftBundle.*state).hasValue() && (mRightBundle.*state).hasValue() && !(mRightBundle.*state).isJump())
                     {
