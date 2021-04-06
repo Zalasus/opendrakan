@@ -33,6 +33,17 @@ namespace odState
     }
 
 
+    /**
+     * @brief Contains definitions for the State flags.
+     *
+     * This is a struct so we can "use" these flags in a StateBundle. We can't
+     * "using namespace" in a class definition, which means that when defining a
+     * custom StateBundle, we'd have to use fully qualified names for every flag
+     * in every state definition, which is obviously very verbose and ugly. But
+     * by making StateBundle privately inherit StateFlags, we can "use" the
+     * individual flags we need in the custom StateBundles. StateFlags is an
+     * empty base, thus this incurs no overhead.
+     */
     struct StateFlags
     {
         using Type = uint16_t;
@@ -57,6 +68,13 @@ namespace odState
         static constexpr Type HAS_VALUE     = (1 << 13);
         static constexpr Type JUMP          = (1 << 14);
         static constexpr Type BOOLEAN       = (1 << 15);
+
+
+    protected:
+
+        // protected. only inheriting StateBundles should be able to instantiate this
+        StateFlags() = default;
+
     };
 
 
@@ -121,10 +139,27 @@ namespace odState
 
 
     /**
-     * A template for a simple state type. This should handle most basic types
-     * of states (ints, floats, glm vectors etc.).
+     * @brief A template for a tracked state, bundling data with bookkeeping.
      *
-     * This works like an Optional, so this can either contain a value or not.
+     * This handles most basic engine types of states (bools, ints, floats,
+     * glm vectors and quats) out of the box.
+     *
+     * This works like an Optional, so this can either contain a value or not
+     * (currently, T still requires DefaultConstructible, but we could lift this
+     * requirement later).
+     *
+     * Some state flags can be statically set via the _GlobalFlags template
+     * argument, which will then apply to all states instantiated from that
+     * definition. However, most flags can be still modified at runtime for
+     * individual states. Some flags are only valid and useful in the
+     * _GlobalFlags context, like StateFlags::LERPED.
+     *
+     * The requirements for T are that it defines an == operator, is
+     * CopyConstructible and CopyAssignable. It must be serializable and
+     * deserializable via DataWriter and DataWriter, respectively. If
+     * _GlobalFlags has LERPED set, StateLerp<T> must be defined for T. The
+     * default StateLerp<T> assumes that glm::mix(T,T,float) exists. If that is
+     * not the case, you need to provide a specialization.
      */
     template <typename T, StateFlags::Type _GlobalFlags = StateFlags::DEFAULT>
     struct State : private detail::StateValueHolder<T>
