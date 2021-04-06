@@ -385,7 +385,8 @@ Record types
         char_bounds[uint16]              char_bounds; // one for each LOD. length field seems to be redundant with num_lods
 
     [0x0209] ???
-        uint8[6]    ???
+        uint16 ???
+        float  ??? // is squared upon model loading
         (These could be related to model rotations. Some models appear incorrectly rotated, and this is always non-zero for those)
 
 
