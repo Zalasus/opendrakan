@@ -169,8 +169,7 @@ Record types
         uint32        height; // editor allows arbitrary height
         uint32        pitch;
         uint16        bits_per_pixel; // indicates 5 5 5+1, 4 4 4+4 or 3 3 2+8 formats for alpha channels. 8 8 8+8 format is reported as "not yet implemented"
-        uint16        alpha_bits_per_pixel;
-        uint16        unknown;
+        uint32        alpha_bits_per_pixel;
         uint32        colour_key;
         ref           mip_map;
         ref           alternate_texture;
