@@ -4,6 +4,12 @@ OpenDrakan
 
 [![Build Status](https://travis-ci.org/Zalasus/opendrakan.svg?branch=master)](https://travis-ci.org/Zalasus/opendrakan)
 
+__Update 2022/01/05__: I realize that there hasn't been an update on this project for quite some time. This is mostly
+on me, with the world going crazy due to COVID, stuff in my life going wrong and my new job taking a toll on my
+time and motivation. That being said, this project is *not dead*. Most recently I started a full rewrite in Rust.
+I'm not sure if that'll lead me somewhere, but for now it keeps me coming back to OpenDrakan, and that's worth
+something, I guess.
+
 A project to reverse-engineer and recreate Surreal Software's Riot Engine with the ultimate goal to be
 able to run the game *Drakan: Order of the Flame* on a modern GNU/Linux system.
 
