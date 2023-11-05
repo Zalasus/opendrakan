@@ -566,8 +566,8 @@ Record types
         uint8[*] string;  // no length field. string fills entire record
         (found in Dragon.rrc, used for localization, credits, gui)
 
-    [0x0402] End record?
-        (one of these appears in many databases, often last. it's size seems to always be 4)
+    [0x0402] Version number
+        seems to always be 4 bytes. At least for .odb files, these entries hold a version number (ex. 0x102) that is checked upon loading of .odb files
 
     Animation (0x0501 - 0x0503)
     ---------------------------
