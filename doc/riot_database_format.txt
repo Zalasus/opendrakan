@@ -184,7 +184,9 @@ Record types
         // 0x02 an alpha channel is integrated into the image data
         // 0x01 this has a seperate alpha map attached after the image data
         uint8         flags;
-        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps
+        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: 
+                                    // 0x10 for bump maps
+                                    // 0x02 for bump maps that also give luminance information
         ref           material_object;
         uint32        ref_count;
         uint32        compression_level; // (0 = none, 1 = lowest, 9 = highest)
