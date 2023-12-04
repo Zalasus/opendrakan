@@ -385,12 +385,9 @@ Record types
         channel[uint16]                  channels;
         char_bounds[uint16]              char_bounds; // one for each LOD. length field seems to be redundant with num_lods
 
-    [0x0209] ???
-        uint16 record_id // this value points to a model in the same database (thats why the value only needs uint16). Upon loading a model, this model gets loaded as well and they point to each other. 
-                         // Not yet known what this is. Could be alternative model / LOD? Then the float value below could be a distance value? 
-        float  ??? // is squared upon model loading
-        (These could be related to model rotations. Some models appear incorrectly rotated, and this is always non-zero for those)
-
+    [0x0209] REO level of detail      // used to implement LOD for Riot Engine Objects. Riot Engine Characters store LOD info in the character data
+        uint16 record_id              // refers to a model in the same database which is a lower LOD for the current model
+        float  threshold_distance     // is squared upon model loading, the distance at which the current model will be used 
 
     Sound (0x0301 - 0x0302)
     -----------------------
