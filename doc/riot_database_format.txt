@@ -184,7 +184,9 @@ Record types
         // 0x02 an alpha channel is integrated into the image data
         // 0x01 this has a seperate alpha map attached after the image data
         uint8         flags;
-        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: this is 0x10 for bump maps
+        uint16        mip_map_number; // as in "this texture is mip map number ..., seems to have other uses: 
+                                    // 0x10 for bump maps
+                                    // 0x02 for bump maps that also give luminance information
         ref           material_object;
         uint32        ref_count;
         uint32        compression_level; // (0 = none, 1 = lowest, 9 = highest)
@@ -383,11 +385,9 @@ Record types
         channel[uint16]                  channels;
         char_bounds[uint16]              char_bounds; // one for each LOD. length field seems to be redundant with num_lods
 
-    [0x0209] ???
-        uint16 ???
-        float  ??? // is squared upon model loading
-        (These could be related to model rotations. Some models appear incorrectly rotated, and this is always non-zero for those)
-
+    [0x0209] REO level of detail      // used to implement LOD for Riot Engine Objects. Riot Engine Characters store LOD info in the character data
+        uint16 record_id              // refers to a model in the same database which is a lower LOD for the current model
+        float  threshold_distance     // is squared upon model loading, the distance at which the current model will be used 
 
     Sound (0x0301 - 0x0302)
     -----------------------
@@ -566,8 +566,8 @@ Record types
         uint8[*] string;  // no length field. string fills entire record
         (found in Dragon.rrc, used for localization, credits, gui)
 
-    [0x0402] End record?
-        (one of these appears in many databases, often last. it's size seems to always be 4)
+    [0x0402] Version number
+        seems to always be 4 bytes. At least for .odb files, these entries hold a version number (ex. 0x102) that is checked upon loading of .odb files
 
     Animation (0x0501 - 0x0503)
     ---------------------------
